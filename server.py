@@ -9,7 +9,7 @@ class Server(swi.SimpleWebInterface):
     def swi(self):
         return open('index.html').read()
 
-    def ws_graph(self, client, id):
+    def ws_viz_component(self, client, id):
         offset = 'abcd'.index(id)
         while True:
             client.write('%g' % (random.random() + 10*offset))
