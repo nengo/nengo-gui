@@ -10,9 +10,12 @@ class Server(swi.SimpleWebInterface):
         return open('index.html').read()
 
     def ws_viz_component(self, client, id):
-        offset = 'abcd'.index(id)
         while True:
-            client.write('%g' % (random.random() + 10*offset))
+            msg = client.read()
+            while msg is not None:
+                print id, msg
+                msg = client.read()
+            client.write('%g' % random.random())
             time.sleep(0.01)
 
 

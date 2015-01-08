@@ -5,13 +5,19 @@
     <link href="static/main.css" rel="stylesheet" type="text/css" />
     <script src="static/viz.js"></script>
     <script src="static/viz_linegraph.js"></script>
+    <script src="static/viz_slider.js"></script>
+    <link href="static/viz_slider.css" rel="stylesheet" type="text/css" />
 <script>
 function onload() {
     main = document.getElementById("main")
     var g1 = new VIZ.LineGraph({parent:main, x:10, y:20, width:100, height:100, id:'a'});
     var g2 = new VIZ.LineGraph({parent:main, x:30, y:50, width:100, height:100, id:'b'});
     var g3 = new VIZ.LineGraph({parent:main, x:130, y:10, width:100, height:100, id:'c'});
-    var g4 = new VIZ.LineGraph({parent:main, x:260, y:100, width:100, height:100, id:'d'});
+    
+    var slider1 = new VIZ.Slider({parent:main, x:200, y:20, width:100, height:300, id:'slider1', 
+                                 n_sliders:3});    
+    var slider2 = new VIZ.Slider({parent:main, x:400, y:20, width:100, height:300, id:'slider2', 
+                                  n_sliders:1});    
 }
 </script>
 </head>

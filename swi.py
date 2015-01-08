@@ -51,6 +51,7 @@ import thread
 import mimetypes
 import base64
 import hashlib
+import socket
 
 
 class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
