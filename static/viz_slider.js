@@ -3,8 +3,10 @@ VIZ.Slider = function(args) {
     VIZ.WSComponent.call(this, args);
     
     this.scale = d3.scale.linear();
-    this.scale.domain([-1, 1]);
+    this.scale.domain([1,  -1]);
     this.scale.range([0, args.height]);
+    
+    this.slider_height = 50;
     
     var self = this;
     
@@ -38,7 +40,8 @@ VIZ.Slider = function(args) {
                     // translate the element
                     target.style.webkitTransform =
                         target.style.transform =
-                        'translate(' + x + 'px, ' + (y-25) + 'px)';
+                        'translate(' + x + 'px, ' + 
+                                      (y-self.slider_height/2) + 'px)';
 
                     // update the position attributes
                     target.setAttribute('data-y', y);
@@ -69,12 +72,13 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
     for (var i in this.sliders) {
         var slider = this.sliders[i];
         slider.div.style.width = width / N;
-        slider.div.style.height = 50;   
+        slider.div.style.height = this.slider_height;   
         var x = i * width /N;
         var y = this.scale(slider.value);
         slider.div.setAttribute('data-x', x);
         slider.div.setAttribute('data-y', y);
         slider.div.style.webkitTransform = 
-            slider.div.style.transform = 'translate(' + x + 'px, ' + (y-25) + 'px)';
+            slider.div.style.transform = 'translate(' + x + 'px, ' + 
+                                         (y-this.slider_height/2) + 'px)';
     }
 };
