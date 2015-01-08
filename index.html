@@ -7,7 +7,8 @@
 
 var GUI = {};
 
-GUI.Graph = function(parent, x, y, width, height) {
+GUI.Graph = function(parent, x, y, width, height, id) {
+    this.id = id;
     var div = document.createElement('div');
     div.style.width = width;
     div.style.height = height;
@@ -58,17 +59,15 @@ GUI.Graph = function(parent, x, y, width, height) {
             target.style.height = newHeight + 'px';
             
             // resize graph
-            var obj = target.gui_obj;
-            obj.scale_x.range([0, newWidth]);
-            obj.scale_y.range([newHeight, 0]);
+            scale_x.range([0, newWidth]);
+            scale_y.range([newHeight, 0]);
             var line = d3.svg.line()
-                .x(function(d, i) {return obj.scale_x(i);})
-                .y(function(d) {return obj.scale_y(d);})
+                .x(function(d, i) {return scale_x(i);})
+                .y(function(d) {return scale_y(d);})
             d3.select(target).select('path')
-                .datum(obj.data)
+                .datum(data)
                 .attr('d', line);
             
-            console.log(target.gui_obj);
         });
     
     
@@ -84,7 +83,7 @@ GUI.Graph = function(parent, x, y, width, height) {
         .x(function(d, i) {return scale_x(i);})
         .y(function(d) {return scale_y(d);})
         
-    var data = this.data = [ 1, 10, 2, 9, 3, 8];
+    var data = this.data = [];
     scale_x.domain([0, 6]);
     scale_y.domain([0, 20]);
     scale_x.range([0, width]);
@@ -97,15 +96,33 @@ GUI.Graph = function(parent, x, y, width, height) {
         .attr('d', line);
     
     this.svg = svg;
+    
+    this.ws = new WebSocket('ws://localhost:8080/graph?id=' + id);
+    this.ws.gui_obj = this;
+    this.ws.onmessage = function(e) {
+        data.push(parseFloat(e.data));
+        if (data.length > 100) {
+            data = data.slice(-100);
+        }
+        scale_x.domain([0, data.length - 1]);
+        scale_y.domain([0, Math.max.apply(null, data)]);
+        var line = d3.svg.line()
+                .x(function(d, i) {return scale_x(i);})
+                .y(function(d) {return scale_y(d);})
+        d3.select(div).select('path')
+                .datum(data)
+                .attr('d', line);
+        
+    }
 }
 
 
 function onload() {
     main = document.getElementById("main")
-    var g1 = GUI.Graph(main, 10, 20, 100, 100);
-    var g2 = GUI.Graph(main, 50, 60, 100, 100);
-    var g3 = GUI.Graph(main, 160, 60, 100, 100);
-    var g4 = GUI.Graph(main, 250, 60, 100, 100);
+    var g1 = GUI.Graph(main, 10, 20, 100, 100, 'a');
+    var g2 = GUI.Graph(main, 50, 60, 100, 100, 'b');
+    var g3 = GUI.Graph(main, 160, 60, 100, 100, 'c');
+    var g4 = GUI.Graph(main, 250, 60, 100, 100, 'd');
 }
 </script>
 </head>
