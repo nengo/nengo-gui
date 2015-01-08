@@ -16,7 +16,4 @@ class Server(swi.SimpleWebInterface):
             time.sleep(0.01)
 
 
-
-port = 8080
-swi.browser(port=port)
-swi.start(Server, port=port)
+Server.start(port=8080, browser=True)

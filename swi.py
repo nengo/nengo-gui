@@ -337,6 +337,26 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             i += 1
         return val
 
+    @classmethod
+    def start(cls, port=80, asynch=True, addr='', browser=False):
+        if browser:
+            cls.browser(port=port)
+        if asynch:
+            server = AsyncHTTPServer((addr, port), cls)
+        else:
+            server = BaseHTTPServer.HTTPServer((addr, port), cls)
+        try:
+            server.serve_forever()
+        finally:
+            # shut down any remaining threads
+            if asynch and server.requests is not None:
+                for socket in server.requests:
+                    socket.close()
+
+    @classmethod
+    def browser(cls, port=80):
+        thread.start_new_thread(webbrowser.open, ('http://localhost:%d' % port,))
+
 
 class AsyncHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
     requests = None
@@ -349,24 +369,6 @@ class AsyncHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         SocketServer.ThreadingMixIn.process_request_thread(self, request,
                                                            client_address)
         self.requests.remove(request)
-
-
-def start(cls, port=80, asynch=True, addr=''):
-    if asynch:
-        server = AsyncHTTPServer((addr, port), cls)
-    else:
-        server = BaseHTTPServer.HTTPServer((addr, port), cls)
-    try:
-        server.serve_forever()
-    finally:
-        # shut down any remaining threads
-        if asynch and server.requests is not None:
-            for socket in server.requests:
-                socket.close()
-
-
-def browser(port=80):
-    thread.start_new_thread(webbrowser.open, ('http://localhost:%d' % port,))
 
 
 favicon = ('\x00\x00\x01\x00\x01\x00\x10\x10\x00\x00\x01\x00\x18\x00h\x03\x00'
@@ -547,5 +549,4 @@ if __name__ == '__main__':
                 time.sleep(1)
 
     Demo.add_user('terry', 'password')
-    browser(8080)
-    start(Demo, 8080)
+    Demo.start(port=8080, browser=True)
