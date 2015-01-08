@@ -10,6 +10,14 @@ VIZ.Component = function(args) {
     div.setAttribute('data-y', args.y);
     div.style.position = 'fixed';
     
+    var parent = args.parent;
+    div.onmousedown = function(event) {
+        // move this item to the end of the draw list, so it is visually on top
+        parent.removeChild(div);
+        parent.appendChild(div);
+    };
+    div.ontouchstart = div.onmousedown;
+    
     div.classList.add('graph');
     args.parent.appendChild(div);
     this.div = div;
@@ -37,7 +45,7 @@ VIZ.Component = function(args) {
 
                   // update the position attributes
                   target.setAttribute('data-x', x);
-                  target.setAttribute('data-y', y);
+                  target.setAttribute('data-y', y);                  
             }
         })
         .resizable(true)
