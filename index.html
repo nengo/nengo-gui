@@ -1,0 +1,78 @@
+<html>
+<head>
+    <script src="static/interact-1.2.2.js"></script>
+    <link href="static/main.css" rel="stylesheet" type="text/css" />
+<script>
+
+var GUI = {};
+
+GUI.Graph = function(parent, x, y, width, height) {
+    var div = document.createElement('div');
+    div.innerHTML = 'test';
+    div.style.width = width;
+    div.style.height = height;
+    div.style.webkitTransform = 
+        div.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+    div.setAttribute('data-x', x);
+    div.setAttribute('data-y', y);
+    
+    div.classList.add('graph');
+    
+    this.div = div;
+    interact(div)
+        .draggable({
+            inertia: true,
+            restrict: {
+                restriction: "parent",
+                endOnly: true,
+                elementRect: {top: 0, left: 0, bottom: 1, right: 1 }
+            },
+            onmove: function (event) {
+                var target = event.target,
+                    // keep the dragged position in the data-x/data-y attributes
+                    x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
+                    y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+                // translate the element
+                target.style.webkitTransform =
+                    target.style.transform =
+                    'translate(' + x + 'px, ' + y + 'px)';
+
+                  // update the position attributes
+                  target.setAttribute('data-x', x);
+                  target.setAttribute('data-y', y);
+            }
+        })
+        .resizable(true)
+        .on('resizemove', function(event) {
+            var target = event.target;
+
+            // add the change in coords to the previous width of the target element
+            var newWidth  = parseFloat(target.style.width ) + event.dx,
+                newHeight = parseFloat(target.style.height) + event.dy;
+
+            // update the element's style
+            target.style.width  = newWidth + 'px';
+            target.style.height = newHeight + 'px';
+        });
+    
+    
+    parent.appendChild(this.div);
+}
+
+
+function onload() {
+    main = document.getElementById("main")
+    var g1 = GUI.Graph(main, 10, 20, 100, 100);
+    var g2 = GUI.Graph(main, 50, 60, 100, 100);
+    var g3 = GUI.Graph(main, 50, 60, 100, 100);
+    var g4 = GUI.Graph(main, 50, 60, 100, 100);
+}
+</script>
+</head>
+<body onload="onload();">
+<div id="main">
+
+</div>
+</body>
+</html>

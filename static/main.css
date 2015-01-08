@@ -1,0 +1,14 @@
+body {
+    margin: 0px;
+}
+
+#main {
+    background: yellow;
+    width: 100%;
+    height: 100%;
+}
+
+.graph {
+    position: fixed;
+    background: blue;
+    }
