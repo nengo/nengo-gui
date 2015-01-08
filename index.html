@@ -1,6 +1,7 @@
 <html>
 <head>
     <script src="static/interact-1.2.2.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
     <link href="static/main.css" rel="stylesheet" type="text/css" />
 <script>
 
@@ -8,7 +9,6 @@ var GUI = {};
 
 GUI.Graph = function(parent, x, y, width, height) {
     var div = document.createElement('div');
-    div.innerHTML = 'test';
     div.style.width = width;
     div.style.height = height;
     div.style.webkitTransform = 
@@ -17,6 +17,8 @@ GUI.Graph = function(parent, x, y, width, height) {
     div.setAttribute('data-y', y);
     
     div.classList.add('graph');
+    
+    div.gui_obj = this;
     
     this.div = div;
     interact(div)
@@ -54,10 +56,47 @@ GUI.Graph = function(parent, x, y, width, height) {
             // update the element's style
             target.style.width  = newWidth + 'px';
             target.style.height = newHeight + 'px';
+            
+            // resize graph
+            var obj = target.gui_obj;
+            obj.scale_x.range([0, newWidth]);
+            obj.scale_y.range([newHeight, 0]);
+            var line = d3.svg.line()
+                .x(function(d, i) {return obj.scale_x(i);})
+                .y(function(d) {return obj.scale_y(d);})
+            d3.select(target).select('path')
+                .datum(obj.data)
+                .attr('d', line);
+            
+            console.log(target.gui_obj);
         });
     
     
     parent.appendChild(this.div);
+    
+    var svg = d3.select(div).append('svg')
+        .attr('width', '100%')
+        .attr('height', '100%');
+        
+    var scale_x = this.scale_x = d3.scale.linear();
+    var scale_y = this.scale_y = d3.scale.linear();
+    var line = d3.svg.line()
+        .x(function(d, i) {return scale_x(i);})
+        .y(function(d) {return scale_y(d);})
+        
+    var data = this.data = [ 1, 10, 2, 9, 3, 8];
+    scale_x.domain([0, 6]);
+    scale_y.domain([0, 20]);
+    scale_x.range([0, width]);
+    scale_y.range([height, 0]);
+    
+
+    svg.append('path')
+        .datum(data)
+        .attr('class', 'line')
+        .attr('d', line);
+    
+    this.svg = svg;
 }
 
 
@@ -65,8 +104,8 @@ function onload() {
     main = document.getElementById("main")
     var g1 = GUI.Graph(main, 10, 20, 100, 100);
     var g2 = GUI.Graph(main, 50, 60, 100, 100);
-    var g3 = GUI.Graph(main, 50, 60, 100, 100);
-    var g4 = GUI.Graph(main, 50, 60, 100, 100);
+    var g3 = GUI.Graph(main, 160, 60, 100, 100);
+    var g4 = GUI.Graph(main, 250, 60, 100, 100);
 }
 </script>
 </head>
