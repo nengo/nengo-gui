@@ -1,7 +1,12 @@
 
 VIZ.LineGraph = function(args) {
     VIZ.WSComponent.call(this, args);
+    
+    this.n_lines = args.n_lines | 1;
     this.data = [];
+    for (var i=0; i < this.n_lines; i++) {
+        this.data.push([]);
+    }
     
     this.svg = d3.select(this.div).append('svg')
         .attr('width', '100%')
@@ -19,8 +24,9 @@ VIZ.LineGraph = function(args) {
         .x(function(d, i) {return self.scale_x(i);})
         .y(function(d) {return self.scale_y(d);})
 
-    this.svg.append('path')
-        .datum(this.data)
+    var path = this.svg.selectAll('path').data(this.data);
+    this.path = path;
+    path.enter().append('path')
         .attr('class', 'line')
         .attr('d', line);    
 };
@@ -29,21 +35,29 @@ VIZ.LineGraph.prototype = Object.create(VIZ.WSComponent.prototype);
 VIZ.LineGraph.prototype.constructor = VIZ.LineGraph;
 
 VIZ.LineGraph.prototype.on_message = function(event) {
-    this.data.push(parseFloat(event.data));
-    
-    if (this.data.length > 100) {
-        this.data = this.data.slice(-100);
+    console.log(event.data);
+    msg = event.data.split(',');
+    console.log([msg, msg.length, this.data.length]);
+    for (var i = 0; i < msg.length; i++) {
+        var value = parseFloat(msg[i]);
+        this.data[i].push(value);
     }
-    this.scale_x.domain([0, this.data.length - 1]);
+    
+    if (this.data[0].length > 100) {
+        for (var i = 0; i < this.n_lines; i++) {
+            this.data[i] = this.data[i].slice(-100);
+        }
+    }
+    
+    this.scale_x.domain([0, this.data[0].length - 1]);
     
     var self = this;
     
     var line = d3.svg.line()
             .x(function(d, i) {return self.scale_x(i);})
             .y(function(d) {return self.scale_y(d);})
-    d3.select(this.div).select('path')
-            .datum(this.data)
-            .attr('d', line);
+    this.path.data(this.data)
+             .attr('d', line);
 };
 
 VIZ.LineGraph.prototype.on_resize = function(width, height) {
@@ -54,7 +68,9 @@ VIZ.LineGraph.prototype.on_resize = function(width, height) {
     var line = d3.svg.line()
         .x(function(d, i) {return self.scale_x(i);})
         .y(function(d) {return self.scale_y(d);})
-    d3.select(this.div).select('path')
-        .datum(this.data)
-        .attr('d', line);
+    this.path.data(this.data)
+             .attr('d', line);
+    //d3.select(this.div).select('path')
+    //    .datum(this.data)
+    //    .attr('d', line);
 };
