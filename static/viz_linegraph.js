@@ -72,7 +72,6 @@ VIZ.LineGraph.prototype.update_lines = function() {
 };
 
 VIZ.LineGraph.prototype.on_resize = function(width, height) {
-    // resize graph
     this.scale_x.range([0, width]);
     this.scale_y.range([height, 0]);
     var self = this;
@@ -81,7 +80,4 @@ VIZ.LineGraph.prototype.on_resize = function(width, height) {
         .y(function(d) {return self.scale_y(d);})
     this.path.data(this.data)
              .attr('d', line);
-    //d3.select(this.div).select('path')
-    //    .datum(this.data)
-    //    .attr('d', line);
 };
