@@ -1,0 +1,24 @@
+<html>
+<head>
+    <script src="static/interact-1.2.2.js"></script>
+    <script src="static/d3.v3.min.js" charset="utf-8"></script>
+    <link href="static/main.css" rel="stylesheet" type="text/css" />
+    <script src="static/viz.js"></script>
+    <link href="static/viz.css" rel="stylesheet" type="text/css" />
+    <script src="static/viz_linegraph.js"></script>
+    <link href="static/viz_linegraph.css" rel="stylesheet" type="text/css" />
+    <script src="static/viz_slider.js"></script>
+    <link href="static/viz_slider.css" rel="stylesheet" type="text/css" />
+<script>
+function onload() {
+main = document.getElementById("main");
+%(components)s
+}
+</script>
+</head>
+<body onload="onload();">
+<div id="main">
+
+</div>
+</body>
+</html>
