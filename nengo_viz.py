@@ -127,8 +127,7 @@ class Viz(object):
     def runner(self):
         import time
         while True:
-            time.sleep(0.01)
-            self.sim.run(0.001, progress_bar=False)
+            self.sim.run(0.1, progress_bar=False)
 
     def create_javascript(self):
         return '\n'.join([c.javascript() for c in self.components.values()])

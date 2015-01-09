@@ -29,15 +29,15 @@ VIZ.LineGraph = function(args) {
     path.enter().append('path')
         .attr('class', 'line')
         .attr('d', line);    
+        
+    this.pending_update = false;
 };
 
 VIZ.LineGraph.prototype = Object.create(VIZ.WSComponent.prototype);
 VIZ.LineGraph.prototype.constructor = VIZ.LineGraph;
 
 VIZ.LineGraph.prototype.on_message = function(event) {
-    console.log(event.data);
     msg = event.data.split(',');
-    console.log([msg, msg.length, this.data.length]);
     for (var i = 0; i < msg.length; i++) {
         var value = parseFloat(msg[i]);
         this.data[i].push(value);
@@ -50,6 +50,17 @@ VIZ.LineGraph.prototype.on_message = function(event) {
     }
     
     this.scale_x.domain([0, this.data[0].length - 1]);
+    
+    
+    if (this.pending_update == false) {
+        this.pending_update = true;
+        var self = this;
+        window.setTimeout(function() {self.update_lines()}, 10);
+    }
+}
+    
+VIZ.LineGraph.prototype.update_lines = function() {
+    this.pending_update = false;
     
     var self = this;
     
