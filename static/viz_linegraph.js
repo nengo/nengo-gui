@@ -11,6 +11,7 @@ VIZ.LineGraph = function(args) {
     this.scale_y = d3.scale.linear();
     this.scale_x.range([0, args.width]);
     this.scale_y.range([args.height, 0]);
+    this.scale_y.domain([args.miny || -1, args.maxy || 1]);
 
     var self = this;
     
@@ -34,7 +35,6 @@ VIZ.LineGraph.prototype.on_message = function(event) {
         this.data = this.data.slice(-100);
     }
     this.scale_x.domain([0, this.data.length - 1]);
-    this.scale_y.domain([0, Math.max.apply(null, this.data)]);
     
     var self = this;
     
