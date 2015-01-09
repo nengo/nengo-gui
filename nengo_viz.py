@@ -127,7 +127,7 @@ class Viz(object):
     def runner(self):
         import time
         while True:
-            self.sim.run(0.1, progress_bar=False)
+            self.sim.run(10, progress_bar=False)
 
     def create_javascript(self):
         return '\n'.join([c.javascript() for c in self.components.values()])
@@ -151,6 +151,24 @@ if __name__ == '__main__':
         nengo.Connection(stimulus_B, ens[1])
         nengo.Connection(ens, result, function=lambda x: x[0] * x[1],
                          synapse=0.01)
+
+        import time
+        class Timer(object):
+            def __init__(self):
+                self.ticks = 0
+                self.start_time = time.time()
+            def __call__(self, t):
+                self.ticks += 1
+                if self.ticks % 1000 == 0:
+                    now = time.time()
+                    dt = now - self.start_time
+                    print 'rate: %g' % (1.0 / dt)
+                    self.start_time = now
+        nengo.Node(Timer())
+
+    #sim = nengo.Simulator(model)
+    #sim.run(100, progress_bar=False)
+
 
     viz = Viz(model)
     viz.slider(stimulus_A)
