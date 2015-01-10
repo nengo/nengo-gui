@@ -7,9 +7,10 @@ import nengo_viz.components
 
 
 class Viz(object):
-    def __init__(self, model):
+    def __init__(self, model, dt=0.001):
         self.model = model
         self.components = {}
+        self.dt = dt
         self.time_control = nengo_viz.components.TimeControl(self)
 
     def add(self, component):
@@ -25,7 +26,7 @@ class Viz(object):
         return nengo_viz.components.Value(self, *args, **kwargs)
 
     def start(self, port=8080, browser=True):
-        self.sim = nengo.Simulator(self.model)
+        self.sim = nengo.Simulator(self.model, dt=self.dt)
         nengo_viz.server.Server.viz = self
         import thread
         thread.start_new_thread(self.runner, ())
