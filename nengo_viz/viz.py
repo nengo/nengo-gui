@@ -10,6 +10,7 @@ class Viz(object):
     def __init__(self, model):
         self.model = model
         self.components = {}
+        self.time_control = nengo_viz.components.TimeControl(self)
 
     def add(self, component):
         self.components[id(component)] = component

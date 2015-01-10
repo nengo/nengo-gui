@@ -9,14 +9,19 @@
     <link href="static/viz_linegraph.css" rel="stylesheet" type="text/css" />
     <script src="static/viz_slider.js"></script>
     <link href="static/viz_slider.css" rel="stylesheet" type="text/css" />
+    <script src="static/viz_time_control.js"></script>
+    <link href="static/viz_time_control.css" rel="stylesheet" type="text/css" />    
 <script>
 function onload() {
 main = document.getElementById("main");
+control = document.getElementById("control");
 %(components)s
 }
 </script>
 </head>
 <body onload="onload();">
+<div id="control">
+</div>
 <div id="main">
 
 </div>
