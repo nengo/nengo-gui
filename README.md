@@ -1,2 +1,2 @@
-# interact_graphs
-Prototype for having a bunch of interactive moveable graphs
+# nengo_viz
+An HTML5 interactive visualizer for nengo
