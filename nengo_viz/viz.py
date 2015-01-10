@@ -2,12 +2,29 @@ import random
 import time
 
 import swi
+import pkgutil
+import os
 
 class Server(swi.SimpleWebInterface):
-    serve_dirs = ['static']
+    def swi_static(self, *path):
+        fn = os.path.join('static', *path)
+        if fn.endswith('.js'):
+            mimetype = 'text/javascript'
+        elif fn.endswith('.css'):
+            mimetype = 'text/css'
+        elif fn.endswith('.png'):
+            mimetype = 'image/png'
+        elif fn.endswith('.gif'):
+            mimetype = 'image/gif'
+        else:
+            raise Exception('unknown extenstion for %s' % fn)
+
+        data = pkgutil.get_data('nengo_viz', fn)
+        return (mimetype, data)
+
 
     def swi(self):
-        html = open('templates/page.html').read()
+        html = pkgutil.get_data('nengo_viz', 'templates/page.html')
         components = self.viz.create_javascript()
         return html % dict(components=components)
 
