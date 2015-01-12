@@ -1,9 +1,16 @@
-.graph {
-    background: #eeeeee;
-}
-    
 .graph .line {
     fill: none;
     stroke: black;
     stroke-width: 1.5px;    
+}
+
+.graph svg .axis path {
+    stroke: black;
+    stroke-width: 1px;
+    fill: none;
+}
+
+.graph svg .axis .tick {
+    font-size: 12px;
+    font-family: serif;
 }

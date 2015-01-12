@@ -43,7 +43,7 @@ VIZ.LineGraph = function(args) {
     this.axis_y = d3.svg.axis()
         .scale(this.scale_y)
         .orient("left")    
-        .ticks(5);
+        .ticks(2);
 
     this.axis_y_g = this.svg.append("g")
         .attr("class", "axis axis_y")
