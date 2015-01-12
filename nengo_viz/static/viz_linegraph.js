@@ -37,10 +37,10 @@ VIZ.LineGraph.prototype = Object.create(VIZ.WSComponent.prototype);
 VIZ.LineGraph.prototype.constructor = VIZ.LineGraph;
 
 VIZ.LineGraph.prototype.on_message = function(event) {
-    msg = event.data.split(',');
-    for (var i = 0; i < msg.length; i++) {
-        var value = parseFloat(msg[i]);
-        this.data[i].push(value);
+    data = new Float32Array(event.data);
+    console.log(data);
+    for (var i = 0; i < this.data.length; i++) {
+        this.data[i].push(data[i + 1]);
     }
     
     if (this.data[0].length > 100) {

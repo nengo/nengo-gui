@@ -73,6 +73,7 @@ VIZ.WSComponent = function(args) {
     var self = this;
     
     this.ws = new WebSocket('ws://localhost:8080/viz_component?id=' + this.id);
+    this.ws.binaryType = "arraybuffer";
     this.ws.onmessage = function(event) {self.on_message(event);}
 };
 VIZ.WSComponent.prototype = Object.create(VIZ.Component.prototype);

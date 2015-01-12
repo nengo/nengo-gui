@@ -1,5 +1,6 @@
 import nengo
 import numpy as np
+import struct
 
 from nengo_viz.components.component import Component
 
@@ -10,6 +11,7 @@ class Value(Component):
         self.obj = obj
         self.data = []
         self.n_lines = obj.size_out
+        self.struct = struct.Struct('<%df' % (1 + self.n_lines))
         with viz.model:
             self.node = nengo.Node(self.gather_data, size_in=obj.size_out)
             self.conn = nengo.Connection(obj, self.node, synapse=0.01)
@@ -19,13 +21,12 @@ class Value(Component):
         viz.model.nodes.remove(self.node)
 
     def gather_data(self, t, x):
-        self.data.append(np.array(x))
+        self.data.append(self.struct.pack(t, *x))
 
     def update_client(self, client):
         while len(self.data) > 0:
             data = self.data.pop(0)
-            data = ['%g' % d for d in data]
-            client.write(','.join(data))
+            client.write(data, binary=True)
 
     def javascript(self):
         return ('new VIZ.LineGraph({parent:main, x:%(x)g, y:%(x)g, '
