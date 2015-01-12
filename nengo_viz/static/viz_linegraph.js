@@ -7,6 +7,10 @@ VIZ.LineGraph = function(args) {
     for (var i=0; i < this.n_lines; i++) {
         this.data.push([]);
     }
+    this.times = [];
+    
+    this.storage_limit = 2000;
+    this.shown_limit = 500;
     
     this.svg = d3.select(this.div).append('svg')
         .attr('width', '100%')
@@ -42,14 +46,17 @@ VIZ.LineGraph.prototype.on_message = function(event) {
     for (var i = 0; i < this.data.length; i++) {
         this.data[i].push(data[i + 1]);
     }
+    this.times.push(data[0]);
     
-    if (this.data[0].length > 100) {
+    if (this.times.length > this.storage_limit) {
+        this.times = this.times.slice(-this.storage_limit);
+        
         for (var i = 0; i < this.n_lines; i++) {
-            this.data[i] = this.data[i].slice(-100);
+            this.data[i] = this.data[i].slice(-this.storage_limit);
         }
     }
     
-    this.scale_x.domain([0, this.data[0].length - 1]);
+    this.scale_x.domain([0, this.shown_limit - 1]);
     
     
     if (this.pending_update == false) {
@@ -67,9 +74,17 @@ VIZ.LineGraph.prototype.update_lines = function() {
     var line = d3.svg.line()
             .x(function(d, i) {return self.scale_x(i);})
             .y(function(d) {return self.scale_y(d);})
-    this.path.data(this.data)
+    this.path.data(this.get_shown_data())
              .attr('d', line);
 };
+
+VIZ.LineGraph.prototype.get_shown_data = function() {
+    var shown = [];
+    for (var i = 0; i < this.data.length; i++) {
+        shown.push(this.data[i].slice(-this.shown_limit));
+    }
+    return shown
+}
 
 VIZ.LineGraph.prototype.on_resize = function(width, height) {
     this.scale_x.range([0, width]);
@@ -78,6 +93,6 @@ VIZ.LineGraph.prototype.on_resize = function(width, height) {
     var line = d3.svg.line()
         .x(function(d, i) {return self.scale_x(i);})
         .y(function(d) {return self.scale_y(d);})
-    this.path.data(this.data)
+    this.path.data(this.get_shown_data())
              .attr('d', line);
 };
