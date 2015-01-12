@@ -52,6 +52,7 @@ import mimetypes
 import base64
 import hashlib
 import socket
+import struct
 
 
 class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -462,19 +463,22 @@ class ClientSocket(object):
             str_data = str(bytearray(unmasked_data))
         return str_data
 
-    def write(self, data):
-        # this only supports small packets.  To add support for larger
-        # packets, see: http://tools.ietf.org/html/rfc6455#section-5.2
-        assert len(data) < 126
+    def write(self, data, binary=False):
+        if binary:
+            code = 0b10000010
+        else:
+            code = 0b10000001
 
-        # 1st byte: fin bit set. text frame bits set.
-        # 2nd byte: no mask. length set in 1 byte.
-        resp = bytearray([0b10000001, len(data)])
-        # append the data bytes
-        for d in bytearray(data):
-            resp.append(d)
+        N = len(data)
+        if N < 126:
+            header = struct.pack('!BB', code, N)
+        elif N <= 0xFFFF:
+            header = struct.pack('!BBH', code, 126, N)
+        else:
+            header = struct.pack('!BBQ', code, 127, N)
 
-        self.socket.send(resp)
+        self.socket.send(header)
+        self.socket.send(data)
 
 
 if __name__ == '__main__':
