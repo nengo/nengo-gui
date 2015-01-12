@@ -53,7 +53,6 @@ class Viz(object):
         self.dt = dt
         self.Simulator = Simulator
         self.lock = threading.Lock()
-        self.sims = {}
         self.components = {}
 
     def slider(self, *args, **kwargs):
@@ -67,14 +66,14 @@ class Viz(object):
         nengo_viz.server.Server.start(port=port, browser=browser)
 
     def create_sim(self):
-        sim = VizSim(self)
-        self.sims[id(sim)] = sim
-        return sim
+        return VizSim(self)
 
     def add(self, component):
         self.components[id(component)] = component
 
     def get_component(self, id):
-        return self.components[id]
+        c = self.components[id]
+        del self.components[id]
+        return c
 
 
