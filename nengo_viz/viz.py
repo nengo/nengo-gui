@@ -1,17 +1,75 @@
 import time
+import threading
+import thread
 
 import nengo
 
 import nengo_viz.server
 import nengo_viz.components
 
+class VizSim(object):
+    def __init__(self, viz):
+        self.viz = viz
+        self.model = viz.model
+        self.dt = viz.dt
+        self.building = True
+        self.components = []
+        self.finished = False
+
+        self.viz.lock.acquire()
+        for cls, args, kwargs in self.viz.template:
+            c = cls(self, *args, **kwargs)
+            self.viz.add(c)
+            self.components.append(c)
+
+        thread.start_new_thread(self.runner, ())
+
+    def runner(self):
+        self.sim = self.viz.Simulator(self.model, dt=self.dt)
+        for c in self.components:
+            c.remove_nengo_objects(self.viz)
+        #TODO: add checks to make sure everything's been removed
+        self.viz.lock.release()
+
+        self.building = False
+
+        while not self.finished:
+            print 'running', self.sim
+            self.sim.run(0.1, progress_bar=False)
+
+    def finish(self):
+        self.finished = True
+
+    def create_javascript(self):
+        return '\n'.join([c.javascript() for c in self.components])
+
+
 
 class Viz(object):
-    def __init__(self, model, dt=0.001):
+    def __init__(self, model, dt=0.001, Simulator=nengo.Simulator):
         self.model = model
-        self.components = {}
+        self.template = []
+        self.template.append((nengo_viz.components.TimeControl, [], {}))
         self.dt = dt
-        self.time_control = nengo_viz.components.TimeControl(self)
+        self.Simulator = Simulator
+        self.lock = threading.Lock()
+        self.sims = {}
+        self.components = {}
+
+    def slider(self, *args, **kwargs):
+        self.template.append((nengo_viz.components.Slider, args, kwargs))
+
+    def value(self, *args, **kwargs):
+        self.template.append((nengo_viz.components.Value, args, kwargs))
+
+    def start(self, port=8080, browser=True):
+        nengo_viz.server.Server.viz = self
+        nengo_viz.server.Server.start(port=port, browser=browser)
+
+    def create_sim(self):
+        sim = VizSim(self)
+        self.sims[id(sim)] = sim
+        return sim
 
     def add(self, component):
         self.components[id(component)] = component
@@ -19,23 +77,4 @@ class Viz(object):
     def get_component(self, id):
         return self.components[id]
 
-    def slider(self, *args, **kwargs):
-        return nengo_viz.components.Slider(self, *args, **kwargs)
 
-    def value(self, *args, **kwargs):
-        return nengo_viz.components.Value(self, *args, **kwargs)
-
-    def start(self, port=8080, browser=True):
-        self.sim = nengo.Simulator(self.model, dt=self.dt)
-        nengo_viz.server.Server.viz = self
-        import thread
-        thread.start_new_thread(self.runner, ())
-        nengo_viz.server.Server.start(port=port, browser=browser)
-
-    def runner(self):
-        import time
-        while True:
-            self.sim.run(10, progress_bar=False)
-
-    def create_javascript(self):
-        return '\n'.join([c.javascript() for c in self.components.values()])

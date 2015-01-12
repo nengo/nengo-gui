@@ -1,6 +1,7 @@
 import time
 import pkgutil
 import os
+import thread
 
 import swi
 
@@ -22,18 +23,23 @@ class Server(swi.SimpleWebInterface):
         return (mimetype, data)
 
     def swi(self):
+        viz_sim = self.viz.create_sim()
+
         html = pkgutil.get_data('nengo_viz', 'templates/page.html')
-        components = self.viz.create_javascript()
+        components = viz_sim.create_javascript()
         return html % dict(components=components)
 
     def ws_viz_component(self, client, id):
         component = self.viz.get_component(int(id))
 
-        while True:
-            msg = client.read()
-            while msg is not None:
-                component.message(msg)
+        try:
+            while True:
                 msg = client.read()
+                while msg is not None:
+                    component.message(msg)
+                    msg = client.read()
 
-            component.update_client(client)
-            time.sleep(0.01)
+                component.update_client(client)
+                time.sleep(0.01)
+        finally:
+            component.finish()

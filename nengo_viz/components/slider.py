@@ -11,6 +11,9 @@ class Slider(Component):
         self.override = [None] * node.size_out
         self.value = np.zeros(node.size_out)
 
+    def remove_nengo_objects(self, viz):
+        self.node.output = self.base_output
+
     def override_output(self, t, *args):
         if callable(self.base_output):
             self.value[:] = self.base_output(t, *args)

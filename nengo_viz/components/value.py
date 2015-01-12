@@ -14,6 +14,10 @@ class Value(Component):
             self.node = nengo.Node(self.gather_data, size_in=obj.size_out)
             self.conn = nengo.Connection(obj, self.node, synapse=0.01)
 
+    def remove_nengo_objects(self, viz):
+        viz.model.connections.remove(self.conn)
+        viz.model.nodes.remove(self.node)
+
     def gather_data(self, t, x):
         self.data.append(np.array(x))
 

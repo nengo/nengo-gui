@@ -8,6 +8,7 @@ from nengo_viz.components.component import Component
 class TimeControl(Component):
     def __init__(self, viz, **kwargs):
         super(TimeControl, self).__init__(viz, **kwargs)
+        self.viz = viz
         with viz.model:
             self.node = nengo.Node(self.control, size_out=0)
         self.paused = False
@@ -18,6 +19,12 @@ class TimeControl(Component):
         self.last_send_rate = None
         self.sim_ticks = 0
         self.skipped = 1
+
+    def remove_nengo_objects(self, viz):
+        viz.model.nodes.remove(self.node)
+
+    def finish(self):
+        self.viz.finish()
 
     def control(self, t):
         self.sim_ticks += 1
