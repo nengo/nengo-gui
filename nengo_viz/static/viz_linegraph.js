@@ -2,15 +2,19 @@
 VIZ.LineGraph = function(args) {
     VIZ.WSComponent.call(this, args);
     
-    this.n_lines = args.n_lines | 1;
+    this.n_lines = args.n_lines || 1;
     this.data = [];
     for (var i=0; i < this.n_lines; i++) {
         this.data.push([]);
     }
     this.times = [];
-    
+        
     this.storage_limit = 2000;
     this.shown_limit = 500;
+    
+    this.shown_time = 0.5;
+    this.first_shown_index = 0;
+    this.last_shown_index = 0;
     
     this.synapse = 0.01;
     
@@ -20,17 +24,45 @@ VIZ.LineGraph = function(args) {
         
     this.scale_x = d3.scale.linear();
     this.scale_y = d3.scale.linear();
-    this.scale_x.range([0, args.width]);
-    this.scale_y.range([args.height, 0]);
     this.scale_y.domain([args.miny || -1, args.maxy || 1]);
+    
+    this.margin_top = 10;
+    this.margin_bottom = 40;
+    this.margin_left = 40;
+    this.margin_right = 10;
+    
+    this.scale_x.range([this.margin_left, args.width - this.margin_right]);
+    this.scale_y.range([args.height - this.margin_bottom, this.margin_top]);
+    
+    
+    this.axis_x = d3.svg.axis()
+        .scale(this.scale_x)
+        .orient("bottom")
+        .ticks(1);
 
+    this.axis_y = d3.svg.axis()
+        .scale(this.scale_y)
+        .orient("left")    
+        .ticks(5);
+
+    this.axis_y_g = this.svg.append("g")
+        .attr("class", "axis axis_y")
+        .attr("transform", "translate(" + this.margin_left+ ", 0)")
+        .call(this.axis_y);
+
+        
+    this.axis_x_g = this.svg.append("g")
+        .attr("class", "axis axis_x")
+        .attr("transform", "translate(0," + (args.height - this.margin_bottom) + ")")
+        .call(this.axis_x);
+        
     var self = this;
     
     var line = d3.svg.line()
-        .x(function(d, i) {return self.scale_x(i);})
+        .x(function(d, i) {return self.scale_x(times[i]);})
         .y(function(d) {return self.scale_y(d);})
 
-    var path = this.svg.selectAll('path').data(this.data);
+    var path = this.svg.append("g").selectAll('path').data(this.data);
     this.path = path;
     path.enter().append('path')
         .attr('class', 'line')
@@ -60,15 +92,6 @@ VIZ.LineGraph.prototype.on_message = function(event) {
     }
     this.times.push(data[0]);
     
-    if (this.times.length > this.storage_limit) {
-        this.times = this.times.slice(-this.storage_limit);
-        
-        for (var i = 0; i < this.n_lines; i++) {
-            this.data[i] = this.data[i].slice(-this.storage_limit);
-        }
-    }
-    
-    this.scale_x.domain([0, this.shown_limit - 1]);
     
     
     if (this.pending_update == false) {
@@ -81,30 +104,55 @@ VIZ.LineGraph.prototype.on_message = function(event) {
 VIZ.LineGraph.prototype.update_lines = function() {
     this.pending_update = false;
     
+    var last_time = this.times[this.times.length - 1];
+    
+    var extra = this.times.length - this.storage_limit;
+    if (extra > 0) {
+        this.times = this.times.slice(extra);
+        for (var i = 0; i < this.n_lines; i++) {
+            this.data[i] = this.data[i].slice(extra);
+        }
+        this.first_shown_index = this.first_shown_index - extra;
+        this.last_shown_index = this.last_shown_index - extra;
+    }
+    while (this.times[this.first_shown_index] < last_time - this.shown_time) {
+        this.first_shown_index = this.first_shown_index + 1;
+    }
+    this.last_shown_index = this.times.length - 1;
+    
+    this.scale_x.domain([data[0] - 0.5, data[0]]);
+    
+    
     var self = this;
     
     var line = d3.svg.line()
-            .x(function(d, i) {return self.scale_x(i);})
+            .x(function(d, i) {return self.scale_x(self.times[i + self.first_shown_index]);})
             .y(function(d) {return self.scale_y(d);})
     this.path.data(this.get_shown_data())
              .attr('d', line);
+             
+    this.axis_x_g.call(this.axis_x);         
 };
 
 VIZ.LineGraph.prototype.get_shown_data = function() {
     var shown = [];
     for (var i = 0; i < this.data.length; i++) {
-        shown.push(this.data[i].slice(-this.shown_limit));
+        shown.push(this.data[i].slice(this.first_shown_index, this.last_shown_index + 1));
     }
     return shown
 }
 
 VIZ.LineGraph.prototype.on_resize = function(width, height) {
-    this.scale_x.range([0, width]);
-    this.scale_y.range([height, 0]);
+    this.scale_x.range([this.margin_left, width - this.margin_right]);
+    this.scale_y.range([height - this.margin_bottom, this.margin_top]);
     var self = this;
     var line = d3.svg.line()
-        .x(function(d, i) {return self.scale_x(i);})
+        .x(function(d, i) {return self.scale_x(self.times[i + self.first_shown_index]);})
         .y(function(d) {return self.scale_y(d);})
     this.path.data(this.get_shown_data())
              .attr('d', line);
+    this.axis_x_g         
+        .attr("transform", "translate(0," + (height - this.margin_bottom) + ")")
+        .call(this.axis_x);
+    this.axis_y_g.call(this.axis_y);         
 };
