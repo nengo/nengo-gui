@@ -12,6 +12,8 @@ VIZ.LineGraph = function(args) {
     this.storage_limit = 2000;
     this.shown_limit = 500;
     
+    this.synapse = 0.01;
+    
     this.svg = d3.select(this.div).append('svg')
         .attr('width', '100%')
         .attr('height', '100%');
@@ -42,9 +44,19 @@ VIZ.LineGraph.prototype.constructor = VIZ.LineGraph;
 
 VIZ.LineGraph.prototype.on_message = function(event) {
     data = new Float32Array(event.data);
-    console.log(data);
+
+    var decay = 0.0;    
+    if (this.times.length != 0) {
+        var dt = data[0] - this.times[this.times.length - 1];
+        decay = Math.exp(-dt / this.synapse);
+    }
+    
     for (var i = 0; i < this.data.length; i++) {
-        this.data[i].push(data[i + 1]);
+        if (decay == 0.0) {
+            this.data[i].push(data[i + 1]);        
+        } else {
+            this.data[i].push(data[i + 1]*(1-decay) + this.data[i][this.data[i].length - 1] * decay);
+        }
     }
     this.times.push(data[0]);
     

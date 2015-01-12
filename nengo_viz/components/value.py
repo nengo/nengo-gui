@@ -14,7 +14,7 @@ class Value(Component):
         self.struct = struct.Struct('<%df' % (1 + self.n_lines))
         with viz.model:
             self.node = nengo.Node(self.gather_data, size_in=obj.size_out)
-            self.conn = nengo.Connection(obj, self.node, synapse=0.01)
+            self.conn = nengo.Connection(obj, self.node, synapse=None)
 
     def remove_nengo_objects(self, viz):
         viz.model.connections.remove(self.conn)
