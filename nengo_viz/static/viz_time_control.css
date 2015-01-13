@@ -3,3 +3,12 @@
     width: 100%;
     height: 100%;
 }
+
+.time_control .time_slider{
+    background: gold;
+}
+
+.time_control .time_slider .shown_time{
+    background: pink;
+    opacity: 0.5;
+}

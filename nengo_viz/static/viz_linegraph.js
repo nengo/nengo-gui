@@ -2,6 +2,8 @@
 VIZ.LineGraph = function(args) {
     VIZ.WSComponent.call(this, args);
     
+    this.time_control = args.time_control;
+    
     this.n_lines = args.n_lines || 1;
     this.data = [];
     for (var i=0; i < this.n_lines; i++) {
@@ -9,9 +11,8 @@ VIZ.LineGraph = function(args) {
     }
     this.times = [];
         
-    this.storage_limit = 2000;
-    this.shown_limit = 500;
-    
+    //TODO: get this data from this.time_control    
+    this.storage_limit = 4000;
     this.shown_time = 0.5;
     this.first_shown_index = 0;
     this.last_shown_index = 0;
@@ -57,6 +58,8 @@ VIZ.LineGraph = function(args) {
         .call(this.axis_x);
         
     var self = this;
+
+    this.time_control.register_listener(function() {self.schedule_update();});
     
     var line = d3.svg.line()
         .x(function(d, i) {return self.scale_x(times[i]);})
@@ -74,8 +77,16 @@ VIZ.LineGraph = function(args) {
 VIZ.LineGraph.prototype = Object.create(VIZ.WSComponent.prototype);
 VIZ.LineGraph.prototype.constructor = VIZ.LineGraph;
 
+VIZ.LineGraph.prototype.schedule_update = function(event) {
+    if (this.pending_update == false) {
+        this.pending_update = true;
+        var self = this;
+        window.setTimeout(function() {self.update_lines()}, 10);
+    }
+}
+
 VIZ.LineGraph.prototype.on_message = function(event) {
-    data = new Float32Array(event.data);
+    var data = new Float32Array(event.data);
 
     var decay = 0.0;    
     if (this.times.length != 0) {
@@ -92,13 +103,7 @@ VIZ.LineGraph.prototype.on_message = function(event) {
     }
     this.times.push(data[0]);
     
-    
-    
-    if (this.pending_update == false) {
-        this.pending_update = true;
-        var self = this;
-        window.setTimeout(function() {self.update_lines()}, 10);
-    }
+    this.schedule_update();
 }
     
 VIZ.LineGraph.prototype.update_lines = function() {
@@ -120,7 +125,7 @@ VIZ.LineGraph.prototype.update_lines = function() {
     }
     this.last_shown_index = this.times.length - 1;
     
-    this.scale_x.domain([data[0] - 0.5, data[0]]);
+    this.scale_x.domain([last_time - 0.5, last_time]);
     
     
     var self = this;
@@ -135,9 +140,21 @@ VIZ.LineGraph.prototype.update_lines = function() {
 };
 
 VIZ.LineGraph.prototype.get_shown_data = function() {
+    var t1 = this.time_control.time_slider.first_shown_time;
+    var t2 = t1 + this.time_control.time_slider.shown_time;
+    
+    var index = 0;
+    while (this.times[index] < t1) {
+        index += 1;
+    }
+    var last_index = 0;
+    while (this.times[last_index] < t2 && last_index < this.times.length) {
+        last_index += 1;
+    }
+
     var shown = [];
     for (var i = 0; i < this.data.length; i++) {
-        shown.push(this.data[i].slice(this.first_shown_index, this.last_shown_index + 1));
+        shown.push(this.data[i].slice(index, last_index));
     }
     return shown
 }

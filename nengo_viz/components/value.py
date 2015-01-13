@@ -29,7 +29,8 @@ class Value(Component):
             client.write(data, binary=True)
 
     def javascript(self):
-        return ('new VIZ.LineGraph({parent:main, x:%(x)g, y:%(x)g, '
+        return ('new VIZ.LineGraph({parent:main, time_control:tc, '
+                'x:%(x)g, y:%(x)g, '
                 'width:%(width)g, height:%(height)g, id:%(id)d, '
                 'n_lines:%(n_lines)d});' %
                 dict(x=self.x, y=self.y, width=self.width, height=self.height,

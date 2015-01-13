@@ -1,4 +1,5 @@
 import time
+import struct
 
 import numpy as np
 import nengo
@@ -19,6 +20,7 @@ class TimeControl(Component):
         self.last_send_rate = None
         self.sim_ticks = 0
         self.skipped = 1
+        self.time = 0.0
 
     def remove_nengo_objects(self, viz):
         viz.model.nodes.remove(self.node)
@@ -27,6 +29,7 @@ class TimeControl(Component):
         self.viz.finish()
 
     def control(self, t):
+        self.time = t
         self.sim_ticks += 1
 
         now = time.time()
@@ -48,18 +51,19 @@ class TimeControl(Component):
             self.last_tick = None
 
     def update_client(self, client):
-        client.write('ticks:%g' % self.sim_ticks)
-        now = time.time()
-        if self.last_send_rate is None or now - self.last_send_rate > 1.0:
-            client.write('rate:%g' % self.rate)
-            self.last_send_rate = now
+        if not self.paused:
+            client.write(struct.pack('<ff', self.time, self.rate), binary=True)
+
+        #client.write('ticks:%g' % self.sim_ticks)
+        #now = time.time()
+        #if self.last_send_rate is None or now - self.last_send_rate > 1.0:
+        #    client.write('rate:%g' % self.rate)
+        #    self.last_send_rate = now
 
     def javascript(self):
-        return ('new VIZ.TimeControl({parent:control, '
-                'x:%(x)g, y:%(x)g, '
-                'width:%(width)g, height:%(height)g, id:%(id)d});' %
-                dict(x=self.x, y=self.y, width=self.width, height=self.height,
-                 id=id(self)))
+        return ('var tc = new VIZ.TimeControl({parent:control, '
+                'id:%(id)d});' %
+                dict(id=id(self)))
 
     def message(self, msg):
         if msg == 'pause':
