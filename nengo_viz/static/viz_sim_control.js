@@ -1,5 +1,5 @@
 
-VIZ.TimeControl = function(args) {
+VIZ.SimControl = function(args) {
     var div = this.div = document.createElement('div');
     div.classList.add('graph');
     args.parent.appendChild(div);
@@ -40,7 +40,7 @@ VIZ.TimeControl = function(args) {
     
 };
 
-VIZ.TimeControl.prototype.on_message = function(event) {
+VIZ.SimControl.prototype.on_message = function(event) {
     var data = new Float32Array(event.data);
     this.time = data[0];
     this.rate = data[1];
@@ -52,11 +52,11 @@ VIZ.TimeControl.prototype.on_message = function(event) {
     }
 };    
 
-VIZ.TimeControl.prototype.register_listener = function(func) {
+VIZ.SimControl.prototype.register_listener = function(func) {
     this.listeners.push(func);
 };
     
-VIZ.TimeControl.prototype.update = function() {
+VIZ.SimControl.prototype.update = function() {
     this.pending_update = false;
     
     this.ticks_div.innerHTML = 'Time: ' + this.time.toFixed(3);
@@ -65,7 +65,7 @@ VIZ.TimeControl.prototype.update = function() {
     this.time_slider.update_times(this.time);
 };
 
-VIZ.TimeControl.prototype.on_pause_click = function(event) {
+VIZ.SimControl.prototype.on_pause_click = function(event) {
     if (this.paused) {
         this.ws.send('continue');
         this.paused = false;

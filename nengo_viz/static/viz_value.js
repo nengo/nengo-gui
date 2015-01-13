@@ -1,15 +1,24 @@
-
+/**
+ * Line graph showing decoded values over time
+ * @constructor
+ *
+ * @param {dict} args - A set of constructor arguments (see VIZ.Component)
+ * @param {int} n_lines - number of decoded values
+ */
 VIZ.Value = function(args) {
     VIZ.Component.call(this, args);
-    
-    this.time_control = args.time_control;
-    
+
     this.n_lines = args.n_lines || 1;
+    
+    this.time_control = args.sim;
+
     this.data = [];
+
     for (var i=0; i < this.n_lines; i++) {
         this.data.push([]);
     }
     this.times = [];
+
         
     //TODO: get this data from this.time_control    
     this.storage_limit = 4000;

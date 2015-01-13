@@ -94,3 +94,12 @@ VIZ.Component.prototype.on_resize = function(width, height) {};
  * Method to be called when Component received a WebSocket message
  */
 VIZ.Component.prototype.on_message = function(event) {};
+
+
+VIZ.DataStore = function(dims) {
+    this.data = [];
+
+    for (var i=0; i < dims; i++) {
+        this.data.push([]);
+    }
+}

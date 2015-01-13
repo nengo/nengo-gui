@@ -22,7 +22,3 @@ viz.slider(stimulus_B)
 viz.value(ens)
 viz.value(result)
 viz.start()
-
-
-
-

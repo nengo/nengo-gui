@@ -48,7 +48,7 @@ class Viz(object):
     def __init__(self, model, dt=0.001, Simulator=nengo.Simulator):
         self.model = model
         self.template = []
-        self.template.append((nengo_viz.components.TimeControl, [], {}))
+        self.template.append((nengo_viz.components.SimControl, [], {}))
         self.dt = dt
         self.Simulator = Simulator
         self.lock = threading.Lock()

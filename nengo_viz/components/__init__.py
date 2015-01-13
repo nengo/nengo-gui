@@ -1,3 +1,3 @@
 from .slider import Slider
 from .value import Value
-from .time_control import TimeControl
+from .sim_control import SimControl

@@ -6,9 +6,9 @@ import nengo
 
 from nengo_viz.components.component import Component
 
-class TimeControl(Component):
+class SimControl(Component):
     def __init__(self, viz, **kwargs):
-        super(TimeControl, self).__init__(viz, **kwargs)
+        super(SimControl, self).__init__(viz, **kwargs)
         self.viz = viz
         with viz.model:
             self.node = nengo.Node(self.control, size_out=0)
@@ -61,7 +61,7 @@ class TimeControl(Component):
         #    self.last_send_rate = now
 
     def javascript(self):
-        return ('var tc = new VIZ.TimeControl({parent:control, '
+        return ('var sim = new VIZ.SimControl({parent:control, '
                 'id:%(id)d});' %
                 dict(id=id(self)))
 
