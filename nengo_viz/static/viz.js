@@ -1,5 +1,17 @@
+/** namespace for all Nengo visualization */
 var VIZ = {};
 
+/** 
+ * Base class for interactive visualization
+ * @constructor
+ *
+ * @param {dict} args - A set of constructor arguments, including:
+ * @param {DOMElement} args.parent - the element to add this component to
+ * @param {float} args.x - the left side of the component (in pixels)
+ * @param {float} args.y - the top of the component (in pixels)
+ * @param {float} args.width - the width of the component (in pixels)
+ * @param {float} args.height - the height of the component (in pixels)
+ */
 VIZ.Component = function(args) {
     var div = document.createElement('div');
     div.style.width = args.width;
