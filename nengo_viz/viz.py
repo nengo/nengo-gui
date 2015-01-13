@@ -34,8 +34,7 @@ class VizSim(object):
         self.building = False
 
         while not self.finished:
-            print 'running', self.sim
-            self.sim.run(0.1, progress_bar=False)
+            self.sim.run(10, progress_bar=False)
 
     def finish(self):
         self.finished = True
