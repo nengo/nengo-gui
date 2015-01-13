@@ -1,15 +1,27 @@
-.time_control {
+.sim_control {
     background: #6699ff;
     width: 100%;
-    height: 100%;
+    height: 80px;
 }
 
-.time_control .time_slider{
+.time_slider{
     background: #99ccff;
 }
 
-.time_control .time_slider .shown_time{
+.time_slider .shown_time{
     background: white;
     opacity: 0.25;
     border: 1px solid black;
 }
+
+.time_slider svg .axis path {
+    stroke: black;
+    stroke-width: 1px;
+    fill: none;
+}
+
+.time_slider svg .axis .tick {
+    font-size: 12px;
+    font-family: serif;
+}
+

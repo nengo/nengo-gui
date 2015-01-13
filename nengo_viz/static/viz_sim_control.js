@@ -1,9 +1,7 @@
 
-VIZ.SimControl = function(args) {
-    var div = this.div = document.createElement('div');
-    div.classList.add('graph');
-    args.parent.appendChild(div);
-    div.classList.add('time_control');    
+VIZ.SimControl = function(div, args) {
+    div.classList.add('sim_control');    
+    this.div = div;
     
     this.height = div.clientHeight;
     

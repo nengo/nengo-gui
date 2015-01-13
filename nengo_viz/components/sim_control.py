@@ -61,8 +61,7 @@ class SimControl(Component):
         #    self.last_send_rate = now
 
     def javascript(self):
-        return ('var sim = new VIZ.SimControl({parent:control, '
-                'id:%(id)d});' %
+        return ('var sim = new VIZ.SimControl(control, {id:%(id)d});' %
                 dict(id=id(self)))
 
     def message(self, msg):
