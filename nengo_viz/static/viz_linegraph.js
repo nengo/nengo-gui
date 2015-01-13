@@ -151,6 +151,8 @@ VIZ.LineGraph.prototype.get_shown_data = function() {
     while (this.times[last_index] < t2 && last_index < this.times.length) {
         last_index += 1;
     }
+    this.first_shown_index = index;
+    this.scale_x.domain([t1, t2]);
 
     var shown = [];
     for (var i = 0; i < this.data.length; i++) {
