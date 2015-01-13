@@ -29,7 +29,7 @@ class Value(Component):
             client.write(data, binary=True)
 
     def javascript(self):
-        return ('new VIZ.LineGraph({parent:main, time_control:tc, '
+        return ('new VIZ.Value({parent:main, time_control:tc, '
                 'x:%(x)g, y:%(x)g, '
                 'width:%(width)g, height:%(height)g, id:%(id)d, '
                 'n_lines:%(n_lines)d});' %

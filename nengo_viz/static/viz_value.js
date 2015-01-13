@@ -1,5 +1,5 @@
 
-VIZ.LineGraph = function(args) {
+VIZ.Value = function(args) {
     VIZ.WSComponent.call(this, args);
     
     this.time_control = args.time_control;
@@ -74,10 +74,10 @@ VIZ.LineGraph = function(args) {
     this.pending_update = false;
 };
 
-VIZ.LineGraph.prototype = Object.create(VIZ.WSComponent.prototype);
-VIZ.LineGraph.prototype.constructor = VIZ.LineGraph;
+VIZ.Value.prototype = Object.create(VIZ.WSComponent.prototype);
+VIZ.Value.prototype.constructor = VIZ.Value;
 
-VIZ.LineGraph.prototype.schedule_update = function(event) {
+VIZ.Value.prototype.schedule_update = function(event) {
     if (this.pending_update == false) {
         this.pending_update = true;
         var self = this;
@@ -85,7 +85,7 @@ VIZ.LineGraph.prototype.schedule_update = function(event) {
     }
 }
 
-VIZ.LineGraph.prototype.on_message = function(event) {
+VIZ.Value.prototype.on_message = function(event) {
     var data = new Float32Array(event.data);
 
     var decay = 0.0;    
@@ -106,7 +106,7 @@ VIZ.LineGraph.prototype.on_message = function(event) {
     this.schedule_update();
 }
     
-VIZ.LineGraph.prototype.update_lines = function() {
+VIZ.Value.prototype.update_lines = function() {
     this.pending_update = false;
     
     var last_time = this.times[this.times.length - 1];
@@ -139,7 +139,7 @@ VIZ.LineGraph.prototype.update_lines = function() {
     this.axis_x_g.call(this.axis_x);         
 };
 
-VIZ.LineGraph.prototype.get_shown_data = function() {
+VIZ.Value.prototype.get_shown_data = function() {
     var t1 = this.time_control.time_slider.first_shown_time;
     var t2 = t1 + this.time_control.time_slider.shown_time;
     
@@ -161,7 +161,7 @@ VIZ.LineGraph.prototype.get_shown_data = function() {
     return shown
 }
 
-VIZ.LineGraph.prototype.on_resize = function(width, height) {
+VIZ.Value.prototype.on_resize = function(width, height) {
     this.scale_x.range([this.margin_left, width - this.margin_right]);
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
     var self = this;
