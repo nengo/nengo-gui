@@ -1,6 +1,6 @@
 
 VIZ.Value = function(args) {
-    VIZ.WSComponent.call(this, args);
+    VIZ.Component.call(this, args);
     
     this.time_control = args.time_control;
     
@@ -74,7 +74,7 @@ VIZ.Value = function(args) {
     this.pending_update = false;
 };
 
-VIZ.Value.prototype = Object.create(VIZ.WSComponent.prototype);
+VIZ.Value.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Value.prototype.constructor = VIZ.Value;
 
 VIZ.Value.prototype.schedule_update = function(event) {

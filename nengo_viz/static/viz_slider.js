@@ -1,6 +1,6 @@
 
 VIZ.Slider = function(args) {
-    VIZ.WSComponent.call(this, args);
+    VIZ.Component.call(this, args);
     
     this.scale = d3.scale.linear();
     this.scale.domain([1,  -1]);
@@ -62,7 +62,7 @@ VIZ.Slider = function(args) {
     
 };
 
-VIZ.Slider.prototype = Object.create(VIZ.WSComponent.prototype);
+VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;
 
 
