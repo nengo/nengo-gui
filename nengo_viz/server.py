@@ -1,7 +1,6 @@
 import time
 import pkgutil
 import os
-import thread
 
 import swi
 

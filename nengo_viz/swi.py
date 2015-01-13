@@ -439,7 +439,12 @@ class ClientSocket(object):
         # see: http://tools.ietf.org/html/rfc6455#section-5.2
         try:
             data = bytearray(self.socket.recv(512))
-        except socket.error, socket.timeout:
+        except socket.error as e:
+            if e.errno == 11:  # no data available
+                return None
+            else:
+                raise
+        except socket.timeout:
             return None
 
         if(len(data) < 6):
