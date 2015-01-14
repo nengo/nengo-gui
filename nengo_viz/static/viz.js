@@ -124,10 +124,11 @@ VIZ.DataStore.prototype.push = function(row) {
 
 
 VIZ.DataStore.prototype.update = function() {
+    /*
     var extra = 0;
     var limit 
     while (this.times[0] < this.sim.time_slider.
-
+*/
 
 }
 
