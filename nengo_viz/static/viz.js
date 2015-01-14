@@ -96,10 +96,38 @@ VIZ.Component.prototype.on_resize = function(width, height) {};
 VIZ.Component.prototype.on_message = function(event) {};
 
 
-VIZ.DataStore = function(dims) {
+VIZ.DataStore = function(dims, sim, synapse) {
+    this.synapse = synapse;
+    this.sim = sim;
+    this.times = []
     this.data = [];
-
     for (var i=0; i < dims; i++) {
         this.data.push([]);
     }
 }
+
+VIZ.DataStore.prototype.push = function(row) {
+    var decay = 0.0;    
+    if (this.times.length != 0) {
+        var dt = row[0] - this.times[this.times.length - 1];
+        decay = Math.exp(-dt / this.synapse);
+    }
+    for (var i = 0; i < this.data.length; i++) {
+        if (decay == 0.0) {
+            this.data[i].push(row[i + 1]);        
+        } else {
+            this.data[i].push(row[i + 1]*(1-decay) + this.data[i][this.data[i].length - 1] * decay);
+        }
+    }
+    this.times.push(row[0]);
+};
+
+
+VIZ.DataStore.prototype.update = function() {
+    var extra = 0;
+    var limit 
+    while (this.times[0] < this.sim.time_slider.
+
+
+}
+

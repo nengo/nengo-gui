@@ -7,20 +7,22 @@
  */
 VIZ.Value = function(args) {
     VIZ.Component.call(this, args);
+    var self = this;
 
     this.n_lines = args.n_lines || 1;
-    
-    this.time_control = args.sim;
+    this.sim = args.sim;
+
 
     this.data = [];
-
     for (var i=0; i < this.n_lines; i++) {
         this.data.push([]);
     }
     this.times = [];
 
+    this.data_store = new VIZ.DataStore(this.n_lines, this.sim, 0.01);
+
         
-    //TODO: get this data from this.time_control    
+    //TODO: get this data from this.sim    
     this.storage_limit = 4000;
     this.shown_time = 0.5;
     this.first_shown_index = 0;
@@ -66,9 +68,8 @@ VIZ.Value = function(args) {
         .attr("transform", "translate(0," + (args.height - this.margin_bottom) + ")")
         .call(this.axis_x);
         
-    var self = this;
 
-    this.time_control.div.addEventListener('adjust_time', 
+    this.sim.div.addEventListener('adjust_time', 
             function(e) {self.schedule_update();}, false);
     
     var line = d3.svg.line()
@@ -103,6 +104,8 @@ VIZ.Value.prototype.on_message = function(event) {
         var dt = data[0] - this.times[this.times.length - 1];
         decay = Math.exp(-dt / this.synapse);
     }
+
+    this.data_store.push(data);
     
     for (var i = 0; i < this.data.length; i++) {
         if (decay == 0.0) {
@@ -150,8 +153,8 @@ VIZ.Value.prototype.update_lines = function() {
 };
 
 VIZ.Value.prototype.get_shown_data = function() {
-    var t1 = this.time_control.time_slider.first_shown_time;
-    var t2 = t1 + this.time_control.time_slider.shown_time;
+    var t1 = this.sim.time_slider.first_shown_time;
+    var t2 = t1 + this.sim.time_slider.shown_time;
     
     var index = 0;
     while (this.times[index] < t1) {
