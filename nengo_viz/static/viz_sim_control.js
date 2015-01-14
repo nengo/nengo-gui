@@ -11,6 +11,10 @@ VIZ.SimControl = function(div, args) {
 
     div.classList.add('sim_control');    
     this.div = div;
+
+    /** respond to resize events */
+    this.div.addEventListener("resize", function() {self.on_resize();});
+    window.addEventListener("resize", function() {self.on_resize();});
     
     /** the most recent time from the simulator */
     this.time = 0.0;
@@ -92,6 +96,12 @@ VIZ.SimControl.prototype.on_pause_click = function(event) {
     }
 };
 
+VIZ.SimControl.prototype.on_resize = function(event) {
+    this.time_slider.resize(this.div.clientWidth - 300, 
+                            this.div.clientHeight - 20);
+
+}
+
 VIZ.TimeSlider = function(args) {
     var self = this;
 
@@ -115,9 +125,6 @@ VIZ.TimeSlider = function(args) {
     this.div.classList.add('time_slider');
     this.div.style.position = 'fixed';
     this.sim.div.appendChild(this.div);
-    this.div.style.width = args.width;
-    this.div.style.height = args.height;
-    this.kept_scale.range([0, args.width]);
     VIZ.set_transform(this.div, args.x, args.y);
 
     /** create the div indicating currently shown time */
@@ -125,12 +132,10 @@ VIZ.TimeSlider = function(args) {
     this.shown_div.classList.add('shown_time');
     this.shown_div.style.position = 'fixed';
     this.div.appendChild(this.shown_div);
-    this.shown_div.style.height = args.height;
-    this.shown_div.style.width = args.width * this.shown_time / this.kept_time;
 
     this.kept_scale.domain([0.0 - this.kept_time, 0.0]);
-    var x = this.kept_scale(this.first_shown_time);
-    VIZ.set_transform(this.shown_div, x, 0);
+
+    this.resize(args.width, args.height);
 
     /** make the shown time draggable */
     interact(this.shown_div)
@@ -176,8 +181,23 @@ VIZ.TimeSlider = function(args) {
     
 }
 
+
 /**
- * Update the axis given a new time point from the simulator */
+ * Adjust size and location of parts based on overall size
+ */
+VIZ.TimeSlider.prototype.resize = function(width, height) {
+    this.div.style.width = width;
+    this.div.style.height = height;
+    this.kept_scale.range([0, width]);
+    this.shown_div.style.height = height;
+    this.shown_div.style.width = width * this.shown_time / this.kept_time;
+    VIZ.set_transform(this.shown_div, 
+                      this.kept_scale(this.first_shown_time), 0);
+}
+
+/**
+ * Update the axis given a new time point from the simulator
+ */
 VIZ.TimeSlider.prototype.update_times = function(time) {
     var delta = time - this.last_time;   // time since last update_time()
     this.last_time = time;
