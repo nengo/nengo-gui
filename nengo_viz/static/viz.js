@@ -124,11 +124,40 @@ VIZ.DataStore.prototype.push = function(row) {
 
 
 VIZ.DataStore.prototype.update = function() {
-    /*
     var extra = 0;
-    var limit 
-    while (this.times[0] < this.sim.time_slider.
-*/
+    var limit = this.sim.time_slider.last_time - this.sim.time_slider.kept_time;
+    while (this.times[extra] < limit) {
+        extra += 1;
+    }
+    if (extra > 0) {
+        console.log('ignoring ' +extra);
+        this.times = this.times.slice(extra);
+        for (var i = 0; i < this.data.length; i++) {
+            this.data[i] = this.data[i].slice(extra);
+        }
+    }
+}
 
+VIZ.DataStore.prototype.get_shown_data = function() {
+    var t1 = this.sim.time_slider.first_shown_time;
+    var t2 = t1 + this.sim.time_slider.shown_time;
+    
+    var index = 0;
+    while (this.times[index] < t1) {
+        index += 1;
+    }
+    var last_index = index;
+    while (this.times[last_index] < t2 && last_index < this.times.length) {
+        last_index += 1;
+    }
+    this.first_shown_index = index;
+    
+    console.log([index, last_index]);
+
+    var shown = [];
+    for (var i = 0; i < this.data.length; i++) {
+        shown.push(this.data[i].slice(index, last_index));
+    }
+    return shown
 }
 

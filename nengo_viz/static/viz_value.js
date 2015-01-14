@@ -12,22 +12,8 @@ VIZ.Value = function(args) {
     this.n_lines = args.n_lines || 1;
     this.sim = args.sim;
 
-
-    this.data = [];
-    for (var i=0; i < this.n_lines; i++) {
-        this.data.push([]);
-    }
-    this.times = [];
-
     this.data_store = new VIZ.DataStore(this.n_lines, this.sim, 0.01);
 
-        
-    //TODO: get this data from this.sim    
-    this.storage_limit = 4000;
-    this.shown_time = 0.5;
-    this.first_shown_index = 0;
-    this.last_shown_index = 0;
-    
     this.synapse = 0.01;
     
     this.svg = d3.select(this.div).append('svg')
@@ -76,11 +62,10 @@ VIZ.Value = function(args) {
         .x(function(d, i) {return self.scale_x(times[i]);})
         .y(function(d) {return self.scale_y(d);})
 
-    var path = this.svg.append("g").selectAll('path').data(this.data);
+    var path = this.svg.append("g").selectAll('path').data(this.data_store.data);
     this.path = path;
     path.enter().append('path')
-        .attr('class', 'line')
-        .attr('d', line);    
+        .attr('class', 'line');
         
     this.pending_update = false;
 };
@@ -98,90 +83,40 @@ VIZ.Value.prototype.schedule_update = function(event) {
 
 VIZ.Value.prototype.on_message = function(event) {
     var data = new Float32Array(event.data);
-
-    var decay = 0.0;    
-    if (this.times.length != 0) {
-        var dt = data[0] - this.times[this.times.length - 1];
-        decay = Math.exp(-dt / this.synapse);
-    }
-
     this.data_store.push(data);
-    
-    for (var i = 0; i < this.data.length; i++) {
-        if (decay == 0.0) {
-            this.data[i].push(data[i + 1]);        
-        } else {
-            this.data[i].push(data[i + 1]*(1-decay) + this.data[i][this.data[i].length - 1] * decay);
-        }
-    }
-    this.times.push(data[0]);
-    
     this.schedule_update();
 }
     
 VIZ.Value.prototype.update_lines = function() {
     this.pending_update = false;
     
-    var last_time = this.times[this.times.length - 1];
-    
-    var extra = this.times.length - this.storage_limit;
-    if (extra > 0) {
-        this.times = this.times.slice(extra);
-        for (var i = 0; i < this.n_lines; i++) {
-            this.data[i] = this.data[i].slice(extra);
-        }
-        this.first_shown_index = this.first_shown_index - extra;
-        this.last_shown_index = this.last_shown_index - extra;
-    }
-    while (this.times[this.first_shown_index] < last_time - this.shown_time) {
-        this.first_shown_index = this.first_shown_index + 1;
-    }
-    this.last_shown_index = this.times.length - 1;
-    
-    this.scale_x.domain([last_time - 0.5, last_time]);
-    
+    this.data_store.update();
+        
+    var t1 = this.sim.time_slider.first_shown_time;
+    var t2 = t1 + this.sim.time_slider.shown_time;
+    this.scale_x.domain([t1, t2]);
     
     var self = this;
     
+    var shown_data = this.data_store.get_shown_data();
     var line = d3.svg.line()
-            .x(function(d, i) {return self.scale_x(self.times[i + self.first_shown_index]);})
+        .x(function(d, i) {return self.scale_x(self.data_store.times[i + self.data_store.first_shown_index]);})
             .y(function(d) {return self.scale_y(d);})
-    this.path.data(this.get_shown_data())
+    this.path.data(shown_data)
              .attr('d', line);
              
     this.axis_x_g.call(this.axis_x);         
 };
 
-VIZ.Value.prototype.get_shown_data = function() {
-    var t1 = this.sim.time_slider.first_shown_time;
-    var t2 = t1 + this.sim.time_slider.shown_time;
-    
-    var index = 0;
-    while (this.times[index] < t1) {
-        index += 1;
-    }
-    var last_index = 0;
-    while (this.times[last_index] < t2 && last_index < this.times.length) {
-        last_index += 1;
-    }
-    this.first_shown_index = index;
-    this.scale_x.domain([t1, t2]);
-
-    var shown = [];
-    for (var i = 0; i < this.data.length; i++) {
-        shown.push(this.data[i].slice(index, last_index));
-    }
-    return shown
-}
-
 VIZ.Value.prototype.on_resize = function(width, height) {
     this.scale_x.range([this.margin_left, width - this.margin_right]);
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
     var self = this;
+    var shown_data = this.data_store.get_shown_data();
     var line = d3.svg.line()
-        .x(function(d, i) {return self.scale_x(self.times[i + self.first_shown_index]);})
+        .x(function(d, i) {return self.scale_x(self.data_store.times[i + self.data_store.first_shown_index]);})
         .y(function(d) {return self.scale_y(d);})
-    this.path.data(this.get_shown_data())
+    this.path.data(shown_data)
              .attr('d', line);
     this.axis_x_g         
         .attr("transform", "translate(0," + (height - this.margin_bottom) + ")")
