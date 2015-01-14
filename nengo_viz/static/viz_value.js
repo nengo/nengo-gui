@@ -68,7 +68,8 @@ VIZ.Value = function(args) {
         
     var self = this;
 
-    this.time_control.register_listener(function() {self.schedule_update();});
+    this.time_control.div.addEventListener('adjust_time', 
+            function(e) {self.schedule_update();}, false);
     
     var line = d3.svg.line()
         .x(function(d, i) {return self.scale_x(times[i]);})

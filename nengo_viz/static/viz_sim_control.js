@@ -46,9 +46,6 @@ VIZ.SimControl = function(div, args) {
     div.appendChild(this.rate_div);
     this.ticks_div = document.createElement('div');
     div.appendChild(this.ticks_div);
-    
-    /** list of functions to call when things are changed */
-    this.listeners = [];
 };
 
 /** Event handler for received WebSocket messages */
@@ -156,12 +153,9 @@ VIZ.TimeSlider = function(args) {
                 
                 x = self.kept_scale(new_time);
                 VIZ.set_transform(event.target, x, 0);
-                    
-                /** update any components registered to listen */
-                for (var i = 0; i < self.sim.listeners.length; i++) {
-                    self.sim.listeners[i]();
-                }
-                    
+
+                /** update any components who need to know the time changed */
+                self.sim.div.dispatchEvent(new Event('adjust_time'));
             }
         })
         
