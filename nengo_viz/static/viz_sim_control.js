@@ -1,59 +1,76 @@
-
+/**
+ * Control panel for a simulation
+ * @constructor
+ *
+ * @param {DOMElement} div - the element for the control
+ * @param {dict} args - A set of constructor arguments, including:
+ * @param {int} args.id - the id of the server-side SimControl to connect to
+ */
 VIZ.SimControl = function(div, args) {
+    var self = this;
+
     div.classList.add('sim_control');    
     this.div = div;
     
-    this.height = div.clientHeight;
-    
+    /** the most recent time from the simulator */
     this.time = 0.0;
+    /** the most recent rate information from the simulator */
     this.rate = 0.0;
-    this.pending_update = false;
+    /** whether the simulation is paused */
     this.paused = false;
-    this.built = false;
-    
-    this.id = args.id;
-    var self = this;
-    
-    this.ws = new WebSocket('ws://localhost:8080/viz_component?id=' + this.id);
+    /** do we have an update() call scheduled? */
+    this.pending_update = false;
+
+    /** Create the WebSocket to communicate with the server */ 
+    this.ws = new WebSocket('ws://localhost:8080/viz_component?id=' + args.id);
     this.ws.binaryType = "arraybuffer";
     this.ws.onmessage = function(event) {self.on_message(event);}
     
-
-    this.time_slider = new VIZ.TimeSlider({parent: this.div, control: this, x: 200, y: 10, 
-                                           width: this.div.clientWidth-300, height: this.div.clientHeight-20});
+    /** Create the TimeSlider */
+    this.time_slider = new VIZ.TimeSlider({x: 200, y: 10, sim:this,
+                                           width: this.div.clientWidth-300, 
+                                           height: this.div.clientHeight-20});
     
-    var self = this;
+    /** Create the pause button */
     this.pause_button = document.createElement('button');
     this.pause_button.innerHTML='Pause';
     this.pause_button.onclick = function(event) {self.on_pause_click();};
     div.appendChild(this.pause_button);
     
+    /** Create the speed and rate update sliders */
     this.rate_div = document.createElement('div');
     div.appendChild(this.rate_div);
     this.ticks_div = document.createElement('div');
     div.appendChild(this.ticks_div);
     
+    /** list of functions to call when things are changed */
     this.listeners = [];
-    
-    
 };
 
+/** Event handler for received WebSocket messages */
 VIZ.SimControl.prototype.on_message = function(event) {
     var data = new Float32Array(event.data);
     this.time = data[0];
     this.rate = data[1];
 
+    this.schedule_update();
+};    
+
+/** Make sure update() will be called in the next 10ms  */
+VIZ.SimControl.prototype.schedule_update = function() {
     if (this.pending_update == false) {
         this.pending_update = true;
         var self = this;
         window.setTimeout(function() {self.update()}, 10);
     }
-};    
+}
 
+/** Add to list of functions to be called when SimControl options change */
 VIZ.SimControl.prototype.register_listener = function(func) {
     this.listeners.push(func);
 };
-    
+
+/** Update the visual display */    
 VIZ.SimControl.prototype.update = function() {
     this.pending_update = false;
     
@@ -76,24 +93,34 @@ VIZ.SimControl.prototype.on_pause_click = function(event) {
 };
 
 VIZ.TimeSlider = function(args) {
+    var self = this;
+
+    /** The SimControl object */
+    this.sim = args.sim;
+
+    /** How much time to show in normal graphs */
     this.shown_time = args.shown_time || 0.5;
+    /** How much total time to store */
     this.kept_time = args.kept_time || 4.0;
+    /** Most recent time received from simulation */
     this.last_time = 0.0;
-    this.control = args.control;
+    /** First time shown on graphs */
     this.first_shown_time = this.last_time - this.shown_time;
     
+    /** scale to convert time to x value (in pixels) */
     this.kept_scale = d3.scale.linear();
     
+    /** create the overall div */
     this.div = document.createElement('div');
     this.div.classList.add('time_slider');
     this.div.style.position = 'fixed';
-    args.parent.appendChild(this.div);
+    this.sim.div.appendChild(this.div);
     this.div.style.width = args.width;
     this.div.style.height = args.height;
     this.kept_scale.range([0, args.width]);
-    this.div.style.webkitTransform = 
-        this.div.style.transform = 'translate(' + args.x + 'px, ' + args.y + 'px)';
+    VIZ.set_transform(this.div, args.x, args.y);
 
+    /** create the div indicating currently shown time */
     this.shown_div = document.createElement('div');
     this.shown_div.classList.add('shown_time');
     this.shown_div.style.position = 'fixed';
@@ -101,50 +128,47 @@ VIZ.TimeSlider = function(args) {
     this.shown_div.style.height = args.height;
     this.shown_div.style.width = args.width * this.shown_time / this.kept_time;
 
-    var self = this;
-    
-        interact(this.shown_div)
-            .draggable({
-                    onmove: function (event) {
-                    
-                    var x = self.kept_scale(self.first_shown_time) + event.dx;
-                    
-                    var new_time = self.kept_scale.invert(x);
-                    if (new_time > self.last_time - self.shown_time) {
-                        new_time = self.last_time - self.shown_time;
-                    }
-                    if (new_time < self.last_time - self.kept_time) {
-                        new_time = self.last_time - self.kept_time;
-                    }
-                    
-                    self.first_shown_time = new_time;
-                    
-                    x = self.kept_scale(new_time);
-                    
-                    // translate the element
-                    event.target.style.webkitTransform =
-                        event.target.style.transform =
-                        'translate(' + x + 'px, 0px)';
-                        
-                    for (var i = 0; i < self.control.listeners.length; i++) {
-                        self.control.listeners[i]();
-                    }
-                        
-                }
-            })
-    
-    
+    this.kept_scale.domain([0.0 - this.kept_time, 0.0]);
+    var x = this.kept_scale(this.first_shown_time);
+    VIZ.set_transform(this.shown_div, x, 0);
 
+    /** make the shown time draggable */
+    interact(this.shown_div)
+        .draggable({
+            onmove: function (event) {
+                /** determine where we have been dragged to in time */
+                var x = self.kept_scale(self.first_shown_time) + event.dx;
+                var new_time = self.kept_scale.invert(x);
+
+                /** make sure we're within bounds */
+                if (new_time > self.last_time - self.shown_time) {
+                    new_time = self.last_time - self.shown_time;
+                }
+                if (new_time < self.last_time - self.kept_time) {
+                    new_time = self.last_time - self.kept_time;
+                }
+                self.first_shown_time = new_time;
+                
+                x = self.kept_scale(new_time);
+                VIZ.set_transform(event.target, x, 0);
+                    
+                /** update any components registered to listen */
+                for (var i = 0; i < self.sim.listeners.length; i++) {
+                    self.sim.listeners[i]();
+                }
+                    
+            }
+        })
         
+    
+    /** build the axis to display inside the scroll area */
     this.svg = d3.select(this.div).append('svg')
         .attr('width', '100%')
         .attr('height', '100%');   
-        
     this.axis = d3.svg.axis()
         .scale(this.kept_scale)
         .orient("bottom")
         .ticks(10);
-
     this.axis_g = this.svg.append("g")
         .attr("class", "axis")
         .attr("transform", "translate(0," + (args.height / 2) + ")")
@@ -152,20 +176,17 @@ VIZ.TimeSlider = function(args) {
     
 }
 
+/**
+ * Update the axis given a new time point from the simulator */
 VIZ.TimeSlider.prototype.update_times = function(time) {
-    var delta = time - this.last_time; 
+    var delta = time - this.last_time;   // time since last update_time()
     this.last_time = time;
     this.first_shown_time = this.first_shown_time + delta;
 
+    /** update the limits on the time axis */
     this.kept_scale.domain([time - this.kept_time, time]);
     
-    var x = this.kept_scale(this.first_shown_time);
-    this.shown_div.style.webkitTransform = 
-        this.shown_div.style.transform = 'translate(' + x + 'px, 0px)';
-    //this.shown_div.style.width = this.div.clientWidth - x;
-
+    /** update the time axis display */
     this.axis_g
         .call(this.axis);
-        
-    
 }
