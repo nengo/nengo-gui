@@ -83,6 +83,9 @@ VIZ.Component = function(args) {
         this.ws.binaryType = "arraybuffer";
         this.ws.onmessage = function(event) {self.on_message(event);}
     }
+
+    /** flag whether there is a scheduled update that hasn't happened yet */
+    this.pending_update = false;
 };
 
 /**
@@ -95,9 +98,42 @@ VIZ.Component.prototype.on_resize = function(width, height) {};
  */
 VIZ.Component.prototype.on_message = function(event) {};
 
+/**
+ * Schedule update() to be called in the near future.  If update() is already
+ * scheduled, then do nothing.  This is meant to limit how fast update() is
+ * called in the case that we are changing the data faster than whatever
+ * processing is needed in update()
+ */
+VIZ.Component.prototype.schedule_update = function(event) {
+    if (this.pending_update == false) {
+        this.pending_update = true;
+        var self = this;
+        window.setTimeout(
+            function() {
+                self.pending_update = false;
+                self.update()
+            }, 10);
+    }
+}
 
+/**
+ * Do any visual updating that is needed due to changes in the underlying data
+ */
+VIZ.Component.prototype.update = function(event) { 
+}
+
+
+
+/**
+ * Storage of a set of data points and associated times.
+ * @constructor
+ *
+ * @param {int} dims - number of data points per time
+ * @param {VIZ.SimControl} sim - the simulation controller
+ * @param {float} synapse - the filter to apply to the data
+ */
 VIZ.DataStore = function(dims, sim, synapse) {
-    this.synapse = synapse;
+    this.synapse = synapse; /** TODO: get from VIZ.SimControl */
     this.sim = sim;
     this.times = []
     this.data = [];
@@ -106,31 +142,48 @@ VIZ.DataStore = function(dims, sim, synapse) {
     }
 }
 
+/**
+ * Add a set of data.
+ * @param {array} row - dims+1 data points, with time as the first one
+ */
 VIZ.DataStore.prototype.push = function(row) {
+    /** compute lowpass filter (value = value*decay + new_value*(1-decay) */
     var decay = 0.0;    
-    if (this.times.length != 0) {
+    if ((this.times.length != 0) && (this.synapse > 0)) {
         var dt = row[0] - this.times[this.times.length - 1];
         decay = Math.exp(-dt / this.synapse);
     }
+    /** put filtered values into data array */
     for (var i = 0; i < this.data.length; i++) {
         if (decay == 0.0) {
             this.data[i].push(row[i + 1]);        
         } else {
-            this.data[i].push(row[i + 1]*(1-decay) + this.data[i][this.data[i].length - 1] * decay);
+            this.data[i].push(row[i + 1] * (1-decay) + 
+                              this.data[i][this.data[i].length - 1] * decay);
         }
     }
+    /** store the time as well */
     this.times.push(row[0]);
 };
 
-
+/**
+ * update the data storage.  This should be call periodically (before visual
+ * updates, but not necessarily after every push()).  Removes old data outside
+ * the storage limit set by the VIZ.SimControl.
+ */
 VIZ.DataStore.prototype.update = function() {
+    /** figure out how many extra values we have (values whose time stamp is
+     * outside the range to keep)
+     */
     var extra = 0;
-    var limit = this.sim.time_slider.last_time - this.sim.time_slider.kept_time;
+    var limit = this.sim.time_slider.last_time - 
+                this.sim.time_slider.kept_time;
     while (this.times[extra] < limit) {
         extra += 1;
     }
+
+    /** remove the extra data */
     if (extra > 0) {
-        console.log('ignoring ' +extra);
         this.times = this.times.slice(extra);
         for (var i = 0; i < this.data.length; i++) {
             this.data[i] = this.data[i].slice(extra);
@@ -138,10 +191,15 @@ VIZ.DataStore.prototype.update = function() {
     }
 }
 
+/**
+ * Return just the data that is to be shown
+ */
 VIZ.DataStore.prototype.get_shown_data = function() {
+    /* determine time range */
     var t1 = this.sim.time_slider.first_shown_time;
     var t2 = t1 + this.sim.time_slider.shown_time;
     
+    /* find the corresponding index values */
     var index = 0;
     while (this.times[index] < t1) {
         index += 1;
@@ -152,12 +210,11 @@ VIZ.DataStore.prototype.get_shown_data = function() {
     }
     this.first_shown_index = index;
     
-    console.log([index, last_index]);
-
+    /** return the visible slice of the data */
     var shown = [];
     for (var i = 0; i < this.data.length; i++) {
         shown.push(this.data[i].slice(index, last_index));
     }
-    return shown
+    return shown;
 }
 
