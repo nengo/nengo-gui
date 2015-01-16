@@ -357,7 +357,8 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
 
     @classmethod
     def browser(cls, port=80):
-        thread.start_new_thread(webbrowser.open, ('http://localhost:%d' % port,))
+        thread.start_new_thread(webbrowser.open,
+                                ('http://localhost:%d' % port,))
 
 
 class AsyncHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):

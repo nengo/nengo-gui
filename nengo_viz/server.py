@@ -5,6 +5,7 @@ import mimetypes
 
 import swi
 
+
 class Server(swi.SimpleWebInterface):
     """Web server interface to nengo_viz"""
 

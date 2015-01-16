@@ -7,6 +7,7 @@ import nengo
 import nengo_viz.server
 import nengo_viz.components
 
+
 class VizSim(object):
     """A single Simulator attached to an html visualization."""
     def __init__(self, viz):
@@ -36,7 +37,7 @@ class VizSim(object):
         # remove the temporary components added for visualization
         for c in self.components:
             c.remove_nengo_objects(self.viz)
-        #TODO: add checks to make sure everything's been removed
+        # TODO: add checks to make sure everything's been removed
         self.viz.lock.release()
 
         self.building = False
@@ -99,5 +100,3 @@ class Viz(object):
         c = self.components[id]
         del self.components[id]
         return c
-
-
