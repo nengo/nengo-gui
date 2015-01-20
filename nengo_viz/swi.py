@@ -445,6 +445,8 @@ class ClientSocket(object):
                 return None
             elif e.errno == 10035:  # no data available
                 return None
+            elif e.errno == 35:  # no data available
+                return None
             else:
                 raise
         except socket.timeout:
