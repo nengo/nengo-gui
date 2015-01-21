@@ -70,6 +70,12 @@ VIZ.Component = function(args) {
             var target = event.target;
             var newWidth = parseFloat(target.style.width) + event.dx;
             var newHeight = parseFloat(target.style.height) + event.dy;
+            if (newWidth < 30){
+                newWidth = 30;
+            }
+            if (newHeight < 50){
+                newHeight = 50;
+            }
             target.style.width  = newWidth + 'px';
             target.style.height = newHeight + 'px';
             self.on_resize(newWidth, newHeight);
