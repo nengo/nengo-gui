@@ -33,7 +33,9 @@ VIZ.Component = function(args) {
     this.div.classList.add('graph');
     args.parent.appendChild(this.div);
     this.parent = args.parent;
-    
+
+    self.minWidth = 30;
+    self.minHeight = 50;
 
     /** Move element to be drawn on top when clicked on */
     this.div.onmousedown = function(event) {
@@ -70,11 +72,11 @@ VIZ.Component = function(args) {
             var target = event.target;
             var newWidth = parseFloat(target.style.width) + event.dx;
             var newHeight = parseFloat(target.style.height) + event.dy;
-            if (newWidth < 30){
-                newWidth = 30;
+            if (newWidth < self.minWidth){
+                newWidth = self.minWidth;
             }
-            if (newHeight < 50){
-                newHeight = 50;
+            if (newHeight < self.minHeight){
+                newHeight = self.minHeight;
             }
             target.style.width  = newWidth + 'px';
             target.style.height = newHeight + 'px';
@@ -223,4 +225,3 @@ VIZ.DataStore.prototype.get_shown_data = function() {
     }
     return shown;
 }
-
