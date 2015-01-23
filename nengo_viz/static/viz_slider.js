@@ -44,7 +44,6 @@ VIZ.Slider = function(args) {
                     /** bound y to within the limits 
                      * TODO: perhaps use interact.js limit system instead
                      */
-                     
                     if (y > self.scale.range()[1]) {
                         y = self.scale.range()[1];
                     }
@@ -64,7 +63,6 @@ VIZ.Slider = function(args) {
                         target.slider.value = new_value;
                         self.ws.send(target.slider.index + ',' + new_value);
                     }
-                    
                 }
             })
     }
