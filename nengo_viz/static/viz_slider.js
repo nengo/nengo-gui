@@ -26,65 +26,48 @@ VIZ.Slider = function(args) {
         slider.index = i;
         slider.div = document.createElement('div');
         slider.value = 0;
-
-        /** Show the slider Value */
-        var valueDisplay = document.createElement('p');
-        valueDisplay.innerHTML = slider.value;
-        slider.div.appendChild(valueDisplay);
-
         slider.div.style.position = 'fixed';
         slider.div.classList.add('slider');
         this.div.appendChild(slider.div);
         slider.div.slider = slider;
         
         /** make the slider draggable */
-
-        /** Only allows dragging slider while mouse is over it */
-        this.div.onmouseover = function(){slider.div.draggable = true;};
-        this.div.onmouseleave = function(){
-            setTimeout(function (){
-                slider.div.draggable = false;},
-                5)
-        }
-            
-
         interact(slider.div)
             .draggable({
                 onmove: function (event) {
                     var target = event.target
-                    if (target.draggable){
 
-                        /** load x and y from custom data-x/y attributes */ 
+                    /** load x and y from custom data-x/y attributes */ 
                         
-                        var x = parseFloat(target.getAttribute('data-x'));
-                        var y = parseFloat(target.getAttribute('data-y')) + 
-                                                                         event.dy;
+                    var x = parseFloat(target.getAttribute('data-x'));
+                    var y = parseFloat(target.getAttribute('data-y')) + 
+                                                                     event.dy;
 
-                        /** bound y to within the limits 
-                         * TODO: perhaps use interact.js limit system instead
-                         */
-                         
-                        if (y > self.scale.range()[1]) {
-                            y = self.scale.range()[1];
-                        }
-                        if (y < self.scale.range()[0]) {
-                            y = self.scale.range()[0];
-                        }
-
-                        VIZ.set_transform(target, x, y - self.slider_height / 2);
-
-                        /** remember where we moved to */
-                        target.setAttribute('data-y', y);
-                          
-                        /** update the value and send it to the server */
-                        var old_value = target.slider.value;
-                        var new_value = self.scale.invert(y);
-                        valueDisplay.innerHTML = new_value.toFixed(2);
-                        if (new_value != old_value) {
-                            target.slider.value = new_value;
-                            self.ws.send(target.slider.index + ',' + new_value);
-                        }
+                    /** bound y to within the limits 
+                     * TODO: perhaps use interact.js limit system instead
+                     */
+                     
+                    if (y > self.scale.range()[1]) {
+                        y = self.scale.range()[1];
                     }
+                    if (y < self.scale.range()[0]) {
+                        y = self.scale.range()[0];
+                    }
+
+                    VIZ.set_transform(target, x, y - self.slider_height / 2);
+
+                    /** remember where we moved to */
+                    target.setAttribute('data-y', y);
+                      
+                    /** update the value and send it to the server */
+                    var old_value = target.slider.value;
+                    var new_value = self.scale.invert(y);
+                    valueDisplay.innerHTML = new_value.toFixed(2);
+                    if (new_value != old_value) {
+                        target.slider.value = new_value;
+                        self.ws.send(target.slider.index + ',' + new_value);
+                    }
+                    
                 }
             })
     }
