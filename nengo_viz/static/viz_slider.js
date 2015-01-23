@@ -9,8 +9,6 @@ VIZ.Slider = function(args) {
     VIZ.Component.call(this, args);
     var self = this;
 
-  
-
     /** a scale to map from values to pixels */
     this.scale = d3.scale.linear();
     this.scale.domain([1,  -1]);
