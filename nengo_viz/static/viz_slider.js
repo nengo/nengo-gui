@@ -36,9 +36,7 @@ VIZ.Slider = function(args) {
             .draggable({
                 onmove: function (event) {
                     var target = event.target
-
                     /** load x and y from custom data-x/y attributes */ 
-                        
                     var x = parseFloat(target.getAttribute('data-x'));
                     var y = parseFloat(target.getAttribute('data-y')) + 
                                                                      event.dy;
@@ -62,7 +60,6 @@ VIZ.Slider = function(args) {
                     /** update the value and send it to the server */
                     var old_value = target.slider.value;
                     var new_value = self.scale.invert(y);
-                    valueDisplay.innerHTML = new_value.toFixed(2);
                     if (new_value != old_value) {
                         target.slider.value = new_value;
                         self.ws.send(target.slider.index + ',' + new_value);
