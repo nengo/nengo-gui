@@ -42,36 +42,47 @@ VIZ.Slider = function(args) {
         /** make the slider draggable */
 
         /** Only allows dragging slider while mouse is over it */
-        this.div.onmouseover = function () {slider.div.draggable = true;};
-        this.div.onmouseleave = function () {
+        //this.div.onmouseover = function (event) {console.log(event); slider.div.draggable = true;};
+        /*this.div.onmouseleave = function () {
             setTimeout(function () {
                 slider.div.draggable = false;},
                 5);
-        };
+        };*/
 
         /** Slider jumps to zero when middle clicked */
+        /** TODO: Replicate this functionality for touch */
         slider.div.addEventListener("click", 
             function(event) {
                 /** check if click was the middle mouse button */
                 if (event.which == 2) {
-                    var selected_slider = self.div.getElementsByClassName('slider')[0];
-                    var midpoint = self.scale.range()[1]/2 ;
-                    selected_slider.setAttribute('data-y', midpoint);
-                    var new_value = self.scale.invert(midpoint)
-                    selected_slider.value = 0;
-                    valueDisplay.innerHTML = 0;
-                    VIZ.set_transform(selected_slider, 0, midpoint - 25);
                     var slider_index = 0;
+
+
 
                     /** user clicked on the slider */
                     if (event.path.length == 6) {
                         slider_index = event.target.slider.index;
+                        event.target.firstChild.innerHTML = 0;
                     }
                     /** user clicked on the value paragraph text in the slider */
                     if (event.path.length == 7) {
                         /** Find the parent element (the slider) and get its index */
                         slider_index = event.path[1].slider.index;
+                        event.path[1].slider.div.firstChild.innerHTML = 0;
                     }
+                    var selected_slider = self.div.getElementsByClassName('slider')[slider_index];
+                    var x_pos = selected_slider.getAttribute('data-x');
+                    var midpoint = self.scale.range()[1]/2 ;
+                    selected_slider.setAttribute('data-y', midpoint);
+                    var new_value = self.scale.invert(midpoint)
+                    selected_slider.value = 0;
+                    
+                    console.log(selected_slider);
+                    //var computedStyle = window.getComputedStyle(selected_slider, null);
+                    //console.log(computedStyle.getPropertyValue('transform'));
+
+                    VIZ.set_transform(selected_slider, x_pos, midpoint - 25);
+
                     self.ws.send(slider_index + ',' + new_value);
                 }
             } 
@@ -82,6 +93,7 @@ VIZ.Slider = function(args) {
             .draggable({
                 onmove: function (event) {
                     var target = event.target
+                    target.draggable = true;
                     if (target.draggable){
 
                         /** load x and y from custom data-x/y attributes */ 
@@ -110,9 +122,9 @@ VIZ.Slider = function(args) {
                         var old_value = target.slider.value;
                         
                         var new_value = self.scale.invert(y);
-                        //console.log(new_value);
                         /** only show slider value to 2 decimal places */
-                        valueDisplay.innerHTML = new_value.toFixed(2); 
+                        console.log(target.firstChild.innerHTML);
+                        target.firstChild.innerHTML = new_value.toFixed(2); 
                         if (new_value != old_value) {
                             target.slider.value = new_value;
                             self.ws.send(target.slider.index + ',' + new_value);
