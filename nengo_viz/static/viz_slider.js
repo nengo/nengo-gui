@@ -36,18 +36,48 @@ VIZ.Slider = function(args) {
         slider.div.classList.add('slider');
         this.div.appendChild(slider.div);
         slider.div.slider = slider;
-        
+
+
+      
         /** make the slider draggable */
 
         /** Only allows dragging slider while mouse is over it */
-        this.div.onmouseover = function(){slider.div.draggable = true;};
-        this.div.onmouseleave = function(){
-            setTimeout(function (){
+        this.div.onmouseover = function () {slider.div.draggable = true;};
+        this.div.onmouseleave = function () {
+            setTimeout(function () {
                 slider.div.draggable = false;},
-                5)
-        }
-            
+                5);
+        };
 
+        /** Slider jumps to zero when middle clicked */
+        slider.div.addEventListener("click", 
+            function(event) {
+                /** check if click was the middle mouse button */
+                if (event.which == 2) {
+                    var selected_slider = self.div.getElementsByClassName('slider')[0];
+                    var midpoint = self.scale.range()[1]/2 ;
+                    selected_slider.setAttribute('data-y', midpoint);
+                    var new_value = self.scale.invert(midpoint)
+                    selected_slider.value = 0;
+                    valueDisplay.innerHTML = 0;
+                    VIZ.set_transform(selected_slider, 0, midpoint - 25);
+                    var slider_index = 0;
+
+                    /** user clicked on the slider */
+                    if (event.path.length == 6) {
+                        slider_index = event.target.slider.index;
+                    }
+                    /** user clicked on the value paragraph text in the slider */
+                    if (event.path.length == 7) {
+                        /** Find the parent element (the slider) and get its index */
+                        slider_index = event.path[1].slider.index;
+                    }
+                    self.ws.send(slider_index + ',' + new_value);
+                }
+            } 
+        );
+
+        /** setup slider dragging */
         interact(slider.div)
             .draggable({
                 onmove: function (event) {
@@ -78,8 +108,11 @@ VIZ.Slider = function(args) {
                           
                         /** update the value and send it to the server */
                         var old_value = target.slider.value;
+                        
                         var new_value = self.scale.invert(y);
-                        valueDisplay.innerHTML = new_value.toFixed(2);
+                        //console.log(new_value);
+                        /** only show slider value to 2 decimal places */
+                        valueDisplay.innerHTML = new_value.toFixed(2); 
                         if (new_value != old_value) {
                             target.slider.value = new_value;
                             self.ws.send(target.slider.index + ',' + new_value);

@@ -38,9 +38,12 @@ VIZ.Component = function(args) {
     self.minHeight = 50;
 
     /** Move element to be drawn on top when clicked on */
-    this.div.onmousedown = function(event) {
-        self.parent.removeChild(self.div);
-        self.parent.appendChild(self.div);
+    this.div.onmouseup = function(event) {
+        setTimeout(function(){
+            self.parent.removeChild(self.div);
+            self.parent.appendChild(self.div);
+        },
+            0)
     };
     this.div.ontouchstart = this.div.onmousedown;
     
