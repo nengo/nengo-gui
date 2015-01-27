@@ -57,8 +57,6 @@ VIZ.Slider = function(args) {
                 if (event.which == 2) {
                     var slider_index = 0;
 
-
-
                     /** user clicked on the slider */
                     if (event.path.length == 6) {
                         slider_index = event.target.slider.index;
@@ -75,9 +73,9 @@ VIZ.Slider = function(args) {
                     var midpoint = self.scale.range()[1]/2 ;
                     selected_slider.setAttribute('data-y', midpoint);
                     var new_value = self.scale.invert(midpoint)
-                    selected_slider.value = 0;
+                    event.target.slider.value = 0
                     
-                    console.log(selected_slider);
+                    //console.log(selected_slider);
                     //var computedStyle = window.getComputedStyle(selected_slider, null);
                     //console.log(computedStyle.getPropertyValue('transform'));
 
@@ -123,7 +121,7 @@ VIZ.Slider = function(args) {
                         
                         var new_value = self.scale.invert(y);
                         /** only show slider value to 2 decimal places */
-                        console.log(target.firstChild.innerHTML);
+                        //console.log(target.firstChild.innerHTML);
                         target.firstChild.innerHTML = new_value.toFixed(2); 
                         if (new_value != old_value) {
                             target.slider.value = new_value;
@@ -153,6 +151,8 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         /** figure out the position of the slider */   
         var x = i * width / N;
         var y = this.scale(slider.value);
+        console.log(slider.value);
+        //console.log(y);
         VIZ.set_transform(slider.div, x, y - this.slider_height / 2);
 
         /** store the x and y locations for use in dragging */
