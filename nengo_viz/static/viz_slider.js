@@ -42,10 +42,11 @@ VIZ.Slider = function(args) {
         /** make the slider draggable */
 
         /** Only allows dragging slider while mouse is over it */
-        //this.div.onmouseover = function (event) {console.log(event); slider.div.draggable = true;};
-        /*this.div.onmouseleave = function () {
-            setTimeout(function () {
-                slider.div.draggable = false;},
+        //this.div.onmouseover = function (event) {event.target.draggable = true;};
+        /*this.div.onmouseout = function (event) {
+            setTimeout(function (event) {
+                console.log(event);
+                event.target.draggable = false;},
                 5);
         };*/
 
@@ -55,32 +56,35 @@ VIZ.Slider = function(args) {
             function(event) {
                 /** check if click was the middle mouse button */
                 if (event.which == 2) {
-                    var slider_index = 0;
-
+                    var target;
                     /** user clicked on the slider */
                     if (event.path.length == 6) {
-                        slider_index = event.target.slider.index;
-                        event.target.firstChild.innerHTML = 0;
+                        target = event.target
                     }
+
                     /** user clicked on the value paragraph text in the slider */
                     if (event.path.length == 7) {
-                        /** Find the parent element (the slider) and get its index */
-                        slider_index = event.path[1].slider.index;
-                        event.path[1].slider.div.firstChild.innerHTML = 0;
+                        target = event.path[1];
                     }
-                    var selected_slider = self.div.getElementsByClassName('slider')[slider_index];
-                    var x_pos = selected_slider.getAttribute('data-x');
-                    var midpoint = self.scale.range()[1]/2 ;
-                    selected_slider.setAttribute('data-y', midpoint);
-                    var new_value = self.scale.invert(midpoint)
-                    event.target.slider.value = 0
-                    
-                    //console.log(selected_slider);
-                    //var computedStyle = window.getComputedStyle(selected_slider, null);
-                    //console.log(computedStyle.getPropertyValue('transform'));
 
-                    VIZ.set_transform(selected_slider, x_pos, midpoint - 25);
+                    var slider_index = target.slider.index; // Get index (For 1D > sliders)
+                    var x_pos = target.getAttribute('data-x'); //important for 2d sliders
+                    var midpoint = self.scale.range()[1]/2 ;// Calculate the middle pixel value
+                    var new_value = self.scale.invert(midpoint);// Convert to scaled value (should be 0)
 
+                    //Change shown text value to 0
+                    target.firstChild.innerHTML = 0;
+
+                    //Change sliders value to 0
+                    target.slider.value = 0;
+
+                    // Set sliders attributed position to the middle
+                    target.setAttribute('data-y', midpoint);
+
+                    //Move the slider to the middle, subtract 25 due to pixel offset
+                    VIZ.set_transform(target, x_pos, midpoint - 25);
+
+                    //Send update to the server
                     self.ws.send(slider_index + ',' + new_value);
                 }
             } 
@@ -151,8 +155,6 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         /** figure out the position of the slider */   
         var x = i * width / N;
         var y = this.scale(slider.value);
-        console.log(slider.value);
-        //console.log(y);
         VIZ.set_transform(slider.div, x, y - this.slider_height / 2);
 
         /** store the x and y locations for use in dragging */
