@@ -56,16 +56,8 @@ VIZ.Slider = function(args) {
             function(event) {
                 /** check if click was the middle mouse button */
                 if (event.which == 2) {
-                    var target;
-                    /** user clicked on the slider */
-                    if (event.path.length == 6) {
-                        target = event.target;
-                    }
-
-                    /** user clicked on the value paragraph text in the slider */
-                    if (event.path.length == 7) {
-                        target = event.path[1];
-                    }
+                    
+                    var target = this;
 
                     var slider_index = target.slider.index; // Get index (For 1D > sliders)
                     var x_pos = target.getAttribute('data-x'); //important for 2d sliders
@@ -88,7 +80,7 @@ VIZ.Slider = function(args) {
                     //Send update to the server
                     self.ws.send(slider_index + ',' + new_value);
                 }
-            } 
+            }
         );
 
         /** setup slider dragging */
@@ -153,7 +145,6 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         /** figure out the size of the slider */
         slider.div.style.width = width / N;
         slider.div.style.height = this.slider_height;
-        //console.log(slider.div);
 
         /** figure out the position of the slider */   
         var x = i * width / N;

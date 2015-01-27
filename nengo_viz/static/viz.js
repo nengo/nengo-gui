@@ -38,13 +38,18 @@ VIZ.Component = function(args) {
     self.minHeight = 50;
 
     /** Move element to be drawn on top when clicked on */
-    this.div.onmouseup = function(event) {
-        setTimeout(function(){
-            self.parent.removeChild(self.div);
-            self.parent.appendChild(self.div);
-        },
-            0)
+    this.div.onmousedown = function() {
+        var all = document.querySelectorAll(".graph");
+        var max = 0;
+        //mildly bad tasting linear FIX but edible..for moving elements on top
+        for (var i = 0; i<all.length; i++){
+            if (all[i].style.zIndex>=max){
+                max = all[i].style.zIndex;
+            }
+        }
+        this.style.zIndex = ++max;
     };
+
     this.div.ontouchstart = this.div.onmousedown;
     
     /** Allow element to be dragged */ 
