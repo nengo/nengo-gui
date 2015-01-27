@@ -59,7 +59,7 @@ VIZ.Slider = function(args) {
                     var target;
                     /** user clicked on the slider */
                     if (event.path.length == 6) {
-                        target = event.target
+                        target = event.target;
                     }
 
                     /** user clicked on the value paragraph text in the slider */
@@ -71,6 +71,7 @@ VIZ.Slider = function(args) {
                     var x_pos = target.getAttribute('data-x'); //important for 2d sliders
                     var midpoint = self.scale.range()[1]/2 ;// Calculate the middle pixel value
                     var new_value = self.scale.invert(midpoint);// Convert to scaled value (should be 0)
+                    var height = parseInt(target.style.height);//Get the slider height
 
                     //Change shown text value to 0
                     target.firstChild.innerHTML = 0;
@@ -81,8 +82,8 @@ VIZ.Slider = function(args) {
                     // Set sliders attributed position to the middle
                     target.setAttribute('data-y', midpoint);
 
-                    //Move the slider to the middle, subtract 25 due to pixel offset
-                    VIZ.set_transform(target, x_pos, midpoint - 25);
+                    //Move the slider to the middle, subtract half slider height due to pixel offset
+                    VIZ.set_transform(target, x_pos, midpoint - height/2);
 
                     //Send update to the server
                     self.ws.send(slider_index + ',' + new_value);
@@ -94,7 +95,7 @@ VIZ.Slider = function(args) {
         interact(slider.div)
             .draggable({
                 onmove: function (event) {
-                    var target = event.target
+                    var target = event.target;
                     target.draggable = true;
                     if (target.draggable){
 
@@ -124,16 +125,17 @@ VIZ.Slider = function(args) {
                         var old_value = target.slider.value;
                         
                         var new_value = self.scale.invert(y);
+
                         /** only show slider value to 2 decimal places */
-                        //console.log(target.firstChild.innerHTML);
                         target.firstChild.innerHTML = new_value.toFixed(2); 
+
                         if (new_value != old_value) {
                             target.slider.value = new_value;
                             self.ws.send(target.slider.index + ',' + new_value);
                         }
                     }
                 }
-            })
+            });
     }
     this.on_resize(args.width, args.height);
 };
@@ -144,13 +146,14 @@ VIZ.Slider.prototype.constructor = VIZ.Slider;
  * update visual display based when component is resized
  */
 VIZ.Slider.prototype.on_resize = function(width, height) {
-    var N = this.sliders.length
+    var N = this.sliders.length;
     this.scale.range([0, height]);
     for (var i in this.sliders) {
         var slider = this.sliders[i];
         /** figure out the size of the slider */
         slider.div.style.width = width / N;
         slider.div.style.height = this.slider_height;
+        //console.log(slider.div);
 
         /** figure out the position of the slider */   
         var x = i * width / N;
