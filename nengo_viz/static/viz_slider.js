@@ -40,15 +40,19 @@ VIZ.Slider = function(args) {
 
       
         /** make the slider draggable */
+        console.log(slider.div);
 
         /** Only allows dragging slider while mouse is over it */
-        //this.div.onmouseover = function (event) {event.target.draggable = true;};
-        /*this.div.onmouseout = function (event) {
+        slider.div.onmouseover = function (event) {
+            this.draggable = true;
+            VIZ.dragging_obj = this;
+        };
+        slider.div.onmouseleave = function (event) {
             setTimeout(function (event) {
-                console.log(event);
-                event.target.draggable = false;},
+                VIZ.dragging_obj.draggable = false;
+            },
                 5);
-        };*/
+        };
 
         /** Slider jumps to zero when middle clicked */
         /** TODO: Replicate this functionality for touch */
@@ -88,7 +92,6 @@ VIZ.Slider = function(args) {
             .draggable({
                 onmove: function (event) {
                     var target = event.target;
-                    target.draggable = true;
                     if (target.draggable){
 
                         /** load x and y from custom data-x/y attributes */ 
