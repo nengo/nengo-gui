@@ -42,7 +42,6 @@ VIZ.Slider = function(args) {
         /** make the slider draggable */
         /** Only allows dragging slider while mouse is over it */
         var drag_on = function () {
-            console.log(this);
             this.draggable = true;
             VIZ.dragging_obj = this;
         };
