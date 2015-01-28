@@ -40,7 +40,6 @@ VIZ.Component = function(args) {
     /** Move element to be drawn on top when clicked on */
     VIZ.max_zindex = 0;
     this.div.onmousedown = function() {
-        var all = document.querySelectorAll(".graph");
         VIZ.max_zindex++;
         this.style.zIndex = VIZ.max_zindex;
     };
