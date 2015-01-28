@@ -37,13 +37,13 @@ VIZ.Slider = function(args) {
                 onmove: function (event) {
                     var target = event.target
                     /** load x and y from custom data-x/y attributes */ 
-                    var x = parseFloat(target.getAttribute('data-x'));
-                    var y = parseFloat(target.getAttribute('data-y')) + 
+                    var x = parseFloat(target.getAttribute('fixed-x'));
+                    var y = parseFloat(target.getAttribute('drag-y')) +
                                                                      event.dy;
+                    /** store the actual drag location without bounds */
+                    target.setAttribute('drag-y', y);
 
-                    /** bound y to within the limits 
-                     * TODO: perhaps use interact.js limit system instead
-                     */
+                    /** bound y to within the limits */
                     if (y > self.scale.range()[1]) {
                         y = self.scale.range()[1];
                     }
@@ -52,9 +52,6 @@ VIZ.Slider = function(args) {
                     }
 
                     VIZ.set_transform(target, x, y - self.slider_height / 2);
-
-                    /** remember where we moved to */
-                    target.setAttribute('data-y', y);
                       
                     /** update the value and send it to the server */
                     var old_value = target.slider.value;
@@ -89,7 +86,7 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         VIZ.set_transform(slider.div, x, y - this.slider_height / 2);
 
         /** store the x and y locations for use in dragging */
-        slider.div.setAttribute('data-x', x);
-        slider.div.setAttribute('data-y', y);
+        slider.div.setAttribute('fixed-x', x);
+        slider.div.setAttribute('drag-y', y);
     }
 };
