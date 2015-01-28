@@ -41,16 +41,23 @@ VIZ.Slider = function(args) {
       
         /** make the slider draggable */
         /** Only allows dragging slider while mouse is over it */
-        slider.div.onmouseover = function (event) {
+        var drag_on = function () {
+            console.log(this);
             this.draggable = true;
             VIZ.dragging_obj = this;
         };
-        slider.div.onmouseleave = function (event) {
-            setTimeout(function (event) {
+
+        var drag_off = function () {
+            setTimeout(function () {
                 VIZ.dragging_obj.draggable = false;
             },
                 5);
-        };
+        };         
+
+        slider.div.addEventListener('mouseover', drag_on);
+        this.div.addEventListener('mouseleave',drag_off);
+        slider.div.addEventListener('touchenter',drag_on);
+        this.div.addEventListener('touchleave',drag_off)
 
         /** Slider jumps to zero when middle clicked */
         /** TODO: Replicate this functionality for touch */
