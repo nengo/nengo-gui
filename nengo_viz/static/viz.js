@@ -38,15 +38,12 @@ VIZ.Component = function(args) {
     self.minHeight = 50;
 
     /** Move element to be drawn on top when clicked on */
+    VIZ.max_zindex = 0;
     this.div.onmousedown = function() {
         var all = document.querySelectorAll(".graph");
-        var max = 0;
-        for (var i = 0; i<all.length; i++){
-            if (all[i].style.zIndex>=max){
-                max = all[i].style.zIndex;
-            }
-        }
-        this.style.zIndex = ++max;
+        VIZ.max_zindex++;
+        this.style.zIndex = VIZ.max_zindex;
+        console.log(VIZ.max_zindex);
     };
 
     this.div.ontouchstart = this.div.onmousedown;

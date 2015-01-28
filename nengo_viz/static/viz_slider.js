@@ -47,7 +47,7 @@ VIZ.Slider = function(args) {
                     var target = this;
 
                     var slider_index = target.slider.index; // Get index (For 1D > sliders)
-                    var x_pos = target.getAttribute('data-x'); //important for 2d sliders
+                    var x_pos = target.getAttribute('fixed-x'); //important for 2d sliders
                     var midpoint = self.scale.range()[1]/2 ;// Calculate the middle pixel value
                     var new_value = self.scale.invert(midpoint);// Convert to scaled value (should be 0)
                     var height = parseInt(target.style.height);//Get the slider height
@@ -80,7 +80,7 @@ VIZ.Slider = function(args) {
                     var x = parseFloat(target.getAttribute('fixed-x'));
                     var y = parseFloat(target.getAttribute('drag-y')) +
                                                                      event.dy;
-                                                                     
+
                     /** store the actual drag location without bounds */
                     target.setAttribute('drag-y', y);
 
