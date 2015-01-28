@@ -79,8 +79,8 @@ VIZ.Slider = function(args) {
                     /** load x and y from custom data-x/y attributes */ 
                     var x = parseFloat(target.getAttribute('fixed-x'));
                     var y = parseFloat(target.getAttribute('drag-y')) +
-
                                                                      event.dy;
+                                                                     
                     /** store the actual drag location without bounds */
                     target.setAttribute('drag-y', y);
 
