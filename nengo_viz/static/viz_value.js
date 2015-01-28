@@ -8,6 +8,7 @@
  * @param {float} args.maxy - maximum value on y-axis
  * @param {VIZ.SimControl} args.sim - the simulation controller
  */
+ 
 VIZ.Value = function(args) {
     VIZ.Component.call(this, args);
     var self = this;
@@ -37,7 +38,6 @@ VIZ.Value = function(args) {
     /** set up the scales to respect the margins */
     this.scale_x.range([this.margin_left, args.width - this.margin_right]);
     this.scale_y.range([args.height - this.margin_bottom, this.margin_top]);
-    
     
     /** define the x-axis */
     this.axis_x = d3.svg.axis()
