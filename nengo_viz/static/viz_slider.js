@@ -37,27 +37,6 @@ VIZ.Slider = function(args) {
         this.div.appendChild(slider.div);
         slider.div.slider = slider;
 
-
-      
-        /** make the slider draggable */
-        /** Only allows dragging slider while mouse is over it */
-        var drag_on = function () {
-            this.draggable = true;
-            VIZ.dragging_obj = this;
-        };
-
-        var drag_off = function () {
-            setTimeout(function () {
-                VIZ.dragging_obj.draggable = false;
-            },
-                5);
-        };         
-
-        slider.div.addEventListener('mouseover', drag_on);
-        this.div.addEventListener('mouseleave',drag_off);
-        slider.div.addEventListener('touchenter',drag_on);
-        this.div.addEventListener('touchleave',drag_off)
-
         /** Slider jumps to zero when middle clicked */
         /** TODO: Replicate this functionality for touch */
         slider.div.addEventListener("click", 
@@ -96,42 +75,40 @@ VIZ.Slider = function(args) {
             .draggable({
                 onmove: function (event) {
                     var target = event.target;
-                    if (target.draggable){
 
-                        /** load x and y from custom data-x/y attributes */ 
-                        
-                        var x = parseFloat(target.getAttribute('data-x'));
-                        var y = parseFloat(target.getAttribute('data-y')) + 
-                                                                         event.dy;
+                    /** load x and y from custom data-x/y attributes */ 
+                    
+                    var x = parseFloat(target.getAttribute('data-x'));
+                    var y = parseFloat(target.getAttribute('data-y')) + 
+                                                                     event.dy;
 
-                        /** bound y to within the limits 
-                         * TODO: perhaps use interact.js limit system instead
-                         */
-                         
-                        if (y > self.scale.range()[1]) {
-                            y = self.scale.range()[1];
-                        }
-                        if (y < self.scale.range()[0]) {
-                            y = self.scale.range()[0];
-                        }
+                    /** bound y to within the limits 
+                     * TODO: perhaps use interact.js limit system instead
+                     */
+                     
+                    if (y > self.scale.range()[1]) {
+                        y = self.scale.range()[1];
+                    }
+                    if (y < self.scale.range()[0]) {
+                        y = self.scale.range()[0];
+                    }
 
-                        VIZ.set_transform(target, x, y - self.slider_height / 2);
+                    VIZ.set_transform(target, x, y - self.slider_height / 2);
 
-                        /** remember where we moved to */
-                        target.setAttribute('data-y', y);
-                          
-                        /** update the value and send it to the server */
-                        var old_value = target.slider.value;
-                        
-                        var new_value = self.scale.invert(y);
+                    /** remember where we moved to */
+                    target.setAttribute('data-y', y);
+                      
+                    /** update the value and send it to the server */
+                    var old_value = target.slider.value;
+                    
+                    var new_value = self.scale.invert(y);
 
-                        /** only show slider value to 2 decimal places */
-                        target.firstChild.innerHTML = new_value.toFixed(2); 
+                    /** only show slider value to 2 decimal places */
+                    target.firstChild.innerHTML = new_value.toFixed(2); 
 
-                        if (new_value != old_value) {
-                            target.slider.value = new_value;
-                            self.ws.send(target.slider.index + ',' + new_value);
-                        }
+                    if (new_value != old_value) {
+                        target.slider.value = new_value;
+                        self.ws.send(target.slider.index + ',' + new_value);
                     }
                 }
             });
