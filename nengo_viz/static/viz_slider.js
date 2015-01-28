@@ -40,8 +40,6 @@ VIZ.Slider = function(args) {
 
       
         /** make the slider draggable */
-        console.log(slider.div);
-
         /** Only allows dragging slider while mouse is over it */
         slider.div.onmouseover = function (event) {
             this.draggable = true;
