@@ -41,7 +41,6 @@ VIZ.Component = function(args) {
     this.div.onmousedown = function() {
         var all = document.querySelectorAll(".graph");
         var max = 0;
-        //mildly bad tasting linear FIX but edible..for moving elements on top
         for (var i = 0; i<all.length; i++){
             if (all[i].style.zIndex>=max){
                 max = all[i].style.zIndex;
