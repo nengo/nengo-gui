@@ -38,11 +38,6 @@ VIZ.Component = function(args) {
     self.minHeight = 50;
 
     /** Move element to be drawn on top when clicked on */
-    this.div.onmousedown = function(event) {
-        self.parent.removeChild(self.div);
-        self.parent.appendChild(self.div);
-    };
-    
     this.div.onmousedown = function() {
         var all = document.querySelectorAll(".graph");
         var max = 0;
