@@ -43,7 +43,6 @@ VIZ.Component = function(args) {
         var all = document.querySelectorAll(".graph");
         VIZ.max_zindex++;
         this.style.zIndex = VIZ.max_zindex;
-        console.log(VIZ.max_zindex);
     };
 
     this.div.ontouchstart = this.div.onmousedown;
