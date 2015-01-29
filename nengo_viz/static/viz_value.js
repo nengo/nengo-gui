@@ -23,6 +23,7 @@ VIZ.Value = function(args) {
     this.svg = d3.select(this.div).append('svg')
         .attr('width', '100%')
         .attr('height', '100%');
+    this.svg.append("text").text(args.id).attr('y', 15);
         
     /** scales for mapping x and y values to pixels */
     this.scale_x = d3.scale.linear();
@@ -30,7 +31,7 @@ VIZ.Value = function(args) {
     this.scale_y.domain([args.miny || -1, args.maxy || 1]);
     
     /** spacing between the graph and the outside edges (in pixels) */
-    this.margin_top = 10;
+    this.margin_top = 30;
     this.margin_bottom = 40;
     this.margin_left = 40;
     this.margin_right = 10;
@@ -43,7 +44,7 @@ VIZ.Value = function(args) {
     this.axis_x = d3.svg.axis()
         .scale(this.scale_x)
         .orient("bottom")
-        .ticks(1);
+        .ticks(2);
     this.axis_x_g = this.svg.append("g")
         .attr("class", "axis axis_x")
         .attr("transform", "translate(0," + (args.height - 
