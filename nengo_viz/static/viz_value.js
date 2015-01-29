@@ -71,9 +71,7 @@ VIZ.Value = function(args) {
     this.path = this.svg.append("g").selectAll('path')
                                     .data(this.data_store.data);
                                     
-    var colors = VIZ.make_colors(this.n_lines);
-    console.log(colors);
-    
+    var colors = VIZ.make_colors(this.n_lines);    
     this.path.enter().append('path')
              .attr('class', 'line')
              .style('stroke', function(d, i) {return colors[i];});

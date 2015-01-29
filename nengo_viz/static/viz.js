@@ -226,10 +226,16 @@ VIZ.DataStore.prototype.get_shown_data = function() {
     return shown;
 }
 
+/**
+ * convert colors from YUV to RGB
+ */
 VIZ.yuv_to_rgb = function(y, u, v) {
-    r = y + (1.370705 * v);
-    g = y - (0.698001 * v) - (0.337633 * u);
-    b = y + (1.732446 * u);    
+    var r = y + (1.370705 * v);
+    var g = y - (0.698001 * v) - (0.337633 * u);
+    var b = y + (1.732446 * u);    
+    //var r = y + (1.13983 * v);
+    //var g = y - (0.58060 * v) - (0.39465 * u);
+    //var b = y + (2.03211 * u);    
     
     r = Math.round(r * 256);
     if (r < 0) r = 0;
@@ -244,12 +250,32 @@ VIZ.yuv_to_rgb = function(y, u, v) {
     return ["rgb(",r,",",g,",",b,")"].join("");
 }
 
+/**
+ * Generate a color sequence of a given length.
+ *
+ * Colors are defined via YUV.  Y (luminance, i.e. what the line will look like
+ * in black-and-white) is evenly spaced from 0 to max_y (0.7).  The U, V are
+ * chosen by spinning through a circle of radius color_strength, moving by
+ * phi*2*pi radians each step.  This cycles through colors while keeping a large
+ * separation (i.e. each angle is far away from all the other angles)
+ */ 
 VIZ.make_colors = function(N) {
-    c = [];
+    var c = [];
+    var start_angle = 1.5;            // what color to start with
+    var phi = (1 + Math.sqrt(5)) / 2; // the golden ratio
+    var color_strength = 0.5;         // how bright the colors are (0=grayscale)
+    var max_y = 0.7;                  // how close to white to get
+    
     for (var i = 0; i < N; i++) {
-        y = 0.5;
-        u = 0.5 * Math.sin(i * 2 * Math.PI / N);
-        v = 0.5 * Math.cos(i * 2 * Math.PI / N);
+        var y = 0;
+        if (N > 1) {
+            y = i * max_y / (N - 1);
+        }
+        
+        var angle = start_angle - 2 * Math.PI * i * phi;
+        //var angle = start_angle + 2 * Math.PI * i / N;
+        var u = color_strength * Math.sin(angle);
+        var v = color_strength * Math.cos(angle);
         c.push(VIZ.yuv_to_rgb(y, u, v));
     }
     return c;
