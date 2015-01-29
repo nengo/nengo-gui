@@ -59,7 +59,7 @@ VIZ.Slider = function(args) {
                     target.slider.value = 0;
 
                     // Set sliders attributed position to the middle
-                    target.setAttribute('data-y', midpoint);
+                    target.setAttribute('drag-y', midpoint);
 
                     //Move the slider to the middle, subtract half slider height due to pixel offset
                     VIZ.set_transform(target, x_pos, midpoint - height/2);
