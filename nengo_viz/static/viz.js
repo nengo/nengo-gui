@@ -225,3 +225,32 @@ VIZ.DataStore.prototype.get_shown_data = function() {
     }
     return shown;
 }
+
+VIZ.yuv_to_rgb = function(y, u, v) {
+    r = y + (1.370705 * v);
+    g = y - (0.698001 * v) - (0.337633 * u);
+    b = y + (1.732446 * u);    
+    
+    r = Math.round(r * 256);
+    if (r < 0) r = 0;
+    if (r > 255) r = 255;
+    g = Math.round(g * 256);
+    if (g < 0) g = 0;
+    if (g > 255) g = 255;
+    b = Math.round(b * 256);
+    if (b < 0) b = 0;
+    if (b > 255) b = 255;
+        
+    return ["rgb(",r,",",g,",",b,")"].join("");
+}
+
+VIZ.make_colors = function(N) {
+    c = [];
+    for (var i = 0; i < N; i++) {
+        y = 0.5;
+        u = 0.5 * Math.sin(i * 2 * Math.PI / N);
+        v = 0.5 * Math.cos(i * 2 * Math.PI / N);
+        c.push(VIZ.yuv_to_rgb(y, u, v));
+    }
+    return c;
+}
