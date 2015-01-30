@@ -39,17 +39,8 @@ VIZ.Slider = function(args) {
         slider.div.style.zIndex = 1;
         slider.div.slider = slider;
 
-        /** show the guideline */
-        var guideline = document.createElement('div');
-        guideline.classList.add('guideline');
-        this.guideline_width = 10;
-        guideline.style.height = parseInt(this.div.style.height);
-        guideline.style.width = this.guideline_width;
-        VIZ.set_transform(guideline, 
-            parseInt(this.div.style.width)/2
-            - parseInt(guideline.style.width)/2, 0);
-        this.guideline = guideline;
-        this.div.appendChild(guideline);
+
+
 
         /** Slider jumps to zero when middle clicked */
         /** TODO: Replicate this functionality for touch */
@@ -123,8 +114,44 @@ VIZ.Slider = function(args) {
                 }
             });
     }
+
+
+    for (var i = 0; i<args.n_sliders;i++){
+            /** show the guideline */
+        this.guideline_width = 10;
+        var guideline = d3.select(this.div)
+            .append('svg')
+            .attr('width',this.guideline_width)
+            .attr('height',args.height);
+
+        this.sliders[i].guideline = guideline;
+
+        var guide_x = args.width/(2*args.n_sliders) - 
+            this.guideline_width*i + (args.width/2)*i - this.guideline_width*0.5;
+
+        VIZ.set_transform(guideline[0][0], guide_x, 0);
+
+        var data = [{x:0, y:0},{x:0, y:999999}];
+        
+        var line = d3.svg.line()
+            .x(function(d){return d.x;})
+            .y(function(d){return d.y;});
+
+        this.myline = guideline.selectAll("path")
+            .data([data]);
+
+        this.myline.enter()
+            .append("path")
+            .attr("d",line)
+            .attr("fill","none")
+            .attr("stroke", "#000")
+            .attr("stroke-width",10);
+        }
+
     this.on_resize(args.width, args.height);
 };
+
+
 VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;
 
@@ -140,17 +167,18 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         slider.div.style.width = width / N;
         slider.div.style.height = this.slider_height;
 
+        slider.guideline.
+            attr('height',height);
+
+        var guide_x = (width/(2*N)) - 
+            (this.guideline_width*i) + ((width/2)*i) - (this.guideline_width/2);
+
+        VIZ.set_transform(slider.guideline[0][0], guide_x, 0);
+
         /** figure out the position of the slider */   
         var x = i * width / N;
         var y = this.scale(slider.value);
         VIZ.set_transform(slider.div, x, y - this.slider_height / 2);
-
-        /** figure out the size of the guideline */
-        this.guideline.style.height = height;
-        VIZ.set_transform(this.guideline, 
-            parseInt(this.div.style.width)/2
-            - parseInt(this.guideline.style.width)/2, 0);
-
 
         /** store the x and y locations for use in dragging */
         slider.div.setAttribute('fixed-x', x);
