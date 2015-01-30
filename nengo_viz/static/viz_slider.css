@@ -1,3 +1,9 @@
 .slider {
     background: #888888;
 }
+
+.guideline{
+	background: black;
+	width: 5;
+	z-index: -1;
+}

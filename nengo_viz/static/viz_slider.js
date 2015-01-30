@@ -32,10 +32,24 @@ VIZ.Slider = function(args) {
         valueDisplay.innerHTML = slider.value;
         slider.div.appendChild(valueDisplay);
 
+        /** put the slider in the container */
         slider.div.style.position = 'fixed';
         slider.div.classList.add('slider');
         this.div.appendChild(slider.div);
+        slider.div.style.zIndex = 1;
         slider.div.slider = slider;
+
+        /** show the guideline */
+        var guideline = document.createElement('div');
+        guideline.classList.add('guideline');
+        this.guideline_width = 10;
+        guideline.style.height = parseInt(this.div.style.height);
+        guideline.style.width = this.guideline_width;
+        VIZ.set_transform(guideline, 
+            parseInt(this.div.style.width)/2
+            - parseInt(guideline.style.width)/2, 0);
+        this.guideline = guideline;
+        this.div.appendChild(guideline);
 
         /** Slider jumps to zero when middle clicked */
         /** TODO: Replicate this functionality for touch */
@@ -130,6 +144,13 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         var x = i * width / N;
         var y = this.scale(slider.value);
         VIZ.set_transform(slider.div, x, y - this.slider_height / 2);
+
+        /** figure out the size of the guideline */
+        this.guideline.style.height = height;
+        VIZ.set_transform(this.guideline, 
+            parseInt(this.div.style.width)/2
+            - parseInt(this.guideline.style.width)/2, 0);
+
 
         /** store the x and y locations for use in dragging */
         slider.div.setAttribute('fixed-x', x);
