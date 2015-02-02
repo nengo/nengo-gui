@@ -88,7 +88,6 @@ VIZ.Slider = function(args) {
 
                     /** store the actual drag location without bounds */
                     target.setAttribute('drag-y', y);
-
                     /** bound y to within the limits */
                     if (y > self.scale.range()[1]) {
                         y = self.scale.range()[1];
@@ -110,6 +109,21 @@ VIZ.Slider = function(args) {
                     if (new_value != old_value) {
                         target.slider.value = new_value;
                         self.ws.send(target.slider.index + ',' + new_value);
+                    }
+                },
+                onend: function(event){
+                    var target = event.target;
+
+                    var y = parseFloat(target.getAttribute('drag-y'));
+
+                    /** important to keep these conditions seperate from above, otherwise
+                    *   sliders will get out of synch
+                    */
+                    if (y > self.scale.range()[1]) {
+                        target.setAttribute('drag-y', self.scale.range()[1]);
+                    }
+                    if (y < self.scale.range()[0]) {
+                        target.setAttribute('drag-y', self.scale.range()[0]);
                     }
                 }
             });
