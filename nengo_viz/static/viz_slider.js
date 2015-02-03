@@ -139,7 +139,7 @@ VIZ.Slider = function(args) {
         //Good for positioning regardless of # of sliders
         var guide_x = args.width / (2 * args.n_sliders) + 
             (args.width / args.n_sliders) * i - this.guideline_width / 2;
-        VIZ.set_transform(guideline,guide_x,0);
+        VIZ.set_transform(guideline, guide_x, 0);
         this.div.appendChild(guideline);
         }
 
