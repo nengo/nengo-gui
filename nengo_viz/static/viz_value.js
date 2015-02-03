@@ -34,7 +34,7 @@ VIZ.Value = function(args) {
     this.margin_top = 30;
     this.margin_bottom = 40;
     this.margin_left = 40;
-    this.margin_right = 30;
+    this.margin_right = 40;
 
     var axis_time_end =this.svg.append("text")
                     .text("Time: NULL")

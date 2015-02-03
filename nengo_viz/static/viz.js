@@ -34,8 +34,8 @@ VIZ.Component = function(args) {
     args.parent.appendChild(this.div);
     this.parent = args.parent;
 
-    self.minWidth = 30;
-    self.minHeight = 50;
+    self.minWidth = 100;
+    self.minHeight = 100;
 
     /** Move element to be drawn on top when clicked on */
     VIZ.max_zindex = 0;
