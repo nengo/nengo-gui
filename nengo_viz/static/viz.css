@@ -1,6 +1,6 @@
 .graph {
     background-color:rgba(255,0,0,0);
-    border: rgba(255,0,0,0);
+    border: 1px solid rgba(255,0,0,0);
 }
 
 .graph:hover {
