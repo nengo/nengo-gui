@@ -39,9 +39,6 @@ VIZ.Slider = function(args) {
         slider.div.style.zIndex = 1;
         slider.div.slider = slider;
 
-
-
-
         /** Slider jumps to zero when middle clicked */
         /** TODO: Replicate this functionality for touch */
         slider.div.addEventListener("click", 
@@ -140,8 +137,8 @@ VIZ.Slider = function(args) {
         guideline.style.height = args.height;
         guideline.style.width = this.guideline_width;
         //Good for positioning regardless of # of sliders
-        var guide_x = args.width/(2*args.n_sliders) + 
-            (args.width/args.n_sliders)*i - this.guideline_width/2;
+        var guide_x = args.width / (2 * args.n_sliders) + 
+            (args.width / args.n_sliders) * i - this.guideline_width / 2;
         VIZ.set_transform(guideline,guide_x,0);
         this.div.appendChild(guideline);
         }
@@ -167,8 +164,8 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
 
         slider.guideline.style.height = height;
 
-        var guide_x = (width/(2*N)) + ((width/N)*i) 
-            - (this.guideline_width/2);
+        var guide_x = width / (2 * N) + (width / N) * i 
+            - this.guideline_width / 2;
 
         VIZ.set_transform(slider.guideline, guide_x, 0);
 
