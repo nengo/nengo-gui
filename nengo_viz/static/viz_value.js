@@ -71,8 +71,11 @@ VIZ.Value = function(args) {
         .y(function(d) {return self.scale_y(d);})
     this.path = this.svg.append("g").selectAll('path')
                                     .data(this.data_store.data);
+                                    
+    var colors = VIZ.make_colors(this.n_lines);    
     this.path.enter().append('path')
-             .attr('class', 'line');
+             .attr('class', 'line')
+             .style('stroke', function(d, i) {return colors[i];});
 };
 VIZ.Value.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Value.prototype.constructor = VIZ.Value;
