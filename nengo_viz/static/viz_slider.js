@@ -167,7 +167,7 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
 
         slider.guideline.style.height = height;
 
-        var guide_x = (width/(2*N)) + ((width/2)*i) 
+        var guide_x = (width/(2*N)) + ((width/N)*i) 
             - (this.guideline_width/2);
 
         VIZ.set_transform(slider.guideline, guide_x, 0);
