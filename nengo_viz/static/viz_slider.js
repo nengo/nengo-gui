@@ -50,7 +50,7 @@ VIZ.Slider = function(args) {
 
                     var slider_index = target.slider.index; // Get index (For 1D > sliders)
                     var x_pos = target.getAttribute('fixed-x'); //important for 2d sliders
-                    var midpoint = self.scale.range()[1]/2 ;// Calculate the middle pixel value
+                    var midpoint = self.scale.range()[1] / 2 ;// Calculate the middle pixel value
                     var new_value = self.scale.invert(midpoint);// Convert to scaled value (should be 0)
                     var height = parseInt(target.style.height);//Get the slider height
 
@@ -64,7 +64,7 @@ VIZ.Slider = function(args) {
                     target.setAttribute('drag-y', midpoint);
 
                     //Move the slider to the middle, subtract half slider height due to pixel offset
-                    VIZ.set_transform(target, x_pos, midpoint - height/2);
+                    VIZ.set_transform(target, x_pos, midpoint - height / 2);
 
                     //Send update to the server
                     self.ws.send(slider_index + ',' + new_value);
