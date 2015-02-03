@@ -24,7 +24,7 @@ VIZ.Value = function(args) {
         .attr('width', '100%')
         .attr('height', '100%');
     this.svg.append("text").text(args.id).attr('y', 15);
-        
+
     /** scales for mapping x and y values to pixels */
     this.scale_x = d3.scale.linear();
     this.scale_y = d3.scale.linear();
@@ -34,8 +34,24 @@ VIZ.Value = function(args) {
     this.margin_top = 30;
     this.margin_bottom = 40;
     this.margin_left = 40;
-    this.margin_right = 10;
-    
+    this.margin_right = 30;
+
+    var axis_time_end =this.svg.append("text")
+                    .text("Time: NULL")
+                    .attr('y', args.height-(this.margin_bottom-20))
+                    .attr('x',args.width - (this.margin_right + 20))
+                    .attr('class','axis_time_end');
+        
+    this.axis_time_end = axis_time_end[0][0];  
+
+    var axis_time_start =this.svg.append("text")
+                    .text("Time: NULL")
+                    .attr('y', args.height-(this.margin_bottom-20))
+                    .attr('x',this.margin_left - 10)
+                    .attr('class','axis_time_start');
+        
+    this.axis_time_start = axis_time_start[0][0];    
+
     /** set up the scales to respect the margins */
     this.scale_x.range([this.margin_left, args.width - this.margin_right]);
     this.scale_y.range([args.height - this.margin_bottom, this.margin_top]);
@@ -44,7 +60,7 @@ VIZ.Value = function(args) {
     this.axis_x = d3.svg.axis()
         .scale(this.scale_x)
         .orient("bottom")
-        .ticks(2);
+        .ticks(0);
     this.axis_x_g = this.svg.append("g")
         .attr("class", "axis axis_x")
         .attr("transform", "translate(0," + (args.height - 
@@ -113,6 +129,10 @@ VIZ.Value.prototype.update = function() {
     this.path.data(shown_data)
              .attr('d', line);
 
+    this.axis_time_start.textContent =  t1.toFixed(3);
+
+    this.axis_time_end.textContent =  t2.toFixed(3);
+
     /** update the x-axis */
     this.axis_x_g.call(this.axis_x);         
 };
@@ -123,6 +143,13 @@ VIZ.Value.prototype.update = function() {
 VIZ.Value.prototype.on_resize = function(width, height) {
     this.scale_x.range([this.margin_left, width - this.margin_right]);
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
+
+    this.axis_time_start.setAttribute('y', height - (this.margin_bottom - 20));
+    this.axis_time_start.setAttribute('x', this.margin_left - 10 );
+
+    this.axis_time_end.setAttribute('y', height - (this.margin_bottom - 20));
+    this.axis_time_end.setAttribute('x', width - (this.margin_right + 20));
+
     this.axis_x_g         
         .attr("transform", 
               "translate(0," + (height - this.margin_bottom) + ")");
