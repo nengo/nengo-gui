@@ -147,6 +147,7 @@ VIZ.Value.prototype.on_resize = function(width, height) {
     this.scale_x.range([this.margin_left, width - this.margin_right]);
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
 
+    //Supress elements when user shrinks the plot
     if (width < this.supression_width){
         this.axis_time_start.style.display = 'none';
     }
@@ -154,12 +155,14 @@ VIZ.Value.prototype.on_resize = function(width, height) {
         this.axis_time_start.style.display = 'block';
     }
 
+    //Adjust positions of time on resize
     this.axis_time_start.setAttribute('y', height - (this.margin_bottom - 20));
     this.axis_time_start.setAttribute('x', this.margin_left - 10 );
 
     this.axis_time_end.setAttribute('y', height - (this.margin_bottom - 20));
     this.axis_time_end.setAttribute('x', width - (this.margin_right + 20));
 
+    //Adjust positions of x axis on resize
     this.axis_x_g         
         .attr("transform", 
               "translate(0," + (height - this.margin_bottom) + ")");
