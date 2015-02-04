@@ -35,6 +35,7 @@ VIZ.Value = function(args) {
     this.margin_bottom = 40;
     this.margin_left = 40;
     this.margin_right = 40;
+    this.supression_width = 150;
 
     var axis_time_end =this.svg.append("text")
                     .text("Time: NULL")
@@ -92,6 +93,8 @@ VIZ.Value = function(args) {
     this.path.enter().append('path')
              .attr('class', 'line')
              .style('stroke', function(d, i) {return colors[i];});
+
+    this.on_resize(100,100);
 };
 VIZ.Value.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Value.prototype.constructor = VIZ.Value;
@@ -143,6 +146,13 @@ VIZ.Value.prototype.update = function() {
 VIZ.Value.prototype.on_resize = function(width, height) {
     this.scale_x.range([this.margin_left, width - this.margin_right]);
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
+
+    if (width < this.supression_width){
+        this.axis_time_start.style.display = 'none';
+    }
+    else{
+        this.axis_time_start.style.display = 'block';
+    }
 
     this.axis_time_start.setAttribute('y', height - (this.margin_bottom - 20));
     this.axis_time_start.setAttribute('x', this.margin_left - 10 );
