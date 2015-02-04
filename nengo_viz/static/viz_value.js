@@ -53,7 +53,7 @@ VIZ.Value = function(args) {
     var axis_time_start =this.svg.append("text")
                     .text("Time: NULL")
                     .attr('class','graph_text')
-                    .attr('y', args.height-(this.margin_bottom-20))
+                    .attr('y', args.height - (this.margin_bottom-20))
                     .attr('x',this.margin_left - 10);
         
     this.axis_time_start = axis_time_start[0][0];    
