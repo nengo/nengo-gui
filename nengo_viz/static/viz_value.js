@@ -16,9 +16,6 @@ VIZ.Value = function(args) {
     this.n_lines = args.n_lines || 1;
     this.sim = args.sim;
 
-    this.font_style = "oblique";
-    this.font_size = "50 px";
-
     /** for storing the accumulated data */
     this.data_store = new VIZ.DataStore(this.n_lines, this.sim, 0.01);
 
