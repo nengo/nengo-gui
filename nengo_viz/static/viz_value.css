@@ -10,12 +10,7 @@
     fill: none;
 }
 
-.graph svg .axis .tick {
+.graph svg .axis .tick .graph_text {
     font-size: 12px;
     font-family: serif;
-}
-
-.graph_text {
-    font-size: 12px;
-    font-family: serif;	
 }
