@@ -16,7 +16,6 @@ VIZ.Slider = function(args) {
     
     /** number of pixels high for the slider itself */
     this.slider_height = 50;
-    console.log(this)
     
     /** make the sliders */
     this.sliders = [];
@@ -153,7 +152,6 @@ VIZ.Slider.prototype.zero_out = function(graph,slider) {
 
                                     //Send update to the server
                                     self.ws.send(slider_index + ',' + new_value);
-                                    
                                 };
 
 /**
