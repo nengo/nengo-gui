@@ -27,7 +27,7 @@ VIZ.Value = function(args) {
     //Add the title 
     this.svg.append("text")
         .text(args.id)
-        .attr('class','graph_text')
+        .attr('class', 'graph_text')
         .attr('y', 15);
 
     /** scales for mapping x and y values to pixels */
@@ -44,9 +44,9 @@ VIZ.Value = function(args) {
 
     var axis_time_end =this.svg.append("text")
                     .text("Time: NULL")
-                    .attr('class','graph_text')
-                    .attr('y', args.height-(this.margin_bottom-20))
-                    .attr('x',args.width - (this.margin_right + 20));
+                    .attr('class', 'graph_text')
+                    .attr('y', args.height - (this.margin_bottom-20))
+                    .attr('x', args.width - (this.margin_right + 20));
         
     this.axis_time_end = axis_time_end[0][0];  
 
@@ -99,7 +99,7 @@ VIZ.Value = function(args) {
              .attr('class', 'line')
              .style('stroke', function(d, i) {return colors[i];});
 
-    this.on_resize(100,100);
+    this.on_resize(100, 100);
 };
 VIZ.Value.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Value.prototype.constructor = VIZ.Value;
