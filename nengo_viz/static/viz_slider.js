@@ -44,7 +44,7 @@ VIZ.Slider = function(args) {
         slider.div.addEventListener("click", 
             function(event) {
                 if (event.which == 2){
-                    self.zero_out(self, this);
+                    self.set_value(self, this, -1, 1, 0);
                 }
             }
         );
@@ -103,7 +103,6 @@ VIZ.Slider = function(args) {
             });
     }
 
-
     for (var i = 0; i<args.n_sliders;i++){
         /** show the guideline */
         this.guideline_width = 10;
@@ -128,31 +127,40 @@ VIZ.Slider = function(args) {
 VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;
 
-VIZ.Slider.prototype.zero_out = function(graph,slider) {
-                                    /** check if click was the middle mouse button */
-                                    var target = slider;
-                                    var self = graph;
-                                    var slider_index = target.slider.index; // Get index (For 1D > sliders)
-                                    var x_pos = target.getAttribute('fixed-x'); //important for 2d sliders
-                                    var midpoint = self.scale.range()[1] / 2 ;// Calculate the middle pixel value
-                                    var new_value = self.scale.invert(midpoint);// Convert to scaled value (should be 0)
-                                    var height = parseInt(target.style.height);//Get the slider height
+VIZ.Slider.prototype.set_value = function(graph, slider, min_in, max_in, value) {
+    /** check if click was the middle mouse button */
+    var target = slider;
+    var self = graph;
+    var slider_index = target.slider.index; // Get index (For 1D > sliders)
+    var x_pos = target.getAttribute('fixed-x'); //important for 2d sliders
 
-                                    //Change shown text value to 0
-                                    target.firstChild.innerHTML = 0;
+    //Math for mapping one range to another
+    var left_min = min_in;
+    var left_max = max_in;
+    var left_span = left_max - left_min;
+    var right_min = self.scale.range()[1];
+    var right_max = self.scale.range()[0];
+    var right_span = right_max - right_min;
+    var scale = (value - left_min) / left_span;
+    var point = right_min + (scale * right_span);
 
-                                    //Change sliders value to 0
-                                    target.slider.value = 0;
+    var height = parseInt(target.style.height);//Get the slider height
 
-                                    // Set sliders attributed position to the middle
-                                    target.setAttribute('drag-y', midpoint);
+    //Change shown text value to 0
+    target.firstChild.textContent = value;
 
-                                    //Move the slider to the middle, subtract half slider height due to pixel offset
-                                    VIZ.set_transform(target, x_pos, midpoint - height / 2);
+    //Change sliders value to 0
+    target.slider.value = value;
 
-                                    //Send update to the server
-                                    self.ws.send(slider_index + ',' + new_value);
-                                };
+    // Set sliders attributed position to the middle
+    target.setAttribute('drag-y', point);
+
+    //Move the slider to the middle, subtract half slider height due to pixel offset
+    VIZ.set_transform(target, x_pos, point - height / 2);
+
+    //Send update to the server
+    self.ws.send(slider_index + ',' + value);
+};
 
 /**
  * update visual display based when component is resized
