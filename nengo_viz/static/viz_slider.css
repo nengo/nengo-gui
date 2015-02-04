@@ -3,7 +3,6 @@
 }
 
 .guideline{
-	background: black;
-	width: 5;
+	background-color: black;
 	z-index: -1;
 }

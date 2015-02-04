@@ -39,9 +39,6 @@ VIZ.Slider = function(args) {
         slider.div.style.zIndex = 1;
         slider.div.slider = slider;
 
-
-
-
         /** Slider jumps to zero when middle clicked */
         /** TODO: Replicate this functionality for touch */
         slider.div.addEventListener("click", 
@@ -53,7 +50,7 @@ VIZ.Slider = function(args) {
 
                     var slider_index = target.slider.index; // Get index (For 1D > sliders)
                     var x_pos = target.getAttribute('fixed-x'); //important for 2d sliders
-                    var midpoint = self.scale.range()[1]/2 ;// Calculate the middle pixel value
+                    var midpoint = self.scale.range()[1] / 2 ;// Calculate the middle pixel value
                     var new_value = self.scale.invert(midpoint);// Convert to scaled value (should be 0)
                     var height = parseInt(target.style.height);//Get the slider height
 
@@ -67,7 +64,7 @@ VIZ.Slider = function(args) {
                     target.setAttribute('drag-y', midpoint);
 
                     //Move the slider to the middle, subtract half slider height due to pixel offset
-                    VIZ.set_transform(target, x_pos, midpoint - height/2);
+                    VIZ.set_transform(target, x_pos, midpoint - height / 2);
 
                     //Send update to the server
                     self.ws.send(slider_index + ',' + new_value);
@@ -131,35 +128,19 @@ VIZ.Slider = function(args) {
 
 
     for (var i = 0; i<args.n_sliders;i++){
-            /** show the guideline */
+        /** show the guideline */
         this.guideline_width = 10;
-        var guideline = d3.select(this.div)
-            .append('svg')
-            .attr('width',this.guideline_width)
-            .attr('height',args.height);
-
+        var guideline = document.createElement('div');
         this.sliders[i].guideline = guideline;
-
-        var guide_x = args.width/(2*args.n_sliders) - 
-            this.guideline_width*i + (args.width/2)*i - this.guideline_width*0.5;
-
-        VIZ.set_transform(guideline[0][0], guide_x, 0);
-
-        var data = [{x:0, y:0},{x:0, y:999999}];
-        
-        var line = d3.svg.line()
-            .x(function(d){return d.x;})
-            .y(function(d){return d.y;});
-
-        this.myline = guideline.selectAll("path")
-            .data([data]);
-
-        this.myline.enter()
-            .append("path")
-            .attr("d",line)
-            .attr("fill","none")
-            .attr("stroke", "#000")
-            .attr("stroke-width",10);
+        guideline.classList.add('guideline');
+        guideline.style.position = "fixed";
+        guideline.style.height = args.height;
+        guideline.style.width = this.guideline_width;
+        //Good for positioning regardless of # of sliders
+        var guide_x = args.width / (2 * args.n_sliders) + 
+            (args.width / args.n_sliders) * i - this.guideline_width / 2;
+        VIZ.set_transform(guideline, guide_x, 0);
+        this.div.appendChild(guideline);
         }
 
     this.on_resize(args.width, args.height);
@@ -181,13 +162,12 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         slider.div.style.width = width / N;
         slider.div.style.height = this.slider_height;
 
-        slider.guideline.
-            attr('height',height);
+        slider.guideline.style.height = height;
 
-        var guide_x = (width/(2*N)) - 
-            (this.guideline_width*i) + ((width/2)*i) - (this.guideline_width/2);
+        var guide_x = width / (2 * N) + (width / N) * i 
+            - this.guideline_width / 2;
 
-        VIZ.set_transform(slider.guideline[0][0], guide_x, 0);
+        VIZ.set_transform(slider.guideline, guide_x, 0);
 
         /** figure out the position of the slider */   
         var x = i * width / N;
