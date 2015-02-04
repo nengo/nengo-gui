@@ -152,7 +152,7 @@ VIZ.Value.prototype.on_resize = function(width, height) {
     this.scale_x.range([this.margin_left, width - this.margin_right]);
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
 
-    //Supress elements when user shrinks the plot
+    //Supress axis start time when user shrinks the plot
     if (width < this.supression_width){
         this.axis_time_start.style.display = 'none';
     }
