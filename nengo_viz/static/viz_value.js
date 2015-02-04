@@ -24,12 +24,6 @@ VIZ.Value = function(args) {
         .attr('width', '100%')
         .attr('height', '100%');
 
-    //Add the title 
-    this.svg.append("text")
-        .text(args.id)
-        .attr('class', 'graph_text')
-        .attr('y', 15);
-
     /** scales for mapping x and y values to pixels */
     this.scale_x = d3.scale.linear();
     this.scale_y = d3.scale.linear();
@@ -99,7 +93,7 @@ VIZ.Value = function(args) {
              .attr('class', 'line')
              .style('stroke', function(d, i) {return colors[i];});
 
-    this.on_resize(100, 100);
+    this.on_resize(args.width, args.height);
 };
 VIZ.Value.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Value.prototype.constructor = VIZ.Value;
