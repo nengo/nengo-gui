@@ -43,8 +43,9 @@ VIZ.Slider = function(args) {
         /** TODO: Replicate this functionality for touch */
         slider.div.addEventListener("click", 
             function(event) {
+                /** check if click was the middle mouse button */
                 if (event.which == 2){
-                    self.set_value(self, this, 0);
+                    self.set_value(slider.index, 0);
                 }
             }
         );
@@ -127,17 +128,18 @@ VIZ.Slider = function(args) {
 VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;
 
-VIZ.Slider.prototype.set_value = function(graph, slider, value) {
-    /** check if click was the middle mouse button */
-    var target = slider;
-    var self = graph;
-    var slider_index = target.slider.index; // Get index (For 1D > sliders)
-    var x_pos = target.getAttribute('fixed-x'); //important for 2d sliders
+VIZ.Slider.prototype.set_value = function(slider_index, value) {
+    //Get the slider
+    var target = this.sliders[slider_index].div;
 
+    //important for 2d sliders
+    var x_pos = target.getAttribute('fixed-x'); 
+    
     //Get the scaled value
-    var point = graph.scale(value);
+    var point = this.scale(value);
 
-    var height = parseInt(target.style.height);//Get the slider height
+    //Get the slider height
+    var height = parseInt(target.style.height);
 
     //Change shown text value to 0
     target.firstChild.textContent = value;
@@ -152,7 +154,7 @@ VIZ.Slider.prototype.set_value = function(graph, slider, value) {
     VIZ.set_transform(target, x_pos, point - height / 2);
 
     //Send update to the server
-    self.ws.send(slider_index + ',' + value);
+    this.ws.send(slider_index + ',' + value);
 };
 
 /**
