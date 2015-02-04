@@ -44,7 +44,7 @@ VIZ.Slider = function(args) {
         slider.div.addEventListener("click", 
             function(event) {
                 if (event.which == 2){
-                    self.set_value(self, this, -1, 1, 0);
+                    self.set_value(self, this, 0);
                 }
             }
         );
@@ -127,22 +127,15 @@ VIZ.Slider = function(args) {
 VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;
 
-VIZ.Slider.prototype.set_value = function(graph, slider, min_in, max_in, value) {
+VIZ.Slider.prototype.set_value = function(graph, slider, value) {
     /** check if click was the middle mouse button */
     var target = slider;
     var self = graph;
     var slider_index = target.slider.index; // Get index (For 1D > sliders)
     var x_pos = target.getAttribute('fixed-x'); //important for 2d sliders
 
-    //Math for mapping one range to another
-    var left_min = min_in;
-    var left_max = max_in;
-    var left_span = left_max - left_min;
-    var right_min = self.scale.range()[1];
-    var right_max = self.scale.range()[0];
-    var right_span = right_max - right_min;
-    var scale = (value - left_min) / left_span;
-    var point = right_min + (scale * right_span);
+    //Get the scaled value
+    var point = graph.scale(value);
 
     var height = parseInt(target.style.height);//Get the slider height
 
@@ -152,7 +145,7 @@ VIZ.Slider.prototype.set_value = function(graph, slider, min_in, max_in, value) 
     //Change sliders value to 0
     target.slider.value = value;
 
-    // Set sliders attributed position to the middle
+    //Set sliders attributed position to the middle
     target.setAttribute('drag-y', point);
 
     //Move the slider to the middle, subtract half slider height due to pixel offset
