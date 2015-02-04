@@ -111,13 +111,26 @@ VIZ.Slider = function(args) {
         guideline.classList.add('guideline');
         guideline.style.position = "fixed";
         //subtract 2 from height for border
-        guideline.style.height = args.height - 2;
+        this.guideline_height = args.height - 2;
+        guideline.style.height = this.guideline_height
         guideline.style.width = this.guideline_width;
         //Good for positioning regardless of # of sliders
         var guide_x = args.width / (2 * args.n_sliders) + 
             (args.width / args.n_sliders) * i - this.guideline_width / 2;
         VIZ.set_transform(guideline, guide_x, 0);
         this.div.appendChild(guideline);
+
+        /** show the green zero-out button */
+        var button = document.createElement('div');
+        button.style.height = this.guideline_width;
+        button.style.width = this.guideline_width;
+        button.classList.add('zero_button');
+        guideline.appendChild(button);
+        var y_pos = args.height / 2 - this.guideline_width / 2;
+        console.log(y_pos);
+        VIZ.set_transform(button, 0, y_pos);
+        button.addEventListener('click', function(){console.log('nonsense')});
+
         }
 
     this.on_resize(args.width, args.height);
