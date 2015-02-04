@@ -16,6 +16,9 @@ VIZ.Value = function(args) {
     this.n_lines = args.n_lines || 1;
     this.sim = args.sim;
 
+    this.font_style = "oblique";
+    this.font_size = "50 px";
+
     /** for storing the accumulated data */
     this.data_store = new VIZ.DataStore(this.n_lines, this.sim, 0.01);
 
@@ -23,7 +26,12 @@ VIZ.Value = function(args) {
     this.svg = d3.select(this.div).append('svg')
         .attr('width', '100%')
         .attr('height', '100%');
-    this.svg.append("text").text(args.id).attr('y', 15);
+
+    //Add the title 
+    this.svg.append("text")
+        .text(args.id)
+        .attr('class','graph_text')
+        .attr('y', 15);
 
     /** scales for mapping x and y values to pixels */
     this.scale_x = d3.scale.linear();
@@ -38,17 +46,17 @@ VIZ.Value = function(args) {
 
     var axis_time_end =this.svg.append("text")
                     .text("Time: NULL")
+                    .attr('class','graph_text')
                     .attr('y', args.height-(this.margin_bottom-20))
-                    .attr('x',args.width - (this.margin_right + 20))
-                    .attr('class','axis_time_end');
+                    .attr('x',args.width - (this.margin_right + 20));
         
     this.axis_time_end = axis_time_end[0][0];  
 
     var axis_time_start =this.svg.append("text")
                     .text("Time: NULL")
+                    .attr('class','graph_text')
                     .attr('y', args.height-(this.margin_bottom-20))
-                    .attr('x',this.margin_left - 10)
-                    .attr('class','axis_time_start');
+                    .attr('x',this.margin_left - 10);
         
     this.axis_time_start = axis_time_start[0][0];    
 
