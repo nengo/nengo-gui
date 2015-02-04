@@ -134,7 +134,8 @@ VIZ.Slider = function(args) {
         this.sliders[i].guideline = guideline;
         guideline.classList.add('guideline');
         guideline.style.position = "fixed";
-        guideline.style.height = args.height;
+        //subtract 2 from height for border
+        guideline.style.height = args.height - 2;
         guideline.style.width = this.guideline_width;
         //Good for positioning regardless of # of sliders
         var guide_x = args.width / (2 * args.n_sliders) + 
@@ -162,7 +163,8 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         slider.div.style.width = width / N;
         slider.div.style.height = this.slider_height;
 
-        slider.guideline.style.height = height;
+        //subtract 2 from height for border
+        slider.guideline.style.height = height - 2;
 
         var guide_x = width / (2 * N) + (width / N) * i 
             - this.guideline_width / 2;
