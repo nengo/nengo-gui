@@ -26,6 +26,10 @@
 }
 
 .play-pause-button {
-    margin: 25px;
+    margin: -20px 15px 0 15px;
+}
+.metrics-container {
+    display: inline-block;
+    margin: 25px 0;
 }
 
