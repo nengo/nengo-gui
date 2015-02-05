@@ -32,6 +32,8 @@ VIZ.Slider = function(args) {
         valueDisplay.innerHTML = slider.value;
         slider.div.appendChild(valueDisplay);
 
+        console.log(this);
+
         /** put the slider in the container */
         slider.div.style.position = 'fixed';
         slider.div.classList.add('slider');
@@ -139,7 +141,7 @@ VIZ.Slider.prototype.set_value = function(slider_index, value) {
     var point = this.scale(value);
 
     //Get the slider height
-    var height = parseInt(target.style.height);
+    var height = this.slider_height;
 
     //Change shown text value to new value
     target.firstChild.textContent = value;
