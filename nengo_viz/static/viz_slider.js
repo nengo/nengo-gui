@@ -141,10 +141,10 @@ VIZ.Slider.prototype.set_value = function(slider_index, value) {
     //Get the slider height
     var height = parseInt(target.style.height);
 
-    //Change shown text value to 0
+    //Change shown text value to new value
     target.firstChild.textContent = value;
 
-    //Change sliders value to 0
+    //Change slider's value to value
     target.slider.value = value;
 
     //Set sliders attributed position to the middle
