@@ -122,15 +122,16 @@ VIZ.Slider = function(args) {
         this.div.appendChild(guideline);
 
         /** show the green zero-out button */
+        var button_index = i;
         var button = document.createElement('div');
+        this.sliders[i].button = button;
         button.style.height = this.guideline_width;
         button.style.width = this.guideline_width;
         button.classList.add('zero_button');
         guideline.appendChild(button);
         var y_pos = args.height / 2 - this.guideline_width / 2;
-        console.log(y_pos);
         VIZ.set_transform(button, 0, y_pos);
-        button.addEventListener('click', function(){console.log('nonsense')});
+        button.addEventListener('click', function(){self.set_value(button_index, 0)});
 
         }
 
@@ -184,6 +185,8 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
 
         //subtract 2 from height for border
         slider.guideline.style.height = height - 2;
+
+        VIZ.set_transform(slider.button, 0, height / 2);
 
         var guide_x = width / (2 * N) + (width / N) * i 
             - this.guideline_width / 2;
