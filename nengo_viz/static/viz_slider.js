@@ -44,30 +44,8 @@ VIZ.Slider = function(args) {
         slider.div.addEventListener("click", 
             function(event) {
                 /** check if click was the middle mouse button */
-                if (event.which == 2) {
-                    
-                    var target = this;
-
-                    var slider_index = target.slider.index; // Get index (For 1D > sliders)
-                    var x_pos = target.getAttribute('fixed-x'); //important for 2d sliders
-                    var midpoint = self.scale.range()[1] / 2 ;// Calculate the middle pixel value
-                    var new_value = self.scale.invert(midpoint);// Convert to scaled value (should be 0)
-                    var height = parseInt(target.style.height);//Get the slider height
-
-                    //Change shown text value to 0
-                    target.firstChild.innerHTML = 0;
-
-                    //Change sliders value to 0
-                    target.slider.value = 0;
-
-                    // Set sliders attributed position to the middle
-                    target.setAttribute('drag-y', midpoint);
-
-                    //Move the slider to the middle, subtract half slider height due to pixel offset
-                    VIZ.set_transform(target, x_pos, midpoint - height / 2);
-
-                    //Send update to the server
-                    self.ws.send(slider_index + ',' + new_value);
+                if (event.which == 2){
+                    self.set_value(slider.index, 0);
                 }
             }
         );
@@ -126,7 +104,6 @@ VIZ.Slider = function(args) {
             });
     }
 
-
     for (var i = 0; i<args.n_sliders;i++){
         /** show the guideline */
         this.guideline_width = 10;
@@ -150,6 +127,35 @@ VIZ.Slider = function(args) {
 
 VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;
+
+VIZ.Slider.prototype.set_value = function(slider_index, value) {
+    //Get the slider
+    var target = this.sliders[slider_index].div;
+
+    //important for 2d sliders
+    var x_pos = target.getAttribute('fixed-x'); 
+    
+    //Get the scaled value
+    var point = this.scale(value);
+
+    //Get the slider height
+    var height = this.slider_height;
+
+    //Change shown text value to new value
+    target.firstChild.textContent = value;
+
+    //Change slider's value to value
+    target.slider.value = value;
+
+    //Set sliders attributed position to the middle
+    target.setAttribute('drag-y', point);
+
+    //Move the slider to the middle, subtract half slider height due to pixel offset
+    VIZ.set_transform(target, x_pos, point - height / 2);
+
+    //Send update to the server
+    this.ws.send(slider_index + ',' + value);
+};
 
 /**
  * update visual display based when component is resized
