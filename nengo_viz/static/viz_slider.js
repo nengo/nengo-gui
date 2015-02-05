@@ -32,8 +32,6 @@ VIZ.Slider = function(args) {
         valueDisplay.innerHTML = slider.value;
         slider.div.appendChild(valueDisplay);
 
-        console.log(this);
-
         /** put the slider in the container */
         slider.div.style.position = 'fixed';
         slider.div.classList.add('slider');
