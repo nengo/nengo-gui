@@ -8,6 +8,7 @@
  * @param {float} args.maxy - maximum value on y-axis
  * @param {VIZ.SimControl} args.sim - the simulation controller
  */
+ 
 VIZ.Value = function(args) {
     VIZ.Component.call(this, args);
     var self = this;
@@ -22,28 +23,44 @@ VIZ.Value = function(args) {
     this.svg = d3.select(this.div).append('svg')
         .attr('width', '100%')
         .attr('height', '100%');
-        
+
     /** scales for mapping x and y values to pixels */
     this.scale_x = d3.scale.linear();
     this.scale_y = d3.scale.linear();
     this.scale_y.domain([args.miny || -1, args.maxy || 1]);
     
     /** spacing between the graph and the outside edges (in pixels) */
-    this.margin_top = 10;
+    this.margin_top = 30;
     this.margin_bottom = 40;
     this.margin_left = 40;
-    this.margin_right = 10;
-    
+    this.margin_right = 40;
+    this.supression_width = 150;
+
+    var axis_time_end =this.svg.append("text")
+                    .text("Time: NULL")
+                    .attr('class', 'graph_text')
+                    .attr('y', args.height - (this.margin_bottom-20))
+                    .attr('x', args.width - (this.margin_right + 20));
+        
+    this.axis_time_end = axis_time_end[0][0];  
+
+    var axis_time_start =this.svg.append("text")
+                    .text("Time: NULL")
+                    .attr('class','graph_text')
+                    .attr('y', args.height - (this.margin_bottom-20))
+                    .attr('x',this.margin_left - 10);
+        
+    this.axis_time_start = axis_time_start[0][0];    
+
     /** set up the scales to respect the margins */
     this.scale_x.range([this.margin_left, args.width - this.margin_right]);
     this.scale_y.range([args.height - this.margin_bottom, this.margin_top]);
-    
     
     /** define the x-axis */
     this.axis_x = d3.svg.axis()
         .scale(this.scale_x)
         .orient("bottom")
-        .ticks(1);
+        .ticks(0);
     this.axis_x_g = this.svg.append("g")
         .attr("class", "axis axis_x")
         .attr("transform", "translate(0," + (args.height - 
@@ -70,8 +87,13 @@ VIZ.Value = function(args) {
         .y(function(d) {return self.scale_y(d);})
     this.path = this.svg.append("g").selectAll('path')
                                     .data(this.data_store.data);
+                                    
+    var colors = VIZ.make_colors(this.n_lines);    
     this.path.enter().append('path')
-             .attr('class', 'line');
+             .attr('class', 'line')
+             .style('stroke', function(d, i) {return colors[i];});
+
+    this.on_resize(args.width, args.height);
 };
 VIZ.Value.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Value.prototype.constructor = VIZ.Value;
@@ -109,6 +131,10 @@ VIZ.Value.prototype.update = function() {
     this.path.data(shown_data)
              .attr('d', line);
 
+    this.axis_time_start.textContent =  t1.toFixed(3);
+
+    this.axis_time_end.textContent =  t2.toFixed(3);
+
     /** update the x-axis */
     this.axis_x_g.call(this.axis_x);         
 };
@@ -119,6 +145,23 @@ VIZ.Value.prototype.update = function() {
 VIZ.Value.prototype.on_resize = function(width, height) {
     this.scale_x.range([this.margin_left, width - this.margin_right]);
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
+
+    //Supress axis start time when user shrinks the plot
+    if (width < this.supression_width){
+        this.axis_time_start.style.display = 'none';
+    }
+    else{
+        this.axis_time_start.style.display = 'block';
+    }
+
+    //Adjust positions of time on resize
+    this.axis_time_start.setAttribute('y', height - (this.margin_bottom - 20));
+    this.axis_time_start.setAttribute('x', this.margin_left - 10 );
+
+    this.axis_time_end.setAttribute('y', height - (this.margin_bottom - 20));
+    this.axis_time_end.setAttribute('x', width - (this.margin_right + 20));
+
+    //Adjust positions of x axis on resize
     this.axis_x_g         
         .attr("transform", 
               "translate(0," + (height - this.margin_bottom) + ")");

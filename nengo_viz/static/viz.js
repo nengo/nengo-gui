@@ -34,14 +34,16 @@ VIZ.Component = function(args) {
     args.parent.appendChild(this.div);
     this.parent = args.parent;
 
-    self.minWidth = 30;
-    self.minHeight = 50;
+    self.minWidth = 100;
+    self.minHeight = 100;
 
     /** Move element to be drawn on top when clicked on */
-    this.div.onmousedown = function(event) {
-        self.parent.removeChild(self.div);
-        self.parent.appendChild(self.div);
+    VIZ.max_zindex = 0;
+    this.div.onmousedown = function() {
+        VIZ.max_zindex++;
+        this.style.zIndex = VIZ.max_zindex;
     };
+
     this.div.ontouchstart = this.div.onmousedown;
     
     /** Allow element to be dragged */ 
@@ -224,4 +226,59 @@ VIZ.DataStore.prototype.get_shown_data = function() {
         shown.push(this.data[i].slice(index, last_index));
     }
     return shown;
+}
+
+/**
+ * convert colors from YUV to RGB
+ */
+VIZ.yuv_to_rgb = function(y, u, v) {
+    var r = y + (1.370705 * v);
+    var g = y - (0.698001 * v) - (0.337633 * u);
+    var b = y + (1.732446 * u);    
+    //var r = y + (1.13983 * v);
+    //var g = y - (0.58060 * v) - (0.39465 * u);
+    //var b = y + (2.03211 * u);    
+    
+    r = Math.round(r * 256);
+    if (r < 0) r = 0;
+    if (r > 255) r = 255;
+    g = Math.round(g * 256);
+    if (g < 0) g = 0;
+    if (g > 255) g = 255;
+    b = Math.round(b * 256);
+    if (b < 0) b = 0;
+    if (b > 255) b = 255;
+        
+    return ["rgb(",r,",",g,",",b,")"].join("");
+}
+
+/**
+ * Generate a color sequence of a given length.
+ *
+ * Colors are defined via YUV.  Y (luminance, i.e. what the line will look like
+ * in black-and-white) is evenly spaced from 0 to max_y (0.7).  The U, V are
+ * chosen by spinning through a circle of radius color_strength, moving by
+ * phi*2*pi radians each step.  This cycles through colors while keeping a large
+ * separation (i.e. each angle is far away from all the other angles)
+ */ 
+VIZ.make_colors = function(N) {
+    var c = [];
+    var start_angle = 1.5;            // what color to start with
+    var phi = (1 + Math.sqrt(5)) / 2; // the golden ratio
+    var color_strength = 0.5;         // how bright the colors are (0=grayscale)
+    var max_y = 0.7;                  // how close to white to get
+    
+    for (var i = 0; i < N; i++) {
+        var y = 0;
+        if (N > 1) {
+            y = i * max_y / (N - 1);
+        }
+        
+        var angle = start_angle - 2 * Math.PI * i * phi;
+        //var angle = start_angle + 2 * Math.PI * i / N;
+        var u = color_strength * Math.sin(angle);
+        var v = color_strength * Math.cos(angle);
+        c.push(VIZ.yuv_to_rgb(y, u, v));
+    }
+    return c;
 }
