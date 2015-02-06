@@ -9,6 +9,8 @@ VIZ.Slider = function(args) {
     VIZ.Component.call(this, args);
     var self = this;
 
+    this.div.appendChild(VIZ.Config([['item1'],['item2']]));
+
     /** a scale to map from values to pixels */
     this.scale = d3.scale.linear();
     this.scale.domain([1,  -1]);
@@ -36,7 +38,7 @@ VIZ.Slider = function(args) {
         slider.div.style.position = 'fixed';
         slider.div.classList.add('slider');
         this.div.appendChild(slider.div);
-        slider.div.style.zIndex = 1;
+        slider.div.style.zIndex = -1;
         slider.div.slider = slider;
 
         /** Slider jumps to zero when middle clicked */

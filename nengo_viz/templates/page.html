@@ -13,13 +13,26 @@
     <link href="static/viz_sim_control.css" rel="stylesheet" type="text/css" /> 
     <script src="static/lib/js/jquery-2.1.3.min.js"></script>
     <script src="static/lib/js/bootstrap.min.js"></script>
-    <link href="static//lib/css/bootstrap.min.css" rel="stylesheet" type="text/css"> 
+    <link href="static/lib/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <script src="static/viz_config.js"></script>
+
+<div id='trial'></div>
 <script>
 function onload() {
 main = document.getElementById("main");
 control = document.getElementById("control");
 %(components)s
 }
+/*
+var newt = document.getElementById('trial');
+var dropdown = VIZ.Config([['item 1'],['item 2']]);
+dropdown.style.height = 10;
+dropdown.style.width = 10;
+console.log(dropdown);
+newt.appendChild(dropdown);
+
+console.log(newt);
+VIZ.set_transform(newt, 200 , 200);*/
 </script>
 </head>
 <body onload="onload();">

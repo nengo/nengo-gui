@@ -5,5 +5,5 @@
 .guideline{
 	border: 1px solid rgb(255,255,255);
 	background-color: black;
-	z-index: -1;
+	z-index: -2;
 }

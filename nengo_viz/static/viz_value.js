@@ -13,6 +13,9 @@ VIZ.Value = function(args) {
     VIZ.Component.call(this, args);
     var self = this;
 
+    this.div.appendChild(VIZ.Config([['item1'],['item2']]));
+
+    
     this.n_lines = args.n_lines || 1;
     this.sim = args.sim;
 
