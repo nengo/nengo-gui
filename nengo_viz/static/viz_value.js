@@ -13,9 +13,9 @@ VIZ.Value = function(args) {
     VIZ.Component.call(this, args);
     var self = this;
 
-    this.div.appendChild(VIZ.Config([['item1'],['item2']]));
+    var anon = function(){console.log("ANON function")}
+    this.div.appendChild(VIZ.Config([['item1', anon],['item2', anon]]));
 
-    
     this.n_lines = args.n_lines || 1;
     this.sim = args.sim;
 
@@ -42,7 +42,7 @@ VIZ.Value = function(args) {
     var axis_time_end =this.svg.append("text")
                     .text("Time: NULL")
                     .attr('class', 'graph_text')
-                    .attr('y', args.height - (this.margin_bottom-20))
+                    .attr('y', args.height - (this.margin_bottom - 20))
                     .attr('x', args.width - (this.margin_right + 20));
         
     this.axis_time_end = axis_time_end[0][0];  
@@ -50,7 +50,7 @@ VIZ.Value = function(args) {
     var axis_time_start =this.svg.append("text")
                     .text("Time: NULL")
                     .attr('class','graph_text')
-                    .attr('y', args.height - (this.margin_bottom-20))
+                    .attr('y', args.height - (this.margin_bottom - 20))
                     .attr('x',this.margin_left - 10);
         
     this.axis_time_start = axis_time_start[0][0];    
