@@ -9,7 +9,16 @@ VIZ.Slider = function(args) {
     VIZ.Component.call(this, args);
     var self = this;
 
-    this.div.appendChild(VIZ.Config([['item1'],['item2']]));
+    var set_val = function(){
+        /*
+        if (sliders.length > 1){
+            prompt 
+        }*/
+        //TODO: Check input 
+        var new_val = prompt("Set value to:");
+        self.set_value(0, new_val);
+    }
+    this.div.appendChild(VIZ.Config([['Set Value', set_val]]));
 
     /** a scale to map from values to pixels */
     this.scale = d3.scale.linear();
@@ -131,7 +140,6 @@ VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;
 
 VIZ.Slider.prototype.set_value = function(slider_index, value) {
-    console.log('ran set val' + value);
     //Get the slider
     var target = this.sliders[slider_index].div;
 

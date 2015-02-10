@@ -36,7 +36,9 @@ VIZ.Config = function(args) {
 		attr.setAttribute('role', 'menuitem');
 		attr.setAttribute('tabindex', '-1');
 		attr.textContent = args[i][0];
-		li.addEventListener('click', args[i][1]);
+		if (args[i][1] != undefined){
+			li.addEventListener('click', args[i][1]);
+		}
 		li.appendChild(attr);
 	}
 	

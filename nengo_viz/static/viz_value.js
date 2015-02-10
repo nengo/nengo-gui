@@ -13,8 +13,21 @@ VIZ.Value = function(args) {
     VIZ.Component.call(this, args);
     var self = this;
 
-    var anon = function(){console.log("ANON function")}
-    this.div.appendChild(VIZ.Config([['item1', anon],['item2', anon]]));
+    self.text_enabled = true;
+
+    var text_toggle = function(){
+        if (self.text_enabled){
+            self.axis_time_end.style.display = 'none'
+            self.axis_time_start.style.display = 'none'
+            self.text_enabled = false;            
+        }
+        else{
+            self.axis_time_end.style.display = 'block'
+            self.axis_time_start.style.display = 'block'
+            self.text_enabled = true;
+        }
+    }
+    this.div.appendChild(VIZ.Config([['Toggle X_Text', text_toggle]]));
 
     this.n_lines = args.n_lines || 1;
     this.sim = args.sim;
@@ -150,11 +163,13 @@ VIZ.Value.prototype.on_resize = function(width, height) {
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
 
     //Supress axis start time when user shrinks the plot
-    if (width < this.supression_width){
-        this.axis_time_start.style.display = 'none';
-    }
-    else{
-        this.axis_time_start.style.display = 'block';
+    if (this.text_enabled){
+        if (width < this.supression_width){
+            this.axis_time_start.style.display = 'none';
+        }
+        else{
+            this.axis_time_start.style.display = 'block';
+        }
     }
 
     //Adjust positions of time on resize
