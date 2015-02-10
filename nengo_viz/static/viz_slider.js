@@ -47,8 +47,7 @@ VIZ.Slider = function(args) {
             function(event) {
                 /** check if click was the middle mouse button */
                 if (event.which == 2){
-                    console.log(event.target)
-                    self.set_value(slider.index, 0);
+                    self.set_value(this.slider.index, 0);
                 }
             }
         );
