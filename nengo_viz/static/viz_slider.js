@@ -47,8 +47,7 @@ VIZ.Slider = function(args) {
             function(event) {
                 /** check if click was the middle mouse button */
                 if (event.which == 2){
-                    console.log(this);
-                    self.set_value(this, 0);
+                    self.set_value(this.slider.index, 0);
                 }
             }
         );
@@ -131,11 +130,9 @@ VIZ.Slider = function(args) {
 VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;
 
-VIZ.Slider.prototype.set_value = function(slider, value) {
+VIZ.Slider.prototype.set_value = function(slider_index, value) {
     //Get the slider
-    var target = slider;
-
-    console.log(slider);
+    var target = this.sliders[slider_index].div;
 
     //important for 2d sliders
     var x_pos = target.getAttribute('fixed-x'); 
