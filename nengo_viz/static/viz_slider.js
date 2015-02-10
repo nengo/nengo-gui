@@ -10,14 +10,16 @@ VIZ.Slider = function(args) {
     var self = this;
 
     var set_val = function(){
-        /*
-        if (sliders.length > 1){
-            prompt 
-        }*/
-        //TODO: Check input 
         var new_val = prompt("Set value to:");
+        while (VIZ.is_num(new_val) == false){
+            new_val = prompt("BAD INPUT - Set value to:");
+            if (new_val == null){
+                return;
+            }
+        }
         self.set_value(0, new_val);
     }
+    
     this.div.appendChild(VIZ.Config([['Set Value', set_val]]));
 
     /** a scale to map from values to pixels */
