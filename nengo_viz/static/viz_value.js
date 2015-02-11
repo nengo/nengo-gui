@@ -14,6 +14,7 @@ VIZ.Value = function(args) {
     var self = this;
 
     self.text_enabled = true;
+    self.full_screen = false;
     self.height = args.height;
     self.width = args.width;
     var text_toggle = function(){
@@ -31,17 +32,34 @@ VIZ.Value = function(args) {
         }
     }
 
-    var full_screen = function() {
-        var h = $(window).height();
-        var w = $(window).width();
-        self.on_resize(w, h);
-        self.div.style.height = h;
-        self.div.style.width = w;
-        self.div.style.backgroundColor = 'white';
-        VIZ.set_transform(self.div, 0, 0);
+    var full_screen = function() {  
+        console.log(self)
+        if (self.full_screen == false){
+
+            var h = $(window).height();
+            var w = $(window).width();
+            self.old_h = self.height;
+            self.old_w = self.width;
+            self.old_x = self.div.getAttribute('data-x');
+            self.old_y = self.div.getAttribute('data-y');
+            self.on_resize(w, h);
+            self.div.style.height = h;
+            self.div.style.width = w;
+            self.div.style.backgroundColor = 'white';
+            VIZ.set_transform(self.div, 0, 0);
+            self.full_screen = true;
+        }
+        else{
+            self.div.style.height = self.old_h;
+            self.div.style.width = self.old_w;
+            self.on_resize(self.old_w, self.old_h);
+            self.div.style.backgroundColor = 'rgba(255,0,0,0)';
+            VIZ.set_transform(self.div, self.old_x, self.old_y);
+            self.full_screen = false;            
+        }
     }
 
-    this.div.appendChild(VIZ.Config([['fs',full_screen],['Toggle X_Text', text_toggle]]));
+    this.div.appendChild(VIZ.Config([['Toggle Full-screen',full_screen],['Toggle X_Text', text_toggle]]));
 
     this.n_lines = args.n_lines || 1;
     this.sim = args.sim;
@@ -173,6 +191,7 @@ VIZ.Value.prototype.update = function() {
  * Adjust the graph layout due to changed size
  */
 VIZ.Value.prototype.on_resize = function(width, height) {
+    this.full_screen = false;
     this.width = width;
     this.height = height;
     this.div.style.backgroundColor = 'rgba(255,0,0,0)';
