@@ -27,7 +27,18 @@ VIZ.Value = function(args) {
             self.text_enabled = true;
         }
     }
-    this.div.appendChild(VIZ.Config([['Toggle X_Text', text_toggle]]));
+
+    var full_screen = function() {
+        var h = $(window).height();
+        var w = $(window).width();
+        self.on_resize(w, h);
+        self.div.style.height = h;
+        self.div.style.width = w;
+        self.div.style.backgroundColor = 'white';
+        VIZ.set_transform(self.div, 0, 0);
+    }
+
+    this.div.appendChild(VIZ.Config([['fs',full_screen],['Toggle X_Text', text_toggle]]));
 
     this.n_lines = args.n_lines || 1;
     this.sim = args.sim;
@@ -159,6 +170,7 @@ VIZ.Value.prototype.update = function() {
  * Adjust the graph layout due to changed size
  */
 VIZ.Value.prototype.on_resize = function(width, height) {
+    this.div.style.backgroundColor = 'rgba(255,0,0,0)';
     this.scale_x.range([this.margin_left, width - this.margin_right]);
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
 
