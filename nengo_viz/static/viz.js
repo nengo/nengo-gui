@@ -292,3 +292,18 @@ VIZ.is_num = function(value){
         return false;
     }
 }
+
+//takes input, min, and max and outputs the
+//boundary value if input is above/below max/min
+//Otherwise outputs the input
+VIZ.max_min = function(value, min, max) {
+    if (value < min) {
+        return min;
+    }
+    else if (value > max) {
+        return max;
+    }
+    else {
+        return value;
+    }
+}

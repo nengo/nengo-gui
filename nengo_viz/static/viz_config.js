@@ -13,8 +13,6 @@ VIZ.Config = function(args) {
 	button.id = 'dropdownMenu1';
 	button.setAttribute('data-toggle', 'dropdown');
 	button.setAttribute("aria-expanded", 'true');
-	//button.style.height = 10;
-	//button.style.width = 10;
 	dropdown.appendChild(button);
 
 	//Create the icon and put it in the button
@@ -48,7 +46,8 @@ VIZ.Config = function(args) {
 	}
 	return dropdown;
 }
-/*
+
+/* EXAMPLE DROPDOWN 
 <div class="dropdown">
   <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
 
