@@ -14,17 +14,20 @@ VIZ.Value = function(args) {
     var self = this;
 
     self.text_enabled = true;
-
+    self.height = args.height;
+    self.width = args.width;
     var text_toggle = function(){
         if (self.text_enabled){
             self.axis_time_end.style.display = 'none'
             self.axis_time_start.style.display = 'none'
             self.text_enabled = false;            
+            self.on_resize(self.width, self.height);
         }
         else{
             self.axis_time_end.style.display = 'block'
             self.axis_time_start.style.display = 'block'
             self.text_enabled = true;
+            self.on_resize(self.width, self.height);
         }
     }
 
@@ -170,6 +173,8 @@ VIZ.Value.prototype.update = function() {
  * Adjust the graph layout due to changed size
  */
 VIZ.Value.prototype.on_resize = function(width, height) {
+    this.width = width;
+    this.height = height;
     this.div.style.backgroundColor = 'rgba(255,0,0,0)';
     this.scale_x.range([this.margin_left, width - this.margin_right]);
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
