@@ -26,7 +26,6 @@ VIZ.Slider = function(args) {
             }
         }
         ind = VIZ.max_min(ind, 0, self.sliders.length - 1);
-        console.log(self);
         new_val = VIZ.max_min(new_val, 0, 1);
         self.set_value(ind, new_val);
     }
