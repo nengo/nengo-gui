@@ -1,10 +1,12 @@
 //args is a listof [menu option name (string) , option function]
 VIZ.Config = function(args) {
+	//Create the div for the drop down and position it
 	var dropdown = document.createElement('div');
 	dropdown.style.position = 'fixed';
 	dropdown.style.right = '0em';
 	dropdown.classList.add('dropdown');
 	
+	//Create the button and put it in the div
 	var button = document.createElement('button');
 	button.className = "btn btn-default dropdown-toggle";
 	button.type = 'button';
@@ -15,18 +17,21 @@ VIZ.Config = function(args) {
 	//button.style.width = 10;
 	dropdown.appendChild(button);
 
+	//Create the icon and put it in the button
 	var icon = document.createElement('span');
 	icon.className = "glyphicon glyphicon-menu-hamburger";
 	icon.setAttribute('aria-hidden', 'true');
 	icon.style.fontSize = 10;
 	button.appendChild(icon);
 
+	//create the dropdown menu and put it in the div
 	var opt_list = document.createElement('ul');
 	opt_list.className = 'dropdown-menu';
 	opt_list.role = 'menu';
 	opt_list.setAttribute('aria-labelledby', "dropdownMenu1");
 	dropdown.appendChild(opt_list);
 
+	//generate 
 	for (var i = 0 ; i < args.length; i++){
 		var li = document.createElement('li');
 		li.setAttribute('role', 'presentation');
@@ -41,7 +46,6 @@ VIZ.Config = function(args) {
 		}
 		li.appendChild(attr);
 	}
-	
 	return dropdown;
 }
 /*
