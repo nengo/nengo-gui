@@ -27,7 +27,49 @@ VIZ.Value = function(args) {
             self.text_enabled = true;
         }
     }
-    this.div.appendChild(VIZ.Config([['Toggle X_Text', text_toggle]]));
+    
+    var save_img = function(){
+
+
+        var cln = self.div.cloneNode(true);
+        cln.removeChild(cln.querySelectorAll('.dropdown')[0]);
+        console.log(cln.getElementsByTagName('svg')[0]);
+        var plastic = cln.getElementsByTagName('svg')[0]
+
+        var html = d3.select(plastic)
+            .attr("version", 1.1)
+            .attr("xmlns", "http://www.w3.org/2000/svg")
+            .node().parentNode.innerHTML;
+
+        //console.log(html);
+
+        var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
+
+        var canvas = document.createElement("canvas");
+        canvas.width = 960;
+        canvas.height = 500;
+        context = canvas.getContext("2d");
+
+        var image = new Image;
+        image.src = imgsrc;
+        image.onload = function() {
+            context.drawImage(image, 0, 0);
+
+            var canvasdata = canvas.toDataURL("image/png");
+
+            var a = document.createElement("a");
+
+            a.download = "sample.png";
+
+            a.href = canvasdata;
+
+            document.body.appendChild(a);
+
+            a.click();
+        };
+}        
+
+    this.div.appendChild(VIZ.Config([['save_img',save_img], ['Toggle X_Text', text_toggle]]));
 
     this.n_lines = args.n_lines || 1;
     this.sim = args.sim;
