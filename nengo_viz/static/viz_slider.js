@@ -15,7 +15,7 @@ VIZ.Slider = function(args) {
     this.scale.range([0, args.height]);
     
     /** number of pixels high for the slider itself */
-    this.slider_height = 50;
+    this.slider_height = 20;
     
     /** make the sliders */
     this.sliders = [];
@@ -106,7 +106,7 @@ VIZ.Slider = function(args) {
 
     for (var i = 0; i<args.n_sliders;i++){
         /** show the guideline */
-        this.guideline_width = 10;
+        this.guideline_width = 5;
         var guideline = document.createElement('div');
         this.sliders[i].guideline = guideline;
         guideline.classList.add('guideline');
@@ -166,7 +166,7 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
     for (var i in this.sliders) {
         var slider = this.sliders[i];
         /** figure out the size of the slider */
-        slider.div.style.width = width / N;
+        slider.div.style.width = width / N - 2;
         slider.div.style.height = this.slider_height;
 
         //subtract 2 from height for border
@@ -178,7 +178,7 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         VIZ.set_transform(slider.guideline, guide_x, 0);
 
         /** figure out the position of the slider */   
-        var x = i * width / N;
+        var x = i * width / N + 1;
         var y = this.scale(slider.value);
         VIZ.set_transform(slider.div, x, y - this.slider_height / 2);
 
