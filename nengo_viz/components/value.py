@@ -9,6 +9,7 @@ class Value(Component):
     def __init__(self, viz, obj, display_time=True, **kwargs):
         super(Value, self).__init__(viz, **kwargs)
         self.obj = obj
+        self.label = viz.viz.get_label(obj)
         self.data = []
         self.n_lines = obj.size_out
         self.display_time = display_time
@@ -31,9 +32,9 @@ class Value(Component):
 
     def javascript(self):
         return ('new VIZ.Value({parent:main, sim:sim, '
-                'x:%(x)g, y:%(y)g, '
+                'x:%(x)g, y:%(y)g, label:%(label)s, '
                 'width:%(width)g, height:%(height)g, id:%(id)d, '
                 'n_lines:%(n_lines)d, display_time:%(display_time)s});' %
                 dict(x=self.x, y=self.y, width=self.width, height=self.height,
-                     id=id(self), n_lines=self.n_lines,
+                     id=id(self), n_lines=self.n_lines, label=`self.label`,
                      display_time = 'true' if self.display_time else 'false'))

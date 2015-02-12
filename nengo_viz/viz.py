@@ -56,7 +56,8 @@ class VizSim(object):
 class Viz(object):
     """The master visualization organizer set up for a particular model."""
     def __init__(self, model, dt=0.001, Simulator=nengo.Simulator,
-                              shown_time=0.5, kept_time=4.0):
+                              shown_time=0.5, kept_time=4.0,
+                              default_labels={}):
         self.model = model
         self.template = []    # what components to show
         self.template.append((nengo_viz.components.SimControl, [],
@@ -65,9 +66,19 @@ class Viz(object):
         self.Simulator = Simulator  # what simulator to use
         self.lock = threading.Lock()
 
+        self.default_labels = default_labels
+
         # list for maintaining components that are waiting for a websocket
         # connection to start
         self.components = {}
+
+    def get_label(self, obj):
+        label = obj.label
+        if label is None:
+            label = self.default_labels.get(obj, None)
+        if label is None:
+            label = `obj`
+        return label
 
     def slider(self, *args, **kwargs):
         """Add a slider (for controlling a Node's value)"""

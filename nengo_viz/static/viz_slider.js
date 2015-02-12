@@ -186,4 +186,6 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         slider.div.setAttribute('fixed-x', x);
         slider.div.setAttribute('drag-y', y);
     }
+    this.label.style.width = width;
+    
 };
