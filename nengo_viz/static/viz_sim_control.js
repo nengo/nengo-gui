@@ -39,15 +39,19 @@ VIZ.SimControl = function(div, args) {
     
     /** Create the pause button */
     this.pause_button = document.createElement('button');
-    this.pause_button.innerHTML='Pause';
+    this.pause_button.className = "btn btn-default play-pause-button";
+    this.pause_button.innerHTML='<i class="glyphicon glyphicon-pause"></i>';
     this.pause_button.onclick = function(event) {self.on_pause_click();};
     div.appendChild(this.pause_button);
     
+    this.metrics_div = document.createElement('div');
+    this.metrics_div.className = 'metrics-container';
+    div.appendChild(this.metrics_div);
     /** Create the speed and rate update sliders */
     this.rate_div = document.createElement('div');
-    div.appendChild(this.rate_div);
+    this.metrics_div.appendChild(this.rate_div);
     this.ticks_div = document.createElement('div');
-    div.appendChild(this.ticks_div);
+    this.metrics_div.appendChild(this.ticks_div);
 };
 
 /** Event handler for received WebSocket messages */
@@ -87,11 +91,11 @@ VIZ.SimControl.prototype.on_pause_click = function(event) {
     if (this.paused) {
         this.ws.send('continue');
         this.paused = false;
-        this.pause_button.innerHTML = 'Pause';
+        this.pause_button.innerHTML = '<i class="glyphicon glyphicon-pause"></i>';
     } else {
         this.ws.send('pause');
         this.paused = true;
-        this.pause_button.innerHTML = 'Continue';
+        this.pause_button.innerHTML = '<i class="glyphicon glyphicon-play"></i>';
     }
 };
 
