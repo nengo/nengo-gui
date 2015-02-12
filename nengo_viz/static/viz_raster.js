@@ -1,24 +1,20 @@
 /**
- * Line graph showing decoded values over time
+ * Raster plot showing spike events over time
  * @constructor
  *
  * @param {dict} args - A set of constructor arguments (see VIZ.Component)
- * @param {int} args.n_lines - number of decoded values
- * @param {float} args.miny - minimum value on y-axis
- * @param {float} args.maxy - maximum value on y-axis
+ * @param {int} args.n_neurons - number of neurons
  * @param {VIZ.SimControl} args.sim - the simulation controller
  */
- 
-VIZ.Value = function(args) {
+VIZ.Raster = function(args) {
     VIZ.Component.call(this, args);
     var self = this;
 
-    this.n_lines = args.n_lines || 1;
+    this.n_neurons = args.n_neurons || 1;
     this.sim = args.sim;
-    this.display_time = args.display_time;
 
     /** for storing the accumulated data */
-    this.data_store = new VIZ.DataStore(this.n_lines, this.sim, 0.01);
+    this.data_store = new VIZ.DataStore(1, this.sim, 0);
 
     /** draw the plot as an SVG */
     this.svg = d3.select(this.div).append('svg')
@@ -28,7 +24,7 @@ VIZ.Value = function(args) {
     /** scales for mapping x and y values to pixels */
     this.scale_x = d3.scale.linear();
     this.scale_y = d3.scale.linear();
-    this.scale_y.domain([args.miny || -1, args.maxy || 1]);
+    this.scale_y.domain([0, args.n_neurons]);
     
     /** spacing between the graph and the outside edges (in pixels) */
     this.margin_top = 30;
@@ -52,11 +48,6 @@ VIZ.Value = function(args) {
                     .attr('x',this.margin_left - 10);
         
     this.axis_time_start = axis_time_start[0][0];    
-    
-    if (this.display_time == false) {
-        this.axis_time_start.style.display = 'none';
-        this.axis_time_end.style.display = 'none';
-    }
 
     /** set up the scales to respect the margins */
     this.scale_x.range([this.margin_left, args.width - this.margin_right]);
@@ -77,7 +68,7 @@ VIZ.Value = function(args) {
     this.axis_y = d3.svg.axis()
         .scale(this.scale_y)
         .orient("left")    
-        .ticks(2);
+        .ticks(0);
     this.axis_y_g = this.svg.append("g")
         .attr("class", "axis axis_y")
         .attr("transform", "translate(" + this.margin_left+ ", 0)")
@@ -94,29 +85,31 @@ VIZ.Value = function(args) {
     this.path = this.svg.append("g").selectAll('path')
                                     .data(this.data_store.data);
                                     
-    var colors = VIZ.make_colors(this.n_lines);    
     this.path.enter().append('path')
              .attr('class', 'line')
-             .style('stroke', function(d, i) {return colors[i];});
+             .style('stroke', 'black');
+             
+    this.spikes = this.svg.append("g").attr('class', 'spikes');
 
     this.on_resize(args.width, args.height);
 };
-VIZ.Value.prototype = Object.create(VIZ.Component.prototype);
-VIZ.Value.prototype.constructor = VIZ.Value;
+VIZ.Raster.prototype = Object.create(VIZ.Component.prototype);
+VIZ.Raster.prototype.constructor = VIZ.Raster;
 
 /**
  * Receive new line data from the server
  */
-VIZ.Value.prototype.on_message = function(event) {
-    var data = new Float32Array(event.data);
-    this.data_store.push(data);
+VIZ.Raster.prototype.on_message = function(event) {
+    var time = new Float32Array(event.data, 0, 1);
+    var data = new Int16Array(event.data, 4);
+    this.data_store.push([time[0], data]);
     this.schedule_update();
 }
    
 /**
  * Redraw the lines and axis due to changed data
  */
-VIZ.Value.prototype.update = function() {
+VIZ.Raster.prototype.update = function() {
     /** let the data store clear out old values */
     this.data_store.update();
         
@@ -128,6 +121,40 @@ VIZ.Value.prototype.update = function() {
     /** update the lines */
     var self = this;
     var shown_data = this.data_store.get_shown_data();
+    
+    var loc = [];
+    for (var i = 0; i < shown_data[0].length; i++) {
+        var t = this.scale_x(this.data_store.times[this.data_store.first_shown_index + i]);
+        
+        for (var j = 0; j < shown_data[0][i].length; j++) {
+            loc.push([t, this.scale_y(shown_data[0][i][j]), this.scale_y(shown_data[0][i][j]+1)]);
+        }
+    }
+    
+    var spikes = this.spikes.selectAll('line').data(loc)
+            .attr('x1', function(d) {return d[0]})
+            .attr('x2', function(d) {return d[0]})
+            .attr('y1', function(d) {return d[1]})
+            .attr('y2', function(d) {return d[2]});
+    spikes.enter()            
+            .append('line')
+            .attr('x1', function(d) {return d[0]})
+            .attr('x2', function(d) {return d[0]})
+            .attr('y1', function(d) {return d[1]})
+            .attr('y2', function(d) {return d[2]});
+    spikes.exit().remove();
+            
+
+
+
+    this.axis_time_start.textContent =  t1.toFixed(3);
+
+    this.axis_time_end.textContent =  t2.toFixed(3);
+
+    /** update the x-axis */
+    this.axis_x_g.call(this.axis_x);         
+            
+    return;
     var line = d3.svg.line()
         .x(function(d, i) {
             return self.scale_x(
@@ -136,24 +163,17 @@ VIZ.Value.prototype.update = function() {
         .y(function(d) {return self.scale_y(d);})
     this.path.data(shown_data)
              .attr('d', line);
-
-    this.axis_time_start.textContent =  t1.toFixed(3);
-
-    this.axis_time_end.textContent =  t2.toFixed(3);
-
-    /** update the x-axis */
-    this.axis_x_g.call(this.axis_x);         
 };
 
 /** 
  * Adjust the graph layout due to changed size
  */
-VIZ.Value.prototype.on_resize = function(width, height) {
+VIZ.Raster.prototype.on_resize = function(width, height) {
     this.scale_x.range([this.margin_left, width - this.margin_right]);
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
 
     //Supress axis start time when user shrinks the plot
-    if (width < this.supression_width || this.display_time == false){
+    if (width < this.supression_width){
         this.axis_time_start.style.display = 'none';
     }
     else{
