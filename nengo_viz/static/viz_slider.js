@@ -172,8 +172,8 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         //subtract 2 from height for border
         slider.guideline.style.height = height - 2;
 
-        var guide_x = width / (2 * N) + (width / N) * i 
-            - this.guideline_width / 2;
+        var guide_x = Math.round(width / (2 * N) + (width / N) * i 
+            - this.guideline_width / 2);
 
         VIZ.set_transform(slider.guideline, guide_x, 0);
 
