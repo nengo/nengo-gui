@@ -7,7 +7,7 @@ import nengo
 from nengo_viz.components.component import Component
 
 class SimControl(Component):
-    def __init__(self, viz, **kwargs):
+    def __init__(self, viz, shown_time=0.5, kept_time=4.0, **kwargs):
         super(SimControl, self).__init__(viz, **kwargs)
         self.viz = viz
         with viz.model:
@@ -18,6 +18,8 @@ class SimControl(Component):
         self.model_dt = viz.dt
         self.rate_tau = 1.0
         self.last_send_rate = None
+        self.shown_time = shown_time
+        self.kept_time = kept_time
         self.sim_ticks = 0
         self.skipped = 1
         self.time = 0.0
@@ -61,8 +63,10 @@ class SimControl(Component):
         #    self.last_send_rate = now
 
     def javascript(self):
-        return ('var sim = new VIZ.SimControl(control, {id:%(id)d});' %
-                dict(id=id(self)))
+        return ('var sim = new VIZ.SimControl(control, {id:%(id)d,'
+                'shown_time:%(shown_time)g, kept_time:%(kept_time)g});' %
+                 dict(id=id(self), shown_time=self.shown_time,
+                     kept_time=self.kept_time))
 
     def message(self, msg):
         if msg == 'pause':

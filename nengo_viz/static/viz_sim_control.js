@@ -33,7 +33,9 @@ VIZ.SimControl = function(div, args) {
     /** Create the TimeSlider */
     this.time_slider = new VIZ.TimeSlider({x: 200, y: 10, sim:this,
                                            width: this.div.clientWidth-300, 
-                                           height: this.div.clientHeight-20});
+                                           height: this.div.clientHeight-20,
+                                           shown_time: args.shown_time,
+                                           kept_time: args.kept_time});
     
     /** Create the pause button */
     this.pause_button = document.createElement('button');
