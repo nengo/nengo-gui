@@ -15,6 +15,7 @@ VIZ.Value = function(args) {
 
     this.n_lines = args.n_lines || 1;
     this.sim = args.sim;
+    this.display_time = args.display_time;
 
     /** for storing the accumulated data */
     this.data_store = new VIZ.DataStore(this.n_lines, this.sim, 0.01);
@@ -51,6 +52,11 @@ VIZ.Value = function(args) {
                     .attr('x',this.margin_left - 10);
         
     this.axis_time_start = axis_time_start[0][0];    
+    
+    if (this.display_time == false) {
+        this.axis_time_start.style.display = 'none';
+        this.axis_time_end.style.display = 'none';
+    }
 
     /** set up the scales to respect the margins */
     this.scale_x.range([this.margin_left, args.width - this.margin_right]);
@@ -147,7 +153,7 @@ VIZ.Value.prototype.on_resize = function(width, height) {
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
 
     //Supress axis start time when user shrinks the plot
-    if (width < this.supression_width){
+    if (width < this.supression_width || this.display_time == false){
         this.axis_time_start.style.display = 'none';
     }
     else{
