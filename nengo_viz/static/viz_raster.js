@@ -199,4 +199,6 @@ VIZ.Raster.prototype.on_resize = function(width, height) {
               "translate(0," + (height - this.margin_bottom) + ")");
     this.axis_y_g.call(this.axis_y);         
     this.update();
+    
+    this.label.style.width = width;    
 };
