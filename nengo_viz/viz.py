@@ -77,6 +77,8 @@ class Viz(object):
         if label is None:
             label = self.default_labels.get(obj, None)
         if label is None:
+            label = self.default_labels.get(id(obj), None)
+        if label is None:
             label = `obj`
         return label
 
