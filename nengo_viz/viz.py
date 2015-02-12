@@ -107,6 +107,27 @@ class Viz(object):
         """Add a component to the list of known components"""
         self.components[id(component)] = component
 
+    def tile_components(self, width=1000, row_height=150, col_width=200):
+        count = len(self.template)
+
+        x = 0
+        y = 20
+
+        for index, (c, args, kwargs) in enumerate(self.template):
+            if c is nengo_viz.components.SimControl:
+                continue
+            kwargs['x'] = x
+            kwargs['y'] = y
+            kwargs['width'] = col_width
+            kwargs['height'] = row_height
+            x += col_width
+            if x + col_width > width:
+                x = 0
+                y += row_height
+            self.template[index] = (c, args, kwargs)
+
+
+
     def pop_component(self, id):
         """Find a registered component by its id.
 
