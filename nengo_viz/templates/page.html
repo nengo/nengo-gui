@@ -12,13 +12,19 @@
     <script src="static/viz_slider.js"></script>
     <link href="static/viz_slider.css" rel="stylesheet" type="text/css" />
     <script src="static/viz_sim_control.js"></script>
-    <link href="static/viz_sim_control.css" rel="stylesheet" type="text/css" />    
+    <link href="static/viz_sim_control.css" rel="stylesheet" type="text/css" /> 
+
+    <script src="static/viz_view.js"></script>
+
+
 <script>
 function onload() {
 main = document.getElementById("main");
 control = document.getElementById("control");
 %(components)s
 }
+var all_c = VIZ.view();
+
 </script>
 </head>
 <body onload="onload();">
