@@ -1,5 +1,6 @@
 <html>
 <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
     <script src="static/interact-1.2.2.js"></script>
     <script src="static/d3.v3.min.js" charset="utf-8"></script>
     <link href="static/main.css" rel="stylesheet" type="text/css" />
@@ -12,13 +13,19 @@
     <script src="static/viz_slider.js"></script>
     <link href="static/viz_slider.css" rel="stylesheet" type="text/css" />
     <script src="static/viz_sim_control.js"></script>
-    <link href="static/viz_sim_control.css" rel="stylesheet" type="text/css" />    
+    <link href="static/viz_sim_control.css" rel="stylesheet" type="text/css" /> 
+
+    <script src="static/viz_view.js"></script>
+
+
 <script>
 function onload() {
 main = document.getElementById("main");
 control = document.getElementById("control");
 %(components)s
+VIZ.view();
 }
+
 </script>
 </head>
 <body onload="onload();">
