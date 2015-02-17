@@ -14,6 +14,8 @@ VIZ.view = function () {
 				else{
 					x_pos = 0;
 					//This assumes all components have the same height
+					//Assumes that all components can fit on page without
+					//resize
 					y_pos += hold[i].offsetHeight;
 				}
 			}
