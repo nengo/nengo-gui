@@ -11,7 +11,7 @@ VIZ.Slider = function(args) {
 
     /** a scale to map from values to pixels */
     this.scale = d3.scale.linear();
-    this.scale.domain([1,  -1]);
+    this.scale.domain([args.max_value,  args.min_value]);
     this.scale.range([0, args.height]);
     
     /** number of pixels high for the slider itself */
@@ -25,7 +25,7 @@ VIZ.Slider = function(args) {
         
         slider.index = i;
         slider.div = document.createElement('div');
-        slider.value = 0;
+        slider.value = args.start_value[i];
 
         /** Show the slider Value */
         var valueDisplay = document.createElement('p');
