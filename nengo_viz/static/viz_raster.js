@@ -10,6 +10,13 @@ VIZ.Raster = function(args) {
     VIZ.Component.call(this, args);
     var self = this;
 
+    //Menu and Menu variable initilization
+    self.height = args.height;
+    self.width = args.width;
+    self.full_screen = false;
+    self.text_enabled = true;
+    this.div.appendChild(VIZ.Config.plot(self));
+
     this.n_neurons = args.n_neurons || 1;
     this.sim = args.sim;
 
@@ -171,13 +178,16 @@ VIZ.Raster.prototype.update = function() {
 VIZ.Raster.prototype.on_resize = function(width, height) {
     this.scale_x.range([this.margin_left, width - this.margin_right]);
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
-
+    this.width = width;
+    this.height = height;
     //Supress axis start time when user shrinks the plot
-    if (width < this.supression_width){
-        this.axis_time_start.style.display = 'none';
-    }
-    else{
-        this.axis_time_start.style.display = 'block';
+    if (this.text_enabled){
+        if (width < this.supression_width){
+            this.axis_time_start.style.display = 'none';
+        }
+        else{
+            this.axis_time_start.style.display = 'block';
+        }
     }
 
     //Adjust positions of time on resize

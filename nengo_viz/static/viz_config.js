@@ -47,6 +47,52 @@ VIZ.Config = function(args) {
 	return dropdown;
 }
 
+VIZ.Config.plot = function(self){
+    var text_toggle = function(){
+        if (self.text_enabled){
+            self.axis_time_end.style.display = 'none'
+            self.axis_time_start.style.display = 'none'
+            self.text_enabled = false;
+        }
+        else{
+            self.axis_time_end.style.display = 'block'
+            self.axis_time_start.style.display = 'block'
+            self.text_enabled = true;
+            self.on_resize(self.width, self.height);
+        }
+    }
+
+    var full_screen = function() {  
+        if (self.full_screen == false){
+            var h = $(window).height();
+            var w = $(window).width();
+            self.old_h = self.height;
+            self.old_w = self.width;
+            self.old_x = self.div.getAttribute('data-x');
+            self.old_y = self.div.getAttribute('data-y');
+            self.on_resize(w, h);
+            self.div.style.height = h;
+            self.div.style.width = w;
+            self.div.style.backgroundColor = 'white';
+            VIZ.set_transform(self.div, 0, 0);
+            self.full_screen = true;
+        }
+        else{
+            self.div.style.height = self.old_h;
+            self.div.style.width = self.old_w;
+            self.on_resize(self.old_w, self.old_h);
+            self.div.style.backgroundColor = 'rgba(255,0,0,0)';
+            VIZ.set_transform(self.div, self.old_x, self.old_y);
+            self.full_screen = false;            
+        }
+    }
+
+    return VIZ.Config([
+    	['Toggle Full-screen',full_screen],
+    	['Toggle X_Text', text_toggle]
+    	]);
+}
+
 /* EXAMPLE DROPDOWN 
 <div class="dropdown">
   <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
