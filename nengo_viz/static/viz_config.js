@@ -97,7 +97,7 @@ VIZ.Config.slider = function(self, min, max) {
     var set_val = function(){
         var ind = 0
         if (self.sliders.length > 1) {
-            ind = prompt("Set for which slider (0 - " + (self.sliders.length - 1) + ")");
+            ind = prompt("Set for which slider [0 - " + (self.sliders.length - 1) + "]");
         }
 
         var new_val = prompt("Set value to:");
