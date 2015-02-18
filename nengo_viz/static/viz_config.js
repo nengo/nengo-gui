@@ -93,6 +93,31 @@ VIZ.Config.plot = function(self){
     	]);
 }
 
+VIZ.Config.slider = function(self) {
+    var set_val = function(){
+        var ind = 0
+        if (self.sliders.length > 1) {
+            ind = prompt("Set for which slider (0 - " + (self.sliders.length - 1) + ")");
+        }
+
+        var new_val = prompt("Set value to:");
+        if (new_val == null) {
+            return;
+        }
+        while (VIZ.is_num(new_val) == false){
+            new_val = prompt("BAD INPUT - Set value to:");
+            if (new_val == null) {
+                return;
+            }
+        }
+        ind = VIZ.max_min(ind, 0, self.sliders.length - 1);
+        new_val = VIZ.max_min(new_val, -1, 1);
+        self.set_value(ind, new_val);
+    }
+    
+    return VIZ.Config([['Set Value', set_val]]);
+}
+
 /* EXAMPLE DROPDOWN 
 <div class="dropdown">
   <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">

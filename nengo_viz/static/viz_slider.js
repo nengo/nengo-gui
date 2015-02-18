@@ -9,28 +9,7 @@ VIZ.Slider = function(args) {
     VIZ.Component.call(this, args);
     var self = this;
 
-    var set_val = function(){
-        var ind = 0
-        if (self.sliders.length > 1) {
-            ind = prompt("Set for which slider (0 - " + (self.sliders.length - 1) + ")");
-        }
-
-        var new_val = prompt("Set value to:");
-        if (new_val == null) {
-            return;
-        }
-        while (VIZ.is_num(new_val) == false){
-            new_val = prompt("BAD INPUT - Set value to:");
-            if (new_val == null) {
-                return;
-            }
-        }
-        ind = VIZ.max_min(ind, 0, self.sliders.length - 1);
-        new_val = VIZ.max_min(new_val, 0, 1);
-        self.set_value(ind, new_val);
-    }
-    
-    this.div.appendChild(VIZ.Config([['Set Value', set_val]]));
+    this.div.appendChild(VIZ.Config.slider(self));
 
     /** a scale to map from values to pixels */
     this.scale = d3.scale.linear();
