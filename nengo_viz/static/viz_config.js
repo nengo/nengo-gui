@@ -93,7 +93,7 @@ VIZ.Config.plot = function(self){
     	]);
 }
 
-VIZ.Config.slider = function(self) {
+VIZ.Config.slider = function(self, min, max) {
     var set_val = function(){
         var ind = 0
         if (self.sliders.length > 1) {
@@ -111,7 +111,7 @@ VIZ.Config.slider = function(self) {
             }
         }
         ind = VIZ.max_min(ind, 0, self.sliders.length - 1);
-        new_val = VIZ.max_min(new_val, -1, 1);
+        new_val = VIZ.max_min(new_val, min, max);
         self.set_value(ind, new_val);
     }
     

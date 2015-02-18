@@ -8,8 +8,7 @@
 VIZ.Slider = function(args) {
     VIZ.Component.call(this, args);
     var self = this;
-
-    this.div.appendChild(VIZ.Config.slider(self));
+    this.div.appendChild(VIZ.Config.slider(self, args.min_value, args.max_value));
 
     VIZ.set_transform(this.label, 0, -20);
  
