@@ -33,6 +33,14 @@ VIZ.Component = function(args) {
     this.div.classList.add('graph');
     args.parent.appendChild(this.div);
     this.parent = args.parent;
+    
+    this.label = document.createElement('div');
+    this.label.classList.add('label');
+    this.label.innerHTML = args.label.replace('<', '&lt;').replace('>', '&gt;');
+    this.label.style.position = 'fixed';
+    this.label.style.width = args.width;
+    this.label.style.height = '2em';
+    this.div.appendChild(this.label);
 
     self.minWidth = 100;
     self.minHeight = 100;

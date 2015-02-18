@@ -15,3 +15,6 @@
     display: block;
 }
 
+.graph .label {
+    color: black;
+}

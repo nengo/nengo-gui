@@ -11,13 +11,15 @@ VIZ.Slider = function(args) {
 
     this.div.appendChild(VIZ.Config.slider(self));
 
+    VIZ.set_transform(this.label, 0, -20);
+ 
     /** a scale to map from values to pixels */
     this.scale = d3.scale.linear();
-    this.scale.domain([1,  -1]);
+    this.scale.domain([args.max_value,  args.min_value]);
     this.scale.range([0, args.height]);
     
     /** number of pixels high for the slider itself */
-    this.slider_height = 50;
+    this.slider_height = 20;
     
     /** make the sliders */
     this.sliders = [];
@@ -27,7 +29,7 @@ VIZ.Slider = function(args) {
         
         slider.index = i;
         slider.div = document.createElement('div');
-        slider.value = 0;
+        slider.value = args.start_value[i];
 
         /** Show the slider Value */
         var valueDisplay = document.createElement('p');
@@ -108,7 +110,7 @@ VIZ.Slider = function(args) {
 
     for (var i = 0; i<args.n_sliders;i++){
         /** show the guideline */
-        this.guideline_width = 10;
+        this.guideline_width = 5;
         var guideline = document.createElement('div');
         this.sliders[i].guideline = guideline;
         guideline.classList.add('guideline');
@@ -168,19 +170,19 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
     for (var i in this.sliders) {
         var slider = this.sliders[i];
         /** figure out the size of the slider */
-        slider.div.style.width = width / N;
+        slider.div.style.width = width / N - 2;
         slider.div.style.height = this.slider_height;
 
         //subtract 2 from height for border
         slider.guideline.style.height = height - 2;
 
-        var guide_x = width / (2 * N) + (width / N) * i 
-            - this.guideline_width / 2;
+        var guide_x = Math.round(width / (2 * N) + (width / N) * i 
+            - this.guideline_width / 2);
 
         VIZ.set_transform(slider.guideline, guide_x, 0);
 
         /** figure out the position of the slider */   
-        var x = i * width / N;
+        var x = i * width / N + 1;
         var y = this.scale(slider.value);
         VIZ.set_transform(slider.div, x, y - this.slider_height / 2);
 
@@ -188,4 +190,6 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         slider.div.setAttribute('fixed-x', x);
         slider.div.setAttribute('drag-y', y);
     }
+    this.label.style.width = width;
+    
 };
