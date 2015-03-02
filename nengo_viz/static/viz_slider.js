@@ -156,6 +156,7 @@ VIZ.Slider = function(parent, sim, args) {
             function(e) {self.schedule_update();}, false);
 
     this.on_resize(args.width, args.height);
+    VIZ.shown_components.push(this);
 };
 
 
@@ -248,6 +249,10 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
     };
     var N = this.sliders.length;
     this.scale.range([0, height]);
+    this.width = width;
+    this.height = height;
+    this.div.style.width = width;
+    this.div.style.height = height;
     for (var i in this.sliders) {
         var slider = this.sliders[i];
         /** figure out the size of the slider */

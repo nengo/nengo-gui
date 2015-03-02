@@ -35,6 +35,7 @@
                 main = document.getElementById("main");
                 control = document.getElementById("control");
                 %(components)s
+                main.addEventListener('mousewheel', function(e) {VIZ.zoom(e)});
             }
         </script>
         <script src="static/lib/js/interact-1.2.4.js"></script>

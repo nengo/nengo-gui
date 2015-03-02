@@ -12,6 +12,9 @@
 VIZ.Value = function(parent, sim, args) {
     VIZ.Component.call(this, parent, args);
     var self = this;
+
+    this.width = args.width;
+    this.height = args.height;
     this.n_lines = args.n_lines || 1;
     this.sim = sim;
     this.display_time = args.display_time;
@@ -50,7 +53,7 @@ VIZ.Value = function(parent, sim, args) {
                     .attr('y', args.height - (this.margin_bottom-20))
                     .attr('x',this.margin_left - 10);
         
-    this.axis_time_start = axis_time_start[0][0];    
+    this.axis_time_start = axis_time_start[0][0]; 
     
     if (this.display_time == false) {
         this.axis_time_start.style.display = 'none';
@@ -100,6 +103,15 @@ VIZ.Value = function(parent, sim, args) {
 
     this.on_resize(args.width, args.height);
     
+    $(this.div)
+        .mouseenter(function(){self.on_hover()})
+        .mouseleave(function(){self.on_hover_out()});
+
+    this.div.addEventListener('mousewheel', function(e) {
+        self.on_scroll(e);});
+
+
+    VIZ.shown_components.push(this);
 };
 VIZ.Value.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Value.prototype.constructor = VIZ.Value;
@@ -111,6 +123,23 @@ VIZ.Value.prototype.on_message = function(event) {
     var data = new Float32Array(event.data);
     this.data_store.push(data);
     this.schedule_update();
+}
+
+VIZ.Value.prototype.on_hover = function() {
+    console.log("hover on")
+    VIZ.zoom_disabled = true;
+}
+
+VIZ.Value.prototype.on_hover_out = function() {
+    console.log("hover off")
+    VIZ.zoom_disabled = false;
+}
+
+VIZ.Value.prototype.on_scroll = function(e) {
+    console.log("trash")
+    var scroll_speed = 10;
+    var movement = (e.deltaY / 53) * scroll_speed;
+    this.on_resize(this.width + movement, this.height + movement);
 }
    
 /**

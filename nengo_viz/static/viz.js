@@ -1,20 +1,7 @@
 /** namespace for all Nengo visualization */
 var VIZ = {};
 
-VIZ.max_zindex = 0;
-
-/**
- * Helper function to clip a number, keeping it between two values.
- */
-VIZ.clip = function(x, low, high) {
-    if (x < low) {
-        x = low;
-    }
-    if (x > high) {
-        x = high;
-    }
-    return x;
-}
+VIZ.shown_components = [];
 
 /**
  * Helper function to set the transform of an element.
@@ -142,19 +129,14 @@ VIZ.Component = function(parent, args) {
         })
         .on('resizemove', function(event) {
             var target = event.target;
-            var newWidth = event.rect.width;
-            var newHeight = event.rect.height;
-            var dx = event.deltaRect.left ;
-            var dy = event.deltaRect.top ;
-            var dz = event.deltaRect.right;
-            var da = event.deltaRect.bottom;
-
-            var scale = VIZ.pan.cord_per_px(VIZ.Screen);
-
-            var x = parseFloat(target.getAttribute('data-x')) + ((dx + dz) / 2 * scale.x) ;
-            var y = parseFloat(target.getAttribute('data-y')) + ((dy + da) / 2 * scale.y) ;
-            target.setAttribute('data-x', x);
-            target.setAttribute('data-y', y);
+            var newWidth = parseFloat(target.style.width) + event.dx;
+            var newHeight = parseFloat(target.style.height) + event.dy;
+            if (newWidth < self.minWidth){
+                newWidth = self.minWidth;
+            }
+            if (newHeight < self.minHeight){
+                newHeight = self.minHeight;
+            }
             self.on_resize(newWidth, newHeight);
             VIZ.pan.redraw();          
         })
