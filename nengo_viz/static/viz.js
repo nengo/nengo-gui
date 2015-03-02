@@ -1,6 +1,8 @@
 /** namespace for all Nengo visualization */
 var VIZ = {};
 
+VIZ.shown_components = [];
+
 /**
  * Helper function to set the transform of an element.
  */
@@ -80,8 +82,6 @@ VIZ.Component = function(args) {
             if (newHeight < self.minHeight){
                 newHeight = self.minHeight;
             }
-            target.style.width  = newWidth + 'px';
-            target.style.height = newHeight + 'px';
             self.on_resize(newWidth, newHeight);
         });    
 

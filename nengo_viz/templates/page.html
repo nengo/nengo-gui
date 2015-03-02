@@ -7,6 +7,7 @@
     <script src="static/viz.js"></script>
     <link href="static/viz.css" rel="stylesheet" type="text/css" />
     <script src="static/viz_value.js"></script>
+    <script src="static/viz_zoom.js"></script>
     <link href="static/viz_value.css" rel="stylesheet" type="text/css" />
     <script src="static/viz_raster.js"></script>
     <link href="static/viz_raster.css" rel="stylesheet" type="text/css" />
@@ -19,7 +20,9 @@ function onload() {
 main = document.getElementById("main");
 control = document.getElementById("control");
 %(components)s
+main.addEventListener('mousewheel', function(e) {VIZ.zoom(e)});
 }
+
 
 </script>
 </head>
