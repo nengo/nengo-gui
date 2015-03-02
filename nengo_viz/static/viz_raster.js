@@ -91,6 +91,8 @@ VIZ.Raster = function(parent, sim, args) {
     this.spikes = this.svg.append("g").attr('class', 'spikes');
 
     this.on_resize(args.width, args.height);
+
+    VIZ.shown_components.push(this);
 };
 VIZ.Raster.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Raster.prototype.constructor = VIZ.Raster;
@@ -168,13 +170,19 @@ VIZ.Raster.prototype.update = function() {
  * Adjust the graph layout due to changed size
  */
 VIZ.Raster.prototype.on_resize = function(width, height) {
-    if (width < this.minWidth) {
+
+    if (width < this.minWidth){
         width = this.minWidth;
     }
-    if (height < this.minHeight) {
+    if (height < this.minHeight){
         height = this.minHeight;
-    };
-    
+    }
+
+    this.div.style.width = width;
+    this.div.style.height = height;
+    this.width = width;
+    this.height = height;
+
     this.scale_x.range([this.margin_left, width - this.margin_right]);
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
 

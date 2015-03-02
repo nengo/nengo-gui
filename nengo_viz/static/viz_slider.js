@@ -238,15 +238,14 @@ VIZ.Slider.prototype.on_message = function(event) {
  * update visual display based when component is resized
  */
 VIZ.Slider.prototype.on_resize = function(width, height) {
-    console.assert(typeof width == 'number');
-    console.assert(typeof height == 'number');
 
-    if (width < this.minWidth) {
+    if (width < this.minWidth){
         width = this.minWidth;
     }
-    if (height < this.minHeight) {
+    if (height < this.minHeight){
         height = this.minHeight;
-    };
+    }
+
     var N = this.sliders.length;
     this.scale.range([0, height]);
     this.width = width;
