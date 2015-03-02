@@ -13,8 +13,6 @@ VIZ.Value = function(args) {
     VIZ.Component.call(this, args);
     var self = this;
 
-    this.width = args.width;
-    this.height = args.height;
     this.n_lines = args.n_lines || 1;
     this.sim = args.sim;
     this.display_time = args.display_time;
@@ -178,6 +176,14 @@ VIZ.Value.prototype.update = function() {
  * Adjust the graph layout due to changed size
  */
 VIZ.Value.prototype.on_resize = function(width, height) {
+
+    if (width < this.minWidth){
+        width = this.minWidth;
+    }
+    if (height < this.minHeight){
+        height = this.minHeight;
+    }
+    
     this.div.style.width = width;
     this.div.style.height = height;
 

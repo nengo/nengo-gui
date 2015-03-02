@@ -162,6 +162,14 @@ VIZ.Slider.prototype.set_value = function(slider_index, value) {
  * update visual display based when component is resized
  */
 VIZ.Slider.prototype.on_resize = function(width, height) {
+
+    if (width < this.minWidth){
+        width = this.minWidth;
+    }
+    if (height < this.minHeight){
+        height = this.minHeight;
+    }
+
     var N = this.sliders.length;
     this.scale.range([0, height]);
     this.width = width;

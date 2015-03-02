@@ -25,7 +25,8 @@ VIZ.set_transform = function(element, x, y) {
  */
 VIZ.Component = function(args) {
     var self = this;
-
+    this.width = args.width;
+    this.height = args.height;
     /** Create the div for the component and position it */
     this.div = document.createElement('div');
     this.div.style.width = args.width;
@@ -74,14 +75,9 @@ VIZ.Component = function(args) {
         .resizable(true)
         .on('resizemove', function(event) {
             var target = event.target;
-            var newWidth = parseFloat(target.style.width) + event.dx;
-            var newHeight = parseFloat(target.style.height) + event.dy;
-            if (newWidth < self.minWidth){
-                newWidth = self.minWidth;
-            }
-            if (newHeight < self.minHeight){
-                newHeight = self.minHeight;
-            }
+            var newWidth = self.width + event.dx;
+            var newHeight = self.height + event.dy;
+            
             self.on_resize(newWidth, newHeight);
         });    
 
