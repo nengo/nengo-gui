@@ -1,20 +1,6 @@
 <html>
 <head>
-    <script src="static/interact-1.2.2.js"></script>
-    <script src="static/d3.v3.min.js" charset="utf-8"></script>
-    <script src="static/jquery-1.11.2.js" charset="utf-8"></script>
-    <link href="static/main.css" rel="stylesheet" type="text/css" />
-    <script src="static/viz.js"></script>
-    <link href="static/viz.css" rel="stylesheet" type="text/css" />
-    <script src="static/viz_value.js"></script>
-    <script src="static/viz_zoom.js"></script>
-    <link href="static/viz_value.css" rel="stylesheet" type="text/css" />
-    <script src="static/viz_raster.js"></script>
-    <link href="static/viz_raster.css" rel="stylesheet" type="text/css" />
-    <script src="static/viz_slider.js"></script>
-    <link href="static/viz_slider.css" rel="stylesheet" type="text/css" />
-    <script src="static/viz_sim_control.js"></script>
-    <link href="static/viz_sim_control.css" rel="stylesheet" type="text/css" />    
+
 <script>
 function onload() {
 main = document.getElementById("main");
@@ -29,5 +15,25 @@ main.addEventListener('mousewheel', function(e) {VIZ.zoom(e)});
 <body onload="onload();">
 <div id="main"></div>
 <div id="control"></div>
+<div id='canvas'></div>
+    <script src="static/interact-1.2.2.js"></script>
+    <script src="static/d3.v3.min.js" charset="utf-8"></script>
+    <script src="static/jquery-1.11.2.js" charset="utf-8"></script>
+    <script src="static/minimap.min.js" charset="utf-8"></script>
+    <link href="static/minimap.min.css" rel="stylesheet" type="text/css" />
+
+    <link href="static/main.css" rel="stylesheet" type="text/css" />
+    <script src="static/viz.js"></script>
+    <link href="static/viz.css" rel="stylesheet" type="text/css" />
+    <script src="static/viz_value.js"></script>
+    <script src="static/viz_zoom.js"></script>
+    <link href="static/viz_value.css" rel="stylesheet" type="text/css" />
+    <script src="static/viz_raster.js"></script>
+    <link href="static/viz_raster.css" rel="stylesheet" type="text/css" />
+    <script src="static/viz_slider.js"></script>
+    <link href="static/viz_slider.css" rel="stylesheet" type="text/css" />
+    <script src="static/viz_sim_control.js"></script>
+    <link href="static/viz_sim_control.css" rel="stylesheet" type="text/css" />  
+        <script src="static/viz_map.js" charset="utf-8"></script>  
 </body>
 </html>

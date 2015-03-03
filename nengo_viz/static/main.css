@@ -17,3 +17,37 @@ body {
     stroke: black;
     stroke-width: 1.5px;    
 }
+
+html, body {
+    font-family: Arial, sans-serif;
+}
+
+.title {
+    font-size: 12px;
+}
+
+.canvas .wrapper.outer > .background {
+    fill: #000000;
+}
+.canvas .wrapper.inner > .background {
+    fill: #CCCCCC;
+    cursor: move;
+}
+.canvas .background {
+    fill: #F6F6F6;
+    stroke: #333333;
+    cursor: move;
+}
+.canvas .panCanvas {
+    cursor: move;
+}
+
+.canvas .minimap .frame .background {
+    stroke: #111111;
+    stroke-width: 4px;
+    fill-opacity: 0.4;
+    fill: #000000;
+    fill: url(#minimapGradient);
+    filter: url(#minimapDropShadow);
+    cursor: move;
+}
