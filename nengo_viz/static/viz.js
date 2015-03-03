@@ -97,7 +97,9 @@ VIZ.Component = function(args) {
 /**
  * Method to be called when Component is resized
  */
-VIZ.Component.prototype.on_resize = function(width, height) {};
+VIZ.Component.prototype.on_resize = function(width, height) {
+    this.on_resize(width, height);
+};
 
 /**
  * Method to be called when Component received a WebSocket message
