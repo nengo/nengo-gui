@@ -12,6 +12,7 @@ VIZ.Raster = function(args) {
 
     this.n_neurons = args.n_neurons || 1;
     this.sim = args.sim;
+    this.display_time = args.display_time;
 
     /** for storing the accumulated data */
     this.data_store = new VIZ.DataStore(1, this.sim, 0);
@@ -49,6 +50,11 @@ VIZ.Raster = function(args) {
         
     this.axis_time_start = axis_time_start[0][0];    
 
+   if (this.display_time == false) {
+        this.axis_time_start.style.display = 'none';
+        this.axis_time_end.style.display = 'none';
+    }
+    
     /** set up the scales to respect the margins */
     this.scale_x.range([this.margin_left, args.width - this.margin_right]);
     this.scale_y.range([args.height - this.margin_bottom, this.margin_top]);
@@ -146,11 +152,10 @@ VIZ.Raster.prototype.update = function() {
             
 
 
-
     this.axis_time_start.textContent =  t1.toFixed(3);
 
     this.axis_time_end.textContent =  t2.toFixed(3);
-
+    
     /** update the x-axis */
     this.axis_x_g.call(this.axis_x);         
             
@@ -173,12 +178,13 @@ VIZ.Raster.prototype.on_resize = function(width, height) {
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
 
     //Supress axis start time when user shrinks the plot
-    if (width < this.supression_width){
+    if (width < this.supression_width || this.display_time == false){
         this.axis_time_start.style.display = 'none';
     }
     else{
         this.axis_time_start.style.display = 'block';
     }
+    
 
     //Adjust positions of time on resize
     this.axis_time_start.setAttribute('y', height - (this.margin_bottom - 20));
@@ -186,7 +192,7 @@ VIZ.Raster.prototype.on_resize = function(width, height) {
 
     this.axis_time_end.setAttribute('y', height - (this.margin_bottom - 20));
     this.axis_time_end.setAttribute('x', width - (this.margin_right + 20));
-
+    
     //Adjust positions of x axis on resize
     this.axis_x_g         
         .attr("transform", 
