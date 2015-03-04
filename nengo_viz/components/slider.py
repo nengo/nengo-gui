@@ -12,6 +12,7 @@ class Slider(Component):
         self.value = np.zeros(node.size_out)
         self.min_value = min_value
         self.max_value = max_value
+        self.label = viz.viz.get_label(node)
         self.start_value = np.zeros(node.size_out)
         if not callable(self.base_output):
             self.start_value[:] = self.base_output
@@ -32,12 +33,12 @@ class Slider(Component):
 
     def javascript(self):
         return ('new VIZ.Slider({parent:main, n_sliders:%(n_sliders)d, '
-                'x:%(x)g, y:%(y)g, '
+                'x:%(x)g, y:%(y)g, label:%(label)s, '
                 'width:%(width)g, height:%(height)g, id:%(id)d, '
                 'min_value:%(min_value)g, max_value:%(max_value)g, '
                 'start_value:%(start_value)s});' %
                 dict(x=self.x, y=self.y, width=self.width, height=self.height,
-                 n_sliders=len(self.override), id=id(self),
+                 n_sliders=len(self.override), id=id(self), label=`self.label`,
                  min_value=self.min_value, max_value=self.max_value,
                  start_value=[float(x) for x in self.start_value]))
 

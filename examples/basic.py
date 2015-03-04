@@ -3,7 +3,7 @@ import nengo
 
 model = nengo.Network()
 with model:
-    stimulus_A = nengo.Node([1])
+    stimulus_A = nengo.Node([1], label='stim A')
     stimulus_B = nengo.Node(lambda t: np.sin(2*np.pi*t))
     ens = nengo.Ensemble(n_neurons=1000, dimensions=2)
     result = nengo.Ensemble(n_neurons=50, dimensions=1)
@@ -16,7 +16,7 @@ with model:
 #sim.run(100, progress_bar=False)
 
 import nengo_viz
-viz = nengo_viz.Viz(model)
+viz = nengo_viz.Viz(model, locals=locals())
 viz.slider(stimulus_A)
 viz.slider(stimulus_B)
 viz.value(ens)

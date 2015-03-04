@@ -9,6 +9,8 @@ VIZ.Slider = function(args) {
     VIZ.Component.call(this, args);
     var self = this;
 
+    VIZ.set_transform(this.label, 0, -20);
+ 
     /** a scale to map from values to pixels */
     this.scale = d3.scale.linear();
     this.scale.domain([args.max_value,  args.min_value]);
@@ -186,4 +188,6 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         slider.div.setAttribute('fixed-x', x);
         slider.div.setAttribute('drag-y', y);
     }
+    this.label.style.width = width;
+    
 };

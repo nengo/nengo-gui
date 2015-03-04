@@ -6,6 +6,7 @@ import nengo
 
 import nengo_viz.server
 import nengo_viz.components
+import nengo_viz
 
 
 class VizSim(object):
@@ -56,7 +57,8 @@ class VizSim(object):
 class Viz(object):
     """The master visualization organizer set up for a particular model."""
     def __init__(self, model, dt=0.001, Simulator=nengo.Simulator,
-                              shown_time=0.5, kept_time=4.0):
+                              shown_time=0.5, kept_time=4.0,
+                              locals=None, default_labels=None):
         self.model = model
         self.template = []    # what components to show
         self.template.append((nengo_viz.components.SimControl, [],
@@ -65,9 +67,27 @@ class Viz(object):
         self.Simulator = Simulator  # what simulator to use
         self.lock = threading.Lock()
 
+        if default_labels is None:
+            if locals is not None:
+                nf = nengo_viz.NameFinder(locals, model)
+                default_labels = nf.known_name
+            else:
+                default_labels = {}
+        self.default_labels = default_labels
+
         # list for maintaining components that are waiting for a websocket
         # connection to start
         self.components = {}
+
+    def get_label(self, obj):
+        label = obj.label
+        if label is None:
+            label = self.default_labels.get(obj, None)
+        if label is None:
+            label = self.default_labels.get(id(obj), None)
+        if label is None:
+            label = `obj`
+        return label
 
     def slider(self, *args, **kwargs):
         """Add a slider (for controlling a Node's value)"""
@@ -93,6 +113,27 @@ class Viz(object):
     def add(self, component):
         """Add a component to the list of known components"""
         self.components[id(component)] = component
+
+    def tile_components(self, width=1000, row_height=150, col_width=200):
+        count = len(self.template)
+
+        x = 0
+        y = 20
+
+        for index, (c, args, kwargs) in enumerate(self.template):
+            if c is nengo_viz.components.SimControl:
+                continue
+            kwargs['x'] = x
+            kwargs['y'] = y
+            kwargs['width'] = col_width
+            kwargs['height'] = row_height
+            x += col_width
+            if x + col_width > width:
+                x = 0
+                y += row_height
+            self.template[index] = (c, args, kwargs)
+
+
 
     def pop_component(self, id):
         """Find a registered component by its id.
