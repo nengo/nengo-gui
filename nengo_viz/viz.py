@@ -6,6 +6,7 @@ import nengo
 
 import nengo_viz.server
 import nengo_viz.components
+import nengo_viz
 
 
 class VizSim(object):
@@ -57,7 +58,7 @@ class Viz(object):
     """The master visualization organizer set up for a particular model."""
     def __init__(self, model, dt=0.001, Simulator=nengo.Simulator,
                               shown_time=0.5, kept_time=4.0,
-                              default_labels={}):
+                              locals=None, default_labels=None):
         self.model = model
         self.template = []    # what components to show
         self.template.append((nengo_viz.components.SimControl, [],
@@ -66,6 +67,12 @@ class Viz(object):
         self.Simulator = Simulator  # what simulator to use
         self.lock = threading.Lock()
 
+        if default_labels is None:
+            if locals is not None:
+                nf = nengo_viz.NameFinder(locals, model)
+                default_labels = nf.known_name
+            else:
+                default_labels = {}
         self.default_labels = default_labels
 
         # list for maintaining components that are waiting for a websocket
