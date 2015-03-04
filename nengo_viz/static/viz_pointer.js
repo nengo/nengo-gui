@@ -28,6 +28,35 @@ VIZ.Pointer = function(args) {
             function(e) {self.schedule_update();}, false);
     
     this.on_resize(args.width, args.height);
+    
+    this.fixed_value = '';
+    var self = this;
+    
+    this.div.addEventListener("mouseup", 
+        function(event) {
+            // for some reason 'click' doesn't seem to work here, so I'm doing
+            // the timing myself
+            var now = new Date().getTime() / 1000;
+            if (now - self.mouse_down_time > 0.1) {
+                return;
+            }
+            var value = prompt('Enter a Semantic Pointer value', 
+                               self.fixed_value);
+            if (value == null) { 
+                value = ''; 
+            }
+            self.fixed_value = value;
+            self.ws.send(value);
+        }
+    );    
+
+    this.div.addEventListener("mousedown", 
+        function(event) {
+            self.mouse_down_time = new Date().getTime() / 1000;
+        }
+    );    
+
+    
 };
 VIZ.Pointer.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Pointer.prototype.constructor = VIZ.Pointer;
@@ -87,32 +116,6 @@ VIZ.Pointer.prototype.update = function() {
         var size = parseFloat(data[i].substring(0,4));
         items[i].style.fontSize = '' + (size * scale) + 'px'
     }
-
-    return;
-        
-    /** determine visible range from the VIZ.SimControl */
-    var t1 = this.sim.time_slider.first_shown_time;
-    var t2 = t1 + this.sim.time_slider.shown_time;
-    this.scale_x.domain([t1, t2]);
-    
-    /** update the lines */
-    var self = this;
-    var shown_data = this.data_store.get_shown_data();
-    var line = d3.svg.line()
-        .x(function(d, i) {
-            return self.scale_x(
-                self.data_store.times[i + self.data_store.first_shown_index]);
-            })
-        .y(function(d) {return self.scale_y(d);})
-    this.path.data(shown_data)
-             .attr('d', line);
-
-    this.axis_time_start.textContent =  t1.toFixed(3);
-
-    this.axis_time_end.textContent =  t2.toFixed(3);
-
-    /** update the x-axis */
-    this.axis_x_g.call(this.axis_x);         
 };
 
 /** 
