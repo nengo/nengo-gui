@@ -24,6 +24,8 @@ Nengo GUI depends on several open source libraries.
   [MIT license](http://www.abeautifulsite.net/blog/2008/03/jquery-file-tree/)
 * [GNOME icon set](http://commons.wikimedia.org/wiki/GNOME_Desktop_icons) -
   Used under GPL license
+* [Bootstrap](http://getbootstrap.com/) - Used under
+  [MIT license](https://raw.githubusercontent.com/twbs/bootstrap/master/LICENSE)
 
 Contributor Assignemnt Agreement
 ================================
