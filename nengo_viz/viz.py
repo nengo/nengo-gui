@@ -101,6 +101,10 @@ class Viz(object):
         """Add a value graph (showing decoded data)"""
         self.template.append((nengo_viz.components.Raster, args, kwargs))
 
+    def pointer(self, *args, **kwargs):
+        """Add a semantic pointer graph"""
+        self.template.append((nengo_viz.components.Pointer, args, kwargs))
+
     def start(self, port=8080, browser=True):
         """Start the web server"""
         nengo_viz.server.Server.viz = self
