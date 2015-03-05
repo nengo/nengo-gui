@@ -37,7 +37,6 @@ class Raster(Component):
         return ('new VIZ.Raster({parent:main, sim:sim, '
                 'x:%(x)g, y:%(y)g, label:%(label)s, '
                 'width:%(width)g, height:%(height)g, id:%(id)d, '
-                'display_time:%(display_time)s, '
                 'n_neurons:%(n_neurons)d});' %
                 dict(x=self.x, y=self.y, width=self.width, height=self.height,
                      id=id(self), n_neurons=self.n_neurons,
