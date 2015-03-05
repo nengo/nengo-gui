@@ -42,4 +42,4 @@ class Raster(Component):
                 dict(x=self.x, y=self.y, width=self.width, height=self.height,
                      id=id(self), n_neurons=self.n_neurons,
                      label=`self.label`,
-                     display_time = 'true' if self.display_time else 'false'))
+                     ))

@@ -40,7 +40,8 @@ VIZ.SimControl = function(div, args) {
     /** Create the pause button */
     this.pause_button = document.createElement('button');
     this.pause_button.className = "btn btn-default play-pause-button";
-    this.pause_button.innerHTML='<i class="glyphicon glyphicon-pause"></i>';
+    this.pause_button.innerHTML = '<span class="glyphicon glyphicon-pause"></span>';
+    this.pause_button_icon = $(this.pause_button).find('.glyphicon');
     this.pause_button.onclick = function(event) {self.on_pause_click();};
     div.appendChild(this.pause_button);
     
@@ -91,12 +92,11 @@ VIZ.SimControl.prototype.on_pause_click = function(event) {
     if (this.paused) {
         this.ws.send('continue');
         this.paused = false;
-        this.pause_button.innerHTML = '<i class="glyphicon glyphicon-pause"></i>';
     } else {
         this.ws.send('pause');
         this.paused = true;
-        this.pause_button.innerHTML = '<i class="glyphicon glyphicon-play"></i>';
     }
+    this.pause_button_icon.toggleClass('glyphicon-pause glyphicon-play');
 };
 
 VIZ.SimControl.prototype.on_resize = function(event) {

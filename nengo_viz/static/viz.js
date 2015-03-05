@@ -236,6 +236,26 @@ VIZ.DataStore.prototype.get_shown_data = function() {
     return shown;
 }
 
+VIZ.DataStore.prototype.get_last_data = function() {
+    /* determine time range */
+    var t1 = this.sim.time_slider.first_shown_time;
+    var t2 = t1 + this.sim.time_slider.shown_time;
+    
+    /* find the corresponding index values */
+    var last_index = 0;
+    while (this.times[last_index] < t2 && last_index < this.times.length - 1) {
+        last_index += 1;
+    }
+        
+    /** return the visible slice of the data */
+    var shown = [];
+    for (var i = 0; i < this.data.length; i++) {
+        shown.push(this.data[i][last_index]);
+    }
+    return shown;
+}
+
+
 /**
  * convert colors from YUV to RGB
  */
