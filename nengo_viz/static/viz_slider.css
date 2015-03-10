@@ -1,7 +1,14 @@
 .slider {
     background: #888888;
 }
-
+.slider p {
+    -webkit-margin-before: 0;
+    -webkit-margin-after: 0;
+    -webkit-margin-start: 5px;
+    -webkit-margin-end: 0px;
+    height: 22px;
+    line-height: 22px;
+}
 .guideline{
 	/*border: 1px solid white;*/
 	background-color: black;
