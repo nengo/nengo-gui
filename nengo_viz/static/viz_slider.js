@@ -108,7 +108,7 @@ VIZ.Slider = function(args) {
 
     for (var i = 0; i<args.n_sliders;i++){
         /** show the guideline */
-        this.guideline_width = 10;
+        this.guideline_width = 5;
         var guideline = document.createElement('div');
         this.sliders[i].guideline = guideline;
         guideline.classList.add('guideline');
