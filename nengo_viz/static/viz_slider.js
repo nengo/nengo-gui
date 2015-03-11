@@ -17,7 +17,7 @@ VIZ.Slider = function(args) {
     this.scale.range([0, args.height]);
     
     /** number of pixels high for the slider itself */
-    this.slider_height = 50;
+    this.slider_height = 20;
     
     /** make the sliders */
     this.sliders = [];
