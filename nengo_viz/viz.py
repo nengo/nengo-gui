@@ -21,6 +21,9 @@ class VizSim(object):
 
         # use the lock to make sure only one Simulator is building at a time
         self.viz.lock.acquire()
+        
+        #Tile the componentes
+        self.viz.tile_components()
 
         # add components to the model for visualization purposes
         for cls, args, kwargs in self.viz.template:
@@ -45,7 +48,7 @@ class VizSim(object):
         # run the simulation
         while not self.finished:
             self.sim.run(0.1, progress_bar=False)
-        self.viz.tile_components()
+
     def finish(self):
         self.finished = True
 
