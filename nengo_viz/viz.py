@@ -34,7 +34,6 @@ class VizSim(object):
     def runner(self):
         # build the simulation
         self.sim = self.viz.Simulator(self.model, dt=self.dt)
-
         # remove the temporary components added for visualization
         for c in self.components:
             c.remove_nengo_objects(self.viz)
@@ -46,11 +45,12 @@ class VizSim(object):
         # run the simulation
         while not self.finished:
             self.sim.run(0.1, progress_bar=False)
-
+        self.viz.tile_components()
     def finish(self):
         self.finished = True
 
     def create_javascript(self):
+
         return '\n'.join([c.javascript() for c in self.components])
 
 
