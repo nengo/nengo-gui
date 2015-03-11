@@ -22,7 +22,7 @@ class VizSim(object):
         # use the lock to make sure only one Simulator is building at a time
         self.viz.lock.acquire()
         
-        #Tile the componentes
+        #Tile the components
         self.viz.tile_components()
 
         # add components to the model for visualization purposes
