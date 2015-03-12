@@ -27,7 +27,7 @@ Nengo GUI depends on several open source libraries.
 * [Bootstrap](http://getbootstrap.com/) - Used under
   [MIT license](https://raw.githubusercontent.com/twbs/bootstrap/master/LICENSE)
 
-Contributor Assignemnt Agreement
+Contributor Assignment Agreement
 ================================
 
 Harmony (HA-CAA-I-ANY) Version 1.0
