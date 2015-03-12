@@ -21,6 +21,9 @@ class VizSim(object):
 
         # use the lock to make sure only one Simulator is building at a time
         self.viz.lock.acquire()
+        
+        #Tile the components
+        self.viz.tile_components()
 
         # add components to the model for visualization purposes
         for cls, args, kwargs in self.viz.template:
@@ -34,7 +37,6 @@ class VizSim(object):
     def runner(self):
         # build the simulation
         self.sim = self.viz.Simulator(self.model, dt=self.dt)
-
         # remove the temporary components added for visualization
         for c in self.components:
             c.remove_nengo_objects(self.viz)
@@ -51,6 +53,7 @@ class VizSim(object):
         self.finished = True
 
     def create_javascript(self):
+
         return '\n'.join([c.javascript() for c in self.components])
 
 
