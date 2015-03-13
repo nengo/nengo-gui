@@ -19,6 +19,6 @@ to the file like so:
 Please keep this list sorted alphabetically by first name.
 
 - Chris Eliasmith <celiasmith@uwaterloo.ca>
+- Christopher Chan <c88chan@uwaterloo.ca>
 - Terry Stewart <terry.stewart@gmail.com>
 - Trevor Bekolay <tbekolay@gmail.com>
-- Christopher Chan <c88chan@uwaterloo.ca>
