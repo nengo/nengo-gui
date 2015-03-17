@@ -15,3 +15,6 @@ class Component(object):
 
     def finish(self):
         pass
+
+    def remove_nengo_objects(self, viz):
+        pass

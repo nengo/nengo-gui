@@ -64,6 +64,7 @@ class Viz(object):
                               locals=None, default_labels=None):
         self.model = model
         self.template = []    # what components to show
+        self.template.append((nengo_viz.components.NetGraph, [], {}))
         self.template.append((nengo_viz.components.SimControl, [],
                               dict(shown_time=shown_time, kept_time=kept_time)))
         self.dt = dt
@@ -128,7 +129,8 @@ class Viz(object):
         y = 20
 
         for index, (c, args, kwargs) in enumerate(self.template):
-            if c is nengo_viz.components.SimControl:
+            if c in [nengo_viz.components.SimControl, 
+                     nengo_viz.components.NetGraph]:
                 continue
             kwargs['x'] = x
             kwargs['y'] = y
