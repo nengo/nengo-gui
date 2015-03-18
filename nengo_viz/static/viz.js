@@ -127,7 +127,7 @@ VIZ.mouse_out = function() {
     setTimeout(function(){
         if(VIZ.mouse_out){
             VIZ.scale_enabled = true;
-        }},30)
+        }},40)
 }
 
 /**
