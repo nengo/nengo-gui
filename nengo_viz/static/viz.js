@@ -75,7 +75,7 @@ VIZ.Component = function(args) {
                 var datay = parseFloat(target.getAttribute('data-y')) + event.dy;
                 VIZ.set_transform(target, x, y);
                 target.setAttribute('data-x', datax);
-                target.setAttribute('data-y', datay);                  
+                target.setAttribute('data-y', datay);             
             }
         })
 
@@ -108,27 +108,7 @@ VIZ.Component = function(args) {
 
     /** flag whether there is a scheduled update that hasn't happened yet */
     this.pending_update = false;
-
-    $(this.div).hover( VIZ.mouse_in, VIZ.mouse_out );
 };
-
-/*To be used to detect if the mouse is over a component to allow accomodate panning and zooming */
-
-VIZ.scale_enabled = true;
-
-VIZ.mouse_in = function() {
-    VIZ.scale_enabled = false;
-    VIZ.mouse_out = false;
-    console.log('in');
-}
-
-VIZ.mouse_out = function() {
-    VIZ.mouse_out = true;
-    setTimeout(function(){
-        if(VIZ.mouse_out){
-            VIZ.scale_enabled = true;
-        }},40)
-}
 
 /**
  * Method to be called when Component is resized

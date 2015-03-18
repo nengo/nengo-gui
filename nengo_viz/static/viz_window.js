@@ -10,7 +10,6 @@ function addEvent(obj, evt, fn) {
 }
 
 var main = document.getElementById('main');
-console.log(main)
 addEvent(window,"load",function(e) {
     addEvent(main, "mouseout", function(e) {
         e = e ? e : window.event;

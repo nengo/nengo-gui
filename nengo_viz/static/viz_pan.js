@@ -5,7 +5,6 @@ VIZ.view = {
 	br:{x:1000,y:700}
 };
 
-
 /* Calculates drag deltas on background */
 var moused = false;
 
@@ -14,13 +13,15 @@ var iy;
 
 $("#main")
 	.mousedown(function(event) {
-		moused = true;
+		console.log(event.target == $('#main')[0]);
+		if (event.target == $('#main')[0]) {
+			moused = true;
+		}
 		ix = event.pageX;
 		iy = event.pageY;
 	})
 	.mouseup(function() {
 	    moused = false
-	    console.log('mouseup')
 	});
 
 
@@ -30,10 +31,7 @@ $('#main').mousemove(function(event) {
 	    var deltaY = event.pageY - iy;
 	    ix = event.pageX;
 	    iy = event.pageY;
-	    //console.log(deltaX, deltaY)
-	    if(VIZ.scale_enabled){
-	    	VIZ.pan(deltaX,deltaY);
-	    }
+	    VIZ.pan(deltaX,deltaY);
 	}
 })
 
