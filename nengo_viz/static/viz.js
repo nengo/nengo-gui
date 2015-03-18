@@ -42,6 +42,7 @@ VIZ.Component = function(args) {
     this.label.style.height = '2em';
     this.div.appendChild(this.label);
 
+
     self.minWidth = 100;
     self.minHeight = 100;
 
@@ -67,11 +68,14 @@ VIZ.Component = function(args) {
             },
             onmove: function (event) {
                 var target = event.target;
-                var x = parseFloat(target.getAttribute('data-x')) + event.dx;
-                var y = parseFloat(target.getAttribute('data-y')) + event.dy;
+                var holde = $(target).css('transform').match(/(-?[0-9\.]+)/g); //Ugly method of finding the transform currently
+                var x = Number(holde[4]) + event.dx;
+                var y = Number(holde[5]) + event.dy;
+                var datax = parseFloat(target.getAttribute('data-x')) + event.dx;
+                var datay = parseFloat(target.getAttribute('data-y')) + event.dy;
                 VIZ.set_transform(target, x, y);
-                target.setAttribute('data-x', x);
-                target.setAttribute('data-y', y);                  
+                target.setAttribute('data-x', datax);
+                target.setAttribute('data-y', datay);                  
             }
         })
 
@@ -104,7 +108,27 @@ VIZ.Component = function(args) {
 
     /** flag whether there is a scheduled update that hasn't happened yet */
     this.pending_update = false;
+
+    $(this.div).hover( VIZ.mouse_in, VIZ.mouse_out );
 };
+
+/*To be used to detect if the mouse is over a component to allow accomodate panning and zooming */
+
+VIZ.scale_enabled = true;
+
+VIZ.mouse_in = function() {
+    VIZ.scale_enabled = false;
+    VIZ.mouse_out = false;
+    console.log('in');
+}
+
+VIZ.mouse_out = function() {
+    VIZ.mouse_out = true;
+    setTimeout(function(){
+        if(VIZ.mouse_out){
+            VIZ.scale_enabled = true;
+        }},30)
+}
 
 /**
  * Method to be called when Component is resized

@@ -31,7 +31,9 @@ $('#main').mousemove(function(event) {
 	    ix = event.pageX;
 	    iy = event.pageY;
 	    //console.log(deltaX, deltaY)
-	    VIZ.pan(deltaX,deltaY)
+	    if(VIZ.scale_enabled){
+	    	VIZ.pan(deltaX,deltaY);
+	    }
 	}
 })
 
@@ -40,8 +42,7 @@ $('#main').mousemove(function(event) {
 
 VIZ.pan = function(dx,dy) {
 	$('.graph').each(function(i, element){
-		var holde = $(element).css('transform').match(/(-?[0-9\.]+)/g);
-		console.log(Number(holde[4]) + 1);
+		var holde = $(element).css('transform').match(/(-?[0-9\.]+)/g); //Ugly method of finding the transform currently
 		VIZ.set_transform(element,Number(holde[4]) +dx ,Number(holde[5]) + dy);
 	})
 }
