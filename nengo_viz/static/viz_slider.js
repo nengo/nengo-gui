@@ -31,6 +31,7 @@ VIZ.Slider = function(args) {
 
         /** Show the slider Value */
         var valueDisplay = document.createElement('p');
+        valueDisplay.classList.add('unselectable')
         valueDisplay.innerHTML = slider.value;
         slider.div.appendChild(valueDisplay);
 

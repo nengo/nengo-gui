@@ -39,7 +39,7 @@ VIZ.Value = function(args) {
 
     var axis_time_end =this.svg.append("text")
                     .text("Time: NULL")
-                    .attr('class', 'graph_text')
+                    .attr('class', 'graph_text unselectable')
                     .attr('y', args.height - (this.margin_bottom-20))
                     .attr('x', args.width - (this.margin_right + 20));
         
@@ -47,7 +47,7 @@ VIZ.Value = function(args) {
 
     var axis_time_start =this.svg.append("text")
                     .text("Time: NULL")
-                    .attr('class','graph_text')
+                    .attr('class','graph_text unselectable')
                     .attr('y', args.height - (this.margin_bottom-20))
                     .attr('x',this.margin_left - 10);
         
@@ -68,7 +68,7 @@ VIZ.Value = function(args) {
         .orient("bottom")
         .ticks(0);
     this.axis_x_g = this.svg.append("g")
-        .attr("class", "axis axis_x")
+        .attr("class", "axis axis_x unselectable")
         .attr("transform", "translate(0," + (args.height - 
                                              this.margin_bottom) + ")")
         .call(this.axis_x);
@@ -79,7 +79,7 @@ VIZ.Value = function(args) {
         .orient("left")    
         .ticks(2);
     this.axis_y_g = this.svg.append("g")
-        .attr("class", "axis axis_y")
+        .attr("class", "axis axis_y unselectable")
         .attr("transform", "translate(" + this.margin_left+ ", 0)")
         .call(this.axis_y);
 

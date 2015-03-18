@@ -35,7 +35,7 @@ VIZ.Component = function(args) {
     this.parent = args.parent;
     
     this.label = document.createElement('div');
-    this.label.classList.add('label');
+    this.label.classList.add('label', 'unselectable');
     this.label.innerHTML = args.label.replace('<', '&lt;').replace('>', '&gt;');
     this.label.style.position = 'fixed';
     this.label.style.width = args.width;

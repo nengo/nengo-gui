@@ -35,7 +35,7 @@ VIZ.Raster = function(args) {
 
     var axis_time_end =this.svg.append("text")
                     .text("Time: NULL")
-                    .attr('class', 'graph_text')
+                    .attr('class', 'graph_text unselectable')
                     .attr('y', args.height - (this.margin_bottom-20))
                     .attr('x', args.width - (this.margin_right + 20));
         
@@ -43,7 +43,7 @@ VIZ.Raster = function(args) {
 
     var axis_time_start =this.svg.append("text")
                     .text("Time: NULL")
-                    .attr('class','graph_text')
+                    .attr('class','graph_text unselectable')
                     .attr('y', args.height - (this.margin_bottom-20))
                     .attr('x',this.margin_left - 10);
         
