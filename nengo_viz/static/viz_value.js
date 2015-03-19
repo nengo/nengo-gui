@@ -18,7 +18,7 @@ VIZ.Value = function(args) {
     self.full_screen = false;
     self.height = args.height;
     self.width = args.width;
-    this.div.appendChild(VIZ.Config.plot(self));
+    this.div.appendChild(this.make_config());
 
     this.n_lines = args.n_lines || 1;
     this.sim = args.sim;
@@ -188,5 +188,21 @@ VIZ.Value.prototype.on_resize = function(width, height) {
     this.update();
     
     this.label.style.width = width;
+    
+};
+
+VIZ.Value.prototype.make_config = function() {
+    var self = this;
+    return VIZ.Config([['Set Range', function() {self.set_range();}]]);
+};
+
+VIZ.Value.prototype.set_range = function() {
+    var current_range = '' + this.scale_y.domain()[0] + ',' + this.scale_y.domain()[1];
+    var range = prompt('Specify range on y-axis:', current_range);
+    var values = range.split(',');
+    var min_value = parseFloat(values[0]);
+    var max_value = parseFloat(values[1]);
+    this.scale_y.domain([min_value, max_value]);
+    this.axis_y_g.call(this.axis_y);         
     
 };

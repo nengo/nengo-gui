@@ -8,7 +8,7 @@
 VIZ.Slider = function(args) {
     VIZ.Component.call(this, args);
     var self = this;
-    this.div.appendChild(VIZ.Config.slider(self, args.min_value, args.max_value));
+    this.div.appendChild(this.make_config());
 
     VIZ.set_transform(this.label, 0, -20);
  
@@ -128,8 +128,25 @@ VIZ.Slider = function(args) {
 };
 
 
+
 VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;
+
+VIZ.Slider.prototype.make_config = function() {
+    var self = this;
+    return VIZ.Config([['Set Range', function() {self.set_range();}]]);
+};
+
+VIZ.Slider.prototype.set_range = function() {
+    var current_range = '' + this.scale.domain()[1] + ',' + this.scale.domain()[0];
+    var range = prompt('Input range for sliders:', current_range);
+    var values = range.split(',');
+    var min_value = parseFloat(values[0]);
+    var max_value = parseFloat(values[1]);
+    this.scale.domain([max_value, min_value]);
+    
+};
+
 
 VIZ.Slider.prototype.set_value = function(slider_index, value) {
     //Get the slider
@@ -137,7 +154,7 @@ VIZ.Slider.prototype.set_value = function(slider_index, value) {
 
     //important for 2d sliders
     var x_pos = target.getAttribute('fixed-x'); 
-    
+
     //Get the scaled value
     var point = this.scale(value);
 
