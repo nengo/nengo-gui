@@ -69,9 +69,9 @@ VIZ.Component = function(args) {
             onmove: function (event) {
                 var target = event.target;
                 var holde = $(target).css('transform').match(/(-?[0-9\.]+)/g); //Ugly method of finding the transform currently
-                var x = Number(holde[4]) + event.dx;
+                var x = Number(holde[4]) + event.dx; //Adjusting position relative to current transform
                 var y = Number(holde[5]) + event.dy;
-                var datax = parseFloat(target.getAttribute('data-x')) + event.dx;
+                var datax = parseFloat(target.getAttribute('data-x')) + event.dx; //Adjusting coordinate independently of position on screen
                 var datay = parseFloat(target.getAttribute('data-y')) + event.dy;
                 VIZ.set_transform(target, x, y);
                 target.setAttribute('data-x', datax);
