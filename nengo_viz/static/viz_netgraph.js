@@ -107,13 +107,15 @@ VIZ.NetGraphItem = function(ng, info) {
                 var w = ng.svg.clientWidth;
                 var h = ng.svg.clientHeight;    
                 var item = ng.svg_objects[uid];
-                item.pos = [item.pos[0] + event.dx/w, item.pos[1] + event.dy/h];
-    
-                g.setAttribute('transform', 'translate(' + item.pos[0]*w + ', ' + item.pos[1]*h + ')');
+                item.set_position(item.pos[0] + event.dx/w, item.pos[1] + event.dy/h);
             }});
-    
 };
 
 
 
-
+VIZ.NetGraphItem.prototype.set_position = function(x, y) {
+    this.pos = [x, y];
+    var w = this.ng.svg.clientWidth;
+    var h = this.ng.svg.clientHeight;    
+    this.g.setAttribute('transform', 'translate(' + this.pos[0]*w + ', ' + this.pos[1]*h + ')');
+};
