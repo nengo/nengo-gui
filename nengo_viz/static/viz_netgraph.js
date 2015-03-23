@@ -121,18 +121,12 @@ VIZ.NetGraphItem = function(ng, info) {
     ng.svg.appendChild(g);
     g.classList.add(this.type);
     
-    var w = this.ng.get_scaled_width();
-    var h = this.ng.get_scaled_height();    
-    
-    g.setAttribute('transform', 'translate(' + info.pos[0]*w + ', ' + info.pos[1]*h + ')');
-    
+    this.set_position(info.pos[0], info.pos[1]);
 
     if (info.type == 'node') {
         this.shape = this.ng.createSVGElement('rect');
-        this.shape.setAttribute('transform', 'translate(-' + info.size[0]*w + ', -' + info.size[1]*h + ')')
     } else if (info.type == 'net') {
         this.shape = this.ng.createSVGElement('rect');
-        this.shape.setAttribute('transform', 'translate(-' + info.size[0]*w + ', -' + info.size[1]*h + ')')
         this.shape.setAttribute('rx', '15');
         this.shape.setAttribute('ry', '15');
     } else if (info.type == 'ens') {
