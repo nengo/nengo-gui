@@ -27,6 +27,22 @@ VIZ.NetGraph = function(args) {
     window.addEventListener("resize", function() {self.on_resize();});
     
     this.svg_objects = {};
+    
+    var self = this;
+    interact(this.svg)
+        .draggable({
+            onmove: function(event) {
+                var w = self.svg.clientWidth;
+                var h = self.svg.clientHeight; 
+                var dx = event.dx / w;
+                var dy = event.dy / h;
+                for (var key in self.svg_objects) {
+                    var item = self.svg_objects[key];
+                    item.set_position(item.pos[0] + dx, item.pos[1] + dy);
+                }    
+            }});
+    
+    
 };
 
 /** Event handler for received WebSocket messages */
@@ -100,9 +116,8 @@ VIZ.NetGraphItem = function(ng, info) {
 
     var uid = this.uid;
     var ng = ng;
-    interact(shape)
+    interact(g)
         .draggable({
-            inertia: true,
             onmove: function(event) {
                 var w = ng.svg.clientWidth;
                 var h = ng.svg.clientHeight;    
