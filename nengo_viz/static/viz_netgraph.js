@@ -65,7 +65,11 @@ VIZ.NetGraph.prototype.create_object = function(info) {
 };
 
 VIZ.NetGraph.prototype.on_resize = function(event) {
-
+    for (var key in this.svg_objects) {
+        var item = this.svg_objects[key];
+        item.set_position(item.pos[0], item.pos[1]);
+        item.set_size(item.size[0], item.size[1]);
+    }
 };
 
 VIZ.NetGraphItem = function(ng, info) {
@@ -86,29 +90,21 @@ VIZ.NetGraphItem = function(ng, info) {
     g.setAttribute('transform', 'translate(' + info.pos[0]*w + ', ' + info.pos[1]*h + ')');
     
 
-    var shape;
     if (info.type == 'node') {
-        shape = this.ng.createSVGElement('rect');
-        shape.setAttribute('transform', 'translate(-' + info.size[0]*w + ', -' + info.size[1]*h + ')')
-        shape.setAttribute('width', info.size[0] * 2 * w);
-        shape.setAttribute('height', info.size[1] * 2 * h);
-        g.appendChild(shape);
+        this.shape = this.ng.createSVGElement('rect');
+        this.shape.setAttribute('transform', 'translate(-' + info.size[0]*w + ', -' + info.size[1]*h + ')')
     } else if (info.type == 'net') {
-        shape = this.ng.createSVGElement('rect');
-        shape.setAttribute('transform', 'translate(-' + info.size[0]*w + ', -' + info.size[1]*h + ')')
-        shape.setAttribute('width', info.size[0] * 2 * w);
-        shape.setAttribute('height', info.size[1] * 2 * h);
-        shape.setAttribute('rx', '15');
-        shape.setAttribute('ry', '15');
-        g.appendChild(shape);
-    } else {
-        shape = this.ng.createSVGElement('ellipse');
-        shape.setAttribute('cx', '0');
-        shape.setAttribute('cy', '0');
-        shape.setAttribute('rx', info.size[0] * w);
-        shape.setAttribute('ry', info.size[1] * h);
-        g.appendChild(shape);
+        this.shape = this.ng.createSVGElement('rect');
+        this.shape.setAttribute('transform', 'translate(-' + info.size[0]*w + ', -' + info.size[1]*h + ')')
+        this.shape.setAttribute('rx', '15');
+        this.shape.setAttribute('ry', '15');
+    } else if (info.type == 'ens') {
+        this.shape = this.ng.createSVGElement('ellipse');
+        this.shape.setAttribute('cx', '0');
+        this.shape.setAttribute('cy', '0');
     }
+    this.set_size(info.size[0], info.size[1]);
+    g.appendChild(this.shape);
     
     var label = this.ng.createSVGElement('text');
     label.innerHTML = info.label;
@@ -133,4 +129,18 @@ VIZ.NetGraphItem.prototype.set_position = function(x, y) {
     var w = this.ng.svg.clientWidth;
     var h = this.ng.svg.clientHeight;    
     this.g.setAttribute('transform', 'translate(' + this.pos[0]*w + ', ' + this.pos[1]*h + ')');
+};
+
+VIZ.NetGraphItem.prototype.set_size = function(width, height) {
+    this.size = [width, height];
+    var w = this.ng.svg.clientWidth;
+    var h = this.ng.svg.clientHeight;    
+    if (this.type == 'ens') {
+        this.shape.setAttribute('rx', width * w);
+        this.shape.setAttribute('ry', height * h);    
+    } else {
+        this.shape.setAttribute('transform', 'translate(-' + width*w + ', -' + height*h + ')')
+        this.shape.setAttribute('width', width * 2 * w);
+        this.shape.setAttribute('height', height * 2 * h);
+    }
 };
