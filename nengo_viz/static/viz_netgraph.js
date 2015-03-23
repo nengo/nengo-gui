@@ -111,13 +111,17 @@ VIZ.NetGraph.prototype.toggle_network = function(uid) {
     if (item.expanded) {
         item.g.classList.remove('expanded');
         item.label.setAttribute('transform', '');
-        item.expanded = false;
         
+        while (item.children.length > 0) {
+            item.children[0].remove();
+        }
+        
+        item.expanded = false;        
     } else {
         item.g.classList.add('expanded');
         item.label.setAttribute('transform', 'translate(0, ' + ((item.size[1])*this.get_scaled_height()) + ')');
         item.expanded = true;
-    
+        this.ws.send(JSON.stringify({act:"expand", uid:uid}));
     }
 }
 
@@ -127,6 +131,13 @@ VIZ.NetGraphItem = function(ng, info) {
     this.size = info.size;
     this.type = info.type;
     this.uid = info.uid;
+    this.children = [];
+    if (info.parent == null) {
+        this.parent = null;
+    } else {
+        this.parent = ng.svg_objects[info.parent];
+        this.parent.children.push(this);
+    }
     this.expanded = false;
     
     this.minWidth = 5;
@@ -194,7 +205,14 @@ VIZ.NetGraphItem = function(ng, info) {
     }
 };
 
-
+VIZ.NetGraphItem.prototype.remove = function() {
+    if (this.parent != null) {
+        var index = this.parent.children.indexOf(this);
+        this.parent.children.splice(index, 1);    
+    }
+    this.ng.svg.removeChild(this.g);
+    delete this.ng.svg_objects[this.uid];    
+}
 
 VIZ.NetGraphItem.prototype.set_position = function(x, y) {
     this.pos = [x, y];

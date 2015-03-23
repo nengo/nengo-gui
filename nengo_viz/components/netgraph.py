@@ -28,6 +28,7 @@ class NetGraph(Component):
             config = Config()
         self.config = config
         self.to_be_expanded = [self.viz.model]
+        self.uids = {}
 
     def update_client(self, client):
         if len(self.to_be_expanded) > 0:
@@ -41,20 +42,34 @@ class NetGraph(Component):
         return 'new VIZ.NetGraph({parent:main, id:%(id)d});' % dict(id=id(self))
 
     def message(self, msg):
-        print 'received', msg
+        info = json.loads(msg)
+        action = info.get('act', None)
+        if action is not None:
+            del info['act']
+            getattr(self, 'act_' + action)(**info)
+        else:
+            print 'received message', msg
+
+    def act_expand(self, uid):
+        net = self.uids[uid]
+        self.to_be_expanded.append(net)
 
     def expand_network(self, network, client):
+        if network is self.viz.model:
+            parent = None
+        else:
+            parent = self.viz.viz.get_uid(network)
         for ens in network.ensembles:
-            self.create_object(client, ens, type='ens')
+            self.create_object(client, ens, type='ens', parent=parent)
         for node in network.nodes:
-            self.create_object(client, node, type='node')
+            self.create_object(client, node, type='node', parent=parent)
         for net in network.networks:
-            self.create_object(client, net, type='net')
+            self.create_object(client, net, type='net', parent=parent)
         for conn in network.connections:
-            self.create_connection(client, conn)
+            self.create_connection(client, conn, parent=parent)
         self.config[network].expanded = True
 
-    def create_object(self, client, obj, type):
+    def create_object(self, client, obj, type, parent):
         pos = self.config[obj].pos
         if pos is None:
             import random
@@ -64,14 +79,17 @@ class NetGraph(Component):
             size = (0.04, 0.04)
         label = self.viz.viz.get_label(obj)
         uid = self.viz.viz.get_uid(obj)
-        info = dict(uid=uid, label=label, pos=pos, type=type, size=size)
+        self.uids[uid] = obj
+        info = dict(uid=uid, label=label, pos=pos, type=type, size=size,
+                    parent=parent)
         client.write(json.dumps(info))
 
-    def create_connection(self, client, conn):
+    def create_connection(self, client, conn, parent):
         pre = self.viz.viz.get_uid(conn.pre_obj)
         post = self.viz.viz.get_uid(conn.post_obj)
         uid = 'conn_%d' % id(conn)
-        info = dict(uid=uid, pre=pre, post=post, type='conn')
+        self.uids[uid] = conn
+        info = dict(uid=uid, pre=pre, post=post, type='conn', parent=parent)
         client.write(json.dumps(info))
 
 
