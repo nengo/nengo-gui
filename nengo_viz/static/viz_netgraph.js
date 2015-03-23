@@ -78,6 +78,9 @@ VIZ.NetGraphItem = function(ng, info) {
     this.size = info.size;
     this.type = info.type;
     this.uid = info.uid;
+    
+    this.minWidth = 5;
+    this.minHeight = 5;
 
     var g = this.ng.createSVGElement('g');
     this.g = g;
@@ -152,12 +155,22 @@ VIZ.NetGraphItem.prototype.set_size = function(width, height) {
     this.size = [width, height];
     var w = this.ng.svg.clientWidth;
     var h = this.ng.svg.clientHeight;    
+    
+    var screen_w = width * w;
+    var screen_h = height * h;
+    if (screen_w < this.minWidth) {
+        screen_w = this.minWidth;
+    }
+    if (screen_h < this.minHeight) {
+        screen_h = this.minHeight;
+    }
+    
     if (this.type == 'ens') {
-        this.shape.setAttribute('rx', width * w);
-        this.shape.setAttribute('ry', height * h);    
+        this.shape.setAttribute('rx', screen_w);
+        this.shape.setAttribute('ry', screen_h);    
     } else {
-        this.shape.setAttribute('transform', 'translate(-' + width*w + ', -' + height*h + ')')
-        this.shape.setAttribute('width', width * 2 * w);
-        this.shape.setAttribute('height', height * 2 * h);
+        this.shape.setAttribute('transform', 'translate(-' + screen_w + ', -' + screen_h + ')')
+        this.shape.setAttribute('width', screen_w * 2);
+        this.shape.setAttribute('height', screen_h * 2);
     }
 };
