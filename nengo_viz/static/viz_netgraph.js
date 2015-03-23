@@ -120,6 +120,23 @@ VIZ.NetGraphItem = function(ng, info) {
                 var item = ng.svg_objects[uid];
                 item.set_position(item.pos[0] + event.dx/w, item.pos[1] + event.dy/h);
             }});
+            
+    interact(this.shape)
+        .resizable({
+            edges: { left: true, right: true, bottom: true, top: true }
+            })
+        .on('resizemove', function(event) {            
+            var item = ng.svg_objects[uid];
+            var w = ng.svg.clientWidth;
+            var h = ng.svg.clientHeight;    
+            
+            item.set_size(item.size[0] + event.deltaRect.width / w / 2, 
+                          item.size[1] + event.deltaRect.height / h / 2);
+            item.set_position(item.pos[0] + event.deltaRect.width / w / 2 + 
+                                            event.deltaRect.left / w, 
+                              item.pos[1] + event.deltaRect.height / h / 2 + 
+                                            event.deltaRect.top / h);
+            });
 };
 
 
