@@ -198,7 +198,7 @@ VIZ.NetGraphItem = function(ng, info) {
             });
             
     if (info.type == 'net') {
-        interact(this.shape)
+        interact(this.g)
             .on('tap', function(event) {
                 ng.toggle_network(uid);
             });
@@ -215,11 +215,30 @@ VIZ.NetGraphItem.prototype.remove = function() {
 }
 
 VIZ.NetGraphItem.prototype.set_position = function(x, y) {
+    var dx = x - this.pos[0];
+    var dy = y - this.pos[1];
+    
     this.pos = [x, y];
     var w = this.ng.svg.clientWidth * this.ng.scale;
     var h = this.ng.svg.clientHeight * this.ng.scale;    
     
-    this.g.setAttribute('transform', 'translate(' + ((this.pos[0]+ this.ng.offsetX)*w) + ', ' + ((this.pos[1]+ this.ng.offsetY)*h) + ')');
+    var offsetX = this.ng.offsetX * w;
+    var offsetY = this.ng.offsetY * h;
+    
+    if (this.parent != null) {
+        offsetX += (this.parent.pos[0] - this.parent.size[0]) * w;
+        offsetY += (this.parent.pos[1] - this.parent.size[1]) * h;
+        w = w * this.parent.size[0] * 2;
+        h = h * this.parent.size[1] * 2;
+    }
+    
+    this.g.setAttribute('transform', 'translate(' + (this.pos[0]*w+offsetX) + ', ' + (this.pos[1]*h+offsetY) + ')');
+    
+    for (var i in this.children) {
+        var item = this.children[i];
+        item.redraw();
+    }
+        
 };
 
 VIZ.NetGraphItem.prototype.set_size = function(width, height) {
@@ -229,6 +248,13 @@ VIZ.NetGraphItem.prototype.set_size = function(width, height) {
     
     var screen_w = width * w * this.ng.scale;
     var screen_h = height * h * this.ng.scale;
+    
+    if (this.parent != null) {
+        screen_w *= this.parent.size[0] * 2;
+        screen_h *= this.parent.size[1] * 2;
+    }
+    
+    
     if (screen_w < this.minWidth) {
         screen_w = this.minWidth;
     }
@@ -248,6 +274,12 @@ VIZ.NetGraphItem.prototype.set_size = function(width, height) {
     if (this.expanded) {
         this.label.setAttribute('transform', 'translate(0, ' + screen_h + ')');
     }
+    
+    for (var i in this.children) {
+        var item = this.children[i];
+        item.redraw();
+    }
+    
     
 };
 
