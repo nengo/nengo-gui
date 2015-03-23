@@ -26,21 +26,46 @@ VIZ.NetGraph = function(args) {
     this.svg.addEventListener("resize", function() {self.on_resize();});
     window.addEventListener("resize", function() {self.on_resize();});
     
+    this.scale = 1.0;
+    this.offsetX = 0;
+    this.offsetY = 0;
     this.svg_objects = {};
     
     var self = this;
     interact(this.svg)
         .draggable({
             onmove: function(event) {
-                var w = self.svg.clientWidth;
-                var h = self.svg.clientHeight; 
+                var w = self.get_scaled_width();
+                var h = self.get_scaled_height(); 
                 var dx = event.dx / w;
                 var dy = event.dy / h;
+                self.offsetX += dx;
+                self.offsetY += dy;
                 for (var key in self.svg_objects) {
-                    var item = self.svg_objects[key];
-                    item.set_position(item.pos[0] + dx, item.pos[1] + dy);
+                    self.svg_objects[key].redraw();
                 }    
             }});
+            
+    this.svg.addEventListener("mousewheel", function(event) {
+        var x = (event.clientX / self.svg.clientWidth);
+        var y = (event.clientY / self.svg.clientHeight);
+        var step_size = 1.1;
+        var scale = event.wheelDeltaY > 0 ? step_size : 1.0 / step_size;
+        
+        var w = self.get_scaled_width(); 
+        var h = self.get_scaled_height();
+        var dw = w * scale - w;
+        var dh = h * scale - h;
+        
+        self.offsetX = self.offsetX / scale - dw * x / (w * scale);
+        self.offsetY = self.offsetY / scale - dh * y / (h * scale);
+                
+        self.scale = scale * self.scale;
+        for (var key in self.svg_objects) {
+            self.svg_objects[key].redraw();
+        }    
+        
+    }, false);
     
     
 };
@@ -72,6 +97,13 @@ VIZ.NetGraph.prototype.on_resize = function(event) {
     }
 };
 
+VIZ.NetGraph.prototype.get_scaled_width = function() {
+    return this.svg.clientWidth * this.scale;
+}
+VIZ.NetGraph.prototype.get_scaled_height = function() {
+    return this.svg.clientHeight * this.scale;
+}
+
 VIZ.NetGraphItem = function(ng, info) {
     this.ng = ng;
     this.pos = info.pos;
@@ -87,8 +119,8 @@ VIZ.NetGraphItem = function(ng, info) {
     ng.svg.appendChild(g);
     g.classList.add(this.type);
     
-    var w = this.ng.svg.clientWidth;
-    var h = this.ng.svg.clientHeight;    
+    var w = this.ng.get_scaled_width();
+    var h = this.ng.get_scaled_height();    
     
     g.setAttribute('transform', 'translate(' + info.pos[0]*w + ', ' + info.pos[1]*h + ')');
     
@@ -118,8 +150,8 @@ VIZ.NetGraphItem = function(ng, info) {
     interact(g)
         .draggable({
             onmove: function(event) {
-                var w = ng.svg.clientWidth;
-                var h = ng.svg.clientHeight;    
+                var w = ng.get_scaled_width();
+                var h = ng.get_scaled_height();    
                 var item = ng.svg_objects[uid];
                 item.set_position(item.pos[0] + event.dx/w, item.pos[1] + event.dy/h);
             }});
@@ -130,8 +162,8 @@ VIZ.NetGraphItem = function(ng, info) {
             })
         .on('resizemove', function(event) {            
             var item = ng.svg_objects[uid];
-            var w = ng.svg.clientWidth;
-            var h = ng.svg.clientHeight;    
+            var w = ng.get_scaled_width();
+            var h = ng.get_scaled_height();    
             
             item.set_size(item.size[0] + event.deltaRect.width / w / 2, 
                           item.size[1] + event.deltaRect.height / h / 2);
@@ -146,9 +178,10 @@ VIZ.NetGraphItem = function(ng, info) {
 
 VIZ.NetGraphItem.prototype.set_position = function(x, y) {
     this.pos = [x, y];
-    var w = this.ng.svg.clientWidth;
-    var h = this.ng.svg.clientHeight;    
-    this.g.setAttribute('transform', 'translate(' + this.pos[0]*w + ', ' + this.pos[1]*h + ')');
+    var w = this.ng.svg.clientWidth * this.ng.scale;
+    var h = this.ng.svg.clientHeight * this.ng.scale;    
+    
+    this.g.setAttribute('transform', 'translate(' + ((this.pos[0]+ this.ng.offsetX)*w) + ', ' + ((this.pos[1]+ this.ng.offsetY)*h) + ')');
 };
 
 VIZ.NetGraphItem.prototype.set_size = function(width, height) {
@@ -156,8 +189,8 @@ VIZ.NetGraphItem.prototype.set_size = function(width, height) {
     var w = this.ng.svg.clientWidth;
     var h = this.ng.svg.clientHeight;    
     
-    var screen_w = width * w;
-    var screen_h = height * h;
+    var screen_w = width * w * this.ng.scale;
+    var screen_h = height * h * this.ng.scale;
     if (screen_w < this.minWidth) {
         screen_w = this.minWidth;
     }
@@ -174,3 +207,8 @@ VIZ.NetGraphItem.prototype.set_size = function(width, height) {
         this.shape.setAttribute('height', screen_h * 2);
     }
 };
+
+VIZ.NetGraphItem.prototype.redraw = function() {
+    this.set_position(this.pos[0], this.pos[1]);
+    this.set_size(this.size[0], this.size[1]);
+}
