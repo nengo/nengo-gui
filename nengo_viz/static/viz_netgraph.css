@@ -24,3 +24,7 @@ g.net rect{
     text-anchor: middle;
     dominant-baseline: central;
     }
+.netgraph g.expanded text {
+    text-anchor: middle;
+    dominant-baseline: text-before-edge;
+    }    

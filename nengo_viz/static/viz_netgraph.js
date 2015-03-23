@@ -106,12 +106,28 @@ VIZ.NetGraph.prototype.get_scaled_height = function() {
     return this.svg.clientHeight * this.scale;
 }
 
+VIZ.NetGraph.prototype.toggle_network = function(uid) {
+    var item = this.svg_objects[uid];
+    if (item.expanded) {
+        item.g.classList.remove('expanded');
+        item.label.setAttribute('transform', '');
+        item.expanded = false;
+        
+    } else {
+        item.g.classList.add('expanded');
+        item.label.setAttribute('transform', 'translate(0, ' + ((item.size[1])*this.get_scaled_height()) + ')');
+        item.expanded = true;
+    
+    }
+}
+
 VIZ.NetGraphItem = function(ng, info) {
     this.ng = ng;
     this.pos = info.pos;
     this.size = info.size;
     this.type = info.type;
     this.uid = info.uid;
+    this.expanded = false;
     
     this.minWidth = 5;
     this.minHeight = 5;
@@ -138,6 +154,7 @@ VIZ.NetGraphItem = function(ng, info) {
     g.appendChild(this.shape);
     
     var label = this.ng.createSVGElement('text');
+    this.label = label;
     label.innerHTML = info.label;
     g.appendChild(label);
 
@@ -168,6 +185,13 @@ VIZ.NetGraphItem = function(ng, info) {
                               item.pos[1] + event.deltaRect.height / h / 2 + 
                                             event.deltaRect.top / h);
             });
+            
+    if (info.type == 'net') {
+        interact(this.shape)
+            .on('tap', function(event) {
+                ng.toggle_network(uid);
+            });
+    }
 };
 
 
@@ -202,6 +226,11 @@ VIZ.NetGraphItem.prototype.set_size = function(width, height) {
         this.shape.setAttribute('width', screen_w * 2);
         this.shape.setAttribute('height', screen_h * 2);
     }
+    
+    if (this.expanded) {
+        this.label.setAttribute('transform', 'translate(0, ' + screen_h + ')');
+    }
+    
 };
 
 VIZ.NetGraphItem.prototype.redraw = function() {
