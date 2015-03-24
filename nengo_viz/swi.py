@@ -455,11 +455,15 @@ class ClientSocket(object):
         if(len(data) < 6):
             raise Exception("Error reading data")
         # FIN bit must be set to indicate end of frame
+        if 0x1 != (0xFF & data[0]) >> 7:
+            print 'invalid ws data %02x %02x %02x %02x' % tuple(data[:4])
+            return ''
         assert(0x1 == (0xFF & data[0]) >> 7)
         # data must be a text frame
         # 0x8 (close connection) is handled with assertion failure
         if 0x1 != (0xF & data[0]):
             print 'invalid ws data %02x %02x %02x %02x' % tuple(data[:4])
+            return ''
         assert(0x1 == (0xF & data[0]))
 
         # assert that data is masked
