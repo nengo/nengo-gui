@@ -108,7 +108,7 @@ class NetGraph(Component):
             del info['act']
             getattr(self, 'act_' + action)(**info)
         else:
-            print 'received message', msg
+            print('received message', msg)
 
     def act_expand(self, uid):
         net = self.uids[uid]
@@ -122,12 +122,10 @@ class NetGraph(Component):
         self.save_config()
 
     def act_pan(self, x, y):
-        print 'pan to', x, y
         self.config[self.viz.model].pos = x, y
         self.save_config()
 
     def act_zoom(self, scale, x, y):
-        print 'zoom to', scale
         self.config[self.viz.model].size = scale, scale
         self.config[self.viz.model].pos = x, y
         self.save_config()
