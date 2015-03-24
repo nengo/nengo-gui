@@ -12,6 +12,7 @@ VIZ.NetGraph = function(args) {
     this.svg = this.createSVGElement('svg');
     this.svg.classList.add('netgraph');    
     this.svg.style.width = '100%';
+    this.svg.id = 'netgraph';
     this.svg.style.height = 'calc(100% - 80px)';
     this.svg.style.position = 'fixed';
     args.parent.appendChild(this.svg);

@@ -1,7 +1,7 @@
 /*This detects if the mouse has exited the browser window to prevent erratic behaviour upon re-entry*/
 window.addEventListener('load',
     function(e){
-        var main = document.getElementById('main');
+        var main = document.getElementById('netgraph');
         main.addEventListener('mouseout',
             function(e) {
                 if (!(e)) {

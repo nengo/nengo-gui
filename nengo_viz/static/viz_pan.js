@@ -13,9 +13,10 @@ VIZ.pan.enabled = false;
 VIZ.pan.cposn = {x:0, y:0};
 
 function init_main_events() {
-	$("#main")
+	console.log($('.netgraph'));
+	$(".netgraph")
 		.mousedown(function(event) { //Listens for mousedown
-			if (event.target == $('#main')[0]) { //Checks that you have indeed clicked the #main element
+			if (event.target == $('.netgraph')[0]) { //Checks that you have indeed clicked the #main element
 				VIZ.pan.enabled = true; //Enables panning
 			}
 			VIZ.pan.iposn = {x:event.pageX, y:event.pageY}; //Gets the starting point of your mouse
@@ -54,4 +55,4 @@ VIZ.pan.snap_to = function(posn) {
 }
 
 //Get those main event listeners up and running
-init_main_events();
+setTimeout(function(){init_main_events();},100);
