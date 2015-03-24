@@ -61,6 +61,11 @@ class NetGraph(Component):
     def act_expand(self, uid):
         net = self.uids[uid]
         self.to_be_expanded.append(net)
+        self.config[net].expanded = True
+
+    def act_collapse(self, uid):
+        net = self.uids[uid]
+        self.config[net].expanded = False
 
     def act_pan(self, x, y):
         print 'pan to', x, y
@@ -70,6 +75,14 @@ class NetGraph(Component):
         print 'zoom to', scale
         self.config[self.viz.model].size = scale, scale
         self.config[self.viz.model].pos = x, y
+
+    def act_pos(self, uid, x, y):
+        obj = self.uids[uid]
+        self.config[obj].pos = x, y
+
+    def act_size(self, uid, width, height):
+        obj = self.uids[uid]
+        self.config[obj].size = width, height
 
     def expand_network(self, network, client):
         if network is self.viz.model:
@@ -91,14 +104,18 @@ class NetGraph(Component):
         if pos is None:
             import random
             pos = random.uniform(0, 1), random.uniform(0, 1)
+            self.config[obj].pos = pos
         size = self.config[obj].size
         if size is None:
             size = (0.1, 0.1)
+            self.config[obj].size = size
         label = self.viz.viz.get_label(obj)
         uid = self.viz.viz.get_uid(obj)
         self.uids[uid] = obj
         info = dict(uid=uid, label=label, pos=pos, type=type, size=size,
                     parent=parent)
+        if type == 'net':
+            info['expanded'] = self.config[obj].expanded
         client.write(json.dumps(info))
 
     def send_pan_and_zoom(self, client):

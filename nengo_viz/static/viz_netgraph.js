@@ -236,6 +236,10 @@ VIZ.NetGraphItem = function(ng, info) {
             .on('tap', function(event) {
                 ng.toggle_network(uid);
             });
+
+        if (info.expanded) {
+            this.expand();
+        }
     }
 };
 
@@ -273,6 +277,11 @@ VIZ.NetGraphItem.prototype.remove = function() {
 VIZ.NetGraphItem.prototype.set_position = function(x, y) {
     var dx = x - this.pos[0];
     var dy = y - this.pos[1];
+
+    if (x!=this.pos[0] || y!=this.pos[1]) {
+        this.ng.ws.send(JSON.stringify({act:"pos", uid:this.uid, 
+                                        x:x, y:y}));
+    }
     
     this.pos = [x, y];
     var w = $(this.ng.svg).width() * this.ng.scale;
@@ -334,6 +343,10 @@ VIZ.NetGraphItem.prototype.get_nested_height = function() {
 }
 
 VIZ.NetGraphItem.prototype.set_size = function(width, height) {
+    if (width!=this.size[0] || height!=this.size[1]) {
+        this.ng.ws.send(JSON.stringify({act:"size", uid:this.uid, 
+                                        width:width, height:height}));
+    }
     this.size = [width, height];
     var w = $(this.ng.svg).width();
     var h = $(this.ng.svg).height();    
