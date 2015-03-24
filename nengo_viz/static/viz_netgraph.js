@@ -119,7 +119,8 @@ VIZ.NetGraph.prototype.toggle_network = function(uid) {
         item.expanded = false;        
     } else {
         item.g.classList.add('expanded');
-        item.label.setAttribute('transform', 'translate(0, ' + ((item.size[1])*this.get_scaled_height()) + ')');
+        var screen_h = item.get_nested_height() * this.svg.clientHeight * this.scale;
+        item.label.setAttribute('transform', 'translate(0, ' + (screen_h) + ')');
         item.expanded = true;
         this.ws.send(JSON.stringify({act:"expand", uid:uid}));
     }
@@ -233,11 +234,13 @@ VIZ.NetGraphItem.prototype.set_position = function(x, y) {
     var offsetX = this.ng.offsetX * w;
     var offsetY = this.ng.offsetY * h;
     
-    if (this.parent != null) {
-        offsetX += (this.parent.pos[0] - this.parent.size[0]) * w;
-        offsetY += (this.parent.pos[1] - this.parent.size[1]) * h;
-        w = w * this.parent.size[0] * 2;
-        h = h * this.parent.size[1] * 2;
+    var parent = this.parent;
+    while (parent != null) {
+        offsetX += (parent.pos[0] - parent.size[0]) * w;
+        offsetY += (parent.pos[1] - parent.size[1]) * h;
+        w = w * parent.size[0] * 2;
+        h = h * parent.size[1] * 2;
+        parent = parent.parent;
     }
     
     this.g.setAttribute('transform', 'translate(' + (this.pos[0]*w+offsetX) + ', ' + (this.pos[1]*h+offsetY) + ')');
@@ -249,20 +252,34 @@ VIZ.NetGraphItem.prototype.set_position = function(x, y) {
         
 };
 
+VIZ.NetGraphItem.prototype.get_nested_width = function() {
+    var w = this.size[0];
+    var parent = this.parent;
+    while (parent != null) {
+        w *= parent.size[0] * 2;
+        parent = parent.parent;
+    }
+    return w;
+}
+
+VIZ.NetGraphItem.prototype.get_nested_height = function() {
+    var h = this.size[1];
+    var parent = this.parent;
+    while (parent != null) {
+        h *= parent.size[1] * 2;
+        parent = parent.parent;
+    }
+    return h;
+}
+
 VIZ.NetGraphItem.prototype.set_size = function(width, height) {
     this.size = [width, height];
     var w = this.ng.svg.clientWidth;
     var h = this.ng.svg.clientHeight;    
     
-    var screen_w = width * w * this.ng.scale;
-    var screen_h = height * h * this.ng.scale;
-    
-    if (this.parent != null) {
-        screen_w *= this.parent.size[0] * 2;
-        screen_h *= this.parent.size[1] * 2;
-    }
-    
-    
+    var screen_w = this.get_nested_width() * w * this.ng.scale;
+    var screen_h = this.get_nested_height() * h * this.ng.scale;
+        
     if (screen_w < this.minWidth) {
         screen_w = this.minWidth;
     }
