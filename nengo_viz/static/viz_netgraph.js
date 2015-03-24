@@ -44,6 +44,10 @@ VIZ.NetGraph = function(args) {
                 for (var key in self.svg_objects) {
                     self.svg_objects[key].redraw();
                 }    
+            },
+            onend: function(event) {
+                self.ws.send(JSON.stringify({act:"pan", x:self.offsetX,
+                                                        y:self.offsetY}));
             }});
     
     interact(this.svg)
@@ -67,7 +71,8 @@ VIZ.NetGraph = function(args) {
             for (var key in self.svg_objects) {
                 self.svg_objects[key].redraw();
             }    
-            
+            self.ws.send(JSON.stringify({act:"zoom", scale:self.scale, 
+                                         x:self.offsetX, y:self.offsetY}));
         });
     
     
@@ -77,10 +82,36 @@ VIZ.NetGraph = function(args) {
 VIZ.NetGraph.prototype.on_message = function(event) {
     console.log(event.data);
     data = JSON.parse(event.data);
-    if (data.type != 'conn') {
+    if (data.type == 'net') {
         this.create_object(data);
+    } else if (data.type == 'ens') {
+        this.create_object(data);
+    } else if (data.type == 'node') {
+        this.create_object(data);
+    } else if (data.type == 'pan') {
+        this.set_offset(data.pan[0], data.pan[1]);
+    } else if (data.type == 'zoom') {
+        this.set_scale(data.zoom);
     }
 };  
+
+VIZ.NetGraph.prototype.set_offset = function(x, y) {
+    this.offsetX = x;
+    this.offsetY = y;
+    this.redraw();
+}
+
+VIZ.NetGraph.prototype.set_scale = function(scale) {
+    this.scale = scale;
+    this.redraw();
+}
+
+VIZ.NetGraph.prototype.redraw = function() {
+    for (var key in this.svg_objects) {
+        this.svg_objects[key].redraw();
+    }    
+}
+
 
 VIZ.NetGraph.prototype.createSVGElement = function(tag) {
     return document.createElementNS("http://www.w3.org/2000/svg", tag);

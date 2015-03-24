@@ -21,11 +21,16 @@ class Config(nengo.Config):
 
 
 class NetGraph(Component):
+    configs = {}
+
     def __init__(self, viz, config=None):
         super(NetGraph, self).__init__(viz)
         self.viz = viz
         if config is None:
-            config = Config()
+            config = NetGraph.configs.get(self.viz.model, None)
+            if config is None:
+                config = Config()
+                NetGraph.configs[self.viz.model] = config
         self.config = config
         self.to_be_expanded = [self.viz.model]
         self.uids = {}
@@ -33,7 +38,10 @@ class NetGraph(Component):
     def update_client(self, client):
         if len(self.to_be_expanded) > 0:
             self.viz.viz.lock.acquire()
-            self.expand_network(self.to_be_expanded.pop(0), client)
+            network = self.to_be_expanded.pop(0)
+            self.expand_network(network, client)
+            if network is self.viz.model:
+                self.send_pan_and_zoom(client)
             self.viz.viz.lock.release()
         else:
             pass
@@ -53,6 +61,15 @@ class NetGraph(Component):
     def act_expand(self, uid):
         net = self.uids[uid]
         self.to_be_expanded.append(net)
+
+    def act_pan(self, x, y):
+        print 'pan to', x, y
+        self.config[self.viz.model].pos = x, y
+
+    def act_zoom(self, scale, x, y):
+        print 'zoom to', scale
+        self.config[self.viz.model].size = scale, scale
+        self.config[self.viz.model].pos = x, y
 
     def expand_network(self, network, client):
         if network is self.viz.model:
@@ -76,13 +93,25 @@ class NetGraph(Component):
             pos = random.uniform(0, 1), random.uniform(0, 1)
         size = self.config[obj].size
         if size is None:
-            size = (0.04, 0.04)
+            size = (0.1, 0.1)
         label = self.viz.viz.get_label(obj)
         uid = self.viz.viz.get_uid(obj)
         self.uids[uid] = obj
         info = dict(uid=uid, label=label, pos=pos, type=type, size=size,
                     parent=parent)
         client.write(json.dumps(info))
+
+    def send_pan_and_zoom(self, client):
+        pan = self.config[self.viz.model].pos
+        if pan is None:
+            pan = 0, 0
+        zoom = self.config[self.viz.model].size
+        if zoom is None:
+            zoom = 1.0
+        else:
+            zoom = zoom[0]
+        client.write(json.dumps(dict(type='pan', pan=pan)))
+        client.write(json.dumps(dict(type='zoom', zoom=zoom)))
 
     def create_connection(self, client, conn, parent):
         pre = self.viz.viz.get_uid(conn.pre_obj)
