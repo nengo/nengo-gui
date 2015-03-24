@@ -109,20 +109,9 @@ VIZ.NetGraph.prototype.get_scaled_height = function() {
 VIZ.NetGraph.prototype.toggle_network = function(uid) {
     var item = this.svg_objects[uid];
     if (item.expanded) {
-        item.g.classList.remove('expanded');
-        item.label.setAttribute('transform', '');
-        
-        while (item.children.length > 0) {
-            item.children[0].remove();
-        }
-        
-        item.expanded = false;        
+        item.collapse();
     } else {
-        item.g.classList.add('expanded');
-        var screen_h = item.get_nested_height() * this.svg.clientHeight * this.scale;
-        item.label.setAttribute('transform', 'translate(0, ' + (screen_h) + ')');
-        item.expanded = true;
-        this.ws.send(JSON.stringify({act:"expand", uid:uid}));
+        item.expand();
     }
 }
 
@@ -214,7 +203,29 @@ VIZ.NetGraphItem = function(ng, info) {
     }
 };
 
+VIZ.NetGraphItem.prototype.expand = function() {
+    this.g.classList.add('expanded');
+    var screen_h = this.get_nested_height() * this.ng.svg.clientHeight * this.ng.scale;
+    this.label.setAttribute('transform', 'translate(0, ' + (screen_h) + ')');
+    this.expanded = true;
+    this.ng.ws.send(JSON.stringify({act:"expand", uid:this.uid}));
+}
+
+VIZ.NetGraphItem.prototype.collapse = function() {
+    this.g.classList.remove('expanded');
+    this.label.setAttribute('transform', '');
+    
+    while (this.children.length > 0) {
+        this.children[0].remove();
+    }
+    this.expanded = false;        
+}
+
+
 VIZ.NetGraphItem.prototype.remove = function() {
+    if (this.expanded) {
+        this.collapse();
+    }
     if (this.parent != null) {
         var index = this.parent.children.indexOf(this);
         this.parent.children.splice(index, 1);    
