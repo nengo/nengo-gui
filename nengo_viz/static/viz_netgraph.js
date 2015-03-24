@@ -31,6 +31,7 @@ VIZ.NetGraph = function(args) {
     this.offsetY = 0;
     this.svg_objects = {};
     this.svg_conns = {};
+    this.collapsed_conns = {};
     
     var self = this;
     interact(this.svg)
@@ -81,7 +82,6 @@ VIZ.NetGraph = function(args) {
 
 /** Event handler for received WebSocket messages */
 VIZ.NetGraph.prototype.on_message = function(event) {
-    console.log(event.data);
     data = JSON.parse(event.data);
     if (data.type == 'net') {
         this.create_object(data);
@@ -124,6 +124,7 @@ VIZ.NetGraph.prototype.createSVGElement = function(tag) {
 VIZ.NetGraph.prototype.create_object = function(info) {
     var item = new VIZ.NetGraphItem(this, info);
     this.svg_objects[info.uid] = item;    
+    this.detect_collapsed_conns(item.uid);
 };
 
 VIZ.NetGraph.prototype.create_connection = function(info) {
@@ -152,6 +153,26 @@ VIZ.NetGraph.prototype.toggle_network = function(uid) {
         item.collapse();
     } else {
         item.expand();
+    }
+}
+
+VIZ.NetGraph.prototype.register_conn = function(conn, target) {
+    if (this.collapsed_conns[target] === undefined) {
+        this.collapsed_conns[target] = [conn];
+    } else {
+        this.collapsed_conns[target].push(conn);
+    }
+}
+VIZ.NetGraph.prototype.detect_collapsed_conns = function(uid) {
+    var conns = this.collapsed_conns[uid];
+    if (conns != undefined) {
+        delete this.collapsed_conns[uid];
+        for (var i in conns) {
+            var conn = conns[i];
+            conn.set_pre(conn.find_pre());
+            conn.set_post(conn.find_post());
+            conn.redraw();
+        }
     }
 }
 
@@ -251,6 +272,7 @@ VIZ.NetGraphItem = function(ng, info) {
             this.expand();
         }
     }
+
 };
 
 VIZ.NetGraphItem.prototype.expand = function() {
@@ -269,6 +291,7 @@ VIZ.NetGraphItem.prototype.collapse = function() {
         this.children[0].remove();
     }
     this.expanded = false;        
+    this.ng.ws.send(JSON.stringify({act:"collapse", uid:this.uid}));
 }
 
 
@@ -280,8 +303,21 @@ VIZ.NetGraphItem.prototype.remove = function() {
         var index = this.parent.children.indexOf(this);
         this.parent.children.splice(index, 1);    
     }
-    this.ng.svg.removeChild(this.g);
+
     delete this.ng.svg_objects[this.uid];    
+
+    for (var i in this.conn_in) {
+        var conn = this.conn_in[i];
+        conn.set_post(conn.find_post());
+        conn.redraw();
+    }
+    for (var i in this.conn_out) {
+        var conn = this.conn_out[i];
+        conn.set_pre(conn.find_pre());
+        conn.redraw();
+    }
+
+    this.ng.svg.removeChild(this.g);
 }
 
 VIZ.NetGraphItem.prototype.set_position = function(x, y) {
@@ -413,8 +449,14 @@ VIZ.NetGraphItem.prototype.get_screen_location = function() {
 VIZ.NetGraphConnection = function(ng, info) {
     this.ng = ng;
     this.uid = info.uid;
-    this.parent = parent;
 
+    if (info.parent == null) {
+        this.parent = null;
+    } else {
+        this.parent = ng.svg_objects[info.parent];
+        this.parent.children.push(this);
+    }
+    this.expanded = false;
     this.pres = info.pre;
     this.posts = info.post;
 
@@ -442,11 +484,11 @@ VIZ.NetGraphConnection.prototype.set_pre = function(pre) {
 
 VIZ.NetGraphConnection.prototype.set_post = function(post) {
     if (this.post != null) {
-        var index = this.post.conn_out.indexOf(this);
-        this.post.conn_out.splice(index, 1);    
+        var index = this.post.conn_in.indexOf(this);
+        this.post.conn_in.splice(index, 1);    
     }
     this.post = post;
-    this.post.conn_out.push(this);
+    this.post.conn_in.push(this);
 }
 
 VIZ.NetGraphConnection.prototype.find_pre = function() {
@@ -454,8 +496,11 @@ VIZ.NetGraphConnection.prototype.find_pre = function() {
         var pre = this.ng.svg_objects[this.pres[i]];
         if (pre != undefined) {
             return pre;
+        } else {
+            this.ng.register_conn(this, this.pres[i]);
         }
     }
+
 }
 
 VIZ.NetGraphConnection.prototype.find_post = function() {
@@ -463,8 +508,20 @@ VIZ.NetGraphConnection.prototype.find_post = function() {
         var post = this.ng.svg_objects[this.posts[i]];
         if (post != undefined) {
             return post;
+        } else {
+            this.ng.register_conn(this, this.posts[i]);
         }
     }
+}
+
+VIZ.NetGraphConnection.prototype.remove = function() {
+    if (this.parent != null) {
+        var index = this.parent.children.indexOf(this);
+        this.parent.children.splice(index, 1);    
+    }
+    this.ng.svg.removeChild(this.line);
+
+    delete this.ng.svg_conns[this.uid];    
 }
 
 VIZ.NetGraphConnection.prototype.redraw = function() {
