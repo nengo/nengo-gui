@@ -76,9 +76,12 @@ class NetGraph(Component):
         if self.viz.viz.filename is not None:
             locals = dict(self.viz.viz.locals)
             locals['config'] = Config()
-            with open(self.viz.viz.filename + '.cfg') as f:
-                config_code = f.read()
-            exec config_code in locals
+            try:
+                with open(self.viz.viz.filename + '.cfg') as f:
+                    config_code = f.read()
+                exec config_code in locals
+            except IOError:
+                pass
             config = locals['config']
         else:
             config = NetGraph.configs.get(self.viz.model, None)
