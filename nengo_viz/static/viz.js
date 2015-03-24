@@ -9,6 +9,11 @@ VIZ.set_transform = function(element, x, y) {
         element.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
 }
 
+VIZ.get_transform = function(element) {
+    var holde = $(element).css('transform').match(/(-?[0-9\.]+)/g); //Ugly method of finding the current transform of the element
+    return {x:Number(holde[4]), y:Number(holde[5])};
+}
+
 /** 
  * Base class for interactive visualization
  * @constructor

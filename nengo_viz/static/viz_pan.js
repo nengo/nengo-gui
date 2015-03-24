@@ -41,8 +41,8 @@ VIZ.pan.shift = function(dx,dy) {
 	VIZ.pan.cposn.x += dx;
 	VIZ.pan.cposn.y += dy;
 	$('.graph').each(function(i, element){ // Get all the graph elements
-		var holde = $(element).css('transform').match(/(-?[0-9\.]+)/g); //Ugly method of finding the current transform of the element
-		VIZ.set_transform(element, Number(holde[4]) + dx, Number(holde[5]) + dy); // Do the transformation
+		var cords = VIZ.get_transform(element);
+		VIZ.set_transform(element, cords.x + dx, cords.y + dy); // Do the transformation
 	});
 };
 
