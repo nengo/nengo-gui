@@ -167,9 +167,11 @@ VIZ.NetGraphItem = function(ng, info) {
                 var w = ng.get_scaled_width();
                 var h = ng.get_scaled_height();    
                 var item = ng.svg_objects[uid];
-                if (item.parent != null) {
-                    w = w * item.parent.size[0] * 2;
-                    h = h * item.parent.size[1] * 2;
+                var parent = item.parent;
+                while (parent != null) {
+                    w = w * parent.size[0] * 2;
+                    h = h * parent.size[1] * 2;
+                    parent = parent.parent;
                 }
                 item.set_position(item.pos[0] + event.dx/w, item.pos[1] + event.dy/h);
             }});
@@ -182,9 +184,11 @@ VIZ.NetGraphItem = function(ng, info) {
             var item = ng.svg_objects[uid];
             var w = ng.get_scaled_width();
             var h = ng.get_scaled_height();    
-            if (item.parent != null) {
-                w = w * item.parent.size[0] * 2;
-                h = h * item.parent.size[1] * 2;
+            var parent = item.parent;
+            while (parent != null) {
+                w = w * parent.size[0] * 2;
+                h = h * parent.size[1] * 2;
+                parent = parent.parent;
             }
             
             item.set_size(item.size[0] + event.deltaRect.width / w / 2, 
