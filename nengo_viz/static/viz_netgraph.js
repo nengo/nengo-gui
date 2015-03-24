@@ -9,6 +9,8 @@
 VIZ.NetGraph = function(args) {
     var self = this;
 
+    n = this;
+
     this.svg = this.createSVGElement('svg');
     this.svg.classList.add('netgraph');    
     this.svg.style.width = '100%';
@@ -169,9 +171,11 @@ VIZ.NetGraph.prototype.detect_collapsed_conns = function(uid) {
         delete this.collapsed_conns[uid];
         for (var i in conns) {
             var conn = conns[i];
-            conn.set_pre(conn.find_pre());
-            conn.set_post(conn.find_post());
-            conn.redraw();
+            if (!conn.removed) {
+                conn.set_pre(conn.find_pre());
+                conn.set_post(conn.find_post());
+                conn.redraw();
+            }
         }
     }
 }
@@ -460,6 +464,8 @@ VIZ.NetGraphConnection = function(ng, info) {
     this.pres = info.pre;
     this.posts = info.post;
 
+    this.removed = false;
+
     this.pre = null;
     this.post = null;
 
@@ -476,6 +482,9 @@ VIZ.NetGraphConnection = function(ng, info) {
 VIZ.NetGraphConnection.prototype.set_pre = function(pre) {
     if (this.pre != null) {
         var index = this.pre.conn_out.indexOf(this);
+        if (index == -1) {
+            console.log('error removing in set_pre');
+        }
         this.pre.conn_out.splice(index, 1);    
     }
     this.pre = pre;
@@ -485,6 +494,9 @@ VIZ.NetGraphConnection.prototype.set_pre = function(pre) {
 VIZ.NetGraphConnection.prototype.set_post = function(post) {
     if (this.post != null) {
         var index = this.post.conn_in.indexOf(this);
+        if (index == -1) {
+            console.log('error removing in set_pre');
+        }
         this.post.conn_in.splice(index, 1);    
     }
     this.post = post;
@@ -500,7 +512,8 @@ VIZ.NetGraphConnection.prototype.find_pre = function() {
             this.ng.register_conn(this, this.pres[i]);
         }
     }
-
+    console.log('could not find pre');
+    console.log(this.pres);
 }
 
 VIZ.NetGraphConnection.prototype.find_post = function() {
@@ -512,14 +525,20 @@ VIZ.NetGraphConnection.prototype.find_post = function() {
             this.ng.register_conn(this, this.posts[i]);
         }
     }
+    console.log('could not find post');
+    console.log(this.posts);
 }
 
 VIZ.NetGraphConnection.prototype.remove = function() {
     if (this.parent != null) {
         var index = this.parent.children.indexOf(this);
+        if (index == -1) {
+            console.log('error removing in remove');
+        }
         this.parent.children.splice(index, 1);    
     }
     this.ng.svg.removeChild(this.line);
+    this.removed = true;
 
     delete this.ng.svg_conns[this.uid];    
 }
