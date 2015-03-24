@@ -234,16 +234,30 @@ VIZ.NetGraphItem.prototype.set_position = function(x, y) {
     var offsetX = this.ng.offsetX * w;
     var offsetY = this.ng.offsetY * h;
     
+    var dx = 0;
+    var dy = 0;
     var parent = this.parent;
     while (parent != null) {
-        offsetX += (parent.pos[0] - parent.size[0]) * w;
-        offsetY += (parent.pos[1] - parent.size[1]) * h;
-        w = w * parent.size[0] * 2;
-        h = h * parent.size[1] * 2;
+        dx *= parent.size[0] * 2;
+        dy *= parent.size[1] * 2;
+        
+        dx += (parent.pos[0] - parent.size[0]);
+        dy += (parent.pos[1] - parent.size[1]);
+        //w = w * parent.size[0] * 2;
+        //h = h * parent.size[1] * 2;
         parent = parent.parent;
     }
+    dx *= w;
+    dy *= h;
     
-    this.g.setAttribute('transform', 'translate(' + (this.pos[0]*w+offsetX) + ', ' + (this.pos[1]*h+offsetY) + ')');
+    var ww = w;
+    var hh = h;
+    if (this.parent != null) {
+        ww *= this.parent.get_nested_width() * 2;
+        hh *= this.parent.get_nested_height() * 2;
+    }
+    
+    this.g.setAttribute('transform', 'translate(' + (this.pos[0]*ww+dx+offsetX) + ', ' + (this.pos[1]*hh+dy+offsetY) + ')');
     
     for (var i in this.children) {
         var item = this.children[i];
