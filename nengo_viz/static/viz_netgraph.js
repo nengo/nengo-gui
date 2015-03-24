@@ -48,8 +48,8 @@ VIZ.NetGraph = function(args) {
     
     interact(this.svg)
         .on('wheel', function(event) {
-            var x = (event.clientX / self.svg.clientWidth);
-            var y = (event.clientY / self.svg.clientHeight);
+            var x = (event.clientX / $(self.svg).width());
+            var y = (event.clientY / $(self.svg).height());
             var step_size = 1.1;
             var scale = event.wheelDeltaY > 0 ? step_size : 1.0 / step_size;
             
@@ -100,10 +100,10 @@ VIZ.NetGraph.prototype.on_resize = function(event) {
 };
 
 VIZ.NetGraph.prototype.get_scaled_width = function() {
-    return this.svg.clientWidth * this.scale;
+    return $(this.svg).width() * this.scale;
 }
 VIZ.NetGraph.prototype.get_scaled_height = function() {
-    return this.svg.clientHeight * this.scale;
+    return $(this.svg).height() * this.scale;
 }
 
 VIZ.NetGraph.prototype.toggle_network = function(uid) {
@@ -209,7 +209,7 @@ VIZ.NetGraphItem = function(ng, info) {
 
 VIZ.NetGraphItem.prototype.expand = function() {
     this.g.classList.add('expanded');
-    var screen_h = this.get_nested_height() * this.ng.svg.clientHeight * this.ng.scale;
+    var screen_h = this.get_nested_height() * $(this.ng.svg).height() * this.ng.scale;
     this.label.setAttribute('transform', 'translate(0, ' + (screen_h) + ')');
     this.expanded = true;
     this.ng.ws.send(JSON.stringify({act:"expand", uid:this.uid}));
@@ -243,9 +243,9 @@ VIZ.NetGraphItem.prototype.set_position = function(x, y) {
     var dy = y - this.pos[1];
     
     this.pos = [x, y];
-    var w = this.ng.svg.clientWidth * this.ng.scale;
-    var h = this.ng.svg.clientHeight * this.ng.scale;    
-    
+    var w = $(this.ng.svg).width() * this.ng.scale;
+    var h = $(this.ng.svg).height() * this.ng.scale;
+
     var offsetX = this.ng.offsetX * w;
     var offsetY = this.ng.offsetY * h;
     
@@ -303,8 +303,8 @@ VIZ.NetGraphItem.prototype.get_nested_height = function() {
 
 VIZ.NetGraphItem.prototype.set_size = function(width, height) {
     this.size = [width, height];
-    var w = this.ng.svg.clientWidth;
-    var h = this.ng.svg.clientHeight;    
+    var w = $(this.ng.svg).width();
+    var h = $(this.ng.svg).height();    
     
     var screen_w = this.get_nested_width() * w * this.ng.scale;
     var screen_h = this.get_nested_height() * h * this.ng.scale;
