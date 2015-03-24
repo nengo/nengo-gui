@@ -59,14 +59,14 @@ VIZ.NetGraph = function(args) {
             var delta = event.wheelDeltaY || -event.deltaY
             var scale = delta > 0 ? step_size : 1.0 / step_size;
             
-            var w = self.get_scaled_width(); 
+            var w = self.get_scaled_width(); //gets original width & height
             var h = self.get_scaled_height();
-            var dw = w * scale - w;
+            var dw = w * scale - w; 
             var dh = h * scale - h;
             
             // TODO: this math is not quite right
-            self.offsetX = self.offsetX / scale - dw * x / (w * scale);
-            self.offsetY = self.offsetY / scale - dh * y / (h * scale);
+            self.offsetX = self.offsetX / scale - (dw * x) / (w * scale);
+            self.offsetY = self.offsetY / scale - (dh * y) / (h * scale);
                     
             self.scale = scale * self.scale;
             for (var key in self.svg_objects) {
