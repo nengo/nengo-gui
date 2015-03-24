@@ -21,7 +21,7 @@ class VizSim(object):
 
         # use the lock to make sure only one Simulator is building at a time
         self.viz.lock.acquire()
-        
+
         #Tile the components
         self.viz.tile_components()
 
@@ -64,6 +64,7 @@ class Viz(object):
                               locals=None, default_labels=None):
         self.model = model
         self.template = []    # what components to show
+        self.template.append((nengo_viz.components.NetGraph, [], {}))
         self.template.append((nengo_viz.components.SimControl, [],
                               dict(shown_time=shown_time, kept_time=kept_time)))
         self.dt = dt
@@ -91,6 +92,12 @@ class Viz(object):
         if label is None:
             label = `obj`
         return label
+
+    def get_uid(self, obj):
+        uid = self.default_labels.get(id(obj), None)
+        if uid is None:
+            uid = `obj`
+        return uid
 
     def slider(self, *args, **kwargs):
         """Add a slider (for controlling a Node's value)"""
@@ -128,7 +135,8 @@ class Viz(object):
         y = 20
 
         for index, (c, args, kwargs) in enumerate(self.template):
-            if c is nengo_viz.components.SimControl:
+            if c in [nengo_viz.components.SimControl,
+                     nengo_viz.components.NetGraph]:
                 continue
             kwargs['x'] = x
             kwargs['y'] = y

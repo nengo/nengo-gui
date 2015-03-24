@@ -81,11 +81,15 @@ VIZ.Component = function(args) {
 
     /** Allow element to be resized */ 
     interact(this.div)
-        .resizable(true)
+        .resizable({
+            edges: { left: true, right: true, bottom: true, top: true }
+            })
         .on('resizemove', function(event) {
             var target = event.target;
-            var newWidth = parseFloat(target.style.width) + event.dx;
-            var newHeight = parseFloat(target.style.height) + event.dy;
+            var newWidth = event.rect.width;
+            var newHeight = event.rect.height;
+            var dx = event.deltaRect.left;
+            var dy = event.deltaRect.top;
             if (newWidth < self.minWidth){
                 newWidth = self.minWidth;
             }
@@ -95,6 +99,14 @@ VIZ.Component = function(args) {
             target.style.width  = newWidth + 'px';
             target.style.height = newHeight + 'px';
             self.on_resize(newWidth, newHeight);
+            
+            var target = event.target;
+            var x = parseFloat(target.getAttribute('data-x')) + dx;
+            var y = parseFloat(target.getAttribute('data-y')) + dy;
+            VIZ.set_transform(target, x, y);
+            target.setAttribute('data-x', x);
+            target.setAttribute('data-y', y);                  
+            
         });    
 
     /** Open a WebSocket to the server */

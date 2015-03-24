@@ -1,0 +1,30 @@
+.netgraph {
+}
+
+g.ens ellipse{
+    fill:#000000;
+    fill-opacity: 0.2;
+    stroke-width:0;
+    }
+    
+g.node rect{
+    fill:#000000;
+    fill-opacity: 0.2;
+    stroke-width:0;
+    }  
+
+g.net rect{
+    fill:#000000;
+    fill-opacity: 0.2;
+    stroke-width:0;
+    }  
+    
+
+.netgraph g text {
+    text-anchor: middle;
+    dominant-baseline: central;
+    }
+.netgraph g.expanded text {
+    text-anchor: middle;
+    dominant-baseline: text-before-edge;
+    }    
