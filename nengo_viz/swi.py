@@ -458,6 +458,8 @@ class ClientSocket(object):
         assert(0x1 == (0xFF & data[0]) >> 7)
         # data must be a text frame
         # 0x8 (close connection) is handled with assertion failure
+        if 0x1 != (0xF & data[0]):
+            print 'invalid ws data %02x %02x %02x %02x' % tuple(data[:4])
         assert(0x1 == (0xF & data[0]))
 
         # assert that data is masked
