@@ -19,6 +19,20 @@ class Config(nengo.Config):
         self[nengo.Network].set_param('size', nengo.params.Parameter(None))
         self[nengo.Network].set_param('expanded', nengo.params.Parameter(False))
 
+    def dumps(self, uids):
+        lines = []
+        for uid, obj in sorted(uids.items()):
+            if isinstance(obj, nengo.Ensemble):
+                lines.append('config[%s].pos=%s' % (uid, self[obj].pos))
+                lines.append('config[%s].size=%s' % (uid, self[obj].size))
+            elif isinstance(obj, nengo.Node):
+                lines.append('config[%s].pos=%s' % (uid, self[obj].pos))
+                lines.append('config[%s].size=%s' % (uid, self[obj].size))
+            elif isinstance(obj, nengo.Network):
+                lines.append('config[%s].pos=%s' % (uid, self[obj].pos))
+                lines.append('config[%s].size=%s' % (uid, self[obj].size))
+                lines.append('config[%s].expanded=%s' % (uid, self[obj].expanded))
+        return '\n'.join(lines)
 
 class NetGraph(Component):
     configs = {}
@@ -27,13 +41,30 @@ class NetGraph(Component):
         super(NetGraph, self).__init__(viz)
         self.viz = viz
         if config is None:
+            config = self.find_config()
+        self.config = config
+        self.to_be_expanded = [self.viz.model]
+        self.uids = {}
+
+    def save_config(self):
+        filename = self.viz.viz.filename
+        with open(filename + '.cfg', 'w') as f:
+            f.write(self.config.dumps(self.uids))
+
+    def find_config(self):
+        if self.viz.viz.filename is not None:
+            locals = dict(self.viz.viz.locals)
+            locals['config'] = Config()
+            with open(self.viz.viz.filename + '.cfg') as f:
+                config_code = f.read()
+            exec config_code in locals
+            config = locals['config']
+        else:
             config = NetGraph.configs.get(self.viz.model, None)
             if config is None:
                 config = Config()
                 NetGraph.configs[self.viz.model] = config
-        self.config = config
-        self.to_be_expanded = [self.viz.model]
-        self.uids = {}
+        return config
 
     def update_client(self, client):
         if len(self.to_be_expanded) > 0:
@@ -62,27 +93,33 @@ class NetGraph(Component):
         net = self.uids[uid]
         self.to_be_expanded.append(net)
         self.config[net].expanded = True
+        self.save_config()
 
     def act_collapse(self, uid):
         net = self.uids[uid]
         self.config[net].expanded = False
+        self.save_config()
 
     def act_pan(self, x, y):
         print 'pan to', x, y
         self.config[self.viz.model].pos = x, y
+        self.save_config()
 
     def act_zoom(self, scale, x, y):
         print 'zoom to', scale
         self.config[self.viz.model].size = scale, scale
         self.config[self.viz.model].pos = x, y
+        self.save_config()
 
     def act_pos(self, uid, x, y):
         obj = self.uids[uid]
         self.config[obj].pos = x, y
+        self.save_config()
 
     def act_size(self, uid, width, height):
         obj = self.uids[uid]
         self.config[obj].size = width, height
+        self.save_config()
 
     def expand_network(self, network, client):
         if network is self.viz.model:

@@ -28,6 +28,6 @@ with model:
 
 
 import nengo_viz
-viz = nengo_viz.Viz(model, locals=locals())
+viz = nengo_viz.Viz(model, locals=locals(), filename=__file__)
 viz.value(result)
 viz.start()
