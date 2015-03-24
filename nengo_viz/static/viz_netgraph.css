@@ -28,3 +28,8 @@ g.net rect{
     text-anchor: middle;
     dominant-baseline: text-before-edge;
     }    
+
+.netgraph line {
+    stroke: black;
+    stroke-width: 2px;
+}

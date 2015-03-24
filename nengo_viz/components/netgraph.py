@@ -45,11 +45,32 @@ class NetGraph(Component):
         self.config = config
         self.to_be_expanded = [self.viz.model]
         self.uids = {}
+        self.parents = {}
+        self.networks_to_search = [self.viz.model]
 
     def save_config(self):
         filename = self.viz.viz.filename
         with open(filename + '.cfg', 'w') as f:
             f.write(self.config.dumps(self.uids))
+
+    def get_parents(self, uid):
+        while uid not in self.parents:
+            net = self.networks_to_search.pop(0)
+            net_uid = self.viz.viz.get_uid(net)
+            for n in net.nodes:
+                n_uid = self.viz.viz.get_uid(n)
+                self.parents[n_uid] = net_uid
+            for e in net.ensembles:
+                e_uid = self.viz.viz.get_uid(e)
+                self.parents[e_uid] = net_uid
+            for n in net.networks:
+                n_uid = self.viz.viz.get_uid(n)
+                self.parents[n_uid] = net_uid
+                self.networks_to_search.append(n)
+        parents = [uid]
+        while parents[-1] in self.parents:
+            parents.append(self.parents[parents[-1]])
+        return parents
 
     def find_config(self):
         if self.viz.viz.filename is not None:
@@ -172,7 +193,9 @@ class NetGraph(Component):
         post = self.viz.viz.get_uid(conn.post_obj)
         uid = 'conn_%d' % id(conn)
         self.uids[uid] = conn
-        info = dict(uid=uid, pre=pre, post=post, type='conn', parent=parent)
+        pres = self.get_parents(pre)[:-1]
+        posts = self.get_parents(post)[:-1]
+        info = dict(uid=uid, pre=pres, post=posts, type='conn', parent=parent)
         client.write(json.dumps(info))
 
 
