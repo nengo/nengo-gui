@@ -19,8 +19,10 @@ class Config(nengo.Config):
         self[nengo.Network].set_param('size', nengo.params.Parameter(None))
         self[nengo.Network].set_param('expanded', nengo.params.Parameter(False))
 
-    def dumps(self, uids):
+    def dumps(self, uids, model):
         lines = []
+        lines.append('config[model].pos=%s' % (self[model].pos,))
+        lines.append('config[model].size=%s' % (self[model].size,))
         for uid, obj in sorted(uids.items()):
             if isinstance(obj, nengo.Ensemble):
                 lines.append('config[%s].pos=%s' % (uid, self[obj].pos))
@@ -51,7 +53,7 @@ class NetGraph(Component):
     def save_config(self):
         filename = self.viz.viz.filename
         with open(filename + '.cfg', 'w') as f:
-            f.write(self.config.dumps(self.uids))
+            f.write(self.config.dumps(self.uids, model=self.viz.model))
 
     def get_parents(self, uid):
         while uid not in self.parents:
