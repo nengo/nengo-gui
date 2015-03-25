@@ -18,7 +18,7 @@ VIZ.NetGraphConnection = function(ng, info) {
         this.parent = null;
     } else {
         this.parent = ng.svg_objects[info.parent];
-        this.parent.children.push(this);
+        this.parent.child_connections.push(this);
     }
 
     /** the uids for the pre and post items in the connection
@@ -124,11 +124,11 @@ VIZ.NetGraphConnection.prototype.find_post = function() {
 /** remove this connection */
 VIZ.NetGraphConnection.prototype.remove = function() {
     if (this.parent != null) {
-        var index = this.parent.children.indexOf(this);
+        var index = this.parent.child_connections.indexOf(this);
         if (index == -1) {
             console.log('error removing in remove');
         }
-        this.parent.children.splice(index, 1);    
+        this.parent.child_connections.splice(index, 1);    
     }
     this.ng.g_conns.removeChild(this.g);
     this.removed = true;

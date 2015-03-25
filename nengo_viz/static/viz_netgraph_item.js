@@ -20,6 +20,7 @@ VIZ.NetGraphItem = function(ng, info) {
     /** if this is a network, the children list is the set of NetGraphItems
      *  and NetGraphConnections that are inside this network */
     this.children = [];
+    this.child_connections = [];
 
     /** NetGraphConnections leading into and out of this item */
     this.conn_out = [];
@@ -175,6 +176,9 @@ VIZ.NetGraphItem.prototype.collapse = function(report_to_server) {
     this.label.setAttribute('transform', '');
     
     /** remove child NetGraphItems and NetGraphConnections */
+    while (this.child_connections.length > 0) {
+        this.child_connections[0].remove();
+    }
     while (this.children.length > 0) {
         this.children[0].remove();
     }
@@ -241,6 +245,7 @@ VIZ.NetGraphItem.prototype.set_position = function(x, y) {
     this.redraw_position();
     
     this.redraw_children();
+    this.redraw_child_connections();
     this.redraw_connections();
 };
 
@@ -259,6 +264,16 @@ VIZ.NetGraphItem.prototype.redraw_children = function() {
         item.redraw();
     }
 };
+
+VIZ.NetGraphItem.prototype.redraw_child_connections = function() {
+    /** update any children's positions */
+    for (var i in this.child_connections) {
+        var item = this.child_connections[i];
+        item.redraw();
+    }
+};
+
+
 
 VIZ.NetGraphItem.prototype.redraw_connections = function() {
     /** update any connections into and out of this */
@@ -302,6 +317,7 @@ VIZ.NetGraphItem.prototype.set_size = function(width, height) {
     this.redraw_size();
     
     this.redraw_children();
+    this.redraw_child_connections();
 };
 
 VIZ.NetGraphItem.prototype.redraw_size = function() {
