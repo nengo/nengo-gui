@@ -18,6 +18,14 @@ VIZ.NetGraph = function(args) {
     this.svg.style.position = 'fixed';
     args.parent.appendChild(this.svg);
     this.parent = args.parent;
+    
+    this.g_networks = this.createSVGElement('g');
+    this.svg.appendChild(this.g_networks);
+    this.g_conns = this.createSVGElement('g');
+    this.svg.appendChild(this.g_conns);
+    this.g_items = this.createSVGElement('g');
+    this.svg.appendChild(this.g_items);
+    
         
     /** connect to server */
     this.ws = new WebSocket('ws://localhost:8080/viz_component?id=' + args.id);
@@ -191,8 +199,10 @@ VIZ.NetGraphItem = function(ng, info) {
     this.conn_in = [];
     if (info.parent == null) {
         this.parent = null;
+        this.depth = 1;
     } else {
         this.parent = ng.svg_objects[info.parent];
+        this.depth = this.parent.depth + 1;
         this.parent.children.push(this);
     }
     this.expanded = false;
@@ -202,7 +212,7 @@ VIZ.NetGraphItem = function(ng, info) {
 
     var g = this.ng.createSVGElement('g');
     this.g = g;
-    ng.svg.appendChild(g);
+    ng.g_items.appendChild(g);    
     g.classList.add(this.type);
     
     this.set_position(info.pos[0], info.pos[1]);
@@ -218,6 +228,7 @@ VIZ.NetGraphItem = function(ng, info) {
         this.shape.setAttribute('cx', '0');
         this.shape.setAttribute('cy', '0');
     }
+    this.compute_fill();
     this.set_size(info.size[0], info.size[1]);
     g.appendChild(this.shape);
     
@@ -283,7 +294,11 @@ VIZ.NetGraphItem.prototype.expand = function() {
     this.g.classList.add('expanded');
     var screen_h = this.get_nested_height() * $(this.ng.svg).height() * this.ng.scale;
     this.label.setAttribute('transform', 'translate(0, ' + (screen_h) + ')');
-    this.expanded = true;
+    if (!this.expanded) {
+        this.expanded = true;
+        this.ng.g_items.removeChild(this.g);
+        this.ng.g_networks.appendChild(this.g);
+    }
     this.ng.ws.send(JSON.stringify({act:"expand", uid:this.uid}));
 }
 
@@ -294,10 +309,19 @@ VIZ.NetGraphItem.prototype.collapse = function(report_to_server) {
     while (this.children.length > 0) {
         this.children[0].remove();
     }
-    this.expanded = false;
+    if (this.expanded) {
+        this.expanded = false;
+        this.ng.g_networks.removeChild(this.g);
+        this.ng.g_items.appendChild(this.g);
+    }
+    
     if (report_to_server) {    
         this.ng.ws.send(JSON.stringify({act:"collapse", uid:this.uid}));
     }
+}
+VIZ.NetGraphItem.prototype.compute_fill = function() {
+    var fill = Math.round(255 * Math.pow(0.8, this.depth));
+    this.shape.style.fill = 'rgb(' + fill + ',' + fill + ',' + fill + ')';
 }
 
 
@@ -323,7 +347,7 @@ VIZ.NetGraphItem.prototype.remove = function() {
         conn.redraw();
     }
 
-    this.ng.svg.removeChild(this.g);
+    this.ng.g_items.removeChild(this.g);    
 }
 
 VIZ.NetGraphItem.prototype.set_position = function(x, y) {
@@ -477,7 +501,7 @@ VIZ.NetGraphConnection = function(ng, info) {
     this.line = ng.createSVGElement('line');
     this.redraw();
 
-    ng.svg.appendChild(this.line);
+    ng.g_conns.appendChild(this.line);
 
 }
 
@@ -539,7 +563,7 @@ VIZ.NetGraphConnection.prototype.remove = function() {
         }
         this.parent.children.splice(index, 1);    
     }
-    this.ng.svg.removeChild(this.line);
+    this.ng.g_conns.removeChild(this.line);
     this.removed = true;
 
     delete this.ng.svg_conns[this.uid];    
