@@ -6,6 +6,7 @@ import nengo
 import json
 
 from nengo_viz.components.component import Component
+import nengo_viz.layout
 
 class Config(nengo.Config):
     def __init__(self):
@@ -18,11 +19,13 @@ class Config(nengo.Config):
         self[nengo.Network].set_param('pos', nengo.params.Parameter(None))
         self[nengo.Network].set_param('size', nengo.params.Parameter(None))
         self[nengo.Network].set_param('expanded', nengo.params.Parameter(False))
+        self[nengo.Network].set_param('has_layout', nengo.params.Parameter(False))
 
     def dumps(self, uids, model):
         lines = []
         lines.append('config[model].pos=%s' % (self[model].pos,))
         lines.append('config[model].size=%s' % (self[model].size,))
+        lines.append('config[model].has_layout=%s' % (self[model].has_layout,))
         for uid, obj in sorted(uids.items()):
             if isinstance(obj, nengo.Ensemble):
                 lines.append('config[%s].pos=%s' % (uid, self[obj].pos))
@@ -34,6 +37,7 @@ class Config(nengo.Config):
                 lines.append('config[%s].pos=%s' % (uid, self[obj].pos))
                 lines.append('config[%s].size=%s' % (uid, self[obj].size))
                 lines.append('config[%s].expanded=%s' % (uid, self[obj].expanded))
+                lines.append('config[%s].has_layout=%s' % (uid, self[obj].has_layout))
         return '\n'.join(lines)
 
 class NetGraph(Component):
@@ -42,6 +46,7 @@ class NetGraph(Component):
     def __init__(self, viz, config=None):
         super(NetGraph, self).__init__(viz)
         self.viz = viz
+        self.layout = nengo_viz.layout.Layout(self.viz.model)
         if config is None:
             config = self.find_config()
         self.config = config
@@ -78,18 +83,22 @@ class NetGraph(Component):
         if self.viz.viz.filename is not None:
             locals = dict(self.viz.viz.locals)
             locals['config'] = Config()
+            config = locals['config']
+            config[self.viz.model].pos = (0, 0)
+            config[self.viz.model].size = 1.0, 1.0
             try:
                 with open(self.viz.viz.filename + '.cfg') as f:
                     config_code = f.read()
                 exec config_code in locals
             except IOError:
                 pass
-            config = locals['config']
         else:
             config = NetGraph.configs.get(self.viz.model, None)
             if config is None:
                 config = Config()
                 NetGraph.configs[self.viz.model] = config
+                config[self.viz.model].pos = (0, 0)
+                config[self.viz.model].size = 1.0, 1.0
         return config
 
     def update_client(self, client):
@@ -156,6 +165,13 @@ class NetGraph(Component):
         self.save_config()
 
     def expand_network(self, network, client):
+        if not self.config[network].has_layout:
+            pos = self.layout.make_layout(network)
+            for obj, layout in pos.items():
+                self.config[obj].pos = layout['y'], layout['x']
+                self.config[obj].size = layout['h'] / 2, layout['w'] / 2
+            self.config[network].has_layout = True
+
         if network is self.viz.model:
             parent = None
         else:
