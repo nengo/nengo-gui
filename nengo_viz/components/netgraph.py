@@ -149,6 +149,12 @@ class NetGraph(Component):
         self.config[obj].size = width, height
         self.save_config()
 
+    def act_pos_size(self, uid, x, y, width, height):
+        obj = self.uids[uid]
+        self.config[obj].pos = x, y
+        self.config[obj].size = width, height
+        self.save_config()
+
     def expand_network(self, network, client):
         if network is self.viz.model:
             parent = None
