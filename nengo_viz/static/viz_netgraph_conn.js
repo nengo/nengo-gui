@@ -13,27 +13,37 @@ VIZ.NetGraphConnection = function(ng, info) {
     this.ng = ng;
     this.uid = info.uid;
 
+    /** determine parent and add to parent's children list */
     if (info.parent == null) {
         this.parent = null;
     } else {
         this.parent = ng.svg_objects[info.parent];
         this.parent.children.push(this);
     }
-    this.expanded = false;
+
+    /** the uids for the pre and post items in the connection
+     *  The lists start with the ideal target item, followed by the parent
+     *  of that item, and its parent, and so on.  If the first item on the
+     *  this does not exist (due to it being inside a collapsed network),
+     *  the connection will look for the next item on the list, and so on
+     *  until it finds one that does exist. */
     this.pres = info.pre;
     this.posts = info.post;
 
     this.removed = false;
 
+    /** the actual NetGraphItem currently connected to/from */
     this.pre = null;
     this.post = null;
 
+    /** figure out the best available items to connect to */
     this.set_pre(this.find_pre());
     this.set_post(this.find_post());
 
-    this.line = ng.createSVGElement('line');
-    
+    /** create the line and its arrowhead marker */
     this.g = ng.createSVGElement('g');
+
+    this.line = ng.createSVGElement('line');
     this.g.appendChild(this.line);
     
     this.marker = ng.createSVGElement('path');
@@ -46,8 +56,11 @@ VIZ.NetGraphConnection = function(ng, info) {
 
 }
 
+
+/** set the item connecting from */
 VIZ.NetGraphConnection.prototype.set_pre = function(pre) {
     if (this.pre != null) {
+        /** if we're currently connected, disconnect */
         var index = this.pre.conn_out.indexOf(this);
         if (index == -1) {
             console.log('error removing in set_pre');
@@ -55,11 +68,15 @@ VIZ.NetGraphConnection.prototype.set_pre = function(pre) {
         this.pre.conn_out.splice(index, 1);    
     }
     this.pre = pre;
+    /** add myself to pre's output connections list */
     this.pre.conn_out.push(this);
 }
 
+
+/** set the item connecting to */
 VIZ.NetGraphConnection.prototype.set_post = function(post) {
     if (this.post != null) {
+        /** if we're currently connected, disconnect */
         var index = this.post.conn_in.indexOf(this);
         if (index == -1) {
             console.log('error removing in set_pre');
@@ -67,15 +84,19 @@ VIZ.NetGraphConnection.prototype.set_post = function(post) {
         this.post.conn_in.splice(index, 1);    
     }
     this.post = post;
+    /** add myself to post's input connections list */
     this.post.conn_in.push(this);
 }
 
+
+/** determine the best available item to connect from */
 VIZ.NetGraphConnection.prototype.find_pre = function() {
     for (var i in this.pres) {
         var pre = this.ng.svg_objects[this.pres[i]];
         if (pre != undefined) {
             return pre;
         } else {
+            /** register to be notified if a better match occurs */
             this.ng.register_conn(this, this.pres[i]);
         }
     }
@@ -83,12 +104,15 @@ VIZ.NetGraphConnection.prototype.find_pre = function() {
     console.log(this.pres);
 }
 
+
+/** determine the best available item to connect to */
 VIZ.NetGraphConnection.prototype.find_post = function() {
     for (var i in this.posts) {
         var post = this.ng.svg_objects[this.posts[i]];
         if (post != undefined) {
             return post;
         } else {
+            /** register to be notified if a better match occurs */
             this.ng.register_conn(this, this.posts[i]);
         }
     }
@@ -96,6 +120,8 @@ VIZ.NetGraphConnection.prototype.find_post = function() {
     console.log(this.posts);
 }
 
+
+/** remove this connection */
 VIZ.NetGraphConnection.prototype.remove = function() {
     if (this.parent != null) {
         var index = this.parent.children.indexOf(this);
@@ -110,6 +136,8 @@ VIZ.NetGraphConnection.prototype.remove = function() {
     delete this.ng.svg_conns[this.uid];    
 }
 
+
+/** redraw the connection */
 VIZ.NetGraphConnection.prototype.redraw = function() {
     var pre_pos = this.pre.get_screen_location();
     var post_pos = this.post.get_screen_location();
