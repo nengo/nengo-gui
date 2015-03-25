@@ -499,9 +499,17 @@ VIZ.NetGraphConnection = function(ng, info) {
     this.set_post(this.find_post());
 
     this.line = ng.createSVGElement('line');
+    
+    this.g = ng.createSVGElement('g');
+    this.g.appendChild(this.line);
+    
+    this.marker = ng.createSVGElement('path');
+    this.marker.setAttribute('d', "M 10 0 L -5 -5 L -5 5 z");
+    this.g.appendChild(this.marker);
+
     this.redraw();
 
-    ng.g_conns.appendChild(this.line);
+    ng.g_conns.appendChild(this.g);
 
 }
 
@@ -563,7 +571,7 @@ VIZ.NetGraphConnection.prototype.remove = function() {
         }
         this.parent.children.splice(index, 1);    
     }
-    this.ng.g_conns.removeChild(this.line);
+    this.ng.g_conns.removeChild(this.g);
     this.removed = true;
 
     delete this.ng.svg_conns[this.uid];    
@@ -576,4 +584,11 @@ VIZ.NetGraphConnection.prototype.redraw = function() {
     this.line.setAttribute('y1', pre_pos[1]);
     this.line.setAttribute('x2', post_pos[0]);
     this.line.setAttribute('y2', post_pos[1]);
+    
+    var mx = pre_pos[0] * 0.4 + post_pos[0] * 0.6;
+    var my = pre_pos[1] * 0.4 + post_pos[1] * 0.6;
+    var angle = 180 / Math.PI * Math.atan2(post_pos[1] - pre_pos[1], 
+                                           post_pos[0] - pre_pos[0]);
+    this.marker.setAttribute('transform', 
+                        'translate(' + mx + ',' + my + ') rotate('+angle+')');
 }
