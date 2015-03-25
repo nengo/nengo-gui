@@ -461,14 +461,28 @@ class ClientSocket(object):
         mask = (data[1] >> 7) & 0x01
         datalen = data[1] & 0x7F
 
+        offset = 0
+
+        if datalen == 126:
+            datalen = 0
+            for i in range(2):
+                datalen = (datalen << 8) + data[2 + i]
+            offset += 2
+        elif datalen == 127:
+            datalen = 0
+            for i in range(8):
+                datalen = (datalen << 8) + data[2 + i]
+            offset += 8
+
         if opcode != 1 or fin != 1 or mask != 1 or rsv != 0:
-            print dict(fin=fin, rsv=rsv, opcode=opcode, mask=mask, datalen=datalen)
+            print dict(fin=fin, rsv=rsv, opcode=opcode, mask=mask, 
+                       datalen=datalen)
             return None
 
         str_data = ''
         if datalen > 0:
-            mask_key = data[2:6]
-            masked_data = data[6:(6 + datalen)]
+            mask_key = data[2 + offset:6 + offset]
+            masked_data = data[6 + offset:(6 + datalen + offset)]
             unmasked_data = [masked_data[i] ^ mask_key[i % 4]
                              for i in range(len(masked_data))]
             str_data = str(bytearray(unmasked_data))
