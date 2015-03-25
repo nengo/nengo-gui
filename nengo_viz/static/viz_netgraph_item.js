@@ -238,18 +238,29 @@ VIZ.NetGraphItem.prototype.remove = function() {
 VIZ.NetGraphItem.prototype.set_position = function(x, y) {
     this.pos = [x, y];
 
+    this.redraw_position();
+    
+    this.redraw_children();
+    this.redraw_connections();
+};
+
+VIZ.NetGraphItem.prototype.redraw_position = function() {
     var screen = this.get_screen_location();
     
     /** update my position */
     this.g.setAttribute('transform', 'translate(' + screen[0] + ', ' + 
                                                     screen[1] + ')');
-    
+};
+
+VIZ.NetGraphItem.prototype.redraw_children = function() {
     /** update any children's positions */
     for (var i in this.children) {
         var item = this.children[i];
         item.redraw();
     }
+};
 
+VIZ.NetGraphItem.prototype.redraw_connections = function() {
     /** update any connections into and out of this */
     for (var i in this.conn_in) {
         var item = this.conn_in[i];
@@ -260,7 +271,6 @@ VIZ.NetGraphItem.prototype.set_position = function(x, y) {
         item.redraw();
     }
 };
-
 
 /** return the width of the item, taking into account parent widths */
 VIZ.NetGraphItem.prototype.get_nested_width = function() {
@@ -288,6 +298,13 @@ VIZ.NetGraphItem.prototype.get_nested_height = function() {
 /** set the size of the item, updating SVG as appropriate */
 VIZ.NetGraphItem.prototype.set_size = function(width, height) {
     this.size = [width, height];
+    
+    this.redraw_size();
+    
+    this.redraw_children();
+};
+
+VIZ.NetGraphItem.prototype.redraw_size = function() {
     var w = $(this.ng.svg).width();
     var h = $(this.ng.svg).height();    
     
@@ -315,13 +332,9 @@ VIZ.NetGraphItem.prototype.set_size = function(width, height) {
         /** put the label at the bottom */
         this.label.setAttribute('transform', 'translate(0, ' + screen_h + ')');
     }
-    
-    /** update any children */
-    for (var i in this.children) {
-        var item = this.children[i];
-        item.redraw();
-    }
 };
+
+
 
 
 /** force a redraw of the item */
