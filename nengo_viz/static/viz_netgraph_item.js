@@ -92,6 +92,10 @@ VIZ.NetGraphItem = function(ng, info) {
                 }
                 item.set_position(item.pos[0] + event.dx / w, 
                                   item.pos[1] + event.dy / h);
+            },
+            onend: function(event) {
+                var item = ng.svg_objects[uid];
+                ng.notify({act:"pos", uid:uid, x:item.pos[0], y:item.pos[1]});
             }});
             
     /** dragging the edge of item to change its size */
@@ -116,6 +120,14 @@ VIZ.NetGraphItem = function(ng, info) {
                                             event.deltaRect.left / w, 
                               item.pos[1] + event.deltaRect.height / h / 2 + 
                                             event.deltaRect.top / h);
+            })
+        .on('resizeend', function(event) {
+            var item = ng.svg_objects[uid];
+            console.log(uid);
+            console.log(item);
+            ng.notify({act:"pos_size", uid:uid, 
+                       x:item.pos[0], y:item.pos[1],
+                       width:item.size[0], height:item.size[1]});
             });
             
     if (info.type == 'net') {
@@ -224,10 +236,6 @@ VIZ.NetGraphItem.prototype.remove = function() {
 
 /** set the position of the item and redraw it appropriately*/
 VIZ.NetGraphItem.prototype.set_position = function(x, y) {
-    if (x!=this.pos[0] || y!=this.pos[1]) {
-        this.ng.notify({act:"pos", uid:this.uid, x:x, y:y});
-    }
-    
     this.pos = [x, y];
 
     var screen = this.get_screen_location();
@@ -279,9 +287,6 @@ VIZ.NetGraphItem.prototype.get_nested_height = function() {
 
 /** set the size of the item, updating SVG as appropriate */
 VIZ.NetGraphItem.prototype.set_size = function(width, height) {
-    if (width!=this.size[0] || height!=this.size[1]) {
-        this.ng.notify({act:"size", uid:this.uid, width:width, height:height});
-    }
     this.size = [width, height];
     var w = $(this.ng.svg).width();
     var h = $(this.ng.svg).height();    
