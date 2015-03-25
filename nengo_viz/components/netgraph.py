@@ -218,8 +218,14 @@ class NetGraph(Component):
         client.write(json.dumps(dict(type='zoom', zoom=zoom)))
 
     def create_connection(self, client, conn, parent):
-        pre = self.viz.viz.get_uid(conn.pre_obj)
-        post = self.viz.viz.get_uid(conn.post_obj)
+        pre = conn.pre_obj
+        if isinstance(pre, nengo.ensemble.Neurons):
+            pre = pre.ensemble
+        post = conn.post_obj
+        if isinstance(post, nengo.ensemble.Neurons):
+            post = post.ensemble
+        pre = self.viz.viz.get_uid(pre)
+        post = self.viz.viz.get_uid(post)
         uid = 'conn_%d' % id(conn)
         self.uids[uid] = conn
         pres = self.get_parents(pre)[:-1]

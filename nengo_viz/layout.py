@@ -13,6 +13,9 @@ class Layout(object):
             return None
         parent = self.parents.get(obj, None)
         while parent is None:
+            if len(self.unexamined_networks) == 0:
+                print "could not find parent of", obj
+                return None
             net = self.unexamined_networks.pop(0)
             for n in net.nodes:
                 self.parents[n] = net
@@ -62,13 +65,24 @@ class Layout(object):
         edges = {}
         for c in network.connections:
             pre = c.pre_obj
+            if isinstance(pre, nengo.ensemble.Neurons):
+                pre = pre.ensemble
             while pre not in vertices:
                 pre = self.find_parent(pre)
+                if pre is None:
+                    break
             post = c.post_obj
+            if isinstance(post, nengo.ensemble.Neurons):
+                post = post.ensemble
             while post not in vertices:
                 post = self.find_parent(post)
+                if post is None:
+                    break
 
-            edges[c] = Edge(vertices[pre], vertices[post], data=c)
+            if pre is None or post is None:
+                print 'error processing', c
+            else:
+                edges[c] = Edge(vertices[pre], vertices[post], data=c)
 
         graph = Graph(vertices.values(), edges.values())
 
@@ -106,6 +120,8 @@ class Layout(object):
                 w = v.view.w * (x1 - x0) / (maxx - minx)
                 h = v.view.h * (y1 - y0) / (maxy - miny)
                 pos[v.data] = dict(x=x, y=y, w=w, h=h)
+
+            x0 = x1 + spacing * scale_x
 
         return pos
 
