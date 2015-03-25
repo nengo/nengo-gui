@@ -105,7 +105,11 @@ class NetGraph(Component):
         return 'new VIZ.NetGraph({parent:main, id:%(id)d});' % dict(id=id(self))
 
     def message(self, msg):
-        info = json.loads(msg)
+        try:
+            info = json.loads(msg)
+        except ValueError:
+            print 'invalid message', `msg`
+            return
         action = info.get('act', None)
         if action is not None:
             del info['act']
