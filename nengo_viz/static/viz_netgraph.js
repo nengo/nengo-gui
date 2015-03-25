@@ -152,7 +152,7 @@ VIZ.NetGraph.prototype.get_scaled_height = function() {
 VIZ.NetGraph.prototype.toggle_network = function(uid) {
     var item = this.svg_objects[uid];
     if (item.expanded) {
-        item.collapse();
+        item.collapse(true);
     } else {
         item.expand();
     }
@@ -287,21 +287,23 @@ VIZ.NetGraphItem.prototype.expand = function() {
     this.ng.ws.send(JSON.stringify({act:"expand", uid:this.uid}));
 }
 
-VIZ.NetGraphItem.prototype.collapse = function() {
+VIZ.NetGraphItem.prototype.collapse = function(report_to_server) {
     this.g.classList.remove('expanded');
     this.label.setAttribute('transform', '');
     
     while (this.children.length > 0) {
         this.children[0].remove();
     }
-    this.expanded = false;        
-    this.ng.ws.send(JSON.stringify({act:"collapse", uid:this.uid}));
+    this.expanded = false;
+    if (report_to_server) {    
+        this.ng.ws.send(JSON.stringify({act:"collapse", uid:this.uid}));
+    }
 }
 
 
 VIZ.NetGraphItem.prototype.remove = function() {
     if (this.expanded) {
-        this.collapse();
+        this.collapse(false);
     }
     if (this.parent != null) {
         var index = this.parent.children.indexOf(this);
