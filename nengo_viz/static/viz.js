@@ -96,7 +96,6 @@ VIZ.Component = function(args) {
             target.style.height = newHeight + 'px';
             self.on_resize(newWidth, newHeight);
             
-            var target = event.target;
             var x = parseFloat(target.getAttribute('data-x')) + dx;
             var y = parseFloat(target.getAttribute('data-y')) + dy;
             VIZ.set_transform(target, x, y);
