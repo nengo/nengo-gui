@@ -1,14 +1,32 @@
 /**
- * interact.js v1.2.2
+ * interact.js v1.2.4
  *
  * Copyright (c) 2012-2015 Taye Adeyemi <dev@taye.me>
  * Open source under the MIT License.
  * https://raw.github.com/taye/interact.js/master/LICENSE
  */
-(function () {
+(function (realWindow) {
     'use strict';
 
-    var document           = window.document,
+    var // get wrapped window if using Shadow DOM polyfill
+        window = (function () {
+            // create a TextNode
+            var el = realWindow.document.createTextNode('');
+
+            // check if it's wrapped by a polyfill
+            if (el.ownerDocument !== realWindow.document
+                && typeof realWindow.wrap === 'function'
+                && realWindow.wrap(el) === el) {
+                // return wrapped window
+                return realWindow.wrap(realWindow);
+            }
+
+            // no Shadow DOM polyfil or native implementation
+            return realWindow;
+        }()),
+
+        document           = window.document,
+        DocumentFragment   = window.DocumentFragment   || blank,
         SVGElement         = window.SVGElement         || blank,
         SVGSVGElement      = window.SVGSVGElement      || blank,
         SVGElementInstance = window.SVGElementInstance || blank,
@@ -48,7 +66,7 @@
                 allowFrom     : null,
                 ignoreFrom    : null,
                 _context      : document,
-                rectChecker   : null
+                dropChecker   : null
             },
 
             drag: {
@@ -83,7 +101,19 @@
                 autoScroll: null,
 
                 square: false,
-                axis: 'xy'
+                axis: 'xy',
+
+                // object with props left, right, top, bottom which are
+                // true/false values to resize when the pointer is over that edge,
+                // CSS selectors to match the handles for each direction
+                // or the Elements for each handle
+                edges: null,
+
+                // a value of 'none' will limit the resize rect to a minimum of 0x0
+                // 'negate' will alow the rect to have negative width/height
+                // 'reposition' will keep the width/height positive by swapping
+                // the top and bottom edges and/or swapping the left and right edges
+                invert: 'none'
             },
 
             gesture: {
@@ -131,7 +161,9 @@
                     zeroResumeDelta  : true,  // if an action is resumed after launch, set dx/dy to 0
                     smoothEndDuration: 300    // animate to snap/restrict endOnly if there's no inertia
                 }
-            }
+            },
+
+            _holdDuration: 600
         },
 
         // Things related to autoScroll
@@ -262,12 +294,32 @@
             resizex : 'e-resize',
             resizey : 's-resize',
             resizexy: 'se-resize',
+
+            resizetop        : 'n-resize',
+            resizeleft       : 'w-resize',
+            resizebottom     : 's-resize',
+            resizeright      : 'e-resize',
+            resizetopleft    : 'se-resize',
+            resizebottomright: 'se-resize',
+            resizetopright   : 'ne-resize',
+            resizebottomleft : 'ne-resize',
+
             gesture : ''
         } : {
             drag    : 'move',
             resizex : 'ew-resize',
             resizey : 'ns-resize',
             resizexy: 'nwse-resize',
+
+            resizetop        : 'ns-resize',
+            resizeleft       : 'ew-resize',
+            resizebottom     : 'ns-resize',
+            resizeright      : 'ew-resize',
+            resizetopleft    : 'nwse-resize',
+            resizebottomright: 'nwse-resize',
+            resizetopright   : 'nesw-resize',
+            resizebottomleft : 'nesw-resize',
+
             gesture : ''
         },
 
@@ -322,8 +374,8 @@
                             && /OS [1-7][^\d]/.test(navigator.appVersion)),
 
         // prefix matchesSelector
-        prefixedMatchesSelector = 'matchesSelector' in Element.prototype?
-                'matchesSelector': 'webkitMatchesSelector' in Element.prototype?
+        prefixedMatchesSelector = 'matches' in Element.prototype?
+                'matches': 'webkitMatchesSelector' in Element.prototype?
                     'webkitMatchesSelector': 'mozMatchesSelector' in Element.prototype?
                         'mozMatchesSelector': 'oMatchesSelector' in Element.prototype?
                             'oMatchesSelector': 'msMatchesSelector',
@@ -332,8 +384,8 @@
         ie8MatchesSelector,
 
         // native requestAnimationFrame or polyfill
-        reqFrame = window.requestAnimationFrame,
-        cancelFrame = window.cancelAnimationFrame,
+        reqFrame = realWindow.requestAnimationFrame,
+        cancelFrame = realWindow.cancelAnimationFrame,
 
         // Events wrapper
         events = (function () {
@@ -519,6 +571,7 @@
             : o.nodeType === 1 && typeof o.nodeName === "string");
     }
     function isWindow (thing) { return !!(thing && thing.Window) && (thing instanceof thing.Window); }
+    function isDocFrag (thing) { return !!thing && thing instanceof DocumentFragment; }
     function isArray (thing) {
         return isObject(thing)
                 && (typeof thing.length !== undefined)
@@ -686,7 +739,7 @@
 
         var rootNode = (node.ownerDocument || node);
 
-        return rootNode.defaultView || rootNode.parentWindow;
+        return rootNode.defaultView || rootNode.parentWindow || window;
     }
 
     function getElementRect (element) {
@@ -819,7 +872,7 @@
                 : defaultOptions.origin;
 
         if (origin === 'parent') {
-            origin = element.parentNode;
+            origin = parentElement(element);
         }
         else if (origin === 'self') {
             origin = interactable.getRect(element);
@@ -862,26 +915,40 @@
     }
 
     function nodeContains (parent, child) {
-        while ((child = child.parentNode)) {
-
+        while (child) {
             if (child === parent) {
                 return true;
             }
+
+            child = child.parentNode;
         }
 
         return false;
     }
 
     function closest (child, selector) {
-        var parent = child.parentNode;
+        var parent = parentElement(child);
 
         while (isElement(parent)) {
             if (matchesSelector(parent, selector)) { return parent; }
 
-            parent = parent.parentNode;
+            parent = parentElement(parent);
         }
 
         return null;
+    }
+
+    function parentElement (node) {
+        var parent = node.parentNode;
+
+        if (isDocFrag(parent)) {
+            // skip past #shado-root fragments
+            while ((parent = parent.host) && isDocFrag(parent)) {}
+
+            return parent;
+        }
+
+        return parent;
     }
 
     function inContext (interactable, element) {
@@ -892,17 +959,13 @@
     function testIgnore (interactable, interactableElement, element) {
         var ignoreFrom = interactable.options.ignoreFrom;
 
-        if (!ignoreFrom
-            // limit test to the interactable's element and its children
-            || !isElement(element) || element === interactableElement.parentNode) {
-            return false;
-        }
+        if (!ignoreFrom || !isElement(element)) { return false; }
 
         if (isString(ignoreFrom)) {
-            return matchesSelector(element, ignoreFrom) || testIgnore(interactable, element.parentNode);
+            return matchesUpTo(element, ignoreFrom, interactableElement);
         }
         else if (isElement(ignoreFrom)) {
-            return element === ignoreFrom || nodeContains(ignoreFrom, element);
+            return nodeContains(ignoreFrom, element);
         }
 
         return false;
@@ -913,16 +976,13 @@
 
         if (!allowFrom) { return true; }
 
-        // limit test to the interactable's element and its children
-        if (!isElement(element) || element === interactableElement.parentNode) {
-            return false;
-        }
+        if (!isElement(element)) { return false; }
 
         if (isString(allowFrom)) {
-            return matchesSelector(element, allowFrom) || testAllow(interactable, element.parentNode);
+            return matchesUpTo(element, allowFrom, interactableElement);
         }
         else if (isElement(allowFrom)) {
-            return element === allowFrom || nodeContains(allowFrom, element);
+            return nodeContains(allowFrom, element);
         }
 
         return false;
@@ -968,8 +1028,8 @@
 
     function withinInteractionLimit (interactable, element, action) {
         var options = interactable.options,
-            maxActions = options[action.name + 'Max'],
-            maxPerElement = options[action.name + 'MaxPerElement'],
+            maxActions = options[action.name].max,
+            maxPerElement = options[action.name].maxPerElement,
             activeInteractions = 0,
             targetCount = 0,
             targetElementCount = 0;
@@ -1119,8 +1179,9 @@
         this.prevDropElement = null; // the element at the time of checking
 
         this.prepared        = {     // action that's ready to be fired on next move event
-            name: null,
-            axis: null
+            name : null,
+            axis : null,
+            edges: null
         };
 
         this.matches         = [];   // all selectors that are matched by target element
@@ -1201,6 +1262,9 @@
 
         this.downEvent   = null;    // pointerdown/mousedown/touchstart event
         this.downPointer = {};
+
+        this._eventTarget    = null;
+        this._curEventTarget = null;
 
         this.prevEvent = null;      // previous action event
         this.tapTime   = 0;         // time of the most recent tap event
@@ -1360,7 +1424,7 @@
 
                 if (target && target.options.styleCursor) {
                     if (action) {
-                        target._doc.documentElement.style.cursor = actionCursors[action.name + (action.axis || '')];
+                        target._doc.documentElement.style.cursor = getActionCursor(action);
                     }
                     else {
                         target._doc.documentElement.style.cursor = '';
@@ -1395,16 +1459,16 @@
                 pointerIndex = this.addPointer(pointer),
                 action;
 
-            this.holdTimers[pointerIndex] = window.setTimeout(function () {
+            this.holdTimers[pointerIndex] = setTimeout(function () {
                 that.pointerHold(events.useAttachEvent? eventCopy : pointer, eventCopy, eventTarget, curEventTarget);
-            }, 600);
+            }, defaultOptions._holdDuration);
 
             this.pointerIsDown = true;
 
             // Check if the down event hits the current inertia target
             if (this.inertiaStatus.active && this.target.selector) {
                 // climb up the DOM tree from the event target
-                while (element && element !== element.ownerDocument) {
+                while (isElement(element)) {
 
                     // if this element is the current inertia target element
                     if (element === this.element
@@ -1418,7 +1482,7 @@
                         this.collectEventTargets(pointer, event, eventTarget, 'down');
                         return;
                     }
-                    element = element.parentNode;
+                    element = parentElement(element);
                 }
             }
 
@@ -1446,24 +1510,20 @@
             // update pointer coords for defaultActionChecker to use
             this.setEventXY(this.curCoords, pointer);
 
-            if (this.matches.length && this.mouse) {
+            while (isElement(element) && !action) {
+                this.matches = [];
+                this.matchElements = [];
+
+                interactables.forEachSelector(pushMatches);
+
                 action = this.validateSelector(pointer, this.matches, this.matchElements);
-            }
-            else {
-                while (element && element !== element.ownerDocument && !action) {
-                    this.matches = [];
-                    this.matchElements = [];
-
-                    interactables.forEachSelector(pushMatches);
-
-                    action = this.validateSelector(pointer, this.matches, this.matchElements);
-                    element = element.parentNode;
-                }
+                element = parentElement(element);
             }
 
             if (action) {
-                this.prepared.name = action.name;
-                this.prepared.axis = action.axis;
+                this.prepared.name  = action.name;
+                this.prepared.axis  = action.axis;
+                this.prepared.edges = action.edges;
 
                 this.collectEventTargets(pointer, event, eventTarget, 'down');
 
@@ -1507,7 +1567,7 @@
                 if (interactable
                     && !testIgnore(interactable, curEventTarget, eventTarget)
                     && testAllow(interactable, curEventTarget, eventTarget)
-                    && (action = validateAction(forceAction || interactable.getAction(pointer, this), interactable, eventTarget))
+                    && (action = validateAction(forceAction || interactable.getAction(pointer, this, curEventTarget), interactable, eventTarget))
                     && withinInteractionLimit(interactable, curEventTarget, action)) {
                     this.target = interactable;
                     this.element = curEventTarget;
@@ -1518,14 +1578,14 @@
                 options = target && target.options;
 
             if (target && !this.interacting()) {
-                action = action || validateAction(forceAction || target.getAction(pointer, this), target, this.element);
+                action = action || validateAction(forceAction || target.getAction(pointer, this, curEventTarget), target, this.element);
 
                 this.setEventXY(this.startCoords);
 
                 if (!action) { return; }
 
                 if (options.styleCursor) {
-                    target._doc.documentElement.style.cursor = actionCursors[action];
+                    target._doc.documentElement.style.cursor = getActionCursor(action);
                 }
 
                 this.resizeAxes = action.name === 'resize'? action.axis : null;
@@ -1534,8 +1594,9 @@
                     action = null;
                 }
 
-                this.prepared.name = action.name;
-                this.prepared.axis = action.axis;
+                this.prepared.name  = action.name;
+                this.prepared.axis  = action.axis;
+                this.prepared.edges = action.edges;
 
                 this.snapStatus.snappedX = this.snapStatus.snappedY =
                     this.restrictStatus.restrictedX = this.restrictStatus.restrictedY = NaN;
@@ -1645,7 +1706,7 @@
          * action must be enabled for the target Interactable and an appropriate number
          * of pointers must be held down – 1 for drag/resize, 2 for gesture.
          *
-         * Use it with interactable.<action>able({ manualStart: false }) to always
+         * Use it with `interactable.<action>able({ manualStart: false })` to always
          * [start actions manually](https://github.com/taye/interact.js/issues/114)
          *
          - action       (object)  The action to be performed - drag, resize, etc.
@@ -1667,7 +1728,7 @@
          |                         event.interactable,
          |                         event.currentTarget);
          |     }
-         });
+         | });
         \*/
         start: function (action, interactable, element) {
             if (this.interacting()
@@ -1676,10 +1737,17 @@
                 return;
             }
 
-            this.prepared.name = action.name;
-            this.prepared.axis = action.axis;
-            this.target        = interactable;
-            this.element       = element;
+            // if this interaction had been removed after stopping
+            // add it back
+            if (indexOf(interactions, this) === -1) {
+                interactions.push(this);
+            }
+
+            this.prepared.name  = action.name;
+            this.prepared.axis  = action.axis;
+            this.prepared.edges = action.edges;
+            this.target         = interactable;
+            this.element        = element;
 
             this.setStartOffsets(action.name, interactable, element);
             this.setModifications(this.startCoords.page);
@@ -1712,7 +1780,7 @@
 
             if (!duplicateMove && (!this.pointerIsDown || this.pointerWasMoved)) {
                 if (this.pointerIsDown) {
-                    window.clearTimeout(this.holdTimers[pointerIndex]);
+                    clearTimeout(this.holdTimers[pointerIndex]);
                 }
 
                 this.collectEventTargets(pointer, event, eventTarget, 'move');
@@ -1755,7 +1823,7 @@
                             var element = eventTarget;
 
                             // check element interactables
-                            while (element && element !== element.ownerDocument) {
+                            while (isElement(element)) {
                                 var elementInteractable = interactables.get(element);
 
                                 if (elementInteractable
@@ -1770,7 +1838,7 @@
                                     break;
                                 }
 
-                                element = element.parentNode;
+                                element = parentElement(element);
                             }
 
                             // if there's no drag from element interactables,
@@ -1798,7 +1866,7 @@
 
                                 element = eventTarget;
 
-                                while (element && element !== element.ownerDocument) {
+                                while (isElement(element)) {
                                     var selectorInteractable = interactables.forEachSelector(getDraggable);
 
                                     if (selectorInteractable) {
@@ -1808,7 +1876,7 @@
                                         break;
                                     }
 
-                                    element = element.parentNode;
+                                    element = parentElement(element);
                                 }
                             }
                         }
@@ -1819,7 +1887,7 @@
 
                 if (starting
                     && (this.target.options[this.prepared.name].manualStart
-                        || !withinInteractionLimit(this.target, this.element, this.prepared.name))) {
+                        || !withinInteractionLimit(this.target, this.element, this.prepared))) {
                     this.stop();
                     return;
                 }
@@ -1897,6 +1965,38 @@
         resizeStart: function (event) {
             var resizeEvent = new InteractEvent(this, event, 'resize', 'start', this.element);
 
+            if (this.prepared.edges) {
+                var startRect = this.target.getRect(this.element);
+
+                if (this.target.options.resize.square) {
+                    var squareEdges = extend({}, this.prepared.edges);
+
+                    squareEdges.top    = squareEdges.top    || (squareEdges.left   && !squareEdges.bottom);
+                    squareEdges.left   = squareEdges.left   || (squareEdges.top    && !squareEdges.right );
+                    squareEdges.bottom = squareEdges.bottom || (squareEdges.right  && !squareEdges.top   );
+                    squareEdges.right  = squareEdges.right  || (squareEdges.bottom && !squareEdges.left  );
+
+                    this.prepared._squareEdges = squareEdges;
+                }
+                else {
+                    this.prepared._squareEdges = null;
+                }
+
+                this.resizeRects = {
+                    start     : startRect,
+                    current   : extend({}, startRect),
+                    restricted: extend({}, startRect),
+                    previous  : extend({}, startRect),
+                    delta     : {
+                        left: 0, right : 0, width : 0,
+                        top : 0, bottom: 0, height: 0
+                    }
+                };
+
+                resizeEvent.rect = this.resizeRects.restricted;
+                resizeEvent.deltaRect = this.resizeRects.delta;
+            }
+
             this.target.fire(resizeEvent);
 
             this.resizing = true;
@@ -1906,6 +2006,81 @@
 
         resizeMove: function (event) {
             var resizeEvent = new InteractEvent(this, event, 'resize', 'move', this.element);
+
+            var edges = this.prepared.edges,
+                invert = this.target.options.resize.invert,
+                invertible = invert === 'reposition' || invert === 'negate';
+
+            if (edges) {
+                var dx = resizeEvent.dx,
+                    dy = resizeEvent.dy,
+
+                    start      = this.resizeRects.start,
+                    current    = this.resizeRects.current,
+                    restricted = this.resizeRects.restricted,
+                    delta      = this.resizeRects.delta,
+                    previous   = extend(this.resizeRects.previous, restricted);
+
+                if (this.target.options.resize.square) {
+                    var originalEdges = edges;
+
+                    edges = this.prepared._squareEdges;
+
+                    if ((originalEdges.left && originalEdges.bottom)
+                        || (originalEdges.right && originalEdges.top)) {
+                        dy = -dx;
+                    }
+                    else if (originalEdges.left || originalEdges.right) { dy = dx; }
+                    else if (originalEdges.top || originalEdges.bottom) { dx = dy; }
+                }
+
+                // update the 'current' rect without modifications
+                if (edges.top   ) { current.top    += dy; }
+                if (edges.bottom) { current.bottom += dy; }
+                if (edges.left  ) { current.left   += dx; }
+                if (edges.right ) { current.right  += dx; }
+
+                if (invertible) {
+                    // if invertible, copy the current rect
+                    extend(restricted, current);
+
+                    if (invert === 'reposition') {
+                        // swap edge values if necessary to keep width/height positive
+                        var swap;
+
+                        if (restricted.top > restricted.bottom) {
+                            swap = restricted.top;
+
+                            restricted.top = restricted.bottom;
+                            restricted.bottom = swap;
+                        }
+                        if (restricted.left > restricted.right) {
+                            swap = restricted.left;
+
+                            restricted.left = restricted.right;
+                            restricted.right = swap;
+                        }
+                    }
+                }
+                else {
+                    // if not invertible, restrict to minimum of 0x0 rect
+                    restricted.top    = Math.min(current.top, start.bottom);
+                    restricted.bottom = Math.max(current.bottom, start.top);
+                    restricted.left   = Math.min(current.left, start.right);
+                    restricted.right  = Math.max(current.right, start.left);
+                }
+
+                restricted.width  = restricted.right  - restricted.left;
+                restricted.height = restricted.bottom - restricted.top ;
+
+                for (var edge in restricted) {
+                    delta[edge] = restricted[edge] - previous[edge];
+                }
+
+                resizeEvent.edges = this.prepared.edges;
+                resizeEvent.rect = restricted;
+                resizeEvent.deltaRect = delta;
+            }
 
             this.target.fire(resizeEvent);
 
@@ -1961,7 +2136,7 @@
         pointerUp: function (pointer, event, eventTarget, curEventTarget) {
             var pointerIndex = this.mouse? 0 : indexOf(this.pointerIds, getPointerId(pointer));
 
-            window.clearTimeout(this.holdTimers[pointerIndex]);
+            clearTimeout(this.holdTimers[pointerIndex]);
 
             this.collectEventTargets(pointer, event, eventTarget, 'up' );
             this.collectEventTargets(pointer, event, eventTarget, 'tap');
@@ -1974,10 +2149,12 @@
         pointerCancel: function (pointer, event, eventTarget, curEventTarget) {
             var pointerIndex = this.mouse? 0 : indexOf(this.pointerIds, getPointerId(pointer));
 
-            window.clearTimeout(this.holdTimers[pointerIndex]);
+            clearTimeout(this.holdTimers[pointerIndex]);
 
             this.collectEventTargets(pointer, event, eventTarget, 'cancel');
             this.pointerEnd(pointer, event, eventTarget, curEventTarget);
+
+            this.removePointer(pointer);
         },
 
         // http://www.quirksmode.org/dom/events/click.html
@@ -2430,11 +2607,12 @@
             this.prepared.name = this.prevEvent = null;
             this.inertiaStatus.resumeDx = this.inertiaStatus.resumeDy = 0;
 
-            this.pointerIds .splice(0);
-            this.pointers   .splice(0);
-            this.downTargets.splice(0);
-            this.downTimes  .splice(0);
-            this.holdTimers .splice(0);
+            // remove pointers if their ID isn't in this.pointerIds
+            for (var i = 0; i < this.pointers.length; i++) {
+                if (indexOf(this.pointerIds, getPointerId(this.pointers[i])) === -1) {
+                    this.pointers.splice(i, 1);
+                }
+            }
 
             // delete interaction if it's not the only one
             if (interactions.length > 1) {
@@ -2529,7 +2707,7 @@
             if (index === -1) { return; }
 
             if (!this.interacting()) {
-                this.pointers   .splice(index, 1);
+                this.pointers.splice(index, 1);
             }
 
             this.pointerIds .splice(index, 1);
@@ -2589,7 +2767,7 @@
 
                 interactables.forEachSelector(collectSelectors);
 
-                element = element.parentNode;
+                element = parentElement(element);
             }
 
             // create the tap event even if there are no listeners so that
@@ -2636,9 +2814,11 @@
                 pointerEvent.dt = pointerEvent.timeStamp - this.downTimes[pointerIndex];
 
                 interval = pointerEvent.timeStamp - this.tapTime;
-                createNewDoubleTap = (this.prevTap && this.prevTap.type !== 'doubletap'
+                createNewDoubleTap = !!(this.prevTap && this.prevTap.type !== 'doubletap'
                        && this.prevTap.target === pointerEvent.target
                        && interval < 500);
+
+                pointerEvent.double = createNewDoubleTap;
 
                 this.tapTime = pointerEvent.timeStamp;
             }
@@ -2847,7 +3027,7 @@
 
             if (isString(restriction)) {
                 if (restriction === 'parent') {
-                    restriction = this.element.parentNode;
+                    restriction = parentElement(this.element);
                 }
                 else if (restriction === 'self') {
                     restriction = target.getRect(this.element);
@@ -2913,6 +3093,12 @@
                     return;
                 }
 
+                // with manualStart, only preventDefault while interacting
+                if (options[this.prepared.name] && options[this.prepared.name].manualStart
+                    && !this.interacting()) {
+                    return;
+                }
+
                 event.preventDefault();
                 return;
             }
@@ -2939,6 +3125,11 @@
 
             status.lambda_v0 = lambda / status.v0;
             status.one_ve_v0 = 1 - inertiaOptions.endSpeed / status.v0;
+        },
+
+        _updateEventTargets: function (target, currentTarget) {
+            this._eventTarget    = target;
+            this._curEventTarget = currentTarget;
         }
 
     };
@@ -2972,7 +3163,7 @@
 
                             return interaction;
                         }
-                        element = element.parentNode;
+                        element = parentElement(element);
                     }
                 }
             }
@@ -3036,7 +3227,9 @@
     function doOnInteractions (method) {
         return (function (event) {
             var interaction,
-                eventTarget = getActualElement(event.target),
+                eventTarget = getActualElement(event.path
+                                               ? event.path[0]
+                                               : event.target),
                 curEventTarget = getActualElement(event.currentTarget),
                 i;
 
@@ -3049,6 +3242,8 @@
                     interaction = getInteractionFromPointer(pointer, event.type, eventTarget);
 
                     if (!interaction) { continue; }
+
+                    interaction._updateEventTargets(eventTarget, curEventTarget);
 
                     interaction[method](pointer, event, eventTarget, curEventTarget);
                 }
@@ -3072,6 +3267,8 @@
                 interaction = getInteractionFromPointer(event, event.type, eventTarget);
 
                 if (!interaction) { return; }
+
+                interaction._updateEventTargets(eventTarget, curEventTarget);
 
                 interaction[method](event, event, eventTarget, curEventTarget);
             }
@@ -3105,7 +3302,9 @@
         client.x -= origin.x;
         client.y -= origin.y;
 
-        if (checkSnap(target, action) && !(starting && interaction.snapOffsets.length)) {
+        var relativePoints = options[action].snap && options[action].snap.relativePoints ;
+
+        if (checkSnap(target, action) && !(starting && relativePoints && relativePoints.length)) {
             this.snap = {
                 range  : snapStatus.range,
                 locked : snapStatus.locked,
@@ -3169,7 +3368,7 @@
         }
 
         // end event dx, dy is difference between start and end points
-        if (ending || action === 'drop') {
+        if (ending) {
             if (deltaSource === 'client') {
                 this.dx = client.x - interaction.startCoords.client.x;
                 this.dy = client.y - interaction.startCoords.client.y;
@@ -3208,7 +3407,7 @@
             this.dx = this.dy = 0;
         }
 
-        if (action === 'resize') {
+        if (action === 'resize' && interaction.resizeAxes) {
             if (options.resize.square) {
                 if (interaction.resizeAxes === 'y') {
                     this.dx = this.dy;
@@ -3343,28 +3542,116 @@
         this.originalEvent.preventDefault();
     }
 
+    function getActionCursor (action) {
+        var cursor = '';
+
+        if (action.name === 'drag') {
+            cursor =  actionCursors.drag;
+        }
+        if (action.name === 'resize') {
+            if (action.axis) {
+                cursor =  actionCursors[action.name + action.axis];
+            }
+            else if (action.edges) {
+                var cursorKey = 'resize',
+                    edgeNames = ['top', 'bottom', 'left', 'right'];
+
+                for (var i = 0; i < 4; i++) {
+                    if (action.edges[edgeNames[i]]) {
+                        cursorKey += edgeNames[i];
+                    }
+                }
+
+                cursor = actionCursors[cursorKey];
+            }
+        }
+
+        return cursor;
+    }
+
+    function checkResizeEdge (name, value, page, element, interactableElement, rect) {
+        // false, '', undefined, null
+        if (!value) { return false; }
+
+        // true value, use pointer coords and element rect
+        if (value === true) {
+            // if dimensions are negative, "switch" edges
+            var width = isNumber(rect.width)? rect.width : rect.right - rect.left,
+                height = isNumber(rect.height)? rect.height : rect.bottom - rect.top;
+
+            if (width < 0) {
+                if      (name === 'left' ) { name = 'right'; }
+                else if (name === 'right') { name = 'left' ; }
+            }
+            if (height < 0) {
+                if      (name === 'top'   ) { name = 'bottom'; }
+                else if (name === 'bottom') { name = 'top'   ; }
+            }
+
+            if (name === 'left'  ) { return page.x < ((width  >= 0? rect.left: rect.right ) + margin); }
+            if (name === 'top'   ) { return page.y < ((height >= 0? rect.top : rect.bottom) + margin); }
+
+            if (name === 'right' ) { return page.x > ((width  >= 0? rect.right : rect.left) - margin); }
+            if (name === 'bottom') { return page.y > ((height >= 0? rect.bottom: rect.top ) - margin); }
+        }
+
+        // the remaining checks require an element
+        if (!isElement(element)) { return false; }
+
+        return isElement(value)
+                    // the value is an element to use as a resize handle
+                    ? value === element
+                    // otherwise check if element matches value as selector
+                    : matchesUpTo(element, value, interactableElement);
+    }
+
     function defaultActionChecker (pointer, interaction, element) {
         var rect = this.getRect(element),
-            right,
-            bottom,
+            shouldResize = false,
             action = null,
             resizeAxes = null,
+            resizeEdges,
             page = extend({}, interaction.curCoords.page),
             options = this.options;
 
         if (!rect) { return null; }
 
         if (actionIsEnabled.resize && options.resize.enabled) {
-            right  = options.resize.axis !== 'y' && page.x > (rect.right  - margin);
-            bottom = options.resize.axis !== 'x' && page.y > (rect.bottom - margin);
+            var resizeOptions = options.resize;
+
+            resizeEdges = {
+                left: false, right: false, top: false, bottom: false
+            };
+
+            // if using resize.edges
+            if (isObject(resizeOptions.edges)) {
+                for (var edge in resizeEdges) {
+                    resizeEdges[edge] = checkResizeEdge(edge,
+                                                        resizeOptions.edges[edge],
+                                                        page,
+                                                        interaction._eventTarget,
+                                                        element,
+                                                        rect);
+                }
+
+                resizeEdges.left = resizeEdges.left && !resizeEdges.right;
+                resizeEdges.top  = resizeEdges.top  && !resizeEdges.bottom;
+
+                shouldResize = resizeEdges.left || resizeEdges.right || resizeEdges.top || resizeEdges.bottom;
+            }
+            else {
+                var right  = options.resize.axis !== 'y' && page.x > (rect.right  - margin),
+                    bottom = options.resize.axis !== 'x' && page.y > (rect.bottom - margin);
+
+                shouldResize = right || bottom;
+                resizeAxes = (right? 'x' : '') + (bottom? 'y' : '');
+            }
         }
 
-        resizeAxes = (right?'x': '') + (bottom?'y': '');
-
-        action = resizeAxes
+        action = shouldResize
             ? 'resize'
             : actionIsEnabled.drag && options.drag.enabled
-                ?  'drag'
+                ? 'drag'
                 : null;
 
         if (actionIsEnabled.gesture
@@ -3376,7 +3663,8 @@
         if (action) {
             return {
                 name: action,
-                axis: resizeAxes
+                axis: resizeAxes,
+                edges: resizeEdges
             };
         }
 
@@ -3424,7 +3712,10 @@
     function delegateListener (event, useCapture) {
         var fakeEvent = {},
             delegated = delegatedEvents[event.type],
-            element = event.target;
+            eventTarget = getActualElement(event.path
+                                           ? event.path[0]
+                                           : event.target),
+            element = eventTarget;
 
         useCapture = useCapture? true: false;
 
@@ -3437,13 +3728,13 @@
         fakeEvent.preventDefault = preventOriginalDefault;
 
         // climb up document tree looking for selector matches
-        while (element && (element.ownerDocument && element !== element.ownerDocument)) {
+        while (isElement(element)) {
             for (var i = 0; i < delegated.selectors.length; i++) {
                 var selector = delegated.selectors[i],
                     context = delegated.contexts[i];
 
                 if (matchesSelector(element, selector)
-                    && nodeContains(context, event.target)
+                    && nodeContains(context, eventTarget)
                     && nodeContains(context, element)) {
 
                     var listeners = delegated.listeners[i];
@@ -3458,7 +3749,7 @@
                 }
             }
 
-            element = element.parentNode;
+            element = parentElement(element);
         }
     }
 
@@ -3743,24 +4034,15 @@
             return this.options.drop;
         },
 
-        /*\
-         * Interactable.dropCheck
-         [ method ]
-         *
-         * The default function to determine if a dragend event occured over
-         * this Interactable's element. Can be overridden using
-         * @Interactable.dropChecker.
-         *
-         - pointer (MouseEvent | PointerEvent | Touch) The event that ends a drag
-         - draggable (Interactable) The Interactable being dragged
-         - draggableElement (Element) The actual element that's being dragged
-         - dropElement (Element) The dropzone element
-         - rect (object) #optional The rect of dropElement
-         = (boolean) whether the pointer was over this Interactable
-        \*/
         dropCheck: function (pointer, draggable, draggableElement, dropElement, rect) {
+            var dropped = false;
+
+            // if the dropzone has no rect (eg. display: none)
+            // call the custom dropChecker or just return false
             if (!(rect = rect || this.getRect(dropElement))) {
-                return false;
+                return (this.options.dropChecker
+                    ? this.options.dropChecker(pointer, dropped, this, dropElement, draggable, draggableElement)
+                    : false);
             }
 
             var dropOverlap = this.options.drop.overlap;
@@ -3777,7 +4059,7 @@
                 horizontal = (page.x > rect.left) && (page.x < rect.right);
                 vertical   = (page.y > rect.top ) && (page.y < rect.bottom);
 
-                return horizontal && vertical;
+                dropped = horizontal && vertical;
             }
 
             var dragRect = draggable.getRect(draggableElement);
@@ -3786,7 +4068,7 @@
                 var cx = dragRect.left + dragRect.width  / 2,
                     cy = dragRect.top  + dragRect.height / 2;
 
-                return cx >= rect.left && cx <= rect.right && cy >= rect.top && cy <= rect.bottom;
+                dropped = cx >= rect.left && cx <= rect.right && cy >= rect.top && cy <= rect.bottom;
             }
 
             if (isNumber(dropOverlap)) {
@@ -3794,8 +4076,14 @@
                                   * Math.max(0, Math.min(rect.bottom, dragRect.bottom) - Math.max(rect.top , dragRect.top ))),
                     overlapRatio = overlapArea / (dragRect.width * dragRect.height);
 
-                return overlapRatio >= dropOverlap;
+                dropped = overlapRatio >= dropOverlap;
             }
+
+            if (this.options.dropChecker) {
+                dropped = this.options.dropChecker(pointer, dropped, this, dropElement, draggable, draggableElement);
+            }
+
+            return dropped;
         },
 
         /*\
@@ -3810,15 +4098,31 @@
          * parameter and returns true or false to indicate if the the current
          * draggable can be dropped into this Interactable
          *
+         - checker (function) The function that will be called when checking for a drop
+         * The checker function takes the following arguments:
+         *
+         - pointer (MouseEvent | PointerEvent | Touch) The pointer/event that ends a drag
+         - dropped (boolean) The value from the default drop check
+         - dropzone (Interactable) The dropzone interactable
+         - dropElement (Element) The dropzone element
+         - draggable (Interactable) The Interactable being dragged
+         - draggableElement (Element) The actual element that's being dragged
+         *
          = (Function | Interactable) The checker function or this Interactable
         \*/
         dropChecker: function (checker) {
             if (isFunction(checker)) {
-                this.dropCheck = checker;
+                this.options.dropChecker = checker;
 
                 return this;
             }
-            return this.dropCheck;
+            if (checker === null) {
+                delete this.options.getRect;
+
+                return this;
+            }
+
+            return this.options.dropChecker;
         },
 
         /*\
@@ -3878,7 +4182,18 @@
          |     onmove : function (event) {},
          |     onend  : function (event) {},
          |
-         |     axis   : 'x' || 'y' || 'xy' // default is 'xy',
+         |     edges: {
+         |       top   : true,       // Use pointer coords to check for resize.
+         |       left  : false,      // Disable resizing from left edge.
+         |       bottom: '.resize-s',// Resize if pointer target matches selector
+         |       right : handleEl    // Resize if pointer target is the given Element
+         |     },
+         |
+         |     // a value of 'none' will limit the resize rect to a minimum of 0x0
+         |     // 'negate' will allow the rect to have negative width/height
+         |     // 'reposition' will keep the width/height positive by swapping
+         |     // the top and bottom edges and/or swapping the left and right edges
+         |     invert: 'none' || 'negate' || 'reposition'
          |
          |     // limit multiple resizes.
          |     // See the explanation in the @Interactable.draggable example
@@ -4219,13 +4534,14 @@
          * Gets or sets the function used to check action to be performed on
          * pointerDown
          *
-         - checker (function | null) #optional A function which takes a pointer event, defaultAction string, interactable, element and interaction as parameters and returns an object with name property 'drag' 'resize' or 'gesture' and optionally an axis 'x', 'y', or 'xy'; or null.
+         - checker (function | null) #optional A function which takes a pointer event, defaultAction string, interactable, element and interaction as parameters and returns an object with name property 'drag' 'resize' or 'gesture' and optionally an `edges` object with boolean 'top', 'left', 'bottom' and right props.
          = (Function | Interactable) The checker function or this Interactable
          *
          | interact('.resize-horiz').actionChecker(function (defaultAction, interactable) {
          |   return {
+         |     // resize from the top and right edges
          |     name: 'resize',
-         |     axis: 'x'
+         |     edges: { top: true, right: true }
          |   };
          | });
         \*/
@@ -4623,7 +4939,7 @@
 
             if (isObject(eventType)) {
                 for (var prop in eventType) {
-                    interact.on(prop, eventType[prop], listener);
+                    this.on(prop, eventType[prop], listener);
                 }
 
                 return this;
@@ -4717,7 +5033,7 @@
 
             if (isObject(eventType)) {
                 for (var prop in eventType) {
-                    interact.off(prop, eventType[prop], listener);
+                    this.off(prop, eventType[prop], listener);
                 }
 
                 return this;
@@ -4917,11 +5233,11 @@
     }
 
     Interactable.prototype.snap = warnOnce(Interactable.prototype.snap,
-         'Interactable#snap is deprecated. See the new documentation for snapping at http://interactjs.io/docs/#snap');
+         'Interactable#snap is deprecated. See the new documentation for snapping at http://interactjs.io/docs/snapping');
     Interactable.prototype.restrict = warnOnce(Interactable.prototype.restrict,
-         'Interactable#restrict is deprecated. See the new documentation for resticting at http://interactjs.io/docs/#restrict');
+         'Interactable#restrict is deprecated. See the new documentation for resticting at http://interactjs.io/docs/restriction');
     Interactable.prototype.inertia = warnOnce(Interactable.prototype.inertia,
-         'Interactable#inertia is deprecated. See the new documentation for inertia at http://interactjs.io/docs/#inertia');
+         'Interactable#inertia is deprecated. See the new documentation for inertia at http://interactjs.io/docs/inertia');
     Interactable.prototype.autoScroll = warnOnce(Interactable.prototype.autoScroll,
          'Interactable#autoScroll is deprecated. See the new documentation for autoScroll at http://interactjs.io/docs/#autoscroll');
 
@@ -5425,7 +5741,28 @@
             return ie8MatchesSelector(element, selector, nodeList);
         }
 
+        // remove /deep/ from selectors if shadowDOM polyfill is used
+        if (window !== realWindow) {
+            selector = selector.replace(/\/deep\//g, ' ');
+        }
+
         return element[prefixedMatchesSelector](selector);
+    }
+
+    function matchesUpTo (element, selector, limit) {
+        while (isElement(element)) {
+            if (matchesSelector(element, selector)) {
+                return true;
+            }
+
+            element = parentElement(element);
+
+            if (element === limit) {
+                return matchesSelector(element, selector);
+            }
+        }
+
+        return false;
     }
 
     // For IE8's lack of an Element#matchesSelector
@@ -5449,16 +5786,16 @@
         var lastTime = 0,
             vendors = ['ms', 'moz', 'webkit', 'o'];
 
-        for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-            reqFrame = window[vendors[x]+'RequestAnimationFrame'];
-            cancelFrame = window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+        for(var x = 0; x < vendors.length && !realWindow.requestAnimationFrame; ++x) {
+            reqFrame = realWindow[vendors[x]+'RequestAnimationFrame'];
+            cancelFrame = realWindow[vendors[x]+'CancelAnimationFrame'] || realWindow[vendors[x]+'CancelRequestAnimationFrame'];
         }
 
         if (!reqFrame) {
             reqFrame = function(callback) {
                 var currTime = new Date().getTime(),
                     timeToCall = Math.max(0, 16 - (currTime - lastTime)),
-                    id = window.setTimeout(function() { callback(currTime + timeToCall); },
+                    id = setTimeout(function() { callback(currTime + timeToCall); },
                   timeToCall);
                 lastTime = currTime + timeToCall;
                 return id;
@@ -5488,7 +5825,7 @@
         });
     }
     else {
-        window.interact = interact;
+        realWindow.interact = interact;
     }
 
-} ());
+} (window));

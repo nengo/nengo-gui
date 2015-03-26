@@ -18,6 +18,6 @@ with model:
         )
 
 import nengo_viz
-viz = nengo_viz.Viz(model)
+viz = nengo_viz.Viz(model, locals=locals(), filename=__file__)
 viz.pointer(model.c)
 viz.start()

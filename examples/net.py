@@ -12,14 +12,22 @@ with model:
     nengo.Connection(ens, result, function=lambda x: x[0] * x[1],
                      synapse=0.01)
 
-#sim = nengo.Simulator(model)
-#sim.run(100, progress_bar=False)
+    with nengo.Network(label='subnet') as subnet:
+        a = nengo.Ensemble(100, 1)
+        b = nengo.Ensemble(100, 1)
+        nengo.Connection(a, b)
+        nengo.Connection(b, b)
+
+        with nengo.Network() as subsubnet:
+            c = nengo.Ensemble(100, 1)
+            d = nengo.Ensemble(100, 1)
+            nengo.Connection(c, d)
+        nengo.Connection(b, c)
+        nengo.Connection(d, a)
+    nengo.Connection(result, a)
+
 
 import nengo_viz
 viz = nengo_viz.Viz(model, locals=locals(), filename=__file__)
-viz.slider(stimulus_A)
-viz.slider(stimulus_B)
-viz.value(ens)
 viz.value(result)
-viz.raster(result.neurons, n_neurons=10)
 viz.start()
