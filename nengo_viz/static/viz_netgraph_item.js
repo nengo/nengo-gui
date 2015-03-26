@@ -96,6 +96,7 @@ VIZ.NetGraphItem = function(ng, info) {
             },
             onend: function(event) {
                 var item = ng.svg_objects[uid];
+                item.constrain_position();                
                 ng.notify({act:"pos", uid:uid, x:item.pos[0], y:item.pos[1]});
             }});
             
@@ -124,8 +125,7 @@ VIZ.NetGraphItem = function(ng, info) {
             })
         .on('resizeend', function(event) {
             var item = ng.svg_objects[uid];
-            console.log(uid);
-            console.log(item);
+            item.constrain_position();                
             ng.notify({act:"pos_size", uid:uid, 
                        x:item.pos[0], y:item.pos[1],
                        width:item.size[0], height:item.size[1]});
@@ -237,9 +237,38 @@ VIZ.NetGraphItem.prototype.remove = function() {
     this.ng.g_items.removeChild(this.g);    
 }
 
+VIZ.NetGraphItem.prototype.constrain_position = function() {
+    var changed = false;
+    if (this.parent != null) {
+        if (this.pos[0] + this.size[0] > 1.0) {
+            this.pos[0] = 1.0 - this.size[0];
+            changed = true;
+        } else if (this.pos[0] - this.size[0] < 0.0) {
+            this.pos[0] = this.size[0];
+            changed = true;
+        } 
+        if (this.pos[1] + this.size[1] > 1.0) {
+            this.pos[1] = 1.0 - this.size[1];
+            changed = true;
+        } else if (this.pos[1] - this.size[1] < 0.0) {
+            this.pos[1] = this.size[1];
+            changed = true;
+        }
+    }
+    
+    if (changed) {
+        this.redraw_position();
+        
+        this.redraw_children();
+        this.redraw_child_connections();
+        this.redraw_connections();    
+    }
+};
+
 
 /** set the position of the item and redraw it appropriately*/
 VIZ.NetGraphItem.prototype.set_position = function(x, y) {
+
     this.pos = [x, y];
 
     this.redraw_position();
