@@ -57,7 +57,7 @@ VIZ.NetGraph = function(args) {
             var y = (event.clientY / $(self.svg).height());
             var step_size = 1.1;
             var delta = event.wheelDeltaY || -event.deltaY
-            var scale = delta > 0 ? step_size : 1.0 / step_size;
+            var scale = delta > 0 ? step_size : 1.0 / step_size; // will either be 1.1 or ~0.9
             
             var w = self.get_scaled_width(); //gets original width & height
             var h = self.get_scaled_height();

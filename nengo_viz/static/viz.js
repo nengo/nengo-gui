@@ -26,6 +26,7 @@ VIZ.get_transform = function(element) {
  * @param {float} args.height - the height of the component (in pixels)
  * @param {int} args.id - the id of the server-side component to connect to
  */
+ 
 VIZ.Component = function(args) {
     var self = this;
 
