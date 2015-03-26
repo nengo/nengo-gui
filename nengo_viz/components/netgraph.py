@@ -88,8 +88,13 @@ class NetGraph(Component):
             config[self.viz.model].size = 1.0, 1.0
             try:
                 with open(self.viz.viz.filename + '.cfg') as f:
-                    config_code = f.read()
-                exec config_code in locals
+                    config_code = f.readlines()
+                for line in config_code:
+                    try:
+                        exec line in locals
+                    except Exception as e:
+                        print('error parsing config', line)
+                        print(e)
             except IOError:
                 pass
         else:
