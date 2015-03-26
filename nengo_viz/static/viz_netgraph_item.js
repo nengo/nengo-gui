@@ -48,6 +48,11 @@ VIZ.NetGraphItem = function(ng, info) {
     this.g = g;
     ng.g_items.appendChild(g);    
     g.classList.add(this.type);
+
+    this.foreignObject = this.ng.createSVGElement('foreignObject');
+    this.config = VIZ.Config(this.foreignObject);
+    ng.g_items.appendChild(this.foreignObject);
+
     
     /** different types use different SVG elements for display */
     if (info.type === 'node') {
@@ -254,6 +259,7 @@ VIZ.NetGraphItem.prototype.remove = function() {
 
     /** remove from the SVG */
     this.ng.g_items.removeChild(this.g);    
+    this.ng.g_items.removeChild(this.foreignObject);
 }
 
 VIZ.NetGraphItem.prototype.constrain_position = function() {
@@ -314,6 +320,9 @@ VIZ.NetGraphItem.prototype.redraw_position = function() {
     /** update my position */
     this.g.setAttribute('transform', 'translate(' + screen[0] + ', ' + 
                                                     screen[1] + ')');
+
+    this.foreignObject.setAttribute('x', screen[0]);
+    this.foreignObject.setAttribute('y', screen[1]);
 };
 
 VIZ.NetGraphItem.prototype.redraw_children = function() {
@@ -407,6 +416,8 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
         /** put the label at the bottom */
         this.label.setAttribute('transform', 'translate(0, ' + screen_h + ')');
     }
+    this.foreignObject.setAttribute('width', 5);
+    this.foreignObject.setAttribute('height', 5);
 };
 
 
