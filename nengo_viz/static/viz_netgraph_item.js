@@ -256,6 +256,16 @@ VIZ.NetGraphItem.prototype.remove = function() {
 VIZ.NetGraphItem.prototype.constrain_position = function() {
     var changed = false;
     if (this.parent != null) {
+        if (this.size[0] > 0.5) {
+            this.size[0] = 0.5;
+            changed = true;
+        }
+        
+        if (this.size[1] > 0.5) {
+            this.size[1] = 0.5;
+            changed = true;
+        }
+    
         if (this.pos[0] + this.size[0] > 1.0) {
             this.pos[0] = 1.0 - this.size[0];
             changed = true;
@@ -274,6 +284,7 @@ VIZ.NetGraphItem.prototype.constrain_position = function() {
     
     if (changed) {
         this.redraw_position();
+        this.redraw_size();
         
         this.redraw_children();
         this.redraw_child_connections();
