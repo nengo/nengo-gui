@@ -59,7 +59,10 @@ VIZ.NetGraph = function(args) {
                 self.offsetX += event.dx / self.get_scaled_width();
                 self.offsetY += event.dy / self.get_scaled_height();
                 for (var key in self.svg_objects) {
-                    self.svg_objects[key].redraw();
+                    self.svg_objects[key].redraw_position();
+                }    
+                for (var key in self.svg_conns) {
+                    self.svg_conns[key].redraw();
                 }    
             },
             onend: function(event) {
@@ -143,7 +146,11 @@ VIZ.NetGraph.prototype.set_scale = function(scale) {
 /** redraw all elements */
 VIZ.NetGraph.prototype.redraw = function() {
     for (var key in this.svg_objects) {
-        this.svg_objects[key].redraw();
+        this.svg_objects[key].redraw_position();
+        this.svg_objects[key].redraw_size();
+    }    
+    for (var key in this.svg_conns) {
+        this.svg_conns[key].redraw();
     }    
 }
 
