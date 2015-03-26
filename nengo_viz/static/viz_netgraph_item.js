@@ -129,7 +129,9 @@ VIZ.NetGraphItem = function(ng, info) {
             ng.notify({act:"pos_size", uid:uid, 
                        x:item.pos[0], y:item.pos[1],
                        width:item.size[0], height:item.size[1]});
-            })
+            });
+            
+    interact(this.g)
         .on('wheel', function(event) {
             var item = ng.svg_objects[uid];
             var step_size = 1.1; // size of zoom per wheel click
