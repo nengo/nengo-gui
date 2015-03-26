@@ -8,7 +8,7 @@ with model:
     nengo.Connection(stimulus, ens)
 
 import nengo_viz
-viz = nengo_viz.Viz(model)
+viz = nengo_viz.Viz(model, locals=locals(), filename=__file__)
 viz.slider(stimulus)
 viz.value(ens)
 viz.start()

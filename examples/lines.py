@@ -9,7 +9,7 @@ cols = int(np.sqrt(D))
 size = 150
 
 model = nengo.Network()
-viz = nengo_viz.Viz(model)
+viz = nengo_viz.Viz(model, locals=locals(), filename=__file__)
 with model:
     for i in range(D):
         def waves(t, i=i):
