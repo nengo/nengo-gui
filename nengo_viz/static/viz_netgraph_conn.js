@@ -34,7 +34,7 @@ VIZ.NetGraphConnection = function(ng, info) {
     this.set_post(this.find_post());
 
     /** determine parent and add to parent's children list */
-    if (info.parent == null) {
+    if (info.parent === null) {
         this.parent = null;
     } else {
         this.parent = ng.svg_objects[info.parent];
@@ -59,10 +59,10 @@ VIZ.NetGraphConnection = function(ng, info) {
 
 /** set the item connecting from */
 VIZ.NetGraphConnection.prototype.set_pre = function(pre) {
-    if (this.pre != null) {
+    if (this.pre !== null) {
         /** if we're currently connected, disconnect */
         var index = this.pre.conn_out.indexOf(this);
-        if (index == -1) {
+        if (index === -1) {
             console.log('error removing in set_pre');
         }
         this.pre.conn_out.splice(index, 1);    
@@ -75,10 +75,10 @@ VIZ.NetGraphConnection.prototype.set_pre = function(pre) {
 
 /** set the item connecting to */
 VIZ.NetGraphConnection.prototype.set_post = function(post) {
-    if (this.post != null) {
+    if (this.post !== null) {
         /** if we're currently connected, disconnect */
         var index = this.post.conn_in.indexOf(this);
-        if (index == -1) {
+        if (index === -1) {
             console.log('error removing in set_pre');
         }
         this.post.conn_in.splice(index, 1);    
@@ -93,7 +93,7 @@ VIZ.NetGraphConnection.prototype.set_post = function(post) {
 VIZ.NetGraphConnection.prototype.find_pre = function() {
     for (var i in this.pres) {
         var pre = this.ng.svg_objects[this.pres[i]];
-        if (pre != undefined) {
+        if (pre !== undefined) {
             return pre;
         } else {
             /** register to be notified if a better match occurs */
@@ -109,7 +109,7 @@ VIZ.NetGraphConnection.prototype.find_pre = function() {
 VIZ.NetGraphConnection.prototype.find_post = function() {
     for (var i in this.posts) {
         var post = this.ng.svg_objects[this.posts[i]];
-        if (post != undefined) {
+        if (post !== undefined) {
             return post;
         } else {
             /** register to be notified if a better match occurs */
@@ -123,9 +123,9 @@ VIZ.NetGraphConnection.prototype.find_post = function() {
 
 /** remove this connection */
 VIZ.NetGraphConnection.prototype.remove = function() {
-    if (this.parent != null) {
+    if (this.parent !== null) {
         var index = this.parent.child_connections.indexOf(this);
-        if (index == -1) {
+        if (index === -1) {
             console.log('error removing in remove');
         }
         this.parent.child_connections.splice(index, 1);    

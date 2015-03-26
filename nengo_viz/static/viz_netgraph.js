@@ -105,17 +105,17 @@ VIZ.NetGraph = function(args) {
 /** Event handler for received WebSocket messages */
 VIZ.NetGraph.prototype.on_message = function(event) {
     data = JSON.parse(event.data);
-    if (data.type == 'net') {
+    if (data.type === 'net') {
         this.create_object(data);
-    } else if (data.type == 'ens') {
+    } else if (data.type === 'ens') {
         this.create_object(data);
-    } else if (data.type == 'node') {
+    } else if (data.type === 'node') {
         this.create_object(data);
-    } else if (data.type == 'conn') {
+    } else if (data.type === 'conn') {
         this.create_connection(data);
-    } else if (data.type == 'pan') {
+    } else if (data.type === 'pan') {
         this.set_offset(data.pan[0], data.pan[1]);
-    } else if (data.type == 'zoom') {
+    } else if (data.type === 'zoom') {
         this.set_scale(data.zoom);
     }
 };  
@@ -226,7 +226,7 @@ VIZ.NetGraph.prototype.register_conn = function(conn, target) {
  *  are waiting for it, and notifies them. */
 VIZ.NetGraph.prototype.detect_collapsed_conns = function(uid) {
     var conns = this.collapsed_conns[uid];
-    if (conns != undefined) {
+    if (conns !== undefined) {
         delete this.collapsed_conns[uid];
         for (var i in conns) {
             var conn = conns[i];

@@ -34,7 +34,7 @@ VIZ.NetGraphItem = function(ng, info) {
     
     /** determine the parent NetGraphItem (if any) and the nested depth
      *  of this item */
-    if (info.parent == null) {
+    if (info.parent === null) {
         this.parent = null;
         this.depth = 1;
     } else {
@@ -50,13 +50,13 @@ VIZ.NetGraphItem = function(ng, info) {
     g.classList.add(this.type);
     
     /** different types use different SVG elements for display */
-    if (info.type == 'node') {
+    if (info.type === 'node') {
         this.shape = this.ng.createSVGElement('rect');
-    } else if (info.type == 'net') {
+    } else if (info.type === 'net') {
         this.shape = this.ng.createSVGElement('rect');
         this.shape.setAttribute('rx', '15');
         this.shape.setAttribute('ry', '15');
-    } else if (info.type == 'ens') {
+    } else if (info.type === 'ens') {
         this.shape = this.ng.createSVGElement('ellipse');
         this.shape.setAttribute('cx', '0');
         this.shape.setAttribute('cy', '0');
@@ -87,7 +87,7 @@ VIZ.NetGraphItem = function(ng, info) {
                 var h = ng.get_scaled_height();    
                 var item = ng.svg_objects[uid];
                 var parent = item.parent;
-                while (parent != null) {
+                while (parent !== null) {
                     w = w * parent.size[0] * 2;
                     h = h * parent.size[1] * 2;
                     parent = parent.parent;
@@ -111,7 +111,7 @@ VIZ.NetGraphItem = function(ng, info) {
             var w = ng.get_scaled_width();
             var h = ng.get_scaled_height();    
             var parent = item.parent;
-            while (parent != null) {
+            while (parent !== null) {
                 w = w * parent.size[0] * 2;
                 h = h * parent.size[1] * 2;
                 parent = parent.parent;
@@ -150,7 +150,7 @@ VIZ.NetGraphItem = function(ng, info) {
             event.stopPropagation();           
             });
             
-    if (info.type == 'net') {
+    if (info.type === 'net') {
         /** tap to expand or collapse a network */
         interact(this.g)
             .on('tap', function(event) {
@@ -233,7 +233,7 @@ VIZ.NetGraphItem.prototype.remove = function() {
     }
 
     /** remove the item from the parent's children list */
-    if (this.parent != null) {
+    if (this.parent !== null) {
         var index = this.parent.children.indexOf(this);
         this.parent.children.splice(index, 1);    
     }
@@ -258,7 +258,7 @@ VIZ.NetGraphItem.prototype.remove = function() {
 
 VIZ.NetGraphItem.prototype.constrain_position = function() {
     var changed = false;
-    if (this.parent != null) {
+    if (this.parent !== null) {
         if (this.size[0] > 0.5) {
             this.size[0] = 0.5;
             changed = true;
@@ -350,7 +350,7 @@ VIZ.NetGraphItem.prototype.redraw_connections = function() {
 VIZ.NetGraphItem.prototype.get_nested_width = function() {
     var w = this.size[0];
     var parent = this.parent;
-    while (parent != null) {
+    while (parent !== null) {
         w *= parent.size[0] * 2;
         parent = parent.parent;
     }
@@ -361,7 +361,7 @@ VIZ.NetGraphItem.prototype.get_nested_width = function() {
 VIZ.NetGraphItem.prototype.get_nested_height = function() {
     var h = this.size[1];
     var parent = this.parent;
-    while (parent != null) {
+    while (parent !== null) {
         h *= parent.size[1] * 2;
         parent = parent.parent;
     }
@@ -393,7 +393,7 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
         screen_h = this.minHeight;
     }
     
-    if (this.type == 'ens') {
+    if (this.type === 'ens') {
         this.shape.setAttribute('rx', screen_w);
         this.shape.setAttribute('ry', screen_h);    
     } else {
@@ -430,7 +430,7 @@ VIZ.NetGraphItem.prototype.get_screen_location = function() {
     var dx = 0;
     var dy = 0;
     var parent = this.parent;
-    while (parent != null) {
+    while (parent !== null) {
         dx *= parent.size[0] * 2;
         dy *= parent.size[1] * 2;
         
@@ -443,7 +443,7 @@ VIZ.NetGraphItem.prototype.get_screen_location = function() {
     
     var ww = w;
     var hh = h;
-    if (this.parent != null) {
+    if (this.parent !== null) {
         ww *= this.parent.get_nested_width() * 2;
         hh *= this.parent.get_nested_height() * 2;
     }
