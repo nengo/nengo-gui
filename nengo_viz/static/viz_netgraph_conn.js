@@ -13,14 +13,13 @@ VIZ.NetGraphConnection = function(ng, info) {
     this.ng = ng;
     this.uid = info.uid;
 
-    /** determine parent and add to parent's children list */
-    if (info.parent == null) {
-        this.parent = null;
-    } else {
-        this.parent = ng.svg_objects[info.parent];
-        this.parent.child_connections.push(this);
-    }
+    /** flag to indicate this Connection has been deleted */
+    this.removed = false;
 
+    /** the actual NetGraphItem currently connected to/from */
+    this.pre = null;
+    this.post = null;    
+    
     /** the uids for the pre and post items in the connection
      *  The lists start with the ideal target item, followed by the parent
      *  of that item, and its parent, and so on.  If the first item on the
@@ -30,16 +29,18 @@ VIZ.NetGraphConnection = function(ng, info) {
     this.pres = info.pre;
     this.posts = info.post;
 
-    this.removed = false;
-
-    /** the actual NetGraphItem currently connected to/from */
-    this.pre = null;
-    this.post = null;
-
     /** figure out the best available items to connect to */
     this.set_pre(this.find_pre());
     this.set_post(this.find_post());
 
+    /** determine parent and add to parent's children list */
+    if (info.parent == null) {
+        this.parent = null;
+    } else {
+        this.parent = ng.svg_objects[info.parent];
+        this.parent.child_connections.push(this);
+    }
+    
     /** create the line and its arrowhead marker */
     this.g = ng.createSVGElement('g');
 
@@ -53,7 +54,6 @@ VIZ.NetGraphConnection = function(ng, info) {
     this.redraw();
 
     ng.g_conns.appendChild(this.g);
-
 }
 
 

@@ -26,6 +26,12 @@ VIZ.NetGraphItem = function(ng, info) {
     this.conn_out = [];
     this.conn_in = [];
 
+    /** minimum and maximum drawn size, in pixels */
+    this.minWidth = 5;
+    this.minHeight = 5;
+
+    this.expanded = false;
+    
     /** determine the parent NetGraphItem (if any) and the nested depth
      *  of this item */
     if (info.parent == null) {
@@ -36,12 +42,7 @@ VIZ.NetGraphItem = function(ng, info) {
         this.depth = this.parent.depth + 1;
         this.parent.children.push(this);
     }
-    this.expanded = false;
     
-    /** minimum and maximum drawn size, in pixels */
-    this.minWidth = 5;
-    this.minHeight = 5;
-
     /** create the SVG group to hold this item */
     var g = this.ng.createSVGElement('g');
     this.g = g;

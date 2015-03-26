@@ -7,6 +7,20 @@
  * @param {DOMElement} args.parent - the element to add this component to
  */
 VIZ.NetGraph = function(args) {
+    this.scale = 1.0;          // global scaling factor
+    this.offsetX = 0;          // global x,y pan offset 
+    this.offsetY = 0;
+
+    this.svg_objects = {};     // dict of all VIZ.NetGraphItems, by uid
+    this.svg_conns = {};       // dict of all VIZ.NetGraphConnections, by uid
+
+    /** Since connections may go to items that do not exist yet (since they
+     *  are inside a collapsed network), this dictionary keeps a list of
+     *  connections to be notified when a particular item appears.  The
+     *  key in the dictionary is the uid of the nonexistent item, and the
+     *  value is a list of VIZ.NetGraphConnections that should be notified
+     *  when that item appears. */
+    this.collapsed_conns = {}; 
 
     /** create the master SVG element */
     this.svg = this.createSVGElement('svg');
@@ -35,22 +49,7 @@ VIZ.NetGraph = function(args) {
     /** respond to resize events */
     this.svg.addEventListener("resize", function() {self.on_resize();});
     window.addEventListener("resize", function() {self.on_resize();});
-    
-    this.scale = 1.0;          // global scaling factor
-    this.offsetX = 0;          // global x,y pan offset 
-    this.offsetY = 0;
-
-    this.svg_objects = {};     // dict of all VIZ.NetGraphItems, by uid
-    this.svg_conns = {};       // dict of all VIZ.NetGraphConnections, by uid
-
-    /** Since connections may go to items that do not exist yet (since they
-     *  are inside a collapsed network), this dictionary keeps a list of
-     *  connections to be notified when a particular item appears.  The
-     *  key in the dictionary is the uid of the nonexistent item, and the
-     *  value is a list of VIZ.NetGraphConnections that should be notified
-     *  when that item appears. */
-    this.collapsed_conns = {}; 
-    
+        
     /** dragging the background pans the full area by changing offsetX,Y */
     var self = this;
     interact(this.svg)
