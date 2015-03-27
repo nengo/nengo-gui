@@ -100,6 +100,7 @@ VIZ.Value = function(args) {
              .style('stroke', function(d, i) {return colors[i];});
 
     this.on_resize(args.width, args.height);
+    
 };
 VIZ.Value.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Value.prototype.constructor = VIZ.Value;
@@ -177,3 +178,23 @@ VIZ.Value.prototype.on_resize = function(width, height) {
     this.label.style.width = width;
     
 };
+
+VIZ.Value.prototype.generate_menu = function() {
+    var self = this;
+    var items = [];
+    items.push(['set range', function() {self.set_range();}]);
+    VIZ.Component.prototype.generate_menu
+    return $.merge(items, VIZ.Component.prototype.generate_menu.call(this));
+};
+
+VIZ.Value.prototype.set_range = function() {
+    var range = this.scale_y.domain();
+    var new_range = prompt('Set range', '' + range[0] + ',' + range[1]);
+    if (new_range !== null) {
+        new_range = new_range.split(',');
+        var min = parseFloat(new_range[0]);
+        var max = parseFloat(new_range[1]);
+        this.scale_y.domain([min, max]);
+        this.axis_y_g.call(this.axis_y);            
+    }
+}

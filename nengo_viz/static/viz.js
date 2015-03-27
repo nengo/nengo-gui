@@ -40,6 +40,7 @@ VIZ.Component = function(args) {
     this.label.style.position = 'fixed';
     this.label.style.width = args.width;
     this.label.style.height = '2em';
+    this.label_visible = true;
     this.div.appendChild(this.label);
 
     self.minWidth = 100;
@@ -115,6 +116,17 @@ VIZ.Component = function(args) {
 
     /** flag whether there is a scheduled update that hasn't happened yet */
     this.pending_update = false;
+    
+    this.menu = new VIZ.Menu(self.parent);
+    interact(this.div)
+        .on('tap', function(event) {
+            if (self.menu.visible) {
+                self.menu.hide();
+            } else {
+                self.menu.show(event.clientX, event.clientY, self.generate_menu());
+            }
+            event.stopPropagation();  
+        });    
 };
 
 /**
@@ -126,6 +138,18 @@ VIZ.Component.prototype.on_resize = function(width, height) {};
  * Method to be called when Component received a WebSocket message
  */
 VIZ.Component.prototype.on_message = function(event) {};
+
+
+VIZ.Component.prototype.generate_menu = function() {
+    var self = this;
+    var items = [];
+    if (this.label_visible) {
+        items.push(['hide label', function() {self.hide_label();}]);
+    } else {
+        items.push(['show label', function() {self.show_label();}]);    
+    }
+    return items;
+};
 
 /**
  * Schedule update() to be called in the near future.  If update() is already
@@ -149,6 +173,20 @@ VIZ.Component.prototype.schedule_update = function(event) {
  * Do any visual updating that is needed due to changes in the underlying data
  */
 VIZ.Component.prototype.update = function(event) { 
+}
+
+VIZ.Component.prototype.hide_label = function(event) { 
+    if (this.label_visible) {
+        this.label.style.display = 'none';
+        this.label_visible = false;
+    }
+}
+
+VIZ.Component.prototype.show_label = function(event) { 
+    if (!this.label_visible) {
+        this.label.style.display = 'inline';
+        this.label_visible = true;
+    }
 }
 
 

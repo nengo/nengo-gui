@@ -11,10 +11,15 @@ VIZ.Menu.visible_menus = {};
 VIZ.Menu.prototype.show = function (x, y, items) {
     VIZ.Menu.hide_menu_in(this.div);
 
+    if (items.length == 0) {
+        return;
+    }
+    
     this.menu = document.createElement('div');
     this.menu.className = 'btn-group-vertical';
     this.menu.role = 'group';
     this.menu.style.position = 'fixed';
+    this.menu.style.zIndex = "999999999";
     this.div.appendChild(this.menu);
 
     VIZ.set_transform(this.menu, x - 20, y - 20);
