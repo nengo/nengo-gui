@@ -178,11 +178,13 @@ VIZ.NetGraphItem.prototype.generate_menu = function () {
     var items = [];
     if (this.type === 'net') {
         if (this.expanded) {
-            items.push(['collapse', function() {self.collapse(true);}]);
-            items.push(['feedforward layout', 
+            items.push(['collapse network', 
+                        function() {self.collapse(true);}]);
+            items.push(['auto-layout', 
                         function() {self.request_feedforward_layout();}]);
         } else {
-            items.push(['expand', function() {self.expand();}]);
+            items.push(['expand network', 
+                        function() {self.expand();}]);
         }
 
     }
