@@ -173,18 +173,28 @@ class NetGraph(Component):
         self.save_config()
 
     def act_feedforward_layout(self, uid):
-        network = self.uids[uid]
+        if uid is None:
+            network = self.viz.model
+            self.config[network].pos = 0.0, 0.0
+            self.config[network].size = 1.0, 1.0
+            self.to_be_sent.append(dict(type='pan',
+                                        pan=self.config[network].pos))
+            self.to_be_sent.append(dict(type='zoom',
+                                        zoom=self.config[network].size[0]))
+        else:
+            network = self.uids[uid]
         pos = self.layout.make_layout(network)
         for obj, layout in pos.items():
             self.config[obj].pos = layout['y'], layout['x']
             self.config[obj].size = layout['h'] / 2, layout['w'] / 2
 
             obj_uid = self.viz.viz.get_uid(obj)
-            self.to_be_sent.append(dict(type='pos_size', 
+            self.to_be_sent.append(dict(type='pos_size',
                                         uid=obj_uid,
                                         pos=self.config[obj].pos,
                                         size=self.config[obj].size))
         self.config[network].has_layout = True
+        self.save_config()
 
     def expand_network(self, network, client):
         if not self.config[network].has_layout:

@@ -100,12 +100,28 @@ VIZ.NetGraph = function(args) {
                          x:self.offsetX, y:self.offsetY});
         });
 
+    this.menu = new VIZ.Menu(self.parent);
+
     interact(this.svg)
         .on('tap', function(event) {
-            VIZ.Menu.hide_menu_in(self.parent);
+            if (self.menu.visible) {
+                self.menu.hide();
+            } else {
+                self.menu.show(event.clientX, event.clientY, self.generate_menu());
+            }
+            event.stopPropagation();  
         });
 };
 
+VIZ.NetGraph.prototype.generate_menu = function() {
+    var self = this;
+    var items = [];
+    items.push(['feedforward layout', 
+                function() {self.notify({act:"feedforward_layout",
+                            uid:null});}]);
+    return items;
+
+}
 
 /** Event handler for received WebSocket messages */
 VIZ.NetGraph.prototype.on_message = function(event) {

@@ -179,12 +179,12 @@ VIZ.NetGraphItem.prototype.generate_menu = function () {
     if (this.type === 'net') {
         if (this.expanded) {
             items.push(['collapse', function() {self.collapse(true);}]);
+            items.push(['feedforward layout', 
+                        function() {self.request_feedforward_layout();}]);
         } else {
             items.push(['expand', function() {self.expand();}]);
         }
 
-        items.push(['feedforward layout', 
-                    function() {self.request_feedforward_layout();}]);
     }
     return items;
 };
