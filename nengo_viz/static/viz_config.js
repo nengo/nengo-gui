@@ -1,5 +1,0 @@
-
-VIZ.Config = function(div) {
-}
-
-

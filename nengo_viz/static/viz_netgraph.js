@@ -99,6 +99,11 @@ VIZ.NetGraph = function(args) {
             self.notify({act:"zoom", scale:self.scale, 
                          x:self.offsetX, y:self.offsetY});
         });
+
+    interact(this.svg)
+        .on('tap', function(event) {
+            VIZ.Menu.hide_menu_in(self.parent);
+        });
 };
 
 

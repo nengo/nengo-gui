@@ -49,7 +49,7 @@ VIZ.NetGraphItem = function(ng, info) {
     ng.g_items.appendChild(g);    
     g.classList.add(this.type);
 
-    this.config = VIZ.Config(this.ng.parent.div);
+    this.menu = new VIZ.Menu(this.ng.parent);
     
     /** different types use different SVG elements for display */
     if (info.type === 'node') {
@@ -151,20 +151,39 @@ VIZ.NetGraphItem = function(ng, info) {
                        
             event.stopPropagation();           
             });
+
+    var self = this;
+    interact(this.g)
+        .on('tap', function(event) {
+            if (self.menu.visible) {
+                self.menu.hide();
+            } else {
+                self.menu.show(event.clientX, event.clientY, self.generate_menu());
+            }
+            event.stopPropagation();           
+        });
             
     if (info.type === 'net') {
-        /** tap to expand or collapse a network */
-        interact(this.g)
-            .on('doubletap', function(event) {
-                ng.toggle_network(uid);
-            });
-
         /** if a network is flagged to expand on creation, then expand it */
         if (info.expanded) {
             this.expand();
         }
     }
 
+};
+
+
+VIZ.NetGraphItem.prototype.generate_menu = function () {
+    var self = this;
+    var items = [];
+    if (this.type === 'net') {
+        if (this.expanded) {
+            items.push(['collapse', function() {self.collapse();}]);
+        } else {
+            items.push(['expand', function() {self.expand();}]);
+        }
+    }
+    return items;
 };
 
 
