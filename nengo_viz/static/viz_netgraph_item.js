@@ -155,7 +155,7 @@ VIZ.NetGraphItem = function(ng, info) {
     if (info.type === 'net') {
         /** tap to expand or collapse a network */
         interact(this.g)
-            .on('tap', function(event) {
+            .on('doubletap', function(event) {
                 ng.toggle_network(uid);
             });
 
