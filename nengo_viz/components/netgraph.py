@@ -51,6 +51,7 @@ class NetGraph(Component):
             config = self.find_config()
         self.config = config
         self.to_be_expanded = [self.viz.model]
+        self.to_be_sent = []
         self.uids = {}
         self.parents = {}
         self.networks_to_search = [self.viz.model]
@@ -115,7 +116,9 @@ class NetGraph(Component):
                 self.send_pan_and_zoom(client)
             self.viz.viz.lock.release()
         else:
-            pass
+            while len(self.to_be_sent) > 0:
+                info = self.to_be_sent.pop(0)
+                client.write(json.dumps(info))
 
     def javascript(self):
         return 'new VIZ.NetGraph({parent:main, id:%(id)d});' % dict(id=id(self))
@@ -168,6 +171,20 @@ class NetGraph(Component):
         self.config[obj].pos = x, y
         self.config[obj].size = width, height
         self.save_config()
+
+    def act_feedforward_layout(self, uid):
+        network = self.uids[uid]
+        pos = self.layout.make_layout(network)
+        for obj, layout in pos.items():
+            self.config[obj].pos = layout['y'], layout['x']
+            self.config[obj].size = layout['h'] / 2, layout['w'] / 2
+
+            obj_uid = self.viz.viz.get_uid(obj)
+            self.to_be_sent.append(dict(type='pos_size', 
+                                        uid=obj_uid,
+                                        pos=self.config[obj].pos,
+                                        size=self.config[obj].size))
+        self.config[network].has_layout = True
 
     def expand_network(self, network, client):
         if not self.config[network].has_layout:

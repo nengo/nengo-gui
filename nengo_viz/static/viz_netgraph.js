@@ -122,6 +122,13 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         this.set_offset(data.pan[0], data.pan[1]);
     } else if (data.type === 'zoom') {
         this.set_scale(data.zoom);
+    } else if (data.type === 'pos_size') {
+        var item = this.svg_objects[data.uid];
+        item.set_position(data.pos[0], data.pos[1]);
+        item.set_size(data.size[0], data.size[1]);
+    } else {
+        console.log('invalid message');
+        console.log(data);
     }
 };  
 

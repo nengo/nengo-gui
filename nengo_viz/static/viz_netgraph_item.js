@@ -178,14 +178,20 @@ VIZ.NetGraphItem.prototype.generate_menu = function () {
     var items = [];
     if (this.type === 'net') {
         if (this.expanded) {
-            items.push(['collapse', function() {self.collapse();}]);
+            items.push(['collapse', function() {self.collapse(true);}]);
         } else {
             items.push(['expand', function() {self.expand();}]);
         }
+
+        items.push(['feedforward layout', 
+                    function() {self.request_feedforward_layout();}]);
     }
     return items;
 };
 
+VIZ.NetGraphItem.prototype.request_feedforward_layout = function () {
+    this.ng.notify({act:"feedforward_layout", uid:this.uid});
+};
 
 /** expand a collapsed network */
 VIZ.NetGraphItem.prototype.expand = function() {
