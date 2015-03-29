@@ -183,7 +183,9 @@ VIZ.Value.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['set range', function() {self.set_range();}]);
-    VIZ.Component.prototype.generate_menu
+
+    // add the parent's menu items to this
+    // TODO: is this really the best way to call the parent's generate_menu()?
     return $.merge(items, VIZ.Component.prototype.generate_menu.call(this));
 };
 

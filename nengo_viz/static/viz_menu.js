@@ -1,13 +1,26 @@
 
-VIZ.Menu = function(div, item) {
-    this.visible = false;
-    this.div = div;
-    this.menu = null;
-    this.actions = null;
+/**
+ * Create a menu that will appear inside the given div
+ */
+VIZ.Menu = function(div) {
+    this.visible = false;   // whether it's currently visible
+    this.div = div;         // the parent div
+    this.menu = null;       // the div for the menu itself
+    this.actions = null;    // the current action list for the menu
 };
 
+
+/**
+ * Dictionary of currently shown menus
+ * The key is the div the menu is in
+ */
 VIZ.Menu.visible_menus = {};
 
+
+/**
+ * Show this menu at the given (x,y) location
+ * Automatically hides any menu that's in the same div
+ */
 VIZ.Menu.prototype.show = function (x, y, items) {
     VIZ.Menu.hide_menu_in(this.div);
 
@@ -15,10 +28,16 @@ VIZ.Menu.prototype.show = function (x, y, items) {
         return;
     }
     
+    // TODO: move this to the constructor
     this.menu = document.createElement('div');
     this.menu.className = 'btn-group-vertical';
     this.menu.role = 'group';
     this.menu.style.position = 'fixed';
+
+    /** because VIZ.Components increase their zIndex every time they are
+     * clicked on, we need the menu's zIndex to be very large
+     * TODO: change this to be one more than the highest existing zIndex
+     */
     this.menu.style.zIndex = "999999999";
     this.div.appendChild(this.menu);
 
@@ -42,6 +61,10 @@ VIZ.Menu.prototype.show = function (x, y, items) {
     VIZ.Menu.visible_menus[this.div] = this;
 };
 
+
+/**
+ * Hide this menu
+ */
 VIZ.Menu.prototype.hide = function () {
     this.div.removeChild(this.menu);
     this.visible = false;
@@ -49,6 +72,10 @@ VIZ.Menu.prototype.hide = function () {
     delete VIZ.Menu.visible_menus[this.div];
 };
 
+
+/**
+ * Hide any menu that is displayed in the given div
+ */
 VIZ.Menu.hide_menu_in = function (div) {
     var menu = VIZ.Menu.visible_menus[div];
     if (menu !== undefined) {
