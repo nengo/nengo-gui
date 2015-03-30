@@ -20,6 +20,5 @@ class Component(object):
 
     def javascript_config(self, cfg):
         for attr in self.config._clsparams.params:
-            if self.config in self.config._clsparams.get_param(attr):
-                cfg[attr] = getattr(self.config, attr)
+            cfg[attr] = getattr(self.config, attr)
         return json.dumps(cfg)
