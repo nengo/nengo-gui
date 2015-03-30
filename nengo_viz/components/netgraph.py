@@ -180,6 +180,9 @@ class NetGraph(Component):
                     parent=parent)
         if type == 'net':
             info['expanded'] = self.config[obj].expanded
+
+        if nengo_viz.components.pointer.Pointer.can_apply(obj):
+            info['allow_pointer_plot'] = True
         client.write(json.dumps(info))
 
     def send_pan_and_zoom(self, client):

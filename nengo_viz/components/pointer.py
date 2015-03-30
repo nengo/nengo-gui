@@ -6,8 +6,8 @@ from nengo_viz.components.component import Component
 
 
 class Pointer(Component):
-    def __init__(self, viz, obj, **kwargs):
-        super(Pointer, self).__init__(viz, **kwargs)
+    def __init__(self, viz, config, uid, obj):
+        super(Pointer, self).__init__(viz, config, uid)
         self.obj = obj
         self.label = viz.viz.get_label(obj)
         self.data = []
@@ -49,13 +49,9 @@ class Pointer(Component):
             client.write(data, binary=False)
 
     def javascript(self):
-        return ('new VIZ.Pointer({parent:main, sim:sim, '
-                'x:%(x)g, y:%(y)g, label:%(label)s, '
-                'width:%(width)g, height:%(height)g, id:%(id)d, '
-                '});' %
-                dict(x=self.x, y=self.y, width=self.width, height=self.height,
-                     id=id(self), label=`self.label`,
-                     ))
+        info = dict(uid=self.uid, label=self.label)
+        json = self.javascript_config(info)
+        return 'new VIZ.Pointer(main, sim, %s);' % json
 
     def message(self, msg):
         if len(msg) == 0:
@@ -65,3 +61,7 @@ class Pointer(Component):
                 self.override_target = self.vocab_out.parse(msg)
             except:
                 self.override_target = None
+
+    @staticmethod
+    def can_apply(obj):
+        return isinstance(obj, (nengo.spa.Buffer, nengo.spa.Memory))

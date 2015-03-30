@@ -6,11 +6,11 @@
  * @param {VIZ.SimControl} args.sim - the simulation controller
  */
  
-VIZ.Pointer = function(args) {
-    VIZ.Component.call(this, args);
+VIZ.Pointer = function(parent, sim, args) {
+    VIZ.Component.call(this, parent, args);
     var self = this;
 
-    this.sim = args.sim;
+    this.sim = sim;
         
     this.pdiv = document.createElement('div');
     this.pdiv.style.width = args.width;

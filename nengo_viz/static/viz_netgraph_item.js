@@ -16,6 +16,7 @@ VIZ.NetGraphItem = function(ng, info) {
     this.size = info.size;
     this.type = info.type;
     this.uid = info.uid;
+    this.allow_pointer_plot = info.allow_pointer_plot;
 
     /** if this is a network, the children list is the set of NetGraphItems
      *  and NetGraphConnections that are inside this network */
@@ -194,6 +195,10 @@ VIZ.NetGraphItem.prototype.generate_menu = function () {
     if (this.type == 'node') {
         items.push(['slider', function() {self.create_graph('Slider');}])
         items.push(['value', function() {self.create_graph('Value');}])
+    }
+    if (this.allow_pointer_plot) {
+        items.push(['semantic pointer', 
+                    function() {self.create_graph('Pointer');}])
     }
     return items;
 };
