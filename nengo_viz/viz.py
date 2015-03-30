@@ -26,7 +26,10 @@ class VizSim(object):
         for template in self.viz.find_templates():
             c = template.create(self)
             self.uids[c.uid] = c
-            self.components.append(c)
+            if isinstance(template, (SimControl, NetGraph)):
+                self.components[:0] = [c]
+            else:
+                self.components.append(c)
 
         # build and run the model in a separate thread
         thread.start_new_thread(self.runner, ())
@@ -82,6 +85,22 @@ class Value(Template):
     def code_python(self, uids):
         return 'nengo_viz.Value(%s)' % uids[self.target]
 
+class Raster(Template):
+    def __init__(self, target):
+        super(Raster, self).__init__(nengo_viz.components.Raster, target)
+        self.target = target
+
+    def code_python(self, uids):
+        return 'nengo_viz.Raster(%s)' % uids[self.target]
+
+class Pointer(Template):
+    def __init__(self, target):
+        super(Pointer, self).__init__(nengo_viz.components.Pointer, target)
+        self.target = target
+
+    def code_python(self, uids):
+        return 'nengo_viz.Pointer(%s)' % uids[self.target]
+
 class NetGraph(Template):
     def __init__(self):
         super(NetGraph, self).__init__(nengo_viz.components.NetGraph)
@@ -111,9 +130,8 @@ class Config(nengo.Config):
         self.configures(SimControl)
         self[SimControl].set_param('shown_time', nengo.params.Parameter(0.5))
         self[SimControl].set_param('kept_time', nengo.params.Parameter(4.0))
-        self.configures(Value)
-        self.configures(Slider)
-        for cls in [Value, Slider]:
+        for cls in [Value, Slider, Raster, Pointer]:
+            self.configures(cls)
             self[cls].set_param('x', nengo.params.Parameter(0))
             self[cls].set_param('y', nengo.params.Parameter(0))
             self[cls].set_param('width', nengo.params.Parameter(100))

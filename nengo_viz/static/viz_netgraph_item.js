@@ -189,6 +189,7 @@ VIZ.NetGraphItem.prototype.generate_menu = function () {
     }
     if (this.type == 'ens') {
         items.push(['value', function() {self.create_graph('Value');}])
+        items.push(['spikes', function() {self.create_graph('Raster');}])
     }
     if (this.type == 'node') {
         items.push(['slider', function() {self.create_graph('Slider');}])
