@@ -21,7 +21,7 @@ VIZ.SimControl = function(div, args) {
     /** the most recent rate information from the simulator */
     this.rate = 0.0;
     /** whether the simulation is paused */
-    this.paused = false;
+    this.paused = true;
     /** do we have an update() call scheduled? */
     this.pending_update = false;
 
@@ -40,9 +40,14 @@ VIZ.SimControl = function(div, args) {
     /** Create the pause button */
     this.pause_button = document.createElement('button');
     this.pause_button.className = "btn btn-default play-pause-button";
-    this.pause_button.innerHTML = '<span class="glyphicon glyphicon-pause"></span>';
-    this.pause_button_icon = $(this.pause_button).find('.glyphicon');
+    this.pause_button_icon = document.createElement('span');
+    this.pause_button_icon.className = "glyphicon glyphicon-play";
+    this.pause_button.appendChild(this.pause_button_icon);
     this.pause_button.onclick = function(event) {self.on_pause_click();};
+    this.pause_button.style.position = 'fixed';
+    this.pause_button.style.width = '60px';
+    this.pause_button.style.height = '60px';
+    VIZ.set_transform(this.pause_button, this.div.clientWidth - 100, 30);
     div.appendChild(this.pause_button);
     
     this.metrics_div = document.createElement('div');
@@ -53,16 +58,53 @@ VIZ.SimControl = function(div, args) {
     this.metrics_div.appendChild(this.rate_div);
     this.ticks_div = document.createElement('div');
     this.metrics_div.appendChild(this.ticks_div);
+
+    this.update();
 };
 
 /** Event handler for received WebSocket messages */
 VIZ.SimControl.prototype.on_message = function(event) {
-    var data = new Float32Array(event.data);
-    this.time = data[0];
-    this.rate = data[1];
+    if (typeof event.data === 'string') {
+        if (event.data.substring(0, 7) === 'status:') {
+            this.set_status(event.data.substring(7));
+        }
+    } else {
+        var data = new Float32Array(event.data);
+        this.time = data[0];
+        this.rate = data[1];
 
-    this.schedule_update();
+        this.schedule_update();
+    }
 };    
+
+VIZ.SimControl.prototype.set_status = function(status) {
+    var icon;
+    if (status === 'building') {
+        icon = 'glyphicon-cog';
+        this.start_rotating_cog();
+    } else if (status === 'paused') {
+        icon = 'glyphicon-play';
+        this.stop_rotating_cog();
+    } else if (status == 'running') {
+        icon = 'glyphicon-pause';
+        this.stop_rotating_cog();
+    }
+    this.pause_button_icon.className = "glyphicon " + icon;
+}
+
+VIZ.SimControl.prototype.start_rotating_cog = function() {
+    var self = this;
+    this.rotation = 0;
+    this.rotationInterval = window.setInterval(function() {
+        self.pause_button_icon.style.transform = "rotate(" + self.rotation + "deg)";
+        self.rotation += 2;
+    }, 10);
+}
+
+VIZ.SimControl.prototype.stop_rotating_cog = function() {
+    window.clearInterval(this.rotationInterval);
+    this.pause_button_icon.style.transform = "";
+}
 
 /** Make sure update() will be called in the next 10ms  */
 VIZ.SimControl.prototype.schedule_update = function() {
@@ -96,7 +138,7 @@ VIZ.SimControl.prototype.on_pause_click = function(event) {
         this.ws.send('pause');
         this.paused = true;
     }
-    this.pause_button_icon.toggleClass('glyphicon-pause glyphicon-play');
+    //this.pause_button_icon.toggleClass('glyphicon-pause glyphicon-play');
 };
 
 VIZ.SimControl.prototype.on_resize = function(event) {

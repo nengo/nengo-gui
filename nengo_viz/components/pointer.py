@@ -1,4 +1,5 @@
 import nengo
+import nengo.spa
 import numpy as np
 import struct
 
@@ -12,9 +13,13 @@ class Pointer(Component):
         self.label = viz.viz.get_label(obj)
         self.data = []
         self.override_target = None
+        self.vocab_out = obj.outputs['default'][1]
+        self.vocab_in = obj.inputs['default'][1]
+
+    def add_nengo_objects(self, viz):
         with viz.model:
-            output, self.vocab_out = obj.outputs['default']
-            input, self.vocab_in = obj.inputs['default']
+            output  = obj.outputs['default'][0]
+            input = obj.inputs['default'][0]
             self.node = nengo.Node(self.gather_data,
                                    size_in=self.vocab_out.dimensions,
                                    size_out=self.vocab_in.dimensions)

@@ -19,9 +19,10 @@ class VizSim(object):
         self.components = []
         self.uids = {}
         self.finished = False   # are we done simulating?
+        self.rebuild = False    # should we rebuild the model?
+        self.sim = None
 
         # use the lock to make sure only one Simulator is building at a time
-        self.viz.lock.acquire()
 
         for template in self.viz.find_templates():
             c = template.create(self)
@@ -34,7 +35,14 @@ class VizSim(object):
         # build and run the model in a separate thread
         thread.start_new_thread(self.runner, ())
 
-    def runner(self):
+    def build(self):
+        self.building = True
+
+        self.sim = None
+
+        self.viz.lock.acquire()
+        for c in self.components:
+            c.add_nengo_objects(self.viz)
         # build the simulation
         self.sim = nengo.Simulator(self.model)
         # remove the temporary components added for visualization
@@ -45,9 +53,19 @@ class VizSim(object):
 
         self.building = False
 
+
+    def runner(self):
         # run the simulation
         while not self.finished:
-            self.sim.run(0.1, progress_bar=False)
+            if self.sim is None:
+                time.sleep(0.01)
+            else:
+                self.sim.step()
+
+            if self.rebuild:
+                self.rebuild = False
+                self.build()
+
 
     def finish(self):
         self.finished = True
@@ -147,17 +165,14 @@ class Config(nengo.Config):
     def dumps(self, uids):
         lines = []
         for obj, uid in sorted(uids.items(), key=lambda x: x[1]):
-            if isinstance(obj, nengo.Ensemble):
-                lines.append('_viz_config[%s].pos=%s' % (uid, self[obj].pos))
-                lines.append('_viz_config[%s].size=%s' % (uid, self[obj].size))
-            elif isinstance(obj, nengo.Node):
-                lines.append('_viz_config[%s].pos=%s' % (uid, self[obj].pos))
-                lines.append('_viz_config[%s].size=%s' % (uid, self[obj].size))
-            elif isinstance(obj, nengo.Network):
-                lines.append('_viz_config[%s].pos=%s' % (uid, self[obj].pos))
-                lines.append('_viz_config[%s].size=%s' % (uid, self[obj].size))
-                lines.append('_viz_config[%s].expanded=%s' % (uid, self[obj].expanded))
-                lines.append('_viz_config[%s].has_layout=%s' % (uid, self[obj].has_layout))
+            if isinstance(obj, (nengo.Ensemble, nengo.Node, nengo.Network)):
+                if self[obj].pos is not None:
+                    lines.append('_viz_config[%s].pos=%s' % (uid, self[obj].pos))
+                if self[obj].size is not None:
+                    lines.append('_viz_config[%s].size=%s' % (uid, self[obj].size))
+                if isinstance(obj, nengo.Network):
+                    lines.append('_viz_config[%s].expanded=%s' % (uid, self[obj].expanded))
+                    lines.append('_viz_config[%s].has_layout=%s' % (uid, self[obj].has_layout))
             elif isinstance(obj, Template):
                 lines.append('%s = %s' % (uid, obj.code_python(uids)))
                 if not isinstance(obj, (NetGraph, SimControl)):

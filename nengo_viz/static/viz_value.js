@@ -206,5 +206,6 @@ VIZ.Value.prototype.set_range = function() {
         var max = parseFloat(new_range[1]);
         this.scale_y.domain([min, max]);
         this.axis_y_g.call(this.axis_y);            
+        this.save_layout();
     }
 }

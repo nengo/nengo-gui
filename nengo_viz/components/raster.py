@@ -15,6 +15,8 @@ class Raster(Component):
         if n_neurons is None:
             n_neurons = min(self.obj.size_out, 10)
         self.n_neurons = n_neurons
+
+    def add_nengo_objects(self, viz):
         with viz.model:
             self.node = nengo.Node(self.gather_data, size_in=self.obj.size_out)
             self.conn = nengo.Connection(self.obj, self.node, synapse=None)

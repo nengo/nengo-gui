@@ -7,13 +7,15 @@ class Slider(Component):
         super(Slider, self).__init__(viz, config, uid)
         self.node = node
         self.base_output = node.output
-        node.output = self.override_output
         self.override = [None] * node.size_out
         self.value = np.zeros(node.size_out)
         self.label = viz.viz.get_label(node)
         self.start_value = np.zeros(node.size_out)
         if not callable(self.base_output):
             self.start_value[:] = self.base_output
+
+    def add_nengo_objects(self, viz):
+        self.node.output = self.override_output
 
     def remove_nengo_objects(self, viz):
         self.node.output = self.base_output

@@ -12,6 +12,9 @@ class Component(object):
     def finish(self):
         pass
 
+    def add_nengo_objects(self, viz):
+        pass
+
     def remove_nengo_objects(self, viz):
         pass
 

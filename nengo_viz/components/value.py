@@ -13,9 +13,12 @@ class Value(Component):
         self.data = []
         self.n_lines = obj.size_out
         self.struct = struct.Struct('<%df' % (1 + self.n_lines))
+
+    def add_nengo_objects(self, viz):
         with viz.model:
-            self.node = nengo.Node(self.gather_data, size_in=obj.size_out)
-            self.conn = nengo.Connection(obj, self.node, synapse=None)
+            self.node = nengo.Node(self.gather_data, 
+                                   size_in=self.obj.size_out)
+            self.conn = nengo.Connection(self.obj, self.node, synapse=None)
 
     def remove_nengo_objects(self, viz):
         viz.model.connections.remove(self.conn)
