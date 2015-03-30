@@ -16,7 +16,7 @@ with model:
 #sim.run(100, progress_bar=False)
 
 import nengo_viz
-viz = nengo_viz.Viz(model, locals=locals())
+viz = nengo_viz.Viz(model, locals=locals(), filename=__file__)
 viz.slider(stimulus_A)
 viz.slider(stimulus_B)
 viz.value(ens)

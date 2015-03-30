@@ -454,23 +454,39 @@ class ClientSocket(object):
 
         if(len(data) < 6):
             raise Exception("Error reading data")
-        # FIN bit must be set to indicate end of frame
-        assert(0x1 == (0xFF & data[0]) >> 7)
-        # data must be a text frame
-        # 0x8 (close connection) is handled with assertion failure
-        assert(0x1 == (0xF & data[0]))
 
-        # assert that data is masked
-        assert(0x1 == (0xFF & data[1]) >> 7)
-        datalen = (0x7F & data[1])
+        fin = (data[0] >> 7) & 0x1
+        rsv = (data[0] >> 4) & 0x07
+        opcode = data[0] & 0x0F
+        mask = (data[1] >> 7) & 0x01
+        datalen = data[1] & 0x7F
+
+        offset = 0
+
+        if datalen == 126:
+            datalen = 0
+            for i in range(2):
+                datalen = (datalen << 8) + data[2 + i]
+            offset += 2
+        elif datalen == 127:
+            datalen = 0
+            for i in range(8):
+                datalen = (datalen << 8) + data[2 + i]
+            offset += 8
+
+        if opcode != 1 or fin != 1 or mask != 1 or rsv != 0:
+            print dict(fin=fin, rsv=rsv, opcode=opcode, mask=mask, 
+                       datalen=datalen)
+            return None
 
         str_data = ''
         if datalen > 0:
-            mask_key = data[2:6]
-            masked_data = data[6:(6 + datalen)]
+            mask_key = data[2 + offset:6 + offset]
+            masked_data = data[6 + offset:(6 + datalen + offset)]
             unmasked_data = [masked_data[i] ^ mask_key[i % 4]
                              for i in range(len(masked_data))]
             str_data = str(bytearray(unmasked_data))
+
         return str_data
 
     def write(self, data, binary=False):

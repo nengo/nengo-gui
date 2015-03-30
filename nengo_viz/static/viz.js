@@ -9,10 +9,24 @@ VIZ.set_transform = function(element, x, y) {
         element.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
 }
 
+
 VIZ.get_transform = function(element) {
     var holde = $(element).css('transform').match(/(-?[0-9\.]+)/g); //Ugly method of finding the current transform of the element
     return {x:Number(holde[4]), y:Number(holde[5])};
 }
+
+/**
+ * Create a WebSocket connection to the given id
+ */
+VIZ.create_websocket = function(id) {
+    var parser = document.createElement('a');
+    parser.href = document.URL;
+    var ws_url = 'ws://' + parser.host + '/viz_component?id=' + id;
+    var ws = new WebSocket(ws_url);
+    ws.binaryType = "arraybuffer";
+    return ws;
+};
+
 
 /** 
  * Base class for interactive visualization
@@ -106,7 +120,6 @@ VIZ.Component = function(args) {
             target.style.height = newHeight + 'px';
             self.on_resize(newWidth, newHeight);
             
-            var target = event.target;
             var x = parseFloat(target.getAttribute('data-x')) + dx;
             var y = parseFloat(target.getAttribute('data-y')) + dy;
             VIZ.set_transform(target, x, y);
@@ -118,9 +131,7 @@ VIZ.Component = function(args) {
     /** Open a WebSocket to the server */
     this.id = args.id;
     if (this.id != undefined) {
-        this.ws = new WebSocket('ws://localhost:8080/viz_component?id=' + 
-                                this.id);
-        this.ws.binaryType = "arraybuffer";
+        this.ws = VIZ.create_websocket(this.id);
         this.ws.onmessage = function(event) {self.on_message(event);}
     }
 

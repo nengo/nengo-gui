@@ -15,7 +15,6 @@ with model:
     with nengo.Network(label='subnet') as subnet:
         a = nengo.Ensemble(100, 1)
         b = nengo.Ensemble(100, 1)
-        nengo.Connection(result, a)
         nengo.Connection(a, b)
         nengo.Connection(b, b)
 
@@ -25,9 +24,10 @@ with model:
             nengo.Connection(c, d)
         nengo.Connection(b, c)
         nengo.Connection(d, a)
+    nengo.Connection(result, a)
 
 
 import nengo_viz
-viz = nengo_viz.Viz(model, locals=locals())
+viz = nengo_viz.Viz(model, locals=locals(), filename=__file__)
 viz.value(result)
 viz.start()
