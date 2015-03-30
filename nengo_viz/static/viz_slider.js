@@ -5,8 +5,8 @@
  * @params {dict} args - a set of constructor arguments (see VIZ.Component)
  * @params {int} args.n_sliders - the number of sliders to show
  */
-VIZ.Slider = function(args) {
-    VIZ.Component.call(this, args);
+VIZ.Slider = function(parent, args) {
+    VIZ.Component.call(this, parent, args);
     var self = this;
 
     VIZ.set_transform(this.label, 0, -20);

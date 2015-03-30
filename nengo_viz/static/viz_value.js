@@ -9,12 +9,12 @@
  * @param {VIZ.SimControl} args.sim - the simulation controller
  */
  
-VIZ.Value = function(args) {
-    VIZ.Component.call(this, args);
+VIZ.Value = function(parent, sim, args) {
+    VIZ.Component.call(this, parent, args);
     var self = this;
 
     this.n_lines = args.n_lines || 1;
-    this.sim = args.sim;
+    this.sim = sim;
     this.display_time = args.display_time;
 
     /** for storing the accumulated data */
@@ -188,6 +188,14 @@ VIZ.Value.prototype.generate_menu = function() {
     // TODO: is this really the best way to call the parent's generate_menu()?
     return $.merge(items, VIZ.Component.prototype.generate_menu.call(this));
 };
+
+
+VIZ.Value.prototype.layout_info = function () {
+    var info = VIZ.Component.prototype.layout_info.call(this);
+    info.miny = this.scale_y.domain()[0];
+    info.maxy = this.scale_y.domain()[1];
+    return info;
+}
 
 VIZ.Value.prototype.set_range = function() {
     var range = this.scale_y.domain();

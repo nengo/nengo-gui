@@ -18,10 +18,11 @@ VIZ.set_transform = function(element, x, y) {
  * @param {float} args.x - the left side of the component (in pixels)
  * @param {float} args.y - the top of the component (in pixels)
  * @param {float} args.width - the width of the component (in pixels)
- * @param {float} args.height - the height of the component (in pixels)
+ * @param {float} args.height - the height of the component (in pixels) 
+ * @param {boolean} args.label_visible - whether the label should be shown
  * @param {int} args.id - the id of the server-side component to connect to
  */
-VIZ.Component = function(args) {
+VIZ.Component = function(parent, args) {
     var self = this;
 
     /** Create the div for the component and position it */
@@ -31,8 +32,8 @@ VIZ.Component = function(args) {
     VIZ.set_transform(this.div, args.x, args.y);
     this.div.style.position = 'fixed';
     this.div.classList.add('graph');
-    args.parent.appendChild(this.div);
-    this.parent = args.parent;
+    parent.appendChild(this.div);
+    this.parent = parent;
     
     this.label = document.createElement('div');
     this.label.classList.add('label');
@@ -42,6 +43,9 @@ VIZ.Component = function(args) {
     this.label.style.height = '2em';
     this.label_visible = true;
     this.div.appendChild(this.label);
+    if (args.label_visible === false) {
+        this.hide_label();
+    }
 
     self.minWidth = 100;
     self.minHeight = 100;
@@ -73,6 +77,9 @@ VIZ.Component = function(args) {
                 VIZ.set_transform(target, x, y);
                 target.setAttribute('data-x', x);
                 target.setAttribute('data-y', y);                  
+            },
+            onend: function (event) {
+                self.save_layout();
             }
         })
 
@@ -103,13 +110,16 @@ VIZ.Component = function(args) {
             target.setAttribute('data-x', x);
             target.setAttribute('data-y', y);                  
             
+        })
+        .on('resizeend', function(event) {
+            self.save_layout()
         });    
 
     /** Open a WebSocket to the server */
-    this.id = args.id;
-    if (this.id != undefined) {
-        this.ws = new WebSocket('ws://localhost:8080/viz_component?id=' + 
-                                this.id);
+    this.uid = args.uid;
+    if (this.uid != undefined) {
+        this.ws = new WebSocket('ws://localhost:8080/viz_component?uid=' + 
+                                this.uid);
         this.ws.binaryType = "arraybuffer";
         this.ws.onmessage = function(event) {self.on_message(event);}
     }
@@ -144,9 +154,15 @@ VIZ.Component.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     if (this.label_visible) {
-        items.push(['hide label', function() {self.hide_label();}]);
+        items.push(['hide label', function() {
+            self.hide_label(); 
+            self.save_layout();
+        }]);
     } else {
-        items.push(['show label', function() {self.show_label();}]);    
+        items.push(['show label', function() {
+            self.show_label(); 
+            self.save_layout();
+        }]);    
     }
     return items;
 };
@@ -189,6 +205,22 @@ VIZ.Component.prototype.show_label = function(event) {
     }
 }
 
+
+VIZ.Component.prototype.layout_info = function () {
+    var info = {};
+    info.x = parseFloat(this.div.getAttribute('data-x'));
+    info.y = parseFloat(this.div.getAttribute('data-y'));
+    info.width = parseFloat(this.div.style.width);
+    info.height = parseFloat(this.div.style.height);  
+    info.label_visible = this.label_visible;    
+    return info;
+}
+
+VIZ.Component.prototype.save_layout = function () {
+    var info = this.layout_info();
+    console.log(info);
+    this.ws.send('config:' + JSON.stringify(info));
+}
 
 
 /**

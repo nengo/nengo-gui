@@ -7,19 +7,19 @@ import nengo
 from nengo_viz.components.component import Component
 
 class SimControl(Component):
-    def __init__(self, viz, shown_time=0.5, kept_time=4.0, **kwargs):
-        super(SimControl, self).__init__(viz, **kwargs)
+    def __init__(self, viz, config, uid, dt=0.001):
+        super(SimControl, self).__init__(viz, config, uid)
         self.viz = viz
         with viz.model:
             self.node = nengo.Node(self.control, size_out=0)
         self.paused = False
         self.last_tick = None
         self.rate = 0.0
-        self.model_dt = viz.dt
+        self.model_dt = dt
         self.rate_tau = 1.0
         self.last_send_rate = None
-        self.shown_time = shown_time
-        self.kept_time = kept_time
+        self.shown_time = config.shown_time
+        self.kept_time = config.kept_time
         self.sim_ticks = 0
         self.skipped = 1
         self.time = 0.0
@@ -56,17 +56,10 @@ class SimControl(Component):
         if not self.paused:
             client.write(struct.pack('<ff', self.time, self.rate), binary=True)
 
-        #client.write('ticks:%g' % self.sim_ticks)
-        #now = time.time()
-        #if self.last_send_rate is None or now - self.last_send_rate > 1.0:
-        #    client.write('rate:%g' % self.rate)
-        #    self.last_send_rate = now
-
     def javascript(self):
-        return ('var sim = new VIZ.SimControl(control, {id:%(id)d,'
-                'shown_time:%(shown_time)g, kept_time:%(kept_time)g});' %
-                 dict(id=id(self), shown_time=self.shown_time,
-                     kept_time=self.kept_time))
+        info = dict(uid=self.uid)
+        json = self.javascript_config(info)
+        return 'var sim = new VIZ.SimControl(control, %s)' % json
 
     def message(self, msg):
         if msg == 'pause':

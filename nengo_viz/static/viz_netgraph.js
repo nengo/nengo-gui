@@ -6,7 +6,7 @@
  * @param {int} args.id - the id of the server-side NetGraph to connect to
  * @param {DOMElement} args.parent - the element to add this component to
  */
-VIZ.NetGraph = function(args) {
+VIZ.NetGraph = function(parent, args) {
     this.scale = 1.0;          // global scaling factor
     this.offsetX = 0;          // global x,y pan offset 
     this.offsetY = 0;
@@ -28,8 +28,8 @@ VIZ.NetGraph = function(args) {
     this.svg.style.width = '100%';
     this.svg.style.height = 'calc(100% - 80px)';
     this.svg.style.position = 'fixed';
-    args.parent.appendChild(this.svg);
-    this.parent = args.parent;
+    parent.appendChild(this.svg);
+    this.parent = parent;
     
     /** three separate layers, so that expanded networks are at the back,
      *  then connection lines, and then other items (nodes, ensembles, and
@@ -42,7 +42,7 @@ VIZ.NetGraph = function(args) {
     this.svg.appendChild(this.g_items);
     
     /** connect to server */
-    this.ws = new WebSocket('ws://localhost:8080/viz_component?id=' + args.id);
+    this.ws = new WebSocket('ws://localhost:8080/viz_component?uid=' + args.uid);
     this.ws.binaryType = "arraybuffer";
     this.ws.onmessage = function(event) {self.on_message(event);}
 

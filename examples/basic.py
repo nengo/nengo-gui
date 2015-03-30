@@ -12,14 +12,6 @@ with model:
     nengo.Connection(ens, result, function=lambda x: x[0] * x[1],
                      synapse=0.01)
 
-#sim = nengo.Simulator(model)
-#sim.run(100, progress_bar=False)
-
-import nengo_viz
-viz = nengo_viz.Viz(model, locals=locals(), filename=__file__)
-viz.slider(stimulus_A)
-viz.slider(stimulus_B)
-viz.value(ens)
-viz.value(result)
-viz.raster(result.neurons, n_neurons=10)
-viz.start()
+if __name__ == '__main__':
+    import nengo_viz
+    nengo_viz.Viz(__file__).start()

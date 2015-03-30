@@ -186,10 +186,30 @@ VIZ.NetGraphItem.prototype.generate_menu = function () {
             items.push(['expand network', 
                         function() {self.expand();}]);
         }
-
+    }
+    if (this.type == 'ens') {
+        items.push(['value', function() {self.create_graph('Value');}])
+    }
+    if (this.type == 'node') {
+        items.push(['slider', function() {self.create_graph('Slider');}])
+        items.push(['value', function() {self.create_graph('Value');}])
     }
     return items;
 };
+
+VIZ.NetGraphItem.prototype.create_graph = function (type) {
+    var info = {};
+    info.act = 'create_graph';
+    info.type = type;
+    var pos = this.get_screen_location();
+    info.x = pos[0];
+    info.y = pos[1];
+    info.width = 200;
+    info.height = 200;
+    info.uid = this.uid;
+    this.ng.notify(info);
+};
+
 
 VIZ.NetGraphItem.prototype.request_feedforward_layout = function () {
     this.ng.notify({act:"feedforward_layout", uid:this.uid});

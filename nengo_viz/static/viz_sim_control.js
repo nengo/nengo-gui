@@ -26,7 +26,7 @@ VIZ.SimControl = function(div, args) {
     this.pending_update = false;
 
     /** Create the WebSocket to communicate with the server */ 
-    this.ws = new WebSocket('ws://localhost:8080/viz_component?id=' + args.id);
+    this.ws = new WebSocket('ws://localhost:8080/viz_component?uid=' + args.uid);
     this.ws.binaryType = "arraybuffer";
     this.ws.onmessage = function(event) {self.on_message(event);}
     
