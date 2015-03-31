@@ -82,3 +82,11 @@ VIZ.Menu.hide_menu_in = function (div) {
         menu.hide();
     }
 }
+
+VIZ.Menu.prototype.visible_any = function () {
+    return VIZ.Menu.visible_menus[this.div] !== undefined;
+}
+
+VIZ.Menu.prototype.hide_any = function () {
+    VIZ.Menu.hide_menu_in(this.div);
+}

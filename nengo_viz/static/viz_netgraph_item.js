@@ -174,8 +174,8 @@ VIZ.NetGraphItem = function(ng, info) {
     var self = this;
     interact(this.g)
         .on('tap', function(event) {
-            if (self.menu.visible) {
-                self.menu.hide();
+            if (self.menu.visible_any()) {
+                self.menu.hide_any();
             } else {
                 self.menu.show(event.clientX, event.clientY, self.generate_menu());
             }

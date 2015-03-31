@@ -100,8 +100,8 @@ VIZ.NetGraph = function(parent, args) {
 
     interact(this.svg)
         .on('tap', function(event) {
-            if (self.menu.visible) {
-                self.menu.hide();
+            if (self.menu.visible_any()) {
+                self.menu.hide_any();
             } else {
                 self.menu.show(event.clientX, event.clientY, self.generate_menu());
             }
