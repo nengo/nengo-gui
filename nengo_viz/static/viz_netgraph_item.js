@@ -434,36 +434,49 @@ VIZ.NetGraphItem.prototype.set_size = function(width, height) {
     this.redraw_child_connections();
 };
 
-VIZ.NetGraphItem.prototype.redraw_size = function() {
-    var w = $(this.ng.svg).width();
-    var h = $(this.ng.svg).height();    
-    
-    var screen_w = this.get_nested_width() * w * this.ng.scale;
-    var screen_h = this.get_nested_height() * h * this.ng.scale;
-        
-    if (screen_w < this.minWidth) {
-        screen_w = this.minWidth;
-    }
-    if (screen_h < this.minHeight) {
-        screen_h = this.minHeight;
-    }
+VIZ.NetGraphItem.prototype.redraw_size = function() {    
+    var screen_w = this.get_width();
+    var screen_h = this.get_height();
     
     if (this.type === 'ens') {
-        this.shape.setAttribute('rx', screen_w);
-        this.shape.setAttribute('ry', screen_h);    
+        this.shape.setAttribute('rx', screen_w / 2);
+        this.shape.setAttribute('ry', screen_h / 2);    
     } else {
         this.shape.setAttribute('transform', 
-                            'translate(-' + screen_w + ', -' + screen_h + ')');
-        this.shape.setAttribute('width', screen_w * 2);
-        this.shape.setAttribute('height', screen_h * 2);
+                            'translate(-' + (screen_w / 2) + ', -' + (screen_h / 2) + ')');
+        this.shape.setAttribute('width', screen_w);
+        this.shape.setAttribute('height', screen_h);
     }
     
     if (this.expanded) {
         /** put the label at the bottom */
-        this.label.setAttribute('transform', 'translate(0, ' + screen_h + ')');
+        this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
     }
 };
 
+VIZ.NetGraphItem.prototype.get_width = function() {
+    var w = $(this.ng.svg).width();
+    
+    var screen_w = this.get_nested_width() * w * this.ng.scale;
+        
+    if (screen_w < this.minWidth) {
+        screen_w = this.minWidth;
+    }
+    
+    return screen_w * 2;
+}
+
+VIZ.NetGraphItem.prototype.get_height = function() {
+    var h = $(this.ng.svg).height();
+    
+    var screen_h = this.get_nested_height() * h * this.ng.scale;
+        
+    if (screen_h < this.minHeight) {
+        screen_h = this.minHeight;
+    }
+    
+    return screen_h * 2;
+}
 
 
 

@@ -27,3 +27,9 @@ g.net rect{
     stroke: black;
     stroke-width: 2px;
 }
+
+.netgraph ellipse.recurrent {
+    stroke: black;
+    stroke-width: 2px;
+    fill: none;
+}
