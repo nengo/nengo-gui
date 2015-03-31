@@ -51,11 +51,15 @@ class SimControl(Component):
 
         self.last_tick = now
 
-        while self.paused:
+        while self.paused and self.viz.sim is not None:
             time.sleep(0.01)
             self.last_tick = None
 
     def update_client(self, client):
+        if self.viz.changed:
+            self.paused = True
+            self.viz.sim = None
+            self.viz.changed = False
         if not self.paused:
             client.write(struct.pack('<ff', self.time, self.rate), binary=True)
         status = self.get_status()

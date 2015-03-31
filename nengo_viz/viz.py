@@ -24,7 +24,6 @@ class VizSim(object):
         self.changed = False    # has something changed the model, so it
                                 #  should be rebuilt?
 
-        # use the lock to make sure only one Simulator is building at a time
 
         for template in self.viz.find_templates():
             self.add_template(template)
@@ -48,6 +47,7 @@ class VizSim(object):
 
         self.sim = None
 
+        # use the lock to make sure only one Simulator is building at a time
         self.viz.lock.acquire()
         for c in self.components:
             c.add_nengo_objects(self.viz)

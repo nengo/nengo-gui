@@ -85,6 +85,7 @@ VIZ.SimControl.prototype.set_status = function(status) {
     } else if (status === 'paused') {
         icon = 'glyphicon-play';
         this.stop_rotating_cog();
+        this.paused = true;
     } else if (status == 'running') {
         icon = 'glyphicon-pause';
         this.stop_rotating_cog();
