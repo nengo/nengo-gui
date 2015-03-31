@@ -74,7 +74,7 @@ VIZ.NetGraph = function(parent, args) {
      *  point in the space */
     interact(this.svg)
         .on('wheel', function(event) {
-            var x = (event.clientX / $(self.svg).width());
+            var x = (event.clientX / $(self.svg).width())
             var y = (event.clientY / $(self.svg).height());
 
             var step_size = 1.1; // size of zoom per wheel click
@@ -82,15 +82,11 @@ VIZ.NetGraph = function(parent, args) {
             var delta = event.wheelDeltaY || -event.deltaY
             var scale = delta > 0 ? step_size : 1.0 / step_size;
             
-            var w = self.get_scaled_width(); 
-            var h = self.get_scaled_height();
-            var dw = w * scale - w;
-            var dh = h * scale - h;
+            var xx = x / self.scale - self.offsetX;
+            var yy = y / self.scale - self.offsetY;
+            self.offsetX = (self.offsetX + xx) / scale - xx;
+            self.offsetY = (self.offsetY + yy) / scale - yy;
             
-            // TODO: this math is not quite right
-            self.offsetX = self.offsetX / scale - dw * x / (w * scale);
-            self.offsetY = self.offsetY / scale - dh * y / (h * scale);
-                    
             self.scale = scale * self.scale;
 
             self.redraw();
