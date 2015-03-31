@@ -195,3 +195,36 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
     this.label.style.width = width;
     
 };
+
+
+VIZ.Slider.prototype.generate_menu = function() {
+    var self = this;
+    var items = [];
+    items.push(['set range', function() {self.set_range();}]);
+
+    // add the parent's menu items to this
+    // TODO: is this really the best way to call the parent's generate_menu()?
+    return $.merge(items, VIZ.Component.prototype.generate_menu.call(this));
+};
+
+VIZ.Slider.prototype.set_range = function() {
+    var range = this.scale.domain();
+    var new_range = prompt('Set range', '' + range[1] + ',' + range[0]);
+    if (new_range !== null) {
+        new_range = new_range.split(',');
+        var min = parseFloat(new_range[1]);
+        var max = parseFloat(new_range[0]);
+        this.scale.domain([min, max]);
+        this.save_layout();
+    }
+    for (var i in this.sliders) {
+        this.set_value(i,this.sliders[i].value); 
+    }
+};
+
+VIZ.Slider.prototype.layout_info = function () {
+    var info = VIZ.Component.prototype.layout_info.call(this);
+    info.min_value = this.scale.domain()[1];
+    info.max_value = this.scale.domain()[0];
+    return info;
+};
