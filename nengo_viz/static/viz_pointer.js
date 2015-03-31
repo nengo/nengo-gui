@@ -32,6 +32,28 @@ VIZ.Pointer = function(parent, sim, args) {
     this.fixed_value = '';
     var self = this;
     
+    this.div.addEventListener("mouseup", 
+        function(event) {
+            // for some reason 'tap' doesn't seem to work here while the
+            // simulation is running, so I'm doing the timing myself
+            var now = new Date().getTime() / 1000;
+            if (now - self.mouse_down_time > 0.1) {
+                return;
+            }
+            if (self.menu.visible) {
+                self.menu.hide();
+            } else {
+                self.menu.show(event.clientX, event.clientY, self.generate_menu());
+            }
+        }
+    );    
+
+    this.div.addEventListener("mousedown", 
+        function(event) {
+            self.mouse_down_time = new Date().getTime() / 1000;
+        }
+    );        
+    
 
     
 };
