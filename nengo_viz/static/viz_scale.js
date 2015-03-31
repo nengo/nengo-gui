@@ -14,13 +14,13 @@ function init(){
 
 		var k = screen_px / dif_x_one;
 
-		var mouse_cords = event.offsetX * dif_x_one / screen_px;
+		var mouse_cords = (event.offsetX * dif_x_one / screen_px) + VIZ.pan.cposn.ul.x;
 
 		var post_width_in_cords = dif_x_one * wheel;
 
 		var j = screen_px / post_width_in_cords;
 
-		var new_urx = (mouse_cords + k*(-mouse_cords + VIZ.pan.cposn.ul.x)/j) 
+		var new_urx = (mouse_cords - (k*mouse_cords - k*VIZ.pan.cposn.ul.x)/j) 
 		
 		////////////////////////////
 
@@ -30,13 +30,15 @@ function init(){
 
 		var ky = screen_pxy / dif_x_oney;
 
-		var mouse_cordsy = event.offsetY * dif_x_oney / screen_pxy;
+		var mouse_cordsy = (event.offsetY * dif_x_oney / screen_pxy) + VIZ.pan.cposn.ul.y;
 
 		var post_height_in_cords = dif_x_oney * wheel;
 
 		var jy = screen_pxy / post_height_in_cords;
 
-		var new_ury = (mouse_cordsy + ky*(-mouse_cordsy + VIZ.pan.cposn.ul.y)/jy) 
+		var new_ury = (mouse_cordsy - (ky*mouse_cordsy - ky*VIZ.pan.cposn.ul.y)/jy) 
+
+		//(mouse_cordsy + ky*(-mouse_cordsy + VIZ.pan.cposn.ul.y)/jy) 
 
 		////////////////////////////////////////////////////
 
@@ -44,7 +46,7 @@ function init(){
 		VIZ.pan.cposn.ul.y = new_ury;
 		VIZ.pan.cposn.lr.x = new_urx + post_width_in_cords;
 		VIZ.pan.cposn.lr.y = new_ury + post_height_in_cords;
-		console.log(VIZ.pan.cposn.ul, VIZ.pan.cposn.lr);
+		console.log(mouse_cords, mouse_cordsy);
 		VIZ.pan.redraw();
 
 
