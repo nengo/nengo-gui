@@ -10,10 +10,13 @@ VIZ.pan.enabled = false;
 */
 
 //Used for storing the cumulative x and y panning of the model
-VIZ.pan.cposn = {x:0, y:0};
+
 
 function init_main_events() {
-	console.log($('.netgraph'));
+	VIZ.pan.cposn = {	ul:{x:0, y:0}, 
+						lr:{x:$('#netgraph').width(), y:$('#netgraph').height()}
+					}
+	//console.log(VIZ.pan.cposn);
 	$(".netgraph")
 		.mousedown(function(event) { //Listens for mousedown
 			if (event.target == $('.netgraph')[0]) { //Checks that you have indeed clicked the #main element
@@ -38,20 +41,72 @@ function init_main_events() {
 
 /*Pass this function the amount of change you want to apply to the screen*/
 VIZ.pan.shift = function(dx,dy) {
-	VIZ.pan.cposn.x += dx;
-	VIZ.pan.cposn.y += dy;
-	$('.graph').each(function(i, element){ // Get all the graph elements
-		var cords = VIZ.get_transform(element);
-		VIZ.set_transform(element, cords.x + dx, cords.y + dy); // Do the transformation
-	});
+	var cpp = cord_per_px(VIZ.pan.cposn)
+	//console.log(cpp.x, cpp.y);
+	VIZ.pan.cposn.ul.x -= dx * cpp.x;
+	VIZ.pan.cposn.ul.y -= dy * cpp.y;
+	VIZ.pan.cposn.lr.x -= dx * cpp.x;
+	VIZ.pan.cposn.lr.y -= dy * cpp.y;
+	//console.log(VIZ.pan.cposn.ul, VIZ.pan.cposn.lr);
+	// Replace this part with a redraw using coords instead 
+	VIZ.pan.redraw();
+
+
 };
 
 /*snap_to pans the screen to the specified posn cords quickly. 
 Effectively the same as changing the cposn cords to the posn points, and panning the screen accordingly*/
 VIZ.pan.snap_to = function(posn) {
-	var dx = posn.x - VIZ.pan.cposn.x;
-	var dy = posn.y - VIZ.pan.cposn.y;
-	VIZ.pan.shift(dx,dy);
+	var dx = VIZ.pan.cposn.ul.x - VIZ.pan.cposn.lr.x;
+	var dy = VIZ.pan.cposn.ul.y - VIZ.pan.cposn.lr.y;
+	VIZ.pan.cposn.ul.x = posn.x;
+	VIZ.pan.cposn.ul.y = posn.y;
+	VIZ.pan.cposn.lr.x = VIZ.pan.cposn.ul.x - dx;
+	VIZ.pan.cposn.lr.y = VIZ.pan.cposn.ul.y - dy;
+	VIZ.pan.redraw();
+};
+
+VIZ.get_cords = function(element) {
+	var datax = parseFloat(element.getAttribute('data-x'));
+    var datay = parseFloat(element.getAttribute('data-y'));
+    return {x: datax , y:datay};
+}
+
+//consumes a scrn and a cord posn and gives a posn that is to be used for a pixel transform
+function cord_map(scrn, posn) {
+	
+	var cord_width = scrn.lr.x - scrn.ul.x;
+
+	var cord_height = scrn.lr.y - scrn.ul.y;
+
+	var px_width = $('#netgraph').width();
+
+	var px_height = $('#netgraph').height();
+
+	return {
+		x: (px_width / cord_width * (posn.x - scrn.ul.x)),
+	 	y: (px_height / cord_height * (posn.y - scrn.ul.y))
+	 };
+}
+
+function cord_per_px(scrn) {
+	var cord_width = scrn.lr.x - scrn.ul.x;
+
+	var cord_height = scrn.lr.y - scrn.ul.y;
+
+	var px_width = $('#netgraph').width();
+
+	var px_height = $('#netgraph').height();
+	
+	return {x: cord_width / px_width,
+	 y: cord_height / px_height};
+}
+
+VIZ.pan.redraw = function() {
+	$('.graph').each(function(i, element){ // Get all the graph elements\
+		var transform_val = cord_map(VIZ.pan.cposn, VIZ.get_cords(element));
+		VIZ.set_transform(element, transform_val.x, transform_val.y);
+	});
 }
 
 //Get those main event listeners up and running
