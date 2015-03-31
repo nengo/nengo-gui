@@ -6,7 +6,10 @@ class NameFinder(object):
         self.known_name = {}
         for k, v in terms.iteritems():
             if not k.startswith('_'):
-                self.known_name[v] = k
+                try:
+                    self.known_name[v] = k
+                except TypeError:
+                    pass
         self.find_names(net)
 
     def find_names(self, net):
