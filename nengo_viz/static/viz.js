@@ -164,8 +164,15 @@ VIZ.Component.prototype.generate_menu = function() {
             self.save_layout();
         }]);    
     }
+    items.push(['remove', function() {self.remove();}]);
     return items;
 };
+
+VIZ.Component.prototype.remove = function() {
+    this.ws.send('remove');
+    this.parent.removeChild(this.div);
+}
+
 
 /**
  * Schedule update() to be called in the near future.  If update() is already

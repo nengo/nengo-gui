@@ -47,6 +47,9 @@ class Server(swi.SimpleWebInterface):
                         for k, v in cfg.items():
                             setattr(self.viz.config[component.template], k, v)
                         self.viz.save_config()
+                    elif msg == 'remove':
+                        self.viz.remove_uid(uid)
+                        self.viz.save_config()
                     else:
                         component.message(msg)
                     msg = client.read()

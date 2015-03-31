@@ -241,6 +241,11 @@ class Viz(object):
         self.locals[uid] = obj
         self.default_labels[obj] = uid
 
+    def remove_uid(self, uid):
+        obj = self.locals[uid]
+        del self.locals[uid]
+        del self.default_labels[obj]
+
     def load_config(self):
         config = Config()
         self.locals['_viz_config'] = config
