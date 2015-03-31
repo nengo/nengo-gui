@@ -47,8 +47,8 @@ VIZ.Component = function(parent, args) {
         this.hide_label();
     }
 
-    self.minWidth = 100;
-    self.minHeight = 100;
+    self.minWidth = 20;
+    self.minHeight = 20;
 
     /** Move element to be drawn on top when clicked on */
     VIZ.max_zindex = 0;

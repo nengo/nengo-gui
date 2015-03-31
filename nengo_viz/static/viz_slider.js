@@ -9,7 +9,7 @@ VIZ.Slider = function(parent, args) {
     VIZ.Component.call(this, parent, args);
     var self = this;
 
-    VIZ.set_transform(this.label, 0, -20);
+    VIZ.set_transform(this.label, 0, -30);
  
     /** a scale to map from values to pixels */
     this.scale = d3.scale.linear();
@@ -17,7 +17,8 @@ VIZ.Slider = function(parent, args) {
     this.scale.range([0, args.height]);
     
     /** number of pixels high for the slider itself */
-    this.slider_height = 20;
+    this.slider_height = 30;
+    self.minHeight = 40;
     
     /** make the sliders */
     this.sliders = [];
@@ -26,7 +27,9 @@ VIZ.Slider = function(parent, args) {
         this.sliders.push(slider);
         
         slider.index = i;
-        slider.div = document.createElement('div');
+        slider.div = document.createElement('button');
+        slider.div.className = 'btn btn-default';
+        
         slider.value = args.start_value[i];
 
         /** Show the slider Value */
@@ -36,7 +39,6 @@ VIZ.Slider = function(parent, args) {
 
         /** put the slider in the container */
         slider.div.style.position = 'fixed';
-        slider.div.classList.add('slider');
         this.div.appendChild(slider.div);
         slider.div.style.zIndex = 1;
         slider.div.slider = slider;
@@ -106,9 +108,9 @@ VIZ.Slider = function(parent, args) {
             });
     }
 
+    this.guideline_width = 3;
     for (var i = 0; i<args.n_sliders;i++){
         /** show the guideline */
-        this.guideline_width = 5;
         var guideline = document.createElement('div');
         this.sliders[i].guideline = guideline;
         guideline.classList.add('guideline');
