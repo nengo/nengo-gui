@@ -145,7 +145,7 @@ VIZ.SimControl.prototype.on_pause_click = function(event) {
 VIZ.SimControl.prototype.on_resize = function(event) {
     this.time_slider.resize(this.div.clientWidth - 300, 
                             this.div.clientHeight - 20);
-
+    VIZ.set_transform(this.pause_button, this.div.clientWidth - 100, 30);
 }
 
 VIZ.TimeSlider = function(args) {
