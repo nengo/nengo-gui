@@ -40,10 +40,13 @@ VIZ.Pointer = function(parent, sim, args) {
             if (now - self.mouse_down_time > 0.1) {
                 return;
             }
-            if (self.menu.visible) {
-                self.menu.hide();
-            } else {
-                self.menu.show(event.clientX, event.clientY, self.generate_menu());
+            if (event.button == 0) {
+                if (self.menu.visible) {
+                    self.menu.hide();
+                } else {
+                    self.menu.show(event.clientX, event.clientY, 
+                                   self.generate_menu());
+                }
             }
         }
     );    

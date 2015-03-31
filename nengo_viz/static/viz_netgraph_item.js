@@ -174,12 +174,15 @@ VIZ.NetGraphItem = function(ng, info) {
     var self = this;
     interact(this.g)
         .on('tap', function(event) {
-            if (self.menu.visible_any()) {
-                self.menu.hide_any();
-            } else {
-                self.menu.show(event.clientX, event.clientY, self.generate_menu());
+            if (event.button == 0) {
+                if (self.menu.visible_any()) {
+                    self.menu.hide_any();
+                } else {
+                    self.menu.show(event.clientX, event.clientY, 
+                                   self.generate_menu());
+                }
+                event.stopPropagation();           
             }
-            event.stopPropagation();           
         });
             
     if (info.type === 'net') {
