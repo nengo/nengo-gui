@@ -21,19 +21,27 @@ class VizSim(object):
         self.finished = False   # are we done simulating?
         self.rebuild = False    # should we rebuild the model?
         self.sim = None
+        self.changed = False    # has something changed the model, so it
+                                #  should be rebuilt?
 
         # use the lock to make sure only one Simulator is building at a time
 
         for template in self.viz.find_templates():
-            c = template.create(self)
-            self.uids[c.uid] = c
-            if isinstance(template, (SimControl, NetGraph)):
-                self.components[:0] = [c]
-            else:
-                self.components.append(c)
+            self.add_template(template)
 
         # build and run the model in a separate thread
         thread.start_new_thread(self.runner, ())
+
+    def add_template(self, template):
+        c = template.create(self)
+        self.uids[c.uid] = c
+        if isinstance(template, (SimControl, NetGraph)):
+            self.components[:0] = [c]
+        else:
+            self.components.append(c)
+        return c
+
+
 
     def build(self):
         self.building = True

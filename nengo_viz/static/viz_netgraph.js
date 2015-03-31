@@ -142,6 +142,9 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         var item = this.svg_objects[data.uid];
         item.set_position(data.pos[0], data.pos[1]);
         item.set_size(data.size[0], data.size[1]);
+    } else if (data.type === 'js') {
+        console.log(data.code);
+        eval(data.code);
     } else {
         console.log('invalid message');
         console.log(data);

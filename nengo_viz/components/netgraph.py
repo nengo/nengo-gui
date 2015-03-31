@@ -117,6 +117,10 @@ class NetGraph(Component):
         self.config[template].height = height
         self.viz.viz.save_config()
 
+        c = self.viz.add_template(template)
+        self.viz.changed = True
+        self.to_be_sent.append(dict(type='js', code=c.javascript()))
+
     def act_feedforward_layout(self, uid):
         if uid is None:
             network = self.viz.model

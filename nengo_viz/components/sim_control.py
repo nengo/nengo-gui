@@ -74,7 +74,7 @@ class SimControl(Component):
     def javascript(self):
         info = dict(uid=self.uid)
         json = self.javascript_config(info)
-        return 'var sim = new VIZ.SimControl(control, %s)' % json
+        return 'sim = new VIZ.SimControl(control, %s)' % json
 
     def message(self, msg):
         if msg == 'pause':
