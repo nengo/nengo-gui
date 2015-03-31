@@ -17,6 +17,9 @@ VIZ.NetGraphItem = function(ng, info) {
     this.type = info.type;
     this.uid = info.uid;
     this.allow_pointer_plot = info.allow_pointer_plot;
+    this.passthrough = info.passthrough;
+    this.fixed_width = null;
+    this.fixed_height = null;
 
     /** if this is a network, the children list is the set of NetGraphItems
      *  and NetGraphConnections that are inside this network */
@@ -43,18 +46,29 @@ VIZ.NetGraphItem = function(ng, info) {
         this.depth = this.parent.depth + 1;
         this.parent.children.push(this);
     }
-    
+
     /** create the SVG group to hold this item */
     var g = this.ng.createSVGElement('g');
     this.g = g;
     ng.g_items.appendChild(g);    
     g.classList.add(this.type);
+    
+    
+
+    
 
     this.menu = new VIZ.Menu(this.ng.parent);
     
     /** different types use different SVG elements for display */
     if (info.type === 'node') {
-        this.shape = this.ng.createSVGElement('rect');
+        if (this.passthrough) {
+            this.shape = this.ng.createSVGElement('ellipse');
+            this.fixed_width = 10;
+            this.fixed_height = 10;
+            this.g.classList.add('passthrough');
+        } else {
+            this.shape = this.ng.createSVGElement('rect');
+        }
     } else if (info.type === 'net') {
         this.shape = this.ng.createSVGElement('rect');
         this.shape.setAttribute('rx', '15');
@@ -74,11 +88,13 @@ VIZ.NetGraphItem = function(ng, info) {
     this.set_size(info.size[0], info.size[1]);
 
     g.appendChild(this.shape);
-    
+
     var label = this.ng.createSVGElement('text');
     this.label = label;
     label.innerHTML = info.label;
     g.appendChild(label);
+    this.label_below = false;
+    
 
     /** dragging an item to change its position */
     var uid = this.uid;
@@ -103,56 +119,58 @@ VIZ.NetGraphItem = function(ng, info) {
                 item.constrain_position();                
                 ng.notify({act:"pos", uid:uid, x:item.pos[0], y:item.pos[1]});
             }});
-            
-    /** dragging the edge of item to change its size */
-    interact(this.shape)
-        .resizable({
-            edges: { left: true, right: true, bottom: true, top: true }
-            })
-        .on('resizemove', function(event) {            
-            var item = ng.svg_objects[uid];
-            var w = ng.get_scaled_width();
-            var h = ng.get_scaled_height();    
-            var parent = item.parent;
-            while (parent !== null) {
-                w = w * parent.size[0] * 2;
-                h = h * parent.size[1] * 2;
-                parent = parent.parent;
-            }
-            
-            item.set_size(item.size[0] + event.deltaRect.width / w / 2, 
-                          item.size[1] + event.deltaRect.height / h / 2);
-            item.set_position(item.pos[0] + event.deltaRect.width / w / 2 + 
-                                            event.deltaRect.left / w, 
-                              item.pos[1] + event.deltaRect.height / h / 2 + 
-                                            event.deltaRect.top / h);
-            })
-        .on('resizeend', function(event) {
-            var item = ng.svg_objects[uid];
-            item.constrain_position();                
-            ng.notify({act:"pos_size", uid:uid, 
-                       x:item.pos[0], y:item.pos[1],
-                       width:item.size[0], height:item.size[1]});
-            });
-            
-    interact(this.g)
-        .on('wheel', function(event) {
-            var item = ng.svg_objects[uid];
-            var step_size = 1.1; // size of zoom per wheel click
 
-            var delta = event.wheelDeltaY || -event.deltaY
-            var scale = delta > 0 ? step_size : 1.0 / step_size;
-            
-            item.set_size(item.size[0] * scale, item.size[1] * scale);
-            
-            item.constrain_position();                
-            ng.notify({act:"pos_size", uid:uid, 
-                       x:item.pos[0], y:item.pos[1],
-                       width:item.size[0], height:item.size[1]});
-                       
-            event.stopPropagation();           
-            });
+    if (!this.passthrough) {
+        /** dragging the edge of item to change its size */
+        interact(this.shape)
+            .resizable({
+                edges: { left: true, right: true, bottom: true, top: true }
+                })
+            .on('resizemove', function(event) {            
+                var item = ng.svg_objects[uid];
+                var w = ng.get_scaled_width();
+                var h = ng.get_scaled_height();    
+                var parent = item.parent;
+                while (parent !== null) {
+                    w = w * parent.size[0] * 2;
+                    h = h * parent.size[1] * 2;
+                    parent = parent.parent;
+                }
+                
+                item.set_size(item.size[0] + event.deltaRect.width / w / 2, 
+                              item.size[1] + event.deltaRect.height / h / 2);
+                item.set_position(item.pos[0] + event.deltaRect.width / w / 2 + 
+                                                event.deltaRect.left / w, 
+                                  item.pos[1] + event.deltaRect.height / h / 2 + 
+                                                event.deltaRect.top / h);
+                })
+            .on('resizeend', function(event) {
+                var item = ng.svg_objects[uid];
+                item.constrain_position();                
+                ng.notify({act:"pos_size", uid:uid, 
+                           x:item.pos[0], y:item.pos[1],
+                           width:item.size[0], height:item.size[1]});
+                });
+                
+        interact(this.g)
+            .on('wheel', function(event) {
+                var item = ng.svg_objects[uid];
+                var step_size = 1.1; // size of zoom per wheel click
 
+                var delta = event.wheelDeltaY || -event.deltaY
+                var scale = delta > 0 ? step_size : 1.0 / step_size;
+                
+                item.set_size(item.size[0] * scale, item.size[1] * scale);
+                
+                item.constrain_position();                
+                ng.notify({act:"pos_size", uid:uid, 
+                           x:item.pos[0], y:item.pos[1],
+                           width:item.size[0], height:item.size[1]});
+                           
+                event.stopPropagation();           
+                });
+    }
+    
     var self = this;
     interact(this.g)
         .on('tap', function(event) {
@@ -169,6 +187,10 @@ VIZ.NetGraphItem = function(ng, info) {
         if (info.expanded) {
             this.expand();
         }
+    }
+    
+    if (this.passthrough) {
+        this.set_label_below(true);
     }
 
 };
@@ -224,11 +246,8 @@ VIZ.NetGraphItem.prototype.request_feedforward_layout = function () {
 /** expand a collapsed network */
 VIZ.NetGraphItem.prototype.expand = function() {
     this.g.classList.add('expanded');
-    var screen_h = this.get_nested_height() * 
-                   $(this.ng.svg).height() * this.ng.scale;
-
-    /** move the label to the bottom */
-    this.label.setAttribute('transform', 'translate(0, ' + (screen_h) + ')');
+    
+    this.set_label_below(true);
 
     if (!this.expanded) {
         this.expanded = true;
@@ -241,13 +260,23 @@ VIZ.NetGraphItem.prototype.expand = function() {
     this.ng.notify({act:"expand", uid:this.uid});
 }
 
+VIZ.NetGraphItem.prototype.set_label_below = function(flag) {
+    if (flag && !this.label_below) {        
+        var screen_h = this.get_height();
+        this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
+    } else if (!flag && this.label_below) {
+        this.label.setAttribute('transform', '');
+    }
+    this.label_below = flag;
+}
+
+
 
 /** collapse an expanded network */
 VIZ.NetGraphItem.prototype.collapse = function(report_to_server) {
     this.g.classList.remove('expanded');
 
-    /** move the label back to the middle */
-    this.label.setAttribute('transform', '');
+    this.set_label_below(false);
     
     /** remove child NetGraphItems and NetGraphConnections */
     while (this.child_connections.length > 0) {
@@ -274,8 +303,10 @@ VIZ.NetGraphItem.prototype.collapse = function(report_to_server) {
 
 /** determine the fill color based on the depth */
 VIZ.NetGraphItem.prototype.compute_fill = function() {
-    var fill = Math.round(255 * Math.pow(0.8, this.depth));
-    this.shape.style.fill = 'rgb(' + fill + ',' + fill + ',' + fill + ')';
+    if (!this.passthrough) {
+        var fill = Math.round(255 * Math.pow(0.8, this.depth));
+        this.shape.style.fill = 'rgb(' + fill + ',' + fill + ',' + fill + ')';
+    }
 }
 
 
@@ -441,6 +472,9 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
     if (this.type === 'ens') {
         this.shape.setAttribute('rx', screen_w / 2);
         this.shape.setAttribute('ry', screen_h / 2);    
+    } else if (this.passthrough) {
+        this.shape.setAttribute('rx', screen_w / 2);
+        this.shape.setAttribute('ry', screen_h / 2);    
     } else {
         this.shape.setAttribute('transform', 
                             'translate(-' + (screen_w / 2) + ', -' + (screen_h / 2) + ')');
@@ -448,13 +482,17 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
         this.shape.setAttribute('height', screen_h);
     }
     
-    if (this.expanded) {
+    if (this.label_below) {
         /** put the label at the bottom */
         this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
     }
 };
 
 VIZ.NetGraphItem.prototype.get_width = function() {
+    if (this.fixed_width !== null) {
+        return this.fixed_width;
+    }
+
     var w = $(this.ng.svg).width();
     
     var screen_w = this.get_nested_width() * w * this.ng.scale;
@@ -467,6 +505,10 @@ VIZ.NetGraphItem.prototype.get_width = function() {
 }
 
 VIZ.NetGraphItem.prototype.get_height = function() {
+    if (this.fixed_height !== null) {
+        return this.fixed_height;
+    }
+
     var h = $(this.ng.svg).height();
     
     var screen_h = this.get_nested_height() * h * this.ng.scale;

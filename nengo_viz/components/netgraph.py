@@ -184,6 +184,8 @@ class NetGraph(Component):
                     parent=parent)
         if type == 'net':
             info['expanded'] = self.config[obj].expanded
+        if type == 'node' and obj.output is None:
+            info['passthrough'] = True
 
         if nengo_viz.components.pointer.Pointer.can_apply(obj):
             info['allow_pointer_plot'] = True
