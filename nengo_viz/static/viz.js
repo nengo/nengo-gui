@@ -246,12 +246,29 @@ VIZ.DataStore = function(dims, sim, synapse) {
  * @param {array} row - dims+1 data points, with time as the first one
  */
 VIZ.DataStore.prototype.push = function(row) {
+    /** if you get data out of order, wipe out the later data */
+    if (row[0] < this.times[this.times.length - 1]) {
+        var index = 0;
+        while (this.times[index] < row[0]) {
+            index += 1;
+        }
+    
+        var dims = this.data.length;
+        this.times.splice(index, this.times.length);
+        for (var i=0; i < this.data.length; i++) {
+            this.data[i].splice(index, this.data[i].length);
+        }        
+    }
+
+
     /** compute lowpass filter (value = value*decay + new_value*(1-decay) */
     var decay = 0.0;    
     if ((this.times.length != 0) && (this.synapse > 0)) {
         var dt = row[0] - this.times[this.times.length - 1];
         decay = Math.exp(-dt / this.synapse);
     }
+    
+    
     /** put filtered values into data array */
     for (var i = 0; i < this.data.length; i++) {
         if (decay == 0.0) {
