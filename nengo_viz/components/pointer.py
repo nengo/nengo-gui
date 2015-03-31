@@ -18,8 +18,8 @@ class Pointer(Component):
 
     def add_nengo_objects(self, viz):
         with viz.model:
-            output  = obj.outputs['default'][0]
-            input = obj.inputs['default'][0]
+            output  = self.obj.outputs['default'][0]
+            input = self.obj.inputs['default'][0]
             self.node = nengo.Node(self.gather_data,
                                    size_in=self.vocab_out.dimensions,
                                    size_out=self.vocab_in.dimensions)
