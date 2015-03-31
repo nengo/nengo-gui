@@ -29,6 +29,8 @@ VIZ.Slider = function(parent, args) {
         slider.index = i;
         slider.div = document.createElement('button');
         slider.div.className = 'btn btn-default';
+        slider.div.style.padding = '5px 0px';
+        slider.div.style.borderColor = '#666';
         
         slider.value = args.start_value[i];
 
@@ -108,7 +110,7 @@ VIZ.Slider = function(parent, args) {
             });
     }
 
-    this.guideline_width = 3;
+    this.guideline_width = 7;
     for (var i = 0; i<args.n_sliders;i++){
         /** show the guideline */
         var guideline = document.createElement('div');
@@ -170,7 +172,7 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
     for (var i in this.sliders) {
         var slider = this.sliders[i];
         /** figure out the size of the slider */
-        slider.div.style.width = width / N;
+        slider.div.style.width = width / N - 3;
         slider.div.style.height = this.slider_height;
 
         //subtract 2 from height for border
