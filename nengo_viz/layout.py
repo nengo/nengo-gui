@@ -81,7 +81,7 @@ class Layout(object):
         for n in network.nodes:
             vertices[n] = Vertex(n)
             # default sizes for nodes: 10x20
-            vertices[n].view = VertexViewer(w=10, h=20)
+            vertices[n].view = VertexViewer(w=8, h=16)
         for e in network.ensembles:
             vertices[e] = Vertex(e)
             # default sizes for ensembles: 10x20
