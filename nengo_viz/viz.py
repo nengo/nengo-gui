@@ -111,6 +111,14 @@ class Value(Template):
     def code_python(self, uids):
         return 'nengo_viz.Value(%s)' % uids[self.target]
 
+class XYValue(Template):
+    def __init__(self, target):
+        super(XYValue, self).__init__(nengo_viz.components.XYValue, target)
+        self.target = target
+
+    def code_python(self, uids):
+        return 'nengo_viz.XYValue(%s)' % uids[self.target]
+
 class Raster(Template):
     def __init__(self, target):
         super(Raster, self).__init__(nengo_viz.components.Raster, target)
@@ -156,7 +164,7 @@ class Config(nengo.Config):
         self.configures(SimControl)
         self[SimControl].set_param('shown_time', nengo.params.Parameter(0.5))
         self[SimControl].set_param('kept_time', nengo.params.Parameter(4.0))
-        for cls in [Value, Slider, Raster, Pointer]:
+        for cls in [XYValue, Value, Slider, Raster, Pointer]:
             self.configures(cls)
             self[cls].set_param('x', nengo.params.Parameter(0))
             self[cls].set_param('y', nengo.params.Parameter(0))
@@ -165,6 +173,10 @@ class Config(nengo.Config):
             self[cls].set_param('label_visible', nengo.params.Parameter(True))
         self[Value].set_param('maxy', nengo.params.Parameter(1))
         self[Value].set_param('miny', nengo.params.Parameter(-1))
+        self[XYValue].set_param('max_value', nengo.params.Parameter(1))
+        self[XYValue].set_param('min_value', nengo.params.Parameter(-1))
+        self[XYValue].set_param('index_x', nengo.params.Parameter(0))
+        self[XYValue].set_param('index_y', nengo.params.Parameter(1))
         self[Slider].set_param('min_value', nengo.params.Parameter(-1))
         self[Slider].set_param('max_value', nengo.params.Parameter(1))
 
@@ -195,6 +207,11 @@ class Config(nengo.Config):
                 if isinstance(obj, Value):
                     lines.append('_viz_config[%s].miny = %g' % (uid, self[obj].miny))
                     lines.append('_viz_config[%s].maxy = %g' % (uid, self[obj].maxy))
+                if isinstance(obj, XYValue):
+                    lines.append('_viz_config[%s].min_value = %g' % (uid, self[obj].min_value))
+                    lines.append('_viz_config[%s].max_value = %g' % (uid, self[obj].max_value))
+                    lines.append('_viz_config[%s].index_x = %g' % (uid, self[obj].index_x))
+                    lines.append('_viz_config[%s].index_y = %g' % (uid, self[obj].index_y))
 
 
         return '\n'.join(lines)

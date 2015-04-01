@@ -20,6 +20,7 @@ VIZ.NetGraphItem = function(ng, info) {
     this.passthrough = info.passthrough;
     this.fixed_width = null;
     this.fixed_height = null;
+    this.dimensions = info.dimensions;
 
     /** if this is a network, the children list is the set of NetGraphItems
      *  and NetGraphConnections that are inside this network */
@@ -215,11 +216,17 @@ VIZ.NetGraphItem.prototype.generate_menu = function () {
     }
     if (this.type == 'ens') {
         items.push(['value', function() {self.create_graph('Value');}])
+        if (this.dimensions > 1) {
+            items.push(['xy-value', function() {self.create_graph('XYValue');}])
+        }
         items.push(['spikes', function() {self.create_graph('Raster');}])
     }
     if (this.type == 'node') {
         items.push(['slider', function() {self.create_graph('Slider');}])
         items.push(['value', function() {self.create_graph('Value');}])
+        if (this.dimensions > 1) {
+            items.push(['xy-value', function() {self.create_graph('XYValue');}])
+        }
     }
     if (this.allow_pointer_plot) {
         items.push(['semantic pointer', 
