@@ -16,7 +16,7 @@ VIZ.pan.events = function () {
 	VIZ.pan.cposn = {	ul:{x:0, y:0}, 
 						lr:{x:$('#netgraph').width(), y:$('#netgraph').height()}
 					}
-	//console.log(VIZ.pan.cposn);
+	//allows dragging on the netgraph
 	$(".netgraph")
 		.mousedown(function(event) { //Listens for mousedown
 			if (event.target == $('.netgraph')[0]) { //Checks that you have indeed clicked the #main element
@@ -26,6 +26,23 @@ VIZ.pan.events = function () {
 										 //Used for storing the initial x and y points of the mouse when panning
 		})
 		.mousemove(function(event) {// Listens for mouse movement
+			console.log(event);
+			if (VIZ.pan.enabled) { // Checks if panning is allowed
+			    var deltaX = event.pageX - VIZ.pan.iposn.x; // Calculates differences using initial x and y reference points
+			    var deltaY = event.pageY - VIZ.pan.iposn.y;
+			    VIZ.pan.iposn.x = event.pageX; // Updates initial reference points
+			    VIZ.pan.iposn.y = event.pageY;
+			    VIZ.pan.shift(deltaX, deltaY); // Call the pan function with the differences that should be made
+			}
+		})
+		.mouseup(function() {// Listens for mouseup
+		    VIZ.pan.enabled = false;//Disables panning
+		});
+
+	// When dragging and mouse goes over a graph, it will continue dragging
+	$(".graph")
+		.mousemove(function(event) {// Listens for mouse movement
+			console.log(event);
 			if (VIZ.pan.enabled) { // Checks if panning is allowed
 			    var deltaX = event.pageX - VIZ.pan.iposn.x; // Calculates differences using initial x and y reference points
 			    var deltaY = event.pageY - VIZ.pan.iposn.y;
@@ -109,5 +126,4 @@ VIZ.pan.redraw = function() {
 	});
 }
 
-//Get those main event listeners up and running
-//setTimeout(function(){init_main_events();},100);
+

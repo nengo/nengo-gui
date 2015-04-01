@@ -31,6 +31,8 @@ VIZ.NetGraph = function(args) {
     this.svg.style.position = 'fixed';
     args.parent.appendChild(this.svg);
     this.parent = args.parent;
+
+    VIZ.netgraph = this.svg;
     
     /** three separate layers, so that expanded networks are at the back,
      *  then connection lines, and then other items (nodes, ensembles, and
