@@ -96,6 +96,7 @@ VIZ.NetGraph = function(parent, args) {
             /** let the server know what happened */
             self.notify({act:"zoom", scale:self.scale, 
                          x:self.offsetX, y:self.offsetY});
+            console.log(['netgraph.scale', self.scale]);
         });
     //Get those pan/zoom event listeners up and running
     VIZ.pan.events();
@@ -176,8 +177,13 @@ VIZ.NetGraph.prototype.set_offset = function(x, y) {
 
 /** zoom the screen (and redraw accordingly) */
 VIZ.NetGraph.prototype.set_scale = function(scale) {
+    console.log([scale, this.get_scaled_width(), $(this.svg).width() / scale]);
     this.scale = scale;
     this.redraw();
+
+    VIZ.pan.cposn.lr.x = VIZ.pan.cposn.ul.x + $(this.svg).width() / scale;
+    VIZ.pan.cposn.lr.y = VIZ.pan.cposn.ul.y + $(this.svg).height() / scale;
+    VIZ.pan.redraw();
 }
 
 
@@ -219,6 +225,10 @@ VIZ.NetGraph.prototype.create_connection = function(info) {
 /** handler for resizing the full SVG */
 VIZ.NetGraph.prototype.on_resize = function(event) {
     this.redraw();
+    
+    VIZ.pan.cposn.lr.x = VIZ.pan.cposn.ul.x + $(this.svg).width() / this.scale;
+    VIZ.pan.cposn.lr.y = VIZ.pan.cposn.ul.y + $(this.svg).height() / this.scale;
+    VIZ.pan.redraw();
 };
 
 

@@ -65,4 +65,6 @@ VIZ.scale.zoom = function (wheel, event){
 	VIZ.pan.cposn.lr.x = new_urx + post_cord_width;
 	VIZ.pan.cposn.lr.y = new_ury + post_cord_height;
 	VIZ.pan.redraw();
+    
+    console.log(['width', VIZ.pan.cposn.lr.x - VIZ.pan.cposn.ul.x]);
 }
