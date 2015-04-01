@@ -99,8 +99,8 @@ VIZ.Component = function(parent, args) {
                 var datax = parseFloat(target.getAttribute('data-x')) + event.dx * scale.x; //Adjusting coordinate independently of position on screen
                 var datay = parseFloat(target.getAttribute('data-y')) + event.dy * scale.y;
                 VIZ.set_transform(target, x, y);
-                target.setAttribute('data-x', x);
-                target.setAttribute('data-y', y);                  
+                target.setAttribute('data-x', datax);
+                target.setAttribute('data-y', datay);                  
             },
             onend: function (event) {
                 self.save_layout();
@@ -158,6 +158,15 @@ VIZ.Component = function(parent, args) {
                 event.stopPropagation();  
             }
         });    
+        
+    VIZ.Component.components.push(this);
+};
+
+VIZ.Component.components = [];
+VIZ.Component.save_components = function() {
+    for (var index in VIZ.Component.components) {
+        VIZ.Component.components[index].save_layout();
+    }
 };
 
 /**
@@ -192,6 +201,8 @@ VIZ.Component.prototype.generate_menu = function() {
 VIZ.Component.prototype.remove = function() {
     this.ws.send('remove');
     this.parent.removeChild(this.div);
+    var index = VIZ.Component.components.indexOf(this);
+    VIZ.Component.components.splive(index, 1);
 }
 
 

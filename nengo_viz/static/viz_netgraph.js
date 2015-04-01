@@ -167,6 +167,10 @@ VIZ.NetGraph.prototype.set_offset = function(x, y) {
     this.offsetX = x;
     this.offsetY = y;
     this.redraw();
+    
+    var dx = VIZ.pan.cposn.ul.x - x * this.get_scaled_width();
+    var dy = VIZ.pan.cposn.ul.y - y * this.get_scaled_height();
+    VIZ.pan.shift(-dx, -dy);
 }
 
 

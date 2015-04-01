@@ -35,7 +35,11 @@ VIZ.pan.events = function () {
 			}
 		})
 		.mouseup(function() {// Listens for mouseup
-		    VIZ.pan.enabled = false;//Disables panning
+            if (VIZ.pan.enabled) {
+                console.log('saving');
+                VIZ.Component.save_components();
+                VIZ.pan.enabled = false;//Disables panning
+            }
 		});
 
 	// When dragging and mouse goes over a graph, it will continue dragging
@@ -50,7 +54,10 @@ VIZ.pan.events = function () {
 			}
 		})
 		.mouseup(function() {// Listens for mouseup
-		    VIZ.pan.enabled = false;//Disables panning
+            if (VIZ.pan.enabled) {
+                VIZ.Component.save_components();
+                VIZ.pan.enabled = false;//Disables panning
+            }
 		});
 	}
 
