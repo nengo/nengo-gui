@@ -6,11 +6,11 @@
  * @param {VIZ.SimControl} args.sim - the simulation controller
  */
  
-VIZ.Pointer = function(args) {
-    VIZ.Component.call(this, args);
+VIZ.Pointer = function(parent, sim, args) {
+    VIZ.Component.call(this, parent, args);
     var self = this;
 
-    this.sim = args.sim;
+    this.sim = sim;
         
     this.pdiv = document.createElement('div');
     this.pdiv.style.width = args.width;
@@ -34,19 +34,20 @@ VIZ.Pointer = function(args) {
     
     this.div.addEventListener("mouseup", 
         function(event) {
-            // for some reason 'click' doesn't seem to work here, so I'm doing
-            // the timing myself
+            // for some reason 'tap' doesn't seem to work here while the
+            // simulation is running, so I'm doing the timing myself
             var now = new Date().getTime() / 1000;
             if (now - self.mouse_down_time > 0.1) {
                 return;
             }
-            var value = prompt('Enter a Semantic Pointer value', 
-                               self.fixed_value);
-            if (value == null) { 
-                value = ''; 
+            if (event.button == 0) {
+                if (self.menu.visible) {
+                    self.menu.hide();
+                } else {
+                    self.menu.show(event.clientX, event.clientY, 
+                                   self.generate_menu());
+                }
             }
-            self.fixed_value = value;
-            self.ws.send(value);
         }
     );    
 
@@ -54,12 +55,36 @@ VIZ.Pointer = function(args) {
         function(event) {
             self.mouse_down_time = new Date().getTime() / 1000;
         }
-    );    
+    );        
+    
 
     
 };
 VIZ.Pointer.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Pointer.prototype.constructor = VIZ.Pointer;
+
+VIZ.Pointer.prototype.generate_menu = function() {
+    var self = this;
+    var items = [];
+    items.push(['set value', function() {self.set_value();}]);
+
+    // add the parent's menu items to this
+    // TODO: is this really the best way to call the parent's generate_menu()?
+    return $.merge(items, VIZ.Component.prototype.generate_menu.call(this));
+};
+
+
+
+VIZ.Pointer.prototype.set_value = function() {
+    var value = prompt('Enter a Semantic Pointer value', 
+                       this.fixed_value);
+    if (value == null) { 
+        value = ''; 
+    }
+    this.fixed_value = value;
+    this.ws.send(value);
+};
+
 
 /**
  * Receive new line data from the server
@@ -122,8 +147,17 @@ VIZ.Pointer.prototype.update = function() {
  * Adjust the graph layout due to changed size
  */
 VIZ.Pointer.prototype.on_resize = function(width, height) {
+    if (width < this.minWidth) {
+        width = this.minWidth;
+    }
+    if (height < this.minHeight) {
+        height = this.minHeight;
+    };
+
     this.width = width;
     this.height = height;
+    this.div.style.width = width;
+    this.div.style.height = height;
 
     this.label.style.width = width;
     

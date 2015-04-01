@@ -6,12 +6,11 @@
  * @param {int} args.n_neurons - number of neurons
  * @param {VIZ.SimControl} args.sim - the simulation controller
  */
-VIZ.Raster = function(args) {
-    VIZ.Component.call(this, args);
+VIZ.Raster = function(parent, sim, args) {
+    VIZ.Component.call(this, parent, args);
     var self = this;
-
     this.n_neurons = args.n_neurons || 1;
-    this.sim = args.sim;
+    this.sim = sim;
 
     /** for storing the accumulated data */
     this.data_store = new VIZ.DataStore(1, this.sim, 0);
@@ -35,7 +34,7 @@ VIZ.Raster = function(args) {
 
     var axis_time_end =this.svg.append("text")
                     .text("Time: NULL")
-                    .attr('class', 'graph_text')
+                    .attr('class', 'graph_text unselectable')
                     .attr('y', args.height - (this.margin_bottom-20))
                     .attr('x', args.width - (this.margin_right + 20));
         
@@ -43,7 +42,7 @@ VIZ.Raster = function(args) {
 
     var axis_time_start =this.svg.append("text")
                     .text("Time: NULL")
-                    .attr('class','graph_text')
+                    .attr('class','graph_text unselectable')
                     .attr('y', args.height - (this.margin_bottom-20))
                     .attr('x',this.margin_left - 10);
         
@@ -169,6 +168,13 @@ VIZ.Raster.prototype.update = function() {
  * Adjust the graph layout due to changed size
  */
 VIZ.Raster.prototype.on_resize = function(width, height) {
+    if (width < this.minWidth) {
+        width = this.minWidth;
+    }
+    if (height < this.minHeight) {
+        height = this.minHeight;
+    };
+    
     this.scale_x.range([this.margin_left, width - this.margin_right]);
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
 
@@ -195,4 +201,9 @@ VIZ.Raster.prototype.on_resize = function(width, height) {
     this.update();
     
     this.label.style.width = width;    
+
+    this.width = width;
+    this.height = height;
+    this.div.style.width = width;
+    this.div.style.height= height;
 };

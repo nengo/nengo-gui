@@ -28,6 +28,8 @@ VIZ.NetGraphConnection = function(ng, info) {
      *  until it finds one that does exist. */
     this.pres = info.pre;
     this.posts = info.post;
+    
+    this.recurrent = this.pres[0] === this.posts[0];
 
     /** figure out the best available items to connect to */
     this.set_pre(this.find_pre());
@@ -44,12 +46,20 @@ VIZ.NetGraphConnection = function(ng, info) {
     /** create the line and its arrowhead marker */
     this.g = ng.createSVGElement('g');
 
-    this.line = ng.createSVGElement('line');
-    this.g.appendChild(this.line);
+
+    if (this.recurrent) {
+        this.recurrent_ellipse = ng.createSVGElement('ellipse');
+        this.recurrent_ellipse.setAttribute('class', 'recurrent');
+        this.g.appendChild(this.recurrent_ellipse);
+    } else {
+        this.line = ng.createSVGElement('line');
+        this.g.appendChild(this.line);    
+    }
     
     this.marker = ng.createSVGElement('path');
     this.marker.setAttribute('d', "M 10 0 L -5 -5 L -5 5 z");
     this.g.appendChild(this.marker);
+    
 
     this.redraw();
 
@@ -140,16 +150,42 @@ VIZ.NetGraphConnection.prototype.remove = function() {
 /** redraw the connection */
 VIZ.NetGraphConnection.prototype.redraw = function() {
     var pre_pos = this.pre.get_screen_location();
-    var post_pos = this.post.get_screen_location();
-    this.line.setAttribute('x1', pre_pos[0]);
-    this.line.setAttribute('y1', pre_pos[1]);
-    this.line.setAttribute('x2', post_pos[0]);
-    this.line.setAttribute('y2', post_pos[1]);
     
-    var mx = pre_pos[0] * 0.4 + post_pos[0] * 0.6;
-    var my = pre_pos[1] * 0.4 + post_pos[1] * 0.6;
-    var angle = 180 / Math.PI * Math.atan2(post_pos[1] - pre_pos[1], 
-                                           post_pos[0] - pre_pos[0]);
-    this.marker.setAttribute('transform', 
-                        'translate(' + mx + ',' + my + ') rotate('+angle+')');
+    if (this.recurrent) {
+        var item = this.ng.svg_objects[this.pres[0]];
+        if (item === undefined) {
+            this.marker.setAttribute('visibility', 'hidden');
+            this.recurrent_ellipse.setAttribute('visibility', 'hidden');
+        } else {
+            this.marker.setAttribute('visibility', 'visible');
+            this.recurrent_ellipse.setAttribute('visibility', 'visible');
+            var width = item.get_width();
+            var height = item.get_height();
+            
+            var mx = pre_pos[0];
+            var my = pre_pos[1] - height;
+            this.marker.setAttribute('transform', 
+                          'translate(' + mx + ',' + my + ') rotate(180)');
+                          
+            var ex = pre_pos[0];
+            var ey = pre_pos[1] - height / 2;
+            this.recurrent_ellipse.setAttribute('transform',
+                          'translate(' + ex + ',' + ey + ')');
+            this.recurrent_ellipse.setAttribute('rx', width / 2);
+            this.recurrent_ellipse.setAttribute('ry', height / 2);
+        }
+    } else {        
+        var post_pos = this.post.get_screen_location();
+        this.line.setAttribute('x1', pre_pos[0]);
+        this.line.setAttribute('y1', pre_pos[1]);
+        this.line.setAttribute('x2', post_pos[0]);
+        this.line.setAttribute('y2', post_pos[1]);
+
+        var mx = pre_pos[0] * 0.4 + post_pos[0] * 0.6;
+        var my = pre_pos[1] * 0.4 + post_pos[1] * 0.6;
+        var angle = 180 / Math.PI * Math.atan2(post_pos[1] - pre_pos[1], 
+                                               post_pos[0] - pre_pos[0]);
+        this.marker.setAttribute('transform', 
+                          'translate(' + mx + ',' + my + ') rotate('+angle+')');
+    }
 }

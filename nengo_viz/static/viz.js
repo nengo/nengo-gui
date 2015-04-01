@@ -9,17 +9,24 @@ VIZ.set_transform = function(element, x, y) {
         element.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
 }
 
+
+VIZ.get_transform = function(element) {
+    var holde = $(element).css('transform').match(/(-?[0-9\.]+)/g); //Ugly method of finding the current transform of the element
+    return {x:Number(holde[4]), y:Number(holde[5])};
+}
+
 /**
  * Create a WebSocket connection to the given id
  */
-VIZ.create_websocket = function(id) {
+VIZ.create_websocket = function(uid) {
     var parser = document.createElement('a');
     parser.href = document.URL;
-    var ws_url = 'ws://' + parser.host + '/viz_component?id=' + id;
+    var ws_url = 'ws://' + parser.host + '/viz_component?uid=' + uid;
     var ws = new WebSocket(ws_url);
     ws.binaryType = "arraybuffer";
     return ws;
 };
+
 
 /** 
  * Base class for interactive visualization
@@ -30,32 +37,43 @@ VIZ.create_websocket = function(id) {
  * @param {float} args.x - the left side of the component (in pixels)
  * @param {float} args.y - the top of the component (in pixels)
  * @param {float} args.width - the width of the component (in pixels)
- * @param {float} args.height - the height of the component (in pixels)
+ * @param {float} args.height - the height of the component (in pixels) 
+ * @param {boolean} args.label_visible - whether the label should be shown
  * @param {int} args.id - the id of the server-side component to connect to
  */
-VIZ.Component = function(args) {
+VIZ.Component = function(parent, args) {
     var self = this;
 
     /** Create the div for the component and position it */
     this.div = document.createElement('div');
     this.div.style.width = args.width;
     this.div.style.height = args.height;
-    VIZ.set_transform(this.div, args.x, args.y);
+    this.width = args.width;
+    this.height = args.height;
+    
+    console.log(VIZ.pan.cposn.ul.x);
+    var transform_val = cord_map(VIZ.pan.cposn, {x:args.x, y:args.y});
+	VIZ.set_transform(this.div, transform_val.x, transform_val.y);
+    
     this.div.style.position = 'fixed';
     this.div.classList.add('graph');
-    args.parent.appendChild(this.div);
-    this.parent = args.parent;
+    parent.appendChild(this.div);
+    this.parent = parent;
     
     this.label = document.createElement('div');
-    this.label.classList.add('label');
+    this.label.classList.add('label', 'unselectable');
     this.label.innerHTML = args.label.replace('<', '&lt;').replace('>', '&gt;');
     this.label.style.position = 'fixed';
     this.label.style.width = args.width;
     this.label.style.height = '2em';
+    this.label_visible = true;
     this.div.appendChild(this.label);
+    if (args.label_visible === false) {
+        this.hide_label();
+    }
 
-    self.minWidth = 100;
-    self.minHeight = 100;
+    self.minWidth = 2;
+    self.minHeight = 2;
 
     /** Move element to be drawn on top when clicked on */
     VIZ.max_zindex = 0;
@@ -72,25 +90,28 @@ VIZ.Component = function(args) {
     interact(this.div)
         .draggable({
             inertia: true,
-            restrict: {
-                restriction: "parent",
-                endOnly: true,
-                elementRect: {top: 0, left: 0, bottom: 1, right: 1 }
-            },
             onmove: function (event) {
                 var target = event.target;
-                var x = parseFloat(target.getAttribute('data-x')) + event.dx;
-                var y = parseFloat(target.getAttribute('data-y')) + event.dy;
+                var holde = $(target).css('transform').match(/(-?[0-9\.]+)/g); //Ugly method of finding the transform currently
+                var x = Number(holde[4]) + event.dx; //Adjusting position relative to current transform
+                var y = Number(holde[5]) + event.dy;
+                var scale = cord_per_px(VIZ.pan.cposn)
+                console.log(scale);
+                var datax = parseFloat(target.getAttribute('data-x')) + event.dx * scale.x; //Adjusting coordinate independently of position on screen
+                var datay = parseFloat(target.getAttribute('data-y')) + event.dy * scale.y;
                 VIZ.set_transform(target, x, y);
-                target.setAttribute('data-x', x);
-                target.setAttribute('data-y', y);                  
+                target.setAttribute('data-x', datax);
+                target.setAttribute('data-y', datay);                  
+            },
+            onend: function (event) {
+                self.save_layout();
             }
         })
 
     /** Allow element to be resized */ 
     interact(this.div)
         .resizable({
-            edges: { left: true, right: true, bottom: true, top: true }
+            edges: { left: true, top: true, right: true, bottom: true }
             })
         .on('resizemove', function(event) {
             var target = event.target;
@@ -98,33 +119,62 @@ VIZ.Component = function(args) {
             var newHeight = event.rect.height;
             var dx = event.deltaRect.left;
             var dy = event.deltaRect.top;
-            if (newWidth < self.minWidth){
-                newWidth = self.minWidth;
-            }
-            if (newHeight < self.minHeight){
-                newHeight = self.minHeight;
-            }
-            target.style.width  = newWidth + 'px';
-            target.style.height = newHeight + 'px';
-            self.on_resize(newWidth, newHeight);
-            
-            var x = parseFloat(target.getAttribute('data-x')) + dx;
-            var y = parseFloat(target.getAttribute('data-y')) + dy;
-            VIZ.set_transform(target, x, y);
+            //if (newWidth < self.minWidth){
+            //    newWidth = self.minWidth;
+            //}
+            //if (newHeight < self.minHeight){
+            //    newHeight = self.minHeight;
+            //}
+            //target.style.width  = newWidth + 'px';
+            //target.style.height = newHeight + 'px';
+
+            var scale = cord_per_px(VIZ.pan.cposn);
+
+            var x = parseFloat(target.getAttribute('data-x')) + dx * scale.x;
+            var y = parseFloat(target.getAttribute('data-y')) + dy * scale.y;
             target.setAttribute('data-x', x);
-            target.setAttribute('data-y', y);                  
+            target.setAttribute('data-y', y);
+            self.on_resize(newWidth, newHeight);
+            VIZ.pan.redraw();          
             
+        })
+        .on('resizeend', function(event) {
+            self.save_layout()
         });    
 
     /** Open a WebSocket to the server */
-    this.id = args.id;
-    if (this.id != undefined) {
-        this.ws = VIZ.create_websocket(this.id);
+    this.uid = args.uid;
+    if (this.uid != undefined) {
+        this.ws = VIZ.create_websocket(this.uid);
         this.ws.onmessage = function(event) {self.on_message(event);}
     }
 
     /** flag whether there is a scheduled update that hasn't happened yet */
     this.pending_update = false;
+    VIZ.pan.events();
+    
+    this.menu = new VIZ.Menu(self.parent);
+    interact(this.div)
+        .on('tap', function(event) {
+            if (event.button == 0) {
+                if (self.menu.visible_any()) {
+                    self.menu.hide_any();
+                } else {
+                    self.menu.show(event.clientX, event.clientY, 
+                                   self.generate_menu());
+                }
+                event.stopPropagation();  
+            }
+        });    
+        
+    VIZ.Component.components.push(this);
+};
+
+VIZ.Component.components = [];
+VIZ.Component.save_components = function() {
+    for (var index in VIZ.Component.components) {
+        VIZ.Component.components[index].save_layout();
+    }
 };
 
 /**
@@ -136,6 +186,33 @@ VIZ.Component.prototype.on_resize = function(width, height) {};
  * Method to be called when Component received a WebSocket message
  */
 VIZ.Component.prototype.on_message = function(event) {};
+
+
+VIZ.Component.prototype.generate_menu = function() {
+    var self = this;
+    var items = [];
+    if (this.label_visible) {
+        items.push(['hide label', function() {
+            self.hide_label(); 
+            self.save_layout();
+        }]);
+    } else {
+        items.push(['show label', function() {
+            self.show_label(); 
+            self.save_layout();
+        }]);    
+    }
+    items.push(['remove', function() {self.remove();}]);
+    return items;
+};
+
+VIZ.Component.prototype.remove = function() {
+    this.ws.send('remove');
+    this.parent.removeChild(this.div);
+    var index = VIZ.Component.components.indexOf(this);
+    VIZ.Component.components.splice(index, 1);
+}
+
 
 /**
  * Schedule update() to be called in the near future.  If update() is already
@@ -161,6 +238,35 @@ VIZ.Component.prototype.schedule_update = function(event) {
 VIZ.Component.prototype.update = function(event) { 
 }
 
+VIZ.Component.prototype.hide_label = function(event) { 
+    if (this.label_visible) {
+        this.label.style.display = 'none';
+        this.label_visible = false;
+    }
+}
+
+VIZ.Component.prototype.show_label = function(event) { 
+    if (!this.label_visible) {
+        this.label.style.display = 'inline';
+        this.label_visible = true;
+    }
+}
+
+
+VIZ.Component.prototype.layout_info = function () {
+    var info = {};
+    info.x = parseFloat(this.div.getAttribute('data-x'));
+    info.y = parseFloat(this.div.getAttribute('data-y'));
+    info.width = parseFloat(this.div.style.width);
+    info.height = parseFloat(this.div.style.height);  
+    info.label_visible = this.label_visible;    
+    return info;
+}
+
+VIZ.Component.prototype.save_layout = function () {
+    var info = this.layout_info();
+    this.ws.send('config:' + JSON.stringify(info));
+}
 
 
 /**
@@ -186,12 +292,29 @@ VIZ.DataStore = function(dims, sim, synapse) {
  * @param {array} row - dims+1 data points, with time as the first one
  */
 VIZ.DataStore.prototype.push = function(row) {
+    /** if you get data out of order, wipe out the later data */
+    if (row[0] < this.times[this.times.length - 1]) {
+        var index = 0;
+        while (this.times[index] < row[0]) {
+            index += 1;
+        }
+    
+        var dims = this.data.length;
+        this.times.splice(index, this.times.length);
+        for (var i=0; i < this.data.length; i++) {
+            this.data[i].splice(index, this.data[i].length);
+        }        
+    }
+
+
     /** compute lowpass filter (value = value*decay + new_value*(1-decay) */
     var decay = 0.0;    
     if ((this.times.length != 0) && (this.synapse > 0)) {
         var dt = row[0] - this.times[this.times.length - 1];
         decay = Math.exp(-dt / this.synapse);
     }
+    
+    
     /** put filtered values into data array */
     for (var i = 0; i < this.data.length; i++) {
         if (decay == 0.0) {

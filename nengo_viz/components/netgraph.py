@@ -8,57 +8,19 @@ import json
 from nengo_viz.components.component import Component
 import nengo_viz.layout
 
-class Config(nengo.Config):
-    def __init__(self):
-        super(Config, self).__init__()
-        for cls in [nengo.Ensemble, nengo.Node]:
-            self.configures(cls)
-            self[cls].set_param('pos', nengo.params.Parameter(None))
-            self[cls].set_param('size', nengo.params.Parameter(None))
-        self.configures(nengo.Network)
-        self[nengo.Network].set_param('pos', nengo.params.Parameter(None))
-        self[nengo.Network].set_param('size', nengo.params.Parameter(None))
-        self[nengo.Network].set_param('expanded', nengo.params.Parameter(False))
-        self[nengo.Network].set_param('has_layout', nengo.params.Parameter(False))
-
-    def dumps(self, uids, model):
-        lines = []
-        lines.append('config[model].pos=%s' % (self[model].pos,))
-        lines.append('config[model].size=%s' % (self[model].size,))
-        lines.append('config[model].has_layout=%s' % (self[model].has_layout,))
-        for uid, obj in sorted(uids.items()):
-            if isinstance(obj, nengo.Ensemble):
-                lines.append('config[%s].pos=%s' % (uid, self[obj].pos))
-                lines.append('config[%s].size=%s' % (uid, self[obj].size))
-            elif isinstance(obj, nengo.Node):
-                lines.append('config[%s].pos=%s' % (uid, self[obj].pos))
-                lines.append('config[%s].size=%s' % (uid, self[obj].size))
-            elif isinstance(obj, nengo.Network):
-                lines.append('config[%s].pos=%s' % (uid, self[obj].pos))
-                lines.append('config[%s].size=%s' % (uid, self[obj].size))
-                lines.append('config[%s].expanded=%s' % (uid, self[obj].expanded))
-                lines.append('config[%s].has_layout=%s' % (uid, self[obj].has_layout))
-        return '\n'.join(lines)
-
 class NetGraph(Component):
     configs = {}
 
-    def __init__(self, viz, config=None):
-        super(NetGraph, self).__init__(viz)
+    def __init__(self, viz, config, uid):
+        super(NetGraph, self).__init__(viz, config, uid)
         self.viz = viz
         self.layout = nengo_viz.layout.Layout(self.viz.model)
-        if config is None:
-            config = self.find_config()
-        self.config = config
+        self.config = viz.config
         self.to_be_expanded = [self.viz.model]
+        self.to_be_sent = []
         self.uids = {}
         self.parents = {}
         self.networks_to_search = [self.viz.model]
-
-    def save_config(self):
-        filename = self.viz.viz.filename
-        with open(filename + '.cfg', 'w') as f:
-            f.write(self.config.dumps(self.uids, model=self.viz.model))
 
     def get_parents(self, uid):
         while uid not in self.parents:
@@ -79,33 +41,6 @@ class NetGraph(Component):
             parents.append(self.parents[parents[-1]])
         return parents
 
-    def find_config(self):
-        if self.viz.viz.filename is not None:
-            locals = dict(self.viz.viz.locals)
-            locals['config'] = Config()
-            config = locals['config']
-            config[self.viz.model].pos = (0, 0)
-            config[self.viz.model].size = 1.0, 1.0
-            try:
-                with open(self.viz.viz.filename + '.cfg') as f:
-                    config_code = f.readlines()
-                for line in config_code:
-                    try:
-                        exec line in locals
-                    except Exception as e:
-                        print('error parsing config', line)
-                        print(e)
-            except IOError:
-                pass
-        else:
-            config = NetGraph.configs.get(self.viz.model, None)
-            if config is None:
-                config = Config()
-                NetGraph.configs[self.viz.model] = config
-                config[self.viz.model].pos = (0, 0)
-                config[self.viz.model].size = 1.0, 1.0
-        return config
-
     def update_client(self, client):
         if len(self.to_be_expanded) > 0:
             self.viz.viz.lock.acquire()
@@ -115,10 +50,12 @@ class NetGraph(Component):
                 self.send_pan_and_zoom(client)
             self.viz.viz.lock.release()
         else:
-            pass
+            while len(self.to_be_sent) > 0:
+                info = self.to_be_sent.pop(0)
+                client.write(json.dumps(info))
 
     def javascript(self):
-        return 'new VIZ.NetGraph({parent:main, id:%(id)d});' % dict(id=id(self))
+        return 'new VIZ.NetGraph(main, {uid:"%s"});' % self.uid
 
     def message(self, msg):
         try:
@@ -137,37 +74,76 @@ class NetGraph(Component):
         net = self.uids[uid]
         self.to_be_expanded.append(net)
         self.config[net].expanded = True
-        self.save_config()
+        self.viz.viz.save_config()
 
     def act_collapse(self, uid):
         net = self.uids[uid]
         self.config[net].expanded = False
-        self.save_config()
+        self.viz.viz.save_config()
 
     def act_pan(self, x, y):
         self.config[self.viz.model].pos = x, y
-        self.save_config()
+        self.viz.viz.save_config()
 
     def act_zoom(self, scale, x, y):
         self.config[self.viz.model].size = scale, scale
         self.config[self.viz.model].pos = x, y
-        self.save_config()
+        self.viz.viz.save_config()
 
     def act_pos(self, uid, x, y):
         obj = self.uids[uid]
         self.config[obj].pos = x, y
-        self.save_config()
+        self.viz.viz.save_config()
 
     def act_size(self, uid, width, height):
         obj = self.uids[uid]
         self.config[obj].size = width, height
-        self.save_config()
+        self.viz.viz.save_config()
 
     def act_pos_size(self, uid, x, y, width, height):
         obj = self.uids[uid]
         self.config[obj].pos = x, y
         self.config[obj].size = width, height
-        self.save_config()
+        self.viz.viz.save_config()
+
+    def act_create_graph(self, uid, type, x, y, width, height):
+        cls = getattr(nengo_viz, type)
+        obj = self.uids[uid]
+        template = cls(obj)
+        self.viz.viz.generate_uid(template, prefix='_viz_')
+        self.config[template].x = x
+        self.config[template].y = y
+        self.config[template].width = width
+        self.config[template].height = height
+        self.viz.viz.save_config()
+
+        c = self.viz.add_template(template)
+        self.viz.changed = True
+        self.to_be_sent.append(dict(type='js', code=c.javascript()))
+
+    def act_feedforward_layout(self, uid):
+        if uid is None:
+            network = self.viz.model
+            #self.config[network].pos = 0.0, 0.0
+            #self.config[network].size = 1.0, 1.0
+            #self.to_be_sent.append(dict(type='pan',
+            #                            pan=self.config[network].pos))
+            #self.to_be_sent.append(dict(type='zoom',
+            #                            zoom=self.config[network].size[0]))
+        else:
+            network = self.uids[uid]
+        pos = self.layout.make_layout(network)
+        for obj, layout in pos.items():
+            self.config[obj].pos = layout['y'], layout['x']
+            self.config[obj].size = layout['h'] / 2, layout['w'] / 2
+
+            obj_uid = self.viz.viz.get_uid(obj)
+            self.to_be_sent.append(dict(type='pos_size',
+                                        uid=obj_uid,
+                                        pos=self.config[obj].pos,
+                                        size=self.config[obj].size))
+        self.config[network].has_layout = True
+        self.viz.viz.save_config()
 
     def expand_network(self, network, client):
         if not self.config[network].has_layout:
@@ -208,6 +184,13 @@ class NetGraph(Component):
                     parent=parent)
         if type == 'net':
             info['expanded'] = self.config[obj].expanded
+        if type == 'node' and obj.output is None:
+            info['passthrough'] = True
+        if type == 'ens' or type == 'node':
+            info['dimensions'] = obj.size_out
+
+        if nengo_viz.components.pointer.Pointer.can_apply(obj):
+            info['allow_pointer_plot'] = True
         client.write(json.dumps(info))
 
     def send_pan_and_zoom(self, client):

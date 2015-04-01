@@ -5,11 +5,11 @@
  * @params {dict} args - a set of constructor arguments (see VIZ.Component)
  * @params {int} args.n_sliders - the number of sliders to show
  */
-VIZ.Slider = function(args) {
-    VIZ.Component.call(this, args);
+VIZ.Slider = function(parent, args) {
+    VIZ.Component.call(this, parent, args);
     var self = this;
 
-    VIZ.set_transform(this.label, 0, -20);
+    VIZ.set_transform(this.label, 0, -30);
  
     /** a scale to map from values to pixels */
     this.scale = d3.scale.linear();
@@ -17,7 +17,8 @@ VIZ.Slider = function(args) {
     this.scale.range([0, args.height]);
     
     /** number of pixels high for the slider itself */
-    this.slider_height = 20;
+    this.slider_height = 30;
+    self.minHeight = 40;
     
     /** make the sliders */
     this.sliders = [];
@@ -26,17 +27,21 @@ VIZ.Slider = function(args) {
         this.sliders.push(slider);
         
         slider.index = i;
-        slider.div = document.createElement('div');
+        slider.div = document.createElement('button');
+        slider.div.className = 'btn btn-default';
+        slider.div.style.padding = '5px 0px';
+        slider.div.style.borderColor = '#666';
+        
         slider.value = args.start_value[i];
 
         /** Show the slider Value */
         var valueDisplay = document.createElement('p');
+        valueDisplay.classList.add('unselectable')
         valueDisplay.innerHTML = slider.value;
         slider.div.appendChild(valueDisplay);
 
         /** put the slider in the container */
         slider.div.style.position = 'fixed';
-        slider.div.classList.add('slider');
         this.div.appendChild(slider.div);
         slider.div.style.zIndex = 1;
         slider.div.slider = slider;
@@ -106,9 +111,9 @@ VIZ.Slider = function(args) {
             });
     }
 
+    this.guideline_width = 7;
     for (var i = 0; i<args.n_sliders;i++){
         /** show the guideline */
-        this.guideline_width = 5;
         var guideline = document.createElement('div');
         this.sliders[i].guideline = guideline;
         guideline.classList.add('guideline');
@@ -163,12 +168,18 @@ VIZ.Slider.prototype.set_value = function(slider_index, value) {
  * update visual display based when component is resized
  */
 VIZ.Slider.prototype.on_resize = function(width, height) {
+    if (width < this.minWidth) {
+        width = this.minWidth;
+    }
+    if (height < this.minHeight) {
+        height = this.minHeight;
+    };
     var N = this.sliders.length;
     this.scale.range([0, height]);
     for (var i in this.sliders) {
         var slider = this.sliders[i];
         /** figure out the size of the slider */
-        slider.div.style.width = width / N;
+        slider.div.style.width = width / N - 3;
         slider.div.style.height = this.slider_height;
 
         //subtract 2 from height for border
@@ -189,5 +200,42 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         slider.div.setAttribute('drag-y', y);
     }
     this.label.style.width = width;
+    this.width = width;
+    this.height = height;
+    this.div.style.width = width;
+    this.div.style.height= height;    
     
+};
+
+
+VIZ.Slider.prototype.generate_menu = function() {
+    var self = this;
+    var items = [];
+    items.push(['set range', function() {self.set_range();}]);
+
+    // add the parent's menu items to this
+    // TODO: is this really the best way to call the parent's generate_menu()?
+    return $.merge(items, VIZ.Component.prototype.generate_menu.call(this));
+};
+
+VIZ.Slider.prototype.set_range = function() {
+    var range = this.scale.domain();
+    var new_range = prompt('Set range', '' + range[1] + ',' + range[0]);
+    if (new_range !== null) {
+        new_range = new_range.split(',');
+        var min = parseFloat(new_range[1]);
+        var max = parseFloat(new_range[0]);
+        this.scale.domain([min, max]);
+        this.save_layout();
+    }
+    for (var i in this.sliders) {
+        this.set_value(i,this.sliders[i].value); 
+    }
+};
+
+VIZ.Slider.prototype.layout_info = function () {
+    var info = VIZ.Component.prototype.layout_info.call(this);
+    info.min_value = this.scale.domain()[1];
+    info.max_value = this.scale.domain()[0];
+    return info;
 };

@@ -1,4 +1,5 @@
 import nengo
+import nengo.spa
 import numpy as np
 import struct
 
@@ -6,15 +7,19 @@ from nengo_viz.components.component import Component
 
 
 class Pointer(Component):
-    def __init__(self, viz, obj, **kwargs):
-        super(Pointer, self).__init__(viz, **kwargs)
+    def __init__(self, viz, config, uid, obj):
+        super(Pointer, self).__init__(viz, config, uid)
         self.obj = obj
         self.label = viz.viz.get_label(obj)
         self.data = []
         self.override_target = None
+        self.vocab_out = obj.outputs['default'][1]
+        self.vocab_in = obj.inputs['default'][1]
+
+    def add_nengo_objects(self, viz):
         with viz.model:
-            output, self.vocab_out = obj.outputs['default']
-            input, self.vocab_in = obj.inputs['default']
+            output  = self.obj.outputs['default'][0]
+            input = self.obj.inputs['default'][0]
             self.node = nengo.Node(self.gather_data,
                                    size_in=self.vocab_out.dimensions,
                                    size_out=self.vocab_in.dimensions)
@@ -49,13 +54,9 @@ class Pointer(Component):
             client.write(data, binary=False)
 
     def javascript(self):
-        return ('new VIZ.Pointer({parent:main, sim:sim, '
-                'x:%(x)g, y:%(y)g, label:%(label)s, '
-                'width:%(width)g, height:%(height)g, id:%(id)d, '
-                '});' %
-                dict(x=self.x, y=self.y, width=self.width, height=self.height,
-                     id=id(self), label=`self.label`,
-                     ))
+        info = dict(uid=self.uid, label=self.label)
+        json = self.javascript_config(info)
+        return 'new VIZ.Pointer(main, sim, %s);' % json
 
     def message(self, msg):
         if len(msg) == 0:
@@ -65,3 +66,7 @@ class Pointer(Component):
                 self.override_target = self.vocab_out.parse(msg)
             except:
                 self.override_target = None
+
+    @staticmethod
+    def can_apply(obj):
+        return isinstance(obj, (nengo.spa.Buffer, nengo.spa.Memory))

@@ -28,8 +28,14 @@
 .play-pause-button {
     margin: -20px 15px 0 15px;
 }
+
+.play-pause-button span {
+    font-size: 30px;
+}
+
 .metrics-container {
     display: inline-block;
     margin: 20px 0;
+    margin-left: 50px;
 }
 

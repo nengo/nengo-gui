@@ -5,9 +5,9 @@ import struct
 from nengo_viz.components.component import Component
 
 
-class Value(Component):
+class XYValue(Component):
     def __init__(self, viz, config, uid, obj):
-        super(Value, self).__init__(viz, config, uid)
+        super(XYValue, self).__init__(viz, config, uid)
         self.obj = obj
         self.label = viz.viz.get_label(obj)
         self.data = []
@@ -16,7 +16,7 @@ class Value(Component):
 
     def add_nengo_objects(self, viz):
         with viz.model:
-            self.node = nengo.Node(self.gather_data, 
+            self.node = nengo.Node(self.gather_data,
                                    size_in=self.obj.size_out)
             self.conn = nengo.Connection(self.obj, self.node, synapse=None)
 
@@ -35,4 +35,4 @@ class Value(Component):
     def javascript(self):
         info = dict(uid=self.uid, n_lines=self.n_lines, label=self.label)
         json = self.javascript_config(info)
-        return 'new VIZ.Value(main, sim, %s);' % json
+        return 'new VIZ.XYValue(main, sim, %s);' % json
