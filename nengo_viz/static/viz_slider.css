@@ -1,9 +1,7 @@
-.slider {
-    background: #888888;
-}
-
 .guideline{
-	/*border: 1px solid rgb(255,255,255);*/
-	background-color: black;
-	z-index: -1;
+    background-color: #ddd;
+    z-index: -1;
+    
+    border: 1px solid #888;
+    border-radius: 4px;
 }

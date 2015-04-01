@@ -27,7 +27,6 @@ with model:
     nengo.Connection(result, a)
 
 
-import nengo_viz
-viz = nengo_viz.Viz(model, locals=locals(), filename=__file__)
-viz.value(result)
-viz.start()
+if __name__ == '__main__':
+    import nengo_viz
+    nengo_viz.Viz(__file__).start()

@@ -7,8 +7,6 @@ with model:
     ens = nengo.Ensemble(n_neurons=1000, dimensions=2)
     nengo.Connection(stimulus, ens)
 
-import nengo_viz
-viz = nengo_viz.Viz(model, locals=locals(), filename=__file__)
-viz.slider(stimulus)
-viz.value(ens)
-viz.start()
+if __name__ == '__main__':
+    import nengo_viz
+    nengo_viz.Viz(__file__).start()
