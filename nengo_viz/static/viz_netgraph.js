@@ -10,7 +10,7 @@ VIZ.NetGraph = function(parent, args) {
     this.scale = 1.0;          // global scaling factor
     this.offsetX = 0;          // global x,y pan offset 
     this.offsetY = 0;
-
+    
     this.svg_objects = {};     // dict of all VIZ.NetGraphItems, by uid
     this.svg_conns = {};       // dict of all VIZ.NetGraphConnections, by uid
 
@@ -28,11 +28,14 @@ VIZ.NetGraph = function(parent, args) {
     this.svg.style.width = '100%';
     this.svg.id = 'netgraph';
     this.svg.style.height = 'calc(100% - 80px)';
-    this.svg.style.position = 'fixed';
+    this.svg.style.position = 'fixed';    
 
     VIZ.netgraph = this.svg;
     parent.appendChild(this.svg);
     this.parent = parent;
+
+    this.old_width = $(this.svg).width();
+    this.old_height = $(this.svg).height();
     
     /** three separate layers, so that expanded networks are at the back,
      *  then connection lines, and then other items (nodes, ensembles, and
@@ -229,9 +232,15 @@ VIZ.NetGraph.prototype.create_connection = function(info) {
 VIZ.NetGraph.prototype.on_resize = function(event) {
     this.redraw();
     
-    VIZ.pan.cposn.lr.x = VIZ.pan.cposn.ul.x + $(this.svg).width() / this.scale;
-    VIZ.pan.cposn.lr.y = VIZ.pan.cposn.ul.y + $(this.svg).height() / this.scale;
+    console.log('redrawing graphs');
     VIZ.pan.redraw();
+    
+    var width = $(this.svg).width();
+    var height = $(this.svg).height();
+    
+    VIZ.scale.redraw_size(width / this.old_width, height / this.old_height);
+    this.old_width = width;
+    this.old_height = height;
 };
 
 

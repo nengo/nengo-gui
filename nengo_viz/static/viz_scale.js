@@ -74,3 +74,12 @@ VIZ.scale.zoom = function (wheel, event){
 		VIZ.Component.components[i].on_resize(w * change, h * change);
 	}
 }
+
+VIZ.scale.redraw_size = function(scale_x, scale_y) {
+    console.log([scale_x, scale_y]);
+	for (var i = 0; i < VIZ.Component.components.length; i++){
+		var w = VIZ.Component.components[i].width;
+		var h = VIZ.Component.components[i].height;
+		VIZ.Component.components[i].on_resize(w * scale_x, h * scale_y);
+	}
+}
