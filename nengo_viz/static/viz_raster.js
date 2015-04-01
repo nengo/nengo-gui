@@ -6,12 +6,12 @@
  * @param {int} args.n_neurons - number of neurons
  * @param {VIZ.SimControl} args.sim - the simulation controller
  */
-VIZ.Raster = function(args) {
-    VIZ.Component.call(this, args);
+VIZ.Raster = function(parent, sim, args) {
+    VIZ.Component.call(this, parent, args);
     var self = this;
 
     this.n_neurons = args.n_neurons || 1;
-    this.sim = args.sim;
+    this.sim = sim;
 
     /** for storing the accumulated data */
     this.data_store = new VIZ.DataStore(1, this.sim, 0);

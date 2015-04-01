@@ -1,13 +1,9 @@
+import json
+
 class Component(object):
-    def __init__(self, viz, x=None, y=None, width=100, height=100):
-        if x is None:
-            x = len(viz.components) * 20
-        if y is None:
-            y = len(viz.components) * 10
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
+    def __init__(self, viz, config, uid):
+        self.config = config
+        self.uid = uid
     def update_client(self, client):
         pass
     def message(self, msg):
@@ -16,5 +12,13 @@ class Component(object):
     def finish(self):
         pass
 
+    def add_nengo_objects(self, viz):
+        pass
+
     def remove_nengo_objects(self, viz):
         pass
+
+    def javascript_config(self, cfg):
+        for attr in self.config._clsparams.params:
+            cfg[attr] = getattr(self.config, attr)
+        return json.dumps(cfg)

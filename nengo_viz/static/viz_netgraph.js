@@ -6,7 +6,7 @@
  * @param {int} args.id - the id of the server-side NetGraph to connect to
  * @param {DOMElement} args.parent - the element to add this component to
  */
-VIZ.NetGraph = function(args) {
+VIZ.NetGraph = function(parent, args) {
     this.scale = 1.0;          // global scaling factor
     this.offsetX = 0;          // global x,y pan offset 
     this.offsetY = 0;
@@ -29,10 +29,10 @@ VIZ.NetGraph = function(args) {
     this.svg.id = 'netgraph';
     this.svg.style.height = 'calc(100% - 80px)';
     this.svg.style.position = 'fixed';
-    args.parent.appendChild(this.svg);
-    this.parent = args.parent;
 
     VIZ.netgraph = this.svg;
+    parent.appendChild(this.svg);
+    this.parent = parent;
     
     /** three separate layers, so that expanded networks are at the back,
      *  then connection lines, and then other items (nodes, ensembles, and
@@ -45,7 +45,7 @@ VIZ.NetGraph = function(args) {
     this.svg.appendChild(this.g_items);
     
     /** connect to server */
-    this.ws = VIZ.create_websocket(args.id);
+    this.ws = VIZ.create_websocket(args.uid);
     this.ws.onmessage = function(event) {self.on_message(event);}
 
     /** respond to resize events */
@@ -76,7 +76,7 @@ VIZ.NetGraph = function(args) {
      *  point in the space */
     interact(this.svg)
         .on('wheel', function(event) {
-            var x = (event.clientX / $(self.svg).width());
+            var x = (event.clientX / $(self.svg).width())
             var y = (event.clientY / $(self.svg).height());
 
             var step_size = 1.1; // size of zoom per wheel click
@@ -84,15 +84,11 @@ VIZ.NetGraph = function(args) {
             var delta = event.wheelDeltaY || -event.deltaY
             var scale = delta > 0 ? step_size : 1.0 / step_size; // will either be 1.1 or ~0.9
             
-            var w = self.get_scaled_width(); //gets original width & height
-            var h = self.get_scaled_height();
-            var dw = w * scale - w; 
-            var dh = h * scale - h;
+            var xx = x / self.scale - self.offsetX;
+            var yy = y / self.scale - self.offsetY;
+            self.offsetX = (self.offsetX + xx) / scale - xx;
+            self.offsetY = (self.offsetY + yy) / scale - yy;
             
-            // TODO: this math is not quite right
-            self.offsetX = self.offsetX / scale - (dw * x) / (w * scale);
-            self.offsetY = self.offsetY / scale - (dh * y) / (h * scale);
-                    
             self.scale = scale * self.scale;
 
             self.redraw();
@@ -104,8 +100,32 @@ VIZ.NetGraph = function(args) {
     //Get those pan/zoom event listeners up and running
     VIZ.pan.events();
     VIZ.scale.events();
+
+    this.menu = new VIZ.Menu(self.parent);
+
+    interact(this.svg)
+        .on('tap', function(event) {
+            if (event.button == 0) {
+                if (self.menu.visible_any()) {
+                    self.menu.hide_any();
+                } else {
+                    self.menu.show(event.clientX, event.clientY, 
+                                   self.generate_menu());
+                }
+                event.stopPropagation();  
+            }
+        });
 };
 
+VIZ.NetGraph.prototype.generate_menu = function() {
+    var self = this;
+    var items = [];
+    items.push(['auto-layout', 
+                function() {self.notify({act:"feedforward_layout",
+                            uid:null});}]);
+    return items;
+
+}
 
 /** Event handler for received WebSocket messages */
 VIZ.NetGraph.prototype.on_message = function(event) {
@@ -122,6 +142,16 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         this.set_offset(data.pan[0], data.pan[1]);
     } else if (data.type === 'zoom') {
         this.set_scale(data.zoom);
+    } else if (data.type === 'pos_size') {
+        var item = this.svg_objects[data.uid];
+        item.set_position(data.pos[0], data.pos[1]);
+        item.set_size(data.size[0], data.size[1]);
+    } else if (data.type === 'js') {
+        console.log(data.code);
+        eval(data.code);
+    } else {
+        console.log('invalid message');
+        console.log(data);
     }
 };  
 
