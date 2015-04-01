@@ -9,6 +9,18 @@ VIZ.set_transform = function(element, x, y) {
         element.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
 }
 
+/**
+ * Create a WebSocket connection to the given id
+ */
+VIZ.create_websocket = function(uid) {
+    var parser = document.createElement('a');
+    parser.href = document.URL;
+    var ws_url = 'ws://' + parser.host + '/viz_component?uid=' + uid;
+    var ws = new WebSocket(ws_url);
+    ws.binaryType = "arraybuffer";
+    return ws;
+};
+
 /** 
  * Base class for interactive visualization
  * @constructor
@@ -118,9 +130,7 @@ VIZ.Component = function(parent, args) {
     /** Open a WebSocket to the server */
     this.uid = args.uid;
     if (this.uid != undefined) {
-        this.ws = new WebSocket('ws://localhost:8080/viz_component?uid=' + 
-                                this.uid);
-        this.ws.binaryType = "arraybuffer";
+        this.ws = VIZ.create_websocket(this.uid);
         this.ws.onmessage = function(event) {self.on_message(event);}
     }
 
