@@ -72,8 +72,8 @@ VIZ.Component = function(parent, args) {
         this.hide_label();
     }
 
-    self.minWidth = 0;
-    self.minHeight = 0;
+    self.minWidth = 2;
+    self.minHeight = 2;
 
     /** Move element to be drawn on top when clicked on */
     VIZ.max_zindex = 0;
@@ -90,11 +90,6 @@ VIZ.Component = function(parent, args) {
     interact(this.div)
         .draggable({
             inertia: true,
-            restrict: {
-                restriction: "parent",
-                endOnly: true,
-                elementRect: {top: 0, left: 0, bottom: 1, right: 1 }
-            },
             onmove: function (event) {
                 var target = event.target;
                 var holde = $(target).css('transform').match(/(-?[0-9\.]+)/g); //Ugly method of finding the transform currently
