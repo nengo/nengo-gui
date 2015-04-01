@@ -1,4 +1,5 @@
 VIZ.scale = {};
+VIZ.scale.cumulative = 1;
 
 //A posn is an object with {x: int , y: int}
 
@@ -9,49 +10,46 @@ VIZ.scale.events = function (){
 		var step_size = 1.1;
 		var wheel = event.wheelDelta / 120;
 		wheel = wheel < 0 ? step_size : 1.0 / step_size;
-		console.log(wheel);
-		var screen_px = $('#netgraph').width();
 
-		var dif_x_one = VIZ.pan.cposn.lr.x - VIZ.pan.cposn.ul.x;
+		VIZ.scale.cumulative *= wheel;
+		console.log(VIZ.scale.cumulative)
+		//////////////////////////////////
+		var screen_px_x = $('#netgraph').width();
 
-		var k = screen_px / dif_x_one;
+		var cord_width = VIZ.pan.cposn.lr.x - VIZ.pan.cposn.ul.x; 
 
-		var mouse_cords = (event.offsetX * dif_x_one / screen_px) + VIZ.pan.cposn.ul.x;
+		var scale_x = screen_px_x / cord_width;
 
-		var post_width_in_cords = dif_x_one * wheel;
+		var mouse_cord_x = (event.offsetX * cord_width / screen_px_x) + VIZ.pan.cposn.ul.x;
 
-		var j = screen_px / post_width_in_cords;
+		var post_cord_width = cord_width * wheel;
 
-		var new_urx = (mouse_cords - (k * mouse_cords - k * VIZ.pan.cposn.ul.x) / j); 
+		var post_scale_x = screen_px_x / post_cord_width;
+
+		var new_urx = (mouse_cord_x - (scale_x * mouse_cord_x - scale_x * VIZ.pan.cposn.ul.x) / post_scale_x); 
 		
 		////////////////////////////
 
 		var screen_px_y = $('#netgraph').height();
 
-		var cord_height = VIZ.pan.cposn.lr.y - VIZ.pan.cposn.ul.y; // dif_x_one_y
+		var cord_height = VIZ.pan.cposn.lr.y - VIZ.pan.cposn.ul.y; 
 
-		var scale_y = screen_px_y / cord_height; //ky
+		var scale_y = screen_px_y / cord_height; 
 
 		var mouse_cord_y = (event.offsetY * cord_height / screen_px_y) + VIZ.pan.cposn.ul.y;
 
 		var post_cord_height = cord_height * wheel;
 
-		var post_scale_y = screen_px_y / post_cord_height; //ky
+		var post_scale_y = screen_px_y / post_cord_height; 
 
-		var new_ury = (mouse_cord_y - (scale_y * mouse_cord_y - scale_y * VIZ.pan.cposn.ul.y) / post_scale_y) 
+		var new_ury = (mouse_cord_y - (scale_y * mouse_cord_y - scale_y * VIZ.pan.cposn.ul.y) / post_scale_y);
 
 		////////////////////////////////////////////////////
 
 		VIZ.pan.cposn.ul.x = new_urx;
 		VIZ.pan.cposn.ul.y = new_ury;
-		VIZ.pan.cposn.lr.x = new_urx + post_width_in_cords;
+		VIZ.pan.cposn.lr.x = new_urx + post_cord_width;
 		VIZ.pan.cposn.lr.y = new_ury + post_cord_height;
-		console.log(mouse_cords, mouse_cord_y);
 		VIZ.pan.redraw();
 	});
 }
-
-
-//setTimeout(init,1000);
-
-

@@ -26,7 +26,6 @@ VIZ.pan.events = function () {
 										 //Used for storing the initial x and y points of the mouse when panning
 		})
 		.mousemove(function(event) {// Listens for mouse movement
-			console.log(event);
 			if (VIZ.pan.enabled) { // Checks if panning is allowed
 			    var deltaX = event.pageX - VIZ.pan.iposn.x; // Calculates differences using initial x and y reference points
 			    var deltaY = event.pageY - VIZ.pan.iposn.y;
@@ -42,7 +41,6 @@ VIZ.pan.events = function () {
 	// When dragging and mouse goes over a graph, it will continue dragging
 	$(".graph")
 		.mousemove(function(event) {// Listens for mouse movement
-			console.log(event);
 			if (VIZ.pan.enabled) { // Checks if panning is allowed
 			    var deltaX = event.pageX - VIZ.pan.iposn.x; // Calculates differences using initial x and y reference points
 			    var deltaY = event.pageY - VIZ.pan.iposn.y;
