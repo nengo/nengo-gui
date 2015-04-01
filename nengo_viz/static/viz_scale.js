@@ -19,14 +19,14 @@ VIZ.scale.zoom = function (wheel, event){
 	VIZ.scale.cumulative *= wheel;
 
 	if (event === undefined) {
-		var offsetX = 0;
-		var offsetY = 0;
+		var offsetX = VIZ.pan.cposn.ul.x;
+		var offsetY = VIZ.pan.cposn.ul.y;
 	}
 	else{
 		var offsetX = event.offsetX;
 		var offsetY = event.offsetY;
 	}
-	
+
 	////////////////////////////////// X scaling
 	var screen_px_x = $('#netgraph').width();
 
