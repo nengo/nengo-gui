@@ -12,7 +12,7 @@ VIZ.pan.enabled = false;
 //Used for storing the cumulative x and y panning of the model
 
 
-function init_main_events() {
+VIZ.pan.events = function () {
 	VIZ.pan.cposn = {	ul:{x:0, y:0}, 
 						lr:{x:$('#netgraph').width(), y:$('#netgraph').height()}
 					}
@@ -110,4 +110,4 @@ VIZ.pan.redraw = function() {
 }
 
 //Get those main event listeners up and running
-setTimeout(function(){init_main_events();},100);
+//setTimeout(function(){init_main_events();},100);

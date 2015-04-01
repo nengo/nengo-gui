@@ -99,6 +99,9 @@ VIZ.NetGraph = function(args) {
             self.notify({act:"zoom", scale:self.scale, 
                          x:self.offsetX, y:self.offsetY});
         });
+    //Get those pan/zoom event listeners up and running
+    VIZ.pan.events();
+    VIZ.scale.events();
 };
 
 
