@@ -6,8 +6,10 @@
  * @params {int} args.n_sliders - the number of sliders to show
  */
 VIZ.Slider = function(args) {
+
     VIZ.Component.call(this, args);
     var self = this;
+    VIZ.shown_components.push(this);
 
     VIZ.set_transform(this.label, 0, -20);
  
@@ -164,6 +166,12 @@ VIZ.Slider.prototype.set_value = function(slider_index, value) {
  * update visual display based when component is resized
  */
 VIZ.Slider.prototype.on_resize = function(width, height) {
+    if (width < this.minWidth) {
+        width = this.minWidth;
+    }
+    if (height < this.minHeight) {
+        height = this.minHeight;
+    };
     var N = this.sliders.length;
     this.scale.range([0, height]);
     for (var i in this.sliders) {
@@ -190,5 +198,8 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         slider.div.setAttribute('drag-y', y);
     }
     this.label.style.width = width;
-    
+    this.width = width;
+    this.height = height;
+    this.div.style.width = width;
+    this.div.style.height= height;    
 };

@@ -7,9 +7,9 @@ VIZ.scale.cumulative = 1;
 
 VIZ.scale.events = function (){
 	document.getElementById('netgraph').addEventListener('mousewheel', function (event){
-		var step_size = 1.1;
+		VIZ.scale.step_size = 1.1;
 		var wheel = event.wheelDelta / 120;
-		wheel = wheel < 0 ? step_size : 1.0 / step_size;
+		wheel = wheel < 0 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size;
 		VIZ.scale.zoom(wheel, event);
 	});
 }
@@ -65,4 +65,14 @@ VIZ.scale.zoom = function (wheel, event){
 	VIZ.pan.cposn.lr.x = new_urx + post_cord_width;
 	VIZ.pan.cposn.lr.y = new_ury + post_cord_height;
 	VIZ.pan.redraw();
+	for (var i = 0; i < VIZ.shown_components.length; i++){
+		var w = VIZ.shown_components[i].width
+		var h = VIZ.shown_components[i].height
+
+		console.log(i, h, w)
+
+		var change = wheel < 1 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size;
+		console.log(wheel);
+		VIZ.shown_components[i].on_resize(w * change, h * change);
+	}
 }

@@ -1,6 +1,8 @@
 /** namespace for all Nengo visualization */
 var VIZ = {};
 
+VIZ.shown_components = [];
+
 /**
  * Helper function to set the transform of an element.
  */
@@ -48,6 +50,8 @@ VIZ.Component = function(args) {
     this.div = document.createElement('div');
     this.div.style.width = args.width;
     this.div.style.height = args.height;
+    this.width = args.width;
+    this.height = args.height;
     VIZ.set_transform(this.div, args.x, args.y);
     this.div.style.position = 'fixed';
     this.div.classList.add('graph');
@@ -118,6 +122,10 @@ VIZ.Component = function(args) {
             if (newHeight < self.minHeight){
                 newHeight = self.minHeight;
             }
+            console.log(self);
+
+            self.width = newWidth;
+            self.height = newHeight;
             target.style.width  = newWidth + 'px';
             target.style.height = newHeight + 'px';
             self.on_resize(newWidth, newHeight);

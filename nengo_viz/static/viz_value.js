@@ -12,7 +12,7 @@
 VIZ.Value = function(args) {
     VIZ.Component.call(this, args);
     var self = this;
-
+    VIZ.shown_components.push(this);
     this.n_lines = args.n_lines || 1;
     this.sim = args.sim;
     this.display_time = args.display_time;
@@ -149,6 +149,12 @@ VIZ.Value.prototype.update = function() {
  * Adjust the graph layout due to changed size
  */
 VIZ.Value.prototype.on_resize = function(width, height) {
+    if (width < this.minWidth) {
+        width = this.minWidth;
+    }
+    if (height < this.minHeight) {
+        height = this.minHeight;
+    };
     this.scale_x.range([this.margin_left, width - this.margin_right]);
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
 
@@ -175,5 +181,9 @@ VIZ.Value.prototype.on_resize = function(width, height) {
     this.update();
     
     this.label.style.width = width;
-    
+
+    this.width = width;
+    this.height = height;
+    this.div.style.width = width;
+    this.div.style.height= height;
 };
