@@ -11,6 +11,7 @@ VIZ.Pointer = function(parent, sim, args) {
     var self = this;
 
     this.sim = sim;
+    VIZ.shown_components.push(this);
         
     this.pdiv = document.createElement('div');
     this.pdiv.style.width = args.width;
@@ -147,6 +148,13 @@ VIZ.Pointer.prototype.update = function() {
  * Adjust the graph layout due to changed size
  */
 VIZ.Pointer.prototype.on_resize = function(width, height) {
+    if (width < this.minWidth) {
+        width = this.minWidth;
+    }
+    if (height < this.minHeight) {
+        height = this.minHeight;
+    };
+
     this.width = width;
     this.height = height;
 

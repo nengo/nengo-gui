@@ -1,6 +1,8 @@
 /** namespace for all Nengo visualization */
 var VIZ = {};
 
+VIZ.shown_components = [];
+
 /**
  * Helper function to set the transform of an element.
  */
@@ -48,6 +50,8 @@ VIZ.Component = function(parent, args) {
     this.div = document.createElement('div');
     this.div.style.width = args.width;
     this.div.style.height = args.height;
+    this.width = args.width;
+    this.height = args.height;
     VIZ.set_transform(this.div, args.x, args.y);
     this.div.style.position = 'fixed';
     this.div.classList.add('graph');
@@ -66,8 +70,8 @@ VIZ.Component = function(parent, args) {
         this.hide_label();
     }
 
-    self.minWidth = 20;
-    self.minHeight = 20;
+    self.minWidth = 0;
+    self.minHeight = 0;
 
     /** Move element to be drawn on top when clicked on */
     VIZ.max_zindex = 0;
@@ -110,7 +114,7 @@ VIZ.Component = function(parent, args) {
     /** Allow element to be resized */ 
     interact(this.div)
         .resizable({
-            edges: { left: true, right: true, bottom: true, top: true }
+            edges: { left: true, top: true, right: true, bottom: true }
             })
         .on('resizemove', function(event) {
             var target = event.target;
@@ -126,6 +130,13 @@ VIZ.Component = function(parent, args) {
             }
             target.style.width  = newWidth + 'px';
             target.style.height = newHeight + 'px';
+
+            var scale = cord_per_px(VIZ.pan.cposn);
+
+            var x = parseFloat(target.getAttribute('data-x')) + dx * scale.x;
+            var y = parseFloat(target.getAttribute('data-y')) + dy * scale.y;
+            target.setAttribute('data-x', x);
+            target.setAttribute('data-y', y);
             self.on_resize(newWidth, newHeight);
             VIZ.pan.redraw();          
             
