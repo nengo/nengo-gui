@@ -20,33 +20,31 @@ function init(){
 
 		var j = screen_px / post_width_in_cords;
 
-		var new_urx = (mouse_cords - (k*mouse_cords - k*VIZ.pan.cposn.ul.x)/j) 
+		var new_urx = (mouse_cords - (k * mouse_cords - k * VIZ.pan.cposn.ul.x) / j); 
 		
 		////////////////////////////
 
-		var screen_pxy = $('#netgraph').height();
+		var screen_px_y = $('#netgraph').height();
 
-		var dif_x_oney = VIZ.pan.cposn.lr.y - VIZ.pan.cposn.ul.y;
+		var cord_height = VIZ.pan.cposn.lr.y - VIZ.pan.cposn.ul.y; // dif_x_one_y
 
-		var ky = screen_pxy / dif_x_oney;
+		var scale_y = screen_px_y / cord_height; //ky
 
-		var mouse_cordsy = (event.offsetY * dif_x_oney / screen_pxy) + VIZ.pan.cposn.ul.y;
+		var mouse_cord_y = (event.offsetY * cord_height / screen_px_y) + VIZ.pan.cposn.ul.y;
 
-		var post_height_in_cords = dif_x_oney * wheel;
+		var post_cord_height = cord_height * wheel;
 
-		var jy = screen_pxy / post_height_in_cords;
+		var post_scale_y = screen_px_y / post_cord_height; //ky
 
-		var new_ury = (mouse_cordsy - (ky*mouse_cordsy - ky*VIZ.pan.cposn.ul.y)/jy) 
-
-		//(mouse_cordsy + ky*(-mouse_cordsy + VIZ.pan.cposn.ul.y)/jy) 
+		var new_ury = (mouse_cord_y - (scale_y * mouse_cord_y - scale_y * VIZ.pan.cposn.ul.y) / post_scale_y) 
 
 		////////////////////////////////////////////////////
 
 		VIZ.pan.cposn.ul.x = new_urx;
 		VIZ.pan.cposn.ul.y = new_ury;
 		VIZ.pan.cposn.lr.x = new_urx + post_width_in_cords;
-		VIZ.pan.cposn.lr.y = new_ury + post_height_in_cords;
-		console.log(mouse_cords, mouse_cordsy);
+		VIZ.pan.cposn.lr.y = new_ury + post_cord_height;
+		console.log(mouse_cords, mouse_cord_y);
 		VIZ.pan.redraw();
 
 
