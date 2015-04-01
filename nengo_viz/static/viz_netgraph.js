@@ -172,6 +172,8 @@ VIZ.NetGraph.prototype.set_offset = function(x, y) {
     var dx = VIZ.pan.cposn.ul.x - x * this.get_scaled_width();
     var dy = VIZ.pan.cposn.ul.y - y * this.get_scaled_height();
     VIZ.pan.shift(-dx, -dy);
+    
+    console.log('set_offset')
 }
 
 
@@ -184,6 +186,7 @@ VIZ.NetGraph.prototype.set_scale = function(scale) {
     VIZ.pan.cposn.lr.x = VIZ.pan.cposn.ul.x + $(this.svg).width() / scale;
     VIZ.pan.cposn.lr.y = VIZ.pan.cposn.ul.y + $(this.svg).height() / scale;
     VIZ.pan.redraw();
+    console.log('set_scale')
 }
 
 

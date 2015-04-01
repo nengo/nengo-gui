@@ -13,13 +13,15 @@ VIZ.pan.enabled = false;
 
 
 VIZ.pan.events = function () {
-	VIZ.pan.cposn = {	ul:{x:0, y:0}, 
-						lr:{x:$('#netgraph').width(), y:$('#netgraph').height()}
-					}
+    if (VIZ.pan.cposn === undefined) {
+        VIZ.pan.cposn = {	ul:{x:0, y:0}, 
+                            lr:{x:$('#netgraph').width(), y:$('#netgraph').height()}
+                        }
+    }
+    
 	//allows dragging on the netgraph
 	$(".netgraph")
 		.mousedown(function(event) { //Listens for mousedown
-            console.log('mousedown');
 			if (event.target == $('.netgraph')[0]) { //Checks that you have indeed clicked the #main element
 				VIZ.pan.enabled = true; //Enables panning
 			}
@@ -37,8 +39,6 @@ VIZ.pan.events = function () {
 		})
 		.mouseup(function() {// Listens for mouseup
             if (VIZ.pan.enabled) {
-                console.log('saving');
-                VIZ.Component.save_components();
                 VIZ.pan.enabled = false;//Disables panning
             }
 		});
@@ -56,7 +56,6 @@ VIZ.pan.events = function () {
 		})
 		.mouseup(function() {// Listens for mouseup
             if (VIZ.pan.enabled) {
-                VIZ.Component.save_components();
                 VIZ.pan.enabled = false;//Disables panning
             }
 		});
@@ -111,6 +110,23 @@ function cord_map(scrn, posn) {
 	 	y: (px_height / cord_height * (posn.y - scrn.ul.y))
 	 };
 }
+
+function map_px_to_cord(scrn, px) {
+	var cord_width = scrn.lr.x - scrn.ul.x;
+
+	var cord_height = scrn.lr.y - scrn.ul.y;
+
+	var px_width = $('#netgraph').width();
+
+	var px_height = $('#netgraph').height();
+
+	return {
+		x: scrn.ul.x + px.x * (cord_width / px_width),
+		y: scrn.ul.y + px.y * (cord_height / px_height),
+	 };
+}
+    
+
 
 function cord_per_px(scrn) {
 	var cord_width = scrn.lr.x - scrn.ul.x;
