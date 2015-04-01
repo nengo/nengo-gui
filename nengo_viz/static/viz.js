@@ -1,8 +1,6 @@
 /** namespace for all Nengo visualization */
 var VIZ = {};
 
-VIZ.shown_components = [];
-
 /**
  * Helper function to set the transform of an element.
  */
@@ -52,7 +50,10 @@ VIZ.Component = function(parent, args) {
     this.div.style.height = args.height;
     this.width = args.width;
     this.height = args.height;
-    VIZ.set_transform(this.div, args.x, args.y);
+    
+    var transform_val = cord_map(VIZ.pan.cposn, {x:args.x, y:args.y});
+	VIZ.set_transform(this.div, transform_val.x, transform_val.y);
+    
     this.div.style.position = 'fixed';
     this.div.classList.add('graph');
     parent.appendChild(this.div);
@@ -122,14 +123,14 @@ VIZ.Component = function(parent, args) {
             var newHeight = event.rect.height;
             var dx = event.deltaRect.left;
             var dy = event.deltaRect.top;
-            if (newWidth < self.minWidth){
-                newWidth = self.minWidth;
-            }
-            if (newHeight < self.minHeight){
-                newHeight = self.minHeight;
-            }
-            target.style.width  = newWidth + 'px';
-            target.style.height = newHeight + 'px';
+            //if (newWidth < self.minWidth){
+            //    newWidth = self.minWidth;
+            //}
+            //if (newHeight < self.minHeight){
+            //    newHeight = self.minHeight;
+            //}
+            //target.style.width  = newWidth + 'px';
+            //target.style.height = newHeight + 'px';
 
             var scale = cord_per_px(VIZ.pan.cposn);
 
@@ -213,7 +214,7 @@ VIZ.Component.prototype.remove = function() {
     this.ws.send('remove');
     this.parent.removeChild(this.div);
     var index = VIZ.Component.components.indexOf(this);
-    VIZ.Component.components.splive(index, 1);
+    VIZ.Component.components.splice(index, 1);
 }
 
 

@@ -12,7 +12,6 @@
 VIZ.Value = function(parent, sim, args) {
     VIZ.Component.call(this, parent, args);
     var self = this;
-    VIZ.shown_components.push(this);
     this.n_lines = args.n_lines || 1;
     this.sim = sim;
     this.display_time = args.display_time;

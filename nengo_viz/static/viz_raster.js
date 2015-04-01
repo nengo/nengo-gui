@@ -9,7 +9,6 @@
 VIZ.Raster = function(parent, sim, args) {
     VIZ.Component.call(this, parent, args);
     var self = this;
-    VIZ.shown_components.push(this);
     this.n_neurons = args.n_neurons || 1;
     this.sim = sim;
 

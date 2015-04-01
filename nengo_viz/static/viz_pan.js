@@ -19,6 +19,7 @@ VIZ.pan.events = function () {
 	//allows dragging on the netgraph
 	$(".netgraph")
 		.mousedown(function(event) { //Listens for mousedown
+            console.log('mousedown');
 			if (event.target == $('.netgraph')[0]) { //Checks that you have indeed clicked the #main element
 				VIZ.pan.enabled = true; //Enables panning
 			}
@@ -125,7 +126,7 @@ function cord_per_px(scrn) {
 }
 
 VIZ.pan.redraw = function() {
-	$('.graph').each(function(i, element){ // Get all the graph elements\
+	$('.graph').each(function(i, element){ // Get all the graph elements
 		var transform_val = cord_map(VIZ.pan.cposn, VIZ.get_cords(element));
 		VIZ.set_transform(element, transform_val.x, transform_val.y);
 	});

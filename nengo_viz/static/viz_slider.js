@@ -8,7 +8,6 @@
 VIZ.Slider = function(parent, args) {
     VIZ.Component.call(this, parent, args);
     var self = this;
-    VIZ.shown_components.push(this);
 
     VIZ.set_transform(this.label, 0, -30);
  

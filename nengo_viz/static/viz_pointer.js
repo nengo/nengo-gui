@@ -11,7 +11,6 @@ VIZ.Pointer = function(parent, sim, args) {
     var self = this;
 
     this.sim = sim;
-    VIZ.shown_components.push(this);
         
     this.pdiv = document.createElement('div');
     this.pdiv.style.width = args.width;
