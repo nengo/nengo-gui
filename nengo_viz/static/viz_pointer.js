@@ -156,6 +156,8 @@ VIZ.Pointer.prototype.on_resize = function(width, height) {
 
     this.width = width;
     this.height = height;
+    this.div.style.width = width;
+    this.div.style.height = height;
 
     this.label.style.width = width;
     
