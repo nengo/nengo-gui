@@ -137,6 +137,10 @@ VIZ.XYValue.prototype.on_resize = function(width, height) {
     this.axis_x_g.call(this.axis_x);         
     
     this.label.style.width = width;
+    this.width = width;
+    this.height = height;
+    this.div.style.width = width;
+    this.div.style.height = height;
     
 };
 
