@@ -17,7 +17,7 @@ class NameFinder(object):
 
         base_lists = ['ensembles', 'nodes', 'connections', 'networks']
         all_lists = ['all_ensembles', 'all_nodes', 'all_connections',
-                     'all_networks', 'all_objects']
+                     'all_networks', 'all_objects', 'all_probes']
 
         classes = (nengo.Node, nengo.Ensemble, nengo.Network,
                    nengo.Connection)
@@ -27,7 +27,7 @@ class NameFinder(object):
                 v = getattr(net, k)
                 if isinstance(v, list):
                     for i, obj in enumerate(v):
-                        if not self.known_name.has_key(obj):
+                        if obj not in self.known_name:
                             n = '%s.%s[%d]' % (net_name, k, i)
                             self.known_name[obj] = n
                 elif isinstance(v, classes):
