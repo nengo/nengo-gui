@@ -17,6 +17,10 @@ class Server(swi.SimpleWebInterface):
         data = pkgutil.get_data('nengo_viz', fn)
         return (mimetype, data)
 
+    def swi_favicon_ico(self):
+        icon = pkgutil.get_data('nengo_viz', 'static/favicon.ico')
+        return ('image/ico', icon)
+
     def swi(self):
         """Handles http://host:port/ by giving the main page"""
         # create a new simulator
