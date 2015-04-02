@@ -140,6 +140,20 @@ VIZ.NetGraphConnection.prototype.remove = function() {
         }
         this.parent.child_connections.splice(index, 1);    
     }
+    
+    var index = this.pre.conn_out.indexOf(this);
+    if (index === -1) {
+        console.log('error removing from conn_out');
+    }
+    this.pre.conn_out.splice(index, 1);    
+
+    var index = this.post.conn_in.indexOf(this);
+    if (index === -1) {
+        console.log('error removing from conn_in');
+    }
+    this.post.conn_in.splice(index, 1);    
+
+    
     this.ng.g_conns.removeChild(this.g);
     this.removed = true;
 
