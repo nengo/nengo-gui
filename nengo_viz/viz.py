@@ -28,7 +28,9 @@ class VizSim(object):
             self.add_template(template)
 
         # build and run the model in a separate thread
-        threading.Thread(target=self.runner).start()
+        t = threading.Thread(target=self.runner)
+        t.daemon = True
+        t.start()
 
     def add_template(self, template):
         c = template.create(self)
