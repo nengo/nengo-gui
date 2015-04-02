@@ -2,8 +2,6 @@
 
 VIZ.pan = {};
 
-VIZ.pan.enabled = false;
-
 /*A Posn is an object with:
  posn.x - int 
  posn.y - int
@@ -18,58 +16,15 @@ VIZ.pan.events = function () {
                             lr:{x:$('#netgraph').width(), y:$('#netgraph').height()}
                         }
     }
-    
-	//allows dragging on the netgraph
-	$(".netgraph")
-		.mousedown(function(event) { //Listens for mousedown
-			if (event.target == $('.netgraph')[0]) { //Checks that you have indeed clicked the #main element
-				VIZ.pan.enabled = true; //Enables panning
-			}
-			VIZ.pan.iposn = {x:event.pageX, y:event.pageY}; //Gets the starting point of your mouse
-										 //Used for storing the initial x and y points of the mouse when panning
-		})
-		.mousemove(function(event) {// Listens for mouse movement
-			if (VIZ.pan.enabled) { // Checks if panning is allowed
-			    var deltaX = event.pageX - VIZ.pan.iposn.x; // Calculates differences using initial x and y reference points
-			    var deltaY = event.pageY - VIZ.pan.iposn.y;
-			    VIZ.pan.iposn.x = event.pageX; // Updates initial reference points
-			    VIZ.pan.iposn.y = event.pageY;
-			    VIZ.pan.shift(deltaX, deltaY); // Call the pan function with the differences that should be made
-			}
-		})
-		.mouseup(function() {// Listens for mouseup
-            if (VIZ.pan.enabled) {
-                VIZ.pan.enabled = false;//Disables panning
-            }
-		});
-
-	// When dragging and mouse goes over a graph, it will continue dragging
-	$(".graph")
-		.mousemove(function(event) {// Listens for mouse movement
-			if (VIZ.pan.enabled) { // Checks if panning is allowed
-			    var deltaX = event.pageX - VIZ.pan.iposn.x; // Calculates differences using initial x and y reference points
-			    var deltaY = event.pageY - VIZ.pan.iposn.y;
-			    VIZ.pan.iposn.x = event.pageX; // Updates initial reference points
-			    VIZ.pan.iposn.y = event.pageY;
-			    VIZ.pan.shift(deltaX, deltaY); // Call the pan function with the differences that should be made
-			}
-		})
-		.mouseup(function() {// Listens for mouseup
-            if (VIZ.pan.enabled) {
-                VIZ.pan.enabled = false;//Disables panning
-            }
-		});
-	}
+}
 
 /*Pass this function the amount of change you want to apply to the screen*/
 VIZ.pan.shift = function(dx,dy) {
 	var cpp = cord_per_px(VIZ.pan.cposn)
-	//console.log(cpp.x, cpp.y);
 	VIZ.pan.cposn.ul.x -= dx * cpp.x;
 	VIZ.pan.cposn.ul.y -= dy * cpp.y;
 	VIZ.pan.cposn.lr.x -= dx * cpp.x;
 	VIZ.pan.cposn.lr.y -= dy * cpp.y;
-	//console.log(VIZ.pan.cposn.ul, VIZ.pan.cposn.lr);
 	// Replace this part with a redraw using coords instead 
 	VIZ.pan.redraw();
 

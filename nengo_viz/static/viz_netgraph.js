@@ -62,6 +62,7 @@ VIZ.NetGraph = function(parent, args) {
     interact(this.svg)
         .draggable({
             onmove: function(event) {
+                VIZ.pan.shift(event.dx, event.dy);
                 self.offsetX += event.dx / self.get_scaled_width();
                 self.offsetY += event.dy / self.get_scaled_height();
                 for (var key in self.svg_objects) {
