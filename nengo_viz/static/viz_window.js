@@ -11,6 +11,7 @@ window.addEventListener('load',
                 var from = e.relatedTarget || e.toElement;
                 if (!from || from.nodeName == "HTML") {
                     $(main).trigger('mouseup'); // When the mouse leaves the #netgraph element, trigger the mouseup event
+                    $('.netgraph').trigger('mouseup');
                 }
             }
             )

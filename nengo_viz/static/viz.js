@@ -46,13 +46,13 @@ VIZ.Component = function(parent, args) {
 
     /** Create the div for the component and position it */
     this.div = document.createElement('div');
+    
     this.div.style.width = args.width;
     this.div.style.height = args.height;
     this.width = args.width;
     this.height = args.height;
-    
-    console.log(VIZ.pan.cposn.ul.x);
-    var transform_val = cord_map(VIZ.pan.cposn, {x:args.x, y:args.y});
+
+    var transform_val = cord_map(VIZ.pan.screen, {x:args.x, y:args.y});
 	VIZ.set_transform(this.div, transform_val.x, transform_val.y);
     
     this.div.style.position = 'fixed';
@@ -95,8 +95,7 @@ VIZ.Component = function(parent, args) {
                 var holde = $(target).css('transform').match(/(-?[0-9\.]+)/g); //Ugly method of finding the transform currently
                 var x = Number(holde[4]) + event.dx; //Adjusting position relative to current transform
                 var y = Number(holde[5]) + event.dy;
-                var scale = cord_per_px(VIZ.pan.cposn)
-                console.log(scale);
+                var scale = cord_per_px(VIZ.pan.screen)
                 var datax = parseFloat(target.getAttribute('data-x')) + event.dx * scale.x; //Adjusting coordinate independently of position on screen
                 var datay = parseFloat(target.getAttribute('data-y')) + event.dy * scale.y;
                 VIZ.set_transform(target, x, y);
@@ -128,7 +127,7 @@ VIZ.Component = function(parent, args) {
             //target.style.width  = newWidth + 'px';
             //target.style.height = newHeight + 'px';
 
-            var scale = cord_per_px(VIZ.pan.cposn);
+            var scale = cord_per_px(VIZ.pan.screen);
 
             var x = parseFloat(target.getAttribute('data-x')) + dx * scale.x;
             var y = parseFloat(target.getAttribute('data-y')) + dy * scale.y;

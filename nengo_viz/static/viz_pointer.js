@@ -159,19 +159,16 @@ VIZ.Pointer.prototype.update = function() {
  * Adjust the graph layout due to changed size
  */
 VIZ.Pointer.prototype.on_resize = function(width, height) {
-    if (width < this.minWidth) {
-        width = this.minWidth;
+    var self = this;
+    
+    if (width < self.minWidth) {
+        width = self.minWidth;
     }
-    if (height < this.minHeight) {
-        height = this.minHeight;
+    if (height < self.minHeight) {
+        height = self.minHeight;
     };
 
-    this.width = width;
-    this.height = height;
-    this.div.style.width = width;
-    this.div.style.height = height;
-
-    this.label.style.width = width;
+    VIZ.resize.general(self, width, height);
     
     this.update();
 };

@@ -62,6 +62,7 @@ VIZ.NetGraph = function(parent, args) {
     interact(this.svg)
         .draggable({
             onmove: function(event) {
+                VIZ.pan.shift(event.dx, event.dy);
                 self.offsetX += event.dx / self.get_scaled_width();
                 self.offsetY += event.dy / self.get_scaled_height();
                 for (var key in self.svg_objects) {
@@ -196,8 +197,8 @@ VIZ.NetGraph.prototype.set_offset = function(x, y) {
     this.offsetY = y;
     this.redraw();
     
-    var dx = VIZ.pan.cposn.ul.x - x * this.get_scaled_width();
-    var dy = VIZ.pan.cposn.ul.y - y * this.get_scaled_height();
+    var dx = VIZ.pan.screen.ul.x - x * this.get_scaled_width();
+    var dy = VIZ.pan.screen.ul.y - y * this.get_scaled_height();
     VIZ.pan.shift(-dx, -dy);    
 }
 
@@ -207,8 +208,8 @@ VIZ.NetGraph.prototype.set_scale = function(scale) {
     this.scale = scale;
     this.redraw();
 
-    VIZ.pan.cposn.lr.x = VIZ.pan.cposn.ul.x + $(this.svg).width() / scale;
-    VIZ.pan.cposn.lr.y = VIZ.pan.cposn.ul.y + $(this.svg).height() / scale;
+    VIZ.pan.screen.lr.x = VIZ.pan.screen.ul.x + $(this.svg).width() / scale;
+    VIZ.pan.screen.lr.y = VIZ.pan.screen.ul.y + $(this.svg).height() / scale;
     VIZ.pan.redraw();
 }
 

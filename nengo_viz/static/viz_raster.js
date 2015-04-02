@@ -168,12 +168,15 @@ VIZ.Raster.prototype.update = function() {
  * Adjust the graph layout due to changed size
  */
 VIZ.Raster.prototype.on_resize = function(width, height) {
-    if (width < this.minWidth) {
-        width = this.minWidth;
+    var self = this;
+    
+    if (width < self.minWidth) {
+        width = self.minWidth;
     }
-    if (height < this.minHeight) {
-        height = this.minHeight;
+    if (height < self.minHeight) {
+        height = self.minHeight;
     };
+    VIZ.resize.general(self, width, height);
     
     this.scale_x.range([this.margin_left, width - this.margin_right]);
     this.scale_y.range([height - this.margin_bottom, this.margin_top]);
@@ -200,10 +203,4 @@ VIZ.Raster.prototype.on_resize = function(width, height) {
     this.axis_y_g.call(this.axis_y);         
     this.update();
     
-    this.label.style.width = width;    
-
-    this.width = width;
-    this.height = height;
-    this.div.style.width = width;
-    this.div.style.height= height;
 };

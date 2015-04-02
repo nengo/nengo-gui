@@ -168,12 +168,16 @@ VIZ.Slider.prototype.set_value = function(slider_index, value) {
  * update visual display based when component is resized
  */
 VIZ.Slider.prototype.on_resize = function(width, height) {
-    if (width < this.minWidth) {
-        width = this.minWidth;
+    var self = this;
+    if (width < self.minWidth) {
+        width = self.minWidth;
     }
-    if (height < this.minHeight) {
-        height = this.minHeight;
+    if (height < self.minHeight) {
+        height = self.minHeight;
     };
+    
+    VIZ.resize.general(self, width, height);
+
     var N = this.sliders.length;
     this.scale.range([0, height]);
     for (var i in this.sliders) {
@@ -198,12 +202,7 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         /** store the x and y locations for use in dragging */
         slider.div.setAttribute('fixed-x', x);
         slider.div.setAttribute('drag-y', y);
-    }
-    this.label.style.width = width;
-    this.width = width;
-    this.height = height;
-    this.div.style.width = width;
-    this.div.style.height= height;    
+    } 
     
 };
 

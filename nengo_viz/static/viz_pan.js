@@ -13,63 +13,24 @@ VIZ.pan.enabled = false;
 
 
 VIZ.pan.events = function () {
-    if (VIZ.pan.cposn === undefined) {
-        VIZ.pan.cposn = {	ul:{x:0, y:0}, 
+    if (VIZ.pan.screen === undefined) {
+        VIZ.pan.screen = {	ul:{x:0, y:0}, 
                             lr:{x:$('#netgraph').width(), y:$('#netgraph').height()}
                         }
     }
-    
-	//allows dragging on the netgraph
-	$(".netgraph")
-		.mousedown(function(event) { //Listens for mousedown
-			if (event.target == $('.netgraph')[0]) { //Checks that you have indeed clicked the #main element
-				VIZ.pan.enabled = true; //Enables panning
-			}
-			VIZ.pan.iposn = {x:event.pageX, y:event.pageY}; //Gets the starting point of your mouse
-										 //Used for storing the initial x and y points of the mouse when panning
-		})
-		.mousemove(function(event) {// Listens for mouse movement
-			if (VIZ.pan.enabled) { // Checks if panning is allowed
-			    var deltaX = event.pageX - VIZ.pan.iposn.x; // Calculates differences using initial x and y reference points
-			    var deltaY = event.pageY - VIZ.pan.iposn.y;
-			    VIZ.pan.iposn.x = event.pageX; // Updates initial reference points
-			    VIZ.pan.iposn.y = event.pageY;
-			    VIZ.pan.shift(deltaX, deltaY); // Call the pan function with the differences that should be made
-			}
-		})
-		.mouseup(function() {// Listens for mouseup
-            if (VIZ.pan.enabled) {
-                VIZ.pan.enabled = false;//Disables panning
-            }
-		});
-
-	// When dragging and mouse goes over a graph, it will continue dragging
-	$(".graph")
-		.mousemove(function(event) {// Listens for mouse movement
-			if (VIZ.pan.enabled) { // Checks if panning is allowed
-			    var deltaX = event.pageX - VIZ.pan.iposn.x; // Calculates differences using initial x and y reference points
-			    var deltaY = event.pageY - VIZ.pan.iposn.y;
-			    VIZ.pan.iposn.x = event.pageX; // Updates initial reference points
-			    VIZ.pan.iposn.y = event.pageY;
-			    VIZ.pan.shift(deltaX, deltaY); // Call the pan function with the differences that should be made
-			}
-		})
-		.mouseup(function() {// Listens for mouseup
-            if (VIZ.pan.enabled) {
-                VIZ.pan.enabled = false;//Disables panning
-            }
-		});
-	}
+}
 
 /*Pass this function the amount of change you want to apply to the screen*/
 VIZ.pan.shift = function(dx,dy) {
-	var cpp = cord_per_px(VIZ.pan.cposn)
+	var cpp = cord_per_px(VIZ.pan.screen)
+	dx = dx * cpp.x;
+	dy = dy * cpp.y;
 	//console.log(cpp.x, cpp.y);
-	VIZ.pan.cposn.ul.x -= dx * cpp.x;
-	VIZ.pan.cposn.ul.y -= dy * cpp.y;
-	VIZ.pan.cposn.lr.x -= dx * cpp.x;
-	VIZ.pan.cposn.lr.y -= dy * cpp.y;
-	//console.log(VIZ.pan.cposn.ul, VIZ.pan.cposn.lr);
+	VIZ.pan.screen.ul.x -= dx;
+	VIZ.pan.screen.ul.y -= dy;
+	VIZ.pan.screen.lr.x -= dx;
+	VIZ.pan.screen.lr.y -= dy;
+	//console.log(VIZ.pan.screen.ul, VIZ.pan.screen.lr);
 	// Replace this part with a redraw using coords instead 
 	VIZ.pan.redraw();
 
@@ -79,12 +40,12 @@ VIZ.pan.shift = function(dx,dy) {
 /*snap_to pans the screen to the specified posn cords quickly. 
 Effectively the same as changing the cposn cords to the posn points, and panning the screen accordingly*/
 VIZ.pan.snap_to = function(posn) {
-	var dx = VIZ.pan.cposn.ul.x - VIZ.pan.cposn.lr.x;
-	var dy = VIZ.pan.cposn.ul.y - VIZ.pan.cposn.lr.y;
-	VIZ.pan.cposn.ul.x = posn.x;
-	VIZ.pan.cposn.ul.y = posn.y;
-	VIZ.pan.cposn.lr.x = VIZ.pan.cposn.ul.x - dx;
-	VIZ.pan.cposn.lr.y = VIZ.pan.cposn.ul.y - dy;
+	var dx = VIZ.pan.screen.ul.x - VIZ.pan.screen.lr.x;
+	var dy = VIZ.pan.screen.ul.y - VIZ.pan.screen.lr.y;
+	VIZ.pan.screen.ul.x = posn.x;
+	VIZ.pan.screen.ul.y = posn.y;
+	VIZ.pan.screen.lr.x = VIZ.pan.screen.ul.x - dx;
+	VIZ.pan.screen.lr.y = VIZ.pan.screen.ul.y - dy;
 	VIZ.pan.redraw();
 };
 
@@ -143,7 +104,7 @@ function cord_per_px(scrn) {
 
 VIZ.pan.redraw = function() {
 	$('.graph').each(function(i, element){ // Get all the graph elements
-		var transform_val = cord_map(VIZ.pan.cposn, VIZ.get_cords(element));
+		var transform_val = cord_map(VIZ.pan.screen, VIZ.get_cords(element));
 		VIZ.set_transform(element, transform_val.x, transform_val.y);
 	});
 }
