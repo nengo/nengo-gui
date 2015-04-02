@@ -14,7 +14,7 @@ root = os.path.dirname(os.path.realpath(__file__))
 version_module = imp.load_source(
     'version', os.path.join(root, 'nengo_viz', 'version.py'))
 description = "Web-based GUI for building and visualizing Nengo models."
-with open(os.path.join(root, 'README.md')) as readme:
+with open(os.path.join(root, 'README.rst')) as readme:
     long_description = readme.read()
 
 setup(
