@@ -1,6 +1,5 @@
 import time
 import threading
-import thread
 
 import nengo
 
@@ -29,7 +28,7 @@ class VizSim(object):
             self.add_template(template)
 
         # build and run the model in a separate thread
-        thread.start_new_thread(self.runner, ())
+        threading.Thread(target=self.runner).start()
 
     def add_template(self, template):
         c = template.create(self)
@@ -224,7 +223,7 @@ class Viz(object):
             locals = {}
             with open(filename) as f:
                 code = f.read()
-            exec code in locals
+            exec(code, locals)
 
         if model is None:
             model = locals['model']
@@ -271,7 +270,7 @@ class Viz(object):
                 config_code = f.readlines()
             for line in config_code:
                 try:
-                    exec line in self.locals
+                    exec(line, self.locals)
                 except Exception as e:
                     print('error parsing config', line, e)
         except IOError:
@@ -300,13 +299,13 @@ class Viz(object):
         if label is None:
             label = self.default_labels.get(obj, None)
         if label is None:
-            label = `obj`
+            label = repr(obj)
         return label
 
     def get_uid(self, obj):
         uid = self.default_labels.get(obj, None)
         if uid is None:
-            uid = `obj`
+            uid = repr(obj)
         return uid
 
     def start(self, port=8080, browser=True):

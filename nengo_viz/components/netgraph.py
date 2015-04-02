@@ -61,7 +61,7 @@ class NetGraph(Component):
         try:
             info = json.loads(msg)
         except ValueError:
-            print 'invalid message', `msg`
+            print('invalid message', repr(msg))
             return
         action = info.get('act', None)
         if action is not None:

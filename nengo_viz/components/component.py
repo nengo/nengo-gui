@@ -7,7 +7,7 @@ class Component(object):
     def update_client(self, client):
         pass
     def message(self, msg):
-        print 'unhandled message', msg
+        print('unhandled message', msg)
 
     def finish(self):
         pass

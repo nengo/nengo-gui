@@ -68,7 +68,7 @@ class  Poset(object):
         return other.s==self.s
 
     def __ne__(self,other):
-        return other.s<>self.s
+        return other.s!=self.s
 
     def copy(self):
         return Poset(self.o)
@@ -121,10 +121,10 @@ class  Poset(object):
     __ge__ = issuperset
 
     def __lt__(self,other):
-        return (self<=other and len(self)<>len(other))
+        return (self<=other and len(self)!=len(other))
 
     def __gt__(self,other):
-        return (self>=other and len(self)<>len(other))
+        return (self>=other and len(self)!=len(other))
 
 
 #  rand_ortho1 returns a numpy.array representing
@@ -148,7 +148,11 @@ def  rand_ortho1(n):
 #------------------------------------------------------------------------------
 #TODO:  this was imported here from masr, but since we have
 #  here access to numpy.array, we could use it for vectors operations.
-def  intersect2lines((x1,y1),(x2,y2),(x3,y3),(x4,y4)):
+def  intersect2lines(p1,p2,p3,p4):
+    x1,y1 = p1
+    x2,y2 = p2
+    x3,y3 = p3
+    x4,y4 = p4
     b = (x2-x1,y2-y1)
     d = (x4-x3,y4-y3)
     det = b[0]*d[1] - b[1]*d[0]
@@ -221,7 +225,7 @@ def median_wh(views):
     mh = [v.h for v in views]
     mw.sort()
     mh.sort()
-    return (mw[len(mw)/2],mh[len(mh)/2])
+    return (mw[len(mw)//2],mh[len(mh)//2])
 
 #------------------------------------------------------------------------------
 #  setcurve returns the spline curve that path through the list of points P.
@@ -429,7 +433,7 @@ class Dot:
                     elif x.type=='edge' :
                         eattr.update(x.D)
                     else :
-                        raise TypeError,'invalid attribute type'
+                        raise TypeError('invalid attribute type')
                 elif isinstance(x,dict):
                     self.attr.update(x)
                 elif isinstance(x,Dot.node):
