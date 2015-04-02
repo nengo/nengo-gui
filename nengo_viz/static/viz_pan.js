@@ -2,8 +2,6 @@
 
 VIZ.pan = {};
 
-VIZ.pan.enabled = false;
-
 /*A Posn is an object with:
  posn.x - int 
  posn.y - int
