@@ -36,23 +36,38 @@ Websockets are also supported via functions that begin with ws_:
                 client.write('received: ' + msg)
 """
 
-import BaseHTTPServer
-import SocketServer
+try:
+    import BaseHTTPServer
+except ImportError:
+    import http.server as BaseHTTPServer
+try:
+    import SocketServer
+except ImportError:
+    import socketserver as SocketServer
 import traceback
 import random
 import string
 import os
-import StringIO
-import mimetools
-import multifile
+try:
+    import StringIO
+except ImportError:
+    import io as StringIO
+try:
+    import mimetools
+except ImportError:
+    import email as mimetools
+try:
+    import multifile
+except ImportError:
+    import email as multifile
 import re
 import webbrowser
-import thread
 import mimetypes
 import base64
 import hashlib
 import socket
 import struct
+import threading
 
 
 class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -189,10 +204,11 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             command = 'ws_%s' % args[0]
 
         client = ClientSocket(self.request, '')
-        key = self.headers['Sec-WebSocket-Key']
+        key = self.headers['Sec-WebSocket-Key'] + MAGIC
+        key = key.encode('ascii')
         resp_data = (HSHAKE_RESP %
-                     base64.b64encode(hashlib.sha1(key + MAGIC).digest()))
-        client.socket.send(resp_data)
+                     base64.b64encode(hashlib.sha1(key).digest()).decode('ascii'))
+        client.socket.send(resp_data.encode('ascii'))
         client.set_blocking(False)
 
         self.user = self.get_user_from_cookie()
@@ -237,14 +253,15 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
                 self.end_headers()
-                print >> self.wfile, "<html><body><pre>"
+                self.wfile.write("<html><body><pre>".encode("utf-8"))
                 text = StringIO.StringIO()
                 traceback.print_exc(file=text)
                 text = text.getvalue()
                 text = text.replace('<', '<')
                 text = text.replace('>', '>')
-                print >> self.wfile, "%s</pre></body></html>" % text
-                print text
+                b = ("%s</pre></body></html>" % text).encode("utf-8")
+                self.wfile.write(b)
+                print(text)
             else:
                 if isinstance(text, tuple):
                     ctype, text = text
@@ -254,14 +271,16 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
                     for k, v in self.pending_headers:
                         self.send_header(k, v)
                 self.end_headers()
-                print >> self.wfile, text
+                if not isinstance(text, bytes):
+                    text = text.encode("utf-8")
+                self.wfile.write(text)
         elif self.path[1:] in self.serve_files:
             self.send_file(self.path[1:])
         elif self.path == '/robots.txt':
             self.send_response(200)
             self.send_header('Content-type', 'text/text')
             self.end_headers()
-            print >> self.wfile, "User-agent: *\nDisallow: /"
+            self.wfile.write("User-agent: *\nDisallow: /".encode("utf-8"))
         else:
             for d in self.serve_dirs:
                 if self.path[1:].startswith(d+'/'):
@@ -270,9 +289,9 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
-            print >> self.wfile, ("<html><body>Invalid request:"
-                                  "<pre>args=%s</pre><pre>db=%s</pre>"
-                                  "</body></html>" % (args, db))
+            self.wfil.write(("<html><body>Invalid request:"
+                             "<pre>args=%s</pre><pre>db=%s</pre>"
+                             "</body></html>" % (args, db)).encode("utf-8"))
 
     def send_file(self, path):
         self.send_response(200)
@@ -280,7 +299,7 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_header('Content-type', type)
         self.send_header('Content-encoding', enc)
         self.end_headers()
-        print >> self.wfile, file(path, 'rb').read()
+        self.wfile.write(file(path, 'rb').read())
 
     def make_db_from_multipart(self, data):
         db = {}
@@ -357,8 +376,8 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
 
     @classmethod
     def browser(cls, port=80):
-        thread.start_new_thread(webbrowser.open,
-                                ('http://localhost:%d' % port,))
+        threading.Thread(target=webbrowser.open,
+                         args=('http://localhost:%d' % port,)).start()
 
 
 class AsyncHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
@@ -475,8 +494,8 @@ class ClientSocket(object):
             offset += 8
 
         if opcode != 1 or fin != 1 or mask != 1 or rsv != 0:
-            print dict(fin=fin, rsv=rsv, opcode=opcode, mask=mask, 
-                       datalen=datalen)
+            print(dict(fin=fin, rsv=rsv, opcode=opcode, mask=mask,
+                       datalen=datalen))
             return None
 
         str_data = ''
@@ -485,7 +504,7 @@ class ClientSocket(object):
             masked_data = data[6 + offset:(6 + datalen + offset)]
             unmasked_data = [masked_data[i] ^ mask_key[i % 4]
                              for i in range(len(masked_data))]
-            str_data = str(bytearray(unmasked_data))
+            str_data = bytearray(unmasked_data).decode('ascii')
 
         return str_data
 
@@ -503,6 +522,8 @@ class ClientSocket(object):
         else:
             header = struct.pack('!BBQ', code, 127, N)
 
+        if not binary:
+            data = data.encode('ascii')
         self.socket.send(header)
         self.socket.send(data)
 

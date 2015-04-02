@@ -174,11 +174,11 @@ class  graph_core(object):
                     y.c=x.c
                 s=x.c
             else:
-                raise ValueError,'unknown Vertex (%s or %s)'%(x.data,y.data)
+                raise ValueError('unknown Vertex (%s or %s)'%(x.data,y.data))
         #check if graph is connected:
         for v in self.V():
             if v.c is None or (v.c!=s):
-                raise ValueError,'unconnected Vertex %s'%v.data
+                raise ValueError('unconnected Vertex %s'%v.data)
             else:
                 v.c = self
 
@@ -195,7 +195,7 @@ class  graph_core(object):
             x = e.v[0]
             y = e.v[1]
             if not ((x in self.sV) or (y in self.sV)):
-                raise ValueError,'unconnected edge'
+                raise ValueError('unconnected edge')
             self.sV.add(x)
             self.sV.add(y)
             e.attach()
@@ -213,7 +213,7 @@ class  graph_core(object):
             # return to inital state by reconnecting everything:
             e.attach()
             # exit with exception!
-            raise ValueError,e
+            raise ValueError(e)
         else:
             self.sE.remove(e)
 
@@ -230,7 +230,7 @@ class  graph_core(object):
             if not self.path(v0,v):
                 # repair everything and raise exception if not connected:
                 for e in E: e.attach()
-                raise ValueError,x
+                raise ValueError(x)
         # remove edges and vertex from internal sets:
         for e in E: self.sE.remove(e)
         self.sV.remove(x)

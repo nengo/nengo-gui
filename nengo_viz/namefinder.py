@@ -4,7 +4,7 @@ class NameFinder(object):
     def __init__(self, terms, net):
         self.base_terms = terms
         self.known_name = {}
-        for k, v in terms.iteritems():
+        for k, v in terms.items():
             if not k.startswith('_'):
                 try:
                     self.known_name[v] = k

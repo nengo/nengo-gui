@@ -308,7 +308,7 @@ class  SugiyamaLayout(object):
         # For layered sugiyama algorithm, the input graph must be acyclic,
         # so we must provide a list of root nodes and a list of inverted edges.
         if roots==None:
-            roots = filter(lambda x: len(x.e_in())==0, self.g.sV)
+            roots = filter(lambda x: len(list(x.e_in()))==0, self.g.sV)
         if inverted_edges==None:
             L = self.g.get_scs_with_feedback(roots)
             inverted_edges = filter(lambda x:x.feedback, self.g.sE)
@@ -375,8 +375,8 @@ class  SugiyamaLayout(object):
     # optimal ranking may be derived from network flow (simplex).
     def rank_all(self,roots,optimize=False):
         self._edge_inverter()
-        r = filter(lambda x: len(x.e_in())==0 and x not in roots, self.g.sV)
-        self._rank_init(roots+r)
+        r = filter(lambda x: len(list(x.e_in()))==0 and x not in roots, self.g.sV)
+        self._rank_init(list(roots)+list(r))
         if optimize: self._rank_optimize()
         self._edge_inverter()
 
@@ -442,7 +442,7 @@ class  SugiyamaLayout(object):
             v0,v1 = v1,v0
             r0,r1 = r1,r0
         elif r0==r1:
-            raise ValueError,'bad ranking'
+            raise ValueError('bad ranking')
         spanover=xrange(r0+1,r1)
         if (r1-r0)>1:
             # "dummy vertices" are stored in the edge ctrl dict,
@@ -633,7 +633,7 @@ class  SugiyamaLayout(object):
                     # set sink as sink of prec-block root
                     if g[v].sink==v:
                         g[v].sink = g[u].sink
-                    if g[v].sink<>g[u].sink:
+                    if g[v].sink!=g[u].sink:
                         s = g[u].sink
                         newshift = g[v].X-(g[u].X+delta)
                         g[s].shift = min(g[s].shift,newshift)
@@ -890,7 +890,7 @@ class  DigcoLayout(object):
         liz = matrix([0.0]*n) # liz is a row of L^Z (size n)
         # compute lzz = L^Z.Z while assembling L^Z by row (liz):
         for i in xrange(n):
-            iterk_except_i = (k for k in xrange(n) if k<>i)
+            iterk_except_i = (k for k in xrange(n) if k!=i)
             for k in iterk_except_i:
                 liz[0,k] = 1.0/(self.Dij[i,k]*dist(Z[i],Z[k]))
             liz[0,i] = 0.0 # forced, otherwise next liz.sum() is wrong !
@@ -909,17 +909,17 @@ class  DigcoLayout(object):
         b  = self.__Lij_Z_Z(Z)
         while count<limit:
             if self.debug:
-                print "count %d"%count
-                print "Z = ",Z
-                print "b = ",b
+                print("count %d"%count)
+                print("Z = ",Z)
+                print("b = ",b)
             # find next Z by solving Lw.Z = b in every direction:
             x,xerr = self._cg_Lw(Lw[1:,1:],Z[1:,0],b[1:,0])
             y,yerr = self._cg_Lw(Lw[1:,1:],Z[1:,1],b[1:,1])
             Z[1:,0] = x
             Z[1:,1] = y
             if self.debug:
-                print " cg -> "
-                print Z,xerr,yerr
+                print(" cg -> ")
+                print(Z,xerr,yerr)
             # compute new stress:
             FZ = K-float(x.transpose()*b[1:,0] + y.transpose()*b[1:,1])
             # precompute new b:
@@ -927,7 +927,7 @@ class  DigcoLayout(object):
             # update new stress:
             FZ += 2*float(x.transpose()*b[1:,0] + y.transpose()*b[1:,1])
             # test convergence:
-            print 'stress=%.10f'%FZ
+            print('stress=%.10f'%FZ)
             if stress==0.0 : break
             elif abs((stress-FZ)/stress)<self._eps:
                 if deep==2:

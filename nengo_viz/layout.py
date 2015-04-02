@@ -1,6 +1,6 @@
 import nengo
-from grandalf.graphs import Vertex, Edge, Graph
-from grandalf.layouts import VertexViewer, SugiyamaLayout
+from nengo_viz.grandalf.graphs import Vertex, Edge, Graph
+from nengo_viz.grandalf.layouts import VertexViewer, SugiyamaLayout
 
 
 class Layout(object):
@@ -33,7 +33,7 @@ class Layout(object):
             if len(self.unexamined_networks) == 0:
                 # there are no networks left we haven't looked into
                 # this should not happen in a valid nengo.Network
-                print "could not find parent of", obj
+                print("could not find parent of", obj)
                 return None
             # grab the next network we haven't looked into
             net = self.unexamined_networks.pop(0)
@@ -114,7 +114,7 @@ class Layout(object):
             if pre is None or post is None:
                 # the connection does not go to a child of this network,
                 # so ignore it.
-                print 'error processing', c
+                print('error processing', c)
             else:
                 edges[c] = Edge(vertices[pre], vertices[post], data=c)
 

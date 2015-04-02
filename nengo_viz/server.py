@@ -4,7 +4,7 @@ import os
 import mimetypes
 import json
 
-import swi
+import nengo_viz.swi as swi
 
 
 class Server(swi.SimpleWebInterface):
@@ -27,6 +27,8 @@ class Server(swi.SimpleWebInterface):
 
         # read the template for the main page
         html = pkgutil.get_data('nengo_viz', 'templates/page.html')
+        if isinstance(html, bytes):
+            html = html.decode("utf-8")
 
         # fill in the javascript needed and return the complete page
         components = viz_sim.create_javascript()
