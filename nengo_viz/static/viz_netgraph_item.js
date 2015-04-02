@@ -268,6 +268,7 @@ VIZ.NetGraphItem.prototype.expand = function() {
         console.log("expanded a network that was already expanded");
         console.log(this);
     }
+
     this.ng.notify({act:"expand", uid:this.uid});
 }
 

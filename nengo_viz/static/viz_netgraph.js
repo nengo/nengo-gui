@@ -21,6 +21,8 @@ VIZ.NetGraph = function(parent, args) {
      *  value is a list of VIZ.NetGraphConnections that should be notified
      *  when that item appears. */
     this.collapsed_conns = {}; 
+    
+    this.notify_msgs = [];
 
     /** create the master SVG element */
     this.svg = this.createSVGElement('svg');
@@ -99,7 +101,6 @@ VIZ.NetGraph = function(parent, args) {
             /** let the server know what happened */
             self.notify({act:"zoom", scale:self.scale, 
                          x:self.offsetX, y:self.offsetY});
-            console.log(['netgraph.scale', self.scale]);
         });
     //Get those pan/zoom event listeners up and running
     VIZ.pan.events();
@@ -151,7 +152,6 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         item.set_position(data.pos[0], data.pos[1]);
         item.set_size(data.size[0], data.size[1]);
     } else if (data.type === 'js') {
-        console.log(data.code);
         eval(data.code);
     } else {
         console.log('invalid message');
@@ -162,9 +162,33 @@ VIZ.NetGraph.prototype.on_message = function(event) {
 
 /** report an event back to the server */
 VIZ.NetGraph.prototype.notify = function(info) {
-    this.ws.send(JSON.stringify(info));
+    this.notify_msgs.push(JSON.stringify(info));
+    
+    // only send one message at a time
+    // TODO: find a better way to figure out when it's safe to send
+    // another message, rather than just waiting 50ms....
+    if (this.notify_msgs.length == 1) {
+        var self = this;
+        window.setTimeout(function() {
+            self.send_notify_msg();
+        }, 50);
+    }
 }
 
+/** send exactly one message back to server
+ *  and schedule the next message to be sent, if any
+ */
+VIZ.NetGraph.prototype.send_notify_msg = function() {
+    msg = this.notify_msgs[0];
+    this.ws.send(msg);
+    if (this.notify_msgs.length > 1) {
+        var self = this;
+        window.setTimeout(function() {
+            self.send_notify_msg();
+        }, 50);
+    }
+    this.notify_msgs.splice(0, 1);
+}
 
 /** pan the screen (and redraw accordingly) */
 VIZ.NetGraph.prototype.set_offset = function(x, y) {
@@ -174,22 +198,18 @@ VIZ.NetGraph.prototype.set_offset = function(x, y) {
     
     var dx = VIZ.pan.cposn.ul.x - x * this.get_scaled_width();
     var dy = VIZ.pan.cposn.ul.y - y * this.get_scaled_height();
-    VIZ.pan.shift(-dx, -dy);
-    
-    console.log('set_offset')
+    VIZ.pan.shift(-dx, -dy);    
 }
 
 
 /** zoom the screen (and redraw accordingly) */
 VIZ.NetGraph.prototype.set_scale = function(scale) {
-    console.log([scale, this.get_scaled_width(), $(this.svg).width() / scale]);
     this.scale = scale;
     this.redraw();
 
     VIZ.pan.cposn.lr.x = VIZ.pan.cposn.ul.x + $(this.svg).width() / scale;
     VIZ.pan.cposn.lr.y = VIZ.pan.cposn.ul.y + $(this.svg).height() / scale;
     VIZ.pan.redraw();
-    console.log('set_scale')
 }
 
 
@@ -232,7 +252,6 @@ VIZ.NetGraph.prototype.create_connection = function(info) {
 VIZ.NetGraph.prototype.on_resize = function(event) {
     this.redraw();
     
-    console.log('redrawing graphs');
     VIZ.pan.redraw();
     
     var width = $(this.svg).width();
