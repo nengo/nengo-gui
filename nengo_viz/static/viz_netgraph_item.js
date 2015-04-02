@@ -268,7 +268,14 @@ VIZ.NetGraphItem.prototype.expand = function() {
         console.log("expanded a network that was already expanded");
         console.log(this);
     }
-    this.ng.notify({act:"expand", uid:this.uid});
+    var self = this;
+    
+    // TODO: fix this to not require random timing
+    // (at the moment, the random timing stops multiple notify requests
+    //  from happening at the same time)
+    window.setTimeout(function() {
+        self.ng.notify({act:"expand", uid:self.uid});
+    }, 200*Math.random());
 }
 
 VIZ.NetGraphItem.prototype.set_label_below = function(flag) {
