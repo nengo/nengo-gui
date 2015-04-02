@@ -339,13 +339,15 @@ VIZ.NetGraphItem.prototype.remove = function() {
     delete this.ng.svg_objects[this.uid];    
 
     /** update any connections into or out of this item */
-    for (var i in this.conn_in) {
-        var conn = this.conn_in[i];
+    var conn_in = this.conn_in.slice();
+    for (var i in conn_in) {
+        var conn = conn_in[i];
         conn.set_post(conn.find_post());
         conn.redraw();
     }
-    for (var i in this.conn_out) {
-        var conn = this.conn_out[i];
+    var conn_out = this.conn_out.slice();
+    for (var i in conn_out) {
+        var conn = conn_out[i];
         conn.set_pre(conn.find_pre());
         conn.redraw();
     }

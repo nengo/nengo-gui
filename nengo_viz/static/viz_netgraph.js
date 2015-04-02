@@ -294,7 +294,10 @@ VIZ.NetGraph.prototype.register_conn = function(conn, target) {
     if (this.collapsed_conns[target] === undefined) {
         this.collapsed_conns[target] = [conn];
     } else {
-        this.collapsed_conns[target].push(conn);
+        var index = this.collapsed_conns[target].indexOf(conn);
+        if (index === -1) {
+            this.collapsed_conns[target].push(conn);
+        }
     }
 }
 
