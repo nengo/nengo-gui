@@ -15,6 +15,7 @@ class Pointer(Component):
         self.override_target = None
         self.vocab_out = obj.outputs['default'][1]
         self.vocab_in = obj.inputs['default'][1]
+        self.vocab_out.include_pairs = config.show_pairs
 
     def add_nengo_objects(self, viz):
         with viz.model:
@@ -35,6 +36,12 @@ class Pointer(Component):
         vocab = self.vocab_out
         m = np.dot(vocab.vectors, x)
         matches = [(mm, vocab.keys[i]) for i, mm in enumerate(m) if mm > 0.01]
+        if self.config.show_pairs:
+            self.vocab_out.include_pairs = True
+            m2 = np.dot(vocab.vector_pairs, x)
+            matches2 = [(mm, vocab.key_pairs[i]) for i, mm in enumerate(m2)
+                        if mm > 0.01]
+            matches += matches2
         text = ';'.join(['%0.2f%s' % (sim, key) for (sim, key) in matches])
 
         msg = '%g %s' % (t, text)

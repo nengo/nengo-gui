@@ -178,6 +178,7 @@ class Config(nengo.Config):
         self[XYValue].set_param('index_y', nengo.params.Parameter(1))
         self[Slider].set_param('min_value', nengo.params.Parameter(-1))
         self[Slider].set_param('max_value', nengo.params.Parameter(1))
+        self[Pointer].set_param('show_pairs', nengo.params.Parameter(False))
 
 
 
@@ -211,6 +212,8 @@ class Config(nengo.Config):
                     lines.append('_viz_config[%s].max_value = %g' % (uid, self[obj].max_value))
                     lines.append('_viz_config[%s].index_x = %g' % (uid, self[obj].index_x))
                     lines.append('_viz_config[%s].index_y = %g' % (uid, self[obj].index_y))
+                if isinstance(obj, Pointer):
+                    lines.append('_viz_config[%s].show_pairs = %g' % (uid, self[obj].show_pairs))
 
 
         return '\n'.join(lines)

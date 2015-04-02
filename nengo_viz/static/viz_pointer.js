@@ -20,6 +20,8 @@ VIZ.Pointer = function(parent, sim, args) {
     this.pdiv.classList.add('pointer');
     this.div.appendChild(this.pdiv);
     
+    this.show_pairs = args.show_pairs;
+    
     /** for storing the accumulated data */
     this.data_store = new VIZ.DataStore(1, this.sim, 0);
 
@@ -67,13 +69,23 @@ VIZ.Pointer.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['set value', function() {self.set_value();}]);
+    if (this.show_pairs) {
+        items.push(['hide pairs', function() {self.set_show_pairs(false);}]);
+    } else {
+        items.push(['show pairs', function() {self.set_show_pairs(true);}]);
+    }
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
     return $.merge(items, VIZ.Component.prototype.generate_menu.call(this));
 };
 
-
+VIZ.Pointer.prototype.set_show_pairs = function(value) {
+    if (this.show_pairs !== value) {
+        this.show_pairs = value;
+        this.save_layout();
+    }
+};
 
 VIZ.Pointer.prototype.set_value = function() {
     var value = prompt('Enter a Semantic Pointer value', 
@@ -163,3 +175,10 @@ VIZ.Pointer.prototype.on_resize = function(width, height) {
     
     this.update();
 };
+
+
+VIZ.Pointer.prototype.layout_info = function () {
+    var info = VIZ.Component.prototype.layout_info.call(this);
+    info.show_pairs = this.show_pairs;
+    return info;
+}
