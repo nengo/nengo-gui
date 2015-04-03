@@ -51,7 +51,6 @@ VIZ.Component = function(parent, args) {
     this.width = args.width;
     this.height = args.height;
     
-    console.log(VIZ.pan.cposn.ul.x);
     var transform_val = cord_map(VIZ.pan.cposn, {x:args.x, y:args.y});
 	VIZ.set_transform(this.div, transform_val.x, transform_val.y);
     

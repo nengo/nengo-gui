@@ -207,7 +207,8 @@ VIZ.TimeSlider = function(args) {
             }
         })
         .resizable({
-            edges: {left:true, top:false, right:true, bottom:false}
+            edges: {left:true, top:false, right:true, bottom:false},
+            invert: 'reposition',
             })
         .on('resizemove', function(event) {
             var newWidth = event.rect.width;
