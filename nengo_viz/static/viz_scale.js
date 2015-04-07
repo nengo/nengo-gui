@@ -65,14 +65,8 @@ VIZ.scale.zoom = function (wheel, event){
 	VIZ.pan.cposn.lr.x = new_urx + post_cord_width;
 	VIZ.pan.cposn.lr.y = new_ury + post_cord_height;
 	VIZ.pan.redraw();
-	for (var i = 0; i < VIZ.Component.components.length; i++){
-		var w = VIZ.Component.components[i].width
-		var h = VIZ.Component.components[i].height
-
-
-		var change = wheel < 1 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size;
-		VIZ.Component.components[i].on_resize(w * change, h * change);
-	}
+	var change = wheel < 1 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size;
+	VIZ.scale.redraw_size(change, change);
 }
 
 VIZ.scale.redraw_size = function(scale_x, scale_y) {
