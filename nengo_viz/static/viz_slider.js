@@ -212,11 +212,21 @@ VIZ.Slider.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['set range', function() {self.set_range();}]);
+    items.push(['set value', function() {self.user_value();}]);
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
     return $.merge(items, VIZ.Component.prototype.generate_menu.call(this));
 };
+
+VIZ.slider.prototype.user_value = function () {
+    var slider_index = 0
+    if (this.sliders.length > 1) {
+        slider_index = prompt('Enter the index of the slider to Change');
+    }
+    var new_value = prompt('set value');
+    this.set_value()
+}
 
 VIZ.Slider.prototype.set_range = function() {
     var range = this.scale.domain();
