@@ -74,5 +74,6 @@ VIZ.scale.redraw_size = function(scale_x, scale_y) {
 		var w = VIZ.Component.components[i].width;
 		var h = VIZ.Component.components[i].height;
 		VIZ.Component.components[i].on_resize(w * scale_x, h * scale_y);
+		VIZ.Component.components[i].save_layout();
 	}
 }
