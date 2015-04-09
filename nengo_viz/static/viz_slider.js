@@ -219,17 +219,37 @@ VIZ.Slider.prototype.generate_menu = function() {
     return $.merge(items, VIZ.Component.prototype.generate_menu.call(this));
 };
 
-VIZ.slider.prototype.user_value = function () {
+VIZ.Slider.prototype.user_value = function () {
     var slider_index = 0
     if (this.sliders.length > 1) {
-        slider_index = prompt('Enter the index of the slider to Change');
+        do{
+            slider_index = prompt('Enter the index of the slider to Change');
+            if (new_value == null) {
+                return;
+            }
+        } while (!(VIZ.is_num(slider_index)));
+        VIZ.max_min(slider_index, 0, this.sliders.length - 1);
     }
-    var new_value = prompt('set value');
-    this.set_value()
+
+    do {
+        var new_value = prompt('set value');
+        if (new_value == null){
+            return;
+        }
+    } while (!(VIZ.is_num(new_value)));
+
+    var slider_range = this.scale.domain();
+
+    new_value = VIZ.max_min(new_value, slider_range[1], slider_range[0]);
+
+    console.log(new_value)
+
+    this.set_value(slider_index, new_value);
 }
 
 VIZ.Slider.prototype.set_range = function() {
     var range = this.scale.domain();
+    console.log(range);
     var new_range = prompt('Set range', '' + range[1] + ',' + range[0]);
     if (new_range !== null) {
         new_range = new_range.split(',');
