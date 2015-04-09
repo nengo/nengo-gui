@@ -471,11 +471,11 @@ VIZ.is_num = function(value){
 //Otherwise outputs the input
 VIZ.max_min = function(value, min, max) {
     if (value < min) {
-        alert('value below range limits, using value: ' + min + ' instead.')
+        //alert('value below range limits, using value: ' + min + ' instead.')
         return min;
     }
     else if (value > max) {
-        alert('value above range limits, using value: ' + max + ' instead.')
+        //alert('value above range limits, using value: ' + max + ' instead.')
         return max;
     }
     else {

@@ -220,31 +220,24 @@ VIZ.Slider.prototype.generate_menu = function() {
 };
 
 VIZ.Slider.prototype.user_value = function () {
-    var slider_index = 0
-    if (this.sliders.length > 1) {
-        do{
-            slider_index = prompt('Enter the index of the slider to Change');
-            if (new_value == null) {
-                return;
-            }
-        } while (!(VIZ.is_num(slider_index)));
-        VIZ.max_min(slider_index, 0, this.sliders.length - 1);
-    }
-
-    do {
-        var new_value = prompt('set value');
-        if (new_value == null){
-            return;
-        }
-    } while (!(VIZ.is_num(new_value)));
+    var new_value = prompt('set value');
+    
+    if (new_value == null) {
+        return;
+    };
+    new_value = new_value.split(',');
 
     var slider_range = this.scale.domain();
 
-    new_value = VIZ.max_min(new_value, slider_range[1], slider_range[0]);
+    for (var i = 0; i < this.sliders.length; i++){
+        if (!(VIZ.is_num(new_value[i]))) {
+            break;
+        }
+        insert_value = VIZ.max_min(new_value[i], slider_range[1], slider_range[0]);
 
-    console.log(new_value)
-
-    this.set_value(slider_index, new_value);
+        this.set_value(i, insert_value);
+    }
+    this.save_layout();
 }
 
 VIZ.Slider.prototype.set_range = function() {
