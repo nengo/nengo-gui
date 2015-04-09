@@ -1,20 +1,15 @@
 VIZ.scale = {};
 VIZ.scale.cumulative = 1;
+VIZ.scale.step_size = 1.1;
 
 //A posn is an object with {x: int , y: int}
 
 //A screen is a rectangle given by two corner posns, {ul: posn, lr: posn}
 
-VIZ.scale.events = function (){
-	document.getElementById('netgraph').addEventListener('mousewheel', function (event){
-		VIZ.scale.step_size = 1.1;
-		var wheel = event.wheelDelta / 120;
-		wheel = wheel < 0 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size;
-		VIZ.scale.zoom(wheel, event);
-	});
-}
-
 VIZ.scale.zoom = function (wheel, event){
+	
+	var wheel = event.wheelDelta / 120;
+	wheel = wheel < 0 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size;
 
 	VIZ.scale.cumulative *= wheel;
 
@@ -23,8 +18,8 @@ VIZ.scale.zoom = function (wheel, event){
 		var offsetY = VIZ.pan.cposn.ul.y;
 	}
 	else{
-		var offsetX = event.offsetX;
-		var offsetY = event.offsetY;
+		var offsetX = event.offsetX || event.clientX;
+		var offsetY = event.offsetY || event.clientY;
 	}
 
 	////////////////////////////////// X scaling
@@ -74,6 +69,5 @@ VIZ.scale.redraw_size = function(scale_x, scale_y) {
 		var w = VIZ.Component.components[i].width;
 		var h = VIZ.Component.components[i].height;
 		VIZ.Component.components[i].on_resize(w * scale_x, h * scale_y);
-		VIZ.Component.components[i].save_layout();
 	}
 }

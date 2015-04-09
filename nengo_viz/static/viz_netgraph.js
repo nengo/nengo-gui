@@ -85,11 +85,15 @@ VIZ.NetGraph = function(parent, args) {
             var x = (event.clientX / $(self.svg).width())
             var y = (event.clientY / $(self.svg).height());
 
-            var step_size = 1.1; // size of zoom per wheel click
+            //var step_size = 1.1; // size of zoom per wheel click
 
             var delta = event.wheelDeltaY || -event.deltaY
-            var scale = delta > 0 ? step_size : 1.0 / step_size; // will either be 1.1 or ~0.9
-            
+            var scale = delta > 0 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size; // will either be 1.1 or ~0.9
+
+            //scale and save components
+            VIZ.scale.zoom(scale, event);
+            VIZ.save_components();
+
             var xx = x / self.scale - self.offsetX;
             var yy = y / self.scale - self.offsetY;
             self.offsetX = (self.offsetX + xx) / scale - xx;
@@ -103,9 +107,9 @@ VIZ.NetGraph = function(parent, args) {
             self.notify({act:"zoom", scale:self.scale, 
                          x:self.offsetX, y:self.offsetY});
         });
-    //Get those pan/zoom event listeners up and running
+    //Get those pan/zoom event listeners up and running after netgraph is built
     VIZ.pan.events();
-    VIZ.scale.events();
+    //VIZ.scale.events();
 
     this.menu = new VIZ.Menu(self.parent);
 
