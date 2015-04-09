@@ -171,7 +171,7 @@ VIZ.Component = function(parent, args) {
 };
 
 VIZ.Component.components = [];
-VIZ.Component.save_components = function() {
+VIZ.save_components = function() {
     for (var index in VIZ.Component.components) {
         VIZ.Component.components[index].save_layout();
     }
