@@ -109,7 +109,6 @@ VIZ.NetGraph = function(parent, args) {
         });
     //Get those pan/zoom event listeners up and running after netgraph is built
     VIZ.pan.events();
-    //VIZ.scale.events();
 
     this.menu = new VIZ.Menu(self.parent);
 

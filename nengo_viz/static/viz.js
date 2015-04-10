@@ -461,7 +461,6 @@ VIZ.is_num = function(value){
         return true;
     }
     else{
-        alert('Not a valid number! Please try again.');
         return false;
     }
 }
