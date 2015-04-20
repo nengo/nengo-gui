@@ -11,6 +11,10 @@ VIZ.SimControl = function(div, args) {
 
     div.classList.add('sim_control');    
     this.div = div;
+    div.style.position = 'fixed';
+    //TODO: Is this the method we want to use for keeping simcontrol on top 
+    //or do we want to dynamically raise it's zindex when other elements have theres increased
+    div.style.zIndex = 99999999; 
 
     /** respond to resize events */
     this.div.addEventListener("resize", function() {self.on_resize();});
