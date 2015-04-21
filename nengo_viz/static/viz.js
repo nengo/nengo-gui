@@ -51,7 +51,6 @@ VIZ.Component = function(parent, args) {
     this.width = args.width;
     this.height = args.height;
     
-    console.log(VIZ.Screen.ul.x);
     var transform_val = cord_map(VIZ.Screen, {x:args.x, y:args.y});
 	VIZ.set_transform(this.div, transform_val.x, transform_val.y);
     
@@ -96,7 +95,6 @@ VIZ.Component = function(parent, args) {
                 var x = Number(holde[4]) + event.dx; //Adjusting position relative to current transform
                 var y = Number(holde[5]) + event.dy;
                 var scale = cord_per_px(VIZ.Screen)
-                console.log(scale);
                 var datax = parseFloat(target.getAttribute('data-x')) + event.dx * scale.x; //Adjusting coordinate independently of position on screen
                 var datay = parseFloat(target.getAttribute('data-y')) + event.dy * scale.y;
                 VIZ.set_transform(target, x, y);
