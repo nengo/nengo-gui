@@ -51,7 +51,6 @@ VIZ.Component = function(parent, args) {
     this.width = args.width;
     this.height = args.height;
     
-    console.log(VIZ.pan.cposn.ul.x);
     var transform_val = cord_map(VIZ.pan.cposn, {x:args.x, y:args.y});
 	VIZ.set_transform(this.div, transform_val.x, transform_val.y);
     
@@ -96,7 +95,7 @@ VIZ.Component = function(parent, args) {
                 var x = Number(holde[4]) + event.dx; //Adjusting position relative to current transform
                 var y = Number(holde[5]) + event.dy;
                 var scale = cord_per_px(VIZ.pan.cposn)
-                console.log(scale);
+                //console.log(scale);
                 var datax = parseFloat(target.getAttribute('data-x')) + event.dx * scale.x; //Adjusting coordinate independently of position on screen
                 var datay = parseFloat(target.getAttribute('data-y')) + event.dy * scale.y;
                 VIZ.set_transform(target, x, y);
@@ -171,7 +170,7 @@ VIZ.Component = function(parent, args) {
 };
 
 VIZ.Component.components = [];
-VIZ.Component.save_components = function() {
+VIZ.save_components = function() {
     for (var index in VIZ.Component.components) {
         VIZ.Component.components[index].save_layout();
     }
@@ -453,4 +452,31 @@ VIZ.make_colors = function(N) {
         c.push(VIZ.yuv_to_rgb(y, u, v));
     }
     return c;
+}
+
+//Check if value is a number
+VIZ.is_num = function(value){
+    if (!(isNaN(value)) && !(value.trim() == '') ) {
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+//takes input, min, and max and outputs the
+//boundary value if input is above/below max/min
+//Otherwise outputs the input
+VIZ.max_min = function(value, min, max) {
+    if (value < min) {
+        //alert('value below range limits, using value: ' + min + ' instead.')
+        return min;
+    }
+    else if (value > max) {
+        //alert('value above range limits, using value: ' + max + ' instead.')
+        return max;
+    }
+    else {
+        return value;
+    }
 }

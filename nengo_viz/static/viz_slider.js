@@ -35,10 +35,12 @@ VIZ.Slider = function(parent, args) {
         slider.value = args.start_value[i];
 
         /** Show the slider Value */
-        var valueDisplay = document.createElement('p');
+        var valueDisplay = document.createElement('div');
         valueDisplay.classList.add('unselectable')
         valueDisplay.innerHTML = slider.value;
         slider.div.appendChild(valueDisplay);
+        slider.value_display = valueDisplay
+        
 
         /** put the slider in the container */
         slider.div.style.position = 'fixed';
@@ -212,14 +214,84 @@ VIZ.Slider.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['set range', function() {self.set_range();}]);
+    items.push(['set value', function() {self.fill_slider_val();}]);
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
     return $.merge(items, VIZ.Component.prototype.generate_menu.call(this));
 };
+/*
+$(obj).on('keypress', my_foo);
+//$(obj).on('click', this.select);
+
+function my_foo(event){
+    console.log('here')
+    if (event.which == 13) {
+        var msg = document.getElementById('in_field').value;
+        obj.innerHTML = msg
+    }
+}*/
+
+VIZ.Slider.prototype.fill_slider_val = function () {
+    var self = this;
+    var obj = this.sliders[0].value_display;
+    var val_holder = this.sliders[0].value;
+    obj.innerHTML = '<input id="value_in_field" style="outline:0;"></input>';
+    //obj.setAttribute('value' , val_holder.toString());
+    $(obj).on('keypress', function(e){my_foo(e, self, obj);});
+    text_input = document.getElementById('value_in_field');
+    text_input.focus();
+    text_input.select();
+
+}
+
+function my_foo(event, obj, alt){
+    if (event.which == 13) {
+        var msg = document.getElementById('value_in_field').value;
+        //console.log(document.getElementById('value_in_field'));
+        if (VIZ.is_num(msg)){
+            var num_msg = Number(msg);
+            var slider_range = obj.scale.domain();
+            obj.sliders[0].value_display.innerHTML = num_msg
+            obj.set_value(0, VIZ.max_min(num_msg, slider_range[1], slider_range[0]));
+            $(alt).off('keypress')
+        }
+        else{
+            alert('failed to set value');
+            obj.sliders[0].value_display.innerHTML = 0
+            obj.set_value(0, VIZ.max_min(0, slider_range[1], slider_range[0]));          
+            return
+        }
+        
+    }
+}
+
+
+VIZ.Slider.prototype.user_value = function () {
+    var new_value = prompt('set value');
+    
+    if (new_value == null) {
+        return;
+    };
+    new_value = new_value.split(',');
+
+    var slider_range = this.scale.domain();
+
+    for (var i = 0; i < this.sliders.length; i++){
+        if (!(VIZ.is_num(new_value[i]))) {
+            alert("invalid input " + new_value[i]);
+            break;
+        }
+        insert_value = VIZ.max_min(new_value[i], slider_range[1], slider_range[0]);
+
+        this.set_value(i, insert_value);
+    }
+    this.save_layout();
+}
 
 VIZ.Slider.prototype.set_range = function() {
     var range = this.scale.domain();
+    console.log(range);
     var new_range = prompt('Set range', '' + range[1] + ',' + range[0]);
     if (new_range !== null) {
         new_range = new_range.split(',');

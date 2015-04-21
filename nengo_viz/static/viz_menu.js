@@ -38,7 +38,8 @@ VIZ.Menu.prototype.show = function (x, y, items) {
      * clicked on, we need the menu's zIndex to be very large
      * TODO: change this to be one more than the highest existing zIndex
      */
-    this.menu.style.zIndex = "999999999";
+    VIZ.max_zindex++;
+    this.menu.style.zIndex = VIZ.max_zindex;
     this.div.appendChild(this.menu);
 
     VIZ.set_transform(this.menu, x - 20, y - 20);
