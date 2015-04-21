@@ -20,7 +20,7 @@ VIZ.pan.events = function () {
 
 /*Pass this function the amount of change you want to apply to the screen*/
 VIZ.pan.shift = function(dx,dy) {
-	var cpp = cord_per_px(VIZ.Screen)
+	var cpp = VIZ.pan.cord_per_px(VIZ.Screen)
 	VIZ.Screen.ul.x -= dx * cpp.x;
 	VIZ.Screen.ul.y -= dy * cpp.y;
 	VIZ.Screen.lr.x -= dx * cpp.x;
@@ -43,14 +43,15 @@ VIZ.pan.snap_to = function(posn) {
 	VIZ.pan.redraw();
 };
 
-VIZ.get_cords = function(element) {
+//Gets the cords of an element
+VIZ.pan.get_cords = function(element) {
 	var datax = parseFloat(element.getAttribute('data-x'));
     var datay = parseFloat(element.getAttribute('data-y'));
     return {x: datax , y:datay};
 }
 
 //consumes a scrn and a cord posn and gives a posn that is to be used for a pixel transform
-function cord_map(scrn, posn) {
+VIZ.pan.cord_map = function (scrn, posn) {
 	
 	var cord_width = scrn.lr.x - scrn.ul.x;
 
@@ -66,7 +67,7 @@ function cord_map(scrn, posn) {
 	 };
 }
 
-function map_px_to_cord(scrn, px) {
+VIZ.pan.map_px_to_cord = function(scrn, px) {
 	var cord_width = scrn.lr.x - scrn.ul.x;
 
 	var cord_height = scrn.lr.y - scrn.ul.y;
@@ -80,10 +81,8 @@ function map_px_to_cord(scrn, px) {
 		y: scrn.ul.y + px.y * (cord_height / px_height),
 	 };
 }
-    
 
-
-function cord_per_px(scrn) {
+VIZ.pan.cord_per_px = function (scrn) {
 	var cord_width = scrn.lr.x - scrn.ul.x;
 
 	var cord_height = scrn.lr.y - scrn.ul.y;
@@ -98,7 +97,7 @@ function cord_per_px(scrn) {
 
 VIZ.pan.redraw = function() {
 	$('.graph').each(function(i, element){ // Get all the graph elements
-		var transform_val = cord_map(VIZ.Screen, VIZ.get_cords(element));
+		var transform_val = VIZ.pan.cord_map(VIZ.Screen, VIZ.pan.get_cords(element));
 		VIZ.set_transform(element, transform_val.x, transform_val.y);
 	});
 }
