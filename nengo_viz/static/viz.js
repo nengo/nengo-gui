@@ -95,7 +95,7 @@ VIZ.Component = function(parent, args) {
                 var tform = VIZ.get_transform(target) 
                 var x = tform.x + event.dx; //Adjusting position relative to current transform
                 var y = tform.y + event.dy;
-                var scale = cord_per_px(VIZ.pan.cposn)
+                var scale = cord_per_px(VIZ.Screen)
 
                 var datax = parseFloat(target.getAttribute('data-x')) + event.dx * scale.x; //Adjusting coordinate independently of position on screen
                 var datay = parseFloat(target.getAttribute('data-y')) + event.dy * scale.y;
