@@ -143,7 +143,7 @@ VIZ.Component = function(parent, args) {
 
     /** flag whether there is a scheduled update that hasn't happened yet */
     this.pending_update = false;
-    VIZ.pan.events();
+    //VIZ.pan.events();
     
     this.menu = new VIZ.Menu(self.parent);
     interact(this.div)

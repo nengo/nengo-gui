@@ -85,8 +85,6 @@ VIZ.NetGraph = function(parent, args) {
             var x = (event.clientX / $(self.svg).width())
             var y = (event.clientY / $(self.svg).height());
 
-            //var step_size = 1.1; // size of zoom per wheel click
-
             var delta = event.wheelDeltaY || -event.deltaY
             var scale = delta > 0 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size; // will either be 1.1 or ~0.9
 
@@ -107,9 +105,8 @@ VIZ.NetGraph = function(parent, args) {
             self.notify({act:"zoom", scale:self.scale, 
                          x:self.offsetX, y:self.offsetY});
         });
-    //Get those pan/zoom event listeners up and running after netgraph is built
-    VIZ.pan.events();
-    //VIZ.scale.events();
+    //Get the pan/zoom screen up and running after netgraph is built
+    VIZ.pan.screen_init();
 
     this.menu = new VIZ.Menu(self.parent);
 

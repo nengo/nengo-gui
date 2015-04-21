@@ -7,10 +7,7 @@ VIZ.pan = {};
  posn.y - int
 */
 
-//Used for storing the cumulative x and y panning of the model
-
-
-VIZ.pan.events = function () {
+VIZ.pan.screen_init = function () {
     if (VIZ.Screen === undefined) {
         VIZ.Screen = {	ul:{x:0, y:0}, 
                             lr:{x:$('#netgraph').width(), y:$('#netgraph').height()}

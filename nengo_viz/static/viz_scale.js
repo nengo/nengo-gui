@@ -1,5 +1,9 @@
 VIZ.scale = {};
+
+//Tracks the cumulative scaling done
 VIZ.scale.cumulative = 1;
+
+//The magnitude of the zoom being applied to the netgraph and the components
 VIZ.scale.step_size = 1.1;
 
 //A posn is an object with {x: int , y: int}
@@ -22,7 +26,7 @@ VIZ.scale.zoom = function (wheel, offx, offy){
 		var offsetY = offy;
 	}
 
-	////////////////////////////////// X scaling
+	////////////////////////////////// X scaling math
 	var screen_px_x = $('#netgraph').width();
 
 	var cord_width = VIZ.Screen.lr.x - VIZ.Screen.ul.x; 
@@ -37,7 +41,7 @@ VIZ.scale.zoom = function (wheel, offx, offy){
 
 	var new_urx = (mouse_cord_x - (scale_x * mouse_cord_x - scale_x * VIZ.Screen.ul.x) / post_scale_x); 
 	
-	//////////////////////////// Y scaling
+	//////////////////////////// Y scaling math
 
 	var screen_px_y = $('#netgraph').height();
 
