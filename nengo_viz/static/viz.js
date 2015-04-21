@@ -51,7 +51,6 @@ VIZ.Component = function(parent, args) {
     this.width = args.width;
     this.height = args.height;
     
-    console.log(VIZ.pan.cposn.ul.x);
     var transform_val = cord_map(VIZ.pan.cposn, {x:args.x, y:args.y});
 	VIZ.set_transform(this.div, transform_val.x, transform_val.y);
     
@@ -156,7 +155,6 @@ VIZ.Component = function(parent, args) {
     this.menu = new VIZ.Menu(self.parent);
     interact(this.div)
         .on('tap', function(event) {
-            console.log("this is launching the menu");
             if (event.button == 0) {
                 if (self.menu.visible_any()) {
                     self.menu.hide_any();
