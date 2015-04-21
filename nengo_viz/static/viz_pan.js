@@ -32,7 +32,7 @@ VIZ.pan.shift = function(dx,dy) {
 };
 
 /*snap_to pans the screen to the specified posn cords quickly. 
-Effectively the same as changing the cposn cords to the posn points, and panning the screen accordingly*/
+Effectively the same as changing the Screen cords to the posn points, and panning the screen accordingly*/
 VIZ.pan.snap_to = function(posn) {
 	var dx = VIZ.Screen.ul.x - VIZ.Screen.lr.x;
 	var dy = VIZ.Screen.ul.y - VIZ.Screen.lr.y;
