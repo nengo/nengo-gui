@@ -92,7 +92,7 @@ VIZ.NetGraph = function(parent, args) {
 
             //scale and save components
             VIZ.scale.zoom(scale, event.clientX, event.clientY);
-            VIZ.save_components();
+            VIZ.Component.save_components();
 
             var xx = x / self.scale - self.offsetX;
             var yy = y / self.scale - self.offsetY;
