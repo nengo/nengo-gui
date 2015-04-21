@@ -51,7 +51,8 @@ VIZ.Component = function(parent, args) {
     this.width = args.width;
     this.height = args.height;
     
-    var transform_val = cord_map(VIZ.pan.cposn, {x:args.x, y:args.y});
+
+    var transform_val = cord_map(VIZ.Screen, {x:args.x, y:args.y});
 	VIZ.set_transform(this.div, transform_val.x, transform_val.y);
     
     this.div.style.position = 'fixed';
@@ -95,6 +96,7 @@ VIZ.Component = function(parent, args) {
                 var x = tform.x + event.dx; //Adjusting position relative to current transform
                 var y = tform.y + event.dy;
                 var scale = cord_per_px(VIZ.pan.cposn)
+
                 var datax = parseFloat(target.getAttribute('data-x')) + event.dx * scale.x; //Adjusting coordinate independently of position on screen
                 var datay = parseFloat(target.getAttribute('data-y')) + event.dy * scale.y;
                 VIZ.set_transform(target, x, y);
@@ -118,7 +120,7 @@ VIZ.Component = function(parent, args) {
             var dx = event.deltaRect.left;
             var dy = event.deltaRect.top;
 
-            var scale = cord_per_px(VIZ.pan.cposn);
+            var scale = cord_per_px(VIZ.Screen);
 
             var x = parseFloat(target.getAttribute('data-x')) + dx * scale.x;
             var y = parseFloat(target.getAttribute('data-y')) + dy * scale.y;
