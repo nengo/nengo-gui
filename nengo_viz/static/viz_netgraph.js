@@ -91,7 +91,7 @@ VIZ.NetGraph = function(parent, args) {
             var scale = delta > 0 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size; // will either be 1.1 or ~0.9
 
             //scale and save components
-            VIZ.scale.zoom(scale, event);
+            VIZ.scale.zoom(scale, event.clientX, event.clientY);
             VIZ.save_components();
 
             var xx = x / self.scale - self.offsetX;

@@ -6,20 +6,20 @@ VIZ.scale.step_size = 1.1;
 
 //A screen is a rectangle given by two corner posns, {ul: posn, lr: posn}
 
-VIZ.scale.zoom = function (wheel, event){
-	
-	var wheel = event.wheelDelta / 120;
-	wheel = wheel < 0 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size;
+VIZ.scale.zoom = function (wheel, offx, offy){
+	VIZ.scale.redraw_size(wheel, wheel);
+
+	wheel = wheel < 1 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size;
 
 	VIZ.scale.cumulative *= wheel;
 
-	if (event === undefined) {
+	if (offx === undefined || offy === undefined) { //in case the zoom function is called without offsets
 		var offsetX = VIZ.Screen.ul.x;
 		var offsetY = VIZ.Screen.ul.y;
 	}
 	else{
-		var offsetX = event.offsetX || event.clientX;
-		var offsetY = event.offsetY || event.clientY;
+		var offsetX = offx;
+		var offsetY = offy;
 	}
 
 	////////////////////////////////// X scaling
@@ -60,8 +60,6 @@ VIZ.scale.zoom = function (wheel, event){
 	VIZ.Screen.lr.x = new_urx + post_cord_width;
 	VIZ.Screen.lr.y = new_ury + post_cord_height;
 	VIZ.pan.redraw();
-	var change = wheel < 1 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size;
-	VIZ.scale.redraw_size(change, change);
 }
 
 VIZ.scale.redraw_size = function(scale_x, scale_y) {
