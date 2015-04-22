@@ -85,14 +85,12 @@ VIZ.NetGraph = function(parent, args) {
             var x = (event.clientX / $(self.svg).width())
             var y = (event.clientY / $(self.svg).height());
 
-            //var step_size = 1.1; // size of zoom per wheel click
-
             var delta = event.wheelDeltaY || -event.deltaY
             var scale = delta > 0 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size; // will either be 1.1 or ~0.9
 
             //scale and save components
-            VIZ.scale.zoom(scale, event);
-            VIZ.save_components();
+            VIZ.scale.zoom(scale, event.clientX, event.clientY);
+            VIZ.Component.save_components();
 
             var xx = x / self.scale - self.offsetX;
             var yy = y / self.scale - self.offsetY;
@@ -107,8 +105,9 @@ VIZ.NetGraph = function(parent, args) {
             self.notify({act:"zoom", scale:self.scale, 
                          x:self.offsetX, y:self.offsetY});
         });
-    //Get those pan/zoom event listeners up and running after netgraph is built
-    VIZ.pan.events();
+
+    //Get the pan/zoom screen up and running after netgraph is built
+    VIZ.pan.screen_init();
 
     this.menu = new VIZ.Menu(self.parent);
 
@@ -200,8 +199,8 @@ VIZ.NetGraph.prototype.set_offset = function(x, y) {
     this.offsetY = y;
     this.redraw();
     
-    var dx = VIZ.pan.cposn.ul.x - x * this.get_scaled_width();
-    var dy = VIZ.pan.cposn.ul.y - y * this.get_scaled_height();
+    var dx = VIZ.Screen.ul.x - x * this.get_scaled_width();
+    var dy = VIZ.Screen.ul.y - y * this.get_scaled_height();
     VIZ.pan.shift(-dx, -dy);    
 }
 
@@ -211,8 +210,8 @@ VIZ.NetGraph.prototype.set_scale = function(scale) {
     this.scale = scale;
     this.redraw();
 
-    VIZ.pan.cposn.lr.x = VIZ.pan.cposn.ul.x + $(this.svg).width() / scale;
-    VIZ.pan.cposn.lr.y = VIZ.pan.cposn.ul.y + $(this.svg).height() / scale;
+    VIZ.Screen.lr.x = VIZ.Screen.ul.x + $(this.svg).width() / scale;
+    VIZ.Screen.lr.y = VIZ.Screen.ul.y + $(this.svg).height() / scale;
     VIZ.pan.redraw();
 }
 
