@@ -271,29 +271,6 @@ VIZ.Slider.prototype.submit_value = function (event, ind, text_div) {
 
 }
 
-
-VIZ.Slider.prototype.user_value = function () {
-    var new_value = prompt('set value');
-    
-    if (new_value == null) {
-        return;
-    };
-    new_value = new_value.split(',');
-
-    var slider_range = this.scale.domain();
-
-    for (var i = 0; i < this.sliders.length; i++){
-        if (!(VIZ.is_num(new_value[i]))) {
-            alert("invalid input " + new_value[i]);
-            break;
-        }
-        insert_value = VIZ.max_min(new_value[i], slider_range[1], slider_range[0]);
-
-        this.set_value(i, insert_value);
-    }
-    this.save_layout();
-}
-
 VIZ.Slider.prototype.set_range = function() {
     var range = this.scale.domain();
     console.log(range);
