@@ -273,7 +273,6 @@ VIZ.Slider.prototype.submit_value = function (event, ind, text_div) {
 
 VIZ.Slider.prototype.set_range = function() {
     var range = this.scale.domain();
-    console.log(range);
     var new_range = prompt('Set range', '' + range[1] + ',' + range[0]);
     if (new_range !== null) {
         new_range = new_range.split(',');
