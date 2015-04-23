@@ -444,7 +444,7 @@ VIZ.make_colors = function(N) {
     return c;
 }
 
-//Check if value is a number
+//Check if a string value represents a number
 VIZ.is_num = function(value){
     if (!(isNaN(value)) && !(value.trim() == '') ) {
         return true;
