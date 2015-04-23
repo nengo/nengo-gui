@@ -144,6 +144,8 @@ VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;
 
 VIZ.Slider.prototype.set_value = function(slider_index, value) {
+    value = Number(value);
+
     //Get the slider
     var target = this.sliders[slider_index].div;
 
@@ -223,7 +225,7 @@ VIZ.Slider.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['set range', function() {self.set_range();}]);
-    items.push(['set value', function() {}]);
+    items.push(['set value', function() {self.user_value();}]);
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
@@ -248,7 +250,7 @@ VIZ.Slider.prototype.input_set_value = function(ind) {
         elem.style.textAlign = 'center';
         $(text_div).on('keypress', function (event) {self.submit_value(event, ind, text_div);});
     }
-}
+};
 
 VIZ.Slider.prototype.submit_value = function (event, ind, text_div) {
     var self = this;
@@ -268,8 +270,29 @@ VIZ.Slider.prototype.submit_value = function (event, ind, text_div) {
             return;
         }
     }
+};
 
-}
+VIZ.Slider.prototype.user_value = function () {
+    var new_value = prompt('Set value\nExample: 1.3, 4.2');
+    
+    if (new_value == null) {
+        return;
+    };
+    new_value = new_value.split(',');
+    console.log(new_value);
+    var slider_range = this.scale.domain();
+
+    for (var i = 0; i < this.sliders.length; i++){
+        if (!(VIZ.is_num(new_value[i]))) {
+            alert("invalid input :" + new_value[i] + "\nFor the slider in position " + (i +1) );
+            break;
+        }
+        insert_value = VIZ.max_min(new_value[i], slider_range[1], slider_range[0]);
+
+        this.set_value(Number(i), insert_value);
+    }
+    this.save_layout();
+};
 
 VIZ.Slider.prototype.set_range = function() {
     var range = this.scale.domain();
