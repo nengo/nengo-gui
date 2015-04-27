@@ -32,7 +32,7 @@ VIZ.NetGraph = function(parent, args) {
     this.svg.style.height = 'calc(100% - 80px)';
     this.svg.style.position = 'fixed';    
 
-    VIZ.netgraph = this.svg;
+    VIZ.netgraph = this;
     parent.appendChild(this.svg);
     this.parent = parent;
 
@@ -120,7 +120,7 @@ VIZ.NetGraph = function(parent, args) {
                     self.menu.show(event.clientX, event.clientY, 
                                    self.generate_menu());
                 }
-                event.stopPropagation();  
+                //event.stopPropagation();  
             }
         });
 };

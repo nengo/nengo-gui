@@ -9,7 +9,10 @@ VIZ.Slider = function(parent, args) {
     VIZ.Component.call(this, parent, args);
     var self = this;
 
+    //Check if user is filling in a number into a slider
     self.filling_slider_value = false;
+
+    self.notify_msgs = [];
 
     VIZ.set_transform(this.label, 0, -30);
  
@@ -144,8 +147,6 @@ VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;
 
 VIZ.Slider.prototype.set_value = function(slider_index, value) {
-    value = Number(value);
-
     //Get the slider
     var target = this.sliders[slider_index].div;
 
@@ -159,7 +160,7 @@ VIZ.Slider.prototype.set_value = function(slider_index, value) {
     var height = this.slider_height;
 
     //Change shown text value to new value
-    target.firstChild.textContent = value.toFixed(2);
+    target.firstChild.textContent = Number(value).toFixed(2);
 
     //Change slider's value to value
     target.slider.value = value;
@@ -171,7 +172,7 @@ VIZ.Slider.prototype.set_value = function(slider_index, value) {
     VIZ.set_transform(target, x_pos, point - height / 2);
 
     //Send update to the server
-    this.ws.send(slider_index + ',' + value);
+    this.notify(slider_index + ',' + value);
 
     //Value has been set, toggle boolean to false
     this.filling_slider_value = false;
@@ -238,6 +239,7 @@ VIZ.Slider.prototype.input_set_value = function(ind) {
         return;
     }
     else{
+        VIZ.netgraph.menu.hide_any();
         self.filling_slider_value = true;
         var text_div = this.sliders[ind].value_display;
         var original_value = text_div.innerHTML;
@@ -248,38 +250,72 @@ VIZ.Slider.prototype.input_set_value = function(ind) {
         elem.select();
         elem.style.width = '3em';
         elem.style.textAlign = 'center';
-        $(text_div).on('keypress', function (event) {self.submit_value(event, ind, text_div);});
+        $(text_div).on('keypress', function (event) {self.submit_value(event.which, ind, text_div);});
     }
 };
 
-VIZ.Slider.prototype.submit_value = function (event, ind, text_div) {
-    var self = this;
-    var slider_range = self.scale.domain();
-    var msg = document.getElementById('value_in_field').value;
-    if (event.which == 13) {
+VIZ.Slider.prototype.click_out = function (text_div, original_value) {
+    text_div.innerHTML = original_value;
+    this.filling_slider_value = false;
+};
+
+VIZ.Slider.prototype.submit_value = function (button, ind, text_div) {
+    if (button == 13) {
+        var self = this;
+        var slider_range = self.scale.domain();
+        var msg = document.getElementById('value_in_field').value;
+        $(text_div).off('keypress');
         if (VIZ.is_num(msg)) {
             self.set_value(ind, VIZ.max_min(Number(msg), slider_range[1], slider_range[0]));
-            $(text_div).off('keypress');
             return;
         }
         else {
             alert('failed to set value');
             text_div.innerHTML = 0;
-            self.set_value(ind, VIZ.max_min(0, slider_range[1], slider_range[0]));
-            $(text_div).off('keypress');          
+            self.set_value(ind, VIZ.max_min(0, slider_range[1], slider_range[0]));   
             return;
         }
     }
 };
 
+/** report an event back to the server */
+VIZ.Slider.prototype.notify = function(info) {
+    this.notify_msgs.push(info);
+    
+    // only send one message at a time
+    // TODO: find a better way to figure out when it's safe to send
+    // another message, rather than just waiting 1ms....
+    if (this.notify_msgs.length == 1) {
+        var self = this;
+        window.setTimeout(function() {
+            self.send_notify_msg();
+        }, 1);
+    }
+}
+
+/** send exactly one message back to server
+ *  and schedule the next message to be sent, if any
+ */
+VIZ.Slider.prototype.send_notify_msg = function() {
+    msg = this.notify_msgs[0];
+    this.ws.send(msg);
+    if (this.notify_msgs.length > 1) {
+        var self = this;
+        window.setTimeout(function() {
+            self.send_notify_msg();
+        }, 1);
+    }
+    this.notify_msgs.splice(0, 1);
+}
+
 VIZ.Slider.prototype.user_value = function () {
+    var self = this;
     var new_value = prompt('Set value\nExample: 1.3, 4.2');
     
     if (new_value == null) {
         return;
     };
     new_value = new_value.split(',');
-    console.log(new_value);
     var slider_range = this.scale.domain();
 
     for (var i = 0; i < this.sliders.length; i++){
@@ -289,9 +325,9 @@ VIZ.Slider.prototype.user_value = function () {
         }
         insert_value = VIZ.max_min(new_value[i], slider_range[1], slider_range[0]);
 
-        this.set_value(Number(i), insert_value);
+        self.set_value(i, insert_value);
     }
-    this.save_layout();
+    //this.save_layout();
 };
 
 VIZ.Slider.prototype.set_range = function() {
