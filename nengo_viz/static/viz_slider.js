@@ -254,11 +254,6 @@ VIZ.Slider.prototype.input_set_value = function(ind) {
     }
 };
 
-VIZ.Slider.prototype.click_out = function (text_div, original_value) {
-    text_div.innerHTML = original_value;
-    this.filling_slider_value = false;
-};
-
 VIZ.Slider.prototype.submit_value = function (button, ind, text_div) {
     if (button == 13) {
         var self = this;
