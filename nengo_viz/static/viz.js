@@ -1,6 +1,8 @@
 /** namespace for all Nengo visualization */
 var VIZ = {};
 
+VIZ.max_zindex = 0;
+
 /**
  * Helper function to set the transform of an element.
  */
@@ -51,7 +53,6 @@ VIZ.Component = function(parent, args) {
     this.width = args.width;
     this.height = args.height;
     
-
     var transform_val = VIZ.pan.cord_map(VIZ.Screen, {x:args.x, y:args.y});
 	VIZ.set_transform(this.div, transform_val.x, transform_val.y);
     
@@ -76,10 +77,9 @@ VIZ.Component = function(parent, args) {
     self.minHeight = 2;
 
     /** Move element to be drawn on top when clicked on */
-    VIZ.max_zindex = 0;
+    
     this.div.onmousedown = function() {
-        VIZ.max_zindex++;
-        this.style.zIndex = VIZ.max_zindex;
+        this.style.zIndex = VIZ.next_zindex();
     };
 
     this.div.ontouchstart = this.div.onmousedown;
@@ -96,7 +96,6 @@ VIZ.Component = function(parent, args) {
                 var x = tform.x + event.dx; //Adjusting position relative to current transform
                 var y = tform.y + event.dy;
                 var scale = VIZ.pan.cord_per_px(VIZ.Screen)
-
                 var datax = parseFloat(target.getAttribute('data-x')) + event.dx * scale.x; //Adjusting coordinate independently of position on screen
                 var datay = parseFloat(target.getAttribute('data-y')) + event.dy * scale.y;
                 VIZ.set_transform(target, x, y);
@@ -444,4 +443,36 @@ VIZ.make_colors = function(N) {
         c.push(VIZ.yuv_to_rgb(y, u, v));
     }
     return c;
+}
+
+//Check if a string value represents a number
+VIZ.is_num = function(value){
+    if (!(isNaN(value)) && !(value.trim() == '') ) {
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+//takes input, min, and max and outputs the
+//boundary value if input is above/below max/min
+//Otherwise outputs the input
+VIZ.max_min = function(value, min, max) {
+    if (value < min) {
+        //alert('value below range limits, using value: ' + min + ' instead.')
+        return min;
+    }
+    else if (value > max) {
+        //alert('value above range limits, using value: ' + max + ' instead.')
+        return max;
+    }
+    else {
+        return value;
+    }
+}
+
+VIZ.next_zindex = function() {
+    VIZ.max_zindex++;
+    return VIZ.max_zindex;
 }

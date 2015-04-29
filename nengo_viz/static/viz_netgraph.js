@@ -32,7 +32,7 @@ VIZ.NetGraph = function(parent, args) {
     this.svg.style.height = 'calc(100% - 80px)';
     this.svg.style.position = 'fixed';    
 
-    VIZ.netgraph = this.svg;
+    VIZ.netgraph = this;
     parent.appendChild(this.svg);
     this.parent = parent;
 
@@ -105,6 +105,7 @@ VIZ.NetGraph = function(parent, args) {
             self.notify({act:"zoom", scale:self.scale, 
                          x:self.offsetX, y:self.offsetY});
         });
+
     //Get the pan/zoom screen up and running after netgraph is built
     VIZ.pan.screen_init();
 
@@ -119,7 +120,7 @@ VIZ.NetGraph = function(parent, args) {
                     self.menu.show(event.clientX, event.clientY, 
                                    self.generate_menu());
                 }
-                event.stopPropagation();  
+                //event.stopPropagation();  
             }
         });
 };

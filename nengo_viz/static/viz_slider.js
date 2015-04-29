@@ -9,6 +9,11 @@ VIZ.Slider = function(parent, args) {
     VIZ.Component.call(this, parent, args);
     var self = this;
 
+    //Check if user is filling in a number into a slider
+    self.filling_slider_value = false;
+
+    self.notify_msgs = [];
+
     VIZ.set_transform(this.label, 0, -30);
  
     /** a scale to map from values to pixels */
@@ -35,10 +40,12 @@ VIZ.Slider = function(parent, args) {
         slider.value = args.start_value[i];
 
         /** Show the slider Value */
-        var valueDisplay = document.createElement('p');
-        valueDisplay.classList.add('unselectable')
-        valueDisplay.innerHTML = slider.value;
+        var valueDisplay = document.createElement('div');
+        valueDisplay.classList.add('value_display')
+        valueDisplay.id = 'value_display';
         slider.div.appendChild(valueDisplay);
+        slider.value_display = valueDisplay;
+        this.update_value_text(i, slider.value);
 
         /** put the slider in the container */
         slider.div.style.position = 'fixed';
@@ -56,6 +63,14 @@ VIZ.Slider = function(parent, args) {
                 }
             }
         );
+
+        interact(slider.div)
+            .on('tap', function(event, item) {
+                var ind = event.currentTarget.slider.index;
+                self.input_set_value(ind);
+                event.stopPropagation();
+                 })
+
 
         /** setup slider dragging */
         interact(slider.div)
@@ -85,12 +100,8 @@ VIZ.Slider = function(parent, args) {
                     
                     var new_value = self.scale.invert(y);
 
-                    /** only show slider value to 2 decimal places */
-                    target.firstChild.innerHTML = new_value.toFixed(2); 
-
                     if (new_value != old_value) {
-                        target.slider.value = new_value;
-                        self.ws.send(target.slider.index + ',' + new_value);
+                        self.set_value(target.slider.index, new_value)
                     }
                 },
                 onend: function(event){
@@ -149,7 +160,7 @@ VIZ.Slider.prototype.set_value = function(slider_index, value) {
     var height = this.slider_height;
 
     //Change shown text value to new value
-    target.firstChild.textContent = value;
+    this.update_value_text(slider_index, value)
 
     //Change slider's value to value
     target.slider.value = value;
@@ -161,7 +172,10 @@ VIZ.Slider.prototype.set_value = function(slider_index, value) {
     VIZ.set_transform(target, x_pos, point - height / 2);
 
     //Send update to the server
-    this.ws.send(slider_index + ',' + value);
+    this.notify(slider_index + ',' + value);
+
+    //Value has been set, toggle boolean to false
+    this.filling_slider_value = false;
 };
 
 /**
@@ -212,10 +226,102 @@ VIZ.Slider.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['set range', function() {self.set_range();}]);
+    items.push(['set value', function() {self.user_value();}]);
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
     return $.merge(items, VIZ.Component.prototype.generate_menu.call(this));
+};
+
+VIZ.Slider.prototype.input_set_value = function(ind) {
+    var self = this;
+    if (self.filling_slider_value){
+        return;
+    }
+    else{
+        VIZ.netgraph.menu.hide_any();
+        self.filling_slider_value = true;
+        var text_div = this.sliders[ind].value_display;
+        var original_value = text_div.innerHTML;
+        text_div.innerHTML = '<input id="value_in_field" style=" border:0; outline:0;"></input>';
+        elem = document.getElementById('value_in_field')
+        elem.value = Number(original_value);
+        elem.focus();
+        elem.select();
+        elem.style.width = '3em';
+        elem.style.textAlign = 'center';
+        $(text_div).on('keypress', function (event) {self.submit_value(event.which, ind, text_div);});
+    }
+};
+
+VIZ.Slider.prototype.submit_value = function (button, ind, text_div) {
+    if (button == 13) {
+        var self = this;
+        var slider_range = self.scale.domain();
+        var msg = document.getElementById('value_in_field').value;
+        $(text_div).off('keypress');
+        if (VIZ.is_num(msg)) {
+            self.set_value(ind, VIZ.max_min(Number(msg), slider_range[1], slider_range[0]));
+            return;
+        }
+        else {
+            alert('failed to set value');
+            text_div.innerHTML = 0;
+            self.set_value(ind, VIZ.max_min(0, slider_range[1], slider_range[0]));   
+            return;
+        }
+    }
+};
+
+/** report an event back to the server */
+VIZ.Slider.prototype.notify = function(info) {
+    this.notify_msgs.push(info);
+    
+    // only send one message at a time
+    // TODO: find a better way to figure out when it's safe to send
+    // another message, rather than just waiting 1ms....
+    if (this.notify_msgs.length == 1) {
+        var self = this;
+        window.setTimeout(function() {
+            self.send_notify_msg();
+        }, 1);
+    }
+}
+
+/** send exactly one message back to server
+ *  and schedule the next message to be sent, if any
+ */
+VIZ.Slider.prototype.send_notify_msg = function() {
+    msg = this.notify_msgs[0];
+    this.ws.send(msg);
+    if (this.notify_msgs.length > 1) {
+        var self = this;
+        window.setTimeout(function() {
+            self.send_notify_msg();
+        }, 1);
+    }
+    this.notify_msgs.splice(0, 1);
+}
+
+VIZ.Slider.prototype.user_value = function () {
+    var self = this;
+    var new_value = prompt('Set value\nExample: 1.3, 4.2');
+    
+    if (new_value == null) {
+        return;
+    };
+    new_value = new_value.split(',');
+    var slider_range = this.scale.domain();
+
+    for (var i = 0; i < this.sliders.length; i++){
+        if (!(VIZ.is_num(new_value[i]))) {
+            alert("invalid input :" + new_value[i] + "\nFor the slider in position " + (i +1) );
+            break;
+        }
+        insert_value = VIZ.max_min(new_value[i], slider_range[1], slider_range[0]);
+
+        self.set_value(i, insert_value);
+    }
 };
 
 VIZ.Slider.prototype.set_range = function() {
@@ -223,13 +329,22 @@ VIZ.Slider.prototype.set_range = function() {
     var new_range = prompt('Set range', '' + range[1] + ',' + range[0]);
     if (new_range !== null) {
         new_range = new_range.split(',');
-        var min = parseFloat(new_range[1]);
-        var max = parseFloat(new_range[0]);
-        this.scale.domain([min, max]);
+        var max = new_range[1];
+        var min = new_range[0];
+        if (!(VIZ.is_num(min)) || !(VIZ.is_num(max)) ) {
+            alert('Invalid input');
+            return;
+        }
+        if (max < min){
+            alert('First value must be less than the second value.');
+            return;
+        }
+        this.scale.domain([max, min]);
         this.save_layout();
     }
     for (var i in this.sliders) {
-        this.set_value(i,this.sliders[i].value); 
+        var new_value = VIZ.max_min(this.sliders[i].value, this.scale.domain()[1], this.scale.domain()[0]);
+        this.set_value(i, new_value); 
     }
 };
 
@@ -239,3 +354,9 @@ VIZ.Slider.prototype.layout_info = function () {
     info.max_value = this.scale.domain()[0];
     return info;
 };
+
+VIZ.Slider.prototype.update_value_text = function (slider_index, new_text) {
+    var self = this;
+    var target = self.sliders[slider_index].value_display;
+    target.innerHTML = new_text.toFixed(2);
+}
