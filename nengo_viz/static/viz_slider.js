@@ -329,9 +329,17 @@ VIZ.Slider.prototype.set_range = function() {
     var new_range = prompt('Set range', '' + range[1] + ',' + range[0]);
     if (new_range !== null) {
         new_range = new_range.split(',');
-        var min = parseFloat(new_range[1]);
-        var max = parseFloat(new_range[0]);
-        this.scale.domain([min, max]);
+        var max = new_range[1];
+        var min = new_range[0];
+        if (!(VIZ.is_num(min)) || !(VIZ.is_num(max)) ) {
+            alert('Invalid input');
+            return;
+        }
+        if (max < min){
+            alert('First value must be less than the second value.');
+            return;
+        }
+        this.scale.domain([max, min]);
         this.save_layout();
     }
     for (var i in this.sliders) {
