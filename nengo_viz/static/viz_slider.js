@@ -335,7 +335,8 @@ VIZ.Slider.prototype.set_range = function() {
         this.save_layout();
     }
     for (var i in this.sliders) {
-        this.set_value(i,this.sliders[i].value); 
+        var new_value = VIZ.max_min(this.sliders[i].value, this.scale.domain()[1], this.scale.domain()[0]);
+        this.set_value(i, new_value); 
     }
 };
 
