@@ -26,6 +26,26 @@ repository.  For most operating systems, here are the commands needed:
    cd ..
    
 
+Running nengo_viz
+=================
+
+There are two ways to run nengo_viz.  First, you can use it from within the
+existing `Nengo GUI <https://github.com/nengo/nengo_gui>`_.  Do this by
+running nengo_gui and clicking on the graph icon in the top-right (the one
+without the 'J' on it).
+
+Alternatively, you can start nengo_viz manually from within your code.  To
+do so, add this to the bottom of your file that defines your Nengo model.
+
+.. code:: python
+
+   if __name__ == '__main__':
+       import nengo_viz
+       nengo_viz.Viz(__file__).start()
+
+Note that if you take this approach, you must name your model "model" and
+you should not be creating a nengo.Simulator object yourself.
+
 Basic usage
 ===========
 
