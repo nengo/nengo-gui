@@ -327,21 +327,36 @@ VIZ.Slider.prototype.send_notify_msg = function() {
 }
 
 VIZ.Slider.prototype.user_value = function () {
-    var new_value = prompt('Set value\nExample: 1.3, 4.2');
+
+    //First build the prompt string
+    var prompt_string = 'Example: ';
+    for (var i = 0; i < this.sliders.length; i++){
+        var rand = (Math.random() * 10).toFixed(1);
+        prompt_string = prompt_string + rand;
+        if (i != this.sliders.length - 1) {
+            prompt_string = prompt_string + ", ";
+        }
+    }
+    var new_value = prompt('Set value\n' + prompt_string);
     
+    //If the user hit cancel
     if (new_value == null) {
         return;
     };
+
+    //Make the string into a list
     new_value = new_value.split(',');
+
+    //Get the max and min slider bounds
     var slider_range = this.scale.domain();
 
+    //Update the sliders one at a time, checking input as we go
     for (var i = 0; i < this.sliders.length; i++){
         if (!(VIZ.is_num(new_value[i]))) {
-            alert("invalid input :" + new_value[i] + "\nFor the slider in position " + (i +1) );
+            alert("invalid input :" + new_value[i] + "\nFor the slider in position " + (i + 1) );
             break;
         }
         insert_value = VIZ.max_min(new_value[i], slider_range[1], slider_range[0]);
-
         this.set_value(i, insert_value);
     }
 };
