@@ -10,9 +10,9 @@ VIZ.Slider = function(parent, args) {
     var self = this;
 
     //Check if user is filling in a number into a slider
-    self.filling_slider_value = false;
+    this.filling_slider_value = false;
 
-    self.notify_msgs = [];
+    this.notify_msgs = [];
 
     VIZ.set_transform(this.label, 0, -30);
  
@@ -23,7 +23,7 @@ VIZ.Slider = function(parent, args) {
     
     /** number of pixels high for the slider itself */
     this.slider_height = 30;
-    self.minHeight = 40;
+    this.minHeight = 40;
     
     /** make the sliders */
     this.sliders = [];
@@ -278,18 +278,17 @@ VIZ.Slider.prototype.disable_all_slider_inputs = function (ind) {
 
 VIZ.Slider.prototype.submit_value = function (button, ind, text_div, original_value) {
     if (button == 13) {
-        var self = this;
         var slider_range = self.scale.domain();
         var msg = text_div.querySelector('#value_in_field').value;
         $(text_div).off('keypress');
         if (VIZ.is_num(msg)) {
-            self.set_value(ind, VIZ.max_min(Number(msg), slider_range[1], slider_range[0]));
+            this.set_value(ind, VIZ.max_min(Number(msg), slider_range[1], slider_range[0]));
             return;
         }
         else {
             alert('failed to set value');
             text_div.innerHTML = original_value;
-            self.set_value(ind, VIZ.max_min(original_value, slider_range[1], slider_range[0]));   
+            this.set_value(ind, VIZ.max_min(original_value, slider_range[1], slider_range[0]));   
             return;
         }
     }
@@ -326,7 +325,6 @@ VIZ.Slider.prototype.send_notify_msg = function() {
 }
 
 VIZ.Slider.prototype.user_value = function () {
-    var self = this;
     var new_value = prompt('Set value\nExample: 1.3, 4.2');
     
     if (new_value == null) {
@@ -342,7 +340,7 @@ VIZ.Slider.prototype.user_value = function () {
         }
         insert_value = VIZ.max_min(new_value[i], slider_range[1], slider_range[0]);
 
-        self.set_value(i, insert_value);
+        this.set_value(i, insert_value);
     }
 };
 
