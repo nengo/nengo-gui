@@ -9,6 +9,11 @@ VIZ.Slider = function(parent, args) {
     VIZ.Component.call(this, parent, args);
     var self = this;
 
+    //Check if user is filling in a number into a slider
+    this.filling_slider_value = false;
+
+    this.notify_msgs = [];
+
     VIZ.set_transform(this.label, 0, -30);
  
     /** a scale to map from values to pixels */
@@ -18,7 +23,7 @@ VIZ.Slider = function(parent, args) {
     
     /** number of pixels high for the slider itself */
     this.slider_height = 30;
-    self.minHeight = 40;
+    this.minHeight = 40;
     
     /** make the sliders */
     this.sliders = [];
@@ -35,10 +40,11 @@ VIZ.Slider = function(parent, args) {
         slider.value = args.start_value[i];
 
         /** Show the slider Value */
-        var valueDisplay = document.createElement('p');
-        valueDisplay.classList.add('unselectable')
+        var valueDisplay = document.createElement('div');
+        valueDisplay.classList.add('value_display');
         valueDisplay.innerHTML = slider.value;
         slider.div.appendChild(valueDisplay);
+        slider.value_display = valueDisplay
 
         /** put the slider in the container */
         slider.div.style.position = 'fixed';
@@ -52,16 +58,26 @@ VIZ.Slider = function(parent, args) {
             function(event) {
                 /** check if click was the middle mouse button */
                 if (event.which == 2){
-                    self.set_value(this.slider.index, 0);
+                    self.set_value(this.slider.index, 0, true);
                 }
             }
         );
+
+        interact(slider.div)
+            .on('tap', function(event) {
+                console.log('crazy:', event);
+                var ind = event.currentTarget.slider.index;
+                self.input_set_value(ind);
+                event.stopPropagation();
+                 })
+
 
         /** setup slider dragging */
         interact(slider.div)
             .draggable({
                 onstart: function () {
                     self.menu.hide_any();
+                    self.disable_all_slider_inputs();
                 },
                 onmove: function (event) {
                     var target = event.target;
@@ -88,12 +104,8 @@ VIZ.Slider = function(parent, args) {
                     
                     var new_value = self.scale.invert(y);
 
-                    /** only show slider value to 2 decimal places */
-                    target.firstChild.innerHTML = new_value.toFixed(2); 
-
                     if (new_value != old_value) {
-                        target.slider.value = new_value;
-                        self.ws.send(target.slider.index + ',' + new_value);
+                        self.set_value(target.slider.index, new_value, true);
                     }
                 },
                 onend: function(event){
@@ -138,7 +150,7 @@ VIZ.Slider = function(parent, args) {
 VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;
 
-VIZ.Slider.prototype.set_value = function(slider_index, value) {
+VIZ.Slider.prototype.set_value = function(slider_index, value, immediate) {
     //Get the slider
     var target = this.sliders[slider_index].div;
 
@@ -152,7 +164,7 @@ VIZ.Slider.prototype.set_value = function(slider_index, value) {
     var height = this.slider_height;
 
     //Change shown text value to new value
-    target.firstChild.textContent = value;
+    target.firstChild.textContent = Number(value).toFixed(2);
 
     //Change slider's value to value
     target.slider.value = value;
@@ -164,7 +176,15 @@ VIZ.Slider.prototype.set_value = function(slider_index, value) {
     VIZ.set_transform(target, x_pos, point - height / 2);
 
     //Send update to the server
-    this.ws.send(slider_index + ',' + value);
+    if (immediate) {
+        this.ws.send(slider_index + ',' + value);
+    }
+    else{
+        this.notify(slider_index + ',' + value);
+    }
+
+    //Value has been set, toggle boolean to false
+    this.filling_slider_value = false;
 };
 
 /**
@@ -215,10 +235,135 @@ VIZ.Slider.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['set range', function() {self.set_range();}]);
+    items.push(['set value', function() {self.user_value();}]);
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
     return $.merge(items, VIZ.Component.prototype.generate_menu.call(this));
+};
+
+VIZ.Slider.prototype.input_set_value = function(ind) {
+    var self = this;
+    this.disable_all_slider_inputs();
+    this.menu.hide_any();
+    var text_div = this.sliders[ind].value_display;
+    var original_value = text_div.innerHTML;
+    this.filling_slider_value = true;
+    this.filling_slider_index = ind;
+    this.filling_slider_original_value = original_value;
+    text_div.innerHTML = '<input id="value_in_field" style=" border:0; outline:0;"></input>';
+    elem = text_div.querySelector('#value_in_field')
+    elem.value = original_value;
+    elem.focus();
+    elem.select();
+    elem.style.width = '3em';
+    elem.style.textAlign = 'center';
+    $(text_div).on('keypress', function (event) {self.submit_value(event.which, ind, text_div, original_value);});
+};
+
+VIZ.Slider.prototype.disable_all_slider_inputs = function () {
+    component_list = VIZ.Component.components
+    slider_list = []
+
+    //Build the slider list
+    for (var i = 0; i < component_list.length; ++i) {
+        var current = component_list[i];
+        if (current instanceof VIZ.Slider){
+            slider_list.push(current);
+        }
+    }
+
+    //Disable editting on sliders
+    for (var j = 0; j < slider_list.length; ++j) {
+        current = slider_list[j];
+        if (current.filling_slider_value) {
+            var text_div = current.sliders[current.filling_slider_index].value_display;
+            text_div.innerHTML = current.filling_slider_original_value;
+            current.filling_slider_value = false;
+        }
+    }
+}
+
+VIZ.Slider.prototype.submit_value = function (button, ind, text_div, original_value) {
+    if (button == 13) {
+        var slider_range = this.scale.domain();
+        var msg = text_div.querySelector('#value_in_field').value;
+        $(text_div).off('keypress');
+        if (VIZ.is_num(msg)) {
+            this.set_value(ind, VIZ.max_min(Number(msg), slider_range[1], slider_range[0]), true);
+            return;
+        }
+        else {
+            alert('failed to set value');
+            text_div.innerHTML = original_value;
+            return;
+        }
+    }
+};
+
+/** report an event back to the server */
+VIZ.Slider.prototype.notify = function(info) {
+    this.notify_msgs.push(info);
+    
+    // only send one message at a time
+    // TODO: find a better way to figure out when it's safe to send
+    // another message, rather than just waiting 1ms....
+    if (this.notify_msgs.length == 1) {
+        var self = this;
+        window.setTimeout(function() {
+            self.send_notify_msg();
+        }, 50);
+    }
+}
+
+/** send exactly one message back to server
+ *  and schedule the next message to be sent, if any
+ */
+VIZ.Slider.prototype.send_notify_msg = function() {
+    msg = this.notify_msgs[0];
+    this.ws.send(msg);
+    if (this.notify_msgs.length > 1) {
+        var self = this;
+        window.setTimeout(function() {
+            self.send_notify_msg();
+        }, 50);
+    }
+    this.notify_msgs.splice(0, 1);
+}
+
+VIZ.Slider.prototype.user_value = function () {
+
+    //First build the prompt string
+    var prompt_string = 'Example: ';
+    for (var i = 0; i < this.sliders.length; i++){
+        var rand = (Math.random() * 10).toFixed(1);
+        prompt_string = prompt_string + rand;
+        if (i != this.sliders.length - 1) {
+            prompt_string = prompt_string + ", ";
+        }
+    }
+    var new_value = prompt('Set value\n' + prompt_string);
+    
+    //If the user hit cancel
+    if (new_value == null) {
+        return;
+    };
+
+    //Make the string into a list
+    new_value = new_value.split(',');
+
+    //Get the max and min slider bounds
+    var slider_range = this.scale.domain();
+
+    //Update the sliders one at a time, checking input as we go
+    for (var i = 0; i < this.sliders.length; i++){
+        if (!(VIZ.is_num(new_value[i]))) {
+            alert("invalid input :" + new_value[i] + "\nFor the slider in position " + (i + 1) );
+            break;
+        }
+        insert_value = VIZ.max_min(new_value[i], slider_range[1], slider_range[0]);
+        this.set_value(i, insert_value, false);
+    }
 };
 
 VIZ.Slider.prototype.set_range = function() {
@@ -232,7 +377,7 @@ VIZ.Slider.prototype.set_range = function() {
         this.save_layout();
     }
     for (var i in this.sliders) {
-        this.set_value(i,this.sliders[i].value); 
+        this.set_value(i, this.sliders[i].value, false); 
     }
 };
 
