@@ -41,8 +41,7 @@ VIZ.Slider = function(parent, args) {
 
         /** Show the slider Value */
         var valueDisplay = document.createElement('div');
-        valueDisplay.classList.add('value_display')
-        valueDisplay.id = 'value_display';
+        valueDisplay.classList.add('value_display');
         valueDisplay.innerHTML = slider.value;
         slider.div.appendChild(valueDisplay);
         slider.value_display = valueDisplay
@@ -104,7 +103,7 @@ VIZ.Slider = function(parent, args) {
                     var new_value = self.scale.invert(y);
 
                     if (new_value != old_value) {
-                        self.set_value(target.slider.index, new_value)
+                        self.set_value(target.slider.index, new_value, true);
                     }
                 },
                 onend: function(event){
@@ -149,7 +148,7 @@ VIZ.Slider = function(parent, args) {
 VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;
 
-VIZ.Slider.prototype.set_value = function(slider_index, value) {
+VIZ.Slider.prototype.set_value = function(slider_index, value, immediate) {
     //Get the slider
     var target = this.sliders[slider_index].div;
 
@@ -175,7 +174,12 @@ VIZ.Slider.prototype.set_value = function(slider_index, value) {
     VIZ.set_transform(target, x_pos, point - height / 2);
 
     //Send update to the server
-    this.notify(slider_index + ',' + value);
+    if (immediate) {
+        this.ws.send(slider_index + ',' + value);
+    }
+    else{
+        this.notify(slider_index + ',' + value);
+    }
 
     //Value has been set, toggle boolean to false
     this.filling_slider_value = false;
@@ -284,13 +288,12 @@ VIZ.Slider.prototype.submit_value = function (button, ind, text_div, original_va
         var msg = text_div.querySelector('#value_in_field').value;
         $(text_div).off('keypress');
         if (VIZ.is_num(msg)) {
-            this.set_value(ind, VIZ.max_min(Number(msg), slider_range[1], slider_range[0]));
+            this.set_value(ind, VIZ.max_min(Number(msg), slider_range[1], slider_range[0]), true);
             return;
         }
         else {
             alert('failed to set value');
             text_div.innerHTML = original_value;
-            this.set_value(ind, VIZ.max_min(original_value, slider_range[1], slider_range[0]));   
             return;
         }
     }
@@ -307,7 +310,7 @@ VIZ.Slider.prototype.notify = function(info) {
         var self = this;
         window.setTimeout(function() {
             self.send_notify_msg();
-        }, 1);
+        }, 50);
     }
 }
 
@@ -321,7 +324,7 @@ VIZ.Slider.prototype.send_notify_msg = function() {
         var self = this;
         window.setTimeout(function() {
             self.send_notify_msg();
-        }, 1);
+        }, 50);
     }
     this.notify_msgs.splice(0, 1);
 }
@@ -357,7 +360,7 @@ VIZ.Slider.prototype.user_value = function () {
             break;
         }
         insert_value = VIZ.max_min(new_value[i], slider_range[1], slider_range[0]);
-        this.set_value(i, insert_value);
+        this.set_value(i, insert_value, false);
     }
 };
 
@@ -372,7 +375,7 @@ VIZ.Slider.prototype.set_range = function() {
         this.save_layout();
     }
     for (var i in this.sliders) {
-        this.set_value(i,this.sliders[i].value); 
+        this.set_value(i, this.sliders[i].value, false); 
     }
 };
 
