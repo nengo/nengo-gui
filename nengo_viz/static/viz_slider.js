@@ -64,7 +64,7 @@ VIZ.Slider = function(parent, args) {
         );
 
         interact(slider.div)
-            .on('tap', function(event, item) {
+            .on('tap', function(event) {
                 var ind = event.currentTarget.slider.index;
                 self.input_set_value(ind);
                 event.stopPropagation();
