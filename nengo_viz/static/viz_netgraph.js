@@ -61,6 +61,9 @@ VIZ.NetGraph = function(parent, args) {
     var self = this;
     interact(this.svg)
         .draggable({
+            onstart: function() {
+                self.menu.hide_any();
+            },
             onmove: function(event) {
                 VIZ.pan.shift(event.dx, event.dy);
                 self.offsetX += event.dx / self.get_scaled_width();
@@ -82,6 +85,9 @@ VIZ.NetGraph = function(parent, args) {
      *  point in the space */
     interact(this.svg)
         .on('wheel', function(event) {
+            
+            self.menu.hide_any();
+
             var x = (event.clientX / $(self.svg).width())
             var y = (event.clientY / $(self.svg).height());
 

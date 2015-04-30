@@ -102,6 +102,9 @@ VIZ.NetGraphItem = function(ng, info) {
     var ng = ng;
     interact(g)
         .draggable({
+            onstart: function () {
+                self.menu.hide_any();
+            },
             onmove: function(event) {
                 var w = ng.get_scaled_width();
                 var h = ng.get_scaled_height();    
@@ -126,6 +129,9 @@ VIZ.NetGraphItem = function(ng, info) {
         interact(this.shape)
             .resizable({
                 edges: { left: true, right: true, bottom: true, top: true }
+                })
+            .on('resizestart', function(event) {
+                self.menu.hide_any();
                 })
             .on('resizemove', function(event) {            
                 var item = ng.svg_objects[uid];
