@@ -247,7 +247,7 @@ VIZ.Slider.prototype.input_set_value = function(ind) {
     this.filling_slider_original_value = original_value;
     text_div.innerHTML = '<input id="value_in_field" style=" border:0; outline:0;"></input>';
     elem = text_div.querySelector('#value_in_field')
-    elem.value = Number(original_value);
+    elem.value = original_value;
     elem.focus();
     elem.select();
     elem.style.width = '3em';
