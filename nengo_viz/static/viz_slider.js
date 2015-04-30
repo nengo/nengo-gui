@@ -75,6 +75,9 @@ VIZ.Slider = function(parent, args) {
         /** setup slider dragging */
         interact(slider.div)
             .draggable({
+                onstart: function (event) {
+                    self.disable_all_slider_inputs();
+                },
                 onmove: function (event) {
                     var target = event.target;
 
@@ -235,7 +238,7 @@ VIZ.Slider.prototype.generate_menu = function() {
 
 VIZ.Slider.prototype.input_set_value = function(ind) {
     var self = this;
-    this.disable_all_slider_inputs(ind);
+    this.disable_all_slider_inputs();
     this.menu.hide_any();
     var text_div = this.sliders[ind].value_display;
     var original_value = text_div.innerHTML;
@@ -250,10 +253,9 @@ VIZ.Slider.prototype.input_set_value = function(ind) {
     elem.style.width = '3em';
     elem.style.textAlign = 'center';
     $(text_div).on('keypress', function (event) {self.submit_value(event.which, ind, text_div, original_value);});
-
 };
 
-VIZ.Slider.prototype.disable_all_slider_inputs = function (ind) {
+VIZ.Slider.prototype.disable_all_slider_inputs = function () {
     component_list = VIZ.Component.components
     slider_list = []
 
@@ -278,7 +280,7 @@ VIZ.Slider.prototype.disable_all_slider_inputs = function (ind) {
 
 VIZ.Slider.prototype.submit_value = function (button, ind, text_div, original_value) {
     if (button == 13) {
-        var slider_range = self.scale.domain();
+        var slider_range = this.scale.domain();
         var msg = text_div.querySelector('#value_in_field').value;
         $(text_div).off('keypress');
         if (VIZ.is_num(msg)) {

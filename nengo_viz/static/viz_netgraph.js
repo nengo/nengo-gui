@@ -120,7 +120,7 @@ VIZ.NetGraph = function(parent, args) {
                     self.menu.show(event.clientX, event.clientY, 
                                    self.generate_menu());
                 }
-                //event.stopPropagation();  
+                event.stopPropagation();  
             }
         });
 };
