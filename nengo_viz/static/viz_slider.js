@@ -151,6 +151,7 @@ VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;
 
 VIZ.Slider.prototype.set_value = function(slider_index, value, immediate) {
+     console.log(typeof value);
     //Get the slider
     var target = this.sliders[slider_index].div;
 
@@ -388,8 +389,8 @@ VIZ.Slider.prototype.layout_info = function () {
     return info;
 };
 
+//slider_index: Nat, new_text: Num
 VIZ.Slider.prototype.update_value_text = function (slider_index, new_text) {
-    var self = this;
-    var target = self.sliders[slider_index].value_display;
+    var target = this.sliders[slider_index].value_display;
     target.innerHTML = new_text.toFixed(2);
 }
