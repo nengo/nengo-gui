@@ -235,30 +235,52 @@ VIZ.Slider.prototype.generate_menu = function() {
 
 VIZ.Slider.prototype.input_set_value = function(ind) {
     var self = this;
-    if (self.filling_slider_value){
-        return;
-    }
-    else{
-        VIZ.netgraph.menu.hide_any();
-        self.filling_slider_value = true;
-        var text_div = this.sliders[ind].value_display;
-        var original_value = text_div.innerHTML;
-        text_div.innerHTML = '<input id="value_in_field" style=" border:0; outline:0;"></input>';
-        elem = document.getElementById('value_in_field')
-        elem.value = Number(original_value);
-        elem.focus();
-        elem.select();
-        elem.style.width = '3em';
-        elem.style.textAlign = 'center';
-        $(text_div).on('keypress', function (event) {self.submit_value(event.which, ind, text_div);});
-    }
+    this.disable_all_slider_inputs(ind);
+    this.menu.hide_any();
+    var text_div = this.sliders[ind].value_display;
+    var original_value = text_div.innerHTML;
+    this.filling_slider_value = true;
+    this.filling_slider_index = ind;
+    this.filling_slider_original_value = original_value;
+    text_div.innerHTML = '<input id="value_in_field" style=" border:0; outline:0;"></input>';
+    elem = text_div.querySelector('#value_in_field')
+    elem.value = Number(original_value);
+    elem.focus();
+    elem.select();
+    elem.style.width = '3em';
+    elem.style.textAlign = 'center';
+    $(text_div).on('keypress', function (event) {self.submit_value(event.which, ind, text_div, original_value);});
+
 };
 
-VIZ.Slider.prototype.submit_value = function (button, ind, text_div) {
+VIZ.Slider.prototype.disable_all_slider_inputs = function (ind) {
+    component_list = VIZ.Component.components
+    slider_list = []
+
+    //Build the slider list
+    for (var i = 0; i < component_list.length; ++i) {
+        var current = component_list[i];
+        if (current instanceof VIZ.Slider){
+            slider_list.push(current);
+        }
+    }
+
+    //Disable editting on sliders
+    for (var j = 0; j < slider_list.length; ++j) {
+        current = slider_list[j];
+        if (current.filling_slider_value) {
+            var text_div = current.sliders[current.filling_slider_index].value_display;
+            text_div.innerHTML = current.filling_slider_original_value;
+            current.filling_slider_value = false;
+        }
+    }
+}
+
+VIZ.Slider.prototype.submit_value = function (button, ind, text_div, original_value) {
     if (button == 13) {
         var self = this;
         var slider_range = self.scale.domain();
-        var msg = document.getElementById('value_in_field').value;
+        var msg = text_div.querySelector('#value_in_field').value;
         $(text_div).off('keypress');
         if (VIZ.is_num(msg)) {
             self.set_value(ind, VIZ.max_min(Number(msg), slider_range[1], slider_range[0]));
@@ -266,8 +288,8 @@ VIZ.Slider.prototype.submit_value = function (button, ind, text_div) {
         }
         else {
             alert('failed to set value');
-            text_div.innerHTML = 0;
-            self.set_value(ind, VIZ.max_min(0, slider_range[1], slider_range[0]));   
+            text_div.innerHTML = original_value;
+            self.set_value(ind, VIZ.max_min(original_value, slider_range[1], slider_range[0]));   
             return;
         }
     }
@@ -322,7 +344,6 @@ VIZ.Slider.prototype.user_value = function () {
 
         self.set_value(i, insert_value);
     }
-    //this.save_layout();
 };
 
 VIZ.Slider.prototype.set_range = function() {
