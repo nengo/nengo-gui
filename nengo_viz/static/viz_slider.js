@@ -58,13 +58,14 @@ VIZ.Slider = function(parent, args) {
             function(event) {
                 /** check if click was the middle mouse button */
                 if (event.which == 2){
-                    self.set_value(this.slider.index, 0);
+                    self.set_value(this.slider.index, 0, true);
                 }
             }
         );
 
         interact(slider.div)
             .on('tap', function(event) {
+                console.log('crazy:', event);
                 var ind = event.currentTarget.slider.index;
                 self.input_set_value(ind);
                 event.stopPropagation();
