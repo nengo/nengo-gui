@@ -60,6 +60,9 @@ VIZ.Slider = function(parent, args) {
         /** setup slider dragging */
         interact(slider.div)
             .draggable({
+                onstart: function () {
+                    self.menu.hide_any();
+                },
                 onmove: function (event) {
                     var target = event.target;
 

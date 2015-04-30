@@ -90,6 +90,9 @@ VIZ.Component = function(parent, args) {
     interact(this.div)
         .draggable({
             inertia: true,
+            onstart: function () {
+                self.menu.hide_any();
+            },
             onmove: function (event) {
                 var target = event.target;
                 var tform = VIZ.get_transform(target) 
@@ -114,6 +117,7 @@ VIZ.Component = function(parent, args) {
             edges: { left: true, top: true, right: true, bottom: true }
             })
         .on('resizemove', function(event) {
+            self.menu.hide_any();
             var target = event.target;
             var newWidth = event.rect.width;
             var newHeight = event.rect.height;
