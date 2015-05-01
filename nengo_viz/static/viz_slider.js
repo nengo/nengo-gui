@@ -151,6 +151,13 @@ VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;
 
 VIZ.Slider.prototype.set_value = function(slider_index, value, immediate) {
+    console.assert(typeof slider_index == 'number');
+    console.assert(typeof value == 'number');
+    console.assert(typeof immediate == 'boolean');
+
+    //Make sure the new value is in the slider range.
+    value = this.max_min(value);
+
     //Get the slider
     var target = this.sliders[slider_index].div;
 
@@ -191,6 +198,9 @@ VIZ.Slider.prototype.set_value = function(slider_index, value, immediate) {
  * update visual display based when component is resized
  */
 VIZ.Slider.prototype.on_resize = function(width, height) {
+    console.assert(typeof width == 'number');
+    console.assert(typeof height == 'number');
+
     if (width < this.minWidth) {
         width = this.minWidth;
     }
@@ -243,6 +253,8 @@ VIZ.Slider.prototype.generate_menu = function() {
 };
 
 VIZ.Slider.prototype.input_set_value = function(ind) {
+    console.assert(typeof ind == 'number');
+
     var self = this;
     this.disable_all_slider_inputs();
     this.menu.hide_any();
@@ -285,12 +297,16 @@ VIZ.Slider.prototype.disable_all_slider_inputs = function () {
 }
 
 VIZ.Slider.prototype.submit_value = function (button, ind, text_div, original_value) {
+    console.assert(typeof button == 'number');
+    console.assert(typeof ind == 'number');
+    console.assert(typeof text_div == 'object');
+    console.assert(typeof original_value == 'string');
+    
     if (button == 13) {
-        var slider_range = this.scale.domain();
         var msg = text_div.querySelector('#value_in_field').value;
         $(text_div).off('keypress');
         if (VIZ.is_num(msg)) {
-            this.set_value(ind, VIZ.max_min(Number(msg), slider_range[1], slider_range[0]), true);
+            this.set_value(ind, Number(msg), true);
             return;
         }
         else {
@@ -344,7 +360,7 @@ VIZ.Slider.prototype.user_value = function () {
     }
     var new_value = prompt('Set value\n' + prompt_string);
     
-    //If the user hit cancel
+    //If the user hits cancel
     if (new_value == null) {
         return;
     };
@@ -352,17 +368,13 @@ VIZ.Slider.prototype.user_value = function () {
     //Make the string into a list
     new_value = new_value.split(',');
 
-    //Get the max and min slider bounds
-    var slider_range = this.scale.domain();
-
     //Update the sliders one at a time, checking input as we go
     for (var i = 0; i < this.sliders.length; i++){
         if (!(VIZ.is_num(new_value[i]))) {
             alert("invalid input :" + new_value[i] + "\nFor the slider in position " + (i + 1) );
             break;
         }
-        insert_value = VIZ.max_min(new_value[i], slider_range[1], slider_range[0]);
-        this.set_value(i, insert_value, false);
+        this.set_value(i, Number(new_value[i]), false);
     }
 };
 
@@ -387,3 +399,26 @@ VIZ.Slider.prototype.layout_info = function () {
     info.max_value = this.scale.domain()[0];
     return info;
 };
+
+//takes input, min, and max and outputs the
+//boundary value if input is above/below max/min
+//Otherwise outputs the input
+//max_min: Num Num Num -> Num
+VIZ.Slider.prototype.max_min = function(value) {
+    console.assert(typeof value == 'number');
+
+    //Get the max and min slider bounds
+    var slider_range = this.scale.domain();
+    min = slider_range[1];
+    max = slider_range[0];
+
+    if (value < min) {
+        return min;
+    }
+    else if (value > max) {
+        return max;
+    }
+    else {
+        return value;
+    }
+}
