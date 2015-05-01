@@ -388,9 +388,9 @@ VIZ.Slider.prototype.layout_info = function () {
     return info;
 };
 
-//slider_index: Nat, new_text: Num
+//slider_index: Nat, new_shown_value: Num
 //Rounds to 2 decimal places
-VIZ.Slider.prototype.update_value_text = function (slider_index, new_text) {
+VIZ.Slider.prototype.update_value_text = function (slider_index, new_shown_value) {
     var target = this.sliders[slider_index].value_display;
-    target.innerHTML = new_text.toFixed(2);
+    target.innerHTML = new_shown_value.toFixed(2);
 }
