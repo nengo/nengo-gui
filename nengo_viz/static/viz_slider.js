@@ -399,10 +399,10 @@ VIZ.Slider.prototype.layout_info = function () {
     return info;
 };
 
-//takes input, min, and max and outputs the
+//takes input and outputs the
 //boundary value if input is above/below max/min
 //Otherwise outputs the input
-//max_min: Num Num Num -> Num
+//max_min: Num -> Num
 VIZ.Slider.prototype.max_min = function(value) {
     console.assert(typeof value == 'number');
 
