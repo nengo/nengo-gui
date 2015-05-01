@@ -65,7 +65,6 @@ VIZ.Slider = function(parent, args) {
 
         interact(slider.div)
             .on('tap', function(event) {
-                console.log('crazy:', event);
                 var ind = event.currentTarget.slider.index;
                 self.input_set_value(ind);
                 event.stopPropagation();
@@ -301,7 +300,7 @@ VIZ.Slider.prototype.submit_value = function (button, ind, text_div, original_va
     console.assert(typeof ind == 'number');
     console.assert(typeof text_div == 'object');
     console.assert(typeof original_value == 'string');
-    
+
     if (button == 13) {
         var msg = text_div.querySelector('#value_in_field').value;
         $(text_div).off('keypress');
