@@ -210,6 +210,30 @@ VIZ.TimeSlider = function(args) {
                 self.sim.div.dispatchEvent(new Event('adjust_time'));
             }
         })
+        .resizable({
+           edges: {left:true, top:false, right:true, bottom:false},
+           invert: 'reposition',
+           })
+        .on('resizemove', function(event) {
+           var newWidth = event.rect.width;
+           var dx = event.deltaRect.left;
+           var x = self.kept_scale(self.first_shown_time) + dx;
+           var new_time = self.kept_scale.invert(x);
+           /** make sure we're within bounds */
+           if (new_time > self.last_time - self.shown_time) {
+               new_time = self.last_time - self.shown_time;
+           }
+           if (new_time < self.last_time - self.kept_time) {
+               new_time = self.last_time - self.kept_time;
+           }
+           self.first_shown_time = new_time;
+           self.shown_time = self.kept_scale.invert(x + newWidth) - new_time;
+
+           VIZ.set_transform(event.target, x, 0);
+           self.shown_div.style.width = newWidth;
+
+           self.sim.div.dispatchEvent(new Event('adjust_time'));
+        });
         
     
     /** build the axis to display inside the scroll area */
