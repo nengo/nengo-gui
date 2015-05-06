@@ -134,7 +134,7 @@ VIZ.NetGraph = function(parent, args) {
 VIZ.NetGraph.prototype.generate_menu = function() {
     var self = this;
     var items = [];
-    items.push(['auto-layout', 
+    items.push(['Auto-layout', 
                 function() {self.notify({act:"feedforward_layout",
                             uid:null});}]);
     return items;

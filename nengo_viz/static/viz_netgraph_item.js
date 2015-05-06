@@ -211,27 +211,27 @@ VIZ.NetGraphItem.prototype.generate_menu = function () {
     var items = [];
     if (this.type === 'net') {
         if (this.expanded) {
-            items.push(['collapse network', 
+            items.push(['Collapse Network', 
                         function() {self.collapse(true);}]);
-            items.push(['auto-layout', 
+            items.push(['Auto-layout', 
                         function() {self.request_feedforward_layout();}]);
         } else {
-            items.push(['expand network', 
+            items.push(['Expand Network', 
                         function() {self.expand();}]);
         }
     }
     if (this.type == 'ens') {
-        items.push(['value', function() {self.create_graph('Value');}])
+        items.push(['Value', function() {self.create_graph('Value');}])
         if (this.dimensions > 1) {
-            items.push(['xy-value', function() {self.create_graph('XYValue');}])
+            items.push(['XY-value', function() {self.create_graph('XYValue');}])
         }
-        items.push(['spikes', function() {self.create_graph('Raster');}])
+        items.push(['Spikes', function() {self.create_graph('Raster');}])
     }
     if (this.type == 'node') {
-        items.push(['slider', function() {self.create_graph('Slider');}])
-        items.push(['value', function() {self.create_graph('Value');}])
+        items.push(['Slider', function() {self.create_graph('Slider');}])
+        items.push(['Value', function() {self.create_graph('Value');}])
         if (this.dimensions > 1) {
-            items.push(['xy-value', function() {self.create_graph('XYValue');}])
+            items.push(['XY-value', function() {self.create_graph('XYValue');}])
         }
     }
     if (this.allow_pointer_plot) {
