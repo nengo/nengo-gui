@@ -85,8 +85,8 @@ VIZ.Component = function(parent, args) {
     
     /** Allow element to be dragged */ 
     var cord_scale = VIZ.pan.cord_per_px(VIZ.Screen)
-    this.div.setAttribute('data-x', args.x); //+ (this.width / 2) * cord_scale.x);
-    this.div.setAttribute('data-y', args.y); //+ (this.height / 2) * cord_scale.y);
+    this.div.setAttribute('data-x', args.x);
+    this.div.setAttribute('data-y', args.y);
     interact(this.div)
         .draggable({
             inertia: true,
