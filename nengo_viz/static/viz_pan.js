@@ -92,11 +92,25 @@ VIZ.pan.cord_per_px = function (scrn) {
 	 y: cord_height / px_height};
 }
 
+VIZ.pan.px_per_cord = function (scrn) {
+	return {x: 1 / VIZ.pan.cord_per_px(scrn).x ,
+		y: 1 / VIZ.pan.cord_per_px(scrn).y};
+}
+
 VIZ.pan.redraw = function() {
 	$('.graph').each(function(i, element){ // Get all the graph elements
 		var transform_val = VIZ.pan.cord_map(VIZ.Screen, VIZ.pan.get_cords(element));
-		VIZ.set_transform(element, transform_val.x, transform_val.y);
+		VIZ.pan.draw_item(element, transform_val.x, transform_val.y);
 	});
 }
 
-
+//draw an item using its centre point as the location of drawing
+//This allows coordinates to still be situated at the top right of the element
+// while being able to draw the object around the centre point
+VIZ.pan.draw_item = function (element, x, y){
+	var w = $(element).width();
+	var h = $(element).height();
+	x = x - w / 2;
+	y = y - h / 2; 
+	VIZ.set_transform(element, x , y);
+}
