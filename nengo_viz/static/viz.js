@@ -115,26 +115,29 @@ VIZ.Component = function(parent, args) {
         .resizable({
             edges: { left: true, top: true, right: true, bottom: true }
             })
-        .on('resizemove', function(event) {
+        .on('resizestart', function (event) {
             self.menu.hide_any();
+        })
+        .on('resizemove', function(event) {
             var target = event.target;
             var newWidth = event.rect.width;
             var newHeight = event.rect.height;
-            var dx = event.deltaRect.left;
-            var dy = event.deltaRect.top;
+            var dx = event.deltaRect.left ;
+            var dy = event.deltaRect.top ;
+            var dz = event.deltaRect.right;
+            var da = event.deltaRect.bottom;
 
             var scale = VIZ.pan.cord_per_px(VIZ.Screen);
 
-            var x = parseFloat(target.getAttribute('data-x')) + dx * scale.x;
-            var y = parseFloat(target.getAttribute('data-y')) + dy * scale.y;
+            var x = parseFloat(target.getAttribute('data-x')) + ((dx + dz) / 2 * scale.x) ;
+            var y = parseFloat(target.getAttribute('data-y')) + ((dy + da) / 2 * scale.y) ;
             target.setAttribute('data-x', x);
             target.setAttribute('data-y', y);
             self.on_resize(newWidth, newHeight);
             VIZ.pan.redraw();          
-            
         })
         .on('resizeend', function(event) {
-            self.save_layout()
+            self.save_layout();
         });    
 
     /** Open a WebSocket to the server */
@@ -162,6 +165,7 @@ VIZ.Component = function(parent, args) {
         });    
         
     VIZ.Component.components.push(this);
+    VIZ.pan.redraw();
 };
 
 VIZ.Component.components = [];
