@@ -92,11 +92,6 @@ VIZ.pan.cord_per_px = function (scrn) {
 	 y: cord_height / px_height};
 }
 
-VIZ.pan.px_per_cord = function (scrn) {
-	return {x: 1 / VIZ.pan.cord_per_px(scrn).x ,
-		y: 1 / VIZ.pan.cord_per_px(scrn).y};
-}
-
 VIZ.pan.redraw = function() {
 	$('.graph').each(function(i, element){ // Get all the graph elements
 		var transform_val = VIZ.pan.cord_map(VIZ.Screen, VIZ.pan.get_cords(element));

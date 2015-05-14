@@ -84,7 +84,6 @@ VIZ.Component = function(parent, args) {
     this.div.ontouchstart = this.div.onmousedown;
     
     /** Allow element to be dragged */ 
-    var cord_scale = VIZ.pan.cord_per_px(VIZ.Screen)
     this.div.setAttribute('data-x', args.x);
     this.div.setAttribute('data-y', args.y);
     interact(this.div)
