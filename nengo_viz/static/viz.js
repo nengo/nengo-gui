@@ -459,24 +459,8 @@ VIZ.is_num = function(value){
     }
 }
 
-//takes input, min, and max and outputs the
-//boundary value if input is above/below max/min
-//Otherwise outputs the input
-VIZ.max_min = function(value, min, max) {
-    if (value < min) {
-        //alert('value below range limits, using value: ' + min + ' instead.')
-        return Number(min);
-    }
-    else if (value > max) {
-        //alert('value above range limits, using value: ' + max + ' instead.')
-        return Number(max);
-    }
-    else {
-        return Number(value);
-    }
-}
-
 VIZ.next_zindex = function() {
     VIZ.max_zindex++;
     return VIZ.max_zindex;
 }
+
