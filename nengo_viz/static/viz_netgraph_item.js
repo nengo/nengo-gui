@@ -211,12 +211,12 @@ VIZ.NetGraphItem.prototype.generate_menu = function () {
     var items = [];
     if (this.type === 'net') {
         if (this.expanded) {
-            items.push(['Collapse Network', 
+            items.push(['Collapse network', 
                         function() {self.collapse(true);}]);
             items.push(['Auto-layout', 
                         function() {self.request_feedforward_layout();}]);
         } else {
-            items.push(['Expand Network', 
+            items.push(['Expand network', 
                         function() {self.expand();}]);
         }
     }
@@ -235,7 +235,7 @@ VIZ.NetGraphItem.prototype.generate_menu = function () {
         }
     }
     if (this.allow_pointer_plot) {
-        items.push(['semantic pointer', 
+        items.push(['Semantic pointer', 
                     function() {self.create_graph('Pointer');}])
     }
     return items;
