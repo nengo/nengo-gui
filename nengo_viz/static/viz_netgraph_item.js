@@ -324,6 +324,8 @@ VIZ.NetGraphItem.prototype.compute_fill = function() {
     if (!this.passthrough) {
         var fill = Math.round(255 * Math.pow(0.8, this.depth));
         this.shape.style.fill = 'rgb(' + fill + ',' + fill + ',' + fill + ')';
+        var stroke = Math.round(255 * Math.pow(0.8, this.depth + 2));
+        this.shape.style.stroke = 'rgb(' + stroke + ',' + stroke + ',' + stroke + ')';
     }
 }
 

@@ -2,17 +2,16 @@
 }
 
 g.ens ellipse{
-    stroke-width:0;
+    stroke-width:1;
     }
     
 g.node rect{
-    stroke-width:0;
+    stroke-width:1;
     }  
 
 g.net rect{
-    stroke-width:0;
+    stroke-width:1;
     }  
-    
 
 .netgraph g text {
     text-anchor: middle;
