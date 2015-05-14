@@ -141,7 +141,7 @@ VIZ.Slider = function(parent, args) {
             (args.width / args.n_sliders) * i - this.guideline_width / 2;
         VIZ.set_transform(guideline, guide_x, 0);
         this.div.appendChild(guideline);
-        }
+    }
 
     this.on_resize(args.width, args.height);
 };
@@ -421,10 +421,11 @@ VIZ.Slider.prototype.max_min = function(value) {
     else {
         return value;
     }
+};
 
 //slider_index: Nat, new_shown_value: Num
 //Rounds to 2 decimal places
 VIZ.Slider.prototype.update_value_text = function (slider_index, new_shown_value) {
     var target = this.sliders[slider_index].value_display;
     target.innerHTML = new_shown_value.toFixed(2);
-}
+};
