@@ -34,12 +34,7 @@ VIZ.Menu.prototype.show = function (x, y, items) {
     this.menu.role = 'group';
     this.menu.style.position = 'fixed';
 
-    /** because VIZ.Components increase their zIndex every time they are
-     * clicked on, we need the menu's zIndex to be very large
-     * TODO: change this to be one more than the highest existing zIndex
-     */
-    VIZ.max_zindex++;
-    this.menu.style.zIndex = VIZ.max_zindex;
+    this.menu.style.zIndex = VIZ.next_zindex();
     this.div.appendChild(this.menu);
 
     VIZ.set_transform(this.menu, x - 20, y - 20);

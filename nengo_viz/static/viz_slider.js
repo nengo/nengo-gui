@@ -44,7 +44,8 @@ VIZ.Slider = function(parent, args) {
         valueDisplay.classList.add('value_display');
         valueDisplay.innerHTML = slider.value;
         slider.div.appendChild(valueDisplay);
-        slider.value_display = valueDisplay
+        slider.value_display = valueDisplay;
+        this.update_value_text(i, slider.value);
 
         /** put the slider in the container */
         slider.div.style.position = 'fixed';
@@ -170,7 +171,7 @@ VIZ.Slider.prototype.set_value = function(slider_index, value, immediate) {
     var height = this.slider_height;
 
     //Change shown text value to new value
-    target.firstChild.textContent = Number(value).toFixed(2);
+    this.update_value_text(slider_index, value)
 
     //Change slider's value to value
     target.slider.value = value;
@@ -420,4 +421,10 @@ VIZ.Slider.prototype.max_min = function(value) {
     else {
         return value;
     }
+
+//slider_index: Nat, new_shown_value: Num
+//Rounds to 2 decimal places
+VIZ.Slider.prototype.update_value_text = function (slider_index, new_shown_value) {
+    var target = this.sliders[slider_index].value_display;
+    target.innerHTML = new_shown_value.toFixed(2);
 }

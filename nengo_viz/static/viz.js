@@ -1,6 +1,8 @@
 /** namespace for all Nengo visualization */
 var VIZ = {};
 
+VIZ.max_zindex = 0;
+
 /**
  * Helper function to set the transform of an element.
  */
@@ -75,10 +77,9 @@ VIZ.Component = function(parent, args) {
     self.minHeight = 2;
 
     /** Move element to be drawn on top when clicked on */
-    VIZ.max_zindex = 0;
+    
     this.div.onmousedown = function() {
-        VIZ.max_zindex++;
-        this.style.zIndex = VIZ.max_zindex;
+        this.style.zIndex = VIZ.next_zindex();
     };
 
     this.div.ontouchstart = this.div.onmousedown;
@@ -456,5 +457,10 @@ VIZ.is_num = function(value){
     else{
         return false;
     }
+}
+
+VIZ.next_zindex = function() {
+    VIZ.max_zindex++;
+    return VIZ.max_zindex;
 }
 
