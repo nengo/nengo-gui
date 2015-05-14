@@ -3,17 +3,14 @@
 
 g.ens ellipse{
     stroke-width:1;
-    stroke: gray;
     }
     
 g.node rect{
     stroke-width:1;
-    stroke: gray;
     }  
 
 g.net rect{
     stroke-width:1;
-    stroke: gray;
     }  
 
 .netgraph g text {
