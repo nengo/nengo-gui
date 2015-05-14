@@ -464,13 +464,13 @@ VIZ.is_num = function(value){
 VIZ.max_min = function(value, min, max) {
     if (value < min) {
         //alert('value below range limits, using value: ' + min + ' instead.')
-        return min;
+        return Number(min);
     }
     else if (value > max) {
         //alert('value above range limits, using value: ' + max + ' instead.')
-        return max;
+        return Number(max);
     }
     else {
-        return value;
+        return Number(value);
     }
 }
