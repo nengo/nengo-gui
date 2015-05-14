@@ -158,24 +158,6 @@ VIZ.NetGraphItem = function(ng, info) {
                            x:item.pos[0], y:item.pos[1],
                            width:item.size[0], height:item.size[1]});
                 });
-                
-        interact(this.g)
-            .on('wheel', function(event) {
-                var item = ng.svg_objects[uid];
-                var step_size = 1.1; // size of zoom per wheel click
-
-                var delta = event.wheelDeltaY || -event.deltaY
-                var scale = delta > 0 ? step_size : 1.0 / step_size;
-                
-                item.set_size(item.size[0] * scale, item.size[1] * scale);
-                
-                item.constrain_position();                
-                ng.notify({act:"pos_size", uid:uid, 
-                           x:item.pos[0], y:item.pos[1],
-                           width:item.size[0], height:item.size[1]});
-                           
-                event.stopPropagation();           
-                });
     }
     
     var self = this;
