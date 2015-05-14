@@ -186,17 +186,17 @@ VIZ.Component.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     if (this.label_visible) {
-        items.push(['hide label', function() {
+        items.push(['Hide label', function() {
             self.hide_label(); 
             self.save_layout();
         }]);
     } else {
-        items.push(['show label', function() {
+        items.push(['Show label', function() {
             self.show_label(); 
             self.save_layout();
         }]);    
     }
-    items.push(['remove', function() {self.remove();}]);
+    items.push(['Remove', function() {self.remove();}]);
     return items;
 };
 
