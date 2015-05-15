@@ -5,11 +5,15 @@ import numpy as np
 import nengo
 import json
 
-from nengo_viz.components.component import Component
+from nengo_viz.components.component import Component, Template
 import nengo_viz.layout
 
 class NetGraph(Component):
     configs = {}
+
+    class Template(Template):
+        def __init__(self):
+            super(Template, self).__init__(NetGraph)
 
     def __init__(self, viz, config, uid):
         super(NetGraph, self).__init__(viz, config, uid)

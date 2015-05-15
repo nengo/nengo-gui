@@ -2,10 +2,14 @@ import nengo
 import numpy as np
 import struct
 
-from nengo_viz.components.component import Component
+from nengo_viz.components.component import Component, Template
 
 
 class Raster(Component):
+    class CompTemplate(Template):
+        def __init__(self, target):
+            super(CompTemplate, self).__init__(Raster, target)
+
     def __init__(self, viz, config, uid, obj, n_neurons=None):
         super(Raster, self).__init__(viz, config, uid)
         self.obj = obj.neurons

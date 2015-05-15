@@ -3,10 +3,14 @@ import nengo.spa
 import numpy as np
 import struct
 
-from nengo_viz.components.component import Component
+from nengo_viz.components.component import Component, Template
 
 
 class Pointer(Component):
+    class Template(Template):
+        def __init__(self, target):
+            super(Template, self).__init__(Pointer, target)
+
     def __init__(self, viz, config, uid, obj):
         super(Pointer, self).__init__(viz, config, uid)
         self.obj = obj

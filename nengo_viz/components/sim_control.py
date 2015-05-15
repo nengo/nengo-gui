@@ -4,9 +4,13 @@ import struct
 import numpy as np
 import nengo
 
-from nengo_viz.components.component import Component
+from nengo_viz.components.component import Component, Template
 
 class SimControl(Component):
+    class Template(Template):
+        def __init__(self):
+            super(Template, self).__init__()
+
     def __init__(self, viz, config, uid, dt=0.001):
         super(SimControl, self).__init__(viz, config, uid)
         self.viz = viz

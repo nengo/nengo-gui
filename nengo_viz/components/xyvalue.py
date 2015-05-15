@@ -2,10 +2,14 @@ import nengo
 import numpy as np
 import struct
 
-from nengo_viz.components.component import Component
+from nengo_viz.components.component import Component, Template
 
 
 class XYValue(Component):
+    class Template(Template):
+        def __init__(self, target):
+            super(Template, self).__init__(target)
+
     def __init__(self, viz, config, uid, obj):
         super(XYValue, self).__init__(viz, config, uid)
         self.obj = obj

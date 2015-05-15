@@ -1,5 +1,6 @@
 import time
 import threading
+import inspect
 
 import nengo
 
@@ -83,70 +84,13 @@ class VizSim(object):
 
         return '\n'.join([c.javascript() for c in self.components])
 
-
-class Template(object):
-    def __init__(self, cls, *args, **kwargs):
-        self.cls = cls
-        self.args = args
-        self.kwargs = kwargs
-    def create(self, vizsim):
-        uid = vizsim.viz.get_uid(self)
-        c = self.cls(vizsim, vizsim.viz.config[self], uid,
-                     *self.args, **self.kwargs)
-        c.template = self
-        return c
-
-class Slider(Template):
-    def __init__(self, target):
-        super(Slider, self).__init__(nengo_viz.components.Slider, target)
-        self.target = target
-
-    def code_python(self, uids):
-        return 'nengo_viz.Slider(%s)' % uids[self.target]
-
-class Value(Template):
-    def __init__(self, target):
-        super(Value, self).__init__(nengo_viz.components.Value, target)
-        self.target = target
-
-    def code_python(self, uids):
-        return 'nengo_viz.Value(%s)' % uids[self.target]
-
-class XYValue(Template):
-    def __init__(self, target):
-        super(XYValue, self).__init__(nengo_viz.components.XYValue, target)
-        self.target = target
-
-    def code_python(self, uids):
-        return 'nengo_viz.XYValue(%s)' % uids[self.target]
-
-class Raster(Template):
-    def __init__(self, target):
-        super(Raster, self).__init__(nengo_viz.components.Raster, target)
-        self.target = target
-
-    def code_python(self, uids):
-        return 'nengo_viz.Raster(%s)' % uids[self.target]
-
-class Pointer(Template):
-    def __init__(self, target):
-        super(Pointer, self).__init__(nengo_viz.components.Pointer, target)
-        self.target = target
-
-    def code_python(self, uids):
-        return 'nengo_viz.Pointer(%s)' % uids[self.target]
-
-class NetGraph(Template):
-    def __init__(self):
-        super(NetGraph, self).__init__(nengo_viz.components.NetGraph)
-    def code_python(self, uids):
-        return 'nengo_viz.NetGraph()'
-
-class SimControl(Template):
-    def __init__(self):
-        super(SimControl, self).__init__(nengo_viz.components.SimControl)
-    def code_python(self, uids):
-        return 'nengo_viz.SimControl()'
+for name, value in inspect.getmembers(nengo_viz.components):
+    try:
+        if issubclass(value, nengo_viz.components.component.Component):
+            if name != 'Component':
+                locals()[name] = value.Template
+    except TypeError:
+        pass
 
 class Config(nengo.Config):
     def __init__(self):
@@ -195,7 +139,7 @@ class Config(nengo.Config):
                 if isinstance(obj, nengo.Network):
                     lines.append('_viz_config[%s].expanded=%s' % (uid, self[obj].expanded))
                     lines.append('_viz_config[%s].has_layout=%s' % (uid, self[obj].has_layout))
-            elif isinstance(obj, Template):
+            elif isinstance(obj, nengo.components.component.Template):
                 lines.append('%s = %s' % (uid, obj.code_python(uids)))
                 if not isinstance(obj, (NetGraph, SimControl)):
                     lines.append('_viz_config[%s].x = %g' % (uid, self[obj].x))
@@ -248,7 +192,7 @@ class Viz(object):
 
     def find_templates(self):
         for k, v in self.locals.items():
-            if isinstance(v, Template):
+            if isinstance(v, nengo_viz.components.component.Template):
                 yield v
 
     def generate_uid(self, obj, prefix):
@@ -291,7 +235,7 @@ class Viz(object):
             config[self.model].size = (1.0, 1.0)
 
         for k, v in self.locals.items():
-            if isinstance(v, Template):
+            if isinstance(v, nengo_viz.components.component.Template):
                 self.default_labels[v] = k
         return config
 

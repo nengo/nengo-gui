@@ -1,8 +1,12 @@
 import numpy as np
 
-from nengo_viz.components.component import Component
+from nengo_viz.components.component import Component, Template
 
 class Slider(Component):
+    class Template(Template):
+        def __init__(self, target):
+            super(Template, self).__init__(target)
+
     def __init__(self, viz, config, uid, node):
         super(Slider, self).__init__(viz, config, uid)
         self.node = node
