@@ -85,6 +85,8 @@ class VizSim(object):
 
 
 class Template(object):
+    config_params = dict(x=0, y=0, width=100, height=100, label_visible=True)
+
     def __init__(self, cls, *args, **kwargs):
         self.cls = cls
         self.args = args
@@ -97,6 +99,7 @@ class Template(object):
         return c
 
 class SliderTemplate(Template):
+    config_params = dict(max_value=1, min_value=-1, **Template.config_params)
     def __init__(self, target):
         super(SliderTemplate, self).__init__(nengo_viz.components.Slider, target)
         self.target = target
@@ -105,6 +108,7 @@ class SliderTemplate(Template):
         return 'nengo_viz.SliderTemplate(%s)' % uids[self.target]
 
 class ValueTemplate(Template):
+    config_params = dict(maxy=1, miny=-1, **Template.config_params)
     def __init__(self, target):
         super(ValueTemplate, self).__init__(nengo_viz.components.Value, target)
         self.target = target
@@ -113,6 +117,8 @@ class ValueTemplate(Template):
         return 'nengo_viz.ValueTemplate(%s)' % uids[self.target]
 
 class XYValueTemplate(Template):
+    config_params = dict(max_value=1, min_value=-1, index_x=0, index_y=1,
+                         **Template.config_params)
     def __init__(self, target):
         super(XYValueTemplate, self).__init__(nengo_viz.components.XYValue, target)
         self.target = target
@@ -129,6 +135,8 @@ class RasterTemplate(Template):
         return 'nengo_viz.RasterTemplate(%s)' % uids[self.target]
 
 class PointerTemplate(Template):
+    config_params = dict(show_pairs=False, **Template.config_params)
+
     def __init__(self, target):
         super(PointerTemplate, self).__init__(nengo_viz.components.Pointer, target)
         self.target = target
@@ -137,12 +145,16 @@ class PointerTemplate(Template):
         return 'nengo_viz.PointerTemplate(%s)' % uids[self.target]
 
 class NetGraphTemplate(Template):
+    config_params = dict()
+
     def __init__(self):
         super(NetGraphTemplate, self).__init__(nengo_viz.components.NetGraph)
     def code_python(self, uids):
         return 'nengo_viz.NetGraphTemplate()'
 
 class SimControlTemplate(Template):
+    config_params = dict(shown_time=0.5, kept_time=4.0)
+
     def __init__(self):
         super(SimControlTemplate, self).__init__(nengo_viz.components.SimControl)
     def code_python(self, uids):
@@ -161,27 +173,10 @@ class Config(nengo.Config):
         self[nengo.Network].set_param('expanded', nengo.params.Parameter(False))
         self[nengo.Network].set_param('has_layout', nengo.params.Parameter(False))
 
-        self.configures(NetGraphTemplate)
-        self.configures(SimControlTemplate)
-        self[SimControlTemplate].set_param('shown_time', nengo.params.Parameter(0.5))
-        self[SimControlTemplate].set_param('kept_time', nengo.params.Parameter(4.0))
-        for cls in [XYValueTemplate, ValueTemplate, SliderTemplate, RasterTemplate, PointerTemplate]:
+        for cls in [XYValueTemplate, ValueTemplate, SliderTemplate, RasterTemplate, PointerTemplate, NetGraphTemplate, SimControlTemplate]:
             self.configures(cls)
-            self[cls].set_param('x', nengo.params.Parameter(0))
-            self[cls].set_param('y', nengo.params.Parameter(0))
-            self[cls].set_param('width', nengo.params.Parameter(100))
-            self[cls].set_param('height', nengo.params.Parameter(100))
-            self[cls].set_param('label_visible', nengo.params.Parameter(True))
-        self[ValueTemplate].set_param('maxy', nengo.params.Parameter(1))
-        self[ValueTemplate].set_param('miny', nengo.params.Parameter(-1))
-        self[XYValueTemplate].set_param('max_value', nengo.params.Parameter(1))
-        self[XYValueTemplate].set_param('min_value', nengo.params.Parameter(-1))
-        self[XYValueTemplate].set_param('index_x', nengo.params.Parameter(0))
-        self[XYValueTemplate].set_param('index_y', nengo.params.Parameter(1))
-        self[SliderTemplate].set_param('min_value', nengo.params.Parameter(-1))
-        self[SliderTemplate].set_param('max_value', nengo.params.Parameter(1))
-        self[PointerTemplate].set_param('show_pairs', nengo.params.Parameter(False))
-
+            for k, v in cls.config_params.items():
+                self[cls].set_param(k, nengo.params.Parameter(v))
 
 
     def dumps(self, uids):
@@ -197,25 +192,9 @@ class Config(nengo.Config):
                     lines.append('_viz_config[%s].has_layout=%s' % (uid, self[obj].has_layout))
             elif isinstance(obj, Template):
                 lines.append('%s = %s' % (uid, obj.code_python(uids)))
-                if not isinstance(obj, (NetGraphTemplate, SimControlTemplate)):
-                    lines.append('_viz_config[%s].x = %g' % (uid, self[obj].x))
-                    lines.append('_viz_config[%s].y = %g' % (uid, self[obj].y))
-                    lines.append('_viz_config[%s].width = %g' % (uid, self[obj].width))
-                    lines.append('_viz_config[%s].height = %g' % (uid, self[obj].height))
-                    lines.append('_viz_config[%s].label_visible = %s' % (uid, self[obj].label_visible))
-                if isinstance(obj, SliderTemplate):
-                    lines.append('_viz_config[%s].min_value = %g' % (uid, self[obj].min_value))
-                    lines.append('_viz_config[%s].max_value = %g' % (uid, self[obj].max_value))
-                if isinstance(obj, ValueTemplate):
-                    lines.append('_viz_config[%s].miny = %g' % (uid, self[obj].miny))
-                    lines.append('_viz_config[%s].maxy = %g' % (uid, self[obj].maxy))
-                if isinstance(obj, XYValueTemplate):
-                    lines.append('_viz_config[%s].min_value = %g' % (uid, self[obj].min_value))
-                    lines.append('_viz_config[%s].max_value = %g' % (uid, self[obj].max_value))
-                    lines.append('_viz_config[%s].index_x = %g' % (uid, self[obj].index_x))
-                    lines.append('_viz_config[%s].index_y = %g' % (uid, self[obj].index_y))
-                if isinstance(obj, PointerTemplate):
-                    lines.append('_viz_config[%s].show_pairs = %g' % (uid, self[obj].show_pairs))
+                for k in cls.config_params.keys():
+                    v = getattr(self[obj], k)
+                    lines.append('_viz_config[%s].%s = %g' % (uid, k, v))
 
 
         return '\n'.join(lines)
