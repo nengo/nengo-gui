@@ -24,7 +24,6 @@ class VizSim(object):
         self.changed = False    # has something changed the model, so it
                                 #  should be rebuilt?
 
-
         for template in self.viz.find_templates():
             self.add_template(template)
 
@@ -42,7 +41,6 @@ class VizSim(object):
         else:
             self.components.append(c)
         return c
-
 
     def build(self):
         self.building = True
@@ -63,7 +61,6 @@ class VizSim(object):
 
         self.building = False
 
-
     def runner(self):
         # run the simulation
         while not self.finished:
@@ -76,14 +73,12 @@ class VizSim(object):
                 self.rebuild = False
                 self.build()
 
-
     def finish(self):
         self.finished = True
 
     def create_javascript(self):
 
         return '\n'.join([c.javascript() for c in self.components])
-
 
 
 class Viz(object):
@@ -146,10 +141,14 @@ class Viz(object):
         except IOError:
             pass
 
+        # make sure a SimControl and a NetGraph exist
         if '_viz_sim_control' not in self.locals:
-            self.locals['_viz_sim_control'] = nengo_viz.components.SimControlTemplate()
+            template = nengo_viz.components.SimControlTemplate()
+            self.locals['_viz_sim_control'] = template
         if '_viz_net_graph' not in self.locals:
-            self.locals['_viz_net_graph'] = nengo_viz.components.NetGraphTemplate()
+            template = nengo_viz.components.NetGraphTemplate()
+            self.locals['_viz_net_graph'] = template
+
         if config[self.model].pos is None:
             config[self.model].pos = (0, 0)
         if config[self.model].size is None:
