@@ -2,7 +2,7 @@ import nengo
 import numpy as np
 import struct
 
-from nengo_viz.components.component import Component
+from nengo_viz.components.component import Component, Template
 
 
 class XYValue(Component):
@@ -36,3 +36,8 @@ class XYValue(Component):
         info = dict(uid=self.uid, n_lines=self.n_lines, label=self.label)
         json = self.javascript_config(info)
         return 'new VIZ.XYValue(main, sim, %s);' % json
+
+class XYValueTemplate(Template):
+    cls = XYValue
+    config_params = dict(max_value=1, min_value=-1, index_x=0, index_y=1,
+                         **Template.default_params)

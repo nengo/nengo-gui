@@ -1,7 +1,7 @@
-from .slider import Slider
-from .value import Value
-from .xyvalue import XYValue
-from .sim_control import SimControl
-from .raster import Raster
-from .pointer import Pointer
-from .netgraph import NetGraph
+from .slider import Slider, SliderTemplate
+from .value import Value, ValueTemplate
+from .xyvalue import XYValue, XYValueTemplate
+from .sim_control import SimControl, SimControlTemplate
+from .raster import Raster, RasterTemplate
+from .pointer import Pointer, PointerTemplate
+from .netgraph import NetGraph, NetGraphTemplate

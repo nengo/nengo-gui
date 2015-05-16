@@ -4,7 +4,7 @@ import struct
 import numpy as np
 import nengo
 
-from nengo_viz.components.component import Component
+from nengo_viz.components.component import Component, Template
 
 class SimControl(Component):
     def __init__(self, viz, config, uid, dt=0.001):
@@ -87,3 +87,7 @@ class SimControl(Component):
             if self.viz.sim is None:
                 self.viz.rebuild = True
             self.paused = False
+
+class SimControlTemplate(Template):
+    cls = SimControl
+    config_params = dict(shown_time=0.5, kept_time=4.0)

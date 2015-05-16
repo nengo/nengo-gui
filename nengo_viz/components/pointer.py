@@ -3,7 +3,7 @@ import nengo.spa
 import numpy as np
 import struct
 
-from nengo_viz.components.component import Component
+from nengo_viz.components.component import Component, Template
 
 
 class Pointer(Component):
@@ -77,3 +77,9 @@ class Pointer(Component):
     @staticmethod
     def can_apply(obj):
         return isinstance(obj, (nengo.spa.Buffer, nengo.spa.Memory))
+
+
+class PointerTemplate(Template):
+    cls = Pointer
+    config_params = dict(show_pairs=False, **Template.default_params)
+
