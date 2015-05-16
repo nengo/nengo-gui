@@ -5,7 +5,7 @@ import numpy as np
 import nengo
 import json
 
-from nengo_viz.components.component import Component
+from nengo_viz.components.component import Component, Template
 import nengo_viz.layout
 
 class NetGraph(Component):
@@ -107,7 +107,7 @@ class NetGraph(Component):
         self.viz.viz.save_config()
 
     def act_create_graph(self, uid, type, x, y, width, height):
-        cls = getattr(nengo_viz, type + 'Template')
+        cls = getattr(nengo_viz.components, type + 'Template')
         obj = self.uids[uid]
         template = cls(obj)
         self.viz.viz.generate_uid(template, prefix='_viz_')
@@ -222,4 +222,8 @@ class NetGraph(Component):
         client.write(json.dumps(info))
 
 
+
+class NetGraphTemplate(Template):
+    cls = NetGraph
+    config_params = dict()
 

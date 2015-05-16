@@ -36,7 +36,8 @@ class VizSim(object):
     def add_template(self, template):
         c = template.create(self)
         self.uids[c.uid] = c
-        if isinstance(template, (SimControlTemplate, NetGraphTemplate)):
+        if isinstance(template, (nengo_viz.components.SimControlTemplate,
+                                 nengo_viz.components.NetGraphTemplate)):
             self.components[:0] = [c]
         else:
             self.components.append(c)
@@ -85,53 +86,8 @@ class VizSim(object):
         return '\n'.join([c.javascript() for c in self.components])
 
 
-class Template(object):
-    default_params = dict(x=0, y=0, width=100, height=100, label_visible=True)
-
-    def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
-    def create(self, vizsim):
-        uid = vizsim.viz.get_uid(self)
-        c = self.cls(vizsim, vizsim.viz.config[self], uid,
-                     *self.args, **self.kwargs)
-        c.template = self
-        return c
-    def code_python(self, uids):
-        args = [uids[x] for x in self.args]
-        name = self.__class__.__name__
-        return 'nengo_viz.%s(%s)' % (name, ','.join(args))
-
-class SliderTemplate(Template):
-    cls = nengo_viz.components.Slider
-    config_params = dict(max_value=1, min_value=-1, **Template.default_params)
-
-class ValueTemplate(Template):
-    cls = nengo_viz.components.Value
-    config_params = dict(maxy=1, miny=-1, **Template.default_params)
-
-class XYValueTemplate(Template):
-    cls = nengo_viz.components.XYValue
-    config_params = dict(max_value=1, min_value=-1, index_x=0, index_y=1,
-                         **Template.default_params)
-
-class RasterTemplate(Template):
-    cls = nengo_viz.components.Raster
-    config_params = dict(**Template.default_params)
-
-class PointerTemplate(Template):
-    cls = nengo_viz.components.Pointer
-    config_params = dict(show_pairs=False, **Template.default_params)
 
 
-class NetGraphTemplate(Template):
-    cls = nengo_viz.components.NetGraph
-    config_params = dict()
-
-
-class SimControlTemplate(Template):
-    cls = nengo_viz.components.SimControl
-    config_params = dict(shown_time=0.5, kept_time=4.0)
 
 
 class Config(nengo.Config):
@@ -147,9 +103,9 @@ class Config(nengo.Config):
         self[nengo.Network].set_param('expanded', nengo.params.Parameter(False))
         self[nengo.Network].set_param('has_layout', nengo.params.Parameter(False))
 
-        for clsname, cls in inspect.getmembers(nengo_viz.viz):
-            if inspect.isclass(cls) and issubclass(cls, Template):
-                if cls != Template:
+        for clsname, cls in inspect.getmembers(nengo_viz.components):
+            if inspect.isclass(cls) and issubclass(cls, nengo_viz.components.component.Template):
+                if cls != nengo_viz.components.component.Template:
                     self.configures(cls)
                     for k, v in cls.config_params.items():
                         self[cls].set_param(k, nengo.params.Parameter(v))
@@ -166,7 +122,7 @@ class Config(nengo.Config):
                 if isinstance(obj, nengo.Network):
                     lines.append('_viz_config[%s].expanded=%s' % (uid, self[obj].expanded))
                     lines.append('_viz_config[%s].has_layout=%s' % (uid, self[obj].has_layout))
-            elif isinstance(obj, Template):
+            elif isinstance(obj, nengo_viz.components.component.Template):
                 lines.append('%s = %s' % (uid, obj.code_python(uids)))
                 for k in obj.config_params.keys():
                     v = getattr(self[obj], k)
@@ -203,7 +159,7 @@ class Viz(object):
 
     def find_templates(self):
         for k, v in self.locals.items():
-            if isinstance(v, Template):
+            if isinstance(v, nengo_viz.components.component.Template):
                 yield v
 
     def generate_uid(self, obj, prefix):
@@ -237,16 +193,16 @@ class Viz(object):
             pass
 
         if '_viz_sim_control' not in self.locals:
-            self.locals['_viz_sim_control'] = SimControlTemplate()
+            self.locals['_viz_sim_control'] = nengo_viz.components.SimControlTemplate()
         if '_viz_net_graph' not in self.locals:
-            self.locals['_viz_net_graph'] = NetGraphTemplate()
+            self.locals['_viz_net_graph'] = nengo_viz.components.NetGraphTemplate()
         if config[self.model].pos is None:
             config[self.model].pos = (0, 0)
         if config[self.model].size is None:
             config[self.model].size = (1.0, 1.0)
 
         for k, v in self.locals.items():
-            if isinstance(v, Template):
+            if isinstance(v, nengo_viz.components.component.Template):
                 self.default_labels[v] = k
         return config
 

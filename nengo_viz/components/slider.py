@@ -1,8 +1,4 @@
-import collections
-
 import numpy as np
-import struct
-
 
 from nengo_viz.components.component import Component, Template
 
@@ -15,8 +11,6 @@ class Slider(Component):
         self.value = np.zeros(node.size_out)
         self.label = viz.viz.get_label(node)
         self.start_value = np.zeros(node.size_out)
-        self.struct = struct.Struct('<%df' % (1 + node.size_out))
-        self.data = collections.deque()
         if not callable(self.base_output):
             self.start_value[:] = self.base_output
 
@@ -29,7 +23,6 @@ class Slider(Component):
     def override_output(self, t, *args):
         if callable(self.base_output):
             self.value[:] = self.base_output(t, *args)
-            self.data.append(self.struct.pack(t, *self.value))
         else:
             self.value[:] = self.base_output
 
@@ -43,21 +36,13 @@ class Slider(Component):
                     label=self.label,
                     start_value=[float(x) for x in self.start_value])
         json = self.javascript_config(info)
-        return 'new VIZ.Slider(main, sim, %s);' % json
-
-    def update_client(self, client):
-        while len(self.data) > 0:
-            item = self.data.popleft()
-            client.write(item, binary=True)
+        return 'new VIZ.Slider(main, %s);' % json
 
     def message(self, msg):
         index, value = msg.split(',')
         index = int(index)
-        if value == 'reset':
-            self.override[index] = None
-        else:
-            value = float(value)
-            self.override[index] = value
+        value = float(value)
+        self.override[index] = value
 
 class SliderTemplate(Template):
     cls = Slider
