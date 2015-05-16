@@ -2,7 +2,7 @@ import nengo
 import numpy as np
 import struct
 
-from nengo_viz.components.component import Component
+from nengo_viz.components.component import Component, Template
 
 
 class Raster(Component):
@@ -40,3 +40,9 @@ class Raster(Component):
                     max_neurons=self.max_neurons)
         json = self.javascript_config(info)
         return 'new VIZ.Raster(main, sim, %s);' % json
+
+
+class RasterTemplate(Template):
+    cls = Raster
+    config_params = dict(**Template.default_params)
+
