@@ -35,7 +35,7 @@ class VizSim(object):
     def add_template(self, template):
         c = template.create(self)
         self.uids[c.uid] = c
-        if isinstance(template, (SimControl, NetGraph)):
+        if isinstance(template, (SimControlTemplate, NetGraphTemplate)):
             self.components[:0] = [c]
         else:
             self.components.append(c)
@@ -96,57 +96,57 @@ class Template(object):
         c.template = self
         return c
 
-class Slider(Template):
+class SliderTemplate(Template):
     def __init__(self, target):
-        super(Slider, self).__init__(nengo_viz.components.Slider, target)
+        super(SliderTemplate, self).__init__(nengo_viz.components.Slider, target)
         self.target = target
 
     def code_python(self, uids):
-        return 'nengo_viz.Slider(%s)' % uids[self.target]
+        return 'nengo_viz.SliderTemplate(%s)' % uids[self.target]
 
-class Value(Template):
+class ValueTemplate(Template):
     def __init__(self, target):
-        super(Value, self).__init__(nengo_viz.components.Value, target)
+        super(ValueTemplate, self).__init__(nengo_viz.components.Value, target)
         self.target = target
 
     def code_python(self, uids):
-        return 'nengo_viz.Value(%s)' % uids[self.target]
+        return 'nengo_viz.ValueTemplate(%s)' % uids[self.target]
 
-class XYValue(Template):
+class XYValueTemplate(Template):
     def __init__(self, target):
-        super(XYValue, self).__init__(nengo_viz.components.XYValue, target)
+        super(XYValueTemplate, self).__init__(nengo_viz.components.XYValue, target)
         self.target = target
 
     def code_python(self, uids):
-        return 'nengo_viz.XYValue(%s)' % uids[self.target]
+        return 'nengo_viz.XYValueTemplate(%s)' % uids[self.target]
 
-class Raster(Template):
+class RasterTemplate(Template):
     def __init__(self, target):
-        super(Raster, self).__init__(nengo_viz.components.Raster, target)
+        super(RasterTemplate, self).__init__(nengo_viz.components.Raster, target)
         self.target = target
 
     def code_python(self, uids):
-        return 'nengo_viz.Raster(%s)' % uids[self.target]
+        return 'nengo_viz.RasterTemplate(%s)' % uids[self.target]
 
-class Pointer(Template):
+class PointerTemplate(Template):
     def __init__(self, target):
-        super(Pointer, self).__init__(nengo_viz.components.Pointer, target)
+        super(PointerTemplate, self).__init__(nengo_viz.components.Pointer, target)
         self.target = target
 
     def code_python(self, uids):
-        return 'nengo_viz.Pointer(%s)' % uids[self.target]
+        return 'nengo_viz.PointerTemplate(%s)' % uids[self.target]
 
-class NetGraph(Template):
+class NetGraphTemplate(Template):
     def __init__(self):
-        super(NetGraph, self).__init__(nengo_viz.components.NetGraph)
+        super(NetGraphTemplate, self).__init__(nengo_viz.components.NetGraph)
     def code_python(self, uids):
-        return 'nengo_viz.NetGraph()'
+        return 'nengo_viz.NetGraphTemplate()'
 
-class SimControl(Template):
+class SimControlTemplate(Template):
     def __init__(self):
-        super(SimControl, self).__init__(nengo_viz.components.SimControl)
+        super(SimControlTemplate, self).__init__(nengo_viz.components.SimControl)
     def code_python(self, uids):
-        return 'nengo_viz.SimControl()'
+        return 'nengo_viz.SimControlTemplate()'
 
 class Config(nengo.Config):
     def __init__(self):
@@ -161,26 +161,26 @@ class Config(nengo.Config):
         self[nengo.Network].set_param('expanded', nengo.params.Parameter(False))
         self[nengo.Network].set_param('has_layout', nengo.params.Parameter(False))
 
-        self.configures(NetGraph)
-        self.configures(SimControl)
-        self[SimControl].set_param('shown_time', nengo.params.Parameter(0.5))
-        self[SimControl].set_param('kept_time', nengo.params.Parameter(4.0))
-        for cls in [XYValue, Value, Slider, Raster, Pointer]:
+        self.configures(NetGraphTemplate)
+        self.configures(SimControlTemplate)
+        self[SimControlTemplate].set_param('shown_time', nengo.params.Parameter(0.5))
+        self[SimControlTemplate].set_param('kept_time', nengo.params.Parameter(4.0))
+        for cls in [XYValueTemplate, ValueTemplate, SliderTemplate, RasterTemplate, PointerTemplate]:
             self.configures(cls)
             self[cls].set_param('x', nengo.params.Parameter(0))
             self[cls].set_param('y', nengo.params.Parameter(0))
             self[cls].set_param('width', nengo.params.Parameter(100))
             self[cls].set_param('height', nengo.params.Parameter(100))
             self[cls].set_param('label_visible', nengo.params.Parameter(True))
-        self[Value].set_param('maxy', nengo.params.Parameter(1))
-        self[Value].set_param('miny', nengo.params.Parameter(-1))
-        self[XYValue].set_param('max_value', nengo.params.Parameter(1))
-        self[XYValue].set_param('min_value', nengo.params.Parameter(-1))
-        self[XYValue].set_param('index_x', nengo.params.Parameter(0))
-        self[XYValue].set_param('index_y', nengo.params.Parameter(1))
-        self[Slider].set_param('min_value', nengo.params.Parameter(-1))
-        self[Slider].set_param('max_value', nengo.params.Parameter(1))
-        self[Pointer].set_param('show_pairs', nengo.params.Parameter(False))
+        self[ValueTemplate].set_param('maxy', nengo.params.Parameter(1))
+        self[ValueTemplate].set_param('miny', nengo.params.Parameter(-1))
+        self[XYValueTemplate].set_param('max_value', nengo.params.Parameter(1))
+        self[XYValueTemplate].set_param('min_value', nengo.params.Parameter(-1))
+        self[XYValueTemplate].set_param('index_x', nengo.params.Parameter(0))
+        self[XYValueTemplate].set_param('index_y', nengo.params.Parameter(1))
+        self[SliderTemplate].set_param('min_value', nengo.params.Parameter(-1))
+        self[SliderTemplate].set_param('max_value', nengo.params.Parameter(1))
+        self[PointerTemplate].set_param('show_pairs', nengo.params.Parameter(False))
 
 
 
@@ -197,24 +197,24 @@ class Config(nengo.Config):
                     lines.append('_viz_config[%s].has_layout=%s' % (uid, self[obj].has_layout))
             elif isinstance(obj, Template):
                 lines.append('%s = %s' % (uid, obj.code_python(uids)))
-                if not isinstance(obj, (NetGraph, SimControl)):
+                if not isinstance(obj, (NetGraphTemplate, SimControlTemplate)):
                     lines.append('_viz_config[%s].x = %g' % (uid, self[obj].x))
                     lines.append('_viz_config[%s].y = %g' % (uid, self[obj].y))
                     lines.append('_viz_config[%s].width = %g' % (uid, self[obj].width))
                     lines.append('_viz_config[%s].height = %g' % (uid, self[obj].height))
                     lines.append('_viz_config[%s].label_visible = %s' % (uid, self[obj].label_visible))
-                if isinstance(obj, Slider):
+                if isinstance(obj, SliderTemplate):
                     lines.append('_viz_config[%s].min_value = %g' % (uid, self[obj].min_value))
                     lines.append('_viz_config[%s].max_value = %g' % (uid, self[obj].max_value))
-                if isinstance(obj, Value):
+                if isinstance(obj, ValueTemplate):
                     lines.append('_viz_config[%s].miny = %g' % (uid, self[obj].miny))
                     lines.append('_viz_config[%s].maxy = %g' % (uid, self[obj].maxy))
-                if isinstance(obj, XYValue):
+                if isinstance(obj, XYValueTemplate):
                     lines.append('_viz_config[%s].min_value = %g' % (uid, self[obj].min_value))
                     lines.append('_viz_config[%s].max_value = %g' % (uid, self[obj].max_value))
                     lines.append('_viz_config[%s].index_x = %g' % (uid, self[obj].index_x))
                     lines.append('_viz_config[%s].index_y = %g' % (uid, self[obj].index_y))
-                if isinstance(obj, Pointer):
+                if isinstance(obj, PointerTemplate):
                     lines.append('_viz_config[%s].show_pairs = %g' % (uid, self[obj].show_pairs))
 
 
@@ -282,9 +282,9 @@ class Viz(object):
             pass
 
         if '_viz_sim_control' not in self.locals:
-            self.locals['_viz_sim_control'] = SimControl()
+            self.locals['_viz_sim_control'] = SimControlTemplate()
         if '_viz_net_graph' not in self.locals:
-            self.locals['_viz_net_graph'] = NetGraph()
+            self.locals['_viz_net_graph'] = NetGraphTemplate()
         if config[self.model].pos is None:
             config[self.model].pos = (0, 0)
         if config[self.model].size is None:
