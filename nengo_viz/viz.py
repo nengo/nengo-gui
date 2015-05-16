@@ -1,5 +1,6 @@
 import time
 import threading
+import inspect
 
 import nengo
 
@@ -160,6 +161,7 @@ class SimControlTemplate(Template):
     def code_python(self, uids):
         return 'nengo_viz.SimControlTemplate()'
 
+
 class Config(nengo.Config):
     def __init__(self):
         super(Config, self).__init__()
@@ -173,10 +175,11 @@ class Config(nengo.Config):
         self[nengo.Network].set_param('expanded', nengo.params.Parameter(False))
         self[nengo.Network].set_param('has_layout', nengo.params.Parameter(False))
 
-        for cls in [XYValueTemplate, ValueTemplate, SliderTemplate, RasterTemplate, PointerTemplate, NetGraphTemplate, SimControlTemplate]:
-            self.configures(cls)
-            for k, v in cls.config_params.items():
-                self[cls].set_param(k, nengo.params.Parameter(v))
+        for clsname, cls in inspect.getmembers(nengo_viz.viz):
+            if inspect.isclass(cls) and issubclass(cls, Template):
+                self.configures(cls)
+                for k, v in cls.config_params.items():
+                    self[cls].set_param(k, nengo.params.Parameter(v))
 
 
     def dumps(self, uids):
@@ -192,7 +195,7 @@ class Config(nengo.Config):
                     lines.append('_viz_config[%s].has_layout=%s' % (uid, self[obj].has_layout))
             elif isinstance(obj, Template):
                 lines.append('%s = %s' % (uid, obj.code_python(uids)))
-                for k in cls.config_params.keys():
+                for k in obj.config_params.keys():
                     v = getattr(self[obj], k)
                     lines.append('_viz_config[%s].%s = %g' % (uid, k, v))
 
