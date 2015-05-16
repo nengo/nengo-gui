@@ -86,7 +86,7 @@ class VizSim(object):
 
 
 class Template(object):
-    config_params = dict(x=0, y=0, width=100, height=100, label_visible=True)
+    default_params = dict(x=0, y=0, width=100, height=100, label_visible=True)
 
     def __init__(self, *args, **kwargs):
         self.args = args
@@ -104,23 +104,24 @@ class Template(object):
 
 class SliderTemplate(Template):
     cls = nengo_viz.components.Slider
-    config_params = dict(max_value=1, min_value=-1, **Template.config_params)
+    config_params = dict(max_value=1, min_value=-1, **Template.default_params)
 
 class ValueTemplate(Template):
     cls = nengo_viz.components.Value
-    config_params = dict(maxy=1, miny=-1, **Template.config_params)
+    config_params = dict(maxy=1, miny=-1, **Template.default_params)
 
 class XYValueTemplate(Template):
     cls = nengo_viz.components.XYValue
     config_params = dict(max_value=1, min_value=-1, index_x=0, index_y=1,
-                         **Template.config_params)
+                         **Template.default_params)
 
 class RasterTemplate(Template):
     cls = nengo_viz.components.Raster
+    config_params = dict(**Template.default_params)
 
 class PointerTemplate(Template):
     cls = nengo_viz.components.Pointer
-    config_params = dict(show_pairs=False, **Template.config_params)
+    config_params = dict(show_pairs=False, **Template.default_params)
 
 
 class NetGraphTemplate(Template):
@@ -148,9 +149,10 @@ class Config(nengo.Config):
 
         for clsname, cls in inspect.getmembers(nengo_viz.viz):
             if inspect.isclass(cls) and issubclass(cls, Template):
-                self.configures(cls)
-                for k, v in cls.config_params.items():
-                    self[cls].set_param(k, nengo.params.Parameter(v))
+                if cls != Template:
+                    self.configures(cls)
+                    for k, v in cls.config_params.items():
+                        self[cls].set_param(k, nengo.params.Parameter(v))
 
 
     def dumps(self, uids):
