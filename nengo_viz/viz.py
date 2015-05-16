@@ -88,8 +88,7 @@ class VizSim(object):
 class Template(object):
     config_params = dict(x=0, y=0, width=100, height=100, label_visible=True)
 
-    def __init__(self, cls, *args, **kwargs):
-        self.cls = cls
+    def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
     def create(self, vizsim):
@@ -98,68 +97,40 @@ class Template(object):
                      *self.args, **self.kwargs)
         c.template = self
         return c
+    def code_python(self, uids):
+        args = [uids[x] for x in self.args]
+        name = self.__class__.__name__
+        return 'nengo_viz.%s(%s)' % (name, ','.join(args))
 
 class SliderTemplate(Template):
+    cls = nengo_viz.components.Slider
     config_params = dict(max_value=1, min_value=-1, **Template.config_params)
-    def __init__(self, target):
-        super(SliderTemplate, self).__init__(nengo_viz.components.Slider, target)
-        self.target = target
-
-    def code_python(self, uids):
-        return 'nengo_viz.SliderTemplate(%s)' % uids[self.target]
 
 class ValueTemplate(Template):
+    cls = nengo_viz.components.Value
     config_params = dict(maxy=1, miny=-1, **Template.config_params)
-    def __init__(self, target):
-        super(ValueTemplate, self).__init__(nengo_viz.components.Value, target)
-        self.target = target
-
-    def code_python(self, uids):
-        return 'nengo_viz.ValueTemplate(%s)' % uids[self.target]
 
 class XYValueTemplate(Template):
+    cls = nengo_viz.components.XYValue
     config_params = dict(max_value=1, min_value=-1, index_x=0, index_y=1,
                          **Template.config_params)
-    def __init__(self, target):
-        super(XYValueTemplate, self).__init__(nengo_viz.components.XYValue, target)
-        self.target = target
-
-    def code_python(self, uids):
-        return 'nengo_viz.XYValueTemplate(%s)' % uids[self.target]
 
 class RasterTemplate(Template):
-    def __init__(self, target):
-        super(RasterTemplate, self).__init__(nengo_viz.components.Raster, target)
-        self.target = target
-
-    def code_python(self, uids):
-        return 'nengo_viz.RasterTemplate(%s)' % uids[self.target]
+    cls = nengo_viz.components.Raster
 
 class PointerTemplate(Template):
+    cls = nengo_viz.components.Pointer
     config_params = dict(show_pairs=False, **Template.config_params)
 
-    def __init__(self, target):
-        super(PointerTemplate, self).__init__(nengo_viz.components.Pointer, target)
-        self.target = target
-
-    def code_python(self, uids):
-        return 'nengo_viz.PointerTemplate(%s)' % uids[self.target]
 
 class NetGraphTemplate(Template):
+    cls = nengo_viz.components.NetGraph
     config_params = dict()
 
-    def __init__(self):
-        super(NetGraphTemplate, self).__init__(nengo_viz.components.NetGraph)
-    def code_python(self, uids):
-        return 'nengo_viz.NetGraphTemplate()'
 
 class SimControlTemplate(Template):
+    cls = nengo_viz.components.SimControl
     config_params = dict(shown_time=0.5, kept_time=4.0)
-
-    def __init__(self):
-        super(SimControlTemplate, self).__init__(nengo_viz.components.SimControl)
-    def code_python(self, uids):
-        return 'nengo_viz.SimControlTemplate()'
 
 
 class Config(nengo.Config):
