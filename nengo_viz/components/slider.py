@@ -1,6 +1,6 @@
 import numpy as np
 
-from nengo_viz.components.component import Component
+from nengo_viz.components.component import Component, Template
 
 class Slider(Component):
     def __init__(self, viz, config, uid, node):
@@ -43,3 +43,7 @@ class Slider(Component):
         index = int(index)
         value = float(value)
         self.override[index] = value
+
+class SliderTemplate(Template):
+    cls = Slider
+    config_params = dict(max_value=1, min_value=-1, **Template.default_params)
