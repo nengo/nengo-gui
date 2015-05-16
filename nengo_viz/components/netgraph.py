@@ -107,7 +107,7 @@ class NetGraph(Component):
         self.viz.viz.save_config()
 
     def act_create_graph(self, uid, type, x, y, width, height):
-        cls = getattr(nengo_viz, type)
+        cls = getattr(nengo_viz, type + 'Template')
         obj = self.uids[uid]
         template = cls(obj)
         self.viz.viz.generate_uid(template, prefix='_viz_')
