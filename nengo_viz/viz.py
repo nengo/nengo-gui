@@ -107,7 +107,6 @@ class Viz(object):
             self.model = model
             self.locals = locals
                 
-
             self.filename = filename
             self.name_finder = nengo_viz.NameFinder(locals, model)
             self.default_labels = self.name_finder.known_name
@@ -118,7 +117,6 @@ class Viz(object):
 
             self.uid_prefix_counter = {}
         except:
-            print('dont give me trash')
             return 'failure'
 
     def find_templates(self):
