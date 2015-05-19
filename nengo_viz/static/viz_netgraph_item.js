@@ -289,6 +289,7 @@ VIZ.NetGraphItem.prototype.generate_menu = function () {
             items.push(['XY-value', function() {self.create_graph('XYValue');}])
         }
         items.push(['Spikes', function() {self.create_graph('Raster');}])
+        items.push(['Voltages', function() {self.create_graph('Voltage');}])
     }
     if (this.type == 'node') {
         items.push(['Slider', function() {self.create_graph('Slider');}])
