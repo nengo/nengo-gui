@@ -6,7 +6,7 @@ from nengo_viz.components.component import Component, Template
 
 
 class Voltage(Component):
-    def __init__(self, viz, config, uid, obj, n_neurons=10):
+    def __init__(self, viz, config, uid, obj, n_neurons=5):
         super(Voltage, self).__init__(viz, config, uid)
         self.viz = viz
         self.obj = obj.neurons
@@ -43,7 +43,8 @@ class Voltage(Component):
             client.write(packet, binary=True)
 
     def javascript(self):
-        info = dict(uid=self.uid, label=self.label, n_lines=self.n_neurons)
+        info = dict(uid=self.uid, label=self.label,
+                    n_lines=self.n_neurons, synapse=0)
         json = self.javascript_config(info)
         return 'new VIZ.Value(main, sim, %s);' % json
 

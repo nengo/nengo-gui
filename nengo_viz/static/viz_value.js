@@ -17,7 +17,8 @@ VIZ.Value = function(parent, sim, args) {
     this.display_time = args.display_time;
 
     /** for storing the accumulated data */
-    this.data_store = new VIZ.DataStore(this.n_lines, this.sim, 0.01);
+    var synapse = (args.synapse !== null) ? args.synapse : 0.01;
+    this.data_store = new VIZ.DataStore(this.n_lines, this.sim, synapse);
 
     this.axes2d = new VIZ.TimeAxes(this.div, args);
 
