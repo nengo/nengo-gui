@@ -97,9 +97,7 @@ VIZ.NetGraphItem = function(ng, info) {
     var label = this.ng.createSVGElement('text');
     this.label = label;
     label.innerHTML = info.label;
-    g.appendChild(label);
-    this.label_below = true;
-    
+    g.appendChild(label);    
 
     /** dragging an item to change its position */
     var uid = this.uid;
@@ -291,17 +289,6 @@ VIZ.NetGraphItem.prototype.expand = function() {
 
     this.ng.notify({act:"expand", uid:this.uid});
 }
-
-// VIZ.NetGraphItem.prototype.set_label_below = function(flag) {
-//     if (flag && !this.label_below) {        
-//         var screen_h = this.get_height();
-//         this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
-//     } else if (!flag && this.label_below) {
-//         this.label.setAttribute('transform', '');
-//     }
-//     this.label_below = flag;
-// }
-
 
 
 /** collapse an expanded network */
@@ -516,10 +503,7 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
         this.shape.setAttribute('height', screen_h);
     }
     
-    if (this.label_below) {
-        /** put the label at the bottom */
-        this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
-    }
+    this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
 };
 
 VIZ.NetGraphItem.prototype.get_width = function() {
