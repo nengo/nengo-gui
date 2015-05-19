@@ -5,12 +5,18 @@ def create_action(action, net_graph, **info):
         return Collapse(net_graph, **info)
     elif action == "pan":
         return Pan(net_graph, **info)
+    elif action == "zoom":
+        return Zoom(net_graph, **info)
     elif action == "pos":
         return Pos(net_graph, **info)
     elif action == "size":
         return Size(net_graph, **info)
     elif action == "pos_size":
         return PosSize(net_graph, **info)
+    elif action == "create_graph":
+        return CreateGraph(net_graph, **info)
+    elif action == "feedforward_layout":
+        return FeedforwardLayout(net_graph, **info)
     else:
         return Action(net_graph, **info)
 
@@ -55,14 +61,8 @@ class Collapse(Action):
 class Pan(Action):
     def __init__(self, net_graph, x, y):
         self.net_graph = net_graph
-        #self.x = x
-        #self.y = y
+        self.x, self.y = self.net_graph.config[self.net_graph.viz.model].pos
 
-        self.new_x = x
-        self.new_y = y
-        self.old_x = 0
-        self.old_y = 0
-        """
     def apply(self):
         x, y = self.x, self.y
         self.x, self.y = self.net_graph.config[self.net_graph.viz.model].pos
@@ -72,25 +72,24 @@ class Pan(Action):
     def undo(self):
         self.apply() # Undo is a mirrored operation
 
-        """
+class Zoom(Action):
+    def __init__(self, net_graph, x, y):
+        self.net_graph = net_graph
+        self.x, self.y = self.net_graph.config[self.net_graph.viz.model].pos
+
     def apply(self):
-        self.old_x, self.old_y = self.net_graph.config[self.net_graph.viz.model].pos
-        self.net_graph.act_pan(self.new_x, self.new_y)
-        self.net_graph.to_be_sent.append(dict(type='pan',pan=[self.new_x,self.new_y]))
+        x, y = self.x, self.y
+        self.x, self.y = self.net_graph.config[self.net_graph.viz.model].pos
+        self.net_graph.act_pan(x, y)
+        self.net_graph.to_be_sent.append(dict(type='pan',pan=[x, y]))
 
     def undo(self):
-        self.new_x, self.new_y = self.net_graph.config[self.net_graph.viz.model].pos
-        self.net_graph.act_pan(self.old_x, self.old_y)
-        self.net_graph.to_be_sent.append(dict(type='pan',pan=[self.old_x,self.old_y]))
+        self.apply() # Undo is a mirrored operation
 
 class PosSize(Action):
     def __init__(self, net_graph, uid, x, y, width, height):
         self.net_graph = net_graph
         self.uid = uid
-        #self.x = x
-        #self.y = y
-        #self.width = width
-        #self.height = height
         
         obj = self.net_graph.uids[self.uid]
         self.x, self.y = self.net_graph.config[obj].pos
@@ -111,8 +110,6 @@ class Pos(Action):
     def __init__(self, net_graph, uid, x, y):
         self.net_graph = net_graph
         self.uid = uid
-        #self.x = x
-        #self.y = y
         obj = self.net_graph.uids[self.uid]
         self.x, self.y = self.net_graph.config[obj].pos
 
@@ -133,8 +130,6 @@ class Size(Action):
         self.uid = uid
         obj = self.net_graph.uids[self.uid]
         self.width, self.height = self.net_graph.config[obj].size
-        #self.width = width
-        #self.height = height
 
     def apply(self):
         width, height = self.width, self.height
