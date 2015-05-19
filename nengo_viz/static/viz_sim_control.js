@@ -27,6 +27,7 @@ VIZ.SimControl = function(div, args) {
 
     /** Create the WebSocket to communicate with the server */ 
     this.ws = VIZ.create_websocket(args.uid);
+    
     this.ws.onmessage = function(event) {self.on_message(event);}
     
     /** Create the TimeSlider */
