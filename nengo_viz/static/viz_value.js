@@ -27,7 +27,9 @@ VIZ.Value = function(parent, sim, args) {
     /** scales for mapping x and y values to pixels */
     this.scale_x = d3.scale.linear();
     this.scale_y = d3.scale.linear();
-    this.scale_y.domain([args.miny, args.maxy]);
+    var miny = (args.miny !== null) ? args.miny : -1;
+    var maxy = (args.maxy !== null) ? args.maxy : 1;
+    this.scale_y.domain([miny, maxy]);
 
     /** spacing between the graph and the outside edges (in pixels) */
     this.margin_top = 30;
@@ -98,7 +100,8 @@ VIZ.Value = function(parent, sim, args) {
              .attr('class', 'line')
              .style('stroke', function(d, i) {return colors[i];});
 
-    this.on_resize(this.get_screen_width(), this.get_screen_height());    
+    this.on_resize(args.width, args.height);
+    
 };
 VIZ.Value.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Value.prototype.constructor = VIZ.Value;
