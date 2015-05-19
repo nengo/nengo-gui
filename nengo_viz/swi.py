@@ -360,21 +360,34 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
         return val
 
     @classmethod
-    def start(cls, port=80, asynch=True, addr='', browser=False):
+    def start(cls, port=80, asynch=True, addr='', browser=False,
+              separate_thread=False):
         if browser:
             cls.browser(port=port)
         if asynch:
             server = AsyncHTTPServer((addr, port), cls)
         else:
             server = BaseHTTPServer.HTTPServer((addr, port), cls)
+
+        server.finished = False
+
+        if separate_thread:
+            threading.Thread(target=cls.runner, args=(server, asynch)).start()
+            return server
+        else:
+            cls.runner(server, asynch)
+
+    @classmethod
+    def runner(cls, server, asynch):
         try:
-            while not cls.shutdown_flag:
+            while not cls.shutdown_flag and not server.finished:
                 server.handle_request()
         finally:
             # shut down any remaining threads
             if asynch and server.requests is not None:
                 for socket in server.requests:
                     socket.close()
+        server.finished = True
 
     @classmethod
     def shutdown(cls):
