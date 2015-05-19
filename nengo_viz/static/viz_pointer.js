@@ -182,3 +182,8 @@ VIZ.Pointer.prototype.layout_info = function () {
     info.show_pairs = this.show_pairs;
     return info;
 }
+
+VIZ.Pointer.prototype.update_layout = function (config) {
+    this.show_pairs = config.show_pairs;
+    VIZ.Component.prototype.update_layout.call(this, config);
+}

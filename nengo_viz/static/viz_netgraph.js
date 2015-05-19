@@ -182,6 +182,10 @@ VIZ.NetGraph.prototype.generate_menu = function() {
     items.push(['Auto-layout', 
                 function() {self.notify({act:"feedforward_layout",
                             uid:null});}]);
+    items.push(['Undo', 
+                function() {self.notify({undo:"1"});}]);
+    items.push(['Redo', 
+                function() {self.notify({undo:"0"});}]);
     return items;
 
 }
@@ -201,10 +205,25 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         this.set_offset(data.pan[0], data.pan[1]);
     } else if (data.type === 'zoom') {
         this.set_scale(data.zoom);
+    } else if (data.type === 'expand') {
+        var item = this.svg_objects[data.uid];
+        item.expand(true,true)
+    } else if (data.type === 'collapse') {
+        var item = this.svg_objects[data.uid];
+        item.collapse(true,true)
     } else if (data.type === 'pos_size') {
         var item = this.svg_objects[data.uid];
         item.set_position(data.pos[0], data.pos[1]);
         item.set_size(data.size[0], data.size[1]);
+    } else if (data.type === 'config') {
+        // Anything about the config of a component has changed
+        var uid = data.uid;
+        for (var i = 0; i < VIZ.Component.components.length; i++) {
+            if (VIZ.Component.components[i].uid === uid) {
+                VIZ.Component.components[i].update_layout(data.config);
+                break;
+            }
+        }
     } else if (data.type === 'js') {
         eval(data.code);
     } else if (data.type === 'rename') {
@@ -221,6 +240,14 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         conn.set_pres(data.pres);
         conn.set_posts(data.posts);
         conn.redraw();
+    } else if (data.type === 'delete_graph') {
+        var uid = data.uid;
+        for (var i = 0; i < VIZ.Component.components.length; i++) {
+            if (VIZ.Component.components[i].uid === uid) {
+                VIZ.Component.components[i].remove(true);
+                break;
+            }
+        }
     } else {
         console.log('invalid message');
         console.log(data);

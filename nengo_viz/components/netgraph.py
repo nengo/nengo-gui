@@ -11,7 +11,7 @@ import json
 from nengo_viz.components.component import Component, Template
 from nengo_viz.disposable_js import infomodal
 import nengo_viz.layout
-
+from action import create_action
 
 class NetGraph(Component):
     configs = {}
@@ -194,11 +194,43 @@ class NetGraph(Component):
             print('invalid message', repr(msg))
             return
         action = info.get('act', None)
+        undo = info.get('undo', None)
         if action is not None:
             del info['act']
-            getattr(self, 'act_' + action)(**info)
+            if action == 'auto_expand' or action == 'auto_collapse':
+                getattr(self, 'act_' + action[5:])(**info)
+            # Pan and Zoom should not use the undo stack
+            elif not (action == 'pan' or action == 'zoom'):
+                act = create_action(action, self, **info)
+                self.viz.undo_stack.append([act])
+                del self.viz.redo_stack[:]
+            else:
+                getattr(self, 'act_' + action)(**info)
+        elif undo is not None:
+            if undo == '1':
+                self.undo()
+            else:
+                self.redo()
         else:
             print('received message', msg)
+
+    def undo(self):
+        if self.viz.undo_stack:
+            action = self.viz.undo_stack.pop()
+            re = []
+            for act in action:
+                act.undo()
+                re.insert(0, act)
+            self.viz.redo_stack.append(re)
+
+    def redo(self):
+        if self.viz.redo_stack:
+            action = self.viz.redo_stack.pop()
+            un = []
+            for act in action:
+                act.apply()
+                un.insert(0, act)
+            self.viz.undo_stack.append(un)
 
     def act_expand(self, uid):
         net = self.uids[uid]
@@ -230,71 +262,9 @@ class NetGraph(Component):
         self.config[self.viz.model].pos = x, y
         self.modified_config()
 
-    def act_pos(self, uid, x, y):
-        obj = self.uids[uid]
-        self.config[obj].pos = x, y
-        self.modified_config()
-
-    def act_size(self, uid, width, height):
-        obj = self.uids[uid]
-        self.config[obj].size = width, height
-        self.modified_config()
-
-    def act_pos_size(self, uid, x, y, width, height):
-        obj = self.uids[uid]
-        self.config[obj].pos = x, y
-        self.config[obj].size = width, height
-        self.modified_config()
-
-    def act_create_graph(self, uid, type, x, y, width, height, **kwargs):
-        cls = getattr(nengo_viz.components, type + 'Template')
-        obj = self.uids[uid]
-        template = cls(obj, **kwargs)
-        self.viz.viz.generate_uid(template, prefix='_viz_')
-        self.config[template].x = x
-        self.config[template].y = y
-        self.config[template].width = width
-        self.config[template].height = height
-        self.modified_config()
-
-        c = self.viz.add_template(template)
-        self.viz.changed = True
-        self.to_be_sent.append(dict(type='js', code=c.javascript()))
-
     def act_create_modal(self, uid, **info):
         js = infomodal(self, uid, **info)
         self.to_be_sent.append(dict(type='js', code=js))
-
-    def act_feedforward_layout(self, uid):
-        if uid is None:
-            network = self.viz.model
-            scale = self.config[network].size[0]
-            x, y = self.config[network].pos
-            # self.config[network].pos = 0.0, 0.0
-            # self.config[network].size = 1.0, 1.0
-            # self.to_be_sent.append(dict(type='pan',
-            #                             pan=self.config[network].pos))
-            # self.to_be_sent.append(dict(type='zoom',
-            #                             zoom=self.config[network].size[0]))
-        else:
-            network = self.uids[uid]
-            scale = 1.0
-            x, y = 0, 0
-        pos = self.layout.make_layout(network)
-        for obj, layout in pos.items():
-
-            self.config[obj].pos = (layout['y'] / scale - x,
-                                    layout['x'] / scale - y)
-            self.config[obj].size = (layout['h'] / 2 / scale,
-                                     layout['w'] / 2 / scale)
-
-            obj_uid = self.viz.viz.get_uid(obj)
-            self.to_be_sent.append(dict(type='pos_size',
-                                        uid=obj_uid,
-                                        pos=self.config[obj].pos,
-                                        size=self.config[obj].size))
-        self.config[network].has_layout = True
-        self.modified_config()
 
     def expand_network(self, network, client):
         if not self.config[network].has_layout:

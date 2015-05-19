@@ -57,11 +57,11 @@ VIZ.Slider = function(parent, sim, args) {
         this.sliders.push(slider);
     }
 
-    /** call schedule_update whenever the time is adjusted in the SimControl */    
-    this.sim.div.addEventListener('adjust_time', 
+    /** call schedule_update whenever the time is adjusted in the SimControl */
+    this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
 
-    this.on_resize(this.get_screen_width(), this.get_screen_height()); 
+    this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
 VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;
@@ -258,4 +258,42 @@ VIZ.Slider.prototype.layout_info = function () {
     info.min_value = this.sliders[0].scale.domain()[1];
     info.max_value = this.sliders[0].scale.domain()[0];
     return info;
+};
+
+VIZ.Slider.prototype.update_layout = function (config) {
+    //FIXME: this has to be backwards to work. Something fishy must be going on
+    for (var i in this.sliders) {
+        this.sliders[i].set_range(config.min_value, config.max_value);
+    }
+    VIZ.Component.prototype.update_layout.call(this, config);
+}
+
+//takes input and outputs the
+//boundary value if input is above/below max/min
+//Otherwise outputs the input
+//max_min: Num -> Num
+VIZ.Slider.prototype.max_min = function(value) {
+    console.assert(typeof value == 'number');
+
+    //Get the max and min slider bounds
+    var slider_range = this.scale.domain();
+    min = slider_range[1];
+    max = slider_range[0];
+
+    if (value < min) {
+        return min;
+    }
+    else if (value > max) {
+        return max;
+    }
+    else {
+        return value;
+    }
+};
+
+//slider_index: Nat, new_shown_value: Num
+//Rounds to 2 decimal places
+VIZ.Slider.prototype.update_value_text = function (slider_index, new_shown_value) {
+    var target = this.sliders[slider_index].value_display;
+    target.innerHTML = new_shown_value.toFixed(2);
 };

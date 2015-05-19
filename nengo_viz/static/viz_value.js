@@ -119,6 +119,11 @@ VIZ.Value.prototype.layout_info = function () {
     return info;
 }
 
+VIZ.Value.prototype.update_layout = function(config) {
+    this.update_range(config.miny, config.maxy);
+    VIZ.Component.prototype.update_layout.call(this, config);
+}
+
 VIZ.Value.prototype.set_range = function() {
     var range = this.axes2d.scale_y.domain();
     var new_range = prompt('Set range', '' + range[0] + ',' + range[1]);
@@ -126,9 +131,12 @@ VIZ.Value.prototype.set_range = function() {
         new_range = new_range.split(',');
         var min = parseFloat(new_range[0]);
         var max = parseFloat(new_range[1]);
-        this.axes2d.scale_y.domain([min, max]);
-        this.axes2d.axis_y_g.call(this.axes2d.axis_y);
-        this.update();
+        this.update_range(min, max);
         this.save_layout();
     }
+}
+
+VIZ.Value.prototype.update_range = function(min, max) {
+    this.axes2d.scale_y.domain([min, max]);
+    this.axes2d.axis_y_g.call(this.axes2d.axis_y);
 }
