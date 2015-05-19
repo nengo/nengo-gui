@@ -73,15 +73,17 @@ class Pan(Action):
         self.apply() # Undo is a mirrored operation
 
 class Zoom(Action):
-    def __init__(self, net_graph, x, y):
+    def __init__(self, net_graph, scale, x, y):
         self.net_graph = net_graph
         self.x, self.y = self.net_graph.config[self.net_graph.viz.model].pos
+        self.scale = self.net_graph.config[self.net_graph.viz.model].size[0]
 
     def apply(self):
-        x, y = self.x, self.y
+        scale, x, y = self.scale, self.x, self.y
         self.x, self.y = self.net_graph.config[self.net_graph.viz.model].pos
-        self.net_graph.act_pan(x, y)
-        self.net_graph.to_be_sent.append(dict(type='pan',pan=[x, y]))
+        self.scale = self.net_graph.config[self.net_graph.viz.model].size[0]
+        self.net_graph.act_zoom(scale, x, y)
+        self.net_graph.to_be_sent.append(dict(type='zoom',zoom=scale))
 
     def undo(self):
         self.apply() # Undo is a mirrored operation
@@ -163,3 +165,51 @@ class Size(Action):
 
     def undo(self):
         self.apply() # Undo is a mirrored operation
+
+class FeedforwardLayout(Action):
+    def __init__(self, net_graph, uid):
+        self.net_graph = net_graph
+        self.uid = uid
+        self.new_state = []
+        self.old_state = []
+
+        # record the current positions and sizes of everything in the network
+        self.old_state = self.save_network()
+
+    def save_network(self):
+        # TODO: gross hacky inefficient method, fix it later
+        if self.uid is None:
+            network = self.net_graph.viz.model
+        else:
+            network = self.net_graph.uids[self.uid]
+
+        pos = self.net_graph.layout.make_layout(network)
+        state = []
+        for obj, layout in pos.items():
+            item = {'uid':self.net_graph.viz.viz.get_uid(obj),
+                    'pos':self.net_graph.config[obj].pos,
+                    'size':self.net_graph.config[obj].size,
+                   }
+            state.append(item)
+
+        return state
+
+    def load_network(self, state):
+        for item in state:
+            self.net_graph.to_be_sent.append(dict(type='pos_size',
+                                                  uid=item['uid'],
+                                                  pos=item['pos'],
+                                                  size=item['size'],
+                                                 ))
+        #TODO: should config[network].has_layout be changed here?
+
+    def apply(self):
+        self.load_network(self.new_state)
+
+    def undo(self):
+        # Save the layout configuration for the redo command
+        # Only save if it has not already been saved
+        if not self.new_state:
+            self.new_state = self.save_network()
+        self.load_network(self.old_state)
+

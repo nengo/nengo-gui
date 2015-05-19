@@ -68,9 +68,12 @@ class NetGraph(Component):
         undo = info.get('undo', None)
         if action is not None:
             del info['act']
-            act = create_action(action, self, **info)
-            self.viz.undo_stack.append(act)
-            del self.viz.redo_stack[:]
+
+            # Pan and Zoom should not use the undo stack
+            if not (action == 'pan' or action == 'zoom'):
+                act = create_action(action, self, **info)
+                self.viz.undo_stack.append(act)
+                del self.viz.redo_stack[:]
             getattr(self, 'act_' + action)(**info)
         elif undo is not None:
             if undo == '1':
