@@ -7,6 +7,7 @@ import json
 
 from nengo_viz.components.component import Component, Template
 import nengo_viz.layout
+from action import create_action
 
 class NetGraph(Component):
     configs = {}
@@ -64,11 +65,32 @@ class NetGraph(Component):
             print('invalid message', repr(msg))
             return
         action = info.get('act', None)
+        undo = info.get('undo', None)
         if action is not None:
             del info['act']
+            act = create_action(action, self, **info)
+            self.viz.undo_stack.append(act)
+            #action.apply()
             getattr(self, 'act_' + action)(**info)
+        elif undo is not None:
+            if undo:
+                self.undo()
+            else:
+                self.redo()
         else:
             print('received message', msg)
+
+    def undo(self):
+        if self.viz.undo_stack:
+            action = self.viz.undo_stack.pop()
+            action.undo()
+            self.viz.redo_stack.append(action)
+
+    def redo(self):
+        if self.viz.redo_stack:
+            action = self.viz.redo_stack.pop()
+            action.apply()
+            self.viz.undo_stack.append(action)
 
     def act_expand(self, uid):
         net = self.uids[uid]
