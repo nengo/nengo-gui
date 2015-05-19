@@ -7,14 +7,14 @@ def create_action(action, net_graph, **info):
         return Pan(net_graph, **info)
     elif action == "zoom":
         return Zoom(net_graph, **info)
+    elif action == "create_graph":  
+        return CreateGraph(net_graph, **info)
     elif action == "pos":
         return Pos(net_graph, **info)
     elif action == "size":
         return Size(net_graph, **info)
     elif action == "pos_size":
         return PosSize(net_graph, **info)
-    elif action == "create_graph":
-        return CreateGraph(net_graph, **info)
     elif action == "feedforward_layout":
         return FeedforwardLayout(net_graph, **info)
     else:
@@ -85,6 +85,28 @@ class Zoom(Action):
 
     def undo(self):
         self.apply() # Undo is a mirrored operation
+
+class CreateGraph(Action):
+    def __init__(self, net_graph, uid, type, x, y, width, height):
+        self.net_graph = net_graph
+        self.uid = uid
+        self.type=type
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        
+    def apply(self):
+        #self.x = self.config[template].x
+        #self.y = self.config[template].y
+        #self.width = self.config[template].width
+        #self.height = self.config[template].height
+              
+        self.net_graph.act_create_graph(self.uid, self.type, self.x, self.y, self.width, self.height)
+
+    def undo(self):
+        self.net_graph.to_be_sent.append(dict(type='delete_graph', uid=self.uid))
+    
 
 class PosSize(Action):
     def __init__(self, net_graph, uid, x, y, width, height):
