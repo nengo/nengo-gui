@@ -503,7 +503,9 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
         this.shape.setAttribute('height', screen_h);
     }
     
-    this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
+    if (this.label) {
+        this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
+    }
 };
 
 VIZ.NetGraphItem.prototype.get_width = function() {
