@@ -28,17 +28,16 @@ function performClick(elemId) {
    }
 }
 
-VIZ.create_websocket('asdasiodjiosajdiosajd');
+
 
 onchange="theimage();"
 
 function theimage(){
- var filename = document.getElementById('openFile').value;
- //document.getElementById('file-path').value = filename;
- alert(filename);
+
 }
 
 VIZ.Toolbar = function() {
+	this.ws = VIZ.create_websocket('asdasiodjiosajdiosajd');
 	var toolbar = document.createElement('ul');
 	toolbar.className = 'nav nav-pills'
 	VIZ.top_bar = toolbar;
@@ -49,19 +48,22 @@ VIZ.Toolbar = function() {
 	var open_file = document.createElement('input');
 	main.appendChild(open_file)
 	open_file.setAttribute('type', 'file');
-	open_file.id = 'openFile'
-	open_file.style.display = 'block';
-	open_file.setAttribute('onchange', 'theimage()');
-	VIZ.Toolbar.add_button('Open file', 'glyphicon glyphicon-folder-open',  function() {performClick('openFile')});
+	open_file.id = 'open_file'
+	open_file.style.display = 'none';
+	$(open_file).change(this.file_name);
+	VIZ.Toolbar.add_button('Open file', 'glyphicon glyphicon-folder-open',  function() {performClick('open_file')});
 
 	VIZ.Toolbar.add_button('Reset model layout', 'glyphicon glyphicon-retweet', function() {performClick('openFile')});
 
 	VIZ.Toolbar.add_button('Save as', 'glyphicon glyphicon-floppy-disk', function() {performClick('openFile')});
-	
-
-
-
 }
+
+
+VIZ.Toolbar.prototype.file_name = function(first_argument) {
+	var filename = document.getElementById('open_file').value;
+	filename = filename.replace("C:\\fakepath\\", ""); 
+	this.ws.send(filename);
+};
 
 VIZ.Toolbar.add_button = function (name, icon_class, fun) {
 	var button = document.createElement('li');
