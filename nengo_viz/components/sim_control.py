@@ -3,6 +3,7 @@ import struct
 
 import numpy as np
 import nengo
+import os
 
 from nengo_viz.components.component import Component, Template
 
@@ -93,6 +94,11 @@ class SimControl(Component):
             self.paused = False
         elif msg[:4] == 'open':
             self.viz.filename = msg[4:]
+            self.reload = True
+        elif msg == 'reset':
+            if os.path.isfile(self.viz.viz.filename + '.cfg') :
+                os.remove(self.viz.viz.filename + '.cfg')
+            self.viz.viz.load(self.viz.viz.filename)
             self.reload = True
 
 class SimControlTemplate(Template):
