@@ -75,9 +75,11 @@ VIZ.NetGraphItem = function(ng, info) {
         this.shape.setAttribute('rx', '15');
         this.shape.setAttribute('ry', '15');
     } else if (info.type === 'ens') {
-        this.shape = this.ng.createSVGElement('ellipse');
-        this.shape.setAttribute('cx', '0');
-        this.shape.setAttribute('cy', '0');
+        this.shape = this.ng.createSVGElement('use');
+        this.shape.setAttributeNS(
+            'http://www.w3.org/1999/xlink', 'href', '#ensemble');
+        this.shape.setAttribute('x', '0');
+        this.shape.setAttribute('y', '0');
     } else {
         console.log("Unknown NetGraphItem type");
         console.log(item);
@@ -487,8 +489,8 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
     var screen_h = this.get_height();
     
     if (this.type === 'ens') {
-        this.shape.setAttribute('rx', screen_w / 2);
-        this.shape.setAttribute('ry', screen_h / 2);    
+        this.shape.setAttribute('width', screen_w / 2);
+        this.shape.setAttribute('height', screen_h / 2);    
     } else if (this.passthrough) {
         this.shape.setAttribute('rx', screen_w / 2);
         this.shape.setAttribute('ry', screen_h / 2);    
