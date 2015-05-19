@@ -70,10 +70,10 @@ class NetGraph(Component):
             del info['act']
             act = create_action(action, self, **info)
             self.viz.undo_stack.append(act)
-            #action.apply()
+            del self.viz.redo_stack[:]
             getattr(self, 'act_' + action)(**info)
         elif undo is not None:
-            if undo:
+            if undo == '1':
                 self.undo()
             else:
                 self.redo()

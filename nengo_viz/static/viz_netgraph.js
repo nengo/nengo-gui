@@ -160,6 +160,12 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         this.set_offset(data.pan[0], data.pan[1]);
     } else if (data.type === 'zoom') {
         this.set_scale(data.zoom);
+    } else if (data.type === 'expand') {
+        var item = this.svg_objects[data.uid];
+        item.expand(false)
+    } else if (data.type === 'collapse') {
+        var item = this.svg_objects[data.uid];
+        item.collapse(false)
     } else if (data.type === 'pos_size') {
         var item = this.svg_objects[data.uid];
         item.set_position(data.pos[0], data.pos[1]);
