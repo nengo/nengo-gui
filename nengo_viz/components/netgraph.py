@@ -73,7 +73,7 @@ class NetGraph(Component):
             del self.viz.redo_stack[:]
             getattr(self, 'act_' + action)(**info)
         elif undo is not None:
-            if undo:
+            if undo == '1':
                 self.undo()
             else:
                 self.redo()

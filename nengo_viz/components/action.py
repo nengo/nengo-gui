@@ -5,6 +5,12 @@ def create_action(action, net_graph, **info):
         return Collapse(net_graph, **info)
     elif action == "pan":
         return Pan(net_graph, **info)
+    elif action == "pos":
+        return Pos(net_graph, **info)
+    elif action == "size":
+        return Size(net_graph, **info)
+    elif action == "pos_size":
+        return PosSize(net_graph, **info)
     else:
         return Action(net_graph, **info)
 
@@ -80,10 +86,15 @@ class Pan(Action):
 class PosSize(Action):
     def __init__(self, net_graph, uid, x, y, width, height):
         self.net_graph = net_graph
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
+        self.uid = uid
+        #self.x = x
+        #self.y = y
+        #self.width = width
+        #self.height = height
+        
+        obj = self.net_graph.uids[self.uid]
+        self.x, self.y = self.net_graph.config[obj].pos
+        self.width, self.height = self.net_graph.config[obj].size
 
     def apply(self):
         x, y, width, height = self.x, self.y, self.width, self.height
@@ -99,8 +110,11 @@ class PosSize(Action):
 class Pos(Action):
     def __init__(self, net_graph, uid, x, y):
         self.net_graph = net_graph
-        self.x = x
-        self.y = y
+        self.uid = uid
+        #self.x = x
+        #self.y = y
+        obj = self.net_graph.uids[self.uid]
+        self.x, self.y = self.net_graph.config[obj].pos
 
     def apply(self):
         x, y = self.x, self.y
@@ -116,8 +130,11 @@ class Pos(Action):
 class Size(Action):
     def __init__(self, net_graph, uid, width, height):
         self.net_graph = net_graph
-        self.width = width
-        self.height = height
+        self.uid = uid
+        obj = self.net_graph.uids[self.uid]
+        self.width, self.height = self.net_graph.config[obj].size
+        #self.width = width
+        #self.height = height
 
     def apply(self):
         width, height = self.width, self.height
