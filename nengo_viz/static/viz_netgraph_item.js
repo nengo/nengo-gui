@@ -98,7 +98,7 @@ VIZ.NetGraphItem = function(ng, info) {
     this.label = label;
     label.innerHTML = info.label;
     g.appendChild(label);
-    this.label_below = false;
+    this.label_below = true;
     
 
     /** dragging an item to change its position */
@@ -206,11 +206,6 @@ VIZ.NetGraphItem = function(ng, info) {
             this.expand();
         }
     }
-    
-    if (this.passthrough) {
-        this.set_label_below(true);
-    }
-
 };
 
 VIZ.NetGraphItem.prototype.set_label = function(label) {
@@ -285,8 +280,6 @@ VIZ.NetGraphItem.prototype.request_feedforward_layout = function () {
 VIZ.NetGraphItem.prototype.expand = function() {
     this.g.classList.add('expanded');
     
-    this.set_label_below(true);
-
     if (!this.expanded) {
         this.expanded = true;
         this.ng.g_items.removeChild(this.g);
@@ -299,23 +292,21 @@ VIZ.NetGraphItem.prototype.expand = function() {
     this.ng.notify({act:"expand", uid:this.uid});
 }
 
-VIZ.NetGraphItem.prototype.set_label_below = function(flag) {
-    if (flag && !this.label_below) {        
-        var screen_h = this.get_height();
-        this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
-    } else if (!flag && this.label_below) {
-        this.label.setAttribute('transform', '');
-    }
-    this.label_below = flag;
-}
+// VIZ.NetGraphItem.prototype.set_label_below = function(flag) {
+//     if (flag && !this.label_below) {        
+//         var screen_h = this.get_height();
+//         this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
+//     } else if (!flag && this.label_below) {
+//         this.label.setAttribute('transform', '');
+//     }
+//     this.label_below = flag;
+// }
 
 
 
 /** collapse an expanded network */
 VIZ.NetGraphItem.prototype.collapse = function(report_to_server) {
     this.g.classList.remove('expanded');
-
-    this.set_label_below(false);
     
     /** remove child NetGraphItems and NetGraphConnections */
     while (this.child_connections.length > 0) {
