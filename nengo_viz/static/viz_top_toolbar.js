@@ -37,7 +37,10 @@ function theimage(){
 }
 
 VIZ.Toolbar = function() {
-	this.ws = VIZ.create_websocket('asdasiodjiosajdiosajd');
+	
+
+	var self = this;
+
 	var toolbar = document.createElement('ul');
 	toolbar.className = 'nav nav-pills'
 	VIZ.top_bar = toolbar;
@@ -50,19 +53,29 @@ VIZ.Toolbar = function() {
 	open_file.setAttribute('type', 'file');
 	open_file.id = 'open_file'
 	open_file.style.display = 'none';
-	$(open_file).change(this.file_name);
-	VIZ.Toolbar.add_button('Open file', 'glyphicon glyphicon-folder-open',  function() {performClick('open_file')});
+	open_file.addEventListener('change', function(){console.log('swiss chz');self.file_name();});
+	VIZ.Toolbar.add_button('Open file', 'glyphicon glyphicon-folder-open', function(){performClick('open_file')});
 
 	VIZ.Toolbar.add_button('Reset model layout', 'glyphicon glyphicon-retweet', function() {performClick('openFile')});
 
 	VIZ.Toolbar.add_button('Save as', 'glyphicon glyphicon-floppy-disk', function() {performClick('openFile')});
 }
 
+VIZ.Toolbar.prototype.onmessage = function(msg) {
+	console.log(msg);
+}
 
-VIZ.Toolbar.prototype.file_name = function(first_argument) {
+VIZ.Toolbar.prototype.file_name = function() {
+	if (!(this.ws)) {
+		this.ws = sim.ws;
+		this.ws.onmessage = function(event) {self.on_message(event);}
+	}
+
 	var filename = document.getElementById('open_file').value;
 	filename = filename.replace("C:\\fakepath\\", ""); 
-	this.ws.send(filename);
+	var msg = {tag:'open', data:'filename'}
+	this.ws.send(msg);
+	console.log('sent ' + msg);
 };
 
 VIZ.Toolbar.add_button = function (name, icon_class, fun) {
@@ -78,4 +91,4 @@ VIZ.Toolbar.add_button = function (name, icon_class, fun) {
 
 VIZ.Toolbar.add_dropdown = function(){}
 
-VIZ.Toolbar();
+new VIZ.Toolbar();
