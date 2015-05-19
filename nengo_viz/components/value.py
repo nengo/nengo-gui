@@ -28,9 +28,9 @@ class Value(Component):
         self.data.append(self.struct.pack(t, *x))
 
     def update_client(self, client):
-        while len(self.data) > 0:
-            data = self.data.pop(0)
-            client.write(data, binary=True)
+        for item in self.data:
+            client.write(item, binary=True)
+        self.data = []
 
     def javascript(self):
         info = dict(uid=self.uid, n_lines=self.n_lines, label=self.label)
