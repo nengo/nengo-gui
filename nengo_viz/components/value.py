@@ -2,7 +2,7 @@ import nengo
 import numpy as np
 import struct
 
-from nengo_viz.components.component import Component
+from nengo_viz.components.component import Component, Template
 
 
 class Value(Component):
@@ -16,7 +16,7 @@ class Value(Component):
 
     def add_nengo_objects(self, viz):
         with viz.model:
-            self.node = nengo.Node(self.gather_data, 
+            self.node = nengo.Node(self.gather_data,
                                    size_in=self.obj.size_out)
             self.conn = nengo.Connection(self.obj, self.node, synapse=None)
 
@@ -36,3 +36,7 @@ class Value(Component):
         info = dict(uid=self.uid, n_lines=self.n_lines, label=self.label)
         json = self.javascript_config(info)
         return 'new VIZ.Value(main, sim, %s);' % json
+
+class ValueTemplate(Template):
+    cls = Value
+    config_params = dict(maxy=1, miny=-1, **Template.default_params)
