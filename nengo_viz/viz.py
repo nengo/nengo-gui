@@ -102,9 +102,9 @@ class Viz(object):
         self.model = model
         self.locals = locals
             
-        self.load(filename):
+        self.load(filename)
     
-    def load(filename):
+    def load(self, filename):
 
         self.filename = filename
         self.name_finder = nengo_viz.NameFinder(self.locals, self.model)

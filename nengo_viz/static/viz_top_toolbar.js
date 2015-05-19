@@ -28,14 +28,6 @@ function performClick(elemId) {
    }
 }
 
-
-
-onchange="theimage();"
-
-function theimage(){
-
-}
-
 VIZ.Toolbar = function() {
 	
 
@@ -73,7 +65,7 @@ VIZ.Toolbar.prototype.file_name = function() {
 
 	var filename = document.getElementById('open_file').value;
 	filename = filename.replace("C:\\fakepath\\", ""); 
-	var msg = {tag:'open', data:'filename'}
+	var msg = JSON.stringify({tag:'open', data:'filename'});
 	this.ws.send(msg);
 	console.log('sent ' + msg);
 };
