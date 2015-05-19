@@ -104,9 +104,6 @@ class Viz(object):
             if model is None:
                 model = locals['model']
 
-
-            locals['nengo_viz'] = nengo_viz
-
             self.model = model
             self.locals = locals
                 
