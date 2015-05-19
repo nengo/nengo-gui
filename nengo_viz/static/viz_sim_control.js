@@ -82,6 +82,7 @@ VIZ.SimControl.prototype.on_message = function(event) {
 
 VIZ.SimControl.prototype.set_status = function(status) {
     var icon;
+    status = status.trim();
     if (status === 'building') {
         icon = 'glyphicon-cog';
         this.start_rotating_cog();
@@ -92,6 +93,8 @@ VIZ.SimControl.prototype.set_status = function(status) {
     } else if (status == 'running') {
         icon = 'glyphicon-pause';
         this.stop_rotating_cog();
+    } else {
+        console.log(['unknown status', status]);
     }
     this.pause_button_icon.className = "glyphicon " + icon;
 }
