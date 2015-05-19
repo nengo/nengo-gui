@@ -61,7 +61,7 @@ class Pan(Action):
         #print( self.new_x, self.new_y)
         self.new_x, self.new_y = self.net_graph.config[self.net_graph.viz.model].pos
         self.net_graph.act_pan(self.old_x, self.old_y)
-
+"""
 class Pos(Action):
     def __init__(self, net_graph, uid, x, y, width, height):
         self.net_graph = net_graph
@@ -69,4 +69,4 @@ class Pos(Action):
         self.new_y = y
         self.old_x = 0
         self.old_y = 0
-
+"""
