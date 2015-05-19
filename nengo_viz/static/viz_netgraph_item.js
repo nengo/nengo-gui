@@ -495,7 +495,8 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
     
     if (this.type === 'ens') {
         // TODO: Do not use hard coded 18, but read out from SVG template.
-        this.shape.setAttribute('transform', 'scale(' + screen_w / 2 / 18 + ')');
+        var scale = Math.sqrt(screen_h * screen_h + screen_w * screen_w) / Math.sqrt(2);
+        this.shape.setAttribute('transform', 'scale(' + scale / 2 / 18 + ')');
     } else if (this.passthrough) {
         this.shape.setAttribute('rx', screen_w / 2);
         this.shape.setAttribute('ry', screen_h / 2);    
