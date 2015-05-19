@@ -173,8 +173,10 @@ class Viz(object):
             label = repr(obj)
         return label
 
-    def get_uid(self, obj):
-        uid = self.default_labels.get(obj, None)
+    def get_uid(self, obj, default_labels=None):
+        if default_labels is None:
+            default_labels = self.default_labels
+        uid = default_labels.get(obj, None)
         if uid is None:
             uid = repr(obj)
         return uid

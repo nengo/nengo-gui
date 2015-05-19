@@ -46,17 +46,41 @@ class NetGraph(Component):
         locals['nengo_viz'] = nengo_viz
         name_finder = nengo_viz.NameFinder(locals, model)
         for uid, old_item in self.uids.items():
-            if isinstance(old_item, (nengo.Node,
-                                     nengo.Ensemble,
-                                     nengo.Network)):
-                old_label = self.viz.viz.get_label(old_item)
+            try:
                 new_item = eval(uid, locals)
-                new_label = self.viz.viz.get_label(new_item,
-                    default_labels=name_finder.known_name)
+            except:
+                new_item = None
 
-                if old_label != new_label:
-                    self.to_be_sent.append(dict(
-                        type='rename', uid=uid, name=new_label))
+            if new_item is None:
+                self.to_be_sent.append(dict(
+                    type='remove', uid=uid))
+                del self.uids[uid]
+            else:
+                if isinstance(old_item, (nengo.Node,
+                                         nengo.Ensemble,
+                                         nengo.Network)):
+                    old_label = self.viz.viz.get_label(old_item)
+                    new_label = self.viz.viz.get_label(new_item,
+                        default_labels=name_finder.known_name)
+
+                    if old_label != new_label:
+                        self.to_be_sent.append(dict(
+                            type='rename', uid=uid, name=new_label))
+                self.uids[uid] = new_item
+
+        self.networks_to_search = [model]
+        self.parents = {}
+        self.to_be_expanded.append(model)
+
+        self.viz.model = model
+        self.viz.viz.model = model
+        self.viz.viz.locals = locals
+        self.viz.viz.name_finder = name_finder
+        self.viz.viz.default_labels = name_finder.known_name
+        self.viz.viz.config = self.viz.viz.load_config()
+        self.viz.config = self.viz.viz.config
+        self.config = self.viz.viz.config
+        self.viz.viz.uid_prefix_counter = {}
 
 
     def get_parents(self, uid):
@@ -205,6 +229,10 @@ class NetGraph(Component):
         self.config[network].expanded = True
 
     def create_object(self, client, obj, type, parent):
+        uid = self.viz.viz.get_uid(obj)
+        if uid in self.uids:
+            return
+
         pos = self.config[obj].pos
         if pos is None:
             import random
@@ -215,7 +243,6 @@ class NetGraph(Component):
             size = (0.1, 0.1)
             self.config[obj].size = size
         label = self.viz.viz.get_label(obj)
-        uid = self.viz.viz.get_uid(obj)
         self.uids[uid] = obj
         info = dict(uid=uid, label=label, pos=pos, type=type, size=size,
                     parent=parent)
@@ -243,6 +270,9 @@ class NetGraph(Component):
         client.write(json.dumps(dict(type='zoom', zoom=zoom)))
 
     def create_connection(self, client, conn, parent):
+        uid = self.viz.viz.get_uid(conn)
+        if uid in self.uids:
+            return
         pre = conn.pre_obj
         if isinstance(pre, nengo.ensemble.Neurons):
             pre = pre.ensemble
@@ -251,7 +281,6 @@ class NetGraph(Component):
             post = post.ensemble
         pre = self.viz.viz.get_uid(pre)
         post = self.viz.viz.get_uid(post)
-        uid = 'conn_%d' % id(conn)
         self.uids[uid] = conn
         pres = self.get_parents(pre)[:-1]
         posts = self.get_parents(post)[:-1]
