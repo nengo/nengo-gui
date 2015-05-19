@@ -6,6 +6,7 @@ import nengo
 import json
 
 from nengo_viz.components.component import Component, Template
+from nengo_viz.disposable_js import infomodal
 import nengo_viz.layout
 
 class NetGraph(Component):
@@ -121,6 +122,10 @@ class NetGraph(Component):
         self.viz.changed = True
         self.to_be_sent.append(dict(type='js', code=c.javascript()))
 
+    def act_create_modal(self, uid):
+        js = infomodal(self.viz, self.uids[uid])
+        self.to_be_sent.append(dict(type='js', code=js))
+
     def act_feedforward_layout(self, uid):
         if uid is None:
             network = self.viz.model
@@ -226,4 +231,3 @@ class NetGraph(Component):
 class NetGraphTemplate(Template):
     cls = NetGraph
     config_params = dict()
-
