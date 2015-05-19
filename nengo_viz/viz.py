@@ -163,10 +163,12 @@ class Viz(object):
         with open(self.filename + '.cfg', 'w') as f:
             f.write(self.config.dumps(uids=self.default_labels))
 
-    def get_label(self, obj):
+    def get_label(self, obj, default_labels=None):
+        if default_labels is None:
+            default_labels = self.default_labels
         label = obj.label
         if label is None:
-            label = self.default_labels.get(obj, None)
+            label = default_labels.get(obj, None)
         if label is None:
             label = repr(obj)
         return label

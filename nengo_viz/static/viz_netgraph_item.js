@@ -187,6 +187,9 @@ VIZ.NetGraphItem = function(ng, info) {
 
 };
 
+VIZ.NetGraphItem.prototype.set_label = function(label) {
+    this.label.innerHTML = label;
+}
 
 VIZ.NetGraphItem.prototype.generate_menu = function () {
     var self = this;

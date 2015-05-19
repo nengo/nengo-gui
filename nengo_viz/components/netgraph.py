@@ -1,5 +1,7 @@
 import time
 import struct
+import threading
+import os
 
 import numpy as np
 import nengo
@@ -21,6 +23,41 @@ class NetGraph(Component):
         self.uids = {}
         self.parents = {}
         self.networks_to_search = [self.viz.model]
+
+        reload_thread = threading.Thread(target=self.reloader)
+        reload_thread.daemon = True
+        reload_thread.start()
+
+    def reloader(self):
+        modify_time = os.path.getmtime(self.viz.viz.filename)
+        while True:
+            time.sleep(1)
+            t = os.path.getmtime(self.viz.viz.filename)
+            if t != modify_time:
+                self.reload()
+                modify_time = t
+
+    def reload(self):
+        locals = {}
+        with open(self.viz.viz.filename) as f:
+            code = f.read()
+        exec(code, locals)
+        model = locals['model']
+        locals['nengo_viz'] = nengo_viz
+        name_finder = nengo_viz.NameFinder(locals, model)
+        for uid, old_item in self.uids.items():
+            if isinstance(old_item, (nengo.Node,
+                                     nengo.Ensemble,
+                                     nengo.Network)):
+                old_label = self.viz.viz.get_label(old_item)
+                new_item = eval(uid, locals)
+                new_label = self.viz.viz.get_label(new_item,
+                    default_labels=name_finder.known_name)
+
+                if old_label != new_label:
+                    self.to_be_sent.append(dict(
+                        type='rename', uid=uid, name=new_label))
+
 
     def get_parents(self, uid):
         while uid not in self.parents:
