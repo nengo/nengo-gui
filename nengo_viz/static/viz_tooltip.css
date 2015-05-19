@@ -3,3 +3,22 @@
     text-align:left;
     max-width:350px;
 }
+
+.modal-body .popover {
+    max-width: 350px;
+}
+
+.modal-body .popover-title {
+    white-space:pre-wrap;
+    text-align:left;
+    font-size:12px;
+    padding:5px 10px;
+    line-height:1.2;
+}
+
+.modal-body .popover-content {
+    white-space:pre-wrap;
+    text-align:left;
+    font-size:12px;
+    padding:5px 10px;
+}
