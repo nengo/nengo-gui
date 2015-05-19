@@ -60,11 +60,11 @@ VIZ.NetGraph = function(parent, args) {
     /** dragging the background pans the full area by changing offsetX,Y */
     var self = this;
 
+    /** define cursor behaviour for background */
     interact(this.svg)
         .on('mousedown', function() {             
             document.documentElement.setAttribute('style','cursor:move;')
-        });
-    interact(this.svg)
+        })
         .on('mouseup', function() {             
             document.documentElement.setAttribute('style','cursor:default;')
         });
