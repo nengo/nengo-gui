@@ -62,8 +62,11 @@ VIZ.NetGraph = function(parent, args) {
 
     /** define cursor behaviour for background */
     interact(this.svg)
-        .on('mousedown', function() {             
-            document.documentElement.setAttribute('style','cursor:move;')
+        .on('mousedown', function() {
+            var cursor = document.documentElement.getAttribute('style');
+            if (cursor.match(/resize/) == null) {               
+                document.documentElement.setAttribute('style','cursor:move;');
+            }
         })
         .on('mouseup', function() {             
             document.documentElement.setAttribute('style','cursor:default;')
