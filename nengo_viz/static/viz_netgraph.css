@@ -1,8 +1,8 @@
 .netgraph {
 }
 
-g.ens ellipse{
-    stroke-width:1;
+#ensemble{
+    stroke-width:0;
     }
     
 g.node rect{
