@@ -5,8 +5,9 @@ import numpy as np
 import nengo
 import json
 
-from nengo_viz.components.component import Component
+from nengo_viz.components.component import Component, Template
 import nengo_viz.layout
+from action import create_action
 
 class NetGraph(Component):
     configs = {}
@@ -64,11 +65,35 @@ class NetGraph(Component):
             print('invalid message', repr(msg))
             return
         action = info.get('act', None)
+        undo = info.get('undo', None)
         if action is not None:
             del info['act']
-            getattr(self, 'act_' + action)(**info)
+            action = create_action(action, self, **info)
+            self.viz.undo_stack.append(action)
+            action.apply()
+            #getattr(self, 'act_' + action)(**info)
+        elif undo is not None:
+            print("I GOT HERE")
+            if undo:
+                print("undoing")
+                self.undo()
+            else:
+                self.redo()
         else:
             print('received message', msg)
+
+    def undo(self):
+        if self.viz.undo_stack:
+            action = self.viz.undo_stack.pop()
+            print(action)
+            action.undo()
+            self.viz.redo_stack.append(action)
+
+    def redo(self):
+        if self.viz.redo_stack:
+            action = self.viz.redo_stack.pop()
+            action.apply()
+            self.viz.undo_stack.append(action)
 
     def act_expand(self, uid):
         net = self.uids[uid]
@@ -107,7 +132,7 @@ class NetGraph(Component):
         self.viz.viz.save_config()
 
     def act_create_graph(self, uid, type, x, y, width, height):
-        cls = getattr(nengo_viz, type)
+        cls = getattr(nengo_viz.components, type + 'Template')
         obj = self.uids[uid]
         template = cls(obj)
         self.viz.viz.generate_uid(template, prefix='_viz_')
@@ -222,4 +247,8 @@ class NetGraph(Component):
         client.write(json.dumps(info))
 
 
+
+class NetGraphTemplate(Template):
+    cls = NetGraph
+    config_params = dict()
 
