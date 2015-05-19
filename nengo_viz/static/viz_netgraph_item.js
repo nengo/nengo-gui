@@ -132,46 +132,65 @@ VIZ.NetGraphItem = function(ng, info) {
             .on('resizestart', function(event) {
                 self.menu.hide_any();
                 })
-            .on('resizemove', function(event) {            
+            .on('resizemove', function(event) {
                 var item = ng.svg_objects[uid];
-                var w = ng.get_scaled_width();
-                var h = ng.get_scaled_height();    
+                var pos = item.get_screen_location();
+                var h_scale = ng.get_scaled_width();
+                var v_scale = ng.get_scaled_height();
                 var parent = item.parent;
                 while (parent !== null) {
-                    w = w * parent.size[0] * 2;
-                    h = h * parent.size[1] * 2;
+                    h_scale = h_scale * parent.size[0] * 2;
+                    v_scale = v_scale * parent.size[1] * 2;
                     parent = parent.parent;
                 }
 
-                dw = event.deltaRect.width / w / 2;
-                dh = event.deltaRect.height / h / 2;
-                offset_x = dw + event.deltaRect.left / w;
-                offset_y = dh + event.deltaRect.top / h;
-
                 if (self.aspect !== null) {
-                    vertical_resize = event.edges.bottom || event.edges.top;
-                    horizontal_resize = event.edges.left || event.edges.right;
+                    var vertical_resize = event.edges.bottom || event.edges.top;
+                    var horizontal_resize = event.edges.left || event.edges.right;
 
-                    dw *= 2;
-                    dh *= 2;
-                    offset_x = 0.;
-                    offset_y = 0.;
+                    var w = pos[0] - event.clientX;
+                    var h = pos[1] - event.clientY;
+                    if (event.edges.right) {
+                        w *= -1;
+                    }
+                    if (event.edges.bottom) {
+                        h *= -1;
+                    }
+                    if (w < 0) {
+                        w = 1;
+                    }
+                    if (h < 0) {
+                        h = 1;
+                    }
+
+                    var scaled_w = item.size[0];
+                    var scaled_h = item.size[1];
 
                     if (horizontal_resize && vertical_resize) {
-                        p = (w * dw + h * dh) / Math.sqrt(w * w + h * h);
-                        dh = p / self.aspect;
-                        dw = p * self.aspect;
+                        var p = (self.size[0] * w + self.size[1] * h) / Math.sqrt(
+                            self.size[0] * self.size[0] + self.size[1] * self.size[1]);
+                        h = p / self.aspect;
+                        w = p * self.aspect;
                     } else if (horizontal_resize) {
-                        dh = dw / self.aspect;
+                        h = w / self.aspect;
                     } else {
-                        dw = dh * self.aspect;
+                        w = h * self.aspect;
                     }
-                }
 
-                item.set_size(item.size[0] + dw, item.size[1] + dh);
-                item.set_position(item.pos[0] + offset_x,
-                                  item.pos[1] + offset_y);
-                })
+                    scaled_w = w / h_scale;
+                    scaled_h = h / v_scale;
+                    item.set_size(scaled_w, scaled_h);
+                } else {
+                    var dw = event.deltaRect.width / h_scale / 2;
+                    var dh = event.deltaRect.height / v_scale / 2;
+                    var offset_x = dw + event.deltaRect.left / h_scale;
+                    var offset_y = dh + event.deltaRect.top / v_scale;
+
+                    item.set_size(item.size[0] + dw, item.size[1] + dh);
+                    item.set_position(item.pos[0] + offset_x,
+                                      item.pos[1] + offset_y);
+                }
+            })
             .on('resizeend', function(event) {
                 var item = ng.svg_objects[uid];
                 item.constrain_position();                
@@ -476,7 +495,7 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
     
     if (this.type === 'ens') {
         // TODO: Do not use hard coded 18, but read out from SVG template.
-        this.shape.setAttribute('transform', 'scale(' + screen_w / 2 / 2 / 18 + ')');
+        this.shape.setAttribute('transform', 'scale(' + screen_w / 2 / 18 + ')');
     } else if (this.passthrough) {
         this.shape.setAttribute('rx', screen_w / 2);
         this.shape.setAttribute('ry', screen_h / 2);    
@@ -535,6 +554,7 @@ VIZ.NetGraphItem.prototype.redraw = function() {
 
 /** determine the pixel location of the centre of the item */
 VIZ.NetGraphItem.prototype.get_screen_location = function() {
+    // FIXME this should probably use this.ng.get_scaled_width and this.ng.get_scaled_height
     var w = $(this.ng.svg).width() * this.ng.scale;
     var h = $(this.ng.svg).height() * this.ng.scale;
 
