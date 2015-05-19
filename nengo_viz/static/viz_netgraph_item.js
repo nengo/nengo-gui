@@ -220,6 +220,7 @@ VIZ.NetGraphItem.prototype.generate_menu = function () {
         items.push(['Semantic pointer', 
                     function() {self.create_graph('Pointer');}])
     }
+    items.push(['Details ...', function() {self.create_modal();}])
     return items;
 };
 
@@ -237,6 +238,12 @@ VIZ.NetGraphItem.prototype.create_graph = function (type) {
     this.ng.notify(info);
 };
 
+VIZ.NetGraphItem.prototype.create_modal = function () {
+    var info = {};
+    info.act = 'create_modal';
+    info.uid = this.uid;
+    this.ng.notify(info);
+}
 
 VIZ.NetGraphItem.prototype.request_feedforward_layout = function () {
     this.ng.notify({act:"feedforward_layout", uid:this.uid});
