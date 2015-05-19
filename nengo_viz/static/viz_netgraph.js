@@ -29,7 +29,9 @@ VIZ.NetGraph = function(parent, args) {
     this.svg.id = 'netgraph';
     this.svg.style.height = 'calc(100% - 80px)';
     this.svg.style.position = 'fixed';    
-
+        
+    interact(this.svg).styleCursor(false);
+        
     VIZ.netgraph = this;
     parent.appendChild(this.svg);
     this.parent = parent;
@@ -57,6 +59,16 @@ VIZ.NetGraph = function(parent, args) {
         
     /** dragging the background pans the full area by changing offsetX,Y */
     var self = this;
+
+    interact(this.svg)
+        .on('mousedown', function() {             
+            document.documentElement.setAttribute('style','cursor:move;')
+        });
+    interact(this.svg)
+        .on('mouseup', function() {             
+            document.documentElement.setAttribute('style','cursor:default;')
+        });
+
     interact(this.svg)
         .draggable({
             onstart: function() {
