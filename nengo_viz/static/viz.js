@@ -245,8 +245,14 @@ VIZ.Component.prototype.generate_menu = function() {
     return items;
 };
 
-VIZ.Component.prototype.remove = function() {
-    this.ws.send('remove');
+VIZ.Component.prototype.remove = function(undo_flag) {
+    undo_flag = typeof undo_flag !== 'undefined' ? undo_flag : false;
+
+    if (undo_flag === true) {
+        this.ws.send('remove_undo');
+    } else {
+        this.ws.send('remove');
+    }
     this.parent.removeChild(this.div);
     var index = VIZ.Component.components.indexOf(this);
     VIZ.Component.components.splice(index, 1);
@@ -305,6 +311,24 @@ VIZ.Component.prototype.layout_info = function () {
 VIZ.Component.prototype.save_layout = function () {
     var info = this.layout_info();
     this.ws.send('config:' + JSON.stringify(info));
+}
+
+VIZ.Component.prototype.update_layout = function (config) {
+    this.w = config.width;
+    this.h = config.height;
+    this.x = config.x;
+    this.y = config.y;
+
+    this.redraw_size();
+    this.redraw_pos();
+    this.on_resize(this.get_screen_width(), this.get_screen_height());    
+
+    if (config.label_visible === true) {
+        this.show_label();
+    } else {
+        this.hide_label();
+    }
+    VIZ.pan.redraw();          
 }
 
 
