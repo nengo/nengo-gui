@@ -68,13 +68,10 @@ class NetGraph(Component):
         undo = info.get('undo', None)
         if action is not None:
             del info['act']
-
-            # Pan and Zoom should not use the undo stack
-            if not (action == 'pan' or action == 'zoom'):
-                act = create_action(action, self, **info)
-                self.viz.undo_stack.append(act)
-                del self.viz.redo_stack[:]
-            getattr(self, 'act_' + action)(**info)
+            act = create_action(action, self, **info)
+            self.viz.undo_stack.append(act)
+            del self.viz.redo_stack[:]
+            #getattr(self, 'act_' + action)(**info)
         elif undo is not None:
             if undo == '1':
                 self.undo()
@@ -131,11 +128,12 @@ class NetGraph(Component):
         self.config[obj].size = width, height
         self.viz.viz.save_config()
 
-    def act_create_graph(self, uid, type, x, y, width, height):
+    """def act_create_graph(self, uid, type, x, y, width, height):
         cls = getattr(nengo_viz.components, type + 'Template')
         obj = self.uids[uid]
         template = cls(obj)
         self.viz.viz.generate_uid(template, prefix='_viz_')
+        uid_graph = self.viz.viz.get_uid(template)
         self.config[template].x = x
         self.config[template].y = y
         self.config[template].width = width
@@ -144,7 +142,7 @@ class NetGraph(Component):
 
         c = self.viz.add_template(template)
         self.viz.changed = True
-        self.to_be_sent.append(dict(type='js', code=c.javascript()))
+        self.to_be_sent.append(dict(type='js', code=c.javascript()))"""
 
     def act_feedforward_layout(self, uid):
         if uid is None:
