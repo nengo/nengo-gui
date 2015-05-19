@@ -87,6 +87,7 @@ VIZ.Component = function(parent, args) {
     /** Allow element to be dragged */ 
     this.div.setAttribute('data-x', args.x);
     this.div.setAttribute('data-y', args.y);
+        
     interact(this.div)
         .draggable({
             inertia: true,

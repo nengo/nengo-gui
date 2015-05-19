@@ -55,9 +55,6 @@ VIZ.NetGraphItem = function(ng, info) {
     ng.g_items.appendChild(g);    
     g.classList.add(this.type);
     
-    
-
-    
 
     this.menu = new VIZ.Menu(this.ng.parent);
     
