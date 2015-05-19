@@ -68,14 +68,12 @@ class NetGraph(Component):
         undo = info.get('undo', None)
         if action is not None:
             del info['act']
-            action = create_action(action, self, **info)
-            self.viz.undo_stack.append(action)
-            action.apply()
-            #getattr(self, 'act_' + action)(**info)
+            act = create_action(action, self, **info)
+            self.viz.undo_stack.append(act)
+            del self.viz.redo_stack[:]
+            getattr(self, 'act_' + action)(**info)
         elif undo is not None:
-            print("I GOT HERE")
             if undo:
-                print("undoing")
                 self.undo()
             else:
                 self.redo()
@@ -85,7 +83,6 @@ class NetGraph(Component):
     def undo(self):
         if self.viz.undo_stack:
             action = self.viz.undo_stack.pop()
-            print(action)
             action.undo()
             self.viz.redo_stack.append(action)
 

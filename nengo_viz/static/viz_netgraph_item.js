@@ -243,7 +243,10 @@ VIZ.NetGraphItem.prototype.request_feedforward_layout = function () {
 };
 
 /** expand a collapsed network */
-VIZ.NetGraphItem.prototype.expand = function() {
+VIZ.NetGraphItem.prototype.expand = function(rts) {
+    // default to true if no parameter is specified
+    rts = typeof rts !== 'undefined' ? rts : true
+    
     this.g.classList.add('expanded');
     
     this.set_label_below(true);
@@ -257,7 +260,9 @@ VIZ.NetGraphItem.prototype.expand = function() {
         console.log(this);
     }
 
-    this.ng.notify({act:"expand", uid:this.uid});
+    if (rts) {    
+        this.ng.notify({act:"expand", uid:this.uid});
+    }
 }
 
 VIZ.NetGraphItem.prototype.set_label_below = function(flag) {
