@@ -34,6 +34,7 @@ VIZ.NetGraphItem = function(ng, info) {
     /** minimum and maximum drawn size, in pixels */
     this.minWidth = 5;
     this.minHeight = 5;
+    this.aspect = null;
 
     this.expanded = false;
     
@@ -80,6 +81,7 @@ VIZ.NetGraphItem = function(ng, info) {
             'http://www.w3.org/1999/xlink', 'href', '#ensemble');
         this.shape.setAttribute('x', '0');
         this.shape.setAttribute('y', '0');
+        this.aspect = 1.;
     } else {
         console.log("Unknown NetGraphItem type");
         console.log(item);
@@ -145,13 +147,35 @@ VIZ.NetGraphItem = function(ng, info) {
                     h = h * parent.size[1] * 2;
                     parent = parent.parent;
                 }
-                
-                item.set_size(item.size[0] + event.deltaRect.width / w / 2, 
-                              item.size[1] + event.deltaRect.height / h / 2);
-                item.set_position(item.pos[0] + event.deltaRect.width / w / 2 + 
-                                                event.deltaRect.left / w, 
-                                  item.pos[1] + event.deltaRect.height / h / 2 + 
-                                                event.deltaRect.top / h);
+
+                dw = event.deltaRect.width / w / 2;
+                dh = event.deltaRect.height / h / 2;
+                offset_x = dw + event.deltaRect.left / w;
+                offset_y = dh + event.deltaRect.top / h;
+
+                if (self.aspect !== null) {
+                    vertical_resize = event.edges.bottom || event.edges.top;
+                    horizontal_resize = event.edges.left || event.edges.right;
+
+                    dw *= 2;
+                    dh *= 2;
+                    offset_x = 0.;
+                    offset_y = 0.;
+
+                    if (horizontal_resize && vertical_resize) {
+                        p = (w * dw + h * dh) / Math.sqrt(w * w + h * h);
+                        dh = p / self.aspect;
+                        dw = p * self.aspect;
+                    } else if (horizontal_resize) {
+                        dh = dw / self.aspect;
+                    } else {
+                        dw = dh * self.aspect;
+                    }
+                }
+
+                item.set_size(item.size[0] + dw, item.size[1] + dh);
+                item.set_position(item.pos[0] + offset_x,
+                                  item.pos[1] + offset_y);
                 })
             .on('resizeend', function(event) {
                 var item = ng.svg_objects[uid];
@@ -489,8 +513,8 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
     var screen_h = this.get_height();
     
     if (this.type === 'ens') {
-        this.shape.setAttribute('width', screen_w / 2);
-        this.shape.setAttribute('height', screen_h / 2);    
+        // TODO: Do not use hard coded 18, but read out from SVG template.
+        this.shape.setAttribute('transform', 'scale(' + screen_w / 2 / 2 / 18 + ')');
     } else if (this.passthrough) {
         this.shape.setAttribute('rx', screen_w / 2);
         this.shape.setAttribute('ry', screen_h / 2);    
