@@ -44,8 +44,21 @@ VIZ.Modal.ensemble_body = function(params, siminfo, connections) {
         .appendTo($content);
     var $plist = $('<dl class="dl-horizontal"/>').appendTo($params);
     for (var i = 0; i < params.length; i++) {
-        $plist.append('<dt>' + params[i][0] + '</dt>')
+        $plist
+            .append('<dt id="dt' + i + '">' + params[i][0] + '&nbsp;</dt>')
             .append('<dd>' + params[i][1] + '</dd>');
+
+        // Make tooltip
+        $tooltip = $('<a href="#" data-toggle="tooltip" data-placement="right"' +
+                     'title="' + VIZ.tooltips["ens"][String(params[i][0])] + '">' +
+                     '<span class="glyphicon glyphicon-question-sign" aria-hidden="true"/></a>');
+
+        // Add tooltip to dt
+        $('#dt' + i).first().append($tooltip);
+
+        // Initialize tooltip
+        // $tooltip.tooltip({"trigger": "click"});  // Debug
+        $tooltip.tooltip();
     }
 
     // Plots
