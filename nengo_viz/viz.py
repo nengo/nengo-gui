@@ -84,6 +84,8 @@ class VizSim(object):
 class Viz(object):
     """The master visualization organizer set up for a particular model."""
     def __init__(self, filename, model=None, locals=None):
+        self.vizsims = []
+
         if locals is None:
             locals = {}
             with open(filename) as f:
@@ -184,4 +186,10 @@ class Viz(object):
 
     def create_sim(self):
         """Create a new Simulator with this configuration"""
-        return VizSim(self)
+        vizsim = VizSim(self)
+        vizsims.append(vizsim)
+        return vizsim
+
+    def shutdown(self):
+        for vizsim in self.vizsims:
+            vizsim.finish()

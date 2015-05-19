@@ -74,6 +74,7 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
     server_version = 'SimpleWebInterface/2.0'
     serve_files = []
     serve_dirs = []
+    shutdown_flag = False
 
     pending_headers = None
     testing_user = None
@@ -289,9 +290,9 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
-            self.wfil.write(("<html><body>Invalid request:"
-                             "<pre>args=%s</pre><pre>db=%s</pre>"
-                             "</body></html>" % (args, db)).encode("utf-8"))
+            self.wfile.write(("<html><body>Invalid request:"
+                              "<pre>args=%s</pre><pre>db=%s</pre>"
+                              "</body></html>" % (args, db)).encode("utf-8"))
 
     def send_file(self, path):
         self.send_response(200)
@@ -367,12 +368,18 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
         else:
             server = BaseHTTPServer.HTTPServer((addr, port), cls)
         try:
-            server.serve_forever()
+            while not cls.shutdown_flag:
+                server.handle_request()
         finally:
             # shut down any remaining threads
             if asynch and server.requests is not None:
                 for socket in server.requests:
                     socket.close()
+
+    @classmethod
+    def shutdown(cls):
+        cls.shutdown_flag = True
+
 
     @classmethod
     def browser(cls, port=80):
