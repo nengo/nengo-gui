@@ -172,6 +172,9 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         item.set_size(data.size[0], data.size[1]);
     } else if (data.type === 'js') {
         eval(data.code);
+    } else if (data.type === 'delete_graph') {
+        var item = this.svg_objects[data.uid];
+        item.remove();
     } else {
         console.log('invalid message');
         console.log(data);
