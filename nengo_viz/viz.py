@@ -89,6 +89,10 @@ class Viz(object):
     """The master visualization organizer set up for a particular model."""
     def __init__(self, filename, model=None, locals=None):
 
+        self.load(filename, model, locals)
+    
+    def load(self, filename, model=None, locals=None):
+
         if locals is None:
             locals = {}
             with open(filename) as f:
@@ -102,12 +106,9 @@ class Viz(object):
         self.model = model
         self.locals = locals
             
-        self.load(filename)
-    
-    def load(self, filename):
 
         self.filename = filename
-        self.name_finder = nengo_viz.NameFinder(self.locals, self.model)
+        self.name_finder = nengo_viz.NameFinder(locals, model)
         self.default_labels = self.name_finder.known_name
 
         self.config = self.load_config()

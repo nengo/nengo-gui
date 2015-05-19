@@ -22,6 +22,7 @@ class SimControl(Component):
         self.skipped = 1
         self.time = 0.0
         self.last_status = None
+        self.reload = False
 
     def add_nengo_objects(self, viz):
         with viz.model:
@@ -66,6 +67,9 @@ class SimControl(Component):
         if status != self.last_status:
             client.write('status:%s' % status)
             self.last_status = status
+        if self.reload == True:
+            client.write('reload')
+            self.reload = False
 
     def get_status(self):
         if self.paused:
@@ -89,7 +93,7 @@ class SimControl(Component):
             self.paused = False
         elif msg[:4] == 'open':
             self.viz.filename = msg[4:]
-            print self.viz.filename
+            self.reload = True
 
 class SimControlTemplate(Template):
     cls = SimControl

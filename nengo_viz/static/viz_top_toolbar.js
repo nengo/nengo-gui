@@ -60,7 +60,7 @@ VIZ.Toolbar.prototype.onmessage = function(msg) {
 VIZ.Toolbar.prototype.file_name = function() {
 	if (!(this.ws)) {
 		this.ws = sim.ws;
-		this.ws.onmessage = function(event) {self.on_message(event);}
+		// this.ws.onmessage = function(event) {self.on_message(event);}
 	}
 
 	var filename = document.getElementById('open_file').value;
@@ -68,7 +68,6 @@ VIZ.Toolbar.prototype.file_name = function() {
 	var msg = 'open' + filename //JSON.stringify({tag:'open', data:filename});
 	this.ws.send(msg);
 	console.log('sent ' + msg);
-    location.reload()
 };
 
 VIZ.Toolbar.add_button = function (name, icon_class, fun) {
