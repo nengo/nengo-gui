@@ -78,8 +78,8 @@ VIZ.NetGraphItem = function(ng, info) {
         } else {
             edge = h;
         }
-        this.shape.setAttribute('rx', .1*edge);
-        this.shape.setAttribute('ry', .1*edge);
+        this.shape.setAttribute('rx', .05*edge);
+        this.shape.setAttribute('ry', .05*edge);
     } else if (info.type === 'ens') {
         this.shape = this.ng.createSVGElement('use');
         this.shape.setAttributeNS(
@@ -185,7 +185,6 @@ VIZ.NetGraphItem = function(ng, info) {
                         w = h * self.aspect;
                     }
 
-<<<<<<< Updated upstream
                     scaled_w = w / h_scale;
                     scaled_h = h / v_scale;
                     item.set_size(scaled_w, scaled_h);
@@ -200,13 +199,6 @@ VIZ.NetGraphItem = function(ng, info) {
                                       item.pos[1] + offset_y);
                 }
             })
-=======
-                item.set_size(item.size[0] + dw, item.size[1] + dh);
-                item.set_position(item.pos[0] + offset_x,
-                                  item.pos[1] + offset_y);
-                }            
-                )
->>>>>>> Stashed changes
             .on('resizeend', function(event) {
                 var item = ng.svg_objects[uid];
                 item.constrain_position();                
