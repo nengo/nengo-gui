@@ -87,6 +87,9 @@ class SimControl(Component):
             if self.viz.sim is None:
                 self.viz.rebuild = True
             self.paused = False
+        elif msg[:4] == 'open':
+            self.viz.filename = msg[4:]
+            print self.viz.filename
 
 class SimControlTemplate(Template):
     cls = SimControl

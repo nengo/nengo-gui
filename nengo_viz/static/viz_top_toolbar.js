@@ -65,9 +65,10 @@ VIZ.Toolbar.prototype.file_name = function() {
 
 	var filename = document.getElementById('open_file').value;
 	filename = filename.replace("C:\\fakepath\\", ""); 
-	var msg = JSON.stringify({tag:'open', data:'filename'});
+	var msg = 'open' + filename //JSON.stringify({tag:'open', data:filename});
 	this.ws.send(msg);
 	console.log('sent ' + msg);
+    location.reload()
 };
 
 VIZ.Toolbar.add_button = function (name, icon_class, fun) {
