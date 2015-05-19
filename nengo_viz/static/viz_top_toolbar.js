@@ -28,6 +28,16 @@ function performClick(elemId) {
    }
 }
 
+VIZ.create_websocket('asdasiodjiosajdiosajd');
+
+onchange="theimage();"
+
+function theimage(){
+ var filename = document.getElementById('openFile').value;
+ //document.getElementById('file-path').value = filename;
+ alert(filename);
+}
+
 VIZ.Toolbar = function() {
 	var toolbar = document.createElement('ul');
 	toolbar.className = 'nav nav-pills'
@@ -41,6 +51,7 @@ VIZ.Toolbar = function() {
 	open_file.setAttribute('type', 'file');
 	open_file.id = 'openFile'
 	open_file.style.display = 'block';
+	open_file.setAttribute('onchange', 'theimage()');
 	VIZ.Toolbar.add_button('Open file', 'glyphicon glyphicon-folder-open',  function() {performClick('openFile')});
 
 	VIZ.Toolbar.add_button('Reset model layout', 'glyphicon glyphicon-retweet', function() {performClick('openFile')});
