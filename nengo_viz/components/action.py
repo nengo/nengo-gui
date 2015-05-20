@@ -207,19 +207,19 @@ class CreateGraph(Action):
 
     def undo(self):
         self.net_graph.to_be_sent.append(dict(type='delete_graph', uid=self.uid_graph))
-    
+
 
 class PosSize(Action):
     def __init__(self, net_graph, uid, x, y, width, height):
         self.net_graph = net_graph
         self.uid = uid
-        
+
         self.obj = self.net_graph.uids[self.uid]
         self.x, self.y = self.net_graph.config[self.obj].pos
         self.width, self.height = self.net_graph.config[self.obj].size
-        
+
         self.act_pos_size(x, y, width, height)
-        
+
     def act_pos_size(self, x, y, width, height):
         self.net_graph.config[self.obj].pos = x, y
         self.net_graph.config[self.obj].size = width, height
@@ -241,9 +241,9 @@ class Pos(Action):
         self.uid = uid
         self.obj = self.net_graph.uids[self.uid]
         self.x, self.y = self.net_graph.config[self.obj].pos
-        
+
         self.act_pos(x, y)
-        
+
     def act_pos(self, x, y):
         self.net_graph.config[self.obj].pos = x, y
         self.net_graph.viz.viz.save_config()    
@@ -264,9 +264,9 @@ class Size(Action):
         self.uid = uid
         self.obj = self.net_graph.uids[self.uid]
         self.width, self.height = self.net_graph.config[self.obj].size
-        
+
         self.act_size(width, height)
-        
+
     def act_size(self, width, height):
         self.net_graph.config[self.obj].size = width, height
         self.net_graph.viz.viz.save_config()    
@@ -290,9 +290,11 @@ class FeedforwardLayout(Action):
 
         # record the current positions and sizes of everything in the network
         self.old_state = self.save_network()
-        
+
         self.act_feedforward_layout()
-        
+
+        self.new_state = self.save_network()
+
     def act_feedforward_layout(self):
         if self.uid is None:
             network = self.net_graph.viz.model
@@ -330,6 +332,7 @@ class FeedforwardLayout(Action):
             item = {'uid':self.net_graph.viz.viz.get_uid(obj),
                     'pos':self.net_graph.config[obj].pos,
                     'size':self.net_graph.config[obj].size,
+                    'obj':obj,
                    }
             state.append(item)
 
@@ -342,15 +345,14 @@ class FeedforwardLayout(Action):
                                                   pos=item['pos'],
                                                   size=item['size'],
                                                  ))
+            self.net_graph.config[item['obj']].pos = item['pos']
+            self.net_graph.config[item['obj']].size = item['size']
         #TODO: should config[network].has_layout be changed here?
+        self.net_graph.viz.viz.save_config()
 
     def apply(self):
         self.load_network(self.new_state)
 
     def undo(self):
-        # Save the layout configuration for the redo command
-        # Only save if it has not already been saved
-        if not self.new_state:
-            self.new_state = self.save_network()
         self.load_network(self.old_state)
 
