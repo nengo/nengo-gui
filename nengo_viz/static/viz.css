@@ -7,6 +7,14 @@
     border: 1px solid #888888;
 }
 
+.graph text { 
+    cursor: default;
+}
+
+.graph text:active {
+    cursor: move;
+}
+
 .graph .line {
     fill: none;
     stroke: black;
@@ -23,13 +31,18 @@
     font-size: .8em;
 }
 
-.graph .axis.axis_y text {
+.graph .axis text {
     font-size: .8em;
 }
 
-div.graph .label {
+.graph .label {
     font-size: 1em;
     font-family: sans-serif;
     font-weight: normal;
     color: black;
+    cursor: default;
+}
+
+.graph .label:active {
+    cursor: ns-resize;
 }
