@@ -227,12 +227,16 @@ VIZ.NetGraphItem.prototype.create_graph = function (type) {
     var info = {};
     info.act = 'create_graph';
     info.type = type;
+    var w = this.get_nested_width();
+    var h = this.get_nested_height();
+    
     var pos = this.get_screen_location();
-    var cords = VIZ.pan.map_px_to_cord(VIZ.Screen, {x:pos[0], y:pos[1]});
-    info.x = cords.x;
-    info.y = cords.y;
-    info.width = 200;
-    info.height = 200;
+    
+    info.x = pos[0] / (viewport.w * viewport.scale) - viewport.x + w; 
+    info.y = pos[1] / (viewport.h * viewport.scale) - viewport.y + h;
+    
+    info.width = w * 2;
+    info.height = h * 2;
     info.uid = this.uid;
     this.ng.notify(info);
 };
