@@ -266,6 +266,18 @@ VIZ.Component.prototype.save_layout = function () {
     this.ws.send('config:' + JSON.stringify(info));
 }
 
+VIZ.Component.prototype.update_layout = function (config) {
+    VIZ.set_transform(this.div, parseFloat(config.x), parseFloat(config.y));
+    this.div.setAttribute('data-x', parseFloat(config.x));
+    this.div.setAttribute('data-y', parseFloat(config.y));
+    this.on_resize(config.height, config.width);
+    if (config.label_visible === true) {
+        this.show_label();
+    } else {
+        this.hide_label();
+    }
+}
+
 
 /**
  * Storage of a set of data points and associated times.
