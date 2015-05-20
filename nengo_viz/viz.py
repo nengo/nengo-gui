@@ -67,7 +67,11 @@ class VizSim(object):
             if self.sim is None:
                 time.sleep(0.01)
             else:
-                self.sim.step()
+                try:
+                    self.sim.step()
+                except AttributeError:
+                    time.sleep(0.01)
+
 
             if self.rebuild:
                 self.rebuild = False

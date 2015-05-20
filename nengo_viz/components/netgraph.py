@@ -79,6 +79,15 @@ class NetGraph(Component):
                     old_post = old_item.post_obj
                     new_pre = new_item.pre_obj
                     new_post = new_item.post_obj
+                    if isinstance(old_pre, nengo.ensemble.Neurons):
+                        old_pre = old_pre.ensemble
+                    if isinstance(old_post, nengo.ensemble.Neurons):
+                        old_post = old_post.ensemble
+                    if isinstance(new_pre, nengo.ensemble.Neurons):
+                        new_pre = new_pre.ensemble
+                    if isinstance(new_post, nengo.ensemble.Neurons):
+                        new_post = new_post.ensemble
+
                     old_pre = self.viz.viz.get_uid(old_pre)
                     old_post = self.viz.viz.get_uid(old_post)
                     new_pre = self.viz.viz.get_uid(new_pre,
@@ -108,10 +117,19 @@ class NetGraph(Component):
         self.viz.config = self.viz.viz.config
         self.config = self.viz.viz.config
         self.viz.viz.uid_prefix_counter = {}
-        self.viz.changed = True
 
-        #for c in self.viz.components:
-        #    c.new_component = c.template.create(self.viz)
+        components = []
+        for c in self.viz.components[:2]:
+            components.append(c)
+            locals[c.uid] = c.template
+        self.viz.components = components
+        for template in self.viz.viz.find_templates():
+            if not isinstance(template,
+                              (nengo_viz.components.SimControlTemplate,
+                               nengo_viz.components.NetGraphTemplate)):
+                self.viz.add_template(template)
+
+        self.viz.changed = True
 
 
     def get_parents(self, uid, default_labels=None):
