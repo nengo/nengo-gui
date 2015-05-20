@@ -22,8 +22,9 @@ class Server(swi.SimpleWebInterface):
         return ('image/ico', icon)
 
     def swi_shutdown(self):
-        Server.viz.shutdown()
-        Server.shutdown()
+        self.viz.cleanup()  # cleanup viz threads
+        self.stop()         # stop handling requests
+        return "Shutting Down"
 
     def swi(self):
         """Handles http://host:port/ by giving the main page"""

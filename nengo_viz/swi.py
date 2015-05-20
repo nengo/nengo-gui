@@ -83,6 +83,8 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
     current_cookies = {}
     passwords = {}
 
+    _stopped = threading.Event()  # set to shut down all servers
+
     def add_header(self, key, value):
         if self.pending_headers is None:
             self.pending_headers = []
@@ -360,8 +362,7 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
         return val
 
     @classmethod
-    def start(cls, port=80, asynch=True, addr='', browser=False,
-              separate_thread=False):
+    def start(cls, port=80, asynch=True, addr='', browser=False):
         if browser:
             cls.browser(port=port)
         if asynch:
@@ -369,30 +370,27 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
         else:
             server = BaseHTTPServer.HTTPServer((addr, port), cls)
 
-        server.finished = False
-
-        if separate_thread:
-            threading.Thread(target=cls.runner, args=(server, asynch)).start()
-            return server
-        else:
-            cls.runner(server, asynch)
+        cls._stopped.clear()
+        cls._runner(server, asynch)
 
     @classmethod
-    def runner(cls, server, asynch):
+    def _runner(cls, server, asynch):
         try:
-            while not cls.shutdown_flag and not server.finished:
+            while not cls._stopped.is_set():
                 server.handle_request()
         finally:
             # shut down any remaining threads
+            # warning: this list is shared across threads -- not thread-safe
             if asynch and server.requests is not None:
                 for socket in server.requests:
                     socket.close()
-        server.finished = True
 
     @classmethod
-    def shutdown(cls):
-        cls.shutdown_flag = True
-
+    def stop(cls):
+        """Stop all servers after their next request."""
+        # Note: a request must be triggered before the server will
+        # stop, because it will be blocking on its current handle_request
+        cls._stopped.set()
 
     @classmethod
     def browser(cls, port=80):

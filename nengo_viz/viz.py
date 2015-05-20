@@ -179,11 +179,12 @@ class Viz(object):
             uid = repr(obj)
         return uid
 
-    def start(self, port=8080, browser=True, separate_thread=False):
+    def start(self, port=8080, browser=True):
         """Start the web server"""
         nengo_viz.server.Server.viz = self
-        return nengo_viz.server.Server.start(port=port, browser=browser,
-                                             separate_thread=separate_thread)
+        # asynch must be true to handle websockets
+        return nengo_viz.server.Server.start(
+            port=port, browser=browser, asynch=True)
 
     def create_sim(self):
         """Create a new Simulator with this configuration"""
@@ -191,6 +192,6 @@ class Viz(object):
         self.vizsims.append(vizsim)
         return vizsim
 
-    def shutdown(self):
+    def cleanup(self):
         for vizsim in self.vizsims:
             vizsim.finish()
