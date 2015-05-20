@@ -210,26 +210,27 @@ VIZ.TimeSlider = function(args) {
             edges: {left: true, right: true, bottom: false, top: false}
         })
         .on('resizemove', function (event) {
-            var xmin = self.kept_scale(self.last_time - self.kept_time);
-            var xmax = self.kept_scale(self.last_time);
-            var xa0 = self.kept_scale(self.first_shown_time);
-            var xb0 = self.kept_scale(self.first_shown_time + self.shown_time);
-            var xa1 = xa0 + event.deltaRect.left;
-            var xb1 = xb0 + event.deltaRect.right;
+            var target = event.target;
 
-            var min_width = 15;
-            xa1 = VIZ.clip(xa1, xmin, xb0 - min_width);
-            xb1 = VIZ.clip(xb1, xa0 + min_width, xmax);
+            var x = self.kept_scale(self.first_shown_time) + event.deltaRect.left;
+            var new_time = self.kept_scale.invert(x);
+            var new_time2 = self.kept_scale.invert(x + event.rect.width);
+            new_time2 = Math.min(self.last_time, new_time2);
+
+            var shown_time = VIZ.clip(
+                new_time2 - new_time, 0.01, self.kept_time);
+            self.shown_time = shown_time;
+            new_time = VIZ.clip(new_time,
+                                self.last_time - self.kept_time,
+                                self.last_time - self.shown_time);
+            self.first_shown_time = new_time;
 
             /** set slider width and position */
-            event.target.style.width = (xb1 - xa1) + 'px';
-            VIZ.set_transform(event.target, xa1, 0);
+            x = self.kept_scale(new_time);
+            var width = self.kept_scale(new_time + shown_time) - x;
 
-            /** update times */
-            var ta1 = self.kept_scale.invert(xa1);
-            var tb1 = self.kept_scale.invert(xb1);
-            self.first_shown_time = ta1;
-            self.shown_time = tb1 - ta1;
+            target.style.width = width + 'px';
+            VIZ.set_transform(event.target, x, 0);
 
             /** update any components who need to know the time changed */
             self.sim.div.dispatchEvent(new Event('adjust_time'));
