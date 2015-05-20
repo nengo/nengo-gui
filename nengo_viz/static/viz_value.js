@@ -30,37 +30,22 @@ VIZ.Value = function(parent, sim, args) {
     this.scale_y.domain([args.miny, args.maxy]);
 
     /** spacing between the graph and the outside edges (in pixels) */
-    this.margin_top = 30;
-    this.margin_bottom = 40;
-    this.margin_left = 40;
-    this.margin_right = 40;
-    this.supression_width = 150;
+    this.calc_axis_geometry(args.width, args.height);
+    this.supression_width = 0;
 
-    var axis_time_end =this.svg.append("text")
+    this.axis_time_end =this.svg.append("text")
                     .text("Time: NULL")
-                    .attr('class', 'graph_text unselectable')
-                    .attr('y', args.height - (this.margin_bottom-20))
-                    .attr('x', args.width - (this.margin_right + 20));
-        
-    this.axis_time_end = axis_time_end[0][0];  
+                    .attr('class', 'graph_text unselectable')[0][0];
 
-    var axis_time_start =this.svg.append("text")
+    this.axis_time_start =this.svg.append("text")
                     .text("Time: NULL")
-                    .attr('class','graph_text unselectable')
-                    .attr('y', args.height - (this.margin_bottom-20))
-                    .attr('x',this.margin_left - 10);
-        
-    this.axis_time_start = axis_time_start[0][0];    
-    
+                    .attr('class','graph_text unselectable')[0][0];
+
     if (this.display_time == false) {
         this.axis_time_start.style.display = 'none';
         this.axis_time_end.style.display = 'none';
     }
 
-    /** set up the scales to respect the margins */
-    this.scale_x.range([this.margin_left, args.width - this.margin_right]);
-    this.scale_y.range([args.height - this.margin_bottom, this.margin_top]);
-    
     /** define the x-axis */
     this.axis_x = d3.svg.axis()
         .scale(this.scale_x)
@@ -68,18 +53,15 @@ VIZ.Value = function(parent, sim, args) {
         .ticks(0);
     this.axis_x_g = this.svg.append("g")
         .attr("class", "axis axis_x unselectable")
-        .attr("transform", "translate(0," + (args.height - 
-                                             this.margin_bottom) + ")")
         .call(this.axis_x);
 
     /** define the y-axis */
     this.axis_y = d3.svg.axis()
         .scale(this.scale_y)
         .orient("left")    
-        .ticks(2);
+        .ticks(2)
     this.axis_y_g = this.svg.append("g")
         .attr("class", "axis axis_y unselectable")
-        .attr("transform", "translate(" + this.margin_left+ ", 0)")
         .call(this.axis_y);
 
     /** call schedule_update whenever the time is adjusted in the SimControl */    
@@ -111,8 +93,22 @@ VIZ.Value.prototype.on_message = function(event) {
     var data = new Float32Array(event.data);
     this.data_store.push(data);
     this.schedule_update();
-}
-   
+};
+
+VIZ.Value.prototype.calc_axis_geometry = function(width, height) {
+    scale = parseFloat($('#main').css('font-size'));
+
+    this.ax_left = 1.75 * scale;
+    this.ax_right = width - 1.75 * scale;
+    this.ax_bottom = height - 1.75 * scale;
+    this.ax_top = 1.5 * scale;
+
+    this.text_offset = 1.2 * scale;
+
+    this.tick_size = 0.4 * scale;
+    this.tick_padding = 0.2 * scale;
+};
+
 /**
  * Redraw the lines and axis due to changed data
  */
@@ -155,8 +151,11 @@ VIZ.Value.prototype.on_resize = function(width, height) {
     if (height < this.minHeight) {
         height = this.minHeight;
     };
-    this.scale_x.range([this.margin_left, width - this.margin_right]);
-    this.scale_y.range([height - this.margin_bottom, this.margin_top]);
+
+    this.calc_axis_geometry(width, height);
+
+    this.scale_x.range([this.ax_left, this.ax_right]);
+    this.scale_y.range([this.ax_bottom, this.ax_top]);
 
     //Supress axis start time when user shrinks the plot
     if (width < this.supression_width || this.display_time == false){
@@ -167,17 +166,19 @@ VIZ.Value.prototype.on_resize = function(width, height) {
     }
 
     //Adjust positions of time on resize
-    this.axis_time_start.setAttribute('y', height - (this.margin_bottom - 20));
-    this.axis_time_start.setAttribute('x', this.margin_left - 10 );
+    this.axis_time_start.setAttribute('y', this.ax_bottom + this.text_offset);
+    this.axis_time_start.setAttribute('x', this.ax_left - this.text_offset);
 
-    this.axis_time_end.setAttribute('y', height - (this.margin_bottom - 20));
-    this.axis_time_end.setAttribute('x', width - (this.margin_right + 20));
+    this.axis_time_end.setAttribute('y', this.ax_bottom + this.text_offset);
+    this.axis_time_end.setAttribute('x', this.ax_right - this.text_offset);
 
     //Adjust positions of x axis on resize
-    this.axis_x_g         
-        .attr("transform", 
-              "translate(0," + (height - this.margin_bottom) + ")");
-    this.axis_y_g.call(this.axis_y);         
+    this.axis_x.tickPadding(this.tick_padding).outerTickSize(this.tick_size, this.tick_size);
+    this.axis_y.tickPadding(this.tick_padding).outerTickSize(this.tick_size, this.tick_size);
+    this.axis_x_g.attr("transform", "translate(0," + this.ax_bottom + ")");
+    this.axis_y_g
+        .attr("transform", "translate(" + this.ax_left + ", 0)");
+    this.axis_y_g.call(this.axis_y);
     this.update();
     
     this.label.style.width = width;
