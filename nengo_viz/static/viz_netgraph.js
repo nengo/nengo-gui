@@ -171,13 +171,10 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         item.set_position(data.pos[0], data.pos[1]);
         item.set_size(data.size[0], data.size[1]);
     } else if (data.type === 'config') {
-        console.log("got the config");
         // Anything about the config of a component has changed
         var uid = data.uid;
-        console.log(uid);
         for (var i = 0; i < VIZ.Component.components.length; i++) {
             if (VIZ.Component.components[i].uid === uid) {
-                console.log("found the component");
                 VIZ.Component.components[i].update_layout(data.config);
             }
         }
