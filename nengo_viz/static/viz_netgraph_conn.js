@@ -48,18 +48,43 @@ VIZ.NetGraphConnection = function(ng, info) {
 
 
     if (this.recurrent) {
-        this.recurrent_ellipse = ng.createSVGElement('ellipse');
-        this.recurrent_ellipse.setAttribute('class', 'recurrent');
+
+//                 <g id = "recur" transform="translate(-18, -17.5)">
+//                 <path 
+//                     d="M6.451,28.748C2.448,26.041,0,22.413,0,18.425C0,
+//                         10.051,10.801,3.262,24.125,3.262
+//                     S48.25,10.051,48.25,18.425c0,6.453-6.412,11.964-15.45,14.153"/>
+//                 </g>
+//                 <g>
+//                 <path id = "recurTriangle" 
+//                     d="M 8 0 L 0 4 L 8 8 z""/>
+//                 </g>
+        this.recurrent_ellipse = this.ng.createSVGElement('path');
+        this.recurrent_ellipse.setAttribute('d', 
+                    "M6.451,28.748C2.448,26.041,0,22.413,0,18.425C0, \
+                        10.051,10.801,3.262,24.125,3.262 \
+                    S48.25,10.051,48.25,18.425c0,6.453-6.412,11.964-15.45,14.153");
+        this.recurrent_ellipse.setAttribute('class','recur');
+        this.recurrent_ellipse.setAttribute('transform','translate(-18, -17.5)');
         this.g.appendChild(this.recurrent_ellipse);
+        
+//         this.recurrent_ellipse = this.ng.createSVGElement('use');
+//         this.recurrent_ellipse.setAttribute('class', 'recurrent');
+//         this.recurrent_ellipse.setAttributeNS(
+//             'http://www.w3.org/1999/xlink', 'href', '#recur');
+//         this.g.appendChild(this.recurrent_ellipse);
+
+        this.marker = ng.createSVGElement('path');
+        this.marker.setAttribute('d', "M 8 0 L 0 4 L 8 8 z");
+        this.g.appendChild(this.marker);
+        
     } else {
         this.line = ng.createSVGElement('line');
         this.g.appendChild(this.line);    
+        this.marker = ng.createSVGElement('path');
+        this.marker.setAttribute('d', "M 10 0 L -5 -5 L -5 5 z");
+        this.g.appendChild(this.marker);
     }
-    
-    this.marker = ng.createSVGElement('path');
-    this.marker.setAttribute('d', "M 10 0 L -5 -5 L -5 5 z");
-    this.g.appendChild(this.marker);
-    
 
     this.redraw();
 
@@ -176,17 +201,22 @@ VIZ.NetGraphConnection.prototype.redraw = function() {
             var width = item.get_width();
             var height = item.get_height();
             
-            var mx = pre_pos[0];
-            var my = pre_pos[1] - height;
-            this.marker.setAttribute('transform', 
-                          'translate(' + mx + ',' + my + ') rotate(180)');
+            var scale = item.shape.getAttribute('transform');
+            var scale_value = parseFloat(scale.split(/[()]+/)[1]);
+
+            this.recurrent_ellipse.setAttribute('style','stroke-width:' + 
+                        2/scale_value+';');              
                           
-            var ex = pre_pos[0];
-            var ey = pre_pos[1] - height / 2;
+            var ex = pre_pos[0] - scale_value*17.5;
+            var ey = pre_pos[1] - height / 2 - scale_value*18;
+            console.log([ex,ey])
             this.recurrent_ellipse.setAttribute('transform',
-                          'translate(' + ex + ',' + ey + ')');
-            this.recurrent_ellipse.setAttribute('rx', width / 2);
-            this.recurrent_ellipse.setAttribute('ry', height / 2);
+                          'translate(' + ex + ',' + ey + ')' + scale);
+                          
+            var mx = pre_pos[0];
+            var my = pre_pos[1] - height / 2 - scale_value*14 - 5;
+            this.marker.setAttribute('transform', 
+                          'translate(' + mx + ',' + my + ')');
         }
     } else {        
         var post_pos = this.post.get_screen_location();
