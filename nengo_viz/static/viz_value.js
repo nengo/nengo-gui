@@ -8,7 +8,7 @@
  * @param {float} args.max_value - maximum value on y-axis
  * @param {VIZ.SimControl} args.sim - the simulation controller
  */
- 
+
 VIZ.Value = function(parent, sim, args) {
     VIZ.Component.call(this, parent, args);
     var self = this;
@@ -21,8 +21,8 @@ VIZ.Value = function(parent, sim, args) {
 
     this.axes2d = new VIZ.TimeAxes(this.div, args);
 
-    /** call schedule_update whenever the time is adjusted in the SimControl */    
-    this.sim.div.addEventListener('adjust_time', 
+    /** call schedule_update whenever the time is adjusted in the SimControl */
+    this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
 
     /** create the lines on the plots */
@@ -38,7 +38,7 @@ VIZ.Value = function(parent, sim, args) {
              .style('stroke', function(d, i) {return colors[i];});
 
     this.update();
-    this.on_resize(args.width, args.height);
+    this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
 VIZ.Value.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Value.prototype.constructor = VIZ.Value;
@@ -78,7 +78,7 @@ VIZ.Value.prototype.update = function() {
              .attr('d', line);
 };
 
-/** 
+/**
  * Adjust the graph layout due to changed size
  */
 VIZ.Value.prototype.on_resize = function(width, height) {

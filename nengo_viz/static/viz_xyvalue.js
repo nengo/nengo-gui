@@ -8,7 +8,7 @@
  * @param {float} args.maxy - maximum value on y-axis
  * @param {VIZ.SimControl} args.sim - the simulation controller
  */
- 
+
 VIZ.XYValue = function(parent, sim, args) {
     VIZ.Component.call(this, parent, args);
     var self = this;
@@ -29,8 +29,8 @@ VIZ.XYValue = function(parent, sim, args) {
     this.index_x = args.index_x;
     this.index_y = args.index_y;
 
-    /** call schedule_update whenever the time is adjusted in the SimControl */    
-    this.sim.div.addEventListener('adjust_time', 
+    /** call schedule_update whenever the time is adjusted in the SimControl */
+    this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
 
     /** create the lines on the plots */
@@ -42,7 +42,7 @@ VIZ.XYValue = function(parent, sim, args) {
     this.path.enter().append('path')
              .attr('class', 'line');
 
-    this.on_resize(args.width, args.height);
+    this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
 VIZ.XYValue.prototype = Object.create(VIZ.Component.prototype);
 VIZ.XYValue.prototype.constructor = VIZ.Value;
@@ -55,14 +55,14 @@ VIZ.XYValue.prototype.on_message = function(event) {
     this.data_store.push(data);
     this.schedule_update();
 }
-   
+
 /**
  * Redraw the lines and axis due to changed data
  */
 VIZ.XYValue.prototype.update = function() {
     /** let the data store clear out old values */
     this.data_store.update();
-            
+
     /** update the lines */
     var self = this;
     var shown_data = this.data_store.get_shown_data();
@@ -76,7 +76,7 @@ VIZ.XYValue.prototype.update = function() {
              .attr('d', line);
 };
 
-/** 
+/**
  * Adjust the graph layout due to changed size
  */
 VIZ.XYValue.prototype.on_resize = function(width, height) {
@@ -89,11 +89,11 @@ VIZ.XYValue.prototype.on_resize = function(width, height) {
     var plot_height = this.axes2d.ax_bottom - this.axes2d.ax_top;
 
     //Adjust positions of x axis on resize
-    this.axes2d.axis_x_g         
-        .attr("transform", 
+    this.axes2d.axis_x_g
+        .attr("transform",
               "translate(0," + (this.axes2d.ax_top + plot_height / 2) + ")");
-    this.axes2d.axis_y_g         
-        .attr("transform", 
+    this.axes2d.axis_y_g
+        .attr("transform",
               "translate(" + (this.axes2d.ax_left + plot_width / 2) + ",0)");
     this.update();
 

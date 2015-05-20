@@ -62,7 +62,7 @@ VIZ.Slider = function(parent, sim, args) {
     this.sim.div.addEventListener('adjust_time', 
             function(e) {self.schedule_update();}, false);
 
-    this.on_resize(args.width, args.height);
+    this.on_resize(this.get_screen_width(), this.get_screen_height()); 
 };
 VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;

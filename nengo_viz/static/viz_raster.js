@@ -19,8 +19,8 @@ VIZ.Raster = function(parent, sim, args) {
     this.axes2d.scale_y.domain([0, args.n_neurons]);
 
 
-    /** call schedule_update whenever the time is adjusted in the SimControl */    
-    this.sim.div.addEventListener('adjust_time', 
+    /** call schedule_update whenever the time is adjusted in the SimControl */
+    this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
 
     /** create the lines on the plots */
@@ -37,7 +37,7 @@ VIZ.Raster = function(parent, sim, args) {
     this.spikes = this.axes2d.svg.append("g").attr('class', 'spikes');
 
     this.update();
-    this.on_resize(args.width, args.height);
+    this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
 VIZ.Raster.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Raster.prototype.constructor = VIZ.Raster;
@@ -83,7 +83,7 @@ VIZ.Raster.prototype.update = function() {
             .attr('x2', function(d) {return d[0]})
             .attr('y1', function(d) {return d[1]})
             .attr('y2', function(d) {return d[2]});
-    spikes.enter()            
+    spikes.enter()
             .append('line')
             .attr('x1', function(d) {return d[0]})
             .attr('x2', function(d) {return d[0]})
@@ -92,7 +92,7 @@ VIZ.Raster.prototype.update = function() {
     spikes.exit().remove();
 };
 
-/** 
+/**
  * Adjust the graph layout due to changed size
  */
 VIZ.Raster.prototype.on_resize = function(width, height) {
