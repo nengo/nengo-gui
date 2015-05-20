@@ -221,8 +221,8 @@ VIZ.NetGraphConnection.prototype.redraw = function() {
         } else {
             this.marker.setAttribute('visibility', 'visible');
             this.recurrent_ellipse.setAttribute('visibility', 'visible');
-            var width = item.get_width();
-            var height = item.get_height();
+            var width = item.get_displayed_size()[0];
+            var height = item.get_displayed_size()[1];
             
             var scale = item.shape.getAttribute('transform');
             var scale_value = parseFloat(scale.split(/[()]+/)[1]);
@@ -231,13 +231,13 @@ VIZ.NetGraphConnection.prototype.redraw = function() {
                         2/scale_value+';');              
                           
             var ex = pre_pos[0] - scale_value*17.5;
-            var ey = pre_pos[1] - height / 2 - scale_value*18;
+            var ey = pre_pos[1] - height - scale_value*36;
             console.log([ex,ey])
             this.recurrent_ellipse.setAttribute('transform',
                           'translate(' + ex + ',' + ey + ')' + scale);
                           
             var mx = pre_pos[0];
-            var my = pre_pos[1] - height / 2 - scale_value*14 - 5;
+            var my = pre_pos[1] - height - scale_value*32 - 5;
             this.marker.setAttribute('transform', 
                           'translate(' + mx + ',' + my + ')');
         }
