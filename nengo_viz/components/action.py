@@ -154,13 +154,14 @@ class CreateGraph(Action):
         self.obj = self.net_graph.uids[self.uid]
         self.uid_graph = None
 
-        self.act_create_graph()
+        self.act_create_graph(self.uid_graph)
 
-    def act_create_graph(self):
+    def act_create_graph(self, uid_graph):
         cls = getattr(nengo_viz.components, self.type + 'Template')
         template = cls(self.obj)
-        self.net_graph.viz.viz.generate_uid(template, prefix='_viz_')
-        self.uid_graph = self.net_graph.viz.viz.get_uid(template)
+        if self.uid_graph == None:
+            self.net_graph.viz.viz.generate_uid(template, prefix='_viz_')
+            self.uid_graph = self.net_graph.viz.viz.get_uid(template)
         self.net_graph.config[template].x = self.x
         self.net_graph.config[template].y = self.y
         self.net_graph.config[template].width = self.width
@@ -172,7 +173,7 @@ class CreateGraph(Action):
         self.net_graph.to_be_sent.append(dict(type='js', code=c.javascript()))
 
     def apply(self):     
-        self.act_create_graph()
+        self.act_create_graph(self.uid_graph)
 
     def undo(self):
         self.net_graph.to_be_sent.append(dict(type='delete_graph', uid=self.uid_graph))
