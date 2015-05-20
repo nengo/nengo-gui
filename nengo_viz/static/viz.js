@@ -270,7 +270,7 @@ VIZ.Component.prototype.update_layout = function (config) {
     //VIZ.set_transform(this.div, parseFloat(config.x), parseFloat(config.y));
     this.div.setAttribute('data-x', parseFloat(config.x));
     this.div.setAttribute('data-y', parseFloat(config.y));
-    this.on_resize(config.height, config.width);
+    this.on_resize(config.width, config.height);
     if (config.label_visible === true) {
         this.show_label();
     } else {
