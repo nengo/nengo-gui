@@ -23,16 +23,38 @@ VIZ.Toolbar = function(model_name) {
 	VIZ.Toolbar.add_button('Reset model layout', 'glyphicon glyphicon-retweet', function() {self.reset_model_layout()});
 	//VIZ.Toolbar.add_button('Save as', 'glyphicon glyphicon-floppy-disk', function() {});
 	VIZ.Toolbar.add_button('Undo last', 'glyphicon glyphicon-backward', function() {});
-	
-	var button = document.createElement('li');
-	button.id = 'model_name';
-	VIZ.top_bar.appendChild(button);
-	button.innerHTML = model_name;
-	button.setAttribute("role", "presentation");	
 
-	}
+	// VIZ.Toolbar.add_button('Settings', 'glyphicon glyphicon-cog', function() {});
+	var settings = document.createElement('li');
+    var settings_link = document.createElement('a');
 
+	settings.setAttribute("role", "presentation");
+	settings.addEventListener('click', function() {});
 
+    settings_link.setAttribute('id', "modal_open");
+    settings_link.setAttribute('title', 'Settings');
+	settings_link.className = 'glyphicon glyphicon-cog';
+    settings_link.onclick = function () {openModal()}; 
+
+    settings.appendChild(settings_link);
+    VIZ.top_bar.appendChild(settings);
+
+	var name = document.createElement('li');
+	name.id = 'model_name';
+	name.innerHTML = model_name;
+	name.setAttribute("role", "presentation");	
+	VIZ.top_bar.appendChild(name);
+
+    var modalWrapper = document.getElementById("modal_wrapper");
+    var modalWindow  = document.getElementById("modal_window");
+
+    var openModal = function(e) {
+       modalWrapper.className = "overlay";
+       modalWindow.style.marginTop = (-modalWindow.offsetHeight)/2 + "px";
+       modalWindow.style.marginLeft = (-modalWindow.offsetWidth)/2 + "px";
+       e.preventDefault ? e.preventDefault() : e.returnValue = false;
+    };
+}
 
 // This opens up the pop up window that allows you to select the file to open
 VIZ.Toolbar.prototype.file_browser = function () {
@@ -48,7 +70,6 @@ VIZ.Toolbar.prototype.file_browser = function () {
                 var msg = 'open' + file
                 sim.ws.send(msg);})
     }
-
 };
 
 //This is run once a file is selected, trims the filename and sends it to the server.
@@ -90,17 +111,17 @@ VIZ.Toolbar.launch_global_user_config_menu = function() {
 
 }
 
-function create_config_item(name, text) {
-	//<input type="checkbox" name="vehicle" value="Bike">
-	var label = document.createElement('label');
-	var option = document.createElement('input');
-	label.innerHTML = text
-	label.appendChild(option);
-	option.type = 'checkbox';
-	option.name = name;
-	option.value = name;
-	return label;
-}
+// function create_config_item(name, text) {
+// 	//<input type="checkbox" name="vehicle" value="Bike">
+// 	var label = document.createElement('label');
+// 	var option = document.createElement('input');
+// 	label.innerHTML = text
+// 	label.appendChild(option);
+// 	option.type = 'checkbox';
+// 	option.name = name;
+// 	option.value = name;
+// 	return label;
+// }
 
 new VIZ.Toolbar();
 
