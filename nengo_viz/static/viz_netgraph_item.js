@@ -405,6 +405,10 @@ VIZ.NetGraphItem.prototype.remove = function() {
 };
 
 VIZ.NetGraphItem.prototype.constrain_aspect = function() {
+    this.size = this.get_displayed_size();
+};
+
+VIZ.NetGraphItem.prototype.get_displayed_size = function() {
     if (this.aspect !== null) {
         var h_scale = this.ng.get_scaled_width();
         var v_scale = this.ng.get_scaled_height();
@@ -419,10 +423,14 @@ VIZ.NetGraphItem.prototype.constrain_aspect = function() {
         var h = this.size[1] * v_scale;
 
         if (h * this.aspect < w) {
-            this.size[0] = h * this.aspect / h_scale;
+            w = h * this.aspect / h_scale;
         } else if (w / this.aspect < h) {
-            this.size[1] = w / this.aspect / v_scale;
+            h = w / this.aspect / v_scale;
         }
+
+        return [w, h];
+    } else {
+        return this.size;
     }
 };
 
