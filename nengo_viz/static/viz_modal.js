@@ -27,7 +27,7 @@ VIZ.Modal.footer = function(type){
     }
 }
 
-VIZ.Modal.ensemble_body = function(params, siminfo, connections) {
+VIZ.Modal.ensemble_body = function(uid, params, siminfo) {
     var $body = $('.modal-body').first();
     $body.empty();
 
@@ -69,5 +69,17 @@ VIZ.Modal.ensemble_body = function(params, siminfo, connections) {
     // Connections
     var $connections = $('<div class="tab-pane" id="connections"/>')
         .appendTo($content);
-    $connections.text("Connections");
+    var $clist = $('<dl/>').appendTo($connections);
+
+    $clist.append($('<dt class="dt-connections">Incoming Connections:</dt>'));
+    var conn_in_objs = VIZ.netgraph.svg_objects[uid].conn_in;
+    for (var i = 0; i < conn_in_objs.length; i++) {
+        $clist.append('<dd>' + conn_in_objs[i].pre.label.innerHTML + '</dd>');
+    }
+
+    $clist.append($('<dt class="dt-connections">Outgoing Connections:</dt>'));
+    var conn_out_objs = VIZ.netgraph.svg_objects[uid].conn_out;
+    for (var i = 0; i < conn_out_objs.length; i++) {
+        $clist.append('<dd>' + conn_out_objs[i].post.label.innerHTML + '</dd>');
+    }
 }

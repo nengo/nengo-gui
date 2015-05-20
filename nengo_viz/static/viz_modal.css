@@ -1,3 +1,7 @@
 .modal-body .tab-pane {
     margin: 20px;
 }
+
+.modal-body .tab-pane .dt-connections {
+    margin-top: 20px;
+}
