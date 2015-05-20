@@ -20,3 +20,28 @@ div.modal-backdrop {
 .alert .glyphicon {
     padding-right: 5px;
 }
+
+.modal-body .tab-pane .list-group-item {
+    padding: 5px 10px;
+}
+
+.modal-body .tab-pane .list-group-item.shaded {
+    color: #aaaaaa;
+}
+
+.modal-body .tab-pane#connections h3 {
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+.modal-body .tab-pane#connections th {
+    font-size: 1em;
+    font-weight: bold;
+    border: 0px;
+    background-color: #dddddd;
+}
+
+.modal-body .tab-pane#connections td {
+    font-size: 0.9em;
+    border: 0px;
+}

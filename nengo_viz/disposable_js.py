@@ -6,12 +6,12 @@ import nengo
 from nengo.utils.ensemble import response_curves, tuning_curves
 
 
-def infomodal(viz, obj, uid):
+def infomodal(ng, uid, **args):
+    obj = ng.uids[uid]
     if isinstance(obj, nengo.Ensemble):
-        return ensemble_infomodal(viz, obj, uid)
+        return ensemble_infomodal(ng, uid=uid, **args)
     else:
         raise NotImplementedError()
-
 
 class PlotInfo(object):
     def __init__(self, title, plot="none"):
@@ -36,19 +36,21 @@ class PlotInfo(object):
         }
 
 
-def ensemble_infomodal(viz, ens, uid):
+def ensemble_infomodal(ng, uid, conn_in_uids, conn_out_uids):
+    ens = ng.uids[uid]
+
     params = [(attr, str(getattr(ens, attr))) for attr in (
         'n_neurons', 'dimensions', 'radius', 'encoders', 'intercepts',
         'max_rates', 'eval_points', 'n_eval_points', 'neuron_type',
         'noise', 'seed') if getattr(ens, attr) is not None]
 
-    if viz.sim is None:
+    if ng.viz.sim is None:
         plots = ("Simulation not yet running. "
                  "Start a simulation to see plots.")
     else:
         plots = []
         rc = PlotInfo("Response curves", plot="multiline")
-        rc.x, rc.y = response_curves(ens, viz.sim)
+        rc.x, rc.y = response_curves(ens, ng.viz.sim)
         rc.y = rc.y.T
         if ens.n_neurons > 200:
             rc.warnings.append("Only showing the first 200 neurons.")
@@ -58,7 +60,7 @@ def ensemble_infomodal(viz, ens, uid):
         tc = PlotInfo("Tuning curves")
         if ens.dimensions == 1:
             tc.plot = "multiline"
-            tc.x, tc.y = tuning_curves(ens, viz.sim)
+            tc.x, tc.y = tuning_curves(ens, ng.viz.sim)
             tc.y = tc.y.T
             if ens.n_neurons > 200:
                 tc.warnings.append("Only showing the first 200 neurons.")
@@ -68,9 +70,13 @@ def ensemble_infomodal(viz, ens, uid):
                                "one-dimensional ensembles.")
         plots.append(tc.to_dict())
 
-    js = ['VIZ.Modal.title("Details for \'%s\'");' % viz.viz.get_label(ens)]
+    conninfo = {}
+    for conn_uid in (conn_in_uids + conn_out_uids):
+        conninfo[conn_uid] = str(ng.uids[conn_uid].function)
+
+    js = ['VIZ.Modal.title("Details for \'%s\'");' % ng.viz.viz.get_label(ens)]
     js.append('VIZ.Modal.footer("close");')
-    js.append('VIZ.Modal.ensemble_body("%s", %s, %s);' % (
-        uid, json.dumps(params), json.dumps(plots)))
+    js.append('VIZ.Modal.ensemble_body("%s", %s, %s, %s);' % (
+        uid, json.dumps(params), json.dumps(plots), json.dumps(conninfo)))
     js.append('VIZ.Modal.show();')
     return '\n'.join(js)

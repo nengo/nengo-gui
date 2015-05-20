@@ -106,7 +106,7 @@ function render_plot($parent, plotinfo) {
     }
 }
 
-VIZ.Modal.ensemble_body = function(uid, params, plots) {
+VIZ.Modal.ensemble_body = function(uid, params, plots, conninfo) {
     var $body = $('.modal-body').first();
     $body.empty();
 
@@ -150,7 +150,7 @@ VIZ.Modal.ensemble_body = function(uid, params, plots) {
             .appendTo($plots);
         $err.append('<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>');
         $err.append('<span class="sr-only">Error:</span>');
-        $err.append(document.createTextNode(siminfo.errors[i]));
+        $err.append(document.createTextNode(plots));
     }
     else {
         for (var i=0; i < plots.length; i++) {
@@ -159,19 +159,85 @@ VIZ.Modal.ensemble_body = function(uid, params, plots) {
     }
 
     // Connections
-    var $connections = $('<div class="tab-pane" id="connections"/>')
-        .appendTo($content);
-    var $clist = $('<dl/>').appendTo($connections);
+    var $connections = $('<div class="tab-pane" id="connections"/>').appendTo($content);
 
-    $clist.append($('<dt class="dt-connections">Incoming Connections:</dt>'));
+    $connections.append('<h3>Incoming Connections:</h3>');
+    var $conn_in_table = $('<table class="table table-condensed"><tr>' +
+                           '<th width="30%"">Object</th>' +
+                           '<th width="50%">Function</th>' +
+                           '<th width="20%">Fan In</th></tr>').appendTo($connections);
     var conn_in_objs = VIZ.netgraph.svg_objects[uid].conn_in;
     for (var i = 0; i < conn_in_objs.length; i++) {
-        $clist.append('<dd>' + conn_in_objs[i].pre.label.innerHTML + '</dd>');
+        var $conn_in_tr = $('<tr/>').appendTo($conn_in_table);
+
+        var $conn_in_objs_td = $('<td>' + String(conn_in_objs[i].pre.label.innerHTML) + '&nbsp;</td>').appendTo($conn_in_tr);
+        VIZ.Modal.make_conn_path_dropdown_list(conn_in_objs[i].pre.uid,
+                                               conn_in_objs[i].pres,
+                                               $conn_in_objs_td);
+
+        var $conn_in_func_td = $('<td/>').appendTo($conn_in_tr);
+        $conn_in_func_td.text(conninfo[String(conn_in_objs[i].uid)]);
+
+        $conn_in_tr.append('<td>fanin' + i + '</td>');
     }
 
-    $clist.append($('<dt class="dt-connections">Outgoing Connections:</dt>'));
+    $connections.append('<hr/>');
+    $connections.append('<h3>Outgoing Connections:</h3>');
+    var $conn_out_table = $('<table class="table table-condensed"><tr>' +
+                           '<th width="30%"">Object</th>' +
+                           '<th width="50%">Function</th>' +
+                           '<th width="20%">Fan Out</th></tr>').appendTo($connections);
     var conn_out_objs = VIZ.netgraph.svg_objects[uid].conn_out;
     for (var i = 0; i < conn_out_objs.length; i++) {
-        $clist.append('<dd>' + conn_out_objs[i].post.label.innerHTML + '</dd>');
+        var $conn_out_tr = $('<tr/>').appendTo($conn_out_table);
+
+        var $conn_out_objs_td = $('<td>' + String(conn_out_objs[i].post.label.innerHTML) + '&nbsp;</td>').appendTo($conn_out_tr);
+        VIZ.Modal.make_conn_path_dropdown_list(conn_out_objs[i].post.uid,
+                                               conn_out_objs[i].posts,
+                                               $conn_out_objs_td);
+
+        var $conn_out_func_td = $('<td/>').appendTo($conn_out_tr);
+        $conn_out_func_td.text(conninfo[String(conn_out_objs[i].uid)]);
+
+        $conn_out_tr.append('<td>fanout' + i + '</td>');
+    }
+}
+
+VIZ.Modal.make_conn_path_dropdown_list = function(current_uid, uid_list, $content) {
+    if (uid_list.length > 1) {
+        // Make the "expand down" tooltip
+        $exp_tooltip = $('<a href="#" data-toggle="tooltip" data-placement="right"' +
+                         'title="' + VIZ.tooltips["conn"]["expand"] + '">' +
+                         '<span class="glyphicon glyphicon-collapse-down"/></a>');
+        $exp_tooltip.tooltip();
+
+        // Add expand control and the tooltip to the <dd> object
+        $content.append($('<a data-toggle="collapse" href="#pathlist' + String(uid_list[0]).replace(/\./g, '_') + '" aria-expanded="false"/>').append($exp_tooltip));
+
+        // Make a list-group for the drop down items
+        var $path_list = $('<ul class="list-group">').appendTo($('<div class="collapse" id="pathlist' + String(uid_list[0]).replace(/\./g, '_') + '"/>').appendTo($content));
+
+        // Add the root "Model" item to the drop down list
+        $path_list.append('<li class="list-group-item shaded"><span class="glyphicon glyphicon-home"/>&nbsp;Model</a>')
+
+        // Populate the list-group
+        var shaded_option = "shaded";
+        for (var p = uid_list.length; p > 0; p--) {
+            if (uid_list[p - 1] in VIZ.netgraph.svg_objects){
+                // If the uid is in netgraph.svg_objects, use the object's label
+                var path_item = VIZ.netgraph.svg_objects[uid_list[p - 1]].label.innerHTML;
+            }
+            else {
+                // Otherwise, use the object's uid
+                var path_item = '(' + String(uid_list[p - 1]) + ')';
+            }
+
+            if (current_uid === uid_list[p - 1]) {
+                // Toggle the shading option when the current_uid has been reached
+                shaded_option = '';
+            }
+            $path_list.append('<li class="list-group-item ' + shaded_option + '">&nbsp;<span class="glyphicon glyphicon-triangle-right"/>' +
+                             path_item + '</li>');
+        }
     }
 }

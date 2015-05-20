@@ -13,3 +13,6 @@ VIZ.tooltips["ens"]["neuron_type"] = ["Type: Neurons\nDefault: LIF()", "The mode
 VIZ.tooltips["ens"]["noise"] = ["Type: StochasticProcess\nDefault: None", "Random noise injected directly into each neuron in the ensemble as current. A sample is drawn for each individual neuron on every simulation step."];
 VIZ.tooltips["ens"]["seed"] = ["Type: int\nDefault: None", "The seed used for random number generation."];
 VIZ.tooltips["ens"]["label"] = ["Type: str\nDefault: None", "A name for the ensemble. Used for debugging and visualization."];
+
+VIZ.tooltips["conn"] = [];
+VIZ.tooltips["conn"]["expand"] = ["Click to show / hide full path"];
