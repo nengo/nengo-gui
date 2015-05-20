@@ -162,12 +162,12 @@ class Viz(object):
                 self.default_labels[v] = k
         return config
 
-    def save_config(self, lazy=False):
-        if lazy and not self.config_save_needed:
+    def save_config(self, lazy=False, force=False):
+        if not force and not self.config_save_needed:
             return
 
         now_time = time.time()
-        if lazy and self.config_save_time is not None:
+        if not force and lazy and self.config_save_time is not None:
             if (now_time - self.config_save_time) < self.config_save_period:
                 return
 
