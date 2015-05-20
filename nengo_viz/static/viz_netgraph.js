@@ -171,45 +171,14 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         item.set_position(data.pos[0], data.pos[1]);
         item.set_size(data.size[0], data.size[1]);
     } else if (data.type === 'config') {
-        console.log("got the config");
         // Anything about the config of a component has changed
         var uid = data.uid;
-        console.log(uid);
         for (var i = 0; i < VIZ.Component.components.length; i++) {
             if (VIZ.Component.components[i].uid === uid) {
-                console.log("found the component");
                 VIZ.Component.components[i].update_layout(data.config);
-            }
-        }
-
-        /*
-        var uid = data.uid;
-        for (var i = 0; i < VIZ.Component.components.length; i++) {
-            if (VIZ.Component.components[i].uid === uid) {
-                // TODO: will there ever be more than one subtype in a message?
-                //       if not, put these into 'else if' statements
-                if (data.sub_type === 'pos') {
-                    VIZ.set_transform(VIZ.Component.components[i].div, data.pos[0], data.pos[1])
-                }
-                if (data.sub_type === 'size') {
-                    VIZ.Component.components[i].on_resize(data.size[0], data.size[1])
-                }
-                if (data.sub_type === 'range') {
-                    VIZ.Component.components[i].update_range(data.range[0], data.range[1])
-                }
-                if (data.sub_type === 'indices') {
-                    VIZ.Component.components[i].update_indices(data.indices[0], data.indices[1])
-                }
-                if (data.sub_type === 'show_label') {
-                    VIZ.Component.components[i].show_label()
-                }
-                if (data.sub_type === 'hide_label') {
-                    VIZ.Component.components[i].hide_label()
-                }
                 break;
             }
         }
-        */
     } else if (data.type === 'js') {
         eval(data.code);
     } else if (data.type === 'delete_graph') {

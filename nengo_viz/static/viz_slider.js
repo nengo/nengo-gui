@@ -383,9 +383,10 @@ VIZ.Slider.prototype.set_range = function() {
     var new_range = prompt('Set range', '' + range[1] + ',' + range[0]);
     if (new_range !== null) {
         new_range = new_range.split(',');
+        //FIXME: this looks like it is backwards
         var min = parseFloat(new_range[1]);
         var max = parseFloat(new_range[0]);
-        this.scale.domain([min, max]);
+        this.update_range(min, max);
         this.save_layout();
     }
     for (var i in this.sliders) {
@@ -393,12 +394,22 @@ VIZ.Slider.prototype.set_range = function() {
     }
 };
 
+VIZ.Slider.prototype.update_range = function(min, max) {
+    this.scale.domain([min, max]);
+}
+
 VIZ.Slider.prototype.layout_info = function () {
     var info = VIZ.Component.prototype.layout_info.call(this);
     info.min_value = this.scale.domain()[1];
     info.max_value = this.scale.domain()[0];
     return info;
 };
+
+VIZ.Slider.prototype.update_layout = function (config) {
+    VIZ.Component.prototype.update_layout.call(this, config);
+    //FIXME: this has to be backwards to work. Something fishy must be going on
+    this.update_range(config.max_value, config.min_value);
+}
 
 //takes input and outputs the
 //boundary value if input is above/below max/min
