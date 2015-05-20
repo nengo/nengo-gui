@@ -5,10 +5,9 @@
  * @params {dict} args - a set of constructor arguments (see VIZ.Component)
  * @params {int} args.n_sliders - the number of sliders to show
  */
-VIZ.Slider = function(parent, sim, args) {
+VIZ.Slider = function(parent, args) {
     VIZ.Component.call(this, parent, args);
     var self = this;
-    this.sim = sim;
 
     //Check if user is filling in a number into a slider
     this.filling_slider_value = false;
@@ -16,9 +15,6 @@ VIZ.Slider = function(parent, sim, args) {
     this.notify_msgs = [];
 
     VIZ.set_transform(this.label, 0, -30);
-    
-    this.data_store = null;
-    
  
     /** a scale to map from values to pixels */
     this.scale = d3.scale.linear();
@@ -29,15 +25,12 @@ VIZ.Slider = function(parent, sim, args) {
     this.slider_height = 30;
     this.minHeight = 40;
     
-    this.reset_value = args.start_value;
-    
     /** make the sliders */
     this.sliders = [];
     for (var i = 0; i < args.n_sliders; i++) {
         var slider = {};
         this.sliders.push(slider);
         
-        slider.fixed = false;
         slider.index = i;
         slider.div = document.createElement('button');
         slider.div.className = 'btn btn-default';
@@ -150,12 +143,7 @@ VIZ.Slider = function(parent, sim, args) {
         this.div.appendChild(guideline);
     }
 
-    
-    /** call schedule_update whenever the time is adjusted in the SimControl */    
-    this.sim.div.addEventListener('adjust_time', 
-            function(e) {self.schedule_update();}, false);
-            
-    this.on_resize(args.width, args.height);
+    this.on_resize(this.get_screen_width(), this.get_screen_height()); 
 };
 
 
@@ -164,10 +152,8 @@ VIZ.Slider.prototype.constructor = VIZ.Slider;
 
 VIZ.Slider.prototype.set_value = function(slider_index, value, immediate) {
     console.assert(typeof slider_index == 'number');
-    console.assert(typeof value == 'number', value);
-    // TODO: get rid of the immediate parameter once the websocket delay
-    //       fix is merged in (#160)
-    //console.assert(typeof immediate == 'boolean');
+    console.assert(typeof value == 'number');
+    console.assert(typeof immediate == 'boolean');
 
     //Make sure the new value is in the slider range.
     value = this.max_min(value);
@@ -197,41 +183,16 @@ VIZ.Slider.prototype.set_value = function(slider_index, value, immediate) {
     VIZ.set_transform(target, x_pos, point - height / 2);
 
     //Send update to the server
-    if (immediate === true) {
+    if (immediate) {
         this.ws.send(slider_index + ',' + value);
-        this.sliders[slider_index].fixed = true;
-        this.sim.time_slider.jump_to_end();
     }
-    else if (immediate === false) {
+    else{
         this.notify(slider_index + ',' + value);
-        this.sliders[slider_index].fixed = true;
-        this.sim.time_slider.jump_to_end();
     }
 
     //Value has been set, toggle boolean to false
     this.filling_slider_value = false;
 };
-
-/**
- * Receive new line data from the server
- */
-VIZ.Slider.prototype.on_message = function(event) {
-    var data = new Float32Array(event.data);
-    if (this.data_store === null) {
-        this.data_store = new VIZ.DataStore(this.sliders.length, this.sim, 0);
-    }
-    this.reset_value = [];
-    for (var i = 0; i < this.sliders.length; i++) {
-        this.reset_value.push(data[i + 1]);
-        
-        if (this.sliders[i].fixed) {
-            data[i + 1] = this.sliders[i].value;
-        }
-    }
-    this.data_store.push(data);
-    this.schedule_update();
-}
-
 
 /**
  * update visual display based when component is resized
@@ -285,8 +246,6 @@ VIZ.Slider.prototype.generate_menu = function() {
     var items = [];
     items.push(['Set range', function() {self.set_range();}]);
     items.push(['Set value', function() {self.user_value();}]);
-    items.push(['Reset value', function() {self.user_reset_value();}]);
-    
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
@@ -388,22 +347,6 @@ VIZ.Slider.prototype.send_notify_msg = function() {
     this.notify_msgs.splice(0, 1);
 }
 
-VIZ.Slider.prototype.update = function() {
-    /** let the data store clear out old values */
-    if (this.data_store !== null) {
-        this.data_store.update();
-        
-        var data = this.data_store.get_last_data();
-        
-        for (var i=0; i< this.sliders.length; i++) {
-            if (!this.data_store.is_at_end() || !this.sliders[i].fixed) {
-                this.set_value(i, data[i], 'never');
-            }
-        }
-    }
-    
-}
-
 VIZ.Slider.prototype.user_value = function () {
 
     //First build the prompt string
@@ -434,14 +377,6 @@ VIZ.Slider.prototype.user_value = function () {
         this.set_value(i, Number(new_value[i]), false);
     }
 };
-
-VIZ.Slider.prototype.user_reset_value = function() {
-    for (var i = 0; i < this.sliders.length; i++){
-        this.notify('' + i + ',reset');
-        this.sliders[i].fixed = false;
-        this.set_value(i, this.reset_value[i], 'never');
-    }    
-}
 
 VIZ.Slider.prototype.set_range = function() {
     var range = this.scale.domain();
