@@ -17,11 +17,7 @@ g.net rect{
     text-anchor: middle;
     dominant-baseline: text-before-edge;
     cursor: default;
-    }
-.netgraph g.expanded text {
-    text-anchor: middle;
-    dominant-baseline: text-before-edge;
-    }    
+    }  
 
 .netgraph line {
     stroke: black;

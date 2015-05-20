@@ -33,7 +33,9 @@ VIZ.NetGraph = function(parent, args) {
     this.svg.style.position = 'fixed';    
         
     interact(this.svg).styleCursor(false);
-        
+    interact(this.svg).preventDefault(true);
+    interact.margin(30*VIZ.scale.step_size*this.scale);
+           
     VIZ.netgraph = this;
     parent.appendChild(this.svg);
     this.parent = parent;
@@ -66,8 +68,10 @@ VIZ.NetGraph = function(parent, args) {
     interact(this.svg)
         .on('mousedown', function() {
             var cursor = document.documentElement.getAttribute('style');
-            if (cursor.match(/resize/) == null) {               
-                document.documentElement.setAttribute('style','cursor:move;');
+            if (cursor !== null) {
+                if (cursor.match(/resize/) == null) {  // don't change resize cursor             
+                    document.documentElement.setAttribute('style','cursor:move;');
+                }
             }
         })
         .on('mouseup', function() {             
@@ -119,6 +123,7 @@ VIZ.NetGraph = function(parent, args) {
             self.offsetY = (self.offsetY + yy) / scale - yy;
             
             self.scale = scale * self.scale;
+            interact.margin(30*self.scale);
 
             self.redraw();
 
