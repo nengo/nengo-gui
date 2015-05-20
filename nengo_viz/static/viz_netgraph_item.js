@@ -423,12 +423,12 @@ VIZ.NetGraphItem.prototype.get_displayed_size = function() {
         var h = this.size[1] * v_scale;
 
         if (h * this.aspect < w) {
-            w = h * this.aspect / h_scale;
+            w = h * this.aspect;
         } else if (w / this.aspect < h) {
-            h = w / this.aspect / v_scale;
+            h = w / this.aspect;
         }
 
-        return [w, h];
+        return [w / h_scale, h / v_scale];
     } else {
         return this.size;
     }
