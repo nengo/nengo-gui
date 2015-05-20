@@ -7,7 +7,7 @@ import nengo_viz
 import nengo_viz.server
 import nengo_viz.components
 import nengo_viz.config
-
+from nengo_viz.components.action import ConfigAction
 
 class VizSim(object):
     """A single Simulator attached to an html visualization."""
@@ -81,6 +81,11 @@ class VizSim(object):
     def create_javascript(self):
 
         return '\n'.join([c.javascript() for c in self.components])
+
+    def config_change(self, component, new_cfg, old_cfg):
+        act = ConfigAction(self, component=component, 
+                           new_cfg=new_cfg, old_cfg=old_cfg)
+        self.undo_stack.append(act)
 
 
 class Viz(object):
