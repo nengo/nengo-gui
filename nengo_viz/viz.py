@@ -105,6 +105,9 @@ class Viz(object):
         self.default_labels = self.name_finder.known_name
 
         self.config = self.load_config()
+        self.config_save_needed = False
+        self.config_save_time = None   # time of last config file save
+        self.config_save_period = 2.0  # minimum time between saves
 
         self.lock = threading.Lock()
 
@@ -163,9 +166,23 @@ class Viz(object):
                 self.default_labels[v] = k
         return config
 
-    def save_config(self):
-        with open(self.filename + '.cfg', 'w') as f:
-            f.write(self.config.dumps(uids=self.default_labels))
+    def save_config(self, lazy=False):
+        if lazy and not self.config_save_needed:
+            return
+
+        now_time = time.time()
+        if lazy and self.config_save_time is not None:
+            if (now_time - self.config_save_time) < self.config_save_period:
+                return
+
+        with self.lock:
+            self.config_save_time = now_time
+            self.config_save_needed = False
+            with open(self.filename + '.cfg', 'w') as f:
+                f.write(self.config.dumps(uids=self.default_labels))
+
+    def modified_config(self):
+        self.config_save_needed = True
 
     def get_label(self, obj, default_labels=None):
         if default_labels is None:
