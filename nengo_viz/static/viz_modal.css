@@ -5,3 +5,18 @@
 .modal-body .tab-pane .dt-connections {
     margin-top: 20px;
 }
+
+.modal-body .axis path,
+.modal-body .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+div.modal-backdrop {
+    z-index: 100000000;
+}
+
+.alert .glyphicon {
+    padding-right: 5px;
+}
