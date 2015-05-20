@@ -182,13 +182,17 @@ VIZ.XYValue.prototype.set_range = function() {
     }
 }
 
-VIZ.XYValue.prototype.set_indexes = function() {
-    var new_indexes = prompt('Specify X and Y indexes', '' + this.index_x + ',' + this.index_y);
-    if (new_indexes !== null) {
-        new_indexes = new_indexes.split(',');
-        this.index_x = parseInt(new_indexes[0]);
-        this.index_y = parseInt(new_indexes[1]);
-        this.update();
-        this.save_layout();
+VIZ.XYValue.prototype.set_indices = function() {
+    var new_indices = prompt('Specify X and Y indices', '' + this.index_x + ',' + this.index_y);
+    if (new_indices !== null) {
+        new_indices = new_indices.split(',');
+        this.update_indices(parseInt(new_indices[0]),parseInt(new_indices[1]));
     }
+}
+
+VIZ.XYValue.prototype.update_indices = function(index_x, index_y) {
+    this.index_x = index_x;
+    this.index_y = index_y;
+    this.update();
+    this.save_layout();
 }
