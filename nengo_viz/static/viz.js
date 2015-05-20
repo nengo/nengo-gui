@@ -52,7 +52,10 @@ VIZ.Component = function(parent, args) {
     this.div.style.height = args.height;
     this.width = args.width;
     this.height = args.height;
-    
+
+    /** Prevent interact from messing up cursor */
+    interact(this.div).styleCursor(true);
+        
     var transform_val = VIZ.pan.cord_map(VIZ.Screen, {x:args.x, y:args.y});
 	VIZ.set_transform(this.div, transform_val.x, transform_val.y);
     
