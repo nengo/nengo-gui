@@ -223,6 +223,19 @@ VIZ.NetGraphItem = function(ng, info) {
                     self.menu.hide_any();
                 }
             }
+        })
+        .on('doubletap', function(event) { //get rid of menus when clicking off
+            if (event.button == 0) {
+                if (self.menu.visible_any()) {
+                    self.menu.hide_any();
+                } else if (self.type === 'net') {
+                    if (self.expanded) {
+                        self.collapse(true);
+                    } else {
+                        self.expand();
+                    }
+                }
+            }
         });        
     $(this.g).bind('contextmenu', function(event) {
             event.preventDefault();   
