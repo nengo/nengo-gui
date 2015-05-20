@@ -114,7 +114,7 @@ class ExpandCollapse(Action):
         self.net_graph.act_expand(self.uid)
         self.net_graph.to_be_sent.append(dict(type='expand',uid=self.uid))"""
 
-class Pan(Action):
+"""class Pan(Action):
     def __init__(self, net_graph, x, y):
         self.net_graph = net_graph
         self.x, self.y = self.net_graph.config[self.net_graph.viz.model].pos
@@ -142,7 +142,7 @@ class Zoom(Action):
         self.net_graph.to_be_sent.append(dict(type='zoom',zoom=scale))
 
     def undo(self):
-        self.apply() # Undo is a mirrored operation
+        self.apply() # Undo is a mirrored operation"""
 
 class CreateGraph(Action):
     def __init__(self, net_graph, uid, type, x, y, width, height):
