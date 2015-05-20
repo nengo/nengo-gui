@@ -150,12 +150,11 @@ VIZ.Slider = function(parent, sim, args) {
         this.div.appendChild(guideline);
     }
 
-    
     /** call schedule_update whenever the time is adjusted in the SimControl */    
     this.sim.div.addEventListener('adjust_time', 
             function(e) {self.schedule_update();}, false);
-            
-    this.on_resize(args.width, args.height);
+
+    this.on_resize(width, args.height);
 };
 
 
