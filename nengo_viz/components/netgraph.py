@@ -23,6 +23,7 @@ class NetGraph(Component):
         self.uids = {}
         self.parents = {}
         self.networks_to_search = [self.viz.model]
+        self.initialized_pan_and_zoom = False
 
         reload_thread = threading.Thread(target=self.reloader)
         reload_thread.daemon = True
@@ -133,12 +134,14 @@ class NetGraph(Component):
         return parents
 
     def update_client(self, client):
+        if not self.initialized_pan_and_zoom:
+            self.send_pan_and_zoom(client)
+            self.initialized_pan_and_zoom = True
+
         if len(self.to_be_expanded) > 0:
             self.viz.viz.lock.acquire()
             network = self.to_be_expanded.pop(0)
             self.expand_network(network, client)
-            if network is self.viz.model:
-                self.send_pan_and_zoom(client)
             self.viz.viz.lock.release()
         else:
             while len(self.to_be_sent) > 0:
