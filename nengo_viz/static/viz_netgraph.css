@@ -18,6 +18,9 @@ g.net rect{
     dominant-baseline: text-before-edge;
     cursor: default;
     }  
+.netgraph g text:active {
+    cursor: move;
+}
 
 .netgraph line {
     stroke: black;

@@ -135,8 +135,9 @@ VIZ.NetGraph = function(parent, args) {
 
     this.menu = new VIZ.Menu(self.parent);
 
+    //Determine when to pull up the menu
     interact(this.svg)
-        .on('tap', function(event) {
+        .on('hold', function(event) { //change to 'tap' for right click
             if (event.button == 0) {
                 if (self.menu.visible_any()) {
                     self.menu.hide_any();
@@ -146,7 +147,24 @@ VIZ.NetGraph = function(parent, args) {
                 }
                 event.stopPropagation();  
             }
+        })
+        .on('tap', function(event) { //get rid of menus when clicking off
+            if (event.button == 0) {
+                if (self.menu.visible_any()) {
+                    self.menu.hide_any();
+                }
+            }
         });
+
+    $(this.svg).bind('contextmenu', function(event) {
+            event.preventDefault();  
+            if (self.menu.visible_any()) {
+                self.menu.hide_any();
+            } else {
+                self.menu.show(event.clientX, event.clientY, 
+                               self.generate_menu());
+        }
+    }); 
 };
 
 VIZ.NetGraph.prototype.generate_menu = function() {

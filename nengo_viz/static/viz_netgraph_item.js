@@ -94,8 +94,7 @@ VIZ.NetGraphItem = function(ng, info) {
 
     g.appendChild(this.shape);
 
-    interact.margin(30);
-
+    interact.margin(15);
 
     /** dragging an item to change its position */
     var uid = this.uid;
@@ -205,8 +204,9 @@ VIZ.NetGraphItem = function(ng, info) {
     }
     
     var self = this;
+    //Determine when to pull up the menu
     interact(this.g)
-        .on('right-click', function(event) {
+        .on('hold', function(event) { //change to 'tap' for right click
             if (event.button == 0) {
                 if (self.menu.visible_any()) {
                     self.menu.hide_any();
@@ -214,10 +214,27 @@ VIZ.NetGraphItem = function(ng, info) {
                     self.menu.show(event.clientX, event.clientY, 
                                    self.generate_menu());
                 }
-                event.stopPropagation();           
+                event.stopPropagation();  
             }
-        });
-            
+        })
+        .on('tap', function(event) { //get rid of menus when clicking off
+            if (event.button == 0) {
+                if (self.menu.visible_any()) {
+                    self.menu.hide_any();
+                }
+            }
+        });        
+    $(this.g).bind('contextmenu', function(event) {
+            event.preventDefault();   
+            event.stopPropagation();        
+            if (self.menu.visible_any()) {
+                self.menu.hide_any();
+            } else {
+                self.menu.show(event.clientX, event.clientY, 
+                               self.generate_menu());
+        }
+    });
+               
     if (info.type === 'net') {
         /** if a network is flagged to expand on creation, then expand it */
         if (info.expanded) {

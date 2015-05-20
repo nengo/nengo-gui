@@ -166,7 +166,7 @@ VIZ.Component = function(parent, args) {
     
     this.menu = new VIZ.Menu(self.parent);
     interact(this.div)
-        .on('tap', function(event) {
+        .on('hold', function(event) { //change to 'tap' for right click
             if (event.button == 0) {
                 if (self.menu.visible_any()) {
                     self.menu.hide_any();
@@ -176,7 +176,24 @@ VIZ.Component = function(parent, args) {
                 }
                 event.stopPropagation();  
             }
-        });    
+        })
+        .on('tap', function(event) { //get rid of menus when clicking off
+            if (event.button == 0) {
+                if (self.menu.visible_any()) {
+                    self.menu.hide_any();
+                }
+            }
+        });        
+    $(this.div).bind('contextmenu', function(event) {
+            event.preventDefault();   
+            event.stopPropagation();        
+            if (self.menu.visible_any()) {
+                self.menu.hide_any();
+            } else {
+                self.menu.show(event.clientX, event.clientY, 
+                               self.generate_menu());
+        }
+    });  
         
     VIZ.Component.components.push(this);
     VIZ.pan.redraw();
