@@ -18,6 +18,8 @@ def create_action(action, net_graph, **info):
         return PosSize(net_graph, **info)
     elif action == "feedforward_layout":
         return FeedforwardLayout(net_graph, **info)
+    elif action == "config":
+        return ConfigAction(net_graph, **info)
     else:
         return Action(net_graph, **info)
 
@@ -32,6 +34,35 @@ class Action(object):
 
     def undo(self):
         pass
+
+class ConfigAction(Action):
+    def __init__(self, viz_sim, component, new_cfg, old_cfg):
+        self.viz_sim = viz_sim
+        self.net_graph = self.viz_sim.net_graph
+        self.component = component
+        self.new_cfg = new_cfg
+        self.old_cfg = old_cfg
+
+    def load(self, cfg):
+        for k, v in cfg.items():
+            # TODO: does this make any sense ???
+            setattr(self.viz_sim.viz.config[self.component.template], k, v)
+        self.viz_sim.viz.save_config()
+
+        # TODO: get a handle to the netgraph somehow, and send a message 
+        # through its to_be_sent list. From there javascript will read it,
+        # figure out which component it refers to, and call the appropriate
+        # function on that component. Might need to figure out what specifically
+        # was changed in the config, and call a specific function based on that
+        # these functions need to be added on the javascript side still, and
+        # a lot of them are specific to the type of component.
+        self.net_graph.to_be_sent.append(dict())
+
+    def apply(self):
+        self.load(self.new_cfg)
+
+    def undo(self):
+        self.load(self.old_cfg)
 
 class ExpandCollapse(Action):
     def __init__(self, net_graph, flag, uid):
@@ -144,9 +175,7 @@ class CreateGraph(Action):
         self.act_create_graph()
 
     def undo(self):
-        print "uid :", self.uid
         self.net_graph.to_be_sent.append(dict(type='delete_graph', uid=self.uid_graph))
-        print "exiting undo"
     
 
 class PosSize(Action):
