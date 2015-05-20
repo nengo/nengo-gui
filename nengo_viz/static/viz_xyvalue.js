@@ -80,7 +80,7 @@ VIZ.XYValue = function(parent, sim, args) {
     this.path.enter().append('path')
              .attr('class', 'line');
                                     
-    this.on_resize(args.width, args.height);
+    this.on_resize(this.get_screen_width(), this.get_screen_height()); 
     
 };
 VIZ.XYValue.prototype = Object.create(VIZ.Component.prototype);

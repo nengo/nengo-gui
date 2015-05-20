@@ -143,7 +143,7 @@ VIZ.Slider = function(parent, args) {
         this.div.appendChild(guideline);
     }
 
-    this.on_resize(args.width, args.height);
+    this.on_resize(this.get_screen_width(), this.get_screen_height()); 
 };
 
 
