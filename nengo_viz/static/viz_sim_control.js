@@ -187,23 +187,18 @@ VIZ.TimeSlider = function(args) {
 
     this.resize(args.width, args.height);
 
-    /** make the shown time draggable */
+    /** make the shown time draggable and resizable */
     interact(this.shown_div)
         .draggable({
             onmove: function (event) {
                 /** determine where we have been dragged to in time */
                 var x = self.kept_scale(self.first_shown_time) + event.dx;
-                var new_time = self.kept_scale.invert(x);
+                var new_time = VIZ.clip(
+                    self.kept_scale.invert(x),
+                    self.last_time - self.kept_time,
+                    self.last_time - self.shown_time);
 
-                /** make sure we're within bounds */
-                if (new_time > self.last_time - self.shown_time) {
-                    new_time = self.last_time - self.shown_time;
-                }
-                if (new_time < self.last_time - self.kept_time) {
-                    new_time = self.last_time - self.kept_time;
-                }
                 self.first_shown_time = new_time;
-                
                 x = self.kept_scale(new_time);
                 VIZ.set_transform(event.target, x, 0);
 
@@ -211,8 +206,36 @@ VIZ.TimeSlider = function(args) {
                 self.sim.div.dispatchEvent(new Event('adjust_time'));
             }
         })
-        
-    
+        .resizable({
+            edges: {left: true, right: true, bottom: false, top: false}
+        })
+        .on('resizemove', function (event) {
+            var target = event.target;
+
+            var x = self.kept_scale(self.first_shown_time) + event.deltaRect.left;
+            var new_time = self.kept_scale.invert(x);
+            var new_time2 = self.kept_scale.invert(x + event.rect.width);
+            new_time2 = Math.min(self.last_time, new_time2);
+
+            var shown_time = VIZ.clip(
+                new_time2 - new_time, 0.01, self.kept_time);
+            self.shown_time = shown_time;
+            new_time = VIZ.clip(new_time,
+                                self.last_time - self.kept_time,
+                                self.last_time - self.shown_time);
+            self.first_shown_time = new_time;
+
+            /** set slider width and position */
+            x = self.kept_scale(new_time);
+            var width = self.kept_scale(new_time + shown_time) - x;
+
+            target.style.width = width + 'px';
+            VIZ.set_transform(event.target, x, 0);
+
+            /** update any components who need to know the time changed */
+            self.sim.div.dispatchEvent(new Event('adjust_time'));
+        });
+
     /** build the axis to display inside the scroll area */
     this.svg = d3.select(this.div).append('svg')
         .attr('width', '100%')
