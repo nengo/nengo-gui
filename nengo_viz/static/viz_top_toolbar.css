@@ -5,3 +5,9 @@
 .glyphicon {
 	color: black;
 }
+
+.nav {
+	position: absolute;
+	z-index: 99999;
+}
+

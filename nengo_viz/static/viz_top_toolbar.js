@@ -2,8 +2,11 @@ VIZ.Toolbar = function() {
 	var self = this;
 	var toolbar = document.createElement('ul');
 	toolbar.className = 'nav nav-pills'
+	//toolbar.style.position = '';
 	VIZ.top_bar = toolbar;
 	var main = document.getElementById('main');
+	console.log(main)
+	VIZ.set_transform(toolbar, 0,0)
 	main.appendChild(toolbar);
 	
 	//Allow navigation of files on computer
@@ -55,27 +58,31 @@ VIZ.Toolbar.add_button = function (name, icon_class, fun) {
 }
 
 VIZ.Toolbar.add_dropdown = function(){}
-/*
+
 VIZ.Toolbar.launch_global_user_config_menu = function() {
 	var menu = document.createElement('div');
+	menu.style.background = 'red';
 	main = document.getElementById('main');
 	main.appendChild(menu);
-
-
+	menu.appendChild(create_config_item('scroll behaviour', 'This is a checkbox, plz clik'));
+	menu.appendChild(create_config_item('scroll behaviour', 'This is a checkbox, plz clik'));
+	menu.appendChild(create_config_item('scroll behaviour', 'This is a checkbox, plz clik'));
 	menu.appendChild(create_config_item('scroll behaviour', 'This is a checkbox, plz clik'));
 
 }
 
 function create_config_item(name, text) {
 	//<input type="checkbox" name="vehicle" value="Bike">
+	var label = document.createElement('label');
 	var option = document.createElement('input');
-	option.innerHTML = text
+	label.innerHTML = text
+	label.appendChild(option);
 	option.type = 'checkbox';
 	option.name = name;
 	option.value = name;
-	return option;
+	return label;
 }
-*/
+
 new VIZ.Toolbar();
 
 //VIZ.Toolbar.launch_global_user_config_menu();
