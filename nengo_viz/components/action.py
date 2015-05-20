@@ -1,9 +1,9 @@
 import nengo_viz.components
 def create_action(action, net_graph, **info):
     if action == "expand":
-        return Expand(net_graph, **info)
+        return ExpandCollapse(net_graph, True, **info)
     elif action == "collapse":
-        return Collapse(net_graph, **info)
+        return ExpandCollapse(net_graph, False, **info)
     elif action == "pan":
         return Pan(net_graph, **info)
     elif action == "zoom":
@@ -18,8 +18,6 @@ def create_action(action, net_graph, **info):
         return PosSize(net_graph, **info)
     elif action == "feedforward_layout":
         return FeedforwardLayout(net_graph, **info)
-    elif action == "config":
-        return ConfigAction(net_graph, **info)
     else:
         return Action(net_graph, **info)
 
@@ -35,52 +33,45 @@ class Action(object):
     def undo(self):
         pass
 
-class ConfigAction(Action):
-    def __init__(self, viz_sim, component, new_cfg, old_cfg):
-        self.viz_sim = viz_sim
-        self.net_graph = self.viz_sim.net_graph
-        self.component = component
-        self.new_cfg = new_cfg
-        self.old_cfg = old_cfg
-
-    def load(self, cfg):
-        for k, v in cfg.items():
-            # TODO: does this make any sense ???
-            setattr(self.viz_sim.viz.config[self.component.template], k, v)
-        self.viz_sim.viz.save_config()
-
-        # TODO: get a handle to the netgraph somehow, and send a message 
-        # through its to_be_sent list. From there javascript will read it,
-        # figure out which component it refers to, and call the appropriate
-        # function on that component. Might need to figure out what specifically
-        # was changed in the config, and call a specific function based on that
-        # these functions need to be added on the javascript side still, and
-        # a lot of them are specific to the type of component.
-        self.net_graph.to_be_sent.append()
-
-    def apply(self):
-        self.load(self.new_cfg)
-
-    def undo(self):
-        self.load(self.old_cfg)
-
-class Expand(Action):
-    def __init__(self, net_graph, uid):
+class ExpandCollapse(Action):
+    def __init__(self, net_graph, flag, uid):
         self.net_graph = net_graph
         self.uid = uid
+        self.flag = flag
+        
+        self.act_expand_collapse(self.flag)
+        
+    def act_expand_collapse(self, flag):
+        net = self.net_graph.uids[self.uid]
+        self.net_graph.to_be_expanded.append(net)
+        self.net_graph.config[net].expanded = flag
+        self.net_graph.viz.viz.save_config()    
 
     def apply(self):
-        self.net_graph.act_expand(self.uid)
-        self.net_graph.to_be_sent.append(dict(type='expand',uid=self.uid))
+        self.act_expand_collapse(self.flag)
+        if self.flag == True:
+            self.net_graph.to_be_sent.append(dict(type='expand',uid=self.uid))
+        else: 
+            self.net_graph.to_be_sent.append(dict(type='collapse',uid=self.uid))
     
     def undo(self):
-        self.net_graph.act_collapse(self.uid)
-        self.net_graph.to_be_sent.append(dict(type='collapse',uid=self.uid))
+        self.act_expand_collapse(not(self.flag))
+        if self.flag == True:
+            self.net_graph.to_be_sent.append(dict(type='collapse',uid=self.uid))
+        else:
+            self.net_graph.to_be_sent.append(dict(type='expand',uid=self.uid))
 
-class Collapse(Action):
+"""class Collapse(Action):
     def __init__(self, net_graph, uid):
         self.net_graph = net_graph
         self.uid = uid
+        
+        self.act_collapse()
+        
+    def act_collapse(self):
+        net = self.net_graph.uids[self.uid]
+        self.net_graph.config[net].expanded = False
+        self.net_graph.viz.viz.save_config()    
 
     def apply(self):
         self.net_graph.act_collapse(self.uid)
@@ -88,7 +79,7 @@ class Collapse(Action):
     
     def undo(self):
         self.net_graph.act_expand(self.uid)
-        self.net_graph.to_be_sent.append(dict(type='expand',uid=self.uid))
+        self.net_graph.to_be_sent.append(dict(type='expand',uid=self.uid))"""
 
 class Pan(Action):
     def __init__(self, net_graph, x, y):
@@ -125,17 +116,16 @@ class CreateGraph(Action):
         self.net_graph = net_graph
         self.uid = uid
         self.type=type
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
+        self.x, self.y = x, y
+        self.width, self.height = width, height
+        self.obj = self.net_graph.uids[self.uid]
+        self.uid_graph = None
 
         self.act_create_graph()
 
     def act_create_graph(self):
         cls = getattr(nengo_viz.components, self.type + 'Template')
-        obj = self.net_graph.uids[self.uid]
-        template = cls(obj)
+        template = cls(self.obj)
         self.net_graph.viz.viz.generate_uid(template, prefix='_viz_')
         self.uid_graph = self.net_graph.viz.viz.get_uid(template)
         self.net_graph.config[template].x = self.x
@@ -162,16 +152,22 @@ class PosSize(Action):
         self.net_graph = net_graph
         self.uid = uid
         
-        obj = self.net_graph.uids[self.uid]
-        self.x, self.y = self.net_graph.config[obj].pos
-        self.width, self.height = self.net_graph.config[obj].size
+        self.obj = self.net_graph.uids[self.uid]
+        self.x, self.y = self.net_graph.config[self.obj].pos
+        self.width, self.height = self.net_graph.config[self.obj].size
+        
+        self.act_pos_size(x, y, width, height)
+        
+    def act_pos_size(self, x, y, width, height):
+        self.net_graph.config[self.obj].pos = x, y
+        self.net_graph.config[self.obj].size = width, height
+        self.net_graph.viz.viz.save_config()    
 
     def apply(self):
         x, y, width, height = self.x, self.y, self.width, self.height
-        obj = self.net_graph.uids[self.uid]
-        self.x, self.y = self.net_graph.config[obj].pos
-        self.width, self.height = self.net_graph.config[obj].size
-        self.net_graph.act_pos_size(self.uid, x, y, width, height)
+        self.x, self.y = self.net_graph.config[self.obj].pos
+        self.width, self.height = self.net_graph.config[self.obj].size
+        self.act_pos_size(x, y, width, height)
         self.net_graph.to_be_sent.append(dict(type='pos_size', uid=self.uid, pos=[x,y], size=[width,height]))
 
     def undo(self):
@@ -181,15 +177,20 @@ class Pos(Action):
     def __init__(self, net_graph, uid, x, y):
         self.net_graph = net_graph
         self.uid = uid
-        obj = self.net_graph.uids[self.uid]
-        self.x, self.y = self.net_graph.config[obj].pos
+        self.obj = self.net_graph.uids[self.uid]
+        self.x, self.y = self.net_graph.config[self.obj].pos
+        
+        self.act_pos(x, y)
+        
+    def act_pos(self, x, y):
+        self.net_graph.config[self.obj].pos = x, y
+        self.net_graph.viz.viz.save_config()    
 
     def apply(self):
         x, y = self.x, self.y
-        obj = self.net_graph.uids[self.uid]
-        self.x, self.y = self.net_graph.config[obj].pos
-        width, height = self.net_graph.config[obj].size
-        self.net_graph.act_pos(self.uid, x, y)
+        self.x, self.y = self.net_graph.config[self.obj].pos
+        width, height = self.net_graph.config[self.obj].size
+        self.act_pos(x, y)
         self.net_graph.to_be_sent.append(dict(type='pos_size', uid=self.uid, pos=[x,y], size=[width,height]))
 
     def undo(self):
@@ -199,15 +200,20 @@ class Size(Action):
     def __init__(self, net_graph, uid, width, height):
         self.net_graph = net_graph
         self.uid = uid
-        obj = self.net_graph.uids[self.uid]
-        self.width, self.height = self.net_graph.config[obj].size
+        self.obj = self.net_graph.uids[self.uid]
+        self.width, self.height = self.net_graph.config[self.obj].size
+        
+        self.act_size(width, height)
+        
+    def act_size(self, width, height):
+        self.net_graph.config[self.obj].size = width, height
+        self.net_graph.viz.viz.save_config()    
 
     def apply(self):
         width, height = self.width, self.height
-        obj = self.net_graph.uids[self.uid]
-        x, y = self.net_graph.config[obj].pos
-        self.width, self.height = self.net_graph.config[obj].size
-        self.net_graph.act_size(self.uid, width, height)
+        x, y = self.net_graph.config[self.obj].pos
+        self.width, self.height = self.net_graph.config[self.obj].size
+        self.act_size(width, height)
         self.net_graph.to_be_sent.append(dict(type='pos_size', uid=self.uid, pos=[x,y], size=[width,height]))
 
     def undo(self):
@@ -222,6 +228,32 @@ class FeedforwardLayout(Action):
 
         # record the current positions and sizes of everything in the network
         self.old_state = self.save_network()
+        
+        self.act_feedforward_layout()
+        
+    def act_feedforward_layout(self):
+        if self.uid is None:
+            network = self.net_graph.viz.model
+            #self.net_graph.config[network].pos = 0.0, 0.0
+            #self.net_graph.config[network].size = 1.0, 1.0
+            #self.net_graph.to_be_sent.append(dict(type='pan',
+            #                            pan=self.config[network].pos))
+            #self.net_graph.to_be_sent.append(dict(type='zoom',
+            #                            zoom=self.config[network].size[0]))
+        else:
+            network = self.net_graph.uids[self.uid]
+        pos = self.net_graph.layout.make_layout(network)
+        for obj, layout in pos.items():
+            self.net_graph.config[obj].pos = layout['y'], layout['x']
+            self.net_graph.config[obj].size = layout['h'] / 2, layout['w'] / 2
+
+            obj_uid = self.net_graph.viz.viz.get_uid(obj)
+            self.net_graph.to_be_sent.append(dict(type='pos_size',
+                                        uid=obj_uid,
+                                        pos=self.net_graph.config[obj].pos,
+                                        size=self.net_graph.config[obj].size))
+        self.net_graph.config[network].has_layout = True
+        self.net_graph.viz.viz.save_config()    
 
     def save_network(self):
         # TODO: gross hacky inefficient method, fix it later
