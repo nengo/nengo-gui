@@ -300,7 +300,11 @@ VIZ.NetGraphItem.prototype.create_graph = function (type) {
     var cords = VIZ.pan.map_px_to_cord(VIZ.Screen, {x:pos[0], y:pos[1]});
     info.x = cords.x;
     info.y = cords.y;
-    info.width = 200;
+    if (info.type == 'Slider') {
+        info.width = 50;
+    } else {
+        info.width = 200;
+    }
     info.height = 200;
     info.uid = this.uid;
     this.ng.notify(info);

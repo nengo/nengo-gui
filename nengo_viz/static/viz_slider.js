@@ -142,8 +142,9 @@ VIZ.Slider = function(parent, args) {
         VIZ.set_transform(guideline, guide_x, 0);
         this.div.appendChild(guideline);
     }
-
-    this.on_resize(args.width, args.height);
+    
+    var width = args.n_sliders * args.width;
+    this.on_resize(width, args.height);
 };
 
 
