@@ -74,7 +74,6 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
     server_version = 'SimpleWebInterface/2.0'
     serve_files = []
     serve_dirs = []
-    shutdown_flag = False
 
     pending_headers = None
     testing_user = None
@@ -371,10 +370,6 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             server = BaseHTTPServer.HTTPServer((addr, port), cls)
 
         cls._stopped.clear()
-        cls._runner(server, asynch)
-
-    @classmethod
-    def _runner(cls, server, asynch):
         try:
             while not cls._stopped.is_set():
                 server.handle_request()
