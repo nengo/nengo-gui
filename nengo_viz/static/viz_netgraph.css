@@ -2,7 +2,7 @@
 }
 
 #ensemble{
-    stroke-width:0;
+    stroke-width:1;
     }
     
 g.node rect{
@@ -27,7 +27,7 @@ g.net rect{
     stroke-width: 2px;
 }
 
-.netgraph ellipse.recurrent {
+.recur {
     stroke: black;
     stroke-width: 2px;
     fill: none;

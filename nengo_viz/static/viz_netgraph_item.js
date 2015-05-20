@@ -573,6 +573,7 @@ VIZ.NetGraphItem.prototype.set_size = function(width, height) {
     
     this.redraw_children();
     this.redraw_child_connections();
+    this.redraw_connections();
 };
 
 VIZ.NetGraphItem.prototype.redraw_size = function() {    
@@ -591,6 +592,7 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
         var scale = Math.sqrt(screen_h * screen_h + screen_w * screen_w) / Math.sqrt(2);
         var r = $('#ensemble #mainCircle').attr('r');
         this.shape.setAttribute('transform', 'scale(' + scale / 2 / r + ')');
+        $('#ensemble').css('stroke-width', 1/(scale/2/r) );
     } else if (this.passthrough) {
         this.shape.setAttribute('rx', screen_w / 2);
         this.shape.setAttribute('ry', screen_h / 2);    
