@@ -37,7 +37,7 @@ class VizSim(object):
         t.start()
 
     def get_net_graph(self):
-        for c in components:
+        for c in self.components:
             if isinstance(c, nengo_viz.components.NetGraph):
                 return c
         return None
