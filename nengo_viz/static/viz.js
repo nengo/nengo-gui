@@ -474,3 +474,10 @@ VIZ.next_zindex = function() {
     VIZ.max_zindex++;
     return VIZ.max_zindex;
 }
+
+VIZ.escapeHTML = function(s) {
+    return s.replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');f
+}

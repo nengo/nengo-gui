@@ -1,29 +1,5 @@
 VIZ.tooltips = {};
 
-VIZ.tooltips.tooltip = function($parent, content, placement, icon) {
-    if (typeof(placement) === 'undefined') { placement = "bottom"; }
-    if (typeof(icon) === 'undefined') { icon = "glyphicon-question-sign"; }
-
-    var $tooltip = $('<a href="#" data-toggle="tooltip" ' +
-                     'data-placement="' + placement + '" ' + 'title="' +
-                     content + '"/>');
-    $tooltip.append('<span class="glyphicon ' + icon + '" ' +
-                    'aria-hidden="true"/>').appendTo($parent);
-    $tooltip.tooltip();
-}
-
-VIZ.tooltips.popover = function($parent, title, content, placement, icon) {
-    if (typeof(placement) === 'undefined') { placement = "bottom"; }
-    if (typeof(icon) === 'undefined') { icon = "glyphicon-question-sign"; }
-
-    var $tooltip = $('<a href="#" data-toggle="popover" ' +
-                     'data-placement="' + placement + '" ' + 'title="' +
-                     title + '"' + 'data-content="' + content + '"/>');
-    $tooltip.append('<span class="glyphicon glyphicon-question-sign" ' +
-                    'aria-hidden="true"/>').appendTo($parent);
-    $tooltip.popover({"trigger": "hover"});
-}
-
 /* Ensemble Parameters */
 VIZ.tooltips.ens = {};
 VIZ.tooltips.ens.n_neurons = ["Type: int", "The number of neurons."];
@@ -85,4 +61,3 @@ VIZ.tooltips.node.size_out = [
 /* Connection Parameters */
 VIZ.tooltips.conn = {};
 VIZ.tooltips.conn.expand = ["Click to show / hide full path"];
-VIZ.tooltips.conn.fan_passthrough = ["This connection is to / from a passthrough node: Fan in / out information is approximate."];
