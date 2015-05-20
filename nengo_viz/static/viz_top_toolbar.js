@@ -18,6 +18,8 @@ VIZ.Toolbar = function(model_name) {
 	var toolbar = document.createElement('ul');
 	toolbar.className = 'nav nav-pills'
 	var main = document.getElementById('main');
+	console.log(main)
+	VIZ.set_transform(toolbar, 0,0)
 	main.appendChild(toolbar);
 	
 	//keep a reference to the toolbar element
@@ -172,7 +174,6 @@ VIZ.Toolbar.prototype.open_modal = function(option_list) {
     
     //Add the checkboxes element
     this.launch_global_user_config_menu(option_list, this.modalWindow);
-
     this.modalWrapper.className = "overlay";
     this.modalWindow.style.marginTop = (-this.modalWindow.offsetHeight) / 2 + "px";
     this.modalWindow.style.marginLeft = (-this.modalWindow.offsetWidth) / 2 + "px";
