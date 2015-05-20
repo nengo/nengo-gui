@@ -60,6 +60,8 @@ class Server(swi.SimpleWebInterface):
                             setattr(self.viz.config[component.template], k, v)
                         self.viz.save_config()
                     elif msg == 'remove':
+                        # Register graph removal to the undo stack
+                        self.viz_sim.remove_graph(component)
                         self.viz.remove_uid(uid)
                         self.viz.save_config()
                     else:

@@ -7,7 +7,7 @@ import nengo_viz
 import nengo_viz.server
 import nengo_viz.components
 import nengo_viz.config
-from nengo_viz.components.action import ConfigAction
+from nengo_viz.components.action import ConfigAction, RemoveGraph
 
 class VizSim(object):
     """A single Simulator attached to an html visualization."""
@@ -93,6 +93,12 @@ class VizSim(object):
     def config_change(self, component, new_cfg, old_cfg):
         act = ConfigAction(self, component=component, 
                            new_cfg=new_cfg, old_cfg=old_cfg)
+        self.undo_stack.append(act)
+
+    def remove_graph(self, component):
+        uid = self.viz.get_uid(component.obj)
+        net_graph = self.get_net_graph()
+        act = RemoveGraph(net_graph, component, uid)
         self.undo_stack.append(act)
 
 
