@@ -161,6 +161,39 @@ class Zoom(Action):
     def undo(self):
         self.apply() # Undo is a mirrored operation"""
 
+class RemoveGraph(Action):        
+    def __init__(self, net_graph, component, uid):
+        self.uid_graph = component.uid
+        self.x, self.y = component.config.x, component.config.y
+        self.width, self.height = component.config.width, component.config.height
+        self.net_graph = net_graph
+        
+        class_type = type(component).__name__
+        cls = getattr(nengo_viz.components, class_type + 'Template')
+        
+        obj = self.net_graph.uids[uid]
+        self.template = cls(obj)
+  
+    def act_create_graph(self):
+        self.net_graph.viz.viz.locals[self.uid_graph] = self.template
+        self.net_graph.viz.viz.default_labels[self.template] = self.uid_graph  
+        
+        self.net_graph.config[self.template].x = self.x
+        self.net_graph.config[self.template].y = self.y
+        self.net_graph.config[self.template].width = self.width
+        self.net_graph.config[self.template].height = self.height
+        self.net_graph.viz.viz.save_config()
+
+        c = self.net_graph.viz.add_template(self.template)
+        self.net_graph.viz.changed = True
+        self.net_graph.to_be_sent.append(dict(type='js', code=c.javascript()))    
+
+    def apply(self):   
+        self.net_graph.to_be_sent.append(dict(type='delete_graph', uid=self.uid_graph))
+
+    def undo(self):
+        self.act_create_graph()
+        
 class CreateGraph(Action):
     def __init__(self, net_graph, uid, type, x, y, width, height):
         self.net_graph = net_graph
@@ -170,26 +203,27 @@ class CreateGraph(Action):
         self.width, self.height = width, height
         self.obj = self.net_graph.uids[self.uid]
         self.uid_graph = None
+        cls = getattr(nengo_viz.components, self.type + 'Template')
+        self.template = cls(self.obj)
 
         self.act_create_graph(self.uid_graph)
 
     def act_create_graph(self, uid_graph):
-        cls = getattr(nengo_viz.components, self.type + 'Template')
-        template = cls(self.obj)
         if self.uid_graph == None:
-            self.net_graph.viz.viz.generate_uid(template, prefix='_viz_')
-            self.uid_graph = self.net_graph.viz.viz.get_uid(template)
-        self.net_graph.config[template].x = self.x
-        self.net_graph.config[template].y = self.y
-        self.net_graph.config[template].width = self.width
-        self.net_graph.config[template].height = self.height
+            self.net_graph.viz.viz.generate_uid(self.template, prefix='_viz_')
+            self.uid_graph = self.net_graph.viz.viz.get_uid(self.template)
+        self.net_graph.config[self.template].x = self.x
+        self.net_graph.config[self.template].y = self.y
+        self.net_graph.config[self.template].width = self.width
+        self.net_graph.config[self.template].height = self.height
         self.net_graph.viz.viz.save_config()
 
-        c = self.net_graph.viz.add_template(template)
+        c = self.net_graph.viz.add_template(self.template)
         self.net_graph.viz.changed = True
         self.net_graph.to_be_sent.append(dict(type='js', code=c.javascript()))
 
-    def apply(self):     
+    def apply(self):   
+        print "in apply: ", self.uid_graph
         self.act_create_graph(self.uid_graph)
 
     def undo(self):
