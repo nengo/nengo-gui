@@ -1,5 +1,7 @@
-VIZ.Toolbar = function() {
+VIZ.Toolbar = function(model_name) {
 	var self = this;
+	this.model_name = model_name;
+
 	var toolbar = document.createElement('ul');
 	toolbar.className = 'nav nav-pills'
 	//toolbar.style.position = '';
@@ -20,6 +22,13 @@ VIZ.Toolbar = function() {
 	VIZ.Toolbar.add_button('Reset model layout', 'glyphicon glyphicon-retweet', function() {self.reset_model_layout()});
 	//VIZ.Toolbar.add_button('Save as', 'glyphicon glyphicon-floppy-disk', function() {});
 	VIZ.Toolbar.add_button('Undo last', 'glyphicon glyphicon-backward', function() {});
+	
+	var button = document.createElement('li');
+	button.id = 'model_name';
+	VIZ.top_bar.appendChild(button);
+	button.innerHTML = model_name;
+	button.setAttribute("role", "presentation");	
+
 	}
 
 // This opens up the pop up window that allows you to select the file to open

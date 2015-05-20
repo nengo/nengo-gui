@@ -8,6 +8,12 @@
 
 .nav {
 	position: absolute;
+	width: 100%;
 	z-index: 99999;
 }
 
+#model_name {
+	float: right;
+	margin-top: 0.5em;
+	margin-right: 1em;
+}

@@ -81,8 +81,10 @@ class VizSim(object):
         self.finished = True
 
     def create_javascript(self):
-
-        return '\n'.join([c.javascript() for c in self.components])
+        webpage_title_js = ';document.title = "%s"' %self.viz.filename[:-3]
+        component_js = '\n'.join([c.javascript() for c in self.components])
+        component_js = component_js + webpage_title_js
+        return component_js
 
 
 class Viz(object):
