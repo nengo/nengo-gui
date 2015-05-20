@@ -62,5 +62,8 @@ class Server(swi.SimpleWebInterface):
                 component.update_client(client)
                 self.viz.save_config(lazy=True)
                 time.sleep(0.01)
+        except swi.SocketClosedError:
+            # This error means the server has shut down, we should stop nicely.
+            self.viz.save_config(lazy=False)
         finally:
             component.finish()

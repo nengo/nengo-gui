@@ -46,7 +46,9 @@ except ImportError:
     import socketserver as SocketServer
 import traceback
 import random
+import select
 import string
+import sys
 import os
 try:
     import StringIO
@@ -68,6 +70,10 @@ import hashlib
 import socket
 import struct
 import threading
+
+
+class SocketClosedError(IOError):
+    pass
 
 
 class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -367,8 +373,27 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
         else:
             server = BaseHTTPServer.HTTPServer((addr, port), cls)
         try:
-            server.serve_forever()
+            serve = True
+            while serve:
+                try:
+                    server.serve_forever()
+                except KeyboardInterrupt:
+                    # Check that user wants to shut down
+                    sys.stdout.write(
+                        "\nShut-down this web server (y/[n])? ")
+                    sys.stdout.flush()
+                    rlist, _, _ = select.select([sys.stdin], [], [], 10)
+                    if rlist:
+                        line = sys.stdin.readline()
+                        if line[0].lower() == 'y':
+                            serve = False
+                        else:
+                            print("Resuming...")
+                    else:
+                        print("No confirmation received. Resuming...")
         finally:
+            print("Shutting down server...")
+
             # shut down any remaining threads
             if asynch and server.requests is not None:
                 for socket in server.requests:
@@ -469,6 +494,8 @@ class ClientSocket(object):
                 pass
             elif e.errno == 35:  # no data available
                 pass
+            elif e.errno == 9:  # "Bad file descriptor" means socket closed
+                raise SocketClosedError("Cannot read from closed socket.")
             else:
                 raise
         except socket.timeout:
