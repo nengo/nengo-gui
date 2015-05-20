@@ -173,8 +173,13 @@ VIZ.NetGraph.prototype.on_message = function(event) {
     } else if (data.type === 'js') {
         eval(data.code);
     } else if (data.type === 'delete_graph') {
-        var item = this.svg_objects[data.uid];
-        item.remove();
+        var uid = data.uid;
+        for (var i = 0; i < VIZ.Component.components.length; i++) {
+            if (VIZ.Component.components[i].uid === uid) {
+                VIZ.Component.components[i].remove();
+                break;
+            }
+        }
     } else {
         console.log('invalid message');
         console.log(data);

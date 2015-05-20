@@ -1,3 +1,4 @@
+import nengo_viz.components
 def create_action(action, net_graph, **info):
     if action == "expand":
         return Expand(net_graph, **info)
@@ -129,17 +130,32 @@ class CreateGraph(Action):
         self.y = y
         self.width = width
         self.height = height
-        
-    def apply(self):
-        #self.x = self.config[template].x
-        #self.y = self.config[template].y
-        #self.width = self.config[template].width
-        #self.height = self.config[template].height
-              
-        self.net_graph.act_create_graph(self.uid, self.type, self.x, self.y, self.width, self.height)
+
+        self.act_create_graph()
+
+    def act_create_graph(self):
+        cls = getattr(nengo_viz.components, self.type + 'Template')
+        obj = self.net_graph.uids[self.uid]
+        template = cls(obj)
+        self.net_graph.viz.viz.generate_uid(template, prefix='_viz_')
+        self.uid_graph = self.net_graph.viz.viz.get_uid(template)
+        self.net_graph.config[template].x = self.x
+        self.net_graph.config[template].y = self.y
+        self.net_graph.config[template].width = self.width
+        self.net_graph.config[template].height = self.height
+        self.net_graph.viz.viz.save_config()
+
+        c = self.net_graph.viz.add_template(template)
+        self.net_graph.viz.changed = True
+        self.net_graph.to_be_sent.append(dict(type='js', code=c.javascript()))
+
+    def apply(self):     
+        self.act_create_graph()
 
     def undo(self):
-        self.net_graph.to_be_sent.append(dict(type='delete_graph', uid=self.uid))
+        print "uid :", self.uid
+        self.net_graph.to_be_sent.append(dict(type='delete_graph', uid=self.uid_graph))
+        print "exiting undo"
     
 
 class PosSize(Action):
