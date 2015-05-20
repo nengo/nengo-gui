@@ -43,9 +43,11 @@ class ExpandCollapse(Action):
         
     def act_expand_collapse(self, flag):
         net = self.net_graph.uids[self.uid]
-        self.net_graph.to_be_expanded.append(net)
+        if flag == True:
+            self.net_graph.to_be_expanded.append(net)
         self.net_graph.config[net].expanded = flag
-        self.net_graph.viz.viz.save_config()    
+        self.net_graph.viz.viz.save_config() 
+
 
     def apply(self):
         self.act_expand_collapse(self.flag)
