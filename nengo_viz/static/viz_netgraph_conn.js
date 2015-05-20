@@ -78,8 +78,10 @@ VIZ.NetGraphConnection.prototype.set_pre = function(pre) {
         this.pre.conn_out.splice(index, 1);    
     }
     this.pre = pre;
-    /** add myself to pre's output connections list */
-    this.pre.conn_out.push(this);
+    if (this.pre !== null) {
+        /** add myself to pre's output connections list */
+        this.pre.conn_out.push(this);
+    }
 }
 
 
@@ -94,8 +96,10 @@ VIZ.NetGraphConnection.prototype.set_post = function(post) {
         this.post.conn_in.splice(index, 1);    
     }
     this.post = post;
-    /** add myself to post's input connections list */
-    this.post.conn_in.push(this);
+    if (this.post !== null) {
+        /** add myself to post's input connections list */
+        this.post.conn_in.push(this);
+    }
 }
 
 
@@ -110,8 +114,7 @@ VIZ.NetGraphConnection.prototype.find_pre = function() {
             this.ng.register_conn(this, this.pres[i]);
         }
     }
-    console.log('could not find pre');
-    console.log(this.pres);
+    return null;
 }
 
 
@@ -126,8 +129,16 @@ VIZ.NetGraphConnection.prototype.find_post = function() {
             this.ng.register_conn(this, this.posts[i]);
         }
     }
-    console.log('could not find post');
-    console.log(this.posts);
+    return null;
+}
+
+VIZ.NetGraphConnection.prototype.set_pres = function(pres) {
+    this.pres = pres;
+    this.set_pre(this.find_pre());
+}
+VIZ.NetGraphConnection.prototype.set_posts = function(posts) {
+    this.posts = posts;
+    this.set_post(this.find_post());
 }
 
 
@@ -141,17 +152,21 @@ VIZ.NetGraphConnection.prototype.remove = function() {
         this.parent.child_connections.splice(index, 1);    
     }
     
-    var index = this.pre.conn_out.indexOf(this);
-    if (index === -1) {
-        console.log('error removing from conn_out');
+    if (this.pre != null) {
+        var index = this.pre.conn_out.indexOf(this);
+        if (index === -1) {
+            console.log('error removing from conn_out');
+        }
+        this.pre.conn_out.splice(index, 1);    
     }
-    this.pre.conn_out.splice(index, 1);    
 
-    var index = this.post.conn_in.indexOf(this);
-    if (index === -1) {
-        console.log('error removing from conn_in');
+    if (this.post != null) {
+        var index = this.post.conn_in.indexOf(this);
+        if (index === -1) {
+            console.log('error removing from conn_in');
+        }
+        this.post.conn_in.splice(index, 1);    
     }
-    this.post.conn_in.splice(index, 1);    
 
     
     this.ng.g_conns.removeChild(this.g);
@@ -163,6 +178,14 @@ VIZ.NetGraphConnection.prototype.remove = function() {
 
 /** redraw the connection */
 VIZ.NetGraphConnection.prototype.redraw = function() {
+    if (this.pre === null || this.post === null) {
+        this.line.setAttribute('visibility', 'hidden');
+        this.marker.setAttribute('visibility', 'hidden');
+        return;
+    } else {
+        this.line.setAttribute('visibility', 'visible');
+        this.marker.setAttribute('visibility', 'visible');
+    }
     var pre_pos = this.pre.get_screen_location();
     
     if (this.recurrent) {

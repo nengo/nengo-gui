@@ -41,10 +41,17 @@ class NetGraph(Component):
         locals = {}
         with open(self.viz.viz.filename) as f:
             code = f.read()
-        exec(code, locals)
+        try:
+            exec(code, locals)
+        except:
+            pass
         model = locals['model']
         locals['nengo_viz'] = nengo_viz
         name_finder = nengo_viz.NameFinder(locals, model)
+
+        self.networks_to_search = [model]
+        self.parents = {}
+
         for uid, old_item in self.uids.items():
             try:
                 new_item = eval(uid, locals)
@@ -66,10 +73,29 @@ class NetGraph(Component):
                     if old_label != new_label:
                         self.to_be_sent.append(dict(
                             type='rename', uid=uid, name=new_label))
+                elif isinstance(old_item, nengo.Connection):
+                    old_pre = old_item.pre_obj
+                    old_post = old_item.post_obj
+                    new_pre = new_item.pre_obj
+                    new_post = new_item.post_obj
+                    old_pre = self.viz.viz.get_uid(old_pre)
+                    old_post = self.viz.viz.get_uid(old_post)
+                    new_pre = self.viz.viz.get_uid(new_pre,
+                            default_labels=name_finder.known_name)
+                    new_post = self.viz.viz.get_uid(new_post,
+                            default_labels=name_finder.known_name)
+
+                    if new_pre != old_pre or new_post != old_post:
+                        pres = self.get_parents(new_pre,
+                            default_labels=name_finder.known_name)[:-1]
+                        posts = self.get_parents(new_post,
+                            default_labels=name_finder.known_name)[:-1]
+                        self.to_be_sent.append(dict(
+                            type='reconnect', uid=uid,
+                            pres=pres, posts=posts))
+
                 self.uids[uid] = new_item
 
-        self.networks_to_search = [model]
-        self.parents = {}
         self.to_be_expanded.append(model)
 
         self.viz.model = model
@@ -81,20 +107,24 @@ class NetGraph(Component):
         self.viz.config = self.viz.viz.config
         self.config = self.viz.viz.config
         self.viz.viz.uid_prefix_counter = {}
+        self.viz.changed = True
+
+        #for c in self.viz.components:
+        #    c.new_component = c.template.create(self.viz)
 
 
-    def get_parents(self, uid):
+    def get_parents(self, uid, default_labels=None):
         while uid not in self.parents:
             net = self.networks_to_search.pop(0)
-            net_uid = self.viz.viz.get_uid(net)
+            net_uid = self.viz.viz.get_uid(net, default_labels=default_labels)
             for n in net.nodes:
-                n_uid = self.viz.viz.get_uid(n)
+                n_uid = self.viz.viz.get_uid(n, default_labels=default_labels)
                 self.parents[n_uid] = net_uid
             for e in net.ensembles:
-                e_uid = self.viz.viz.get_uid(e)
+                e_uid = self.viz.viz.get_uid(e, default_labels=default_labels)
                 self.parents[e_uid] = net_uid
             for n in net.networks:
-                n_uid = self.viz.viz.get_uid(n)
+                n_uid = self.viz.viz.get_uid(n, default_labels=default_labels)
                 self.parents[n_uid] = net_uid
                 self.networks_to_search.append(n)
         parents = [uid]

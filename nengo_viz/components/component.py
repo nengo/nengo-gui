@@ -4,6 +4,8 @@ class Component(object):
     def __init__(self, viz, config, uid):
         self.config = config
         self.uid = uid
+        self.new_component = None
+
     def update_client(self, client):
         pass
     def message(self, msg):

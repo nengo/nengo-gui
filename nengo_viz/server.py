@@ -45,6 +45,8 @@ class Server(swi.SimpleWebInterface):
 
         try:
             while True:
+                if component.new_component is not None:
+                    component = component.new_component
                 # read all data coming from the component
                 msg = client.read()
                 while msg is not None:

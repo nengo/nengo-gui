@@ -164,13 +164,17 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         var item = this.svg_objects[data.uid];
         item.set_label(data.name);    
     } else if (data.type === 'remove') {
-        console.log(data);
         var item = this.svg_objects[data.uid];
         if (item === undefined) {
             item = this.svg_conns[data.uid];
         }
-        console.log(item);
         item.remove();    
+    } else if (data.type === 'reconnect') {
+        console.log(['reconnect', data]);
+        var conn = this.svg_conns[data.uid];
+        conn.set_pres(data.pres);
+        conn.set_posts(data.posts);
+        conn.redraw();
     } else {
         console.log('invalid message');
         console.log(data);
