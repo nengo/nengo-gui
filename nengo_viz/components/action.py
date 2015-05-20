@@ -198,7 +198,6 @@ class CreateGraph(Action):
         self.net_graph.to_be_sent.append(dict(type='js', code=c.javascript()))
 
     def apply(self):   
-        print "in apply: ", self.uid_graph
         self.act_create_graph(self.uid_graph)
 
     def undo(self):
