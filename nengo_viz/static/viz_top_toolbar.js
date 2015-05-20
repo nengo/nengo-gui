@@ -51,6 +51,8 @@ VIZ.Toolbar = function(model_name) {
 		});
 };
 
+
+
 // This opens up the pop up window that allows you to select the file to open
 VIZ.Toolbar.prototype.file_browser = function () {
     sim.ws.send('browse');

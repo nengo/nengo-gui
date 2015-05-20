@@ -20,7 +20,6 @@ class Server(swi.SimpleWebInterface):
         self.script_path = '.'
         if self.user is None: return
         r = ['<ul class="jqueryFileTree" style="display: none;">']
-
         d = unquote(dir)
         for f in sorted(os.listdir(os.path.join(self.script_path, d))):
             ff = os.path.relpath(os.path.join(self.script_path, d,f), self.script_path)
