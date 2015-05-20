@@ -137,10 +137,11 @@ class Zoom(Action):
         self.apply() # Undo is a mirrored operation"""
 
 class RemoveGraph(Action):        
-    def __init__(self, net_graph, component, uid):
+    def __init__(self, net_graph, component, uid, label_visible):
         self.uid_graph = component.uid
         self.x, self.y = component.config.x, component.config.y
         self.width, self.height = component.config.width, component.config.height
+        self.label_visible = label_visible
         self.net_graph = net_graph
         
         class_type = type(component).__name__
@@ -157,6 +158,7 @@ class RemoveGraph(Action):
         self.net_graph.config[self.template].y = self.y
         self.net_graph.config[self.template].width = self.width
         self.net_graph.config[self.template].height = self.height
+        self.net_graph.config[self.template].label_visible = self.label_visible
         self.net_graph.viz.viz.save_config()
 
         c = self.net_graph.viz.add_template(self.template)

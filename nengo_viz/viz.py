@@ -98,8 +98,15 @@ class VizSim(object):
     def remove_graph(self, component):
         uid = self.viz.get_uid(component.obj)
         net_graph = self.get_net_graph()
-        act = RemoveGraph(net_graph, component, uid)
+
+        # save the value of label_visible attribute from the
+        # previous template before removing the graph
+        template =  self.viz.locals[component.uid]
+        label_visible = self.net_graph.config[template].label_visible
+
+        act = RemoveGraph(net_graph, component, uid, label_visible)
         self.undo_stack.append(act)
+
 
 
 class Viz(object):
