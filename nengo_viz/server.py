@@ -52,15 +52,16 @@ class Server(swi.SimpleWebInterface):
                         cfg = json.loads(msg[7:])
                         for k, v in cfg.items():
                             setattr(self.viz.config[component.template], k, v)
-                        self.viz.save_config()
+                        self.viz.modified_config()
                     elif msg == 'remove':
                         self.viz.remove_uid(uid)
-                        self.viz.save_config()
+                        self.viz.modified_config()
                     else:
                         component.message(msg)
                     msg = client.read()
                 # send data to the component
                 component.update_client(client)
+                self.viz.save_config(lazy=True)
                 time.sleep(0.01)
         finally:
             component.finish()

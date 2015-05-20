@@ -41,6 +41,9 @@ class NetGraph(Component):
             parents.append(self.parents[parents[-1]])
         return parents
 
+    def modified_config(self):
+        self.viz.viz.modified_config()
+
     def update_client(self, client):
         if len(self.to_be_expanded) > 0:
             self.viz.viz.lock.acquire()
@@ -74,37 +77,37 @@ class NetGraph(Component):
         net = self.uids[uid]
         self.to_be_expanded.append(net)
         self.config[net].expanded = True
-        self.viz.viz.save_config()
+        self.modified_config()
 
     def act_collapse(self, uid):
         net = self.uids[uid]
         self.config[net].expanded = False
-        self.viz.viz.save_config()
+        self.modified_config()
 
     def act_pan(self, x, y):
         self.config[self.viz.model].pos = x, y
-        self.viz.viz.save_config()
+        self.modified_config()
 
     def act_zoom(self, scale, x, y):
         self.config[self.viz.model].size = scale, scale
         self.config[self.viz.model].pos = x, y
-        self.viz.viz.save_config()
+        self.modified_config()
 
     def act_pos(self, uid, x, y):
         obj = self.uids[uid]
         self.config[obj].pos = x, y
-        self.viz.viz.save_config()
+        self.modified_config()
 
     def act_size(self, uid, width, height):
         obj = self.uids[uid]
         self.config[obj].size = width, height
-        self.viz.viz.save_config()
+        self.modified_config()
 
     def act_pos_size(self, uid, x, y, width, height):
         obj = self.uids[uid]
         self.config[obj].pos = x, y
         self.config[obj].size = width, height
-        self.viz.viz.save_config()
+        self.modified_config()
 
     def act_create_graph(self, uid, type, x, y, width, height):
         cls = getattr(nengo_viz.components, type + 'Template')
@@ -115,7 +118,7 @@ class NetGraph(Component):
         self.config[template].y = y
         self.config[template].width = width
         self.config[template].height = height
-        self.viz.viz.save_config()
+        self.modified_config()
 
         c = self.viz.add_template(template)
         self.viz.changed = True
@@ -143,7 +146,7 @@ class NetGraph(Component):
                                         pos=self.config[obj].pos,
                                         size=self.config[obj].size))
         self.config[network].has_layout = True
-        self.viz.viz.save_config()
+        self.modified_config()
 
     def expand_network(self, network, client):
         if not self.config[network].has_layout:
@@ -220,7 +223,6 @@ class NetGraph(Component):
         posts = self.get_parents(post)[:-1]
         info = dict(uid=uid, pre=pres, post=posts, type='conn', parent=parent)
         client.write(json.dumps(info))
-
 
 
 class NetGraphTemplate(Template):
