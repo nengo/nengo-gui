@@ -176,6 +176,7 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         for (var i = 0; i < VIZ.Component.components.length; i++) {
             if (VIZ.Component.components[i].uid === uid) {
                 VIZ.Component.components[i].update_layout(data.config);
+                break;
             }
         }
     } else if (data.type === 'js') {
