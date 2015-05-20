@@ -29,10 +29,18 @@ class VizSim(object):
         for template in self.viz.find_templates():
             self.add_template(template)
 
+        self.net_graph = self.get_net_graph()
+
         # build and run the model in a separate thread
         t = threading.Thread(target=self.runner)
         t.daemon = True
         t.start()
+
+    def get_net_graph(self):
+        for c in components:
+            if isinstance(c, nengo_viz.components.NetGraph):
+                return c
+        return None
 
     def add_template(self, template):
         c = template.create(self)
