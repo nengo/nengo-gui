@@ -2,6 +2,8 @@
 
 import json
 
+import numpy as np
+
 import nengo
 from nengo.utils.ensemble import response_curves, tuning_curves
 
@@ -10,6 +12,8 @@ def infomodal(ng, uid, **args):
     obj = ng.uids[uid]
     if isinstance(obj, nengo.Ensemble):
         return ensemble_infomodal(ng, uid=uid, **args)
+    elif isinstance(obj, nengo.Node):
+        return node_infomodal(ng, uid=uid, **args)
     else:
         raise NotImplementedError()
 
@@ -77,6 +81,44 @@ def ensemble_infomodal(ng, uid, conn_in_uids, conn_out_uids):
     js = ['VIZ.Modal.title("Details for \'%s\'");' % ng.viz.viz.get_label(ens)]
     js.append('VIZ.Modal.footer("close");')
     js.append('VIZ.Modal.ensemble_body("%s", %s, %s, %s);' % (
+        uid, json.dumps(params), json.dumps(plots), json.dumps(conninfo)))
+    js.append('VIZ.Modal.show();')
+    return '\n'.join(js)
+
+
+def node_infomodal(ng, uid, conn_in_uids, conn_out_uids):
+    node = ng.uids[uid]
+
+    params = [(attr, str(getattr(node, attr))) for attr in (
+        'output', 'size_in', 'size_out') if getattr(node, attr) is not None]
+
+    f_out = PlotInfo("Node output")
+    if node.size_in > 0:
+        f_out.warnings.append("Node output only shown when 'size_in' is 0.")
+    else:
+        f_out.plot = "multiline"
+        if callable(node.output):
+            dt = 0.001
+            f_out.x = np.arange(dt, 1.0, dt)
+            f_out.y = np.asarray([node.output(x) for x in f_out.x])
+        else:
+            # Don't bother with all the copies if it's static
+            f_out.x = np.asarray([0, 1.0])
+            f_out.y = np.hstack((node.output, node.output))
+        if f_out.y.ndim == 1:
+            f_out.y = f_out.y[:, np.newaxis]
+        f_out.y = f_out.y.T
+
+    plots = [f_out.to_dict()]
+
+    conninfo = {}
+    for conn_uid in (conn_in_uids + conn_out_uids):
+        conninfo[conn_uid] = str(ng.uids[conn_uid].function)
+
+    js = ['VIZ.Modal.title("Details for \'%s\'");' % (
+        ng.viz.viz.get_label(node))]
+    js.append('VIZ.Modal.footer("close");')
+    js.append('VIZ.Modal.node_body("%s", %s, %s, %s);' % (
         uid, json.dumps(params), json.dumps(plots), json.dumps(conninfo)))
     js.append('VIZ.Modal.show();')
     return '\n'.join(js)

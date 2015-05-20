@@ -27,62 +27,86 @@ VIZ.Modal.footer = function(type){
     }
 }
 
-/**
- * Static multiline plot with shared x-axis
- *
- * @param {String} selector - Where the svg will be added
- * @param {Array of Float} x - The shared x-axis
- * @param {Array of Array of Float} ys - The y data for each line
- */
-function multiline_plot(selector, x, ys) {
-    var m = {left: 40, top: 0, right: 0, bottom: 30};
-    var w = 500 - m.left - m.right;
-    var h = 220 - m.bottom - m.top;
-
-    var scale_x = d3.scale.linear()
-        .domain([x[0], x[x.length-1]])
-        .range([m.left, w - m.right]);
-    var scale_y = d3.scale.linear()
-        .domain([0, d3.max(ys, function(y){ return d3.max(y); })])
-        .range([h+m.top, 0]);
-
-    // Add an SVG element with the desired dimensions and margin.
-    var graph = d3.select(selector).append("svg")
-	.attr("width", w + m.left + m.right)
-	.attr("height", h + m.bottom + m.top);
-
-    var xAxis = d3.svg.axis()
-        .scale(scale_x)
-        .orient("bottom")
-        .ticks(9);
-    graph.append("g")
-	.attr("class", "axis axis_x unselectable")
-	.attr("transform", "translate(0," + (h+m.top)  + ")")
-	.call(xAxis);
-
-    var yAxisLeft = d3.svg.axis()
-        .scale(scale_y)
-        .orient("left");
-    graph.append("g")
-	.attr("class", "axis axis_y unselectable")
-	.attr("transform", "translate(" + m.left + ",0)")
-	.call(yAxisLeft);
-
-    var colors = VIZ.make_colors(ys.length);
-
-    var line = d3.svg.line()
-	.x(function(d, i) { return scale_x(x[i]); })
-	.y(function(d) { return scale_y(d); })
-
-    graph.selectAll("path")
-        .data(ys)
-      .enter()
-        .append("path")
-        .attr("d", line)
-        .attr("class", "line")
-        .style("stroke", function(d, i) { return colors[i]; });
+VIZ.Modal.ensemble_body = function(uid, params, plots, conninfo) {
+    var tabs = info_body();
+    render_params(tabs.$params, params, VIZ.tooltips.ens);
+    render_plots(tabs.$plots, plots);
+    render_connections(tabs.$connections, uid, conninfo);
 }
 
+VIZ.Modal.node_body = function(uid, params, plots, conninfo) {
+    var tabs = info_body();
+    render_params(tabs.$params, params, VIZ.tooltips.node);
+    render_plots(tabs.$plots, plots);
+    render_connections(tabs.$connections, uid, conninfo);
+}
+
+/**
+ * Sets up the three tabs for Info modals.
+ */
+function info_body() {
+    var $body = $('.modal-body').first();
+    $body.empty();
+
+    $body.append('<ul class="nav nav-tabs">'+
+                 '  <li class="active"><a href="#params" data-toggle="tab">Parameters</a></li>'+
+                 '  <li><a href="#plots" data-toggle="tab">Plots</a></li>'+
+                 '  <li><a href="#connections" data-toggle="tab">Connections</a></li>'+
+                 '</ul>');
+
+    var $content = $('<div class="tab-content"/>').appendTo($body);
+    var $params = $('<div class="tab-pane active" id="params"/>')
+        .appendTo($content);
+    var $plots = $('<div class="tab-pane" id="plots"/>')
+        .appendTo($content);
+    var $connections = $('<div class="tab-pane" id="connections"/>')
+        .appendTo($content);
+    return {$params: $params, $plots: $plots, $connections: $connections}
+}
+
+/**
+ * Renders information about the parameters of an object.
+ */
+function render_params($parent, params, tooltips) {
+    var $plist = $('<dl class="dl-horizontal"/>').appendTo($parent);
+    for (var i = 0; i < params.length; i++) {
+        var $dt = $('<dt>' + VIZ.escapeHTML(params[i][0]) +'</dt>')
+            .appendTo($plist);
+        $plist.append('<dd>' + VIZ.escapeHTML(params[i][1]) + '</dd>');
+
+        var $tooltip = $('<a href="#" data-toggle="popover" ' +
+                         'data-placement="right" ' +
+                         'title="' + tooltips[String(params[i][0])][0] + '"' +
+                         'data-content="' + tooltips[String(params[i][0])][1] +
+                         '"/>');
+        $tooltip.append('<span class="glyphicon glyphicon-question-sign" ' +
+                        'aria-hidden="true"/>').appendTo($dt);
+        $tooltip.popover({"trigger": "hover"});
+    }
+}
+
+/**
+ * Renders information about plots related to an object.
+ */
+function render_plots($parent, plots) {
+    // This indicates an error (usually no sim running)
+    if (typeof plots === 'string') {
+        var $err = $('<div class="alert alert-danger" role="alert"/>')
+            .appendTo($parent);
+        $err.append('<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>');
+        $err.append('<span class="sr-only">Error:</span>');
+        $err.append(document.createTextNode(plots));
+    }
+    else {
+        for (var i=0; i < plots.length; i++) {
+            render_plot($parent, plots[i]);
+        }
+    }
+}
+
+/**
+ * Renders information about a single plot.
+ */
 function render_plot($parent, plotinfo) {
     $parent.append("<h4>" + plotinfo.title + "</h4>")
 
@@ -106,74 +130,79 @@ function render_plot($parent, plotinfo) {
     }
 }
 
-VIZ.Modal.ensemble_body = function(uid, params, plots, conninfo) {
-    var $body = $('.modal-body').first();
-    $body.empty();
+/**
+ * Static multiline plot with shared x-axis
+ *
+ * @param {String} selector - Where the svg will be added
+ * @param {Array of Float} x - The shared x-axis
+ * @param {Array of Array of Float} ys - The y data for each line
+ */
+function multiline_plot(selector, x, ys) {
+    var m = {left: 50, top: 10, right: 0, bottom: 30};
+    var w = 500 - m.left - m.right;
+    var h = 220 - m.bottom - m.top;
 
-    $body.append('<ul class="nav nav-tabs">'+
-                 '  <li class="active"><a href="#params" data-toggle="tab">Parameters</a></li>'+
-                 '  <li><a href="#plots" data-toggle="tab">Plots</a></li>'+
-                 '  <li><a href="#connections" data-toggle="tab">Connections</a></li>'+
-                 '</ul>');
+    var scale_x = d3.scale.linear()
+        .domain([x[0], x[x.length-1]])
+        .range([m.left, w - m.right]);
+    var scale_y = d3.scale.linear()
+        .domain([d3.min(ys, function(y){ return d3.min(y); }) - 0.01,
+                 d3.max(ys, function(y){ return d3.max(y); }) + 0.01])
+        .range([h+m.top, m.top]);
 
-    var $content = $('<div class="tab-content"/>').appendTo($body);
+    // Add an SVG element with the desired dimensions and margin.
+    var graph = d3.select(selector).append("svg")
+        .attr("width", w + m.left + m.right)
+        .attr("height", h + m.bottom + m.top);
 
-    // Parameters
-    var $params = $('<div class="tab-pane active" id="params"/>')
-        .appendTo($content);
-    var $plist = $('<dl class="dl-horizontal"/>').appendTo($params);
-    for (var i = 0; i < params.length; i++) {
-        $plist
-            .append('<dt id="dt' + i + '">' + params[i][0] + '&nbsp;</dt>')
-            .append('<dd>' + params[i][1] + '</dd>');
+    var xAxis = d3.svg.axis()
+        .scale(scale_x)
+        .orient("bottom")
+        .ticks(9);
+    graph.append("g")
+        .attr("class", "axis axis_x unselectable")
+        .attr("transform", "translate(0," + (h+m.top)  + ")")
+        .call(xAxis);
 
-        // Make tooltip
-        $tooltip = $('<a href="#" data-toggle="popover" data-placement="right"' +
-                     'title="' + VIZ.tooltips["ens"][String(params[i][0])][0] + '"' +
-                     'data-content="' + VIZ.tooltips["ens"][String(params[i][0])][1] + '">' +
-                     '<span class="glyphicon glyphicon-question-sign" aria-hidden="true"/></a>');
+    var yAxisLeft = d3.svg.axis()
+        .scale(scale_y)
+        .ticks(5)
+        .orient("left");
+    graph.append("g")
+        .attr("class", "axis axis_y unselectable")
+        .attr("transform", "translate(" + m.left + ",0)")
+        .call(yAxisLeft);
 
-        // Add tooltip to dt
-        $('#dt' + i).first().append($tooltip);
+    var colors = VIZ.make_colors(ys.length);
 
-        // Initialize tooltip
-        $tooltip.popover({"trigger": "hover"});
-        // $tooltip.popover();    // For debugging
-    }
+    var line = d3.svg.line()
+        .x(function(d, i) { return scale_x(x[i]); })
+        .y(function(d) { return scale_y(d); })
 
-    // Plots
-    var $plots = $('<div class="tab-pane" id="plots"/>').appendTo($content);
+    graph.append("g")
+        .selectAll("path")
+        .data(ys)
+      .enter()
+        .append("path")
+        .attr("d", line)
+        .attr("class", "line")
+        .style("stroke", function(d, i) { return colors[i]; });
+}
 
-    // This indicates an error (usually no sim running)
-    if (typeof plots === 'string') {
-        var $err = $('<div class="alert alert-danger" role="alert"/>')
-            .appendTo($plots);
-        $err.append('<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>');
-        $err.append('<span class="sr-only">Error:</span>');
-        $err.append(document.createTextNode(plots));
-    }
-    else {
-        for (var i=0; i < plots.length; i++) {
-            render_plot($plots, plots[i]);
-        }
-    }
-
-    // Connections
-    var $connections = $('<div class="tab-pane" id="connections"/>').appendTo($content);
-
-    $connections.append('<h3>Incoming Connections:</h3>');
+function render_connections($parent, uid, conninfo) {
+    $parent.append('<h3>Incoming Connections:</h3>');
     var $conn_in_table = $('<table class="table table-condensed"><tr>' +
                            '<th width="30%"">Object</th>' +
                            '<th width="50%">Function</th>' +
-                           '<th width="20%">Fan In</th></tr>').appendTo($connections);
+                           '<th width="20%">Fan In</th></tr>').appendTo($parent);
     var conn_in_objs = VIZ.netgraph.svg_objects[uid].conn_in;
     for (var i = 0; i < conn_in_objs.length; i++) {
         var $conn_in_tr = $('<tr/>').appendTo($conn_in_table);
 
         var $conn_in_objs_td = $('<td>' + String(conn_in_objs[i].pre.label.innerHTML) + '&nbsp;</td>').appendTo($conn_in_tr);
-        VIZ.Modal.make_conn_path_dropdown_list(conn_in_objs[i].pre.uid,
-                                               conn_in_objs[i].pres,
-                                               $conn_in_objs_td);
+        make_conn_path_dropdown_list(conn_in_objs[i].pre.uid,
+                                     conn_in_objs[i].pres,
+                                     $conn_in_objs_td);
 
         var $conn_in_func_td = $('<td/>').appendTo($conn_in_tr);
         $conn_in_func_td.text(conninfo[String(conn_in_objs[i].uid)]);
@@ -181,20 +210,20 @@ VIZ.Modal.ensemble_body = function(uid, params, plots, conninfo) {
         $conn_in_tr.append('<td>fanin' + i + '</td>');
     }
 
-    $connections.append('<hr/>');
-    $connections.append('<h3>Outgoing Connections:</h3>');
+    $parent.append('<hr/>');
+    $parent.append('<h3>Outgoing Connections:</h3>');
     var $conn_out_table = $('<table class="table table-condensed"><tr>' +
                            '<th width="30%"">Object</th>' +
                            '<th width="50%">Function</th>' +
-                           '<th width="20%">Fan Out</th></tr>').appendTo($connections);
+                           '<th width="20%">Fan Out</th></tr>').appendTo($parent);
     var conn_out_objs = VIZ.netgraph.svg_objects[uid].conn_out;
     for (var i = 0; i < conn_out_objs.length; i++) {
         var $conn_out_tr = $('<tr/>').appendTo($conn_out_table);
 
         var $conn_out_objs_td = $('<td>' + String(conn_out_objs[i].post.label.innerHTML) + '&nbsp;</td>').appendTo($conn_out_tr);
-        VIZ.Modal.make_conn_path_dropdown_list(conn_out_objs[i].post.uid,
-                                               conn_out_objs[i].posts,
-                                               $conn_out_objs_td);
+        make_conn_path_dropdown_list(conn_out_objs[i].post.uid,
+                                     conn_out_objs[i].posts,
+                                     $conn_out_objs_td);
 
         var $conn_out_func_td = $('<td/>').appendTo($conn_out_tr);
         $conn_out_func_td.text(conninfo[String(conn_out_objs[i].uid)]);
@@ -203,11 +232,11 @@ VIZ.Modal.ensemble_body = function(uid, params, plots, conninfo) {
     }
 }
 
-VIZ.Modal.make_conn_path_dropdown_list = function(current_uid, uid_list, $content) {
+function make_conn_path_dropdown_list(current_uid, uid_list, $content) {
     if (uid_list.length > 1) {
         // Make the "expand down" tooltip
         $exp_tooltip = $('<a href="#" data-toggle="tooltip" data-placement="right"' +
-                         'title="' + VIZ.tooltips["conn"]["expand"] + '">' +
+                         'title="' + VIZ.tooltips.conn.expand + '">' +
                          '<span class="glyphicon glyphicon-collapse-down"/></a>');
         $exp_tooltip.tooltip();
 
