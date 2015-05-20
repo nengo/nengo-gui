@@ -242,6 +242,8 @@ VIZ.NetGraphItem.prototype.create_modal = function () {
     var info = {};
     info.act = 'create_modal';
     info.uid = this.uid;
+    info.conn_in_uids = this.conn_in.map(function (c) {return c.uid;});
+    info.conn_out_uids = this.conn_out.map(function (c) {return c.uid;});
     this.ng.notify(info);
 }
 
