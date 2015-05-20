@@ -56,7 +56,7 @@ class ConfigAction(Action):
         # was changed in the config, and call a specific function based on that
         # these functions need to be added on the javascript side still, and
         # a lot of them are specific to the type of component.
-        self.net_graph.to_be_sent.append()
+        self.net_graph.to_be_sent.append(dict())
 
     def apply(self):
         self.load(self.new_cfg)
@@ -175,9 +175,7 @@ class CreateGraph(Action):
         self.act_create_graph()
 
     def undo(self):
-        print "uid :", self.uid
         self.net_graph.to_be_sent.append(dict(type='delete_graph', uid=self.uid_graph))
-        print "exiting undo"
     
 
 class PosSize(Action):
