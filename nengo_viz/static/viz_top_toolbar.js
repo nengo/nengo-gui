@@ -1,10 +1,11 @@
 VIZ.Toolbar = function(model_name) {
 	var self = this;
-	this.model_name = model_name;
+    $('#filebrowser').hide()
+    $('#filebrowser').mouseleave(function(){$(this).hide(200)});
 
 	var toolbar = document.createElement('ul');
 	toolbar.className = 'nav nav-pills'
-	//toolbar.style.position = '';
+
 	VIZ.top_bar = toolbar;
 	var main = document.getElementById('main');
 	console.log(main)
@@ -28,6 +29,12 @@ VIZ.Toolbar = function(model_name) {
 	VIZ.top_bar.appendChild(button);
 	button.innerHTML = model_name;
 	button.setAttribute("role", "presentation");	
+
+    VIZ.Toolbar.add_button('nanon', 'glyphicon glyphicon-backward', function () {
+        fb = $('#filebrowser');
+        console.log(fb) 
+        $('#filebrowser').toggle(200);
+    })
 
 	}
 

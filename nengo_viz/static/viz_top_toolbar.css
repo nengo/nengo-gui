@@ -17,3 +17,19 @@
 	margin-top: 0.5em;
 	margin-right: 1em;
 }
+
+#filebrowser {
+    position: absolute;
+    top:40px;
+    left: 5px;
+    width: 200px;
+    height: 300px;
+    border-top: solid 2px #BBB;
+    border-left: solid 2px #BBB;
+    border-bottom: solid 2px #BBB;
+    border-right: solid 2px #BBB;
+    background-color: #999;
+    z-index: 1000;
+    overflow: auto;
+}
+
