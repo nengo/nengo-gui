@@ -94,16 +94,16 @@ class NetGraph(Component):
             action.apply()
             self.viz.undo_stack.append(action)
 
-    def act_expand(self, uid):
+    """def act_expand(self, uid):
         net = self.uids[uid]
         self.to_be_expanded.append(net)
         self.config[net].expanded = True
-        self.viz.viz.save_config()
+        self.viz.viz.save_config()"""
 
-    def act_collapse(self, uid):
+    """def act_collapse(self, uid):
         net = self.uids[uid]
         self.config[net].expanded = False
-        self.viz.viz.save_config()
+        self.viz.viz.save_config()"""
 
     def act_pan(self, x, y):
         self.config[self.viz.model].pos = x, y
@@ -114,21 +114,21 @@ class NetGraph(Component):
         self.config[self.viz.model].pos = x, y
         self.viz.viz.save_config()
 
-    def act_pos(self, uid, x, y):
+    """def act_pos(self, uid, x, y):
         obj = self.uids[uid]
         self.config[obj].pos = x, y
-        self.viz.viz.save_config()
+        self.viz.viz.save_config()"""
 
-    def act_size(self, uid, width, height):
+    """def act_size(self, uid, width, height):
         obj = self.uids[uid]
         self.config[obj].size = width, height
-        self.viz.viz.save_config()
+        self.viz.viz.save_config()"""
 
-    def act_pos_size(self, uid, x, y, width, height):
+    """def act_pos_size(self, uid, x, y, width, height):
         obj = self.uids[uid]
         self.config[obj].pos = x, y
         self.config[obj].size = width, height
-        self.viz.viz.save_config()
+        self.viz.viz.save_config()"""
 
     """def act_create_graph(self, uid, type, x, y, width, height):
         cls = getattr(nengo_viz.components, type + 'Template')
@@ -146,7 +146,7 @@ class NetGraph(Component):
         self.viz.changed = True
         self.to_be_sent.append(dict(type='js', code=c.javascript()))"""
 
-    def act_feedforward_layout(self, uid):
+    """def act_feedforward_layout(self, uid):
         if uid is None:
             network = self.viz.model
             #self.config[network].pos = 0.0, 0.0
@@ -168,7 +168,7 @@ class NetGraph(Component):
                                         pos=self.config[obj].pos,
                                         size=self.config[obj].size))
         self.config[network].has_layout = True
-        self.viz.viz.save_config()
+        self.viz.viz.save_config()"""
 
     def expand_network(self, network, client):
         if not self.config[network].has_layout:
