@@ -7,6 +7,29 @@
     border: 1px solid #888888;
 }
 
-.graph .label {
+.graph .line {
+    fill: none;
+    stroke: black;
+    stroke-width: 1.5px;    
+}
+
+.graph svg .axis path {
+    stroke: black;
+    stroke-width: 1px;
+    fill: none;
+}
+
+.graph text.graph_text {
+    font-size: .8em;
+}
+
+.graph .axis.axis_y text {
+    font-size: .8em;
+}
+
+div.graph .label {
+    font-size: 1em;
+    font-family: sans-serif;
+    font-weight: normal;
     color: black;
 }
