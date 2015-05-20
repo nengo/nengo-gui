@@ -383,6 +383,7 @@ VIZ.Slider.prototype.set_range = function() {
     var new_range = prompt('Set range', '' + range[1] + ',' + range[0]);
     if (new_range !== null) {
         new_range = new_range.split(',');
+        //FIXME: this looks like it is backwards
         var min = parseFloat(new_range[1]);
         var max = parseFloat(new_range[0]);
         this.update_range(min, max);
@@ -406,7 +407,8 @@ VIZ.Slider.prototype.layout_info = function () {
 
 VIZ.Slider.prototype.update_layout = function (config) {
     VIZ.Component.prototype.update_layout.call(this, config);
-    this.update_range(config.min_value, config.max_value);
+    //FIXME: this has to be backwards to work. Something fishy must be going on
+    this.update_range(config.max_value, config.min_value);
 }
 
 //takes input and outputs the
