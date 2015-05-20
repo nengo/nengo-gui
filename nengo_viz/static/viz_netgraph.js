@@ -14,6 +14,8 @@ VIZ.NetGraph = function(parent, args) {
     this.svg_objects = {};     // dict of all VIZ.NetGraphItems, by uid
     this.svg_conns = {};       // dict of all VIZ.NetGraphConnections, by uid
 
+    this.in_zoom_delay = false;
+
     /** Since connections may go to items that do not exist yet (since they
      *  are inside a collapsed network), this dictionary keeps a list of
      *  connections to be notified when a particular item appears.  The
@@ -104,7 +106,13 @@ VIZ.NetGraph = function(parent, args) {
      *  point in the space */
     interact(this.svg)
         .on('wheel', function(event) {
-            
+            event.preventDefault();
+            if (self.in_zoom_delay) {
+                return;
+            }
+            self.in_zoom_delay = true;
+            setTimeout(function () { self.in_zoom_delay = false; }, 50);
+
             self.menu.hide_any();
 
             var x = (event.clientX / $(self.svg).width())
