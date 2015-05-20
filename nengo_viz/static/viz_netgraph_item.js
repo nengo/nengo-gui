@@ -70,16 +70,6 @@ VIZ.NetGraphItem = function(ng, info) {
         }
     } else if (info.type === 'net') {
         this.shape = this.ng.createSVGElement('rect');
-        var w = this.get_width();
-        var h = this.get_height();
-        var edge = 0;
-        if (w < h) {
-            edge = w;
-        } else {
-            edge = h;
-        }
-        this.shape.setAttribute('rx', .05*edge);
-        this.shape.setAttribute('ry', .05*edge);
     } else if (info.type === 'ens') {
         this.shape = this.ng.createSVGElement('use');
         this.shape.setAttributeNS(
@@ -94,15 +84,18 @@ VIZ.NetGraphItem = function(ng, info) {
 
     this.compute_fill();
 
+    var label = this.ng.createSVGElement('text');
+    this.label = label;
+    label.innerHTML = info.label;
+    g.appendChild(label); 
+    
     this.set_position(info.pos[0], info.pos[1]);
     this.set_size(info.size[0], info.size[1]);
 
     g.appendChild(this.shape);
 
-    var label = this.ng.createSVGElement('text');
-    this.label = label;
-    label.innerHTML = info.label;
-    g.appendChild(label);    
+    interact.margin(30);
+
 
     /** dragging an item to change its position */
     var uid = this.uid;
@@ -210,7 +203,7 @@ VIZ.NetGraphItem = function(ng, info) {
     
     var self = this;
     interact(this.g)
-        .on('tap', function(event) {
+        .on('right-click', function(event) {
             if (event.button == 0) {
                 if (self.menu.visible_any()) {
                     self.menu.hide_any();
@@ -526,11 +519,15 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
                             'translate(-' + (screen_w / 2) + ', -' + (screen_h / 2) + ')');
         this.shape.setAttribute('width', screen_w);
         this.shape.setAttribute('height', screen_h);
+        if (this.type === 'net') {
+            var radius = Math.min(screen_w, screen_h);
+            // TODO: Don't hardcode .1 as the corner radius scale
+            this.shape.setAttribute('rx', radius*.1);
+            this.shape.setAttribute('ry', radius*.1);
+        }
     }
     
-    if (this.label) {
-        this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
-    }
+    this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
 };
 
 VIZ.NetGraphItem.prototype.get_width = function() {
