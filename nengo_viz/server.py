@@ -50,6 +50,12 @@ class Server(swi.SimpleWebInterface):
                 while msg is not None:
                     if msg.startswith('config:'):
                         cfg = json.loads(msg[7:])
+                        old_cfg = {}
+                        for k in component.template.config_params.keys():
+                            v = getattr(self.viz.config[component.template], k)
+                            old_cfg[k] = v
+                        # Register config change to the undo stack
+                        self.viz_sim.config_change(component, cfg, old_cfg)
                         for k, v in cfg.items():
                             setattr(self.viz.config[component.template], k, v)
                         self.viz.save_config()
