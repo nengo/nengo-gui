@@ -165,7 +165,7 @@ class RemoveGraph(Action):
         self.net_graph.viz.changed = True
         self.net_graph.to_be_sent.append(dict(type='js', code=c.javascript()))    
 
-    def apply(self):   
+    def apply(self):
         self.net_graph.to_be_sent.append(dict(type='delete_graph', uid=self.uid_graph))
 
     def undo(self):
@@ -189,6 +189,9 @@ class CreateGraph(Action):
         if self.uid_graph == None:
             self.net_graph.viz.viz.generate_uid(self.template, prefix='_viz_')
             self.uid_graph = self.net_graph.viz.viz.get_uid(self.template)
+        else:
+            self.net_graph.viz.viz.locals[uid_graph] = self.template
+            self.net_graph.viz.viz.default_labels[self.template] = uid_graph
         self.net_graph.config[self.template].x = self.x
         self.net_graph.config[self.template].y = self.y
         self.net_graph.config[self.template].width = self.width
