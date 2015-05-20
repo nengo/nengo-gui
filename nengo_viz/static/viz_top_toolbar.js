@@ -51,7 +51,22 @@ VIZ.Toolbar = function(model_name) {
 		});
 };
 
+	var name = document.createElement('li');
+	name.id = 'model_name';
+	name.innerHTML = model_name;
+	name.setAttribute("role", "presentation");	
+	VIZ.top_bar.appendChild(name);
 
+    var modalWrapper = document.getElementById("modal_wrapper");
+    var modalWindow  = document.getElementById("modal_window");
+
+    var openModal = function(e) {
+       modalWrapper.className = "overlay";
+       modalWindow.style.marginTop = (-modalWindow.offsetHeight)/2 + "px";
+       modalWindow.style.marginLeft = (-modalWindow.offsetWidth)/2 + "px";
+       e.preventDefault ? e.preventDefault() : e.returnValue = false;
+    };
+}
 
 // This opens up the pop up window that allows you to select the file to open
 VIZ.Toolbar.prototype.file_browser = function () {
