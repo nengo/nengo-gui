@@ -213,8 +213,12 @@ VIZ.Value.prototype.set_range = function() {
         new_range = new_range.split(',');
         var min = parseFloat(new_range[0]);
         var max = parseFloat(new_range[1]);
-        this.scale_y.domain([min, max]);
-        this.axis_y_g.call(this.axis_y);            
-        this.save_layout();
+        this.update_range(min, max);
     }
+}
+
+VIZ.Value.prototype.update_range = function(min, max) {
+    this.scale_y.domain([min, max]);
+    this.axis_y_g.call(this.axis_y);            
+    this.save_layout();
 }
