@@ -49,7 +49,15 @@ VIZ.Menu.prototype.show = function (x, y, items) {
         b.innerHTML = item[0];
         b.func = item[1];
         this.actions[b] = item[1];
-        $(b).click(function(e) { e.target.func(); self.hide();});
+        $(b).click(function(e) { 
+            e.target.func(); 
+            self.hide();
+        })
+        .on('contextmenu', function(e) {
+            e.preventDefault();
+            e.target.func();
+            self.hide();
+        });
         this.menu.appendChild(b);
     }
 
