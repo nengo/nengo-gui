@@ -30,44 +30,47 @@ VIZ.Toolbar = function(model_name) {
 	button.innerHTML = model_name;
 	button.setAttribute("role", "presentation");	
 
-    VIZ.Toolbar.add_button('nanon', 'glyphicon glyphicon-backward', function () {
-        fb = $('#filebrowser');
-        console.log(fb) 
-        $('#filebrowser').toggle(200);
-    })
-
 	}
 
+
+
 // This opens up the pop up window that allows you to select the file to open
-VIZ.Toolbar.prototype.file_browser =function () {
-   var elem = document.getElementById('open_file');
-   if(elem && document.createEvent) {
-      var evt = document.createEvent("MouseEvents");
-      evt.initEvent("click", true, false);
-      elem.dispatchEvent(evt);
-   }
+VIZ.Toolbar.prototype.file_browser = function () {
+    sim.ws.send('browse');
+
+    fb = $('#filebrowser');
+    fb.toggle(200);
+    if (fb.is(":visible")) {
+        fb.fileTree({
+            root: '.',
+            script: '/browse'
+        }, function (file) {
+                var msg = 'open' + file
+                sim.ws.send(msg);})
+    }
+
 };
 
 //This is run once a file is selected, trims the filename and sends it to the server.
 VIZ.Toolbar.prototype.file_name = function() {
-	var filename = document.getElementById('open_file').value;
-	filename = filename.replace("C:\\fakepath\\", ""); 
-	var msg = 'open' + filename 
-	sim.ws.send(msg);
+    var filename = document.getElementById('open_file').value;
+    filename = filename.replace("C:\\fakepath\\", ""); 
+    var msg = 'open' + filename 
+        sim.ws.send(msg);
 };
 
 //Tells the server to reset the model layout to the default
 //Accomplishes this by deleting the config file and reloading the script (ex. reloads basic.py)
 VIZ.Toolbar.prototype.reset_model_layout = function () {
-	sim.ws.send('reset');
+    sim.ws.send('reset');
 }
 
 VIZ.Toolbar.add_button = function (name, icon_class, fun) {
-	var button = document.createElement('li');
-	var link = document.createElement('a');
-	link.setAttribute('title', name);
-	button.appendChild(link);
-	VIZ.top_bar.appendChild(button);
+    var button = document.createElement('li');
+    var link = document.createElement('a');
+    link.setAttribute('title', name);
+    button.appendChild(link);
+    VIZ.top_bar.appendChild(button);
 	link.className = icon_class;
 	button.setAttribute("role", "presentation");
 	button.addEventListener('click', function() {fun();});

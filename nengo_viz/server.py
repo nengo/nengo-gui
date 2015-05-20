@@ -1,14 +1,37 @@
 import time
 import pkgutil
 import os
+import os.path
 import mimetypes
 import json
+
+try:
+    from urllib import unquote
+except ImportError:
+    from urllib.parse import unquote
 
 import nengo_viz.swi as swi
 
 
 class Server(swi.SimpleWebInterface):
     """Web server interface to nengo_viz"""
+
+    def swi_browse(self, dir):
+        self.script_path = '.'
+        if self.user is None: return
+        r = ['<ul class="jqueryFileTree" style="display: none;">']
+        # r.append('<li class="directory collapsed"><a href="#" rel="../">..</a></li>')
+        d = unquote(dir)
+        for f in sorted(os.listdir(os.path.join(self.script_path, d))):
+            ff = os.path.relpath(os.path.join(self.script_path, d,f), self.script_path)
+            if os.path.isdir(os.path.join(self.script_path, d, ff)):
+                r.append('<li class="directory collapsed"><a href="#" rel="%s/">%s</a></li>' % (ff,f))
+            else:
+                e = os.path.splitext(f)[1][1:] # get .ext and remove dot
+                if e == 'py':
+                    r.append('<li class="file ext_%s"><a href="#" rel="%s">%s</a></li>' % (e,ff,f))
+        r.append('</ul>')
+        return ''.join(r)
 
     def swi_static(self, *path):
         """Handles http://host:port/static/* by returning pkg data"""
