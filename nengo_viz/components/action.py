@@ -43,36 +43,11 @@ class ConfigAction(Action):
         self.new_cfg = new_cfg
         self.old_cfg = old_cfg
 
-        """
-        # Generate the messages the client needs to switch between configs
-        self.old_msg, self.new_msg = self.generate_msg(old_cfg, new_cfg)
-        
-    def generate_msg(self, old_cfg, new_cfg):
-        old_msg = {}
-        new_msg = {}
-        for k, v in old_cfg.items():
-            if k in new_cfg.keys():
-                if v != new_cfg[k]:
-                    # Some parameter has changed. Need to 
-                    pass
-
-        return
-        """
     def load(self, cfg):
         for k, v in cfg.items():
             # TODO: does this make any sense ???
             setattr(self.viz_sim.viz.config[self.component.template], k, v)
         self.viz_sim.viz.save_config()
-
-        # TODO: get a handle to the netgraph somehow, and send a message 
-        # through its to_be_sent list. From there javascript will read it,
-        # figure out which component it refers to, and call the appropriate
-        # function on that component. Might need to figure out what specifically
-        # was changed in the config, and call a specific function based on that
-        # these functions need to be added on the javascript side still, and
-        # a lot of them are specific to the type of component.
-        print("sent the config")
-        print(cfg)
         self.net_graph.to_be_sent.append(dict(type="config", uid=self.component.uid, config=cfg))
 
     def apply(self):
