@@ -46,19 +46,7 @@ VIZ.NetGraphConnection = function(ng, info) {
     /** create the line and its arrowhead marker */
     this.g = ng.createSVGElement('g');
 
-
     if (this.recurrent) {
-
-//                 <g id = "recur" transform="translate(-18, -17.5)">
-//                 <path 
-//                     d="M6.451,28.748C2.448,26.041,0,22.413,0,18.425C0,
-//                         10.051,10.801,3.262,24.125,3.262
-//                     S48.25,10.051,48.25,18.425c0,6.453-6.412,11.964-15.45,14.153"/>
-//                 </g>
-//                 <g>
-//                 <path id = "recurTriangle" 
-//                     d="M 8 0 L 0 4 L 8 8 z""/>
-//                 </g>
         this.recurrent_ellipse = this.ng.createSVGElement('path');
         this.recurrent_ellipse.setAttribute('d', 
                     "M6.451,28.748C2.448,26.041,0,22.413,0,18.425C0, \
@@ -67,12 +55,6 @@ VIZ.NetGraphConnection = function(ng, info) {
         this.recurrent_ellipse.setAttribute('class','recur');
         this.recurrent_ellipse.setAttribute('transform','translate(-18, -17.5)');
         this.g.appendChild(this.recurrent_ellipse);
-        
-//         this.recurrent_ellipse = this.ng.createSVGElement('use');
-//         this.recurrent_ellipse.setAttribute('class', 'recurrent');
-//         this.recurrent_ellipse.setAttributeNS(
-//             'http://www.w3.org/1999/xlink', 'href', '#recur');
-//         this.g.appendChild(this.recurrent_ellipse);
 
         this.marker = ng.createSVGElement('path');
         this.marker.setAttribute('d', "M 8 0 L 0 4 L 8 8 z");
