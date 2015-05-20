@@ -17,6 +17,7 @@ VIZ.Toolbar = function(model_name) {
     //Create the top toolbar which is using Bootstrap styling
 	var toolbar = document.createElement('ul');
 	toolbar.className = 'nav nav-pills'
+
 	var main = document.getElementById('main');
 	console.log(main)
 	VIZ.set_transform(toolbar, 0,0)
