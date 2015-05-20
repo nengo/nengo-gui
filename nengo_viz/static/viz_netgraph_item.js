@@ -36,7 +36,7 @@ VIZ.NetGraphItem = function(ng, info) {
     this.minHeight = 5;
 
     this.expanded = false;
-    
+
     /** determine the parent NetGraphItem (if any) and the nested depth
      *  of this item */
     if (info.parent === null) {
@@ -51,15 +51,15 @@ VIZ.NetGraphItem = function(ng, info) {
     /** create the SVG group to hold this item */
     var g = this.ng.createSVGElement('g');
     this.g = g;
-    ng.g_items.appendChild(g);    
+    ng.g_items.appendChild(g);
     g.classList.add(this.type);
-    
-    
 
-    
+
+
+
 
     this.menu = new VIZ.Menu(this.ng.parent);
-    
+
     /** different types use different SVG elements for display */
     if (info.type === 'node') {
         if (this.passthrough) {
@@ -95,7 +95,7 @@ VIZ.NetGraphItem = function(ng, info) {
     label.innerHTML = info.label;
     g.appendChild(label);
     this.label_below = false;
-    
+
 
     /** dragging an item to change its position */
     var uid = this.uid;
@@ -107,7 +107,7 @@ VIZ.NetGraphItem = function(ng, info) {
             },
             onmove: function(event) {
                 var w = ng.get_scaled_width();
-                var h = ng.get_scaled_height();    
+                var h = ng.get_scaled_height();
                 var item = ng.svg_objects[uid];
                 var parent = item.parent;
                 while (parent !== null) {
@@ -115,12 +115,12 @@ VIZ.NetGraphItem = function(ng, info) {
                     h = h * parent.size[1] * 2;
                     parent = parent.parent;
                 }
-                item.set_position(item.pos[0] + event.dx / w, 
+                item.set_position(item.pos[0] + event.dx / w,
                                   item.pos[1] + event.dy / h);
             },
             onend: function(event) {
                 var item = ng.svg_objects[uid];
-                item.constrain_position();                
+                item.constrain_position();
                 ng.notify({act:"pos", uid:uid, x:item.pos[0], y:item.pos[1]});
             }});
 
@@ -133,33 +133,33 @@ VIZ.NetGraphItem = function(ng, info) {
             .on('resizestart', function(event) {
                 self.menu.hide_any();
                 })
-            .on('resizemove', function(event) {            
+            .on('resizemove', function(event) {
                 var item = ng.svg_objects[uid];
                 var w = ng.get_scaled_width();
-                var h = ng.get_scaled_height();    
+                var h = ng.get_scaled_height();
                 var parent = item.parent;
                 while (parent !== null) {
                     w = w * parent.size[0] * 2;
                     h = h * parent.size[1] * 2;
                     parent = parent.parent;
                 }
-                
-                item.set_size(item.size[0] + event.deltaRect.width / w / 2, 
+
+                item.set_size(item.size[0] + event.deltaRect.width / w / 2,
                               item.size[1] + event.deltaRect.height / h / 2);
-                item.set_position(item.pos[0] + event.deltaRect.width / w / 2 + 
-                                                event.deltaRect.left / w, 
-                                  item.pos[1] + event.deltaRect.height / h / 2 + 
+                item.set_position(item.pos[0] + event.deltaRect.width / w / 2 +
+                                                event.deltaRect.left / w,
+                                  item.pos[1] + event.deltaRect.height / h / 2 +
                                                 event.deltaRect.top / h);
                 })
             .on('resizeend', function(event) {
                 var item = ng.svg_objects[uid];
-                item.constrain_position();                
-                ng.notify({act:"pos_size", uid:uid, 
+                item.constrain_position();
+                ng.notify({act:"pos_size", uid:uid,
                            x:item.pos[0], y:item.pos[1],
                            width:item.size[0], height:item.size[1]});
                 });
     }
-    
+
     var self = this;
     interact(this.g)
         .on('tap', function(event) {
@@ -167,20 +167,20 @@ VIZ.NetGraphItem = function(ng, info) {
                 if (self.menu.visible_any()) {
                     self.menu.hide_any();
                 } else {
-                    self.menu.show(event.clientX, event.clientY, 
+                    self.menu.show(event.clientX, event.clientY,
                                    self.generate_menu());
                 }
-                event.stopPropagation();           
+                event.stopPropagation();
             }
         });
-            
+
     if (info.type === 'net') {
         /** if a network is flagged to expand on creation, then expand it */
         if (info.expanded) {
             this.expand();
         }
     }
-    
+
     if (this.passthrough) {
         this.set_label_below(true);
     }
@@ -193,12 +193,12 @@ VIZ.NetGraphItem.prototype.generate_menu = function () {
     var items = [];
     if (this.type === 'net') {
         if (this.expanded) {
-            items.push(['Collapse network', 
+            items.push(['Collapse network',
                         function() {self.collapse(true);}]);
-            items.push(['Auto-layout', 
+            items.push(['Auto-layout',
                         function() {self.request_feedforward_layout();}]);
         } else {
-            items.push(['Expand network', 
+            items.push(['Expand network',
                         function() {self.expand();}]);
         }
     }
@@ -217,7 +217,7 @@ VIZ.NetGraphItem.prototype.generate_menu = function () {
         }
     }
     if (this.allow_pointer_plot) {
-        items.push(['Semantic pointer', 
+        items.push(['Semantic pointer',
                     function() {self.create_graph('Pointer');}])
     }
     return items;
@@ -245,7 +245,7 @@ VIZ.NetGraphItem.prototype.request_feedforward_layout = function () {
 /** expand a collapsed network */
 VIZ.NetGraphItem.prototype.expand = function() {
     this.g.classList.add('expanded');
-    
+
     this.set_label_below(true);
 
     if (!this.expanded) {
@@ -261,7 +261,7 @@ VIZ.NetGraphItem.prototype.expand = function() {
 }
 
 VIZ.NetGraphItem.prototype.set_label_below = function(flag) {
-    if (flag && !this.label_below) {        
+    if (flag && !this.label_below) {
         var screen_h = this.get_height();
         this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
     } else if (!flag && this.label_below) {
@@ -277,7 +277,7 @@ VIZ.NetGraphItem.prototype.collapse = function(report_to_server) {
     this.g.classList.remove('expanded');
 
     this.set_label_below(false);
-    
+
     /** remove child NetGraphItems and NetGraphConnections */
     while (this.child_connections.length > 0) {
         this.child_connections[0].remove();
@@ -294,8 +294,8 @@ VIZ.NetGraphItem.prototype.collapse = function(report_to_server) {
         console.log("collapsed a network that was already collapsed");
         console.log(this);
     }
-    
-    if (report_to_server) {    
+
+    if (report_to_server) {
         this.ng.notify({act:"collapse", uid:this.uid});
     }
 }
@@ -323,10 +323,10 @@ VIZ.NetGraphItem.prototype.remove = function() {
     /** remove the item from the parent's children list */
     if (this.parent !== null) {
         var index = this.parent.children.indexOf(this);
-        this.parent.children.splice(index, 1);    
+        this.parent.children.splice(index, 1);
     }
 
-    delete this.ng.svg_objects[this.uid];    
+    delete this.ng.svg_objects[this.uid];
 
     /** update any connections into or out of this item */
     var conn_in = this.conn_in.slice();
@@ -343,7 +343,7 @@ VIZ.NetGraphItem.prototype.remove = function() {
     }
 
     /** remove from the SVG */
-    this.ng.g_items.removeChild(this.g);    
+    this.ng.g_items.removeChild(this.g);
 }
 
 VIZ.NetGraphItem.prototype.constrain_position = function() {
@@ -353,19 +353,19 @@ VIZ.NetGraphItem.prototype.constrain_position = function() {
             this.size[0] = 0.5;
             changed = true;
         }
-        
+
         if (this.size[1] > 0.5) {
             this.size[1] = 0.5;
             changed = true;
         }
-    
+
         if (this.pos[0] + this.size[0] > 1.0) {
             this.pos[0] = 1.0 - this.size[0];
             changed = true;
         } else if (this.pos[0] - this.size[0] < 0.0) {
             this.pos[0] = this.size[0];
             changed = true;
-        } 
+        }
         if (this.pos[1] + this.size[1] > 1.0) {
             this.pos[1] = 1.0 - this.size[1];
             changed = true;
@@ -374,14 +374,14 @@ VIZ.NetGraphItem.prototype.constrain_position = function() {
             changed = true;
         }
     }
-    
+
     if (changed) {
         this.redraw_position();
         this.redraw_size();
-        
+
         this.redraw_children();
         this.redraw_child_connections();
-        this.redraw_connections();    
+        this.redraw_connections();
     }
 };
 
@@ -392,7 +392,7 @@ VIZ.NetGraphItem.prototype.set_position = function(x, y) {
     this.pos = [x, y];
 
     this.redraw_position();
-    
+
     this.redraw_children();
     this.redraw_child_connections();
     this.redraw_connections();
@@ -400,9 +400,9 @@ VIZ.NetGraphItem.prototype.set_position = function(x, y) {
 
 VIZ.NetGraphItem.prototype.redraw_position = function() {
     var screen = this.get_screen_location();
-    
+
     /** update my position */
-    this.g.setAttribute('transform', 'translate(' + screen[0] + ', ' + 
+    this.g.setAttribute('transform', 'translate(' + screen[0] + ', ' +
                                                     screen[1] + ')');
 };
 
@@ -462,30 +462,30 @@ VIZ.NetGraphItem.prototype.get_nested_height = function() {
 /** set the size of the item, updating SVG as appropriate */
 VIZ.NetGraphItem.prototype.set_size = function(width, height) {
     this.size = [width, height];
-    
+
     this.redraw_size();
-    
+
     this.redraw_children();
     this.redraw_child_connections();
 };
 
-VIZ.NetGraphItem.prototype.redraw_size = function() {    
+VIZ.NetGraphItem.prototype.redraw_size = function() {
     var screen_w = this.get_width();
     var screen_h = this.get_height();
-    
+
     if (this.type === 'ens') {
         this.shape.setAttribute('rx', screen_w / 2);
-        this.shape.setAttribute('ry', screen_h / 2);    
+        this.shape.setAttribute('ry', screen_h / 2);
     } else if (this.passthrough) {
         this.shape.setAttribute('rx', screen_w / 2);
-        this.shape.setAttribute('ry', screen_h / 2);    
+        this.shape.setAttribute('ry', screen_h / 2);
     } else {
-        this.shape.setAttribute('transform', 
+        this.shape.setAttribute('transform',
                             'translate(-' + (screen_w / 2) + ', -' + (screen_h / 2) + ')');
         this.shape.setAttribute('width', screen_w);
         this.shape.setAttribute('height', screen_h);
     }
-    
+
     if (this.label_below) {
         /** put the label at the bottom */
         this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
@@ -498,13 +498,13 @@ VIZ.NetGraphItem.prototype.get_width = function() {
     }
 
     var w = $(this.ng.svg).width();
-    
+
     var screen_w = this.get_nested_width() * w * this.ng.scale;
-        
+
     if (screen_w < this.minWidth) {
         screen_w = this.minWidth;
     }
-    
+
     return screen_w * 2;
 }
 
@@ -514,13 +514,13 @@ VIZ.NetGraphItem.prototype.get_height = function() {
     }
 
     var h = $(this.ng.svg).height();
-    
+
     var screen_h = this.get_nested_height() * h * this.ng.scale;
-        
+
     if (screen_h < this.minHeight) {
         screen_h = this.minHeight;
     }
-    
+
     return screen_h * 2;
 }
 
@@ -540,21 +540,21 @@ VIZ.NetGraphItem.prototype.get_screen_location = function() {
 
     var offsetX = this.ng.offsetX * w;
     var offsetY = this.ng.offsetY * h;
-    
+
     var dx = 0;
     var dy = 0;
     var parent = this.parent;
     while (parent !== null) {
         dx *= parent.size[0] * 2;
         dy *= parent.size[1] * 2;
-        
+
         dx += (parent.pos[0] - parent.size[0]);
         dy += (parent.pos[1] - parent.size[1]);
         parent = parent.parent;
     }
     dx *= w;
     dy *= h;
-    
+
     var ww = w;
     var hh = h;
     if (this.parent !== null) {
@@ -562,6 +562,6 @@ VIZ.NetGraphItem.prototype.get_screen_location = function() {
         hh *= this.parent.get_nested_height() * 2;
     }
 
-    return [this.pos[0] * ww + dx + offsetX, 
+    return [this.pos[0] * ww + dx + offsetX,
             this.pos[1] * hh + dy + offsetY];
 }

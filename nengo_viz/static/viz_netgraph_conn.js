@@ -18,8 +18,8 @@ VIZ.NetGraphConnection = function(ng, info) {
 
     /** the actual NetGraphItem currently connected to/from */
     this.pre = null;
-    this.post = null;    
-    
+    this.post = null;
+
     /** the uids for the pre and post items in the connection
      *  The lists start with the ideal target item, followed by the parent
      *  of that item, and its parent, and so on.  If the first item on the
@@ -28,7 +28,7 @@ VIZ.NetGraphConnection = function(ng, info) {
      *  until it finds one that does exist. */
     this.pres = info.pre;
     this.posts = info.post;
-    
+
     this.recurrent = this.pres[0] === this.posts[0];
 
     /** figure out the best available items to connect to */
@@ -42,7 +42,7 @@ VIZ.NetGraphConnection = function(ng, info) {
         this.parent = ng.svg_objects[info.parent];
         this.parent.child_connections.push(this);
     }
-    
+
     /** create the line and its arrowhead marker */
     this.g = ng.createSVGElement('g');
 
@@ -53,13 +53,13 @@ VIZ.NetGraphConnection = function(ng, info) {
         this.g.appendChild(this.recurrent_ellipse);
     } else {
         this.line = ng.createSVGElement('line');
-        this.g.appendChild(this.line);    
+        this.g.appendChild(this.line);
     }
-    
+
     this.marker = ng.createSVGElement('path');
     this.marker.setAttribute('d', "M 10 0 L -5 -5 L -5 5 z");
     this.g.appendChild(this.marker);
-    
+
 
     this.redraw();
 
@@ -75,7 +75,7 @@ VIZ.NetGraphConnection.prototype.set_pre = function(pre) {
         if (index === -1) {
             console.log('error removing in set_pre');
         }
-        this.pre.conn_out.splice(index, 1);    
+        this.pre.conn_out.splice(index, 1);
     }
     this.pre = pre;
     /** add myself to pre's output connections list */
@@ -91,7 +91,7 @@ VIZ.NetGraphConnection.prototype.set_post = function(post) {
         if (index === -1) {
             console.log('error removing in set_pre');
         }
-        this.post.conn_in.splice(index, 1);    
+        this.post.conn_in.splice(index, 1);
     }
     this.post = post;
     /** add myself to post's input connections list */
@@ -138,33 +138,33 @@ VIZ.NetGraphConnection.prototype.remove = function() {
         if (index === -1) {
             console.log('error removing in remove');
         }
-        this.parent.child_connections.splice(index, 1);    
+        this.parent.child_connections.splice(index, 1);
     }
-    
+
     var index = this.pre.conn_out.indexOf(this);
     if (index === -1) {
         console.log('error removing from conn_out');
     }
-    this.pre.conn_out.splice(index, 1);    
+    this.pre.conn_out.splice(index, 1);
 
     var index = this.post.conn_in.indexOf(this);
     if (index === -1) {
         console.log('error removing from conn_in');
     }
-    this.post.conn_in.splice(index, 1);    
+    this.post.conn_in.splice(index, 1);
 
-    
+
     this.ng.g_conns.removeChild(this.g);
     this.removed = true;
 
-    delete this.ng.svg_conns[this.uid];    
+    delete this.ng.svg_conns[this.uid];
 }
 
 
 /** redraw the connection */
 VIZ.NetGraphConnection.prototype.redraw = function() {
     var pre_pos = this.pre.get_screen_location();
-    
+
     if (this.recurrent) {
         var item = this.ng.svg_objects[this.pres[0]];
         if (item === undefined) {
@@ -175,12 +175,12 @@ VIZ.NetGraphConnection.prototype.redraw = function() {
             this.recurrent_ellipse.setAttribute('visibility', 'visible');
             var width = item.get_width();
             var height = item.get_height();
-            
+
             var mx = pre_pos[0];
             var my = pre_pos[1] - height;
-            this.marker.setAttribute('transform', 
+            this.marker.setAttribute('transform',
                           'translate(' + mx + ',' + my + ') rotate(180)');
-                          
+
             var ex = pre_pos[0];
             var ey = pre_pos[1] - height / 2;
             this.recurrent_ellipse.setAttribute('transform',
@@ -188,7 +188,7 @@ VIZ.NetGraphConnection.prototype.redraw = function() {
             this.recurrent_ellipse.setAttribute('rx', width / 2);
             this.recurrent_ellipse.setAttribute('ry', height / 2);
         }
-    } else {        
+    } else {
         var post_pos = this.post.get_screen_location();
         this.line.setAttribute('x1', pre_pos[0]);
         this.line.setAttribute('y1', pre_pos[1]);
@@ -197,9 +197,9 @@ VIZ.NetGraphConnection.prototype.redraw = function() {
 
         var mx = pre_pos[0] * 0.4 + post_pos[0] * 0.6;
         var my = pre_pos[1] * 0.4 + post_pos[1] * 0.6;
-        var angle = 180 / Math.PI * Math.atan2(post_pos[1] - pre_pos[1], 
+        var angle = 180 / Math.PI * Math.atan2(post_pos[1] - pre_pos[1],
                                                post_pos[0] - pre_pos[0]);
-        this.marker.setAttribute('transform', 
+        this.marker.setAttribute('transform',
                           'translate(' + mx + ',' + my + ') rotate('+angle+')');
     }
 }
