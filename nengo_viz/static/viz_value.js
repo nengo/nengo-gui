@@ -4,8 +4,8 @@
  *
  * @param {dict} args - A set of constructor arguments (see VIZ.Component)
  * @param {int} args.n_lines - number of decoded values
- * @param {float} args.miny - minimum value on y-axis
- * @param {float} args.maxy - maximum value on y-axis
+ * @param {float} args.min_value - minimum value on y-axis
+ * @param {float} args.max_value - maximum value on y-axis
  * @param {VIZ.SimControl} args.sim - the simulation controller
  */
  
@@ -19,69 +19,26 @@ VIZ.Value = function(parent, sim, args) {
     /** for storing the accumulated data */
     this.data_store = new VIZ.DataStore(this.n_lines, this.sim, 0.01);
 
-    /** draw the plot as an SVG */
-    this.svg = d3.select(this.div).append('svg')
-        .attr('width', '100%')
-        .attr('height', '100%');
-
-    /** scales for mapping x and y values to pixels */
-    this.scale_x = d3.scale.linear();
-    this.scale_y = d3.scale.linear();
-    this.scale_y.domain([args.miny, args.maxy]);
-
-    /** spacing between the graph and the outside edges (in pixels) */
-    this.calc_axis_geometry(args.width, args.height);
-    this.supression_width = 0;
-
-    this.axis_time_end =this.svg.append("text")
-                    .text("Time: NULL")
-                    .attr('class', 'graph_text unselectable')[0][0];
-
-    this.axis_time_start =this.svg.append("text")
-                    .text("Time: NULL")
-                    .attr('class','graph_text unselectable')[0][0];
-
-    if (this.display_time == false) {
-        this.axis_time_start.style.display = 'none';
-        this.axis_time_end.style.display = 'none';
-    }
-
-    /** define the x-axis */
-    this.axis_x = d3.svg.axis()
-        .scale(this.scale_x)
-        .orient("bottom")
-        .ticks(0);
-    this.axis_x_g = this.svg.append("g")
-        .attr("class", "axis axis_x unselectable")
-        .call(this.axis_x);
-
-    /** define the y-axis */
-    this.axis_y = d3.svg.axis()
-        .scale(this.scale_y)
-        .orient("left")    
-        .ticks(2)
-    this.axis_y_g = this.svg.append("g")
-        .attr("class", "axis axis_y unselectable")
-        .call(this.axis_y);
+    this.axes2d = new VIZ.TimeAxes(this.div, args);
 
     /** call schedule_update whenever the time is adjusted in the SimControl */    
     this.sim.div.addEventListener('adjust_time', 
             function(e) {self.schedule_update();}, false);
-    
+
     /** create the lines on the plots */
     var line = d3.svg.line()
-        .x(function(d, i) {return self.scale_x(times[i]);})
-        .y(function(d) {return self.scale_y(d);})
-    this.path = this.svg.append("g").selectAll('path')
+        .x(function(d, i) {return self.axes2d.scale_x(times[i]);})
+        .y(function(d) {return self.axes2d.scale_y(d);})
+    this.path = this.axes2d.svg.append("g").selectAll('path')
                                     .data(this.data_store.data);
-                                    
-    var colors = VIZ.make_colors(this.n_lines);    
+
+    var colors = VIZ.make_colors(this.n_lines);
     this.path.enter().append('path')
              .attr('class', 'line')
              .style('stroke', function(d, i) {return colors[i];});
 
+    this.update();
     this.on_resize(args.width, args.height);
-    
 };
 VIZ.Value.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Value.prototype.constructor = VIZ.Value;
@@ -95,50 +52,30 @@ VIZ.Value.prototype.on_message = function(event) {
     this.schedule_update();
 };
 
-VIZ.Value.prototype.calc_axis_geometry = function(width, height) {
-    scale = parseFloat($('#main').css('font-size'));
-
-    this.ax_left = 1.75 * scale;
-    this.ax_right = width - 1.75 * scale;
-    this.ax_bottom = height - 1.75 * scale;
-    this.ax_top = 1.5 * scale;
-
-    this.text_offset = 1.2 * scale;
-
-    this.tick_size = 0.4 * scale;
-    this.tick_padding = 0.2 * scale;
-};
-
 /**
  * Redraw the lines and axis due to changed data
  */
 VIZ.Value.prototype.update = function() {
     /** let the data store clear out old values */
     this.data_store.update();
-        
+
     /** determine visible range from the VIZ.SimControl */
     var t1 = this.sim.time_slider.first_shown_time;
     var t2 = t1 + this.sim.time_slider.shown_time;
-    this.scale_x.domain([t1, t2]);
-    
+
+    this.axes2d.set_time_range(t1, t2);
+
     /** update the lines */
     var self = this;
     var shown_data = this.data_store.get_shown_data();
     var line = d3.svg.line()
         .x(function(d, i) {
-            return self.scale_x(
+            return self.axes2d.scale_x(
                 self.data_store.times[i + self.data_store.first_shown_index]);
             })
-        .y(function(d) {return self.scale_y(d);})
+        .y(function(d) {return self.axes2d.scale_y(d);})
     this.path.data(shown_data)
              .attr('d', line);
-
-    this.axis_time_start.textContent =  t1.toFixed(3);
-
-    this.axis_time_end.textContent =  t2.toFixed(3);
-
-    /** update the x-axis */
-    this.axis_x_g.call(this.axis_x);         
 };
 
 /** 
@@ -152,35 +89,10 @@ VIZ.Value.prototype.on_resize = function(width, height) {
         height = this.minHeight;
     };
 
-    this.calc_axis_geometry(width, height);
+    this.axes2d.on_resize(width, height);
 
-    this.scale_x.range([this.ax_left, this.ax_right]);
-    this.scale_y.range([this.ax_bottom, this.ax_top]);
-
-    //Supress axis start time when user shrinks the plot
-    if (width < this.supression_width || this.display_time == false){
-        this.axis_time_start.style.display = 'none';
-    }
-    else{
-        this.axis_time_start.style.display = 'block';
-    }
-
-    //Adjust positions of time on resize
-    this.axis_time_start.setAttribute('y', this.ax_bottom + this.text_offset);
-    this.axis_time_start.setAttribute('x', this.ax_left - this.text_offset);
-
-    this.axis_time_end.setAttribute('y', this.ax_bottom + this.text_offset);
-    this.axis_time_end.setAttribute('x', this.ax_right - this.text_offset);
-
-    //Adjust positions of x axis on resize
-    this.axis_x.tickPadding(this.tick_padding).outerTickSize(this.tick_size, this.tick_size);
-    this.axis_y.tickPadding(this.tick_padding).outerTickSize(this.tick_size, this.tick_size);
-    this.axis_x_g.attr("transform", "translate(0," + this.ax_bottom + ")");
-    this.axis_y_g
-        .attr("transform", "translate(" + this.ax_left + ", 0)");
-    this.axis_y_g.call(this.axis_y);
     this.update();
-    
+
     this.label.style.width = width;
 
     this.width = width;
@@ -202,20 +114,21 @@ VIZ.Value.prototype.generate_menu = function() {
 
 VIZ.Value.prototype.layout_info = function () {
     var info = VIZ.Component.prototype.layout_info.call(this);
-    info.miny = this.scale_y.domain()[0];
-    info.maxy = this.scale_y.domain()[1];
+    info.min_value = this.axes2d.scale_y.domain()[0];
+    info.max_value = this.axes2d.scale_y.domain()[1];
     return info;
 }
 
 VIZ.Value.prototype.set_range = function() {
-    var range = this.scale_y.domain();
+    var range = this.axes2d.scale_y.domain();
     var new_range = prompt('Set range', '' + range[0] + ',' + range[1]);
     if (new_range !== null) {
         new_range = new_range.split(',');
         var min = parseFloat(new_range[0]);
         var max = parseFloat(new_range[1]);
-        this.scale_y.domain([min, max]);
-        this.axis_y_g.call(this.axis_y);            
+        this.axes2d.scale_y.domain([min, max]);
+        this.axes2d.axis_y_g.call(this.axes2d.axis_y);
+        this.update();
         this.save_layout();
     }
 }
