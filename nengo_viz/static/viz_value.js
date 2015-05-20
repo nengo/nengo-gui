@@ -206,6 +206,11 @@ VIZ.Value.prototype.layout_info = function () {
     return info;
 }
 
+VIZ.Value.prototype.update_layout = function(config) {
+    VIZ.Component.prototype.update_layout.call(this, config);
+    this.update_range(config.miny, config.maxy);
+}
+
 VIZ.Value.prototype.set_range = function() {
     var range = this.scale_y.domain();
     var new_range = prompt('Set range', '' + range[0] + ',' + range[1]);
@@ -214,11 +219,11 @@ VIZ.Value.prototype.set_range = function() {
         var min = parseFloat(new_range[0]);
         var max = parseFloat(new_range[1]);
         this.update_range(min, max);
+        this.save_layout();
     }
 }
 
 VIZ.Value.prototype.update_range = function(min, max) {
     this.scale_y.domain([min, max]);
     this.axis_y_g.call(this.axis_y);            
-    this.save_layout();
 }

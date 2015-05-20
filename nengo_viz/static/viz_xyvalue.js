@@ -148,7 +148,7 @@ VIZ.XYValue.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['Set range', function() {self.set_range();}]);
-    items.push(['Set X, Y indexes', function() {self.set_indexes();}]);
+    items.push(['Set X, Y indices', function() {self.set_indices();}]);
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
@@ -165,6 +165,12 @@ VIZ.XYValue.prototype.layout_info = function () {
     return info;
 }
 
+VIZ.XYValue.prototype.update_layout = function (config) {
+    VIZ.Component.prototype.update_layout.call(this, config);
+    this.update_indices(config.index_x, config.index_y);
+    this.update_range(config.min_value, config.max_value);
+}
+
 VIZ.XYValue.prototype.set_range = function() {
     var range = this.scale_y.domain();
     var new_range = prompt('Set range', '' + range[0] + ',' + range[1]);
@@ -172,14 +178,18 @@ VIZ.XYValue.prototype.set_range = function() {
         new_range = new_range.split(',');
         var min = parseFloat(new_range[0]);
         var max = parseFloat(new_range[1]);
-        this.scale_x.domain([min, max]);
-        this.scale_y.domain([min, max]);
-        this.axis_x.tickValues([min, max]);
-        this.axis_y.tickValues([min, max]);
-        this.axis_y_g.call(this.axis_y);            
-        this.axis_x_g.call(this.axis_x);            
+        this.update_range(min, max);
         this.save_layout();
     }
+}
+
+VIZ.XYValue.prototype.update_range = function(min, max) {
+    this.scale_x.domain([min, max]);
+    this.scale_y.domain([min, max]);
+    this.axis_x.tickValues([min, max]);
+    this.axis_y.tickValues([min, max]);
+    this.axis_y_g.call(this.axis_y);            
+    this.axis_x_g.call(this.axis_x);            
 }
 
 VIZ.XYValue.prototype.set_indices = function() {
@@ -187,6 +197,7 @@ VIZ.XYValue.prototype.set_indices = function() {
     if (new_indices !== null) {
         new_indices = new_indices.split(',');
         this.update_indices(parseInt(new_indices[0]),parseInt(new_indices[1]));
+        this.save_layout();
     }
 }
 
@@ -194,5 +205,4 @@ VIZ.XYValue.prototype.update_indices = function(index_x, index_y) {
     this.index_x = index_x;
     this.index_y = index_y;
     this.update();
-    this.save_layout();
 }

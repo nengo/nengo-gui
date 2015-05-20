@@ -267,7 +267,7 @@ VIZ.Component.prototype.save_layout = function () {
 }
 
 VIZ.Component.prototype.update_layout = function (config) {
-    VIZ.set_transform(this.div, parseFloat(config.x), parseFloat(config.y));
+    //VIZ.set_transform(this.div, parseFloat(config.x), parseFloat(config.y));
     this.div.setAttribute('data-x', parseFloat(config.x));
     this.div.setAttribute('data-y', parseFloat(config.y));
     this.on_resize(config.height, config.width);
@@ -276,6 +276,7 @@ VIZ.Component.prototype.update_layout = function (config) {
     } else {
         this.hide_label();
     }
+    VIZ.pan.redraw();          
 }
 
 
