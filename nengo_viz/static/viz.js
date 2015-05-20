@@ -4,6 +4,19 @@ var VIZ = {};
 VIZ.max_zindex = 0;
 
 /**
+ * Helper function to clip a number, keeping it between two values.
+ */
+VIZ.clip = function(x, low, high) {
+    if (x < low) {
+        x = low;
+    }
+    if (x > high) {
+        x = high;
+    }
+    return x;
+}
+
+/**
  * Helper function to set the transform of an element.
  */
 VIZ.set_transform = function(element, x, y) {
