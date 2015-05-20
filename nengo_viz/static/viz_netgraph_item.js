@@ -146,6 +146,8 @@ VIZ.NetGraphItem = function(ng, info) {
                 }
 
                 if (self.aspect !== null) {
+                    self.constrain_aspect();
+
                     var vertical_resize = event.edges.bottom || event.edges.top;
                     var horizontal_resize = event.edges.left || event.edges.right;
 
@@ -164,12 +166,12 @@ VIZ.NetGraphItem = function(ng, info) {
                         h = 1;
                     }
 
-                    var scaled_w = item.size[0];
-                    var scaled_h = item.size[1];
+                    var screen_w = self.get_width();
+                    var screen_h = self.get_height();
 
                     if (horizontal_resize && vertical_resize) {
-                        var p = (self.size[0] * w + self.size[1] * h) / Math.sqrt(
-                            self.size[0] * self.size[0] + self.size[1] * self.size[1]);
+                        var p = (screen_w * w + screen_h * h) / Math.sqrt(
+                            screen_w * screen_w + screen_h * screen_h);
                         h = p / self.aspect;
                         w = p * self.aspect;
                     } else if (horizontal_resize) {
@@ -178,8 +180,9 @@ VIZ.NetGraphItem = function(ng, info) {
                         w = h * self.aspect;
                     }
 
-                    scaled_w = w / h_scale;
-                    scaled_h = h / v_scale;
+                    var scaled_w = w / h_scale;
+                    var scaled_h = h / v_scale;
+
                     item.set_size(scaled_w, scaled_h);
                 } else {
                     var dw = event.deltaRect.width / h_scale / 2;
@@ -378,11 +381,38 @@ VIZ.NetGraphItem.prototype.remove = function() {
 
     /** remove from the SVG */
     this.ng.g_items.removeChild(this.g);    
-}
+};
+
+VIZ.NetGraphItem.prototype.constrain_aspect = function() {
+    if (this.aspect !== null) {
+        var h_scale = this.ng.get_scaled_width();
+        var v_scale = this.ng.get_scaled_height();
+        var parent = this.parent;
+        while (parent !== null) {
+            h_scale = h_scale * parent.size[0] * 2;
+            v_scale = v_scale * parent.size[1] * 2;
+            parent = parent.parent;
+        }
+
+        var w = this.size[0] * h_scale;
+        var h = this.size[1] * v_scale;
+
+        if (h * this.aspect < w) {
+            this.size[0] = h * this.aspect / h_scale;
+        } else if (w / this.aspect < h) {
+            this.size[1] = w / this.aspect / v_scale;
+        }
+    }
+};
 
 VIZ.NetGraphItem.prototype.constrain_position = function() {
+    this.constrain_aspect();
+
     var changed = false;
     if (this.parent !== null) {
+        var w = this.size[0];
+        var h = this.size[1];
+
         if (this.size[0] > 0.5) {
             this.size[0] = 0.5;
             changed = true;
@@ -506,11 +536,19 @@ VIZ.NetGraphItem.prototype.set_size = function(width, height) {
 VIZ.NetGraphItem.prototype.redraw_size = function() {    
     var screen_w = this.get_width();
     var screen_h = this.get_height();
-    
+
+    if (this.aspect !== null) {
+        if (screen_h * this.aspect < screen_w) {
+            screen_w = screen_h * this.aspect;
+        } else if (screen_w / this.aspect < screen_h) {
+            screen_h = screen_w / this.aspect;
+        }
+    }
+
     if (this.type === 'ens') {
-        // TODO: Do not use hard coded 18, but read out from SVG template.
         var scale = Math.sqrt(screen_h * screen_h + screen_w * screen_w) / Math.sqrt(2);
-        this.shape.setAttribute('transform', 'scale(' + scale / 2 / 18 + ')');
+        var r = $('#ensemble #mainCircle').attr('r');
+        this.shape.setAttribute('transform', 'scale(' + scale / 2 / r + ')');
     } else if (this.passthrough) {
         this.shape.setAttribute('rx', screen_w / 2);
         this.shape.setAttribute('ry', screen_h / 2);    
