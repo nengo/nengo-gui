@@ -94,33 +94,35 @@ class Viz(object):
         self.load(filename, model, locals)
     
     def load(self, filename, model=None, locals=None):
+        try:
+            if locals is None:
+                locals = {}
+                with open(filename) as f:
+                    code = f.read()
+                exec(code, locals)
+        
+            if model is None:
+                model = locals['model']
 
-        if locals is None:
-            locals = {}
-            with open(filename) as f:
-                code = f.read()
-            exec(code, locals)
 
-        if model is None:
-            model = locals['model']
-        locals['nengo_viz'] = nengo_viz
+            locals['nengo_viz'] = nengo_viz
 
-        self.model = model
-        self.locals = locals
-            
+            self.model = model
+            self.locals = locals
+                
 
-        self.filename = filename
-        self.name_finder = nengo_viz.NameFinder(locals, model)
-        self.default_labels = self.name_finder.known_name
+            self.filename = filename
+            self.name_finder = nengo_viz.NameFinder(locals, model)
+            self.default_labels = self.name_finder.known_name
 
-        self.config = self.load_config()
-        self.config_save_needed = False
-        self.config_save_time = None   # time of last config file save
-        self.config_save_period = 2.0  # minimum time between saves
+            self.config = self.load_config()
 
-        self.lock = threading.Lock()
+            self.lock = threading.Lock()
 
-        self.uid_prefix_counter = {}
+            self.uid_prefix_counter = {}
+        except:
+            print('dont give me trash')
+            return 'failure'
 
     def find_templates(self):
         for k, v in self.locals.items():

@@ -48,6 +48,11 @@ VIZ.SimControl = function(div, args) {
     this.rate_tr = $('#rate_tr')[0];
     this.ticks_tr = $('#ticks_tr')[0];
 
+    interact(this.div)
+    .on('tap', function(){
+        self.menu.hide_any();
+    });
+
     this.update();
 };
 
