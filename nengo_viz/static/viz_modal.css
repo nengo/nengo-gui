@@ -20,3 +20,45 @@ div.modal-backdrop {
 .alert .glyphicon {
     padding-right: 5px;
 }
+
+.modal-body .tab-pane .list-group-item {
+    padding: 5px 10px;
+}
+
+.modal-body .tab-pane .list-group-item.shaded {
+    color: #aaaaaa;
+}
+
+.modal-body .tab-pane > h3 {
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+.modal-body .tab-pane th {
+    font-size: 1em;
+    font-weight: bold;
+    border: 0px;
+    background-color: #dddddd;
+}
+
+.modal-body .tab-pane td {
+    font-size: 0.9em;
+    border: 0px;
+}
+
+.modal-body table .conn-objs {
+    width: 30%;
+}
+
+.modal-body table .conn-funcs {
+    width: 50%;
+}
+
+.modal-body table .conn-fan {
+    width: 20%;
+}
+
+.modal-body table ul > li > .glyphicon,
+.modal-body table ul > li > .glyphicon {
+    padding-right: 8px;
+}
