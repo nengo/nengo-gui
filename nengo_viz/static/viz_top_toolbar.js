@@ -131,7 +131,6 @@ VIZ.Toolbar.prototype.create_config_item = function (name, text) {
 		}
 		var msg = JSON.stringify(options);
 		sim.ws.send(msg);
-	});
 	return label;
 };
 

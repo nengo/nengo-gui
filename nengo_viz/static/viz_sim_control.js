@@ -75,6 +75,7 @@ VIZ.SimControl.prototype.on_message = function(event) {
             toolbar.open_modal(parsed_data['data']);
         } 
     }
+
     else {
         var data = new Float32Array(event.data);
         this.time = data[0];
