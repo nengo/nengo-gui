@@ -34,8 +34,8 @@ VIZ.SimControl = function(div, args) {
     this.ws.onmessage = function(event) {self.on_message(event);}
     
     /** Create the TimeSlider */
-    this.time_slider = new VIZ.TimeSlider({x: 200, y: 10, sim:this,
-                                           width: this.div.clientWidth-300, 
+    this.time_slider = new VIZ.TimeSlider({x: 140, y: 10, sim:this,
+                                           width: this.div.clientWidth-240, 
                                            height: this.div.clientHeight-20,
                                            shown_time: args.shown_time,
                                            kept_time: args.kept_time});
@@ -53,14 +53,14 @@ VIZ.SimControl = function(div, args) {
     VIZ.set_transform(this.pause_button, this.div.clientWidth - 100, 30);
     div.appendChild(this.pause_button);
     
-    this.metrics_div = document.createElement('div');
-    this.metrics_div.className = 'metrics-container';
-    div.appendChild(this.metrics_div);
+    this.metrics_table = document.createElement('table');
+    this.metrics_table.className = 'table metrics-container';
+    div.appendChild(this.metrics_table);
     /** Create the speed and rate update sliders */
-    this.rate_div = document.createElement('div');
-    this.metrics_div.appendChild(this.rate_div);
-    this.ticks_div = document.createElement('div');
-    this.metrics_div.appendChild(this.ticks_div);
+    this.rate_tr = document.createElement('tr');
+    this.metrics_table.appendChild(this.rate_tr);
+    this.ticks_tr = document.createElement('tr');
+    this.metrics_table.appendChild(this.ticks_tr);
 
     this.update();
 };
@@ -128,8 +128,8 @@ VIZ.SimControl.prototype.register_listener = function(func) {
 VIZ.SimControl.prototype.update = function() {
     this.pending_update = false;
     
-    this.ticks_div.innerHTML = 'Time: ' + this.time.toFixed(3);
-    this.rate_div.innerHTML = 'Speed: ' + this.rate.toFixed(2) + 'x';
+    this.ticks_tr.innerHTML = '<th>Time</th><td>' + this.time.toFixed(3) + '</td>';
+    this.rate_tr.innerHTML = '<th>Speed</th><td>' + this.rate.toFixed(2) + 'x</td>';
     
     this.time_slider.update_times(this.time);
 };
@@ -146,7 +146,7 @@ VIZ.SimControl.prototype.on_pause_click = function(event) {
 };
 
 VIZ.SimControl.prototype.on_resize = function(event) {
-    this.time_slider.resize(this.div.clientWidth - 300, 
+    this.time_slider.resize(this.div.clientWidth - 240, 
                             this.div.clientHeight - 20);
     VIZ.set_transform(this.pause_button, this.div.clientWidth - 100, 30);
 }
@@ -180,7 +180,11 @@ VIZ.TimeSlider = function(args) {
     /** create the div indicating currently shown time */
     this.shown_div = document.createElement('div');
     this.shown_div.classList.add('shown_time');
-    this.shown_div.style.position = 'fixed';
+    this.shown_div.style.position = 'absolute';
+    var d1 = document.createElement('div')
+    this.shown_div.appendChild(d1);
+    var d2 = document.createElement('div')
+    d1.appendChild(d2);
     this.div.appendChild(this.shown_div);
 
     this.kept_scale.domain([0.0 - this.kept_time, 0.0]);
@@ -238,7 +242,8 @@ VIZ.TimeSlider = function(args) {
     /** build the axis to display inside the scroll area */
     this.svg = d3.select(this.div).append('svg')
         .attr('width', '100%')
-        .attr('height', '100%');   
+        .attr('height', '100%')
+        .attr('style', 'pointer-events: none; position: absolute;');
     this.axis = d3.svg.axis()
         .scale(this.kept_scale)
         .orient("bottom")
