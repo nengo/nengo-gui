@@ -70,9 +70,11 @@ VIZ.Modal.info_body = function() {
 VIZ.Modal.render_params = function($parent, params, tooltips) {
     var $plist = $('<dl class="dl-horizontal"/>').appendTo($parent);
     for (var i = 0; i < params.length; i++) {
-        var $dt = $('<dt>' + VIZ.escapeHTML(params[i][0]) +'</dt>')
-            .appendTo($plist);
-        $plist.append('<dd>' + VIZ.escapeHTML(params[i][1]) + '</dd>');
+        var $dt = $('<dt/>').appendTo($plist);
+        $dt.text(params[i][0]);
+
+        var $dd = $('<dd/>').appendTo($plist);
+        $dd.text(params[i][1]);
 
         var $tooltip = $('<a href="#" data-toggle="popover" ' +
                          'data-placement="right" ' +
@@ -189,84 +191,149 @@ VIZ.Modal.multiline_plot = function(selector, x, ys) {
         .style("stroke", function(d, i) { return colors[i]; });
 }
 
+/*
+ *  Renders information about connections related to an object.
+ */
 VIZ.Modal.render_connections = function($parent, uid, conninfo) {
-    $parent.append('<h3>Incoming Connections:</h3>');
-    var $conn_in_table = $('<table class="table table-condensed"><tr>' +
-                           '<th width="30%"">Object</th>' +
-                           '<th width="50%">Function</th>' +
-                           '<th width="20%">Fan In</th></tr>').appendTo($parent);
     var conn_in_objs = VIZ.netgraph.svg_objects[uid].conn_in;
-    for (var i = 0; i < conn_in_objs.length; i++) {
-        var $conn_in_tr = $('<tr/>').appendTo($conn_in_table);
+    if (conn_in_objs.length > 0) {
+        $parent.append('<h3>Incoming Connections:</h3>');
 
-        var $conn_in_objs_td = $('<td>' + String(conn_in_objs[i].pre.label.innerHTML) + '&nbsp;</td>').appendTo($conn_in_tr);
-        VIZ.Modal.make_conn_path_dropdown_list(conn_in_objs[i].pre.uid,
-                                               conn_in_objs[i].pres,
-                                               $conn_in_objs_td);
+        var $conn_in_table = $('<table class="table table-condensed"><tr>' +
+                               '<th class="conn-objs">Object</th>' +
+                               '<th class="conn-funcs">Function</th>' +
+                               '<th class="conn-fan">Fan In</th></tr>').appendTo($parent);
 
-        var $conn_in_func_td = $('<td/>').appendTo($conn_in_tr);
-        $conn_in_func_td.text(conninfo[String(conn_in_objs[i].uid)]);
-
-        $conn_in_tr.append('<td>fanin' + i + '</td>');
+        VIZ.Modal.make_connections_table_row(
+            $conn_in_table, conninfo, conn_in_objs,
+            function (conn_obj) { return conn_obj.pre },
+            function (conn_obj) { return conn_obj.pres });
     }
 
-    $parent.append('<hr/>');
-    $parent.append('<h3>Outgoing Connections:</h3>');
-    var $conn_out_table = $('<table class="table table-condensed"><tr>' +
-                           '<th width="30%"">Object</th>' +
-                           '<th width="50%">Function</th>' +
-                           '<th width="20%">Fan Out</th></tr>').appendTo($parent);
     var conn_out_objs = VIZ.netgraph.svg_objects[uid].conn_out;
-    for (var i = 0; i < conn_out_objs.length; i++) {
-        var $conn_out_tr = $('<tr/>').appendTo($conn_out_table);
+    if (conn_out_objs.length > 0) {
+        if (conn_in_objs.length > 0) {
+            $parent.append('<hr/>');
+        }
+        $parent.append('<h3>Outgoing Connections:</h3>');
 
-        var $conn_out_objs_td = $('<td>' + String(conn_out_objs[i].post.label.innerHTML) + '&nbsp;</td>').appendTo($conn_out_tr);
-        VIZ.Modal.make_conn_path_dropdown_list(conn_out_objs[i].post.uid,
-                                               conn_out_objs[i].posts,
-                                               $conn_out_objs_td);
+        var $conn_out_table = $('<table class="table table-condensed"><tr>' +
+                                '<th class="conn-objs">Object</th>' +
+                                '<th class="conn-funcs">Function</th>' +
+                                '<th class="conn-fan">Fan Out</th></tr>').appendTo($parent);
 
-        var $conn_out_func_td = $('<td/>').appendTo($conn_out_tr);
-        $conn_out_func_td.text(conninfo[String(conn_out_objs[i].uid)]);
-
-        $conn_out_tr.append('<td>fanout' + i + '</td>');
+        VIZ.Modal.make_connections_table_row(
+            $conn_out_table, conninfo, conn_out_objs,
+            function (conn_obj) { return conn_obj.post },
+            function (conn_obj) { return conn_obj.posts });
     }
 }
 
-VIZ.Modal.make_conn_path_dropdown_list = function(current_uid, uid_list, $content) {
-    if (uid_list.length > 1) {
+/*
+ *  Generates one row in the connections table in the connections tab.
+ */
+VIZ.Modal.make_connections_table_row = function($table, conninfo, conn_objs, get_conn_other, get_conn_conn_uid_list) {
+    for (var i = 0; i < conn_objs.length; i++) {
+        // Get a reference to the object that the current object is connected to
+        var conn_other = get_conn_other(conn_objs[i]);
+
+        // Make a row in the table
+        var $tr = $('<tr/>').appendTo($table);
+
+        // Make the objects column
+        var $objs_td = $('<td>' + String(conn_other.label.innerHTML) +
+                         '</td>').appendTo($tr);
+        VIZ.Modal.make_conn_path_dropdown_list(
+            $objs_td,
+            conn_other.uid,
+            conninfo["obj_type"][String(conn_objs[i].uid)],
+            get_conn_conn_uid_list(conn_objs[i]));
+
+        // Make the functions column
+        var $func_td = $('<td/>').appendTo($tr);
+        $func_td.text(conninfo["func"][String(conn_objs[i].uid)]);
+
+        // Make the fan data column
+        var $fan_td = $('<td>' + conninfo["fan"][String(conn_objs[i].uid)] + '</td>').appendTo($tr);
+        if (conninfo["obj_type"][String(conn_objs[i].uid)] === "passthrough") {
+            var $fan_tooltip = $('<a href="#" data-toggle="tooltip" data-placement="bottom"' +
+                                 'title="' + VIZ.tooltips.conn.fan_passthrough + '">' +
+                                 '<span class="glyphicon glyphicon-question-sign"/></a>');
+            $fan_tooltip.tooltip();
+
+            $fan_td.append($fan_tooltip);
+        }
+    }
+}
+
+/*
+ *  Generates the connection path dropdown list for the connections tab.
+ */
+VIZ.Modal.make_conn_path_dropdown_list = function($container, others_uid, obj_type, conn_uid_list) {
+    if (conn_uid_list.length > 1) {
         // Make the "expand down" tooltip
-        $exp_tooltip = $('<a href="#" data-toggle="tooltip" data-placement="right"' +
-                         'title="' + VIZ.tooltips.conn.expand + '">' +
-                         '<span class="glyphicon glyphicon-collapse-down"/></a>');
+        var $exp_tooltip = $('<a href="#" data-toggle="tooltip" data-placement="right"' +
+                             'title="' + VIZ.tooltips.conn.expand + '">' +
+                             '<span class="glyphicon glyphicon-collapse-down"/></a>');
         $exp_tooltip.tooltip();
 
         // Add expand control and the tooltip to the <dd> object
-        $content.append($('<a data-toggle="collapse" href="#pathlist' + String(uid_list[0]).replace(/\./g, '_') + '" aria-expanded="false"/>').append($exp_tooltip));
+        $container.append($('<a data-toggle="collapse" href="#pathlist' +
+                          String(conn_uid_list[0]).replace(/[\.\[\]]/g, '_') +
+                          '" aria-expanded="false"/>').append($exp_tooltip));
 
         // Make a list-group for the drop down items
-        var $path_list = $('<ul class="list-group">').appendTo($('<div class="collapse" id="pathlist' + String(uid_list[0]).replace(/\./g, '_') + '"/>').appendTo($content));
+        var $path_list = $('<ul class="list-group">')
+                            .appendTo($('<div class="collapse" id="pathlist' +
+                                      String(conn_uid_list[0]).replace(/[\.\[\]]/g, '_') +
+                                      '"/>')
+                                .appendTo($container));
 
         // Add the root "Model" item to the drop down list
-        $path_list.append('<li class="list-group-item shaded"><span class="glyphicon glyphicon-home"/>&nbsp;Model</a>')
+        $path_list.append('<li class="list-group-item shaded"><span class="glyphicon glyphicon-home"/>Model</a>')
 
         // Populate the list-group
         var shaded_option = "shaded";
-        for (var p = uid_list.length; p > 0; p--) {
-            if (uid_list[p - 1] in VIZ.netgraph.svg_objects){
+        var endpoint_icon = "glyphicon glyphicon-triangle-right";
+        for (var p = conn_uid_list.length - 1; p >= 0; p--) {
+            if (conn_uid_list[p] in VIZ.netgraph.svg_objects){
                 // If the uid is in netgraph.svg_objects, use the object's label
-                var path_item = VIZ.netgraph.svg_objects[uid_list[p - 1]].label.innerHTML;
+                var path_item = VIZ.netgraph.svg_objects[conn_uid_list[p]].label.innerHTML;
             }
             else {
-                // Otherwise, use the object's uid
-                var path_item = '(' + String(uid_list[p - 1]) + ')';
+                // Otherwise, use the object's uid (with brackets to indicate that the UI
+                // is unsure of the exact label)
+                var path_item = '(' + String(conn_uid_list[p]) + ')';
             }
 
-            if (current_uid === uid_list[p - 1]) {
-                // Toggle the shading option when the current_uid has been reached
+            if (others_uid === conn_uid_list[p]) {
+                // Toggle the shading option when the others_uid has been reached
                 shaded_option = '';
             }
-            $path_list.append('<li class="list-group-item ' + shaded_option + '">&nbsp;<span class="glyphicon glyphicon-triangle-right"/>' +
-                             path_item + '</li>');
+
+            if (p === 0) {
+                switch (obj_type) {
+                    case "ens":
+                        endpoint_icon = "glyphicon glyphicon-option-horizontal";
+                        break;
+                    case "node":
+                        endpoint_icon = "glyphicon glyphicon-stop";
+                        break;
+                    case "passthrough":
+                        endpoint_icon = "glyphicon glyphicon-share-alt";
+                        break;
+                    case "net":
+                        endpoint_icon = "glyphicon glyphicon-list-alt";
+                        break;
+                    default:
+                        endpoint_icon = "glyphicon glyphicon-warning-sign";
+                        break;
+                }
+            }
+
+            $path_list.append('<li class="list-group-item ' + shaded_option +
+                              '"><span class="' + endpoint_icon + '"/>' +
+                              path_item + '</li>');
         }
     }
 }
