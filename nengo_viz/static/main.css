@@ -1,3 +1,7 @@
+html * {
+    cursor: inherit !important;
+}
+
 body {
     margin: 0px;
     height: 100%;
