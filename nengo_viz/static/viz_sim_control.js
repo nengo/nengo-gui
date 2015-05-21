@@ -151,6 +151,7 @@ VIZ.SimControl.prototype.on_resize = function(event) {
     VIZ.set_transform(this.pause_button, this.div.clientWidth - 100, 30);
 }
 
+
 VIZ.TimeSlider = function(args) {
     var self = this;
 
@@ -227,6 +228,15 @@ VIZ.TimeSlider = function(args) {
     
 }
 
+VIZ.TimeSlider.prototype.jump_to_end = function() {
+    this.first_shown_time = this.last_time - this.shown_time;
+    
+    x = this.kept_scale(this.first_shown_time);
+    VIZ.set_transform(this.shown_div, x, 0);
+
+    /** update any components who need to know the time changed */
+    this.sim.div.dispatchEvent(new Event('adjust_time'));
+}
 
 /**
  * Adjust size and location of parts based on overall size
