@@ -19,7 +19,6 @@ VIZ.Toolbar = function(model_name) {
 	toolbar.className = 'nav nav-pills'
 
 	var main = document.getElementById('main');
-	//VIZ.set_transform(toolbar, 0,0)
 	main.appendChild(toolbar);
 	
 	//keep a reference to the toolbar element
@@ -52,7 +51,6 @@ VIZ.Toolbar = function(model_name) {
 
 // This opens up the pop up window that allows you to select the file to open
 VIZ.Toolbar.prototype.file_browser = function () {
-	//this.menu.hide_any()
     sim.ws.send('browse');
 
     fb = $('#filebrowser');
