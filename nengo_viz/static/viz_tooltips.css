@@ -16,10 +16,17 @@
     padding: 5px 10px;
 }
 
+.modal-body .tooltip-inner {
+    white-space: pre-wrap;
+    text-align: left;
+}
+
 .modal-body .popover-title {
     line-height: 1.2;
 }
 
-dt > a > .glyphicon {
+dt > a > .glyphicon,
+td > a .glyphicon {
     padding-left: 8px;
 }
+

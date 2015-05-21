@@ -70,9 +70,11 @@ function info_body() {
 function render_params($parent, params, tooltips) {
     var $plist = $('<dl class="dl-horizontal"/>').appendTo($parent);
     for (var i = 0; i < params.length; i++) {
-        var $dt = $('<dt>' + VIZ.escapeHTML(params[i][0]) +'</dt>')
-            .appendTo($plist);
-        $plist.append('<dd>' + VIZ.escapeHTML(params[i][1]) + '</dd>');
+        var $dt = $('<dt/>').appendTo($plist);
+        $dt.text(params[i][0]);
+
+        var $dd = $('<dd/>').appendTo($plist);
+        $dd.text(params[i][1]);
 
         var $tooltip = $('<a href="#" data-toggle="popover" ' +
                          'data-placement="right" ' +
@@ -189,134 +191,22 @@ function multiline_plot(selector, x, ys) {
         .style("stroke", function(d, i) { return colors[i]; });
 }
 
-function render_connections($parent, uid, conninfo) {
-    $parent.append('<h3>Incoming Connections:</h3>');
-    var $conn_in_table = $('<table class="table table-condensed"><tr>' +
-                           '<th width="30%"">Object</th>' +
-                           '<th width="50%">Function</th>' +
-                           '<th width="20%">Fan In</th></tr>').appendTo($parent);
-    var conn_in_objs = VIZ.netgraph.svg_objects[uid].conn_in;
-    for (var i = 0; i < conn_in_objs.length; i++) {
-        var $conn_in_tr = $('<tr/>').appendTo($conn_in_table);
-
-        var $conn_in_objs_td = $('<td>' + String(conn_in_objs[i].pre.label.innerHTML) + '&nbsp;</td>').appendTo($conn_in_tr);
-        make_conn_path_dropdown_list(conn_in_objs[i].pre.uid,
-                                     conn_in_objs[i].pres,
-                                     $conn_in_objs_td);
-
-/**
- * Static multiline plot with shared x-axis
- *
- * @param {String} selector - Where the svg will be added
- * @param {Array of Float} x - The shared x-axis
- * @param {Array of Array of Float} ys - The y data for each line
- */
-VIZ.Modal.multiline_plot = function(selector, x, ys) {
-    var m = {left: 50, top: 10, right: 0, bottom: 30};
-    var w = 500 - m.left - m.right;
-    var h = 220 - m.bottom - m.top;
-
-    var scale_x = d3.scale.linear()
-        .domain([x[0], x[x.length-1]])
-        .range([m.left, w - m.right]);
-    var scale_y = d3.scale.linear()
-        .domain([d3.min(ys, function(y){ return d3.min(y); }) - 0.01,
-                 d3.max(ys, function(y){ return d3.max(y); }) + 0.01])
-        .range([h+m.top, m.top]);
-
-    // Add an SVG element with the desired dimensions and margin.
-    var graph = d3.select(selector).append("svg")
-        .attr("width", w + m.left + m.right)
-        .attr("height", h + m.bottom + m.top);
-
-    var xAxis = d3.svg.axis()
-        .scale(scale_x)
-        .orient("bottom")
-        .ticks(9);
-    graph.append("g")
-        .attr("class", "axis axis_x unselectable")
-        .attr("transform", "translate(0," + (h+m.top)  + ")")
-        .call(xAxis);
-
-    var yAxisLeft = d3.svg.axis()
-        .scale(scale_y)
-        .ticks(5)
-        .orient("left");
-    graph.append("g")
-        .attr("class", "axis axis_y unselectable")
-        .attr("transform", "translate(" + m.left + ",0)")
-        .call(yAxisLeft);
-
-    var colors = VIZ.make_colors(ys.length);
-
-    var line = d3.svg.line()
-        .x(function(d, i) { return scale_x(x[i]); })
-        .y(function(d) { return scale_y(d); })
-
-    graph.append("g")
-        .selectAll("path")
-        .data(ys)
-      .enter()
-        .append("path")
-        .attr("d", line)
-        .attr("class", "line")
-        .style("stroke", function(d, i) { return colors[i]; });
-}
-
 /*
  *  Renders information about connections related to an object.
  */
-VIZ.Modal.render_connections = function($parent, uid, conninfo) {
-    var ngi = VIZ.netgraph.svg_objects[uid];
-    var conn_in_objs = ngi.conn_in;
+function render_connections($parent, uid, conninfo) {
+    var conn_in_objs = VIZ.netgraph.svg_objects[uid].conn_in;
     if (conn_in_objs.length > 0) {
-        $parent.append('<h3>Incoming Connections</h3>');
+        $parent.append('<h3>Incoming Connections:</h3>');
 
         var $conn_in_table = $('<table class="table table-condensed"><tr>' +
                                '<th class="conn-objs">Object</th>' +
                                '<th class="conn-funcs">Function</th>' +
-                               '<th class="conn-fan">Fan In</th></tr>')
-            .appendTo($parent);
-        VIZ.tooltips.popover($conn_in_table.find('.conn-objs').first(),
-                             "'Pre' object",
-                             "This object plays the role of 'Pre' in the " +
-                             "connection to this object.",
-                             "top");
-        VIZ.tooltips.popover($conn_in_table.find('.conn-funcs').first(),
-                             "Connection function",
-                             "This function being computed across this " +
-                             "connection (in vector space).",
-                             "top");
-        VIZ.tooltips.popover($conn_in_table.find('.conn-fan').first(),
-                             "Neuron fan-in",
-                             "The number of incoming neural connections. " +
-                             "In biological terms, this is the number of " +
-                             "synapses in the dendritic tree of a single " +
-                             "neuron in this object, resulting from this " +
-                             "connection. The total number of synapses would " +
-                             "be the sum of the numbers in this column.",
-                             "top");
+                               '<th class="conn-fan">Fan In</th></tr>').appendTo($parent);
 
-        VIZ.Modal.make_connections_table_row(
-            $conn_in_table, conninfo, conn_in_objs,
-            function (conn_obj) { return conn_obj.pre },
-            function (conn_obj) { return conn_obj.pres });
-    }
-
-    $parent.append('<hr/>');
-    $parent.append('<h3>Outgoing Connections:</h3>');
-    var $conn_out_table = $('<table class="table table-condensed"><tr>' +
-                           '<th width="30%"">Object</th>' +
-                           '<th width="50%">Function</th>' +
-                           '<th width="20%">Fan Out</th></tr>').appendTo($parent);
-    var conn_out_objs = VIZ.netgraph.svg_objects[uid].conn_out;
-    for (var i = 0; i < conn_out_objs.length; i++) {
-        var $conn_out_tr = $('<tr/>').appendTo($conn_out_table);
-
-        var $conn_out_objs_td = $('<td>' + String(conn_out_objs[i].post.label.innerHTML) + '&nbsp;</td>').appendTo($conn_out_tr);
-        make_conn_path_dropdown_list(conn_out_objs[i].post.uid,
-                                     conn_out_objs[i].posts,
-                                     $conn_out_objs_td);
+        make_connections_table_row($conn_in_table, conninfo, conn_in_objs,
+                                   function (conn_obj) { return conn_obj.pre },
+                                   function (conn_obj) { return conn_obj.pres });
 
         VIZ.tooltips.popover($conn_out_table.find('.conn-objs').first(),
                              "'Post' object",
@@ -355,16 +245,58 @@ VIZ.Modal.render_connections = function($parent, uid, conninfo) {
                 "Network is expanded. Please see individual objects for connection info."));
         } else {
             $p.append(document.createTextNode("No connections to or from this object."));
+        make_connections_table_row($conn_out_table, conninfo, conn_out_objs,
+                                   function (conn_obj) { return conn_obj.post },
+                                   function (conn_obj) { return conn_obj.posts });
+    }
+}
+
+/*
+ *  Generates one row in the connections table in the connections tab.
+ */
+function make_connections_table_row($table, conninfo, conn_objs, get_conn_other, get_conn_conn_uid_list) {
+    for (var i = 0; i < conn_objs.length; i++) {
+        // Get a reference to the object that the current object is connected to
+        var conn_other = get_conn_other(conn_objs[i]);
+
+        // Make a row in the table
+        var $tr = $('<tr/>').appendTo($table);
+
+        // Make the objects column
+        var $objs_td = $('<td>' + String(conn_other.label.innerHTML) +
+                         '</td>').appendTo($tr);
+        make_conn_path_dropdown_list($objs_td,
+                                     conn_other.uid,
+                                     conninfo["obj_type"][String(conn_objs[i].uid)],
+                                     get_conn_conn_uid_list(conn_objs[i]));
+
+        // Make the functions column
+        var $func_td = $('<td/>').appendTo($tr);
+        $func_td.text(conninfo["func"][String(conn_objs[i].uid)]);
+
+        // Make the fan data column
+        var $fan_td = $('<td>' + conninfo["fan"][String(conn_objs[i].uid)] + '</td>').appendTo($tr);
+        if (conninfo["obj_type"][String(conn_objs[i].uid)] === "passthrough") {
+            var $fan_tooltip = $('<a href="#" data-toggle="tooltip" data-placement="bottom"' +
+                                 'title="' + VIZ.tooltips.conn.fan_passthrough + '">' +
+                                 '<span class="glyphicon glyphicon-question-sign"/></a>');
+            $fan_tooltip.tooltip();
+
+            $fan_td.append($fan_tooltip);
+>>>>>>> Updated connections info tab
         }
     }
 }
 
-function make_conn_path_dropdown_list(current_uid, uid_list, $content) {
-    if (uid_list.length > 1) {
+/*
+ *  Generates the connection path dropdown list for the connections tab.
+ */
+function make_conn_path_dropdown_list($container, others_uid, obj_type, conn_uid_list) {
+    if (conn_uid_list.length > 1) {
         // Make the "expand down" tooltip
-        $exp_tooltip = $('<a href="#" data-toggle="tooltip" data-placement="right"' +
-                         'title="' + VIZ.tooltips.conn.expand + '">' +
-                         '<span class="glyphicon glyphicon-collapse-down"/></a>');
+        var $exp_tooltip = $('<a href="#" data-toggle="tooltip" data-placement="right"' +
+                             'title="' + VIZ.tooltips.conn.expand + '">' +
+                             '<span class="glyphicon glyphicon-collapse-down"/></a>');
         $exp_tooltip.tooltip();
 
 /*
@@ -373,13 +305,9 @@ function make_conn_path_dropdown_list(current_uid, uid_list, $content) {
 VIZ.Modal.make_conn_path_dropdown_list = function($container, others_uid, obj_type, conn_uid_list) {
     if (conn_uid_list.length > 1) {
         // Add expand control and the tooltip to the <dd> object
-        var $lg_header = $('<a data-toggle="collapse" href="#pathlist' +
-                           String(conn_uid_list[0]).replace(/[\.\[\]]/g, '_') +
-                           '" aria-expanded="false"/>').appendTo($container);
-
-        // Make the "expand down" tooltip
-        VIZ.tooltips.tooltip($lg_header, VIZ.tooltips.conn.expand,
-                             "right", "glyphicon-collapse-down");
+        $container.append($('<a data-toggle="collapse" href="#pathlist' +
+                          String(conn_uid_list[0]).replace(/[\.\[\]]/g, '_') +
+                          '" aria-expanded="false"/>').append($exp_tooltip));
 
         // Make a list-group for the drop down items
         var $path_list = $('<ul class="list-group">')

@@ -72,7 +72,9 @@ def ensemble_infomodal(viz, ens, uid):
                                "one-dimensional ensembles.")
         plots.append(tc.to_dict())
 
-    js = ['VIZ.Modal.title("Details for \'%s\'");' % viz.viz.get_label(ens)]
+    conninfo = conn_infomodal(ng, uid, conn_in_uids, conn_out_uids)
+
+    js = ['VIZ.Modal.title("Details for \'%s\'");' % ng.viz.viz.get_label(ens)]
     js.append('VIZ.Modal.footer("close");')
     js.append('VIZ.Modal.ensemble_body("%s", %s, %s);' % (
         uid, json.dumps(params), json.dumps(plots)))
@@ -105,9 +107,7 @@ def node_infomodal(ng, uid, conn_in_uids, conn_out_uids):
 
     plots = [f_out.to_dict()]
 
-    conninfo = {}
-    for conn_uid in (conn_in_uids + conn_out_uids):
-        conninfo[conn_uid] = str(ng.uids[conn_uid].function)
+    conninfo = conn_infomodal(ng, uid, conn_in_uids, conn_out_uids)
 
     js = ['VIZ.Modal.title("Details for \'%s\'");' % (
         ng.viz.viz.get_label(node))]
@@ -116,3 +116,42 @@ def node_infomodal(ng, uid, conn_in_uids, conn_out_uids):
         uid, json.dumps(params), json.dumps(plots), json.dumps(conninfo)))
     js.append('VIZ.Modal.show();')
     return '\n'.join(js)
+
+
+def conn_infomodal(ng, uid, conn_in_uids, conn_out_uids):
+    conninfo = {}
+
+    conninfo["obj_type"] = {}
+    conninfo["func"] = {}
+    conninfo["fan"] = {}
+
+    def get_conn_func_str(conn_uid):
+        return (str(ng.uids[conn_uid].function)
+                if ng.uids[conn_uid].function is not None
+                else "Identity function")
+
+    def get_obj_info(nengo_obj):
+        if isinstance(nengo_obj, nengo.Node):
+            if nengo_obj.output is None:
+                return "passthrough", "> 0"
+            else:
+                return "node", "0"
+        elif isinstance(nengo_obj, nengo.Ensemble):
+            return "ens", str(nengo_obj.n_neurons)
+        elif isinstance(nengo_obj, nengo.Network):
+            return "net", str(sum(map(lambda e: e.n_neurons,
+                                      nengo_obj.all_ensembles)))
+        else:
+            return "err", "0"
+
+    for conn_uid in conn_in_uids:
+        conninfo["obj_type"][conn_uid], conninfo["fan"][conn_uid] = \
+            get_obj_info(ng.uids[conn_uid].pre_obj)
+        conninfo["func"][conn_uid] = get_conn_func_str(conn_uid)
+
+    for conn_uid in conn_out_uids:
+        conninfo["obj_type"][conn_uid], conninfo["fan"][conn_uid] = \
+            get_obj_info(ng.uids[conn_uid].post_obj)
+        conninfo["func"][conn_uid] = get_conn_func_str(conn_uid)
+
+    return conninfo
