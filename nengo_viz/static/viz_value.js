@@ -98,8 +98,7 @@ VIZ.Value = function(parent, sim, args) {
              .attr('class', 'line')
              .style('stroke', function(d, i) {return colors[i];});
 
-    this.on_resize(args.width, args.height);
-    
+    this.on_resize(this.get_screen_width(), this.get_screen_height());    
 };
 VIZ.Value.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Value.prototype.constructor = VIZ.Value;

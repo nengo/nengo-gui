@@ -58,16 +58,19 @@ VIZ.create_websocket = function(uid) {
  */
 VIZ.Component = function(parent, args) {
     var self = this;
+    
+    this.viewport = viewport;
 
     /** Create the div for the component and position it */
     this.div = document.createElement('div');
-    this.div.style.width = args.width;
-    this.div.style.height = args.height;
-    this.width = args.width;
-    this.height = args.height;
+
+    this.x = args.x;
+    this.y = args.y;
+    this.w = args.width;
+    this.h = args.height;
     
-    var transform_val = VIZ.pan.cord_map(VIZ.Screen, {x:args.x, y:args.y});
-	VIZ.set_transform(this.div, transform_val.x, transform_val.y);
+    this.redraw_size();
+    this.redraw_pos();
     
     this.div.style.position = 'fixed';
     this.div.classList.add('graph');
@@ -98,8 +101,6 @@ VIZ.Component = function(parent, args) {
     this.div.ontouchstart = this.div.onmousedown;
     
     /** Allow element to be dragged */ 
-    this.div.setAttribute('data-x', args.x);
-    this.div.setAttribute('data-y', args.y);
     interact(this.div)
         .draggable({
             inertia: true,
@@ -108,15 +109,12 @@ VIZ.Component = function(parent, args) {
             },
             onmove: function (event) {
                 var target = event.target;
-                var tform = VIZ.get_transform(target) 
-                var x = tform.x + event.dx; //Adjusting position relative to current transform
-                var y = tform.y + event.dy;
-                var scale = VIZ.pan.cord_per_px(VIZ.Screen)
-                var datax = parseFloat(target.getAttribute('data-x')) + event.dx * scale.x; //Adjusting coordinate independently of position on screen
-                var datay = parseFloat(target.getAttribute('data-y')) + event.dy * scale.y;
-                VIZ.set_transform(target, x, y);
-                target.setAttribute('data-x', datax);
-                target.setAttribute('data-y', datay);                  
+                
+                self.x = self.x + event.dx / (self.viewport.w * self.viewport.scale);
+                self.y = self.y + event.dy / (self.viewport.h * self.viewport.scale);
+                
+                self.redraw_pos();
+                
             },
             onend: function (event) {
                 self.save_layout();
@@ -140,14 +138,17 @@ VIZ.Component = function(parent, args) {
             var dz = event.deltaRect.right;
             var da = event.deltaRect.bottom;
 
-            var scale = VIZ.pan.cord_per_px(VIZ.Screen);
-
-            var x = parseFloat(target.getAttribute('data-x')) + ((dx + dz) / 2 * scale.x) ;
-            var y = parseFloat(target.getAttribute('data-y')) + ((dy + da) / 2 * scale.y) ;
-            target.setAttribute('data-x', x);
-            target.setAttribute('data-y', y);
+            var x = self.x + (dx + dz) / 2 / (viewport.w * viewport.scale);
+            var y = self.y + (dy + da) / 2 / (viewport.h * viewport.scale);
+            
+            self.x = x;
+            self.y = y;
+            self.w = newWidth / (viewport.w * viewport.scale) / 2;
+            self.h = newHeight / (viewport.h * viewport.scale) / 2;
+            
             self.on_resize(newWidth, newHeight);
-            VIZ.pan.redraw();          
+            self.redraw_size();
+            self.redraw_pos();
         })
         .on('resizeend', function(event) {
             self.save_layout();
@@ -178,7 +179,6 @@ VIZ.Component = function(parent, args) {
         });    
         
     VIZ.Component.components.push(this);
-    VIZ.pan.redraw();
 };
 
 VIZ.Component.components = [];
@@ -266,10 +266,10 @@ VIZ.Component.prototype.show_label = function(event) {
 
 VIZ.Component.prototype.layout_info = function () {
     var info = {};
-    info.x = parseFloat(this.div.getAttribute('data-x'));
-    info.y = parseFloat(this.div.getAttribute('data-y'));
-    info.width = parseFloat(this.div.style.width);
-    info.height = parseFloat(this.div.style.height);  
+    info.x = this.x;
+    info.y = this.y;
+    info.width = this.w;
+    info.height = this.h;  
     info.label_visible = this.label_visible;    
     return info;
 }
@@ -278,6 +278,28 @@ VIZ.Component.prototype.save_layout = function () {
     var info = this.layout_info();
     this.ws.send('config:' + JSON.stringify(info));
 }
+
+
+VIZ.Component.prototype.redraw_size = function () {
+    this.width = this.viewport.w * this.w * this.viewport.scale * 2;
+    this.height = this.viewport.h * this.h * this.viewport.scale * 2;
+    this.div.style.width = this.width;
+    this.div.style.height = this.height;
+};
+    
+VIZ.Component.prototype.redraw_pos = function () {
+    var x = (this.x + this.viewport.x - this.w) * this.viewport.w * this.viewport.scale;
+    var y = (this.y + this.viewport.y - this.h) * this.viewport.h * this.viewport.scale;
+    VIZ.set_transform(this.div, x, y);
+};
+
+VIZ.Component.prototype.get_screen_width = function () {
+    return this.viewport.w * this.w * this.viewport.scale * 2
+};
+VIZ.Component.prototype.get_screen_height = function () {
+    return this.viewport.h * this.h * this.viewport.scale * 2
+};
+
 
 
 /**
