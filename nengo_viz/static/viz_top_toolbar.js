@@ -38,11 +38,12 @@ VIZ.Toolbar = function(model_name) {
 	open_file.setAttribute('type', 'file');
 	open_file.id = 'open_file'
 	open_file.style.display = 'none';
-	open_file.addEventListener('change', function(){console.log('swiss chz');self.file_name();});
-<<<<<<< HEAD
-	this.add_button('Open file', 'glyphicon glyphicon-folder-open', function(){self.file_browser()});
+	open_file.addEventListener('change', function(){self.file_name();});
+	
+    this.add_button('Open file', 'glyphicon glyphicon-folder-open', function(){self.file_browser()});
 	this.add_button('Reset model layout', 'glyphicon glyphicon-retweet', function() {self.reset_model_layout()});
 	this.add_button('Undo last', 'glyphicon glyphicon-backward', function() {});
+    this.add_button('Config_modal', 'glyphicon glyphicon-backward', function() {self.open_modal();});
 	
 	var button = document.createElement('li');
 	button.id = 'model_name';
@@ -56,19 +57,12 @@ VIZ.Toolbar = function(model_name) {
 		});
 	this.launch_global_user_config_menu(this.global_config_options);
 
-=======
 	VIZ.Toolbar.add_button('Open file', 'glyphicon glyphicon-folder-open', function(){self.file_browser()});
 	VIZ.Toolbar.add_button('Reset model layout', 'glyphicon glyphicon-retweet', function() {self.reset_model_layout()});
-	//VIZ.Toolbar.add_button('Save as', 'glyphicon glyphicon-floppy-disk', function() {});
 	VIZ.Toolbar.add_button('Undo last', 'glyphicon glyphicon-backward', function() {});
 
-	// VIZ.Toolbar.add_button('Settings', 'glyphicon glyphicon-cog', function() {});
 	var settings = document.createElement('li');
     var settings_link = document.createElement('a');
-
-    settings.setAttribute('id', "modal_open");
-	settings.setAttribute("role", "presentation");
-	settings.addEventListener('click', function() {});
 
     settings_link.setAttribute('title', 'Settings');
 	settings_link.className = 'glyphicon glyphicon-cog';
@@ -83,17 +77,9 @@ VIZ.Toolbar = function(model_name) {
 	name.setAttribute("role", "presentation");	
 	VIZ.top_bar.appendChild(name);
 
-    // var modalWrapper = document.getElementById("modal_wrapper");
-    // var modalWindow  = document.getElementById("modal_window");
-    //
-    // var openModal = function(e) {
-    //    modalWrapper.className = "overlay";
-    //    modalWindow.style.marginTop = (-modalWindow.offsetHeight)/2 + "px";
-    //    modalWindow.style.marginLeft = (-modalWindow.offsetWidth)/2 + "px";
-    //    e.preventDefault ? e.preventDefault() : e.returnValue = false;
-    // };
->>>>>>> moved config out of template
-}
+    this.is_showing = false;
+
+};
 
 // This opens up the pop up window that allows you to select the file to open
 VIZ.Toolbar.prototype.file_browser = function () {
@@ -181,3 +167,27 @@ VIZ.Toolbar.prototype.create_config_item = function (name, text, val) {
 	})
 	return label;
 }
+
+// Original JavaScript code by Chirp Internet: www.chirp.com.au
+// Please acknowledge use of this code by including this header.
+
+VIZ.Toolbar.prototype.open_modal = function() {
+        console.log(this);
+        console.log(this.is_showing);
+
+        if (this.is_showing == false) {
+            console.log('got in here')
+            this.modalWrapper.className = "overlay";
+            this.modalWindow.style.marginTop = (-this.modalWindow.offsetHeight)/2 + "px";
+            this.modalWindow.style.marginLeft = (-this.modalWindow.offsetWidth)/2 + "px";
+            this.is_showing = true;
+        }
+        else {
+            this.close_modal();
+        }
+    };
+
+VIZ.Toolbar.prototype.close_modal = function() {
+        this.modalWrapper.className = "";
+        this.is_showing = false;
+    };
