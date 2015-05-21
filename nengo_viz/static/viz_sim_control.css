@@ -1,21 +1,25 @@
 .sim_control {
-    background: #6699ff;
+    background-color: #eee;
     width: 100%;
     height: 80px;
+    box-shadow: 0 0 12px 1px rgba(87,87,87,0.2);
 }
 
 .time_slider{
-    background: #99ccff;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
 }
 
 .time_slider .shown_time{
-    background: white;
-    opacity: 0.25;
-    border: 1px solid black;
+    background: #d9edf7;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
 }
 
 .time_slider svg .axis path {
-    stroke: black;
+    stroke: #333;
     stroke-width: 1px;
     fill: none;
 }
@@ -33,9 +37,16 @@
     font-size: 30px;
 }
 
-.metrics-container {
+.metrics-container.table {
     display: inline-block;
-    margin: 20px 0;
-    margin-left: 50px;
+    /*margin: 15px 0;*/
+    margin-top: 40px;
+    transform: translate(0, -50%);
+    margin-left: 20px;
+    width: 100px;
+    overflow: hidden;
 }
 
+.metrics-container td, .metrics-container th {
+    padding: 0.2em;
+}
