@@ -211,13 +211,20 @@ VIZ.TimeSlider = function(args) {
         .on('resizemove', function (event) {
             var target = event.target;
 
-            var x = self.kept_scale(self.first_shown_time) + event.deltaRect.left;
+            var dx = event.deltaRect.left;
+            var width = event.rect.width;
+            if (width < 5) {
+                width = 5;
+                dx = 0;
+            }
+
+            var x = self.kept_scale(self.first_shown_time) + dx;
             var new_time = self.kept_scale.invert(x);
-            var new_time2 = self.kept_scale.invert(x + event.rect.width);
+            var new_time2 = self.kept_scale.invert(x + width);
             new_time2 = Math.min(self.last_time, new_time2);
 
             var shown_time = VIZ.clip(
-                new_time2 - new_time, 0.01, self.kept_time);
+                new_time2 - new_time, 0.0, self.kept_time);
             self.shown_time = shown_time;
             new_time = VIZ.clip(new_time,
                                 self.last_time - self.kept_time,
