@@ -380,7 +380,7 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             server.running = True
             while server.running:
                 try:
-                    server.serve_forever(poll_interval=0.1)
+                    server.serve_forever(poll_interval=0.02)
                     server.running = False
                 except KeyboardInterrupt:
                     # Check that user wants to shut down
@@ -402,6 +402,25 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
                         serve = False
         finally:
             print("Shutting down server...")
+
+            # shut down any remaining threads
+            if asynch and server.requests is not None:
+                for _, sock in server.requests:
+                    sock.close()
+
+                first = True
+                for thread, _ in server.requests:
+                    if thread.is_alive():
+                        # giving the first thread more time to close
+                        # effectively gives all threads more time to close
+                        thread.join(0.05 if first else 0.01)
+                        first = False
+
+                n_zombie = sum(thread.is_alive()
+                               for thread, _ in server.requests)
+                if n_zombie > 0:
+                    print("%d zombie threads will close abruptly" % n_zombie)
+
             cls.servers.remove(server)
 
     @classmethod
@@ -417,6 +436,19 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
 
 class AsyncHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
     daemon_threads = True  # this ensures all spawned threads exit
+
+    def __init__(self, *args, **kwargs):
+        BaseHTTPServer.HTTPServer.__init__(self, *args, **kwargs)
+
+        # keep track of open threads, so we can close them when we exit
+        self.requests = []
+
+    def process_request_thread(self, request, client_address):
+        thread = threading.current_thread()
+        self.requests.append((thread, request))
+        SocketServer.ThreadingMixIn.process_request_thread(
+            self, request, client_address)
+        self.requests.remove((thread, request))
 
 
 favicon = ('\x00\x00\x01\x00\x01\x00\x10\x10\x00\x00\x01\x00\x18\x00h\x03\x00'
