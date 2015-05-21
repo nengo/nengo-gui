@@ -1,53 +1,14 @@
 import nengo
 from nengo_viz.grandalf.graphs import Vertex, Edge, Graph
 from nengo_viz.grandalf.layouts import VertexViewer, SugiyamaLayout
+from nengo_viz.namefinder import LayoutParentFinder
 
 
 class Layout(object):
     """Generates layouts for nengo Networks"""
     def __init__(self, model):
         self.model = model
-
-        # dictionary to keep track of parents of items in Network
-        self.parents = {}
-
-        # subnetworks that have not yet been examined for parents
-        self.unexamined_networks = [model]
-
-    def find_parent(self, obj):
-        """Return the parent of an object in the model.
-
-        The layout system needs to know the parents of items so that it can
-        handle a Connection into a deeply nested subnetwork (that Connection
-        should be treated as a Connection to the Network that is a direct
-        child of the Network we are currently laying out).  But, we don't
-        want to do a complete search of the entire graph.  So, instead we
-        do an incremental breadth-first search until we find the component
-        we are looking for.
-        """
-        if obj is self.model:
-            # the top Network does not have a parent
-            return None
-        parent = self.parents.get(obj, None)
-        while parent is None:
-            if len(self.unexamined_networks) == 0:
-                # there are no networks left we haven't looked into
-                # this should not happen in a valid nengo.Network
-                print("could not find parent of", obj)
-                return None
-            # grab the next network we haven't looked into
-            net = self.unexamined_networks.pop(0)
-            # identify all its children
-            for n in net.nodes:
-                self.parents[n] = net
-            for e in net.ensembles:
-                self.parents[e] = net
-            for n in net.networks:
-                self.parents[n] = net
-                # add child networks into the list to be searched
-                self.unexamined_networks.append(n)
-            parent = self.parents.get(obj, None)
-        return parent
+        self.parent_finder = LayoutParentFinder(model)
 
     def compute_bounds(self, core):
         """Determine the min/max x/y values in the graph_core"""
@@ -100,14 +61,14 @@ class Layout(object):
             if isinstance(pre, nengo.ensemble.Neurons):
                 pre = pre.ensemble
             while pre not in vertices:
-                pre = self.find_parent(pre)
+                pre = self.parent_finder.find_parent(pre)
                 if pre is None:
                     break
             post = c.post_obj
             if isinstance(post, nengo.ensemble.Neurons):
                 post = post.ensemble
             while post not in vertices:
-                post = self.find_parent(post)
+                post = self.parent_finder.find_parent(post)
                 if post is None:
                     break
 

@@ -201,6 +201,8 @@ class Viz(object):
         nengo_viz.server.Server.viz = self
         nengo_viz.server.Server.start(port=port, browser=browser)
 
+        print("Namefinder: %f" % self.name_finder.total_time)
+
     def create_sim(self):
         """Create a new Simulator with this configuration"""
         return VizSim(self)
