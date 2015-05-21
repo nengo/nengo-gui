@@ -78,6 +78,7 @@ class SocketClosedError(IOError):
 
 class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
     server_version = 'SimpleWebInterface/2.0'
+    servers = []
     serve_files = []
     serve_dirs = []
 
@@ -372,11 +373,15 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             server = AsyncHTTPServer((addr, port), cls)
         else:
             server = BaseHTTPServer.HTTPServer((addr, port), cls)
+
+        cls.servers.append(server)
+
         try:
-            serve = True
-            while serve:
+            server.running = True
+            while server.running:
                 try:
-                    server.serve_forever()
+                    server.serve_forever(poll_interval=0.1)
+                    server.running = False
                 except KeyboardInterrupt:
                     # Check that user wants to shut down
                     try:
@@ -387,7 +392,7 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
                         if rlist:
                             line = sys.stdin.readline()
                             if line[0].lower() == 'y':
-                                serve = False
+                                server.running = False
                             else:
                                 print("Resuming...")
                         else:
@@ -397,11 +402,12 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
                         serve = False
         finally:
             print("Shutting down server...")
+            cls.servers.remove(server)
 
-            # shut down any remaining threads
-            if asynch and server.requests is not None:
-                for socket in server.requests:
-                    socket.close()
+    @classmethod
+    def stop(cls):
+        for server in cls.servers[:]:
+            server.shutdown()
 
     @classmethod
     def browser(cls, port=80):
@@ -410,16 +416,7 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
 
 
 class AsyncHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
-    requests = None
-
-    def process_request_thread(self, request, client_address):
-        # keep track of open threads, so we can close them when we exit
-        if self.requests is None:
-            self.requests = []
-        self.requests.append(request)
-        SocketServer.ThreadingMixIn.process_request_thread(self, request,
-                                                           client_address)
-        self.requests.remove(request)
+    daemon_threads = True  # this ensures all spawned threads exit
 
 
 favicon = ('\x00\x00\x01\x00\x01\x00\x10\x10\x00\x00\x01\x00\x18\x00h\x03\x00'

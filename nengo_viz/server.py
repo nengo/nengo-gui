@@ -38,6 +38,10 @@ class Server(swi.SimpleWebInterface):
         components = viz_sim.create_javascript()
         return html % dict(components=components)
 
+    def swi_shutdown(self, *path):
+        self.stop()
+        return "Shutting down..."
+
     def ws_viz_component(self, client, uid):
         """Handles ws://host:port/viz_component with a websocket"""
         # figure out what component is being connected to
