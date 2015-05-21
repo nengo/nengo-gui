@@ -83,7 +83,7 @@ VIZ.NetGraph = function(parent, args) {
     /** scrollwheel on background zooms the full area by changing scale.
      *  Note that offsetX,Y are also changed to zoom into a particular
      *  point in the space */
-    interact(this.svg)
+    interact(document.getElementById('main'))
         .on('wheel', function(event) {
             
             self.menu.hide_any();
