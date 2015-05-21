@@ -180,6 +180,10 @@ VIZ.TimeSlider = function(args) {
     this.shown_div = document.createElement('div');
     this.shown_div.classList.add('shown_time');
     this.shown_div.style.position = 'absolute';
+    var d1 = document.createElement('div')
+    this.shown_div.appendChild(d1);
+    var d2 = document.createElement('div')
+    d1.appendChild(d2);
     this.div.appendChild(this.shown_div);
 
     this.kept_scale.domain([0.0 - this.kept_time, 0.0]);

@@ -12,10 +12,20 @@
     overflow: hidden;
 }
 
-.time_slider .shown_time{
+.time_slider .shown_time {
     background: #d9edf7;
     border-left: 1px solid #ccc;
     border-right: 1px solid #ccc;
+    padding-left: 1px;
+    padding-right: 1px;
+}
+
+.time_slider .shown_time div {
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    padding-left: 1px;
+    padding-right: 1px;
+    height: 100%;
 }
 
 .time_slider svg .axis path {
