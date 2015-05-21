@@ -39,6 +39,7 @@ VIZ.Toolbar = function(model_name) {
 	open_file.id = 'open_file'
 	open_file.style.display = 'none';
 	open_file.addEventListener('change', function(){console.log('swiss chz');self.file_name();});
+<<<<<<< HEAD
 	this.add_button('Open file', 'glyphicon glyphicon-folder-open', function(){self.file_browser()});
 	this.add_button('Reset model layout', 'glyphicon glyphicon-retweet', function() {self.reset_model_layout()});
 	this.add_button('Undo last', 'glyphicon glyphicon-backward', function() {});
@@ -55,6 +56,43 @@ VIZ.Toolbar = function(model_name) {
 		});
 	this.launch_global_user_config_menu(this.global_config_options);
 
+=======
+	VIZ.Toolbar.add_button('Open file', 'glyphicon glyphicon-folder-open', function(){self.file_browser()});
+	VIZ.Toolbar.add_button('Reset model layout', 'glyphicon glyphicon-retweet', function() {self.reset_model_layout()});
+	//VIZ.Toolbar.add_button('Save as', 'glyphicon glyphicon-floppy-disk', function() {});
+	VIZ.Toolbar.add_button('Undo last', 'glyphicon glyphicon-backward', function() {});
+
+	// VIZ.Toolbar.add_button('Settings', 'glyphicon glyphicon-cog', function() {});
+	var settings = document.createElement('li');
+    var settings_link = document.createElement('a');
+
+    settings.setAttribute('id', "modal_open");
+	settings.setAttribute("role", "presentation");
+	settings.addEventListener('click', function() {});
+
+    settings_link.setAttribute('title', 'Settings');
+	settings_link.className = 'glyphicon glyphicon-cog';
+    // settings_link.onclick = function (e) {config.openModal(e)}; 
+
+    settings.appendChild(settings_link);
+    VIZ.top_bar.appendChild(settings);
+
+	var name = document.createElement('li');
+	name.id = 'model_name';
+	name.innerHTML = model_name;
+	name.setAttribute("role", "presentation");	
+	VIZ.top_bar.appendChild(name);
+
+    // var modalWrapper = document.getElementById("modal_wrapper");
+    // var modalWindow  = document.getElementById("modal_window");
+    //
+    // var openModal = function(e) {
+    //    modalWrapper.className = "overlay";
+    //    modalWindow.style.marginTop = (-modalWindow.offsetHeight)/2 + "px";
+    //    modalWindow.style.marginLeft = (-modalWindow.offsetWidth)/2 + "px";
+    //    e.preventDefault ? e.preventDefault() : e.returnValue = false;
+    // };
+>>>>>>> moved config out of template
 }
 
 // This opens up the pop up window that allows you to select the file to open

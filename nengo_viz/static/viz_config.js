@@ -1,51 +1,59 @@
 // Original JavaScript code by Chirp Internet: www.chirp.com.au
 // Please acknowledge use of this code by including this header.
 
-// var modal_init = function() {
+VIZ.Config = function() {
+    var self = this
 
-//   var modalWrapper = document.getElementById("modal_wrapper");
-//   var modalWindow  = document.getElementById("modal_window");
+    var modalWrapper = document.createElement('div');
+    var modalWindow = document.createElement('div');
+    modalWrapper.id = 'modal_wrapper';
+    modalWindow.id = 'modal_window';
+    modalWindow.innerHTML = '<p>Config menu</p>';
+    modalWrapper.appendChild(modalWindow);
+	var main = document.getElementById('main');
+    main.appendChild(modalWrapper);
 
-//   var openModal = function(e)
-//   {
-//     modalWrapper.className = "overlay";
-//     modalWindow.style.marginTop = (-modalWindow.offsetHeight)/2 + "px";
-//     modalWindow.style.marginLeft = (-modalWindow.offsetWidth)/2 + "px";
-//     e.preventDefault ? e.preventDefault() : e.returnValue = false;
-//   };
+    console.log(modalWrapper);
 
-//   var closeModal = function(e)
-//   {
-//     modalWrapper.className = "";
-//     e.preventDefault ? e.preventDefault() : e.returnValue = false;
-//   };
+    this.openModal = function(e) {
+        modalWrapper.className = "overlay";
+        modalWindow.style.marginTop = (-modalWindow.offsetHeight)/2 + "px";
+        modalWindow.style.marginLeft = (-modalWindow.offsetWidth)/2 + "px";
+        e.preventDefault ? e.preventDefault() : e.returnValue = false;
 
-//   var clickHandler = function(e) {
-//     if(!e.target) e.target = e.srcElement;
-//     if(e.target.tagName == "DIV") {
-//       if(e.target.id != "modal_window") closeModal(e);
-//     }
-//   };
+        console.log('here')
+    };
 
-//   var keyHandler = function(e) {
-//     if(e.keyCode == 27) closeModal(e);
-//   };
+    this.closeModal = function(e) {
+        modalWrapper.className = "";
+        e.preventDefault ? e.preventDefault() : e.returnValue = false;
+    };
 
-//   if(document.addEventListener) {
-//     document.getElementById("modal_open").addEventListener("click", openModal, false);
-//     document.getElementById("modal_close").addEventListener("click", closeModal, false);
-//     document.addEventListener("click", clickHandler, false);
-//     document.addEventListener("keydown", keyHandler, false);
-//   } else {
-//     document.getElementById("modal_open").attachEvent("onclick", openModal);
-//     document.getElementById("modal_close").attachEvent("onclick", closeModal);
-//     document.attachEvent("onclick", clickHandler);
-//     document.attachEvent("onkeydown", keyHandler);
-//   }
-// };
+    this.clickHandler = function(e) {
+        if(!e.target) e.target = e.srcElement;
+        if(e.target.tagName == "DIV") {
+          if(e.target.id != "modal_window") self.closeModal(e);
+        }
+    };
 
-// if(document.addEventListener) {
-//   document.addEventListener("DOMContentLoaded", modal_init, false);
-// } else {
-//   window.attachEvent("onload", modal_init);
-// }
+    this.keyHandler = function(e) {
+        if(e.keyCode == 27) self.closeModal(e);
+    };
+
+    if(document.addEventListener) {
+        document.getElementById("modal_open").addEventListener('click', 
+                self.openModal);
+        document.addEventListener("click", self.clickHandler, false);
+        document.addEventListener("keydown", self.keyHandler, false);
+    } 
+    else {
+        document.getElementById("modal_open").attachEvent("onclick", 
+                self.openModal);
+        document.attachEvent("onclick", self.clickHandler);
+        document.attachEvent("onkeydown", self.keyHandler);
+    }
+};
+
+
+
+>>>>>>> moved config out of template

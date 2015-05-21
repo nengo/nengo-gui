@@ -88,7 +88,9 @@ class SimControl(Component):
     def javascript(self):
         info = dict(uid=self.uid)
         json = self.javascript_config(info)
-        return 'sim = new VIZ.SimControl(control, %s); toolbar = new VIZ.Toolbar("%s")' % (json, self.viz.viz.filename) 
+        return 'sim = new VIZ.SimControl(control, %s); ' % json + \
+               'toolbar = new VIZ.Toolbar("%s"); ' % self.viz.viz.filename + \
+               'config = new VIZ.Config();'
 
     def message(self, msg):
         if type(msg) is unicode:
