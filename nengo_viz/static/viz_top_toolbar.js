@@ -15,22 +15,11 @@ VIZ.Toolbar = function(model_name) {
     //Create the top toolbar which is using Bootstrap styling
 	var toolbar = document.createElement('ul');
 	toolbar.className = 'nav nav-pills'
-	//VIZ.top_bar = toolbar;
 	var main = document.getElementById('main');
-	//VIZ.set_transform(toolbar, 0,0)
 	main.appendChild(toolbar);
 	
 	//keep a reference to the toolbar element
 	this.toolbar=toolbar;
-
-	//Keep an array of settings the user can modify
-	this.global_config_options = ['yes', 'tesfeswfefs', 'asd']
-
-	//Keep an array representing user setting configuration
-	this.global_config_settings = [];
-	for (var i = 0; i < this.global_config_options; i++) {
-		this.global_config_settings.push(true);
-	}
 
 	//Allow navigation of files on computer
 	var open_file = document.createElement('input');
@@ -67,9 +56,10 @@ VIZ.Toolbar.prototype.file_browser = function () {
         fb.fileTree({
             root: '.',
             script: '/browse'
-        }, function (file) {
-                var msg = 'open' + file
-                sim.ws.send(msg);})
+        }, 
+        function (file) {
+            var msg = 'open' + file
+            sim.ws.send(msg);})
     }
 };
 
@@ -77,8 +67,8 @@ VIZ.Toolbar.prototype.file_browser = function () {
 VIZ.Toolbar.prototype.file_name = function() {
     var filename = document.getElementById('open_file').value;
     filename = filename.replace("C:\\fakepath\\", ""); 
-    var msg = 'open' + filename 
-        sim.ws.send(msg);
+    var msg = 'open' + filename;
+    sim.ws.send(msg);
 };
 
 //Tells the server to reset the model layout to the default
@@ -115,9 +105,6 @@ VIZ.Toolbar.prototype.launch_global_user_config_menu = function(option_list, mod
 	close_button.addEventListener('click', function () {self.close_modal()});
 	modal_element.appendChild(close_button);
 
-<<<<<<< HEAD
-=======
-
     return modal_element;
 }
 
@@ -129,20 +116,20 @@ VIZ.Toolbar.prototype.create_config_item = function (name, text, val) {
 	option.setAttribute('class', 'config_option');
 	label.appendChild(option);
 	option.type = 'checkbox';
-	//option.checked = val;
+
 	option.name = name;
 	option.value = name;
 	option.addEventListener('click', function() {
 		var answers = $('.config_option');
 		var options = {tag:'user_config' , data: []}
 		for (var i = 0; i < answers.length; i++){
-			options.data.push(answers[i].checked)
+			options.data.push(answers[i].checked);
 		}
 		var msg = JSON.stringify(options);
 		sim.ws.send(msg);
-	})
+	});
 	return label;
-}
+};
 
 VIZ.Toolbar.prototype.start_modal = function () {
 
@@ -152,7 +139,7 @@ VIZ.Toolbar.prototype.start_modal = function () {
     else{
         sim.ws.send('config')
     }
-}
+};
 
 VIZ.Toolbar.prototype.open_modal = function(option_list) {
 
@@ -170,11 +157,9 @@ VIZ.Toolbar.prototype.open_modal = function(option_list) {
     this.modalWrapper.className = "overlay";
     this.modalWindow.style.marginTop = (-this.modalWindow.offsetHeight) / 2 + "px";
     this.modalWindow.style.marginLeft = (-this.modalWindow.offsetWidth) / 2 + "px";
-    };
-
-
+};
 
 VIZ.Toolbar.prototype.close_modal = function() {
         this.modalWrapper.parentNode.removeChild(this.modalWrapper);
         this.modalWrapper = false;
-    };
+};
