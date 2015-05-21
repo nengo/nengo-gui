@@ -206,12 +206,69 @@ VIZ.NetGraphConnection.prototype.redraw = function() {
         this.line.setAttribute('y1', pre_pos[1]);
         this.line.setAttribute('x2', post_pos[0]);
         this.line.setAttribute('y2', post_pos[1]);
-
-        var mx = pre_pos[0] * 0.4 + post_pos[0] * 0.6;
-        var my = pre_pos[1] * 0.4 + post_pos[1] * 0.6;
-        var angle = 180 / Math.PI * Math.atan2(post_pos[1] - pre_pos[1], 
+        
+        var angle = Math.atan2(post_pos[1] - pre_pos[1], //angle between objects
                                                post_pos[0] - pre_pos[0]);
+        
+        var w1 = this.pre.get_width();
+        var h1 = this.pre.get_height();
+        var w2 = this.post.get_width();
+        var h2 = this.post.get_height();
+
+        a1 = Math.atan2(h1,w1);
+        a2 = Math.atan2(h2,w2);
+        
+        var pre_length = this.intersect_length(angle, a1, w1, h1);
+        var post_to_pre_angle = angle - Math.PI;
+        if (post_to_pre_angle < -Math.PI) {post_to_pre_angle+=2*Math.PI;}
+        var post_length = this.intersect_length(post_to_pre_angle, a2, w2, h2);
+        
+        var mx = (pre_pos[0]+pre_length[0]) * 0.4 
+                    + (post_pos[0]+post_length[0]) * 0.6;
+        var my = (pre_pos[1]+pre_length[1]) * 0.4 
+                    + (post_pos[1]+post_length[1]) * 0.6;
+        
+        //Check to make sure the marker doesn't go past either endpoint
+        vec1 = [post_pos[0]-pre_pos[0], post_pos[1]-pre_pos[1]];
+        vec2 = [mx-pre_pos[0], my-pre_pos[1]];
+        dot_prod = (vec1[0]*vec2[0] + vec1[1]*vec2[1]) 
+            / (vec1[0]*vec1[0]+vec1[1]*vec1[1]);
+        console.log([vec1, vec2, dot_prod]);
+        if (dot_prod < 0) {
+            mx = pre_pos[0];
+            my = pre_pos[1];
+        } else if (dot_prod>1){
+            mx = post_pos[0];
+            my = post_pos[1];
+        }        
+        angle = 180 / Math.PI * angle;
         this.marker.setAttribute('transform', 
-                          'translate(' + mx + ',' + my + ') rotate('+angle+')');
+                          'translate(' + mx + ',' + my + ') rotate('+ angle +')');
     }
+}
+/**Function to determine the length of an intersection line through a rectangle
+ ** theta - the angle of the line
+ ** alpha - the angle between zero and the top right corner of the object
+ **/
+VIZ.NetGraphConnection.prototype.intersect_length = function(theta, alpha, width, height) {
+    var quad = 0;
+    var beta = 2*(Math.PI/2 - alpha);  //angle between top corners
+    var h2 = (height/2)*(height/2);
+    var w2 = (width/2)*(width/2);
+
+    if (theta >= -alpha && theta < alpha) { //1st quadrant
+        var x = width/2;
+        var y = width/2*Math.tan(theta);
+    } else if (theta >= alpha && theta < alpha + beta) { //2nd quadrant
+        var x = (height/2)/Math.tan(theta);
+        var y = height/2;
+    } else if (theta >= alpha + beta || theta < -(alpha + beta)) { //3rd quadrant
+        var x = -width/2;
+        var y = -width/2*Math.tan(theta);
+    } else { //4th quadrant
+        var x = -(height/2)/Math.tan(theta);
+        var y = -height/2;
+    }
+    
+    return [x,y];
 }
