@@ -378,6 +378,12 @@ VIZ.DataStore.prototype.get_shown_data = function() {
     return shown;
 }
 
+VIZ.DataStore.prototype.is_at_end = function() {
+    var ts = this.sim.time_slider;
+    return (ts.last_time < ts.first_shown_time + ts.shown_time + 0.01);
+}
+
+
 VIZ.DataStore.prototype.get_last_data = function() {
     /* determine time range */
     var t1 = this.sim.time_slider.first_shown_time;
