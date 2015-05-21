@@ -4,53 +4,63 @@
 VIZ.Config = function() {
     var self = this
 
+    // Create the config window
     var modalWrapper = document.createElement('div');
     var modalWindow = document.createElement('div');
     modalWrapper.id = 'modal_wrapper';
     modalWindow.id = 'modal_window';
     modalWindow.innerHTML = '<p>Config menu</p>';
     modalWrapper.appendChild(modalWindow);
+    // Add it to the main page
 	var main = document.getElementById('main');
     main.appendChild(modalWrapper);
 
-    console.log(modalWrapper);
+    this.is_showing = false;
 
-    this.openModal = function(e) {
-        modalWrapper.className = "overlay";
-        modalWindow.style.marginTop = (-modalWindow.offsetHeight)/2 + "px";
-        modalWindow.style.marginLeft = (-modalWindow.offsetWidth)/2 + "px";
-        e.preventDefault ? e.preventDefault() : e.returnValue = false;
+    openModal = function(e) {
+        console.log(self);
+        console.log(self.is_showing);
 
-        console.log('here')
-    };
-
-    this.closeModal = function(e) {
-        modalWrapper.className = "";
-        e.preventDefault ? e.preventDefault() : e.returnValue = false;
-    };
-
-    this.clickHandler = function(e) {
-        if(!e.target) e.target = e.srcElement;
-        if(e.target.tagName == "DIV") {
-          if(e.target.id != "modal_window") self.closeModal(e);
+        if (self.is_showing == false) {
+            modalWrapper.className = "overlay";
+            modalWindow.style.marginTop = (-modalWindow.offsetHeight)/2 + "px";
+            modalWindow.style.marginLeft = (-modalWindow.offsetWidth)/2 + "px";
+            e.preventDefault ? e.preventDefault() : e.returnValue = false;
+            self.is_showing = true;
+        }
+        else {
+            closeModal(e);
         }
     };
 
-    this.keyHandler = function(e) {
-        if(e.keyCode == 27) self.closeModal(e);
+    closeModal = function(e) {
+        modalWrapper.className = "";
+        e.preventDefault ? e.preventDefault() : e.returnValue = false;
+        self.is_showing = false;
+    };
+
+    clickHandler = function(e) {
+        if(!e.target) e.target = e.srcElement;
+        if(e.target.tagName == "DIV") {
+          if(e.target.id != "modal_window") closeModal(e);
+        }
+    };
+
+    keyHandler = function(e) {
+        if(e.keyCode == 27) closeModal(e);
     };
 
     if(document.addEventListener) {
         document.getElementById("modal_open").addEventListener('click', 
-                self.openModal);
-        document.addEventListener("click", self.clickHandler, false);
-        document.addEventListener("keydown", self.keyHandler, false);
+                openModal);
+        document.addEventListener("click", clickHandler, false);
+        document.addEventListener("keydown", keyHandler, false);
     } 
     else {
         document.getElementById("modal_open").attachEvent("onclick", 
-                self.openModal);
-        document.attachEvent("onclick", self.clickHandler);
-        document.attachEvent("onkeydown", self.keyHandler);
+                openModal);
+        document.attachEvent("onclick", clickHandler);
+        document.attachEvent("onkeydown", keyHandler);
     }
 };
 
