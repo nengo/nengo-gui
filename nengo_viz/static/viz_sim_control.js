@@ -53,6 +53,11 @@ VIZ.SimControl = function(div, args) {
         self.menu.hide_any();
     });
 
+    interact(this.div)
+    .on('tap', function(){
+        self.menu.hide_any();
+    });
+
     this.update();
 };
 

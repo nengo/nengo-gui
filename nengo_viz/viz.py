@@ -106,7 +106,6 @@ class Viz(object):
 
             self.model = model
             self.locals = locals
-                
             self.filename = filename
             self.name_finder = nengo_viz.NameFinder(locals, model)
             self.default_labels = self.name_finder.known_name
