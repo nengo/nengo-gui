@@ -97,10 +97,7 @@ class SimControl(Component):
                'toolbar = new VIZ.Toolbar("%s"); ' % self.viz.viz.filename 
 
     def message(self, msg):
-        if type(msg) is unicode:
-            msg = json.loads(msg)
-            self.config_settings(msg['data'])
-        elif msg == 'pause':
+        if msg == 'pause':
             self.paused = True
         elif msg == 'config':
             print('config request received')
@@ -117,7 +114,7 @@ class SimControl(Component):
                 os.remove(self.viz.viz.filename + '.cfg')
             self.viz.viz.load(self.viz.viz.filename)
             self.reload = True
-        else: ## Currently this handles json stringified data from config_menu checkboxes
+        else:
             print(msg)
 
 class SimControlTemplate(Template):
