@@ -185,7 +185,7 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         var uid = data.uid;
         for (var i = 0; i < VIZ.Component.components.length; i++) {
             if (VIZ.Component.components[i].uid === uid) {
-                VIZ.Component.components[i].remove();
+                VIZ.Component.components[i].remove(true);
                 break;
             }
         }

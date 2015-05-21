@@ -204,8 +204,12 @@ VIZ.Component.prototype.generate_menu = function() {
     return items;
 };
 
-VIZ.Component.prototype.remove = function() {
-    this.ws.send('remove');
+VIZ.Component.prototype.remove = function(undo_flag) {
+    if (undo_flag === true) {
+        this.ws.send('remove_undo');
+    } else {
+        this.ws.send('remove');
+    }
     this.parent.removeChild(this.div);
     var index = VIZ.Component.components.indexOf(this);
     VIZ.Component.components.splice(index, 1);
