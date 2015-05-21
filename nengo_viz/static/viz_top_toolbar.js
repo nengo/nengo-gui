@@ -125,16 +125,6 @@ VIZ.Toolbar.prototype.launch_global_user_config_menu = function(option_list, mod
 
 // creates a checkbox item that sends updates to the server when it is checked/unchecked
 VIZ.Toolbar.prototype.create_config_item = function (name, text) {
-	var label = document.createElement('label');
-	var option = document.createElement('input');
-	label.innerHTML = text;
-	option.setAttribute('class', 'config_option');
-	label.appendChild(option);
-	option.type = 'checkbox';
-	option.name = name;
-	option.value = name;
-	option.addEventListener('click', function() {
-		var answers = $('.config_option');
 		var options = {tag:'user_config' , data: []}
 		for (var i = 0; i < answers.length; i++){
 			options.data.push(answers[i].checked);
