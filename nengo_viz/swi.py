@@ -384,22 +384,18 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
                     server.running = False
                 except KeyboardInterrupt:
                     # Check that user wants to shut down
-                    try:
-                        sys.stdout.write(
-                            "\nShut-down this web server (y/[n])? ")
-                        sys.stdout.flush()
-                        rlist, _, _ = select.select([sys.stdin], [], [], 10)
-                        if rlist:
-                            line = sys.stdin.readline()
-                            if line[0].lower() == 'y':
-                                server.running = False
-                            else:
-                                print("Resuming...")
+                    sys.stdout.write(
+                        "\nShut-down this web server (y/[n])? ")
+                    sys.stdout.flush()
+                    rlist, _, _ = select.select([sys.stdin], [], [], 10)
+                    if rlist:
+                        line = sys.stdin.readline()
+                        if line[0].lower() == 'y':
+                            server.running = False
                         else:
-                            print("No confirmation received. Resuming...")
-                    except KeyboardInterrupt:
-                        # Two quick interrupts, so quit.
-                        serve = False
+                            print("Resuming...")
+                    else:
+                        print("No confirmation received. Resuming...")
         finally:
             print("Shutting down server...")
 
