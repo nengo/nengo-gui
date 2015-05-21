@@ -506,13 +506,18 @@ class ClientSocket(object):
 
         str_data = ''
         if datalen > 0:
-            mask_key = data[2 + offset:6 + offset]
-            masked_data = data[6 + offset:(6 + datalen + offset)]
-            unmasked_data = [masked_data[i] ^ mask_key[i % 4]
-                             for i in range(len(masked_data))]
-            str_data = bytearray(unmasked_data).decode('ascii')
+            stop_index = 6 + datalen + offset
+            if len(data) < stop_index:
+                self.old_data = data
+                return None
+            else:
+                mask_key = data[2 + offset:6 + offset]
+                masked_data = data[6 + offset : stop_index]
+                unmasked_data = [masked_data[i] ^ mask_key[i % 4]
+                                 for i in range(len(masked_data))]
+                str_data = bytearray(unmasked_data).decode('ascii')
 
-            self.old_data = data[(6 + datalen + offset):]
+                self.old_data = data[stop_index:]
 
         return str_data
 
