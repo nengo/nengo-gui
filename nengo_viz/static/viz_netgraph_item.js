@@ -120,7 +120,11 @@ VIZ.NetGraphItem = function(ng, info) {
 
     if (!this.passthrough) {
         /** dragging the edge of item to change its size */
-        interact(this.shape)
+        var tmp = this.shape
+        if(info.type === 'ens') {
+            tmp = $(this.shape.getElementsByClassName('mainCircle'))[0];
+        }
+        interact(tmp)
             .resizable({
                 edges: { left: true, right: true, bottom: true, top: true }
                 })
@@ -585,12 +589,8 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
 
     if (this.type === 'ens') {
         var scale = Math.sqrt(screen_h * screen_h + screen_w * screen_w) / Math.sqrt(2);
-        var r = $('.mainCircle').attr('r');
+        var r = 18;  //TODO: Don't hardcode the size of the ensemble
         this.shape.setAttribute('transform', 'scale(' + scale / 2 / r + ')');
-//         this.shape.setAttribute('transform', 'translate(' 
-//                 + (-screen_w / 2 + 18) + ', ' 
-//                 + (-screen_h / 2) + ')scale(' +
-//                 + scale / 2 / r + ')');
         this.shape.style.setProperty('stroke-width', 20/scale);              
     } else if (this.passthrough) {
         this.shape.setAttribute('rx', screen_w / 2);
@@ -690,16 +690,7 @@ VIZ.NetGraphItem.prototype.get_screen_location = function() {
 VIZ.NetGraphItem.prototype.ensemble_svg = function() {
     var shape = this.ng.createSVGElement('g');
     shape.setAttribute('class', 'ensemble');        
-    aspect = 1.;
     
-    var main_circle = this.ng.createSVGElement('circle');
-    main_circle.setAttribute('class', 'mainCircle');
-    main_circle.setAttribute('style', 'fill: transparent; stroke-width: 0;');
-    main_circle.setAttribute('cx', '0');
-    main_circle.setAttribute('cy', '0');
-    main_circle.setAttribute('r', '18');
-    
-    shape.appendChild(main_circle);
     var circle = this.ng.createSVGElement('circle');
     VIZ.setAttributes(circle, {'cx':'-11.157','cy':'-7.481','r':'4.843'});
     shape.appendChild(circle);
@@ -718,6 +709,14 @@ VIZ.NetGraphItem.prototype.ensemble_svg = function() {
     var circle = this.ng.createSVGElement('circle');
     VIZ.setAttributes(circle, {'cx':'3.894','cy':'-13.158','r':'4.843'});
     shape.appendChild(circle);
+
+    var main_circle = this.ng.createSVGElement('circle');
+    main_circle.setAttribute('class', 'mainCircle');
+    main_circle.setAttribute('style', 'fill: transparent; stroke-width: 0;');
+    main_circle.setAttribute('cx', '0');
+    main_circle.setAttribute('cy', '0');
+    main_circle.setAttribute('r', '18');
+    shape.appendChild(main_circle);
     
     return shape;
 }
