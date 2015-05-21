@@ -256,7 +256,7 @@ VIZ.NetGraphConnection.prototype.redraw = function() {
         vec2 = [mx-pre_pos[0], my-pre_pos[1]];
         dot_prod = (vec1[0]*vec2[0] + vec1[1]*vec2[1]) 
             / (vec1[0]*vec1[0]+vec1[1]*vec1[1]);
-        console.log([vec1, vec2, dot_prod]);
+
         if (dot_prod < 0) {
             mx = pre_pos[0];
             my = pre_pos[1];
