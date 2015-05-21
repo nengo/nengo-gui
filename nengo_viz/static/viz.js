@@ -205,6 +205,8 @@ VIZ.Component.prototype.generate_menu = function() {
 };
 
 VIZ.Component.prototype.remove = function(undo_flag) {
+    undo_flag = typeof undo_flag !== 'undefined' ? undo_flag : false;
+
     if (undo_flag === true) {
         this.ws.send('remove_undo');
     } else {
