@@ -14,6 +14,8 @@ def infomodal(ng, uid, **args):
         return ensemble_infomodal(ng, uid=uid, **args)
     elif isinstance(obj, nengo.Node):
         return node_infomodal(ng, uid=uid, **args)
+    elif isinstance(obj, nengo.Network):
+        return net_infomodal(ng, uid=uid, **args)
     else:
         raise NotImplementedError()
 
@@ -158,3 +160,39 @@ def conn_infomodal(ng, uid, conn_in_uids, conn_out_uids):
         conninfo["func"][conn_uid] = get_conn_func_str(conn_uid)
 
     return conninfo
+
+
+def net_infomodal(ng, uid, conn_in_uids, conn_out_uids):
+    net = ng.uids[uid]
+
+    stats = []
+    stats.append({
+        'title': "In this network",
+        'stats': [
+            ('Number of ensembles', len(net.ensembles)),
+            ('Total number of neurons',
+             sum(e.n_neurons for e in net.ensembles)),
+            ('Number of nodes', len(net.nodes)),
+            ('Number of connections', len(net.connections)),
+            ('Number of subnetworks', len(net.networks)),
+        ]})
+    stats.append({
+        'title': "In this network and subnetworks",
+        'stats': [
+            ('Number of ensembles', len(net.all_ensembles)),
+            ('Total number of neurons',
+             sum(e.n_neurons for e in net.all_ensembles)),
+            ('Number of nodes', len(net.all_nodes)),
+            ('Number of connections', len(net.all_connections)),
+            ('Number of subnetworks', len(net.all_networks)),
+        ]})
+
+    conninfo = conn_infomodal(ng, uid, conn_in_uids, conn_out_uids)
+
+    js = ['VIZ.Modal.title("Details for \'%s\'");' % (
+        ng.viz.viz.get_label(net))]
+    js.append('VIZ.Modal.footer("close");')
+    js.append('VIZ.Modal.net_body("%s", %s, %s);' % (
+        uid, json.dumps(stats), json.dumps(conninfo)))
+    js.append('VIZ.Modal.show();')
+    return '\n'.join(js)

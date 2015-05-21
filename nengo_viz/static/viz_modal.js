@@ -28,40 +28,57 @@ VIZ.Modal.footer = function(type){
 }
 
 VIZ.Modal.ensemble_body = function(uid, params, plots, conninfo) {
-    var tabs = VIZ.Modal.info_body();
-    VIZ.Modal.render_params(tabs.$params, params, VIZ.tooltips.ens);
-    VIZ.Modal.render_plots(tabs.$plots, plots);
-    VIZ.Modal.render_connections(tabs.$connections, uid, conninfo);
+    var tabs = VIZ.Modal.info_body([{id: 'params', title: 'Parameters'},
+                                    {id: 'plots', title: 'Plots'},
+                                    {id: 'connections', title: 'Connections'}]);
+    VIZ.Modal.render_params(tabs.params, params, VIZ.tooltips.ens);
+    VIZ.Modal.render_plots(tabs.plots, plots);
+    VIZ.Modal.render_connections(tabs.connections, uid, conninfo);
 }
 
 VIZ.Modal.node_body = function(uid, params, plots, conninfo) {
-    var tabs = VIZ.Modal.info_body();
-    VIZ.Modal.render_params(tabs.$params, params, VIZ.tooltips.node);
-    VIZ.Modal.render_plots(tabs.$plots, plots);
-    VIZ.Modal.render_connections(tabs.$connections, uid, conninfo);
+    var tabs = VIZ.Modal.info_body([{id: 'params', title: 'Parameters'},
+                                    {id: 'plots', title: 'Plots'},
+                                    {id: 'connections', title: 'Connections'}]);
+    VIZ.Modal.render_params(tabs.params, params, VIZ.tooltips.node);
+    VIZ.Modal.render_plots(tabs.plots, plots);
+    VIZ.Modal.render_connections(tabs.connections, uid, conninfo);
+}
+
+VIZ.Modal.net_body = function(uid, stats, conninfo) {
+    var tabs = VIZ.Modal.info_body([{id: 'stats', title: 'Statistics'},
+                                    {id: 'connections', title: 'Connections'}]);
+    VIZ.Modal.render_stats(tabs.stats, stats);
+    VIZ.Modal.render_connections(tabs.connections, uid, conninfo);
 }
 
 /**
- * Sets up the three tabs for Info modals.
+ * Sets up the tabs for Info modals.
  */
-VIZ.Modal.info_body = function() {
+VIZ.Modal.info_body = function(tabinfo) {
+    var tabdivs = {}
     var $body = $('.modal-body').first();
     $body.empty();
 
-    $body.append('<ul class="nav nav-tabs">'+
-                 '  <li class="active"><a href="#params" data-toggle="tab">Parameters</a></li>'+
-                 '  <li><a href="#plots" data-toggle="tab">Plots</a></li>'+
-                 '  <li><a href="#connections" data-toggle="tab">Connections</a></li>'+
-                 '</ul>');
-
+    var $tab_ul = $('<ul class="nav nav-tabs"/>').appendTo($body);
     var $content = $('<div class="tab-content"/>').appendTo($body);
-    var $params = $('<div class="tab-pane active" id="params"/>')
-        .appendTo($content);
-    var $plots = $('<div class="tab-pane" id="plots"/>')
-        .appendTo($content);
-    var $connections = $('<div class="tab-pane" id="connections"/>')
-        .appendTo($content);
-    return {$params: $params, $plots: $plots, $connections: $connections}
+
+    for (var i = 0; i < tabinfo.length; i++) {
+        // <li> for the tab label
+        var $tab_li = $('<li/>').appendTo($tab_ul);
+        $tab_li.append('<a href="#' + tabinfo[i].id + '" data-toggle="tab">' +
+                       tabinfo[i].title + '</a>');
+
+        // <div> for the tab content
+        tabdivs[tabinfo[i].id] = $(
+            '<div class="tab-pane" id="' + tabinfo[i].id + '"/>')
+            .appendTo($content);
+        if (i === 0) {
+            $tab_li.addClass("active");
+            tabdivs[tabinfo[i].id].addClass("active");
+        }
+    }
+    return tabdivs;
 }
 
 /**
@@ -84,6 +101,25 @@ VIZ.Modal.render_params = function($parent, params, tooltips) {
         $tooltip.append('<span class="glyphicon glyphicon-question-sign" ' +
                         'aria-hidden="true"/>').appendTo($dt);
         $tooltip.popover({"trigger": "hover"});
+    }
+}
+
+/**
+ * Renders information about some statistics of an object.
+ */
+VIZ.Modal.render_stats = function($parent, stats) {
+    for (var i = 0; i < stats.length; i++) {
+        $parent.append('<h3>' + stats[i].title + '</h3>')
+        var $stable = $('<table class="table table-condensed table-hover"/>')
+            .appendTo($parent);
+
+        for (var j = 0; j < stats[i].stats.length; j++) {
+            var $tr = $('<tr/>').appendTo($stable);
+            var $desc = $('<td class="col-md-8"/>').appendTo($tr);
+            $desc.text(stats[i].stats[j][0]);
+            var $val = $('<td class="col-md-4"/>').appendTo($tr);
+            $val.text(stats[i].stats[j][1]);
+        }
     }
 }
 
@@ -125,7 +161,7 @@ VIZ.Modal.render_plot = function($parent, plotinfo) {
     }
 
     if (plotinfo.plot === 'multiline') {
-        multiline_plot($parent.get(0), plotinfo.x, plotinfo.y);
+        VIZ.Modal.multiline_plot($parent.get(0), plotinfo.x, plotinfo.y);
     } else if (plotinfo.plot !== 'none') {
         console.warn("Plot type " + plotinfo.plot +
                      " not understood, or not implemented yet.");
@@ -195,9 +231,10 @@ VIZ.Modal.multiline_plot = function(selector, x, ys) {
  *  Renders information about connections related to an object.
  */
 VIZ.Modal.render_connections = function($parent, uid, conninfo) {
-    var conn_in_objs = VIZ.netgraph.svg_objects[uid].conn_in;
+    var ngi = VIZ.netgraph.svg_objects[uid];
+    var conn_in_objs = ngi.conn_in;
     if (conn_in_objs.length > 0) {
-        $parent.append('<h3>Incoming Connections:</h3>');
+        $parent.append('<h3>Incoming Connections</h3>');
 
         var $conn_in_table = $('<table class="table table-condensed"><tr>' +
                                '<th class="conn-objs">Object</th>' +
@@ -210,12 +247,12 @@ VIZ.Modal.render_connections = function($parent, uid, conninfo) {
             function (conn_obj) { return conn_obj.pres });
     }
 
-    var conn_out_objs = VIZ.netgraph.svg_objects[uid].conn_out;
+    var conn_out_objs = ngi.conn_out;
     if (conn_out_objs.length > 0) {
         if (conn_in_objs.length > 0) {
             $parent.append('<hr/>');
         }
-        $parent.append('<h3>Outgoing Connections:</h3>');
+        $parent.append('<h3>Outgoing Connections</h3>');
 
         var $conn_out_table = $('<table class="table table-condensed"><tr>' +
                                 '<th class="conn-objs">Object</th>' +
@@ -226,6 +263,20 @@ VIZ.Modal.render_connections = function($parent, uid, conninfo) {
             $conn_out_table, conninfo, conn_out_objs,
             function (conn_obj) { return conn_obj.post },
             function (conn_obj) { return conn_obj.posts });
+    }
+
+    if (conn_in_objs.length === 0 && conn_out_objs.length === 0) {
+        var $warn = $('<div class="alert alert-warning" role="alert"/>')
+            .appendTo($parent);
+        var $p = $('<p/>').appendTo($warn);
+        $p.append('<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>');
+        $p.append('<span class="sr-only">Warning:</span>');
+        if (ngi.type === 'net' && ngi.expanded) {
+            $p.append(document.createTextNode(
+                "Network is expanded. Please see individual objects for connection info."));
+        } else {
+            $p.append(document.createTextNode("No connections to or from this object."));
+        }
     }
 }
 
