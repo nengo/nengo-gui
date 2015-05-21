@@ -24,19 +24,14 @@ class NetGraph(Component):
         self.parents = {}
         self.networks_to_search = [self.viz.model]
         self.initialized_pan_and_zoom = False
+        self.last_modify_time = os.path.getmtime(self.viz.viz.filename)
 
-        reload_thread = threading.Thread(target=self.reloader)
-        reload_thread.daemon = True
-        reload_thread.start()
+    def check_for_reload(self):
+        t = os.path.getmtime(self.viz.viz.filename)
 
-    def reloader(self):
-        modify_time = os.path.getmtime(self.viz.viz.filename)
-        while True:
-            time.sleep(1)
-            t = os.path.getmtime(self.viz.viz.filename)
-            if t != modify_time:
-                self.reload()
-                modify_time = t
+        if self.last_modify_time is None or self.last_modify_time < t:
+            self.reload()
+            self.last_modify_time = t
 
     def reload(self):
         locals = {}
@@ -152,6 +147,8 @@ class NetGraph(Component):
         return parents
 
     def update_client(self, client):
+        self.check_for_reload()
+
         if not self.initialized_pan_and_zoom:
             self.send_pan_and_zoom(client)
             self.initialized_pan_and_zoom = True
