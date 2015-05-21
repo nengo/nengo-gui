@@ -61,3 +61,4 @@ VIZ.tooltips.node.size_out = [
 /* Connection Parameters */
 VIZ.tooltips.conn = {};
 VIZ.tooltips.conn.expand = ["Click to show / hide full path"];
+VIZ.tooltips.conn.fan_passthrough = ["This connection is to / from a passthrough node: Fan in / out information is approximate."];

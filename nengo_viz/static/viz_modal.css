@@ -45,3 +45,20 @@ div.modal-backdrop {
     font-size: 0.9em;
     border: 0px;
 }
+
+.modal-body table .conn-objs {
+    width: 30%;
+}
+
+.modal-body table .conn-funcs {
+    width: 50%;
+}
+
+.modal-body table .conn-fan {
+    width: 20%;
+}
+
+.modal-body table ul > li > .glyphicon,
+.modal-body table ul > li > .glyphicon {
+    padding-right: 8px;
+}
