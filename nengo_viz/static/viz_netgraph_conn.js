@@ -191,7 +191,7 @@ VIZ.NetGraphConnection.prototype.redraw = function() {
                           
             var ex = pre_pos[0] - scale_value*17.5;
             var ey = pre_pos[1] - height - scale_value*36;
-            console.log([ex,ey])
+
             this.recurrent_ellipse.setAttribute('transform',
                           'translate(' + ex + ',' + ey + ')' + scale);
                           

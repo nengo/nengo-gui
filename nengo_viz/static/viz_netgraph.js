@@ -35,8 +35,8 @@ VIZ.NetGraph = function(parent, args) {
     this.svg.style.position = 'fixed';    
         
     interact(this.svg).styleCursor(false);
-    interact(this.svg).preventDefault(true);
-    interact.margin(30*VIZ.scale.step_size*this.scale);
+    //interact(this.svg).preventDefault(true);
+    //interact.margin(30*VIZ.scale.step_size*this.scale);
            
     VIZ.netgraph = this;
     parent.appendChild(this.svg);
