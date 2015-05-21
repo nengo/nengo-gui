@@ -91,19 +91,16 @@ VIZ.Toolbar.prototype.add_button = function (name, icon_class, fun) {
 	button.addEventListener('click', function() {fun();});
 }
 
-VIZ.Toolbar.add_dropdown = function(){}
-
-
 VIZ.Toolbar.prototype.launch_global_user_config_menu = function() {
 	var self = this;
 	var menu = document.createElement('div');
 	menu.id = 'global_config_menu';
 	main = document.getElementById('main');
 	main.appendChild(menu);
-	menu.appendChild(create_config_item(1, 'box1, plz clik'));
-	menu.appendChild(create_config_item(2, 'box2, plz clik'));
-	menu.appendChild(create_config_item(3, 'box3, plz clik'));
-	menu.appendChild(create_config_item(4, 'box4, plz clik'));
+	menu.appendChild(this.create_config_item(1, 'box1, plz clik'));
+	menu.appendChild(this.create_config_item(2, 'box2, plz clik'));
+	menu.appendChild(this.create_config_item(3, 'box3, plz clik'));
+	menu.appendChild(this.create_config_item(4, 'box4, plz clik'));
 
 	var close_button = document.createElement('button');
 	close_button.setAttribute('type', 'button');
@@ -111,11 +108,11 @@ VIZ.Toolbar.prototype.launch_global_user_config_menu = function() {
 	close_button.style.position = 'absolute';
 	close_button.style.bottom = '0';
 	close_button.innerHTML = 'Close';
-	close_button.addEventListener('click', function () {document.removeChild(menu)});
+	close_button.addEventListener('click', function () {menu.parentNode.removeChild(menu)});
 	menu.appendChild(close_button);
 }
 
-function create_config_item(name, text) {
+VIZ.Toolbar.prototype.create_config_item = function (name, text) {
 	var label = document.createElement('label');
 	var option = document.createElement('input');
 	label.innerHTML = text;
