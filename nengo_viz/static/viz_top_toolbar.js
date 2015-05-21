@@ -1,4 +1,6 @@
 VIZ.Toolbar = function(model_name) {
+    console.assert(typeof model_name == 'string')
+
 	var self = this;
 
 	//Make sure the file opener is initially hidden
@@ -77,7 +79,14 @@ VIZ.Toolbar.prototype.reset_model_layout = function () {
     sim.ws.send('reset');
 }
 
+// Adds an icon to the top toolbar, using a bootstrap glyphicon class as the icon class
+// attaches the function that is passed into it
+// names is shown on hover
 VIZ.Toolbar.prototype.add_button = function (name, icon_class, fun) {
+    console.assert(typeof name == 'string')
+    console.assert(typeof icon_class == 'string')
+    console.assert(typeof fun == 'function')
+    
     var button = document.createElement('li');
     var link = document.createElement('a');
     link.setAttribute('title', name);
@@ -88,11 +97,14 @@ VIZ.Toolbar.prototype.add_button = function (name, icon_class, fun) {
 	button.addEventListener('click', function() {fun();});
 }
 
+// Takes a list of options from the server and an element in which it will place a checkbox menu
 VIZ.Toolbar.prototype.launch_global_user_config_menu = function(option_list, modal_element) {
+    console.assert(typeof option_list == 'object')
+    console.assert(typeof modal_element == 'object')
 	var self = this;
 
 	for (var i = 0; i < option_list.length; i++) {
-		modal_element.appendChild(this.create_config_item(i, option_list[i], VIZ.user_settings[i]));
+		modal_element.appendChild(this.create_config_item(i, option_list[i]));
 	}
 
     //make the close button
@@ -108,15 +120,14 @@ VIZ.Toolbar.prototype.launch_global_user_config_menu = function(option_list, mod
     return modal_element;
 }
 
->>>>>>> config options are retrieved form server
-VIZ.Toolbar.prototype.create_config_item = function (name, text, val) {
+// creates a checkbox item that sends updates to the server when it is checked/unchecked
+VIZ.Toolbar.prototype.create_config_item = function (name, text) {
 	var label = document.createElement('label');
 	var option = document.createElement('input');
 	label.innerHTML = text;
 	option.setAttribute('class', 'config_option');
 	label.appendChild(option);
 	option.type = 'checkbox';
-
 	option.name = name;
 	option.value = name;
 	option.addEventListener('click', function() {
@@ -131,6 +142,9 @@ VIZ.Toolbar.prototype.create_config_item = function (name, text, val) {
 	return label;
 };
 
+// Function called by event handler in order to launch modal
+// open_modal is called from sim_control messages listener 
+// after request for config options is sent by server, 
 VIZ.Toolbar.prototype.start_modal = function () {
 
     if (this.modalWrapper) {
@@ -141,7 +155,10 @@ VIZ.Toolbar.prototype.start_modal = function () {
     }
 };
 
+// Is called once an option list is received from server,
+// Creates the modal elements and positions it on screen.
 VIZ.Toolbar.prototype.open_modal = function(option_list) {
+    console.assert(typeof option_list == 'object')
 
     this.modalWrapper = document.createElement('div');
     this.modalWindow = document.createElement('div');
@@ -153,12 +170,15 @@ VIZ.Toolbar.prototype.open_modal = function(option_list) {
     // Add it to the main page
     main.appendChild(this.modalWrapper);
     
+    //Add the checkboxes element
     this.launch_global_user_config_menu(option_list, this.modalWindow);
+
     this.modalWrapper.className = "overlay";
     this.modalWindow.style.marginTop = (-this.modalWindow.offsetHeight) / 2 + "px";
     this.modalWindow.style.marginLeft = (-this.modalWindow.offsetWidth) / 2 + "px";
 };
 
+// Closes the modal and removes it from the screen
 VIZ.Toolbar.prototype.close_modal = function() {
         this.modalWrapper.parentNode.removeChild(this.modalWrapper);
         this.modalWrapper = false;
