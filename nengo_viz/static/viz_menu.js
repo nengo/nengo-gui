@@ -27,7 +27,7 @@ VIZ.Menu.prototype.show = function (x, y, items) {
     if (items.length == 0) {
         return;
     }
-    
+
     // TODO: move this to the constructor
     this.menu = document.createElement('div');
     this.menu.className = 'btn-group-vertical';

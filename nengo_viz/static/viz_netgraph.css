@@ -4,14 +4,14 @@
 g.ens ellipse{
     stroke-width:1;
     }
-    
+
 g.node rect{
     stroke-width:1;
-    }  
+    }
 
 g.net rect{
     stroke-width:1;
-    }  
+    }
 
 .netgraph g text {
     text-anchor: middle;
@@ -20,7 +20,7 @@ g.net rect{
 .netgraph g.expanded text {
     text-anchor: middle;
     dominant-baseline: text-before-edge;
-    }    
+    }
 
 .netgraph line {
     stroke: black;
@@ -41,5 +41,4 @@ g.net rect{
 .netgraph g.passthrough text {
     text-anchor: middle;
     dominant-baseline: text-before-edge;
-    }    
-
+    }
