@@ -92,11 +92,26 @@ class SimControl(Component):
                'toolbar = new VIZ.Toolbar("%s"); ' % self.viz.viz.filename + \
                'config = new VIZ.Config();'
 
+    # def message(self, msg):
+    #     if type(msg) is unicode:
+    #         msg = json.loads(msg)
+    #         self.config_settings(msg['data'])
+    #     elif msg == 'pause':
+    #         self.paused = True
+    #     elif msg == 'continue':
+    #         if self.viz.sim is None:
+    #             self.viz.rebuild = True
+    #         self.paused = False
+    #     elif msg[:4] == 'open':
+    #         self.viz.viz.load(msg[4:])
+    #         self.reload = True
+    #     elif msg == 'reset':
+    #         if os.path.isfile(self.viz.viz.filename + '.cfg') :
+    #             os.remove(self.viz.viz.filename + '.cfg')
+    #         self.viz.viz.load(self.viz.viz.filename)
+    #         self.reload = True
     def message(self, msg):
-        if type(msg) is unicode:
-            msg = json.loads(msg)
-            self.config_settings(msg['data'])
-        elif msg == 'pause':
+        if msg == 'pause':
             self.paused = True
         elif msg == 'continue':
             if self.viz.sim is None:
@@ -110,6 +125,8 @@ class SimControl(Component):
                 os.remove(self.viz.viz.filename + '.cfg')
             self.viz.viz.load(self.viz.viz.filename)
             self.reload = True
+        else:
+            print(msg)
 
 class SimControlTemplate(Template):
     cls = SimControl
