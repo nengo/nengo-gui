@@ -29,19 +29,19 @@ div.modal-backdrop {
     color: #aaaaaa;
 }
 
-.modal-body .tab-pane#connections h3 {
+.modal-body .tab-pane > h3 {
     font-size: 1.3em;
     font-weight: bold;
 }
 
-.modal-body .tab-pane#connections th {
+.modal-body .tab-pane th {
     font-size: 1em;
     font-weight: bold;
     border: 0px;
     background-color: #dddddd;
 }
 
-.modal-body .tab-pane#connections td {
+.modal-body .tab-pane td {
     font-size: 0.9em;
     border: 0px;
 }
