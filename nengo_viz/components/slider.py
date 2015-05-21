@@ -1,5 +1,8 @@
+import collections
+
 import numpy as np
 import struct
+
 
 from nengo_viz.components.component import Component, Template
 
@@ -13,7 +16,7 @@ class Slider(Component):
         self.label = viz.viz.get_label(node)
         self.start_value = np.zeros(node.size_out)
         self.struct = struct.Struct('<%df' % (1 + node.size_out))
-        self.data = []
+        self.data = collections.deque()
         if not callable(self.base_output):
             self.start_value[:] = self.base_output
 
@@ -44,8 +47,8 @@ class Slider(Component):
 
     def update_client(self, client):
         while len(self.data) > 0:
-            data = self.data.pop(0)
-            client.write(data, binary=True)
+            item = self.data.popleft()
+            client.write(item, binary=True)
 
     def message(self, msg):
         index, value = msg.split(',')
