@@ -45,7 +45,8 @@ VIZ.Toolbar = function(model_name) {
 		.on('tap', function(){
 			self.menu.hide_any();
 		});
-	VIZ.Toolbar.launch_global_user_config_menu();
+	this.launch_global_user_config_menu();
+
 }
 
 // This opens up the pop up window that allows you to select the file to open
@@ -92,10 +93,9 @@ VIZ.Toolbar.prototype.add_button = function (name, icon_class, fun) {
 
 VIZ.Toolbar.add_dropdown = function(){}
 
-//<button type="button" class="btn btn-default">Default</button>
 
-VIZ.Toolbar.launch_global_user_config_menu = function() {
-
+VIZ.Toolbar.prototype.launch_global_user_config_menu = function() {
+	var self = this;
 	var menu = document.createElement('div');
 	menu.id = 'global_config_menu';
 	main = document.getElementById('main');
@@ -110,7 +110,8 @@ VIZ.Toolbar.launch_global_user_config_menu = function() {
 	close_button.class = 'btn btn-default';
 	close_button.style.position = 'absolute';
 	close_button.style.bottom = '0';
-	close_button.innerHTML = 'hallo';
+	close_button.innerHTML = 'Close';
+	close_button.addEventListener('click', function () {document.removeChild(menu)});
 	menu.appendChild(close_button);
 }
 
