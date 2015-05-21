@@ -210,34 +210,26 @@ VIZ.TimeSlider = function(args) {
             edges: {left: true, right: true, bottom: false, top: false}
         })
         .on('resizemove', function (event) {
-            var target = event.target;
+            var xmin = self.kept_scale(self.last_time - self.kept_time);
+            var xmax = self.kept_scale(self.last_time);
+            var xa0 = self.kept_scale(self.first_shown_time);
+            var xb0 = self.kept_scale(self.first_shown_time + self.shown_time);
+            var xa1 = xa0 + event.deltaRect.left;
+            var xb1 = xb0 + event.deltaRect.right;
 
-            var dx = event.deltaRect.left;
-            var width = event.rect.width;
-            if (width < 5) {
-                width = 5;
-                dx = 0;
-            }
-
-            var x = self.kept_scale(self.first_shown_time) + dx;
-            var new_time = self.kept_scale.invert(x);
-            var new_time2 = self.kept_scale.invert(x + width);
-            new_time2 = Math.min(self.last_time, new_time2);
-
-            var shown_time = VIZ.clip(
-                new_time2 - new_time, 0.0, self.kept_time);
-            self.shown_time = shown_time;
-            new_time = VIZ.clip(new_time,
-                                self.last_time - self.kept_time,
-                                self.last_time - self.shown_time);
-            self.first_shown_time = new_time;
+            var min_width = 15;
+            xa1 = VIZ.clip(xa1, xmin, xb0 - min_width);
+            xb1 = VIZ.clip(xb1, xa0 + min_width, xmax);
 
             /** set slider width and position */
-            x = self.kept_scale(new_time);
-            var width = self.kept_scale(new_time + shown_time) - x;
+            event.target.style.width = (xb1 - xa1) + 'px';
+            VIZ.set_transform(event.target, xa1, 0);
 
-            target.style.width = width + 'px';
-            VIZ.set_transform(event.target, x, 0);
+            /** update times */
+            var ta1 = self.kept_scale.invert(xa1);
+            var tb1 = self.kept_scale.invert(xb1);
+            self.first_shown_time = ta1;
+            self.shown_time = tb1 - ta1;
 
             /** update any components who need to know the time changed */
             self.sim.div.dispatchEvent(new Event('adjust_time'));
