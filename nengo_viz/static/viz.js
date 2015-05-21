@@ -380,7 +380,7 @@ VIZ.DataStore.prototype.get_shown_data = function() {
 
 VIZ.DataStore.prototype.is_at_end = function() {
     var ts = this.sim.time_slider;
-    return (ts.last_time < ts.first_shown_time + ts.shown_time + 0.01);
+    return (ts.last_time < ts.first_shown_time + ts.shown_time + 0.000000001);
 }
 
 
