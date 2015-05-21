@@ -167,19 +167,25 @@ VIZ.XYValue.prototype.layout_info = function () {
 
 VIZ.XYValue.prototype.set_range = function() {
     var range = this.scale_y.domain();
-    var new_range = prompt('Set range', '' + range[0] + ',' + range[1]);
-    if (new_range !== null) {
-        new_range = new_range.split(',');
-        var min = parseFloat(new_range[0]);
-        var max = parseFloat(new_range[1]);
-        this.scale_x.domain([min, max]);
-        this.scale_y.domain([min, max]);
-        this.axis_x.tickValues([min, max]);
-        this.axis_y.tickValues([min, max]);
-        this.axis_y_g.call(this.axis_y);            
-        this.axis_x_g.call(this.axis_x);            
-        this.save_layout();
-    }
+    var self = this;
+    VIZ.Modal.title('Set graph range...');
+    VIZ.Modal.single_input_body(range,'Range:');
+    VIZ.Modal.footer('ok_cancel', function(e) {
+        var new_range = $('#singleInput').val();
+        if (new_range !== null) {
+            new_range = new_range.split(',');
+            var min = parseFloat(new_range[0]);
+            var max = parseFloat(new_range[1]);
+            self.scale_x.domain([min, max]);
+            self.scale_y.domain([min, max]);
+            self.axis_x.tickValues([min, max]);
+            self.axis_y.tickValues([min, max]);
+            self.axis_y_g.call(self.axis_y);            
+            self.axis_x_g.call(self.axis_x);            
+            self.save_layout();
+        }      
+    });
+    VIZ.Modal.show();
 }
 
 VIZ.XYValue.prototype.set_indexes = function() {
@@ -191,4 +197,20 @@ VIZ.XYValue.prototype.set_indexes = function() {
         this.update();
         this.save_layout();
     }
+}
+VIZ.XYValue.prototype.set_indexes = function() {
+    var self = this;
+    VIZ.Modal.title('Set X and Y indices...');
+    VIZ.Modal.single_input_body([this.index_x,this.index_y],'Indices:');
+    VIZ.Modal.footer('ok_cancel', function(e) {
+        var new_indexes = $('#singleInput').val();
+        if (new_indexes !== null) {
+            new_indexes = new_indexes.split(',');
+            self.index_x = parseInt(new_indexes[0]);
+            self.index_y = parseInt(new_indexes[1]);
+            self.update();
+            self.save_layout();
+        }
+    });
+    VIZ.Modal.show();
 }

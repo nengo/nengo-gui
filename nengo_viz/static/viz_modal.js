@@ -16,16 +16,36 @@ VIZ.Modal.title = function(title) {
     $('.modal-title').first().text(title);
 }
 
-VIZ.Modal.footer = function(type){
+VIZ.Modal.footer = function(type, ok_function){
     var $footer = $('.modal-footer').first();
     $footer.empty();
 
     if (type === "close") {
         $footer.append('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
+    } else if (type === "ok_cancel") {
+        $footer.append('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');        
+        $footer.append('<button id="OK" type="button" class="btn btn-primary" data-dismiss="modal">OK</button>');
+        $('#OK').on('click', ok_function);
     } else {
         console.warn('Modal footer type ' + type + ' no recognized.')
     }
 }
+
+/**
+ * Sets up the body for standard input forms
+ */
+
+VIZ.Modal.single_input_body = function(start_values, label) {
+    var $body = $('.modal-body').first();
+    $body.empty();
+
+    var $form = $('<form class="form-horizontal"/>').appendTo($body);
+    var $ctrlg = $('<div class="control-group"/>').appendTo($form);
+    $ctrlg.append('<label class="control-label" for="singleInput">'+label+'</label>');
+    var $ctrls = $('<div class="controls">').appendTo($ctrlg);
+    $ctrls.append('<input id="singleInput" type="text" placeholder="' + start_values + '">');
+}
+
 
 VIZ.Modal.ensemble_body = function(uid, params, plots, conninfo) {
     var tabs = info_body([{id: 'params', title: 'Parameters'},

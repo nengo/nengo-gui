@@ -87,15 +87,20 @@ VIZ.Pointer.prototype.set_show_pairs = function(value) {
     }
 };
 
-VIZ.Pointer.prototype.set_value = function() {
-    var value = prompt('Enter a Semantic Pointer value', 
-                       this.fixed_value);
-    if (value == null) { 
-        value = ''; 
-    }
-    this.fixed_value = value;
-    this.ws.send(value);
-};
+VIZ.Value.prototype.set_value = function() {
+    var self = this;
+    VIZ.Modal.title('Enter a Semantic Pointer value...');
+    VIZ.Modal.single_input_body('Pointer','Value:');
+    VIZ.Modal.footer('ok_cancel', function(e) {
+        var value = $('#singleInput').val();
+        if (value == null) { 
+            value = ''; 
+        }
+        self.fixed_value = value;
+        self.ws.send(value);
+    });
+    VIZ.Modal.show();
+}
 
 
 /**
