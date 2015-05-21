@@ -10,6 +10,8 @@ VIZ.Toolbar = function(model_name) {
     //Create a menu object for the top toolbar (useful for closing other menus that are open when toolbar is clicked on)
     this.menu = new VIZ.Menu(this);
 
+    sim.toolbar = this;
+
     //Create the top toolbar which is using Bootstrap styling
 	var toolbar = document.createElement('ul');
 	toolbar.className = 'nav nav-pills'
@@ -21,8 +23,14 @@ VIZ.Toolbar = function(model_name) {
 	//keep a reference to the toolbar element
 	this.toolbar=toolbar;
 
+	//Keep an array of settings the user can modify
+	this.global_config_options = ['yes', 'tesfeswfefs', 'asd']
+
 	//Keep an array representing user setting configuration
-	this.array_settings;
+	this.global_config_settings = [];
+	for (var i = 0; i < this.global_config_options; i++) {
+		this.global_config_settings.push(true);
+	}
 
 	//Allow navigation of files on computer
 	var open_file = document.createElement('input');
@@ -45,7 +53,7 @@ VIZ.Toolbar = function(model_name) {
 		.on('tap', function(){
 			self.menu.hide_any();
 		});
-	this.launch_global_user_config_menu();
+	this.launch_global_user_config_menu(this.global_config_options);
 
 }
 
@@ -91,16 +99,17 @@ VIZ.Toolbar.prototype.add_button = function (name, icon_class, fun) {
 	button.addEventListener('click', function() {fun();});
 }
 
-VIZ.Toolbar.prototype.launch_global_user_config_menu = function() {
+VIZ.Toolbar.prototype.launch_global_user_config_menu = function(names) {
 	var self = this;
 	var menu = document.createElement('div');
 	menu.id = 'global_config_menu';
 	main = document.getElementById('main');
+
+	for (var i = 0; i < names.length; i++) {
+		menu.appendChild(this.create_config_item(i, names[i], this.global_config_settings[i]));
+	}
+
 	main.appendChild(menu);
-	menu.appendChild(this.create_config_item(1, 'box1, plz clik'));
-	menu.appendChild(this.create_config_item(2, 'box2, plz clik'));
-	menu.appendChild(this.create_config_item(3, 'box3, plz clik'));
-	menu.appendChild(this.create_config_item(4, 'box4, plz clik'));
 
 	var close_button = document.createElement('button');
 	close_button.setAttribute('type', 'button');
@@ -112,13 +121,14 @@ VIZ.Toolbar.prototype.launch_global_user_config_menu = function() {
 	menu.appendChild(close_button);
 }
 
-VIZ.Toolbar.prototype.create_config_item = function (name, text) {
+VIZ.Toolbar.prototype.create_config_item = function (name, text, val) {
 	var label = document.createElement('label');
 	var option = document.createElement('input');
 	label.innerHTML = text;
 	option.setAttribute('class', 'config_option');
 	label.appendChild(option);
 	option.type = 'checkbox';
+	option.checked = val;
 	option.name = name;
 	option.value = name;
 	option.addEventListener('click', function() {
