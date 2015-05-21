@@ -52,7 +52,10 @@ VIZ.Component = function(parent, args) {
     this.div.style.height = args.height;
     this.width = args.width;
     this.height = args.height;
-    
+
+    /** Prevent interact from messing up cursor */
+    interact(this.div).styleCursor(true);
+        
     var transform_val = VIZ.pan.cord_map(VIZ.Screen, {x:args.x, y:args.y});
 	VIZ.set_transform(this.div, transform_val.x, transform_val.y);
     
@@ -87,6 +90,7 @@ VIZ.Component = function(parent, args) {
     /** Allow element to be dragged */ 
     this.div.setAttribute('data-x', args.x);
     this.div.setAttribute('data-y', args.y);
+        
     interact(this.div)
         .draggable({
             inertia: true,
@@ -152,7 +156,7 @@ VIZ.Component = function(parent, args) {
     
     this.menu = new VIZ.Menu(self.parent);
     interact(this.div)
-        .on('tap', function(event) {
+        .on('hold', function(event) { //change to 'tap' for right click
             if (event.button == 0) {
                 if (self.menu.visible_any()) {
                     self.menu.hide_any();
@@ -162,7 +166,24 @@ VIZ.Component = function(parent, args) {
                 }
                 event.stopPropagation();  
             }
-        });    
+        })
+        .on('tap', function(event) { //get rid of menus when clicking off
+            if (event.button == 0) {
+                if (self.menu.visible_any()) {
+                    self.menu.hide_any();
+                }
+            }
+        });        
+    $(this.div).bind('contextmenu', function(event) {
+            event.preventDefault();   
+            event.stopPropagation();        
+            if (self.menu.visible_any()) {
+                self.menu.hide_any();
+            } else {
+                self.menu.show(event.clientX, event.clientY, 
+                               self.generate_menu());
+        }
+    });  
         
     VIZ.Component.components.push(this);
     VIZ.pan.redraw();
@@ -399,56 +420,17 @@ VIZ.DataStore.prototype.get_last_data = function() {
 
 
 /**
- * convert colors from YUV to RGB
- */
-VIZ.yuv_to_rgb = function(y, u, v) {
-    var r = y + (1.370705 * v);
-    var g = y - (0.698001 * v) - (0.337633 * u);
-    var b = y + (1.732446 * u);    
-    //var r = y + (1.13983 * v);
-    //var g = y - (0.58060 * v) - (0.39465 * u);
-    //var b = y + (2.03211 * u);    
-    
-    r = Math.round(r * 256);
-    if (r < 0) r = 0;
-    if (r > 255) r = 255;
-    g = Math.round(g * 256);
-    if (g < 0) g = 0;
-    if (g > 255) g = 255;
-    b = Math.round(b * 256);
-    if (b < 0) b = 0;
-    if (b > 255) b = 255;
-        
-    return ["rgb(",r,",",g,",",b,")"].join("");
-}
-
-/**
  * Generate a color sequence of a given length.
  *
- * Colors are defined via YUV.  Y (luminance, i.e. what the line will look like
- * in black-and-white) is evenly spaced from 0 to max_y (0.7).  The U, V are
- * chosen by spinning through a circle of radius color_strength, moving by
- * phi*2*pi radians each step.  This cycles through colors while keeping a large
- * separation (i.e. each angle is far away from all the other angles)
+ * Colors are defined using a color blind-friendly palette.
  */ 
 VIZ.make_colors = function(N) {
+    //Color blind palette with blue, green, red, magenta, yellow, cyan
+    var palette=["#1c73b3","#039f74","#d65e00","#cd79a7","#f0e542","#56b4ea"];
     var c = [];
-    var start_angle = 1.5;            // what color to start with
-    var phi = (1 + Math.sqrt(5)) / 2; // the golden ratio
-    var color_strength = 0.5;         // how bright the colors are (0=grayscale)
-    var max_y = 0.7;                  // how close to white to get
     
     for (var i = 0; i < N; i++) {
-        var y = 0;
-        if (N > 1) {
-            y = i * max_y / (N - 1);
-        }
-        
-        var angle = start_angle - 2 * Math.PI * i * phi;
-        //var angle = start_angle + 2 * Math.PI * i / N;
-        var u = color_strength * Math.sin(angle);
-        var v = color_strength * Math.cos(angle);
-        c.push(VIZ.yuv_to_rgb(y, u, v));
+        c.push(palette[i % palette.length]);
     }
     return c;
 }

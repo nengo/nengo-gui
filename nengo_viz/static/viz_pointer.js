@@ -68,7 +68,7 @@ VIZ.Pointer.prototype.constructor = VIZ.Pointer;
 VIZ.Pointer.prototype.generate_menu = function() {
     var self = this;
     var items = [];
-    items.push(['Set value', function() {self.set_value();}]);
+    items.push(['Set value...', function() {self.set_value();}]);
     if (this.show_pairs) {
         items.push(['Hide pairs', function() {self.set_show_pairs(false);}]);
     } else {

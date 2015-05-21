@@ -1,7 +1,7 @@
 .netgraph {
 }
 
-g.ens ellipse{
+.ensemble{
     stroke-width:1;
     }
     
@@ -15,19 +15,19 @@ g.net rect{
 
 .netgraph g text {
     text-anchor: middle;
-    dominant-baseline: central;
-    }
-.netgraph g.expanded text {
-    text-anchor: middle;
     dominant-baseline: text-before-edge;
-    }    
+    cursor: default;
+    }  
+.netgraph g text:active {
+    cursor: move;
+}
 
 .netgraph line {
     stroke: black;
     stroke-width: 2px;
 }
 
-.netgraph ellipse.recurrent {
+.recur {
     stroke: black;
     stroke-width: 2px;
     fill: none;
