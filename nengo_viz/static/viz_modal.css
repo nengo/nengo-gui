@@ -62,3 +62,29 @@ div.modal-backdrop {
 .modal-body table ul > li > .glyphicon {
     padding-right: 8px;
 }
+
+.modal-body th .glyphicon {
+    padding-left: 8px;
+}
+
+.modal-body .tooltip-inner {
+    white-space: pre-wrap;
+    text-align: left;
+    max-width: 350px;
+}
+
+.modal-body .popover {
+    max-width: 350px;
+}
+
+.modal-body .popover-title,
+.modal-body .popover-content {
+    white-space: pre-wrap;
+    text-align: left;
+    font-size: 0.9em;
+    padding: 5px 10px;
+}
+
+.modal-body .popover-title {
+    line-height: 1.2;
+}
