@@ -1,7 +1,3 @@
-.nav {
-	background-color: #6699ff;
-}
-
 .glyphicon {
 	color: black;
 }
@@ -10,6 +6,7 @@
 	position: absolute;
 	width: 100%;
 	z-index: 99999;
+    background-color: #6699ff;
 }
 
 #model_name {
