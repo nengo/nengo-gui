@@ -692,22 +692,22 @@ VIZ.NetGraphItem.prototype.ensemble_svg = function() {
     shape.setAttribute('class', 'ensemble');        
     
     var circle = this.ng.createSVGElement('circle');
-    VIZ.setAttributes(circle, {'cx':'-11.157','cy':'-7.481','r':'4.843'});
+    this.setAttributes(circle, {'cx':'-11.157','cy':'-7.481','r':'4.843'});
     shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
-    VIZ.setAttributes(circle, {'cx':'0.186','cy':'-0.127','r':'4.843'});
+    this.setAttributes(circle, {'cx':'0.186','cy':'-0.127','r':'4.843'});
     shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
-    VIZ.setAttributes(circle, {'cx':'5.012','cy':'12.56','r':'4.843'});
+    this.setAttributes(circle, {'cx':'5.012','cy':'12.56','r':'4.843'});
     shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
-    VIZ.setAttributes(circle, {'cx':'13.704','cy':'-0.771','r':'4.843'});
+    this.setAttributes(circle, {'cx':'13.704','cy':'-0.771','r':'4.843'});
     shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
-    VIZ.setAttributes(circle, {'cx':'-10.353','cy':'8.413','r':'4.843'});
+    this.setAttributes(circle, {'cx':'-10.353','cy':'8.413','r':'4.843'});
     shape.appendChild(circle);            
     var circle = this.ng.createSVGElement('circle');
-    VIZ.setAttributes(circle, {'cx':'3.894','cy':'-13.158','r':'4.843'});
+    this.setAttributes(circle, {'cx':'3.894','cy':'-13.158','r':'4.843'});
     shape.appendChild(circle);
 
     var main_circle = this.ng.createSVGElement('circle');
@@ -721,7 +721,7 @@ VIZ.NetGraphItem.prototype.ensemble_svg = function() {
     return shape;
 }
 /** Helper function for setting attributions*/
-VIZ.setAttributes = function(el, attrs) {
+VIZ.NetGraphItem.prototype.setAttributes = function(el, attrs) {
   for(var key in attrs) {
     el.setAttribute(key, attrs[key]);
   }
