@@ -62,17 +62,24 @@ VIZ.SimControl.prototype.on_message = function(event) {
         if (event.data.substring(0, 7) === 'status:') {
             this.set_status(event.data.substring(7));
         }
-        if (event.data.substring(0, 6) === 'reload') {
-            location.reload()
+        else if (event.data.substring(0, 6) === 'reload') {
+            location.reload();
         }
-    } else {
+        else if (event.data.substring(0, 6) === 'config') {
+            var parsed_data = JSON.parse(event.data.substring(6, event.data.length));
+            toolbar.open_modal(parsed_data['data']);
+        } 
+    }
+
+    else {
         var data = new Float32Array(event.data);
         this.time = data[0];
         this.rate = data[1];
 
         this.schedule_update();
     }
-};    
+};
+
 
 VIZ.SimControl.prototype.set_status = function(status) {
     var icon;

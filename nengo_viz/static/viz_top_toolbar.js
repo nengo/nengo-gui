@@ -43,7 +43,7 @@ VIZ.Toolbar = function(model_name) {
     this.add_button('Open file', 'glyphicon glyphicon-folder-open', function(){self.file_browser()});
 	this.add_button('Reset model layout', 'glyphicon glyphicon-retweet', function() {self.reset_model_layout()});
 	this.add_button('Undo last', 'glyphicon glyphicon-backward', function() {});
-    this.add_button('Config_modal', 'glyphicon glyphicon-backward', function() {self.open_modal();});
+    this.add_button('Config_modal', 'glyphicon glyphicon-cog', function() {self.start_modal();});
 	
 	var button = document.createElement('li');
 	button.id = 'model_name';
@@ -55,35 +55,10 @@ VIZ.Toolbar = function(model_name) {
 		.on('tap', function(){
 			self.menu.hide_any();
 		});
-	this.launch_global_user_config_menu(this.global_config_options);
-
-	VIZ.Toolbar.add_button('Open file', 'glyphicon glyphicon-folder-open', function(){self.file_browser()});
-	VIZ.Toolbar.add_button('Reset model layout', 'glyphicon glyphicon-retweet', function() {self.reset_model_layout()});
-	VIZ.Toolbar.add_button('Undo last', 'glyphicon glyphicon-backward', function() {});
-
-	var settings = document.createElement('li');
-    var settings_link = document.createElement('a');
-
-    settings_link.setAttribute('title', 'Settings');
-	settings_link.className = 'glyphicon glyphicon-cog';
-    // settings_link.onclick = function (e) {config.openModal(e)}; 
-
-    settings.appendChild(settings_link);
-    VIZ.top_bar.appendChild(settings);
-
-	var name = document.createElement('li');
-	name.id = 'model_name';
-	name.innerHTML = model_name;
-	name.setAttribute("role", "presentation");	
-	VIZ.top_bar.appendChild(name);
-
-    this.is_showing = false;
-
 };
 
 // This opens up the pop up window that allows you to select the file to open
 VIZ.Toolbar.prototype.file_browser = function () {
-	//this.menu.hide_any()
     sim.ws.send('browse');
 
     fb = $('#filebrowser');
@@ -123,28 +98,30 @@ VIZ.Toolbar.prototype.add_button = function (name, icon_class, fun) {
 	button.addEventListener('click', function() {fun();});
 }
 
-VIZ.Toolbar.prototype.launch_global_user_config_menu = function(names) {
+VIZ.Toolbar.prototype.launch_global_user_config_menu = function(option_list, modal_element) {
 	var self = this;
-	var menu = document.createElement('div');
-	menu.id = 'global_config_menu';
-	main = document.getElementById('main');
 
-	for (var i = 0; i < names.length; i++) {
-		menu.appendChild(this.create_config_item(i, names[i], this.global_config_settings[i]));
+	for (var i = 0; i < option_list.length; i++) {
+		modal_element.appendChild(this.create_config_item(i, option_list[i], VIZ.user_settings[i]));
 	}
 
-	main.appendChild(menu);
-
+    //make the close button
 	var close_button = document.createElement('button');
 	close_button.setAttribute('type', 'button');
 	close_button.class = 'btn btn-default';
 	close_button.style.position = 'absolute';
 	close_button.style.bottom = '0';
 	close_button.innerHTML = 'Close';
-	close_button.addEventListener('click', function () {menu.parentNode.removeChild(menu)});
-	menu.appendChild(close_button);
+	close_button.addEventListener('click', function () {self.close_modal()});
+	modal_element.appendChild(close_button);
+
+<<<<<<< HEAD
+=======
+
+    return modal_element;
 }
 
+>>>>>>> config options are retrieved form server
 VIZ.Toolbar.prototype.create_config_item = function (name, text, val) {
 	var label = document.createElement('label');
 	var option = document.createElement('input');
@@ -152,42 +129,52 @@ VIZ.Toolbar.prototype.create_config_item = function (name, text, val) {
 	option.setAttribute('class', 'config_option');
 	label.appendChild(option);
 	option.type = 'checkbox';
-	option.checked = val;
+	//option.checked = val;
 	option.name = name;
 	option.value = name;
 	option.addEventListener('click', function() {
 		var answers = $('.config_option');
-		console.log(answers)
 		var options = {tag:'user_config' , data: []}
 		for (var i = 0; i < answers.length; i++){
 			options.data.push(answers[i].checked)
 		}
 		var msg = JSON.stringify(options);
-		sim.ws.send(msg)
+		sim.ws.send(msg);
 	})
 	return label;
 }
 
-// Original JavaScript code by Chirp Internet: www.chirp.com.au
-// Please acknowledge use of this code by including this header.
+VIZ.Toolbar.prototype.start_modal = function () {
 
-VIZ.Toolbar.prototype.open_modal = function() {
-        console.log(this);
-        console.log(this.is_showing);
+    if (this.modalWrapper) {
+        this.close_modal();
+    }
+    else{
+        sim.ws.send('config')
+    }
+}
 
-        if (this.is_showing == false) {
-            console.log('got in here')
-            this.modalWrapper.className = "overlay";
-            this.modalWindow.style.marginTop = (-this.modalWindow.offsetHeight)/2 + "px";
-            this.modalWindow.style.marginLeft = (-this.modalWindow.offsetWidth)/2 + "px";
-            this.is_showing = true;
-        }
-        else {
-            this.close_modal();
-        }
+VIZ.Toolbar.prototype.open_modal = function(option_list) {
+
+    this.modalWrapper = document.createElement('div');
+    this.modalWindow = document.createElement('div');
+    this.modalWrapper.id = 'modal_wrapper';
+    this.modalWindow.id = 'modal_window';
+    this.modalWindow.innerHTML = '<p>Config menu</p>';
+    this.modalWrapper.appendChild(this.modalWindow);
+
+    // Add it to the main page
+    main.appendChild(this.modalWrapper);
+    
+    this.launch_global_user_config_menu(option_list, this.modalWindow);
+    this.modalWrapper.className = "overlay";
+    this.modalWindow.style.marginTop = (-this.modalWindow.offsetHeight) / 2 + "px";
+    this.modalWindow.style.marginLeft = (-this.modalWindow.offsetWidth) / 2 + "px";
     };
 
+
+
 VIZ.Toolbar.prototype.close_modal = function() {
-        this.modalWrapper.className = "";
-        this.is_showing = false;
+        this.modalWrapper.parentNode.removeChild(this.modalWrapper);
+        this.modalWrapper = false;
     };

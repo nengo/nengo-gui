@@ -25,6 +25,7 @@ class SimControl(Component):
         self.time = 0.0
         self.last_status = None
         self.reload = False
+        self.send_config_options = False
 
     def add_nengo_objects(self, viz):
         with viz.model:
@@ -76,6 +77,10 @@ class SimControl(Component):
         if self.reload == True:
             client.write('reload')
             self.reload = False
+        if self.send_config_options == True:
+            cat = {'data': ['option1','option2','option3']}
+            client.write('config' + json.dumps(cat))
+            self.send_config_options = False
 
     def get_status(self):
         if self.paused:
@@ -94,6 +99,9 @@ class SimControl(Component):
     def message(self, msg):
         if msg == 'pause':
             self.paused = True
+        elif msg == 'config':
+            print('config request received')
+            self.send_config_options = True
         elif msg == 'continue':
             if self.viz.sim is None:
                 self.viz.rebuild = True
