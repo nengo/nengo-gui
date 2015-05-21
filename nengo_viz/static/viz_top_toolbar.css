@@ -6,7 +6,7 @@
 	color: black;
 }
 
-.nav {
+.nav-pills {
 	position: absolute;
 	width: 100%;
 	z-index: 99999;
