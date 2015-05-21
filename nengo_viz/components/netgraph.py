@@ -1,7 +1,7 @@
 import time
 import struct
-import threading
 import os
+import traceback
 
 import numpy as np
 import nengo
@@ -40,8 +40,13 @@ class NetGraph(Component):
         try:
             exec(code, locals)
         except:
-            pass
-        model = locals['model']
+            traceback.print_exc()
+        try:
+            model = locals['model']
+        except:
+            traceback.print_exc()
+            return
+
         locals['nengo_viz'] = nengo_viz
         name_finder = nengo_viz.NameFinder(locals, model)
 
@@ -112,6 +117,7 @@ class NetGraph(Component):
         self.viz.config = self.viz.viz.config
         self.config = self.viz.viz.config
         self.viz.viz.uid_prefix_counter = {}
+        self.layout = nengo_viz.layout.Layout(model)
 
         components = []
         for c in self.viz.components[:2]:
