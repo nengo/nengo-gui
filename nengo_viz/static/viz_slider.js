@@ -12,7 +12,8 @@ VIZ.Slider = function(parent, sim, args) {
 
     //Check if user is filling in a number into a slider
     this.filling_slider_value = false;
-
+    this.n_sliders = args.n_sliders;
+    
     this.notify_msgs = [];
 
     VIZ.set_transform(this.label, 0, -30);
@@ -459,6 +460,7 @@ VIZ.Slider.prototype.set_range = function() {
 
 VIZ.Slider.prototype.layout_info = function () {
     var info = VIZ.Component.prototype.layout_info.call(this);
+    info.width = info.width/this.n_sliders;
     info.min_value = this.scale.domain()[1];
     info.max_value = this.scale.domain()[0];
     return info;
