@@ -165,6 +165,8 @@ VIZ.Slider.prototype.constructor = VIZ.Slider;
 VIZ.Slider.prototype.set_value = function(slider_index, value, immediate) {
     console.assert(typeof slider_index == 'number');
     console.assert(typeof value == 'number', value);
+    // TODO: get rid of the immediate parameter once the websocket delay
+    //       fix is merged in (#160)
     //console.assert(typeof immediate == 'boolean');
 
     //Make sure the new value is in the slider range.
