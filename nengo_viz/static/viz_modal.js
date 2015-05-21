@@ -92,15 +92,9 @@ function render_params($parent, params, tooltips) {
 
         var $dd = $('<dd/>').appendTo($plist);
         $dd.text(params[i][1]);
-
-        var $tooltip = $('<a href="#" data-toggle="popover" ' +
-                         'data-placement="right" ' +
-                         'title="' + tooltips[String(params[i][0])][0] + '"' +
-                         'data-content="' + tooltips[String(params[i][0])][1] +
-                         '"/>');
-        $tooltip.append('<span class="glyphicon glyphicon-question-sign" ' +
-                        'aria-hidden="true"/>').appendTo($dt);
-        $tooltip.popover({"trigger": "hover"});
+        VIZ.tooltips.popover($dt,
+                             tooltips[String(params[i][0])][0],
+                             tooltips[String(params[i][0])][1]);
     }
 }
 
@@ -239,7 +233,27 @@ function render_connections($parent, uid, conninfo) {
         var $conn_in_table = $('<table class="table table-condensed"><tr>' +
                                '<th class="conn-objs">Object</th>' +
                                '<th class="conn-funcs">Function</th>' +
-                               '<th class="conn-fan">Fan In</th></tr>').appendTo($parent);
+                               '<th class="conn-fan">Fan In</th></tr>')
+            .appendTo($parent);
+        VIZ.tooltips.popover($conn_in_table.find('.conn-objs').first(),
+                             "'Pre' object",
+                             "This object plays the role of 'Pre' in the " +
+                             "connection to this object.",
+                             "top");
+        VIZ.tooltips.popover($conn_in_table.find('.conn-funcs').first(),
+                             "Connection function",
+                             "This function being computed across this " +
+                             "connection (in vector space).",
+                             "top");
+        VIZ.tooltips.popover($conn_in_table.find('.conn-fan').first(),
+                             "Neuron fan-in",
+                             "The number of incoming neural connections. " +
+                             "In biological terms, this is the number of " +
+                             "synapses in the dendritic tree of a single " +
+                             "neuron in this object, resulting from this " +
+                             "connection. The total number of synapses would " +
+                             "be the sum of the numbers in this column.",
+                             "top");
 
         make_connections_table_row($conn_in_table, conninfo, conn_in_objs,
                                    function (conn_obj) { return conn_obj.pre },
@@ -256,7 +270,28 @@ function render_connections($parent, uid, conninfo) {
         var $conn_out_table = $('<table class="table table-condensed"><tr>' +
                                 '<th class="conn-objs">Object</th>' +
                                 '<th class="conn-funcs">Function</th>' +
-                                '<th class="conn-fan">Fan Out</th></tr>').appendTo($parent);
+                                '<th class="conn-fan">Fan Out</th></tr>')
+            .appendTo($parent);
+
+        VIZ.tooltips.popover($conn_out_table.find('.conn-objs').first(),
+                             "'Post' object",
+                             "This object plays the role of 'Post' in the " +
+                             "connection from this object.",
+                             "top");
+        VIZ.tooltips.popover($conn_out_table.find('.conn-funcs').first(),
+                             "Connection function",
+                             "This function being computed across this " +
+                             "connection (in vector space).",
+                             "top");
+        VIZ.tooltips.popover($conn_out_table.find('.conn-fan').first(),
+                             "Neuron fan-out",
+                             "The number of outgoing neural connections. " +
+                             "In biological terms, this is the number of " +
+                             "synapses from axon terminals of a single " +
+                             "neuron in this object, resulting from this " +
+                             "connection. The total number of synapses would " +
+                             "be the sum of the numbers in this column.",
+                             "top");
 
         make_connections_table_row($conn_out_table, conninfo, conn_out_objs,
                                    function (conn_obj) { return conn_obj.post },
@@ -304,12 +339,7 @@ function make_connections_table_row($table, conninfo, conn_objs, get_conn_other,
         // Make the fan data column
         var $fan_td = $('<td>' + conninfo["fan"][String(conn_objs[i].uid)] + '</td>').appendTo($tr);
         if (conninfo["obj_type"][String(conn_objs[i].uid)] === "passthrough") {
-            var $fan_tooltip = $('<a href="#" data-toggle="tooltip" data-placement="bottom"' +
-                                 'title="' + VIZ.tooltips.conn.fan_passthrough + '">' +
-                                 '<span class="glyphicon glyphicon-question-sign"/></a>');
-            $fan_tooltip.tooltip();
-
-            $fan_td.append($fan_tooltip);
+            VIZ.tooltips.tooltip($fan_td, VIZ.tooltips.conn.fan_passthrough);
         }
     }
 }
@@ -319,16 +349,14 @@ function make_connections_table_row($table, conninfo, conn_objs, get_conn_other,
  */
 function make_conn_path_dropdown_list($container, others_uid, obj_type, conn_uid_list) {
     if (conn_uid_list.length > 1) {
-        // Make the "expand down" tooltip
-        var $exp_tooltip = $('<a href="#" data-toggle="tooltip" data-placement="right"' +
-                             'title="' + VIZ.tooltips.conn.expand + '">' +
-                             '<span class="glyphicon glyphicon-collapse-down"/></a>');
-        $exp_tooltip.tooltip();
-
         // Add expand control and the tooltip to the <dd> object
-        $container.append($('<a data-toggle="collapse" href="#pathlist' +
-                          String(conn_uid_list[0]).replace(/[\.\[\]]/g, '_') +
-                          '" aria-expanded="false"/>').append($exp_tooltip));
+        var $lg_header = $('<a data-toggle="collapse" href="#pathlist' +
+                           String(conn_uid_list[0]).replace(/[\.\[\]]/g, '_') +
+                           '" aria-expanded="false"/>').appendTo($container);
+
+        // Make the "expand down" tooltip
+        VIZ.tooltips.tooltip($lg_header, VIZ.tooltips.conn.expand,
+                             "right", "glyphicon-collapse-down");
 
         // Make a list-group for the drop down items
         var $path_list = $('<ul class="list-group">')
