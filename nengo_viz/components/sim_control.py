@@ -4,6 +4,7 @@ import struct
 import numpy as np
 import nengo
 import os
+import json
 
 from nengo_viz.components.component import Component, Template
 
@@ -57,6 +58,10 @@ class SimControl(Component):
             time.sleep(0.01)
             self.last_tick = None
 
+    def config_settings(self, data):
+        for i in data:
+            print(i)
+
     def update_client(self, client):
         if self.viz.changed:
             self.paused = True
@@ -86,7 +91,10 @@ class SimControl(Component):
         return 'sim = new VIZ.SimControl(control, %s); toolbar = new VIZ.Toolbar("%s")' % (json, self.viz.viz.filename) 
 
     def message(self, msg):
-        if msg == 'pause':
+        if type(msg) is unicode:
+            msg = json.loads(msg)
+            self.config_settings(msg['data'])
+        elif msg == 'pause':
             self.paused = True
         elif msg == 'continue':
             if self.viz.sim is None:

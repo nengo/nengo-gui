@@ -100,10 +100,10 @@ VIZ.Toolbar.launch_global_user_config_menu = function() {
 	menu.id = 'global_config_menu';
 	main = document.getElementById('main');
 	main.appendChild(menu);
-	menu.appendChild(create_config_item(1, 'scroll behaviour', 'box1, plz clik'));
-	menu.appendChild(create_config_item(2, 'scroll behaviour', 'box2, plz clik'));
-	menu.appendChild(create_config_item(3, 'scroll behaviour', 'box3, plz clik'));
-	menu.appendChild(create_config_item(4, 'scroll behaviour', 'box4, plz clik'));
+	menu.appendChild(create_config_item(1, 'box1, plz clik'));
+	menu.appendChild(create_config_item(2, 'box2, plz clik'));
+	menu.appendChild(create_config_item(3, 'box3, plz clik'));
+	menu.appendChild(create_config_item(4, 'box4, plz clik'));
 
 	var close_button = document.createElement('button');
 	close_button.setAttribute('type', 'button');
@@ -115,7 +115,6 @@ VIZ.Toolbar.launch_global_user_config_menu = function() {
 }
 
 function create_config_item(name, text) {
-	//<input type="checkbox" name="vehicle" value="Bike">
 	var label = document.createElement('label');
 	var option = document.createElement('input');
 	label.innerHTML = text;
@@ -127,13 +126,12 @@ function create_config_item(name, text) {
 	option.addEventListener('click', function() {
 		var answers = $('.config_option');
 		console.log(answers)
-		var options = {tag:'user_config' , data: []}//.each(function(item){console.log(item)});
+		var options = {tag:'user_config' , data: []}
 		for (var i = 0; i < answers.length; i++){
 			options.data.push(answers[i].checked)
 		}
-		console.log(options)
 		var msg = JSON.stringify(options);
-		console.log(msg)
+		sim.ws.send(msg)
 	})
 	return label;
 }
