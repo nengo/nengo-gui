@@ -114,7 +114,7 @@ class SimControl(Component):
                 os.remove(self.viz.viz.filename + '.cfg')
             self.viz.viz.load(self.viz.viz.filename)
             self.reload = True
-        else:
+        else: ## Currently this handles json stringified data from config_menu checkboxes
             print(msg)
 
 class SimControlTemplate(Template):
