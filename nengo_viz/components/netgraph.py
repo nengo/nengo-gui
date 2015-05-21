@@ -1,12 +1,9 @@
-import time
-import struct
-
-import numpy as np
 import nengo
 import json
 
 from nengo_viz.components.component import Component, Template
 import nengo_viz.layout
+
 
 class NetGraph(Component):
     configs = {}
@@ -109,7 +106,7 @@ class NetGraph(Component):
     def act_create_graph(self, uid, type, x, y, width, height):
         cls = getattr(nengo_viz.components, type + 'Template')
         obj = self.uids[uid]
-        template = cls(obj)
+        template = cls(obj, **args)
         self.viz.viz.generate_uid(template, prefix='_viz_')
         self.config[template].x = x
         self.config[template].y = y
@@ -124,12 +121,12 @@ class NetGraph(Component):
     def act_feedforward_layout(self, uid):
         if uid is None:
             network = self.viz.model
-            #self.config[network].pos = 0.0, 0.0
-            #self.config[network].size = 1.0, 1.0
-            #self.to_be_sent.append(dict(type='pan',
-            #                            pan=self.config[network].pos))
-            #self.to_be_sent.append(dict(type='zoom',
-            #                            zoom=self.config[network].size[0]))
+            # self.config[network].pos = 0.0, 0.0
+            # self.config[network].size = 1.0, 1.0
+            # self.to_be_sent.append(dict(type='pan',
+            #                             pan=self.config[network].pos))
+            # self.to_be_sent.append(dict(type='zoom',
+            #                             zoom=self.config[network].size[0]))
         else:
             network = self.uids[uid]
         pos = self.layout.make_layout(network)
@@ -189,8 +186,9 @@ class NetGraph(Component):
         if type == 'ens' or type == 'node':
             info['dimensions'] = int(obj.size_out)
 
-        if nengo_viz.components.pointer.Pointer.can_apply(obj):
-            info['allow_pointer_plot'] = True
+        info['sp_targets'] = \
+            nengo_viz.components.pointer.Pointer.applicable_targets(obj)
+
         client.write(json.dumps(info))
 
     def send_pan_and_zoom(self, client):
@@ -222,8 +220,6 @@ class NetGraph(Component):
         client.write(json.dumps(info))
 
 
-
 class NetGraphTemplate(Template):
     cls = NetGraph
     config_params = dict()
-
