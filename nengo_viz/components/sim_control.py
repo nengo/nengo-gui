@@ -97,7 +97,10 @@ class SimControl(Component):
                'toolbar = new VIZ.Toolbar("%s"); ' % self.viz.viz.filename 
 
     def message(self, msg):
-        if msg == 'pause':
+        if type(msg) is unicode:
+            msg = json.loads(msg)
+            self.config_settings(msg['data'])
+        elif msg == 'pause':
             self.paused = True
         elif msg == 'config':
             print('config request received')
