@@ -5,7 +5,7 @@
 VIZ.Menu = function(div) {
     this.visible = false;   // whether it's currently visible
     this.div = div;         // the parent div
-    this.menu = null;       // the div for the menu itself
+    this.menu_div = null;       // the div for the menu itself
     this.actions = null;    // the current action list for the menu
 };
 
@@ -29,27 +29,34 @@ VIZ.Menu.prototype.show = function (x, y, items) {
     }
     
     // TODO: move this to the constructor
-    this.menu = document.createElement('div');
-    this.menu.className = 'btn-group-vertical';
-    this.menu.role = 'group';
-    this.menu.style.position = 'fixed';
+    this.menu_div = document.createElement('div');
+    this.menu_div.style.position = 'fixed';
+    this.menu_div.style.zIndex = VIZ.next_zindex();
+    
+    this.menu = document.createElement('ul');
+    this.menu.className = 'dropdown-menu';
+    this.menu.style.position = 'absolute';
+    this.menu.style.display = 'block';
+    this.menu.role = 'menu';
 
-    this.menu.style.zIndex = VIZ.next_zindex();
-    this.div.appendChild(this.menu);
+    this.menu_div.appendChild(this.menu);
+    this.div.appendChild(this.menu_div);
 
-    VIZ.set_transform(this.menu, x - 20, y - 20);
+    VIZ.set_transform(this.menu_div, x - 20, y - 20);
 
     this.actions = {}
 
     var self = this;
     for (var i in items) {
         var item = items[i];
-        var b = document.createElement('button');
-        b.className = 'btn btn-default';
-        b.innerHTML = item[0];
-        b.func = item[1];
-        this.actions[b] = item[1];
-        $(b).click(function(e) { 
+        var b = document.createElement('li');
+        var a = document.createElement('a');
+        a.setAttribute('href','#');
+        a.className = 'menu-item';
+        a.innerHTML = item[0];
+        a.func = item[1];
+        this.actions[a] = item[1];
+        $(a).click(function(e) { 
             e.target.func(); 
             self.hide();
         })
@@ -58,9 +65,9 @@ VIZ.Menu.prototype.show = function (x, y, items) {
             e.target.func();
             self.hide();
         });
+        b.appendChild(a);
         this.menu.appendChild(b);
     }
-
     this.visible = true;
     VIZ.Menu.visible_menus[this.div] = this;
 };
@@ -70,9 +77,9 @@ VIZ.Menu.prototype.show = function (x, y, items) {
  * Hide this menu
  */
 VIZ.Menu.prototype.hide = function () {
-    this.div.removeChild(this.menu);
+    this.div.removeChild(this.menu_div);
     this.visible = false;
-    this.menu = null;
+    this.menu_div = null;
     delete VIZ.Menu.visible_menus[this.div];
 };
 
