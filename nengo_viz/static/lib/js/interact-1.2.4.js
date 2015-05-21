@@ -8,6 +8,9 @@
 (function (realWindow) {
     'use strict';
 
+    // return early if there's no window to work with (eg. Node.js)
+    if (!realWindow) { return; }
+
     var // get wrapped window if using Shadow DOM polyfill
         window = (function () {
             // create a TextNode
@@ -103,6 +106,9 @@
                 square: false,
                 axis: 'xy',
 
+                // use default margin
+                margin: NaN,
+
                 // object with props left, right, top, bottom which are
                 // true/false values to resize when the pointer is over that edge,
                 // CSS selectors to match the handles for each direction
@@ -197,59 +203,6 @@
                 if (autoScroll.isScrolling) {
                     cancelFrame(autoScroll.i);
                     autoScroll.i = reqFrame(autoScroll.scroll);
-                }
-            },
-
-            edgeMove: function (event) {
-                var interaction,
-                    target,
-                    doAutoscroll = false;
-
-                for (var i = 0; i < interactions.length; i++) {
-                    interaction = interactions[i];
-
-                    if (interaction.interacting()
-                        && checkAutoScroll(interaction.target, interaction.prepared.name)) {
-
-                        target = interaction.target;
-                        doAutoscroll = true;
-                        break;
-                    }
-                }
-
-                if (!doAutoscroll) { return; }
-
-                var top,
-                    right,
-                    bottom,
-                    left,
-                    options = target.options[interaction.prepared.name].autoScroll,
-                    container = options.container || getWindow(interaction.element);
-
-                if (isWindow(container)) {
-                    left   = event.clientX < autoScroll.margin;
-                    top    = event.clientY < autoScroll.margin;
-                    right  = event.clientX > container.innerWidth  - autoScroll.margin;
-                    bottom = event.clientY > container.innerHeight - autoScroll.margin;
-                }
-                else {
-                    var rect = getElementRect(container);
-
-                    left   = event.clientX < rect.left   + autoScroll.margin;
-                    top    = event.clientY < rect.top    + autoScroll.margin;
-                    right  = event.clientX > rect.right  - autoScroll.margin;
-                    bottom = event.clientY > rect.bottom - autoScroll.margin;
-                }
-
-                autoScroll.x = (right ? 1: left? -1: 0);
-                autoScroll.y = (bottom? 1:  top? -1: 0);
-
-                if (!autoScroll.isScrolling) {
-                    // set the autoScroll properties to those of the target
-                    autoScroll.margin = options.margin;
-                    autoScroll.speed  = options.speed;
-
-                    autoScroll.start(interaction);
                 }
             },
 
@@ -502,6 +455,7 @@
                         for (i = 0; i < len; i++) {
                             remove(element, type, target.events[type][i], Boolean(useCapture));
                         }
+                        return;
                     } else {
                         for (i = 0; i < len; i++) {
                             if (target.events[type][i] === listener) {
@@ -529,9 +483,9 @@
                 }
 
                 if (!target.typeCount) {
-                    targets.splice(elementIndex);
-                    elements.splice(elementIndex);
-                    attachedListeners.splice(elementIndex);
+                    targets.splice(elementIndex, 1);
+                    elements.splice(elementIndex, 1);
+                    attachedListeners.splice(elementIndex, 1);
                 }
             }
 
@@ -1577,7 +1531,7 @@
             var target = this.target,
                 options = target && target.options;
 
-            if (target && !this.interacting()) {
+            if (target && (forceAction || !this.prepared.name)) {
                 action = action || validateAction(forceAction || target.getAction(pointer, this, curEventTarget), target, this.element);
 
                 this.setEventXY(this.startCoords);
@@ -1749,6 +1703,7 @@
             this.target         = interactable;
             this.element        = element;
 
+            this.setEventXY(this.startCoords);
             this.setStartOffsets(action.name, interactable, element);
             this.setModifications(this.startCoords.page);
 
@@ -1844,19 +1799,21 @@
                             // if there's no drag from element interactables,
                             // check the selector interactables
                             if (!this.prepared.name) {
+                                var thisInteraction = this;
+
                                 var getDraggable = function (interactable, selector, context) {
                                     var elements = ie8MatchesSelector
                                         ? context.querySelectorAll(selector)
                                         : undefined;
 
-                                    if (interactable === this.target) { return; }
+                                    if (interactable === thisInteraction.target) { return; }
 
                                     if (inContext(interactable, eventTarget)
                                         && !interactable.options.drag.manualStart
                                         && !testIgnore(interactable, element, eventTarget)
                                         && testAllow(interactable, element, eventTarget)
                                         && matchesSelector(element, selector, elements)
-                                        && interactable.getAction(this.downPointer, this, element).name === 'drag'
+                                        && interactable.getAction(thisInteraction.downPointer, thisInteraction, element).name === 'drag'
                                         && checkAxis(axis, interactable)
                                         && withinInteractionLimit(interactable, element, 'drag')) {
 
@@ -1911,7 +1868,7 @@
             copyCoords(this.prevCoords, this.curCoords);
 
             if (this.dragging || this.resizing) {
-                autoScroll.edgeMove(event);
+                this.autoScrollMove(pointer);
             }
         },
 
@@ -2520,6 +2477,8 @@
                     timeStamp    : dragEvent.timeStamp,
                     type         : 'drop'
                 };
+
+                dragEvent.dropzone = this.dropTarget;
             }
             if (dragEvent.type === 'dragstart') {
                 dropEvents.activate = {
@@ -2572,9 +2531,7 @@
         },
 
         clearTargets: function () {
-            if (this.target && !this.target.selector) {
-                this.target = this.element = null;
-            }
+            this.target = this.element = null;
 
             this.dropTarget = this.dropElement = this.prevDropTarget = this.prevDropElement = null;
         },
@@ -2614,9 +2571,11 @@
                 }
             }
 
-            // delete interaction if it's not the only one
-            if (interactions.length > 1) {
-                interactions.splice(indexOf(interactions, this), 1);
+            for (i = 0; i < interactions.length; i++) {
+                // remove this interaction if it's not the only one of it's type
+                if (interactions[i] !== this && interactions[i].mouse === this.mouse) {
+                    interactions.splice(indexOf(interactions, this), 1);
+                }
             }
         },
 
@@ -3083,7 +3042,7 @@
             var options = interactable.options,
                 prevent = options.preventDefault;
 
-            if (prevent === 'auto' && element && !/^input$|^textarea$/i.test(element.nodeName)) {
+            if (prevent === 'auto' && element && !/^(input|select|textarea)$/i.test(event.target.nodeName)) {
                 // do not preventDefault on pointerdown if the prepared action is a drag
                 // and dragging can only start from a certain direction - this allows
                 // a touch to pan the viewport if a drag isn't in the right direction
@@ -3125,6 +3084,51 @@
 
             status.lambda_v0 = lambda / status.v0;
             status.one_ve_v0 = 1 - inertiaOptions.endSpeed / status.v0;
+        },
+
+        autoScrollMove: function (pointer) {
+            if (!(this.interacting()
+                && checkAutoScroll(this.target, this.prepared.name))) {
+                return;
+            }
+
+            if (this.inertiaStatus.active) {
+                autoScroll.x = autoScroll.y = 0;
+                return;
+            }
+
+            var top,
+                right,
+                bottom,
+                left,
+                options = this.target.options[this.prepared.name].autoScroll,
+                container = options.container || getWindow(this.element);
+
+            if (isWindow(container)) {
+                left   = pointer.clientX < autoScroll.margin;
+                top    = pointer.clientY < autoScroll.margin;
+                right  = pointer.clientX > container.innerWidth  - autoScroll.margin;
+                bottom = pointer.clientY > container.innerHeight - autoScroll.margin;
+            }
+            else {
+                var rect = getElementRect(container);
+
+                left   = pointer.clientX < rect.left   + autoScroll.margin;
+                top    = pointer.clientY < rect.top    + autoScroll.margin;
+                right  = pointer.clientX > rect.right  - autoScroll.margin;
+                bottom = pointer.clientY > rect.bottom - autoScroll.margin;
+            }
+
+            autoScroll.x = (right ? 1: left? -1: 0);
+            autoScroll.y = (bottom? 1:  top? -1: 0);
+
+            if (!autoScroll.isScrolling) {
+                // set the autoScroll properties to those of the target
+                autoScroll.margin = options.margin;
+                autoScroll.speed  = options.speed;
+
+                autoScroll.start(this);
+            }
         },
 
         _updateEventTargets: function (target, currentTarget) {
@@ -3341,10 +3345,10 @@
         this.clientX   = client.x;
         this.clientY   = client.y;
 
-        this.x0        = interaction.startCoords.page.x;
-        this.y0        = interaction.startCoords.page.y;
-        this.clientX0  = interaction.startCoords.client.x;
-        this.clientY0  = interaction.startCoords.client.y;
+        this.x0        = interaction.startCoords.page.x - origin.x;
+        this.y0        = interaction.startCoords.page.y - origin.y;
+        this.clientX0  = interaction.startCoords.client.x - origin.x;
+        this.clientY0  = interaction.startCoords.client.y - origin.y;
         this.ctrlKey   = event.ctrlKey;
         this.altKey    = event.altKey;
         this.shiftKey  = event.shiftKey;
@@ -3569,7 +3573,7 @@
         return cursor;
     }
 
-    function checkResizeEdge (name, value, page, element, interactableElement, rect) {
+    function checkResizeEdge (name, value, page, element, interactableElement, rect, margin) {
         // false, '', undefined, null
         if (!value) { return false; }
 
@@ -3631,7 +3635,8 @@
                                                         page,
                                                         interaction._eventTarget,
                                                         element,
-                                                        rect);
+                                                        rect,
+                                                        resizeOptions.margin || margin);
                 }
 
                 resizeEdges.left = resizeEdges.left && !resizeEdges.right;
@@ -3698,7 +3703,7 @@
             'dragStart', 'dragMove', 'resizeStart', 'resizeMove', 'gestureStart', 'gestureMove',
             'pointerOver', 'pointerOut', 'pointerHover', 'selectorDown',
             'pointerDown', 'pointerMove', 'pointerUp', 'pointerCancel', 'pointerEnd',
-            'addPointer', 'removePointer', 'recordPointer',
+            'addPointer', 'removePointer', 'recordPointer', 'autoScrollMove'
         ];
 
     for (var i = 0, len = interactionListeners.length; i < len; i++) {
@@ -5176,7 +5181,7 @@
          = (object) @interact
         \*/
         unset: function () {
-            events.remove(this, 'all');
+            events.remove(this._element, 'all');
 
             if (!isString(this.selector)) {
                 events.remove(this, 'all');
@@ -5240,6 +5245,8 @@
          'Interactable#inertia is deprecated. See the new documentation for inertia at http://interactjs.io/docs/inertia');
     Interactable.prototype.autoScroll = warnOnce(Interactable.prototype.autoScroll,
          'Interactable#autoScroll is deprecated. See the new documentation for autoScroll at http://interactjs.io/docs/#autoscroll');
+    Interactable.prototype.squareResize = warnOnce(Interactable.prototype.squareResize,
+         'Interactable#squareResize is deprecated. See http://interactjs.io/docs/#resize-square');
 
     /*\
      * interact.isSet
@@ -5466,6 +5473,8 @@
             pointerMove           : listeners.pointerMove,
             pointerHover          : listeners.pointerHover,
 
+            eventTypes            : eventTypes,
+
             events                : events,
             globalEvents          : globalEvents,
             delegatedEvents       : delegatedEvents
@@ -5665,7 +5674,7 @@
             events.add(doc, pEventTypes.cancel, listeners.pointerCancel);
 
             // autoscroll
-            events.add(doc, pEventTypes.move, autoScroll.edgeMove);
+            events.add(doc, pEventTypes.move, listeners.autoScrollMove);
         }
         else {
             events.add(doc, 'mousedown', listeners.selectorDown);
@@ -5680,8 +5689,8 @@
             events.add(doc, 'touchcancel', listeners.pointerCancel);
 
             // autoscroll
-            events.add(doc, 'mousemove', autoScroll.edgeMove);
-            events.add(doc, 'touchmove', autoScroll.edgeMove);
+            events.add(doc, 'mousemove', listeners.autoScrollMove);
+            events.add(doc, 'touchmove', listeners.autoScrollMove);
         }
 
         events.add(win, 'blur', endAllInteractions);
@@ -5828,4 +5837,4 @@
         realWindow.interact = interact;
     }
 
-} (window));
+} (typeof window === 'undefined'? undefined : window));
