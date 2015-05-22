@@ -22,8 +22,6 @@ VIZ.NetGraph = function(parent, args) {
      *  when that item appears. */
     this.collapsed_conns = {}; 
     
-    this.notify_msgs = [];
-
     /** create the master SVG element */
     this.svg = this.createSVGElement('svg');
     this.svg.classList.add('netgraph');    
@@ -171,32 +169,7 @@ VIZ.NetGraph.prototype.on_message = function(event) {
 
 /** report an event back to the server */
 VIZ.NetGraph.prototype.notify = function(info) {
-    this.notify_msgs.push(JSON.stringify(info));
-    
-    // only send one message at a time
-    // TODO: find a better way to figure out when it's safe to send
-    // another message, rather than just waiting 50ms....
-    if (this.notify_msgs.length == 1) {
-        var self = this;
-        window.setTimeout(function() {
-            self.send_notify_msg();
-        }, 50);
-    }
-}
-
-/** send exactly one message back to server
- *  and schedule the next message to be sent, if any
- */
-VIZ.NetGraph.prototype.send_notify_msg = function() {
-    msg = this.notify_msgs[0];
-    this.ws.send(msg);
-    if (this.notify_msgs.length > 1) {
-        var self = this;
-        window.setTimeout(function() {
-            self.send_notify_msg();
-        }, 50);
-    }
-    this.notify_msgs.splice(0, 1);
+    this.ws.send(JSON.stringify(info));
 }
 
 /** pan the screen (and redraw accordingly) */

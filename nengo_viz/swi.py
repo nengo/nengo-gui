@@ -443,6 +443,7 @@ class ClientSocket(object):
     def __init__(self, socket, addr):
         self.socket = socket
         self.addr = addr
+        self.buffered_data = bytearray([])
 
     def set_timeout(self, timeout):
         self.socket.settimeout(timeout)
@@ -457,18 +458,23 @@ class ClientSocket(object):
         #    - text protocol
         #    - no ping pong messages
         # see: http://tools.ietf.org/html/rfc6455#section-5.2
+
+        data = self.buffered_data
         try:
-            data = bytearray(self.socket.recv(512))
+            data = data + bytearray(self.socket.recv(512))
         except socket.error as e:
             if e.errno == 11:  # no data available
-                return None
+                pass
             elif e.errno == 10035:  # no data available
-                return None
+                pass
             elif e.errno == 35:  # no data available
-                return None
+                pass
             else:
                 raise
         except socket.timeout:
+            return None
+
+        if len(data) == 0:
             return None
 
         if(len(data) < 6):
@@ -500,11 +506,18 @@ class ClientSocket(object):
 
         str_data = ''
         if datalen > 0:
-            mask_key = data[2 + offset:6 + offset]
-            masked_data = data[6 + offset:(6 + datalen + offset)]
-            unmasked_data = [masked_data[i] ^ mask_key[i % 4]
-                             for i in range(len(masked_data))]
-            str_data = bytearray(unmasked_data).decode('ascii')
+            stop_index = 6 + datalen + offset
+            if len(data) < stop_index:
+                self.buffered_data = data
+                return None
+            else:
+                mask_key = data[2 + offset:6 + offset]
+                masked_data = data[6 + offset : stop_index]
+                unmasked_data = [masked_data[i] ^ mask_key[i % 4]
+                                 for i in range(len(masked_data))]
+                str_data = bytearray(unmasked_data).decode('ascii')
+
+                self.buffered_data = data[stop_index:]
 
         return str_data
 
