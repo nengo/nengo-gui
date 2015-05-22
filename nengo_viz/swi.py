@@ -443,7 +443,7 @@ class ClientSocket(object):
     def __init__(self, socket, addr):
         self.socket = socket
         self.addr = addr
-        self.old_data = bytearray([])
+        self.buffered_data = bytearray([])
 
     def set_timeout(self, timeout):
         self.socket.settimeout(timeout)
@@ -459,7 +459,7 @@ class ClientSocket(object):
         #    - no ping pong messages
         # see: http://tools.ietf.org/html/rfc6455#section-5.2
 
-        data = self.old_data
+        data = self.buffered_data
         try:
             data = data + bytearray(self.socket.recv(512))
         except socket.error as e:
@@ -508,7 +508,7 @@ class ClientSocket(object):
         if datalen > 0:
             stop_index = 6 + datalen + offset
             if len(data) < stop_index:
-                self.old_data = data
+                self.buffered_data = data
                 return None
             else:
                 mask_key = data[2 + offset:6 + offset]
@@ -517,7 +517,7 @@ class ClientSocket(object):
                                  for i in range(len(masked_data))]
                 str_data = bytearray(unmasked_data).decode('ascii')
 
-                self.old_data = data[stop_index:]
+                self.buffered_data = data[stop_index:]
 
         return str_data
 
