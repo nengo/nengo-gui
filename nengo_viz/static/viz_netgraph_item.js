@@ -16,7 +16,7 @@ VIZ.NetGraphItem = function(ng, info) {
     this.size = info.size;
     this.type = info.type;
     this.uid = info.uid;
-    this.allow_pointer_plot = info.allow_pointer_plot;
+    this.sp_targets = info.sp_targets;
     this.passthrough = info.passthrough;
     this.fixed_width = null;
     this.fixed_height = null;
@@ -216,14 +216,14 @@ VIZ.NetGraphItem.prototype.generate_menu = function () {
             items.push(['XY-value', function() {self.create_graph('XYValue');}])
         }
     }
-    if (this.allow_pointer_plot) {
-        items.push(['Semantic pointer', 
-                    function() {self.create_graph('Pointer');}])
+    if (this.sp_targets.length > 0) {
+        items.push(['Semantic pointer',
+                    function() {self.create_graph('Pointer', self.sp_targets[0]);}])
     }
     return items;
 };
 
-VIZ.NetGraphItem.prototype.create_graph = function (type) {
+VIZ.NetGraphItem.prototype.create_graph = function (type, args) {
     var info = {};
     info.act = 'create_graph';
     info.type = type;
@@ -234,6 +234,7 @@ VIZ.NetGraphItem.prototype.create_graph = function (type) {
     info.width = 200;
     info.height = 200;
     info.uid = this.uid;
+    if (typeof(args) != 'undefined') { info.args = args; }
     this.ng.notify(info);
 };
 

@@ -1,26 +1,27 @@
 import nengo
 import nengo.spa
+from nengo.spa.module import Module
 import numpy as np
-import struct
 
 from nengo_viz.components.component import Component, Template
 
 
 class Pointer(Component):
-    def __init__(self, viz, config, uid, obj):
+    def __init__(self, viz, config, uid, obj, **args):
         super(Pointer, self).__init__(viz, config, uid)
         self.obj = obj
         self.label = viz.viz.get_label(obj)
         self.data = []
         self.override_target = None
-        self.vocab_out = obj.outputs['default'][1]
-        self.vocab_in = obj.inputs['default'][1]
+        self.target = args.get('args', 'default')
+        self.vocab_out = obj.outputs[self.target][1]
+        self.vocab_in = obj.inputs[self.target][1]
         self.vocab_out.include_pairs = config.show_pairs
 
     def add_nengo_objects(self, viz):
         with viz.model:
-            output  = self.obj.outputs['default'][0]
-            input = self.obj.inputs['default'][0]
+            output = self.obj.outputs[self.target][0]
+            input = self.obj.inputs[self.target][0]
             self.node = nengo.Node(self.gather_data,
                                    size_in=self.vocab_out.dimensions,
                                    size_out=self.vocab_in.dimensions)
@@ -54,7 +55,6 @@ class Pointer(Component):
                 v = np.dot(self.vocab_out.transform_to(self.vocab_in), v)
             return v
 
-
     def update_client(self, client):
         while len(self.data) > 0:
             data = self.data.pop(0)
@@ -75,11 +75,13 @@ class Pointer(Component):
                 self.override_target = None
 
     @staticmethod
-    def can_apply(obj):
-        return isinstance(obj, (nengo.spa.Buffer, nengo.spa.Memory))
+    def applicable_targets(obj):
+        if isinstance(obj, Module):
+            return obj.outputs.keys()
+        else:
+            return []
 
 
 class PointerTemplate(Template):
     cls = Pointer
     config_params = dict(show_pairs=False, **Template.default_params)
-
