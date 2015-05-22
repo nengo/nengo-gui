@@ -1,9 +1,12 @@
+import time
+import struct
+
+import numpy as np
 import nengo
 import json
 
 from nengo_viz.components.component import Component, Template
 import nengo_viz.layout
-
 
 class NetGraph(Component):
     configs = {}
@@ -103,10 +106,10 @@ class NetGraph(Component):
         self.config[obj].size = width, height
         self.viz.viz.save_config()
 
-    def act_create_graph(self, uid, type, x, y, width, height, **args):
+    def act_create_graph(self, uid, type, x, y, width, height, **kwargs):
         cls = getattr(nengo_viz.components, type + 'Template')
         obj = self.uids[uid]
-        template = cls(obj, **args)
+        template = cls(obj, **kwargs)
         self.viz.viz.generate_uid(template, prefix='_viz_')
         self.config[template].x = x
         self.config[template].y = y
@@ -121,12 +124,12 @@ class NetGraph(Component):
     def act_feedforward_layout(self, uid):
         if uid is None:
             network = self.viz.model
-            # self.config[network].pos = 0.0, 0.0
-            # self.config[network].size = 1.0, 1.0
-            # self.to_be_sent.append(dict(type='pan',
-            #                             pan=self.config[network].pos))
-            # self.to_be_sent.append(dict(type='zoom',
-            #                             zoom=self.config[network].size[0]))
+            #self.config[network].pos = 0.0, 0.0
+            #self.config[network].size = 1.0, 1.0
+            #self.to_be_sent.append(dict(type='pan',
+            #                            pan=self.config[network].pos))
+            #self.to_be_sent.append(dict(type='zoom',
+            #                            zoom=self.config[network].size[0]))
         else:
             network = self.uids[uid]
         pos = self.layout.make_layout(network)
@@ -220,6 +223,8 @@ class NetGraph(Component):
         client.write(json.dumps(info))
 
 
+
 class NetGraphTemplate(Template):
     cls = NetGraph
     config_params = dict()
+
