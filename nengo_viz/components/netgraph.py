@@ -53,7 +53,7 @@ class NetGraph(Component):
         self.networks_to_search = [model]
         self.parents = {}
 
-        for uid, old_item in self.uids.items():
+        for uid, old_item in nengo.utils.compat.iteritems(self.uids):
             try:
                 new_item = eval(uid, locals)
             except:
