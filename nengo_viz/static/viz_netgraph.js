@@ -170,7 +170,6 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         }
         item.remove();    
     } else if (data.type === 'reconnect') {
-        console.log(['reconnect', data]);
         var conn = this.svg_conns[data.uid];
         conn.set_pres(data.pres);
         conn.set_posts(data.posts);
