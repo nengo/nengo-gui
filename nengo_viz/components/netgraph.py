@@ -29,7 +29,7 @@ class NetGraph(Component):
     def check_for_reload(self):
         t = os.path.getmtime(self.viz.viz.filename)
 
-        if self.last_modify_time is None or self.last_modify_time < t:
+        if self.last_modify_time < t:
             self.reload()
             self.last_modify_time = t
 
