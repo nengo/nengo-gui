@@ -25,6 +25,7 @@ class NetGraph(Component):
         self.networks_to_search = [self.viz.model]
         self.initialized_pan_and_zoom = False
         self.last_modify_time = os.path.getmtime(self.viz.viz.filename)
+        self.last_reload_check = time.time()
 
     def check_for_reload(self):
         t = os.path.getmtime(self.viz.viz.filename)
@@ -153,7 +154,10 @@ class NetGraph(Component):
         return parents
 
     def update_client(self, client):
-        self.check_for_reload()
+        now = time.time()
+        if now > self.last_reload_check + 0.5:
+            self.check_for_reload()
+            self.last_reload_check = now
 
         if not self.initialized_pan_and_zoom:
             self.send_pan_and_zoom(client)
