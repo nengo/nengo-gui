@@ -60,7 +60,7 @@ class NetGraph(Component):
         # for Nodes, Ensembles, and Networks, this means to find the item
         # with the same uid.  For Connections, we don't really have a uid,
         # so we use the uids of the pre and post objects.
-        for uid, old_item in nengo.utils.compat.iteritems(self.uids):
+        for uid, old_item in nengo.utils.compat.iteritems(dict(self.uids)):
             try:
                 new_item = eval(uid, locals)
             except:
