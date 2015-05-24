@@ -232,10 +232,10 @@ class NetGraph(Component):
         self.config[obj].size = width, height
         self.viz.viz.save_config()
 
-    def act_create_graph(self, uid, type, x, y, width, height):
+    def act_create_graph(self, uid, type, x, y, width, height, **kwargs):
         cls = getattr(nengo_viz.components, type + 'Template')
         obj = self.uids[uid]
-        template = cls(obj)
+        template = cls(obj, **kwargs)
         self.viz.viz.generate_uid(template, prefix='_viz_')
         self.config[template].x = x
         self.config[template].y = y
@@ -322,8 +322,9 @@ class NetGraph(Component):
         if type == 'ens' or type == 'node':
             info['dimensions'] = int(obj.size_out)
 
-        if nengo_viz.components.pointer.Pointer.can_apply(obj):
-            info['allow_pointer_plot'] = True
+        info['sp_targets'] = \
+            nengo_viz.components.pointer.Pointer.applicable_targets(obj)
+
         client.write(json.dumps(info))
 
     def send_pan_and_zoom(self, client):
