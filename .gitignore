@@ -52,3 +52,9 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Mac OS X stuff
+.DS_Store
+
+# nengo_viz specific
+*.py.cfg

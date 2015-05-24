@@ -486,4 +486,3 @@ VIZ.next_zindex = function() {
     VIZ.max_zindex++;
     return VIZ.max_zindex;
 }
-

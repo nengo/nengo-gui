@@ -134,13 +134,25 @@ VIZ.SimControl.prototype.update = function() {
     this.time_slider.update_times(this.time);
 };
 
-VIZ.SimControl.prototype.on_pause_click = function(event) {
+VIZ.SimControl.prototype.pause = function() {
+    if (!this.paused) {
+        this.ws.send('pause');
+    }
+    this.paused = true;
+}
+
+VIZ.SimControl.prototype.play = function() {
     if (this.paused) {
         this.ws.send('continue');
-        this.paused = false;
+    }
+    this.paused = false;
+}
+
+VIZ.SimControl.prototype.on_pause_click = function(event) {
+    if (this.paused) {
+        this.play();
     } else {
-        this.ws.send('pause');
-        this.paused = true;
+        this.pause();
     }
     //this.pause_button_icon.toggleClass('glyphicon-pause glyphicon-play');
 };

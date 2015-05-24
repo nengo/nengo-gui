@@ -6,13 +6,29 @@
         <link href="static/viz_raster.css" rel="stylesheet" type="text/css" />
         <link href="static/viz_pointer.css" rel="stylesheet" type="text/css" />
         <link href="static/viz_slider.css" rel="stylesheet" type="text/css" />
-        <link href="static/viz_sim_control.css" rel="stylesheet" type="text/css" /> 
-        <link href="static/viz_netgraph.css" rel="stylesheet" type="text/css" /> 
-        <link href="static//lib/css/bootstrap.min.css" rel="stylesheet" type="text/css" /> 
+        <link href="static/viz_modal.css" rel="stylesheet" type="text/css" />
+        <link href="static/viz_tooltips.css" rel="stylesheet" type="text/css" />
+        <link href="static/viz_sim_control.css" rel="stylesheet" type="text/css" />
+        <link href="static/viz_netgraph.css" rel="stylesheet" type="text/css" />
+        <link href="static//lib/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     </head>
     <body onload="onload();">
         <div id="main"></div>
         <div id="control"></div>
+        <div class="modal fade" style="z-index:100000001;">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title"></h4>
+              </div>
+              <div class="modal-body">
+              </div>
+              <div class="modal-footer">
+              </div>
+            </div>
+          </div>
+        </div>
         <script>
             function onload() {
                 main = document.getElementById("main");
@@ -36,6 +52,8 @@
         <script src="static/viz_pointer.js"></script>
         <script src="static/viz_netgraph_item.js"></script>
         <script src="static/viz_netgraph_conn.js"></script>
+        <script src="static/viz_modal.js"></script>
+        <script src="static/viz_tooltips.js"></script>
         <script src="static/viz_menu.js"></script>
     </body>
 </html>
