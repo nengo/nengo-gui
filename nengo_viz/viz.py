@@ -88,6 +88,8 @@ class VizSim(object):
 class Viz(object):
     """The master visualization organizer set up for a particular model."""
     def __init__(self, filename, model=None, locals=None):
+        self.vizsims = []
+
         if locals is None:
             locals = {}
             with open(filename) as f:
@@ -188,8 +190,16 @@ class Viz(object):
     def start(self, port=8080, browser=True):
         """Start the web server"""
         nengo_viz.server.Server.viz = self
-        nengo_viz.server.Server.start(port=port, browser=browser)
+        # asynch must be true to handle websockets
+        return nengo_viz.server.Server.start(
+            port=port, browser=browser, asynch=True)
 
     def create_sim(self):
         """Create a new Simulator with this configuration"""
-        return VizSim(self)
+        vizsim = VizSim(self)
+        self.vizsims.append(vizsim)
+        return vizsim
+
+    def cleanup(self):
+        for vizsim in self.vizsims:
+            vizsim.finish()

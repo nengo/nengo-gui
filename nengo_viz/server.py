@@ -21,6 +21,11 @@ class Server(swi.SimpleWebInterface):
         icon = pkgutil.get_data('nengo_viz', 'static/favicon.ico')
         return ('image/ico', icon)
 
+    def swi_shutdown(self):
+        self.viz.cleanup()  # cleanup viz threads
+        self.stop()         # stop handling requests
+        return "Shutting Down"
+
     def swi(self):
         """Handles http://host:port/ by giving the main page"""
         # create a new simulator

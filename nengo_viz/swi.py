@@ -82,6 +82,8 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
     current_cookies = {}
     passwords = {}
 
+    _stopped = threading.Event()  # set to shut down all servers
+
     def add_header(self, key, value):
         if self.pending_headers is None:
             self.pending_headers = []
@@ -289,9 +291,9 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
-            self.wfil.write(("<html><body>Invalid request:"
-                             "<pre>args=%s</pre><pre>db=%s</pre>"
-                             "</body></html>" % (args, db)).encode("utf-8"))
+            self.wfile.write(("<html><body>Invalid request:"
+                              "<pre>args=%s</pre><pre>db=%s</pre>"
+                              "</body></html>" % (args, db)).encode("utf-8"))
 
     def send_file(self, path):
         self.send_response(200)
@@ -366,13 +368,24 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             server = AsyncHTTPServer((addr, port), cls)
         else:
             server = BaseHTTPServer.HTTPServer((addr, port), cls)
+
+        cls._stopped.clear()
         try:
-            server.serve_forever()
+            while not cls._stopped.is_set():
+                server.handle_request()
         finally:
             # shut down any remaining threads
+            # warning: this list is shared across threads -- not thread-safe
             if asynch and server.requests is not None:
                 for socket in server.requests:
                     socket.close()
+
+    @classmethod
+    def stop(cls):
+        """Stop all servers after their next request."""
+        # Note: a request must be triggered before the server will
+        # stop, because it will be blocking on its current handle_request
+        cls._stopped.set()
 
     @classmethod
     def browser(cls, port=80):
