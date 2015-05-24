@@ -1,5 +1,7 @@
 import time
 import struct
+import os
+import traceback
 
 import numpy as np
 import nengo
@@ -23,19 +25,134 @@ class NetGraph(Component):
         self.uids = {}
         self.parents = {}
         self.networks_to_search = [self.viz.model]
+        self.initialized_pan_and_zoom = False
+        self.last_modify_time = os.path.getmtime(self.viz.viz.filename)
+        self.last_reload_check = time.time()
 
-    def get_parents(self, uid):
+    def check_for_reload(self):
+        t = os.path.getmtime(self.viz.viz.filename)
+
+        if self.last_modify_time < t:
+            self.reload()
+            self.last_modify_time = t
+
+    def reload(self):
+        locals = {}
+        with open(self.viz.viz.filename) as f:
+            code = f.read()
+        try:
+            exec(code, locals)
+        except:
+            traceback.print_exc()
+        try:
+            model = locals['model']
+        except:
+            traceback.print_exc()
+            return
+
+        locals['nengo_viz'] = nengo_viz
+        name_finder = nengo_viz.NameFinder(locals, model)
+
+        self.networks_to_search = [model]
+        self.parents = {}
+
+        # for each item in the old model, find the matching new item
+        # for Nodes, Ensembles, and Networks, this means to find the item
+        # with the same uid.  For Connections, we don't really have a uid,
+        # so we use the uids of the pre and post objects.
+        for uid, old_item in nengo.utils.compat.iteritems(self.uids):
+            try:
+                new_item = eval(uid, locals)
+            except:
+                new_item = None
+
+            if new_item is None:
+                self.to_be_sent.append(dict(
+                    type='remove', uid=uid))
+                del self.uids[uid]
+            else:
+                if isinstance(old_item, (nengo.Node,
+                                         nengo.Ensemble,
+                                         nengo.Network)):
+                    old_label = self.viz.viz.get_label(old_item)
+                    new_label = self.viz.viz.get_label(new_item,
+                        default_labels=name_finder.known_name)
+
+                    if old_label != new_label:
+                        self.to_be_sent.append(dict(
+                            type='rename', uid=uid, name=new_label))
+                elif isinstance(old_item, nengo.Connection):
+                    old_pre = old_item.pre_obj
+                    old_post = old_item.post_obj
+                    new_pre = new_item.pre_obj
+                    new_post = new_item.post_obj
+                    if isinstance(old_pre, nengo.ensemble.Neurons):
+                        old_pre = old_pre.ensemble
+                    if isinstance(old_post, nengo.ensemble.Neurons):
+                        old_post = old_post.ensemble
+                    if isinstance(new_pre, nengo.ensemble.Neurons):
+                        new_pre = new_pre.ensemble
+                    if isinstance(new_post, nengo.ensemble.Neurons):
+                        new_post = new_post.ensemble
+
+                    old_pre = self.viz.viz.get_uid(old_pre)
+                    old_post = self.viz.viz.get_uid(old_post)
+                    new_pre = self.viz.viz.get_uid(new_pre,
+                            default_labels=name_finder.known_name)
+                    new_post = self.viz.viz.get_uid(new_post,
+                            default_labels=name_finder.known_name)
+
+                    if new_pre != old_pre or new_post != old_post:
+                        # if the connection has changed, tell javascript
+                        pres = self.get_parents(new_pre,
+                            default_labels=name_finder.known_name)[:-1]
+                        posts = self.get_parents(new_post,
+                            default_labels=name_finder.known_name)[:-1]
+                        self.to_be_sent.append(dict(
+                            type='reconnect', uid=uid,
+                            pres=pres, posts=posts))
+
+                self.uids[uid] = new_item
+
+        self.to_be_expanded.append(model)
+
+        self.viz.model = model
+        self.viz.viz.model = model
+        self.viz.viz.locals = locals
+        self.viz.viz.name_finder = name_finder
+        self.viz.viz.default_labels = name_finder.known_name
+        self.viz.viz.config = self.viz.viz.load_config()
+        self.viz.config = self.viz.viz.config
+        self.config = self.viz.viz.config
+        self.viz.viz.uid_prefix_counter = {}
+        self.layout = nengo_viz.layout.Layout(model)
+
+        components = []
+        for c in self.viz.components[:2]:
+            components.append(c)
+            locals[c.uid] = c.template
+        self.viz.components = components
+        for template in self.viz.viz.find_templates():
+            if not isinstance(template,
+                              (nengo_viz.components.SimControlTemplate,
+                               nengo_viz.components.NetGraphTemplate)):
+                self.viz.add_template(template)
+
+        self.viz.changed = True
+
+
+    def get_parents(self, uid, default_labels=None):
         while uid not in self.parents:
             net = self.networks_to_search.pop(0)
-            net_uid = self.viz.viz.get_uid(net)
+            net_uid = self.viz.viz.get_uid(net, default_labels=default_labels)
             for n in net.nodes:
-                n_uid = self.viz.viz.get_uid(n)
+                n_uid = self.viz.viz.get_uid(n, default_labels=default_labels)
                 self.parents[n_uid] = net_uid
             for e in net.ensembles:
-                e_uid = self.viz.viz.get_uid(e)
+                e_uid = self.viz.viz.get_uid(e, default_labels=default_labels)
                 self.parents[e_uid] = net_uid
             for n in net.networks:
-                n_uid = self.viz.viz.get_uid(n)
+                n_uid = self.viz.viz.get_uid(n, default_labels=default_labels)
                 self.parents[n_uid] = net_uid
                 self.networks_to_search.append(n)
         parents = [uid]
@@ -44,12 +161,19 @@ class NetGraph(Component):
         return parents
 
     def update_client(self, client):
+        now = time.time()
+        if now > self.last_reload_check + 0.5:
+            self.check_for_reload()
+            self.last_reload_check = now
+
+        if not self.initialized_pan_and_zoom:
+            self.send_pan_and_zoom(client)
+            self.initialized_pan_and_zoom = True
+
         if len(self.to_be_expanded) > 0:
             self.viz.viz.lock.acquire()
             network = self.to_be_expanded.pop(0)
             self.expand_network(network, client)
-            if network is self.viz.model:
-                self.send_pan_and_zoom(client)
             self.viz.viz.lock.release()
         else:
             while len(self.to_be_sent) > 0:
@@ -174,6 +298,10 @@ class NetGraph(Component):
         self.config[network].expanded = True
 
     def create_object(self, client, obj, type, parent):
+        uid = self.viz.viz.get_uid(obj)
+        if uid in self.uids:
+            return
+
         pos = self.config[obj].pos
         if pos is None:
             import random
@@ -184,7 +312,6 @@ class NetGraph(Component):
             size = (0.1, 0.1)
             self.config[obj].size = size
         label = self.viz.viz.get_label(obj)
-        uid = self.viz.viz.get_uid(obj)
         self.uids[uid] = obj
         info = dict(uid=uid, label=label, pos=pos, type=type, size=size,
                     parent=parent)
@@ -212,6 +339,9 @@ class NetGraph(Component):
         client.write(json.dumps(dict(type='zoom', zoom=zoom)))
 
     def create_connection(self, client, conn, parent):
+        uid = self.viz.viz.get_uid(conn)
+        if uid in self.uids:
+            return
         pre = conn.pre_obj
         if isinstance(pre, nengo.ensemble.Neurons):
             pre = pre.ensemble
@@ -220,7 +350,6 @@ class NetGraph(Component):
             post = post.ensemble
         pre = self.viz.viz.get_uid(pre)
         post = self.viz.viz.get_uid(post)
-        uid = 'conn_%d' % id(conn)
         self.uids[uid] = conn
         pres = self.get_parents(pre)[:-1]
         posts = self.get_parents(post)[:-1]

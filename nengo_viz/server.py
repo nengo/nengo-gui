@@ -41,10 +41,9 @@ class Server(swi.SimpleWebInterface):
     def ws_viz_component(self, client, uid):
         """Handles ws://host:port/viz_component with a websocket"""
         # figure out what component is being connected to
-        component = self.viz_sim.uids[uid]
-
         try:
             while True:
+                component = self.viz_sim.uids[uid]
                 # read all data coming from the component
                 msg = client.read()
                 while msg is not None:

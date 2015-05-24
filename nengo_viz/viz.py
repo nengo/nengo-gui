@@ -67,7 +67,11 @@ class VizSim(object):
             if self.sim is None:
                 time.sleep(0.01)
             else:
-                self.sim.step()
+                try:
+                    self.sim.step()
+                except AttributeError:
+                    time.sleep(0.01)
+
 
             if self.rebuild:
                 self.rebuild = False
@@ -163,16 +167,20 @@ class Viz(object):
         with open(self.filename + '.cfg', 'w') as f:
             f.write(self.config.dumps(uids=self.default_labels))
 
-    def get_label(self, obj):
+    def get_label(self, obj, default_labels=None):
+        if default_labels is None:
+            default_labels = self.default_labels
         label = obj.label
         if label is None:
-            label = self.default_labels.get(obj, None)
+            label = default_labels.get(obj, None)
         if label is None:
             label = repr(obj)
         return label
 
-    def get_uid(self, obj):
-        uid = self.default_labels.get(obj, None)
+    def get_uid(self, obj, default_labels=None):
+        if default_labels is None:
+            default_labels = self.default_labels
+        uid = default_labels.get(obj, None)
         if uid is None:
             uid = repr(obj)
         return uid
