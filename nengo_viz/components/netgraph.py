@@ -54,6 +54,10 @@ class NetGraph(Component):
         self.networks_to_search = [model]
         self.parents = {}
 
+        # for each item in the old model, find the matching new item
+        # for Nodes, Ensembles, and Networks, this means to find the item
+        # with the same uid.  For Connections, we don't really have a uid,
+        # so we use the uids of the pre and post objects.
         for uid, old_item in nengo.utils.compat.iteritems(self.uids):
             try:
                 new_item = eval(uid, locals)
@@ -97,6 +101,7 @@ class NetGraph(Component):
                             default_labels=name_finder.known_name)
 
                     if new_pre != old_pre or new_post != old_post:
+                        # if the connection has changed, tell javascript
                         pres = self.get_parents(new_pre,
                             default_labels=name_finder.known_name)[:-1]
                         posts = self.get_parents(new_post,
