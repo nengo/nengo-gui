@@ -296,9 +296,9 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
-            self.wfil.write(("<html><body>Invalid request:"
-                             "<pre>args=%s</pre><pre>db=%s</pre>"
-                             "</body></html>" % (args, db)).encode("utf-8"))
+            self.wfile.write(("<html><body>Invalid request:"
+                              "<pre>args=%s</pre><pre>db=%s</pre>"
+                              "</body></html>" % (args, db)).encode("utf-8"))
 
     def send_file(self, path):
         self.send_response(200)
