@@ -89,7 +89,7 @@ VIZ.NetGraphItem = function(ng, info) {
 
     g.appendChild(this.shape);
 
-    interact.margin(15);
+    interact.margin(20);
 
     /** dragging an item to change its position */
     var uid = this.uid;
