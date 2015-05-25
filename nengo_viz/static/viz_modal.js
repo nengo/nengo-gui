@@ -437,13 +437,11 @@ function make_conn_path_dropdown_list($container, others_uid, obj_type, conn_uid
     }
 }
 
-$( document ).ready(function() {
-//    Validator.prototype.toggleSubmit = function () {
-        if(!this.options.disable) return
-        var $btn = $('button[type="tester"], input[type="tester"]')
-          .filter('[form="' + this.$element.attr('id') + '"]')
-          .add(this.$element.find('input[type="tester"], button[type="tester"]'))
-        $btn.toggleClass('disabled', this.isIncomplete() || this.hasErrors())
-          .css({'pointer-events': 'all', 'cursor': 'pointer'})
-    //}
-});
+Validator.prototype.toggleSubmit = function () {
+    if(!this.options.disable) return
+    var $btn = $('button[type="tester"], input[type="tester"]')
+      .filter('[form="' + this.$element.attr('id') + '"]')
+      .add(this.$element.find('input[type="tester"], button[type="tester"]'))
+    $btn.toggleClass('disabled', this.isIncomplete() || this.hasErrors())
+      .css({'pointer-events': 'all', 'cursor': 'pointer'})
+}
