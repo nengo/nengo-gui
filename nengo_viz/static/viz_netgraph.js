@@ -14,6 +14,8 @@ VIZ.NetGraph = function(parent, args) {
     this.svg_objects = {};     // dict of all VIZ.NetGraphItems, by uid
     this.svg_conns = {};       // dict of all VIZ.NetGraphConnections, by uid
 
+    this.in_zoom_delay = false;
+
     /** Since connections may go to items that do not exist yet (since they
      *  are inside a collapsed network), this dictionary keeps a list of
      *  connections to be notified when a particular item appears.  The
@@ -29,7 +31,9 @@ VIZ.NetGraph = function(parent, args) {
     this.svg.id = 'netgraph';
     this.svg.style.height = 'calc(100% - 80px)';
     this.svg.style.position = 'fixed';    
-
+        
+    interact(this.svg).styleCursor(false);
+           
     VIZ.netgraph = this;
     parent.appendChild(this.svg);
     this.parent = parent;
@@ -57,6 +61,21 @@ VIZ.NetGraph = function(parent, args) {
         
     /** dragging the background pans the full area by changing offsetX,Y */
     var self = this;
+
+    /** define cursor behaviour for background */
+    interact(this.svg)
+        .on('mousedown', function() {
+            var cursor = document.documentElement.getAttribute('style');
+            if (cursor !== null) {
+                if (cursor.match(/resize/) == null) {  // don't change resize cursor             
+                    document.documentElement.setAttribute('style','cursor:move;');
+                }
+            }
+        })
+        .on('mouseup', function() {             
+            document.documentElement.setAttribute('style','cursor:default;')
+        });
+
     interact(this.svg)
         .draggable({
             onstart: function() {
@@ -83,7 +102,13 @@ VIZ.NetGraph = function(parent, args) {
      *  point in the space */
     interact(document.getElementById('main'))
         .on('wheel', function(event) {
-            
+            event.preventDefault();
+            if (self.in_zoom_delay) {
+                return;
+            }
+            self.in_zoom_delay = true;
+            setTimeout(function () { self.in_zoom_delay = false; }, 50);
+
             self.menu.hide_any();
 
             var x = (event.clientX / $(self.svg).width())
@@ -115,8 +140,9 @@ VIZ.NetGraph = function(parent, args) {
 
     this.menu = new VIZ.Menu(self.parent);
 
+    //Determine when to pull up the menu
     interact(this.svg)
-        .on('tap', function(event) {
+        .on('hold', function(event) { //change to 'tap' for right click
             if (event.button == 0) {
                 if (self.menu.visible_any()) {
                     self.menu.hide_any();
@@ -126,7 +152,24 @@ VIZ.NetGraph = function(parent, args) {
                 }
                 event.stopPropagation();  
             }
+        })
+        .on('tap', function(event) { //get rid of menus when clicking off
+            if (event.button == 0) {
+                if (self.menu.visible_any()) {
+                    self.menu.hide_any();
+                }
+            }
         });
+
+    $(this.svg).bind('contextmenu', function(event) {
+            event.preventDefault();  
+            if (self.menu.visible_any()) {
+                self.menu.hide_any();
+            } else {
+                self.menu.show(event.clientX, event.clientY, 
+                               self.generate_menu());
+        }
+    }); 
 };
 
 VIZ.NetGraph.prototype.generate_menu = function() {

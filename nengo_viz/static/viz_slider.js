@@ -12,7 +12,8 @@ VIZ.Slider = function(parent, sim, args) {
 
     //Check if user is filling in a number into a slider
     this.filling_slider_value = false;
-
+    this.n_sliders = args.n_sliders;
+    
     this.notify_msgs = [];
 
     VIZ.set_transform(this.label, 0, -30);
@@ -150,11 +151,10 @@ VIZ.Slider = function(parent, sim, args) {
         this.div.appendChild(guideline);
     }
 
-    
     /** call schedule_update whenever the time is adjusted in the SimControl */    
     this.sim.div.addEventListener('adjust_time', 
             function(e) {self.schedule_update();}, false);
-            
+
     this.on_resize(args.width, args.height);
 };
 
@@ -283,10 +283,9 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
 VIZ.Slider.prototype.generate_menu = function() {
     var self = this;
     var items = [];
-    items.push(['Set range', function() {self.set_range();}]);
-    items.push(['Set value', function() {self.user_value();}]);
+    items.push(['Set range...', function() {self.set_range();}]);
+    items.push(['Set value...', function() {self.user_value();}]);
     items.push(['Reset value', function() {self.user_reset_value();}]);
-    
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
@@ -460,6 +459,7 @@ VIZ.Slider.prototype.set_range = function() {
 
 VIZ.Slider.prototype.layout_info = function () {
     var info = VIZ.Component.prototype.layout_info.call(this);
+    info.width = info.width/this.n_sliders;
     info.min_value = this.scale.domain()[1];
     info.max_value = this.scale.domain()[0];
     return info;
