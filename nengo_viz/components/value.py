@@ -1,7 +1,8 @@
-import nengo
-import numpy as np
 import struct
 import collections
+
+import nengo
+import numpy as np
 
 from nengo_viz.components.component import Component, Template
 

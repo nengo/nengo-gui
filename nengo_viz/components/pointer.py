@@ -1,8 +1,10 @@
+import struct
+import collections
+
 import nengo
 import nengo.spa
 from nengo.spa.module import Module
 import numpy as np
-import struct
 
 from nengo_viz.components.component import Component, Template
 
@@ -12,7 +14,7 @@ class Pointer(Component):
         super(Pointer, self).__init__(viz, config, uid)
         self.obj = obj
         self.label = viz.viz.get_label(obj)
-        self.data = []
+        self.data = collections.deque()
         self.override_target = None
         self.target = kwargs.get('args', 'default')
         self.vocab_out = obj.outputs[self.target][1]
@@ -59,7 +61,7 @@ class Pointer(Component):
 
     def update_client(self, client):
         while len(self.data) > 0:
-            data = self.data.pop(0)
+            data = self.data.popleft()
             client.write(data, binary=False)
 
     def javascript(self):
