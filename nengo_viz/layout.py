@@ -1,14 +1,15 @@
 import nengo
 from nengo_viz.grandalf.graphs import Vertex, Edge, Graph
 from nengo_viz.grandalf.layouts import VertexViewer, SugiyamaLayout
-from nengo_viz.namefinder import LayoutParentFinder
+# from nengo_viz.namefinder import LayoutParentFinder
 
 
 class Layout(object):
     """Generates layouts for nengo Networks"""
-    def __init__(self, model):
-        self.model = model
-        self.parent_finder = LayoutParentFinder(model)
+    def __init__(self, viz):
+        self.viz = viz
+        self.model = viz.model
+        # self.parent_finder = LayoutParentFinder(model)
 
     def compute_bounds(self, core):
         """Determine the min/max x/y values in the graph_core"""
@@ -61,14 +62,14 @@ class Layout(object):
             if isinstance(pre, nengo.ensemble.Neurons):
                 pre = pre.ensemble
             while pre not in vertices:
-                pre = self.parent_finder.find_parent(pre)
+                pre = self.viz.viz.model_manager.find_parent(pre)
                 if pre is None:
                     break
             post = c.post_obj
             if isinstance(post, nengo.ensemble.Neurons):
                 post = post.ensemble
             while post not in vertices:
-                post = self.parent_finder.find_parent(post)
+                post = self.viz.viz.model_manager.find_parent(post)
                 if post is None:
                     break
 

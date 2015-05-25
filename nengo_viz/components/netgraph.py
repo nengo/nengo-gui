@@ -7,7 +7,7 @@ import json
 
 from nengo_viz.components.component import Component, Template
 import nengo_viz.layout
-from nengo_viz.namefinder import NetgraphParentFinder
+# from nengo_viz.namefinder import NetgraphParentFinder
 
 
 class NetGraph(Component):
@@ -16,12 +16,12 @@ class NetGraph(Component):
     def __init__(self, viz, config, uid):
         super(NetGraph, self).__init__(viz, config, uid)
         self.viz = viz
-        self.layout = nengo_viz.layout.Layout(self.viz.model)
+        self.layout = nengo_viz.layout.Layout(self.viz)
         self.config = viz.config
         self.to_be_expanded = [self.viz.model]
         self.to_be_sent = []
         self.uids = {}
-        self.parent_finder = NetgraphParentFinder(self.viz)
+        # self.parent_finder = NetgraphParentFinder(self.viz)
 
     def modified_config(self):
         self.viz.viz.modified_config()
@@ -201,8 +201,10 @@ class NetGraph(Component):
         post = self.viz.viz.get_uid(post)
         uid = 'conn_%d' % id(conn)
         self.uids[uid] = conn
-        pres = self.parent_finder.get_parents(pre)[:-1]
-        posts = self.parent_finder.get_parents(post)[:-1]
+        # pres = self.parent_finder.get_parents(pre)[:-1]
+        # posts = self.parent_finder.get_parents(post)[:-1]
+        pres = self.viz.viz.model_manager.get_parent_chain(pre)[:-1]
+        posts = self.viz.viz.model_manager.get_parent_chain(post)[:-1]
         info = dict(uid=uid, pre=pres, post=posts, type='conn', parent=parent)
         client.write(json.dumps(info))
 

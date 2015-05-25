@@ -7,6 +7,7 @@ import nengo_viz
 import nengo_viz.server
 import nengo_viz.components
 import nengo_viz.config
+from nengo_viz.namefinder import ModelManager
 
 
 class VizSim(object):
@@ -97,8 +98,7 @@ class Viz(object):
         self.model = model
         self.filename = filename
         self.locals = locals
-        self.name_finder = nengo_viz.NameFinder(locals, model)
-        self.default_labels = self.name_finder.known_name
+        self.model_manager = ModelManager(model, locals)
 
         self.config = self.load_config()
         self.config_save_needed = False
@@ -107,28 +107,22 @@ class Viz(object):
 
         self.lock = threading.Lock()
 
-        self.uid_prefix_counter = {}
+    def get_uid(self, obj):
+        return self.model_manager.get_uid(obj)
+        
+    def generate_uid(self, obj, prefix):
+        self.model_manager.generate_uid(obj, prefix)
+
+    def remove_uid(self, uid):
+        self.model_manager.remove_uid(uid)
+
+    def get_label(self, obj):
+        return self.model_manager.get_label(obj)
 
     def find_templates(self):
         for k, v in self.locals.items():
             if isinstance(v, nengo_viz.components.component.Template):
                 yield v
-
-    def generate_uid(self, obj, prefix):
-        index = self.uid_prefix_counter.get(prefix, 0)
-        uid = '%s%d' % (prefix, index)
-        while uid in self.locals:
-            index += 1
-            uid = '%s%d' % (prefix, index)
-        self.uid_prefix_counter[prefix] = index + 1
-
-        self.locals[uid] = obj
-        self.default_labels[obj] = uid
-
-    def remove_uid(self, uid):
-        obj = self.locals[uid]
-        del self.locals[uid]
-        del self.default_labels[obj]
 
     def load_config(self):
         config = nengo_viz.config.Config()
@@ -159,7 +153,8 @@ class Viz(object):
 
         for k, v in self.locals.items():
             if isinstance(v, nengo_viz.components.component.Template):
-                self.default_labels[v] = k
+                self.model_manager.set_uid(v, k)
+                # self.default_labels[v] = k
         return config
 
     def save_config(self, lazy=False, force=False):
@@ -175,33 +170,25 @@ class Viz(object):
         self.config_save_time = now_time
         self.config_save_needed = False
         with open(self.filename + '.cfg', 'w') as f:
-            f.write(self.config.dumps(uids=self.default_labels))
+            # f.write(self.config.dumps(uids=self.default_labels))
+            f.write(self.config.dumps(uids=self.model_manager._names))
         self.lock.release()
 
     def modified_config(self):
         if not self.config_save_needed:
             self.config_save_needed = True
 
-    def get_label(self, obj):
-        label = obj.label
-        if label is None:
-            label = self.default_labels.get(obj, None)
-        if label is None:
-            label = repr(obj)
-        return label
-
-    def get_uid(self, obj):
-        uid = self.default_labels.get(obj, None)
-        if uid is None:
-            uid = repr(obj)
-        return uid
-
     def start(self, port=8080, browser=True):
         """Start the web server"""
         nengo_viz.server.Server.viz = self
         nengo_viz.server.Server.start(port=port, browser=browser)
 
-        print("Namefinder: %f" % self.name_finder.total_time)
+        print("names: %f" % self.model_manager.names_time)
+        print("names2: %f" % self.model_manager.names2_time)
+        print("parents: %f" % self.model_manager.parent_time)
+        print("parent chains: %f" % self.model_manager.parent_chain_time)
+        
+        # print("Namefinder: %f" % self.name_finder.total_time)
 
     def create_sim(self):
         """Create a new Simulator with this configuration"""

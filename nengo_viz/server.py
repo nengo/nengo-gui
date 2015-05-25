@@ -73,6 +73,6 @@ class Server(swi.SimpleWebInterface):
             self.viz.save_config(lazy=False)
         finally:
             component.finish()
-            if isinstance(component, NetGraph):
-                print("Layout: %f" % component.layout.parent_finder.total_time)
-                print("Parent: %f" % component.parent_finder.total_time)
+            # if isinstance(component, NetGraph):
+            #     print("Layout: %f" % component.layout.parent_finder.total_time)
+            #     print("Parent: %f" % component.parent_finder.total_time)
