@@ -28,7 +28,7 @@ VIZ.Modal.footer = function(type, ok_function){
         $footerBtn.append('<button id="OK" type="submit" class="btn btn-primary" data-dismiss="modal">OK</button>');
         $('#OK').on('click', ok_function);
     } else {
-        console.warn('Modal footer type ' + type + ' no recognized.')
+        console.warn('Modal footer type ' + type + ' not recognized.')
     }
 }
 
@@ -40,15 +40,16 @@ VIZ.Modal.single_input_body = function(start_values, label) {
     var $body = $('.modal-body').first();
     $body.empty();
 
-    var $form = $('<form class="form-horizontal" id ="myModal"/>').appendTo($body);
+    var $form = $('<form class="form-horizontal" id ="myModalForm"/>').appendTo($body);
     var $ctrlg = $('<div class="form-group"/>').appendTo($form);
     $ctrlg.append('<label class="control-label" for="singleInput">'+label+'</label>');
     var $ctrls = $('<div class="controls"/>').appendTo($ctrlg);
     $ctrls.append('<input id="singleInput" type="text" placeholder="' + start_values + '"/>');
     $('<div class="help-block with-errors"/>').appendTo($ctrls);
-    $('<button id="OK" type="submit" class="btn btn-primary" data-dismiss="modal">blah</button>').appendTo($form);
+    $('.modal').on('shown.bs.modal', function () {
+        $('#singleInput').focus();
+    })
 }
-
 
 VIZ.Modal.ensemble_body = function(uid, params, plots, conninfo) {
     var tabs = info_body([{id: 'params', title: 'Parameters'},
@@ -437,13 +438,23 @@ function make_conn_path_dropdown_list($container, others_uid, obj_type, conn_uid
     }
 }
 
+//**  A monkey patch to override the default behaviour of the Validator
+/*    plugin, which forces the button to be in the form. Our button is
+/*    in a different div (the footer).
+**/
 $( document ).ready(function() {
+    $.fn.validator.Constructor.DEFAULTS["delay"]=5000  //Change the delay before showing errors
     $.fn.validator.Constructor.prototype.toggleSubmit = function () {
         if(!this.options.disable) return
-        var $btn = $('button[type="tester"], input[type="tester"]')
-            .filter('[form="' + this.$element.attr('id') + '"]')
-            .add(this.$element.find('input[type="tester"], button[type="tester"]'))
-        $btn.toggleClass('disabled', this.isIncomplete() || this.hasErrors())
-            .css({'pointer-events': 'all', 'cursor': 'pointer'})
+        
+        var pointer = 'default';
+        if (!this.isIncomplete() && !this.hasErrors()) {
+            pointer = 'pointer';
+        }
+        var $btn = $('button[type="submit"], input[type="submit"]')
+            //.filter('[form="' + this.$element.attr('id') + '"]')
+            .add(this.$element.find('input[type="submit"], button[type="submit"]'))
+        $btn.prop('disabled', this.isIncomplete() || this.hasErrors())
+            .css({'pointer-events': 'all', 'cursor': pointer})
     }
 });

@@ -372,6 +372,26 @@ VIZ.Slider.prototype.user_value = function () {
             }
         }
     });
+    
+    var $form = $('#myModalForm').validator({custom: {valuegraph: function($item) {
+            var nums = $item.val().split(',');
+            if (nums.length != self.sliders.length) {
+                return false;
+            }
+            for (var i=0; i<nums.length; i++) {
+                if (!$.isNumeric(nums[i])) {
+                    return false;
+                }
+            }
+            return true;
+        }},
+        errors: {valuegraph: 'Does not match'}
+    });
+    
+    var $input = $('#singleInput');
+    $input.attr('data-valuegraph','number');
+    $input.attr('data-error','Input should be one comma-separated numerical value for each slider.');
+    $('#OK').prop('disabled',true);
     VIZ.Modal.show();
 }
 
@@ -393,6 +413,17 @@ VIZ.Slider.prototype.set_range = function() {
             this.set_value(i, this.sliders[i].value, false); 
         }    
     });
+    var $form = $('#myModalForm').validator({custom: {valuegraph: function($item) {
+            var nums = $item.val().split(',');
+            return (nums.length==2 && $.isNumeric(nums[0]) && $.isNumeric(nums[1]))
+        }},
+        errors: {valuegraph: 'Does not match'}
+    });
+    
+    var $input = $('#singleInput');
+    $input.attr('data-valuegraph','number');
+    $input.attr('data-error','Input should be in the form "<min>,<max>".');
+    $('#OK').prop('disabled',true);
     VIZ.Modal.show();
 }
 

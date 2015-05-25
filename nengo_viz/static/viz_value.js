@@ -222,12 +222,17 @@ VIZ.Value.prototype.set_range = function() {
             self.save_layout();
         }        
     });
-    var $form = $('#myModal');
-    $form.validator();
-    $form.attr('data-disable','true');   
+    
+    var $form = $('#myModalForm').validator({custom: {valuegraph: function($item) {
+            var nums = $item.val().split(',');
+            return (nums.length==2 && $.isNumeric(nums[0]) && $.isNumeric(nums[1]))
+        }},
+        errors: {valuegraph: 'Does not match'}
+    });
+    
     var $input = $('#singleInput');
-    $input.attr('type','email');
-    $input.attr('data-error','Nooooot a number!');
-    $input.attr('required');
+    $input.attr('data-valuegraph','number');
+    $input.attr('data-error','Input should be in the form "<min>,<max>".');
+    $('#OK').prop('disabled',true);
     VIZ.Modal.show();
 }
