@@ -155,7 +155,7 @@ VIZ.Slider = function(parent, sim, args) {
     this.sim.div.addEventListener('adjust_time', 
             function(e) {self.schedule_update();}, false);
 
-    this.on_resize(width, args.height);
+    this.on_resize(args.width, args.height);
 };
 
 

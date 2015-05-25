@@ -186,11 +186,15 @@ VIZ.NetGraphConnection.prototype.remove = function() {
 /** redraw the connection */
 VIZ.NetGraphConnection.prototype.redraw = function() {
     if (this.pre === null || this.post === null) {
-        this.line.setAttribute('visibility', 'hidden');
+        if (this.line !== undefined) {
+            this.line.setAttribute('visibility', 'hidden');
+        }
         this.marker.setAttribute('visibility', 'hidden');
         return;
     } else {
-        this.line.setAttribute('visibility', 'visible');
+        if (this.line !== undefined) {
+            this.line.setAttribute('visibility', 'visible');
+        }
         this.marker.setAttribute('visibility', 'visible');
     }
     var pre_pos = this.pre.get_screen_location();
