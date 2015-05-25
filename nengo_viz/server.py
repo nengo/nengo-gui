@@ -38,6 +38,10 @@ class Server(swi.SimpleWebInterface):
         components = viz_sim.create_javascript()
         return html % dict(components=components)
 
+    def swi_shutdown(self, *path):
+        self.stop()
+        return "Shutting down..."
+
     def ws_viz_component(self, client, uid):
         """Handles ws://host:port/viz_component with a websocket"""
         # figure out what component is being connected to
@@ -51,15 +55,19 @@ class Server(swi.SimpleWebInterface):
                         cfg = json.loads(msg[7:])
                         for k, v in cfg.items():
                             setattr(self.viz.config[component.template], k, v)
-                        self.viz.save_config()
+                        self.viz.modified_config()
                     elif msg == 'remove':
                         self.viz.remove_uid(uid)
-                        self.viz.save_config()
+                        self.viz.modified_config()
                     else:
                         component.message(msg)
                     msg = client.read()
                 # send data to the component
                 component.update_client(client)
+                self.viz.save_config(lazy=True)
                 time.sleep(0.01)
+        except swi.SocketClosedError:
+            # This error means the server has shut down, we should stop nicely.
+            self.viz.save_config(lazy=False)
         finally:
             component.finish()

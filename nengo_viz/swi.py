@@ -46,7 +46,9 @@ except ImportError:
     import socketserver as SocketServer
 import traceback
 import random
+import select
 import string
+import sys
 import os
 try:
     import StringIO
@@ -70,8 +72,13 @@ import struct
 import threading
 
 
+class SocketClosedError(IOError):
+    pass
+
+
 class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
     server_version = 'SimpleWebInterface/2.0'
+    servers = []
     serve_files = []
     serve_dirs = []
 
@@ -366,13 +373,56 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             server = AsyncHTTPServer((addr, port), cls)
         else:
             server = BaseHTTPServer.HTTPServer((addr, port), cls)
+
+        cls.servers.append(server)
+
         try:
-            server.serve_forever()
+            server.running = True
+            while server.running:
+                try:
+                    server.serve_forever(poll_interval=0.02)
+                    server.running = False
+                except KeyboardInterrupt:
+                    # Check that user wants to shut down
+                    sys.stdout.write(
+                        "\nShut-down this web server (y/[n])? ")
+                    sys.stdout.flush()
+                    rlist, _, _ = select.select([sys.stdin], [], [], 10)
+                    if rlist:
+                        line = sys.stdin.readline()
+                        if line[0].lower() == 'y':
+                            server.running = False
+                        else:
+                            print("Resuming...")
+                    else:
+                        print("No confirmation received. Resuming...")
         finally:
+            print("Shutting down server...")
+
             # shut down any remaining threads
             if asynch and server.requests is not None:
-                for socket in server.requests:
-                    socket.close()
+                for _, sock in server.requests:
+                    sock.close()
+
+                first = True
+                for thread, _ in server.requests:
+                    if thread.is_alive():
+                        # giving the first thread more time to close
+                        # effectively gives all threads more time to close
+                        thread.join(0.05 if first else 0.01)
+                        first = False
+
+                n_zombie = sum(thread.is_alive()
+                               for thread, _ in server.requests)
+                if n_zombie > 0:
+                    print("%d zombie threads will close abruptly" % n_zombie)
+
+            cls.servers.remove(server)
+
+    @classmethod
+    def stop(cls):
+        for server in cls.servers[:]:
+            server.shutdown()
 
     @classmethod
     def browser(cls, port=80):
@@ -381,16 +431,20 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
 
 
 class AsyncHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
-    requests = None
+    daemon_threads = True  # this ensures all spawned threads exit
+
+    def __init__(self, *args, **kwargs):
+        BaseHTTPServer.HTTPServer.__init__(self, *args, **kwargs)
+
+        # keep track of open threads, so we can close them when we exit
+        self.requests = []
 
     def process_request_thread(self, request, client_address):
-        # keep track of open threads, so we can close them when we exit
-        if self.requests is None:
-            self.requests = []
-        self.requests.append(request)
-        SocketServer.ThreadingMixIn.process_request_thread(self, request,
-                                                           client_address)
-        self.requests.remove(request)
+        thread = threading.current_thread()
+        self.requests.append((thread, request))
+        SocketServer.ThreadingMixIn.process_request_thread(
+            self, request, client_address)
+        self.requests.remove((thread, request))
 
 
 favicon = ('\x00\x00\x01\x00\x01\x00\x10\x10\x00\x00\x01\x00\x18\x00h\x03\x00'
@@ -469,6 +523,8 @@ class ClientSocket(object):
                 pass
             elif e.errno == 35:  # no data available
                 pass
+            elif e.errno == 9:  # "Bad file descriptor" means socket closed
+                raise SocketClosedError("Cannot read from closed socket.")
             else:
                 raise
         except socket.timeout:
