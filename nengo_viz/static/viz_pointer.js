@@ -87,7 +87,7 @@ VIZ.Pointer.prototype.set_show_pairs = function(value) {
     }
 };
 
-VIZ.Value.prototype.set_value = function() {
+VIZ.Pointer.prototype.set_value = function() {
     var self = this;
     VIZ.Modal.title('Enter a Semantic Pointer value...');
     VIZ.Modal.single_input_body('Pointer','Value:');
