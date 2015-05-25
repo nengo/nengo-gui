@@ -148,6 +148,23 @@ VIZ.XYValue.prototype.set_range = function() {
             self.save_layout();
         }
     });
+    var $form = $('#myModalForm').validator({
+        custom: {
+            valuegraph: function($item) {
+                var nums = $item.val().split(',');
+                return (nums.length==2
+                        && $.isNumeric(nums[0])
+                        && $.isNumeric(nums[1]));
+            }},
+        errors: {
+            valuegraph: 'Does not match'
+        }
+    });
+
+    var $input = $('#singleInput');
+    $input.attr('data-valuegraph', 'number');
+    $input.attr('data-error', 'Input should be in the form "<min>,<max>".');
+    $('#OK').prop('disabled', true);
     VIZ.modal.show();
 }
 

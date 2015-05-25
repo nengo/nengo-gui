@@ -30,8 +30,9 @@ VIZ.Modal.prototype.footer = function(type, ok_function){
     if (type === "close") {
         this.$footer.append('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
     } else if (type === "ok_cancel") {
-        this.$footer.append('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
-        this.$footer.append('<button id="OK" type="button" class="btn btn-primary" data-dismiss="modal">OK</button>');
+        var $footerBtn = $('<div class="form-group"/>').appendTo(this.$footer);
+        $footerBtn.append('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
+        $footerBtn.append('<button id="OK" type="submit" class="btn btn-primary" data-dismiss="modal">OK</button>');
         $('#OK').on('click', ok_function);
     } else if (type === 'confirm_reset') {
         this.$footer.append('<button type="button" id="confirm_reset_button" class="btn btn-primary">Reset</button>');
@@ -46,6 +47,7 @@ VIZ.Modal.prototype.footer = function(type, ok_function){
 
 VIZ.Modal.prototype.clear_body = function() {
     this.$body.empty();
+    this.$div.off('shown.bs.modal');
 }
 
 VIZ.Modal.prototype.text_body = function(text, type) {
@@ -92,13 +94,17 @@ VIZ.Modal.prototype.tabbed_body = function(tabinfo) {
 VIZ.Modal.prototype.single_input_body = function(start_values, label) {
     this.clear_body();
 
-    var $form = $('<form class="form-horizontal"/>').appendTo(this.$body);
-    var $ctrlg = $('<div class="control-group"/>').appendTo($form);
-    $ctrlg.append('<label class="control-label" for="singleInput">'+label+
+    var $form = $('<form class="form-horizontal" id ="myModalForm"/>').appendTo(this.$body);
+    var $ctrlg = $('<div class="form-group"/>').appendTo($form);
+    $ctrlg.append('<label class="control-label" for="singleInput">' + label +
                   '</label>');
-    var $ctrls = $('<div class="controls">').appendTo($ctrlg);
+    var $ctrls = $('<div class="controls"/>').appendTo($ctrlg);
     $ctrls.append('<input id="singleInput" type="text" placeholder="' +
-                  start_values + '">');
+                  start_values + '"/>');
+    $('<div class="help-block with-errors"/>').appendTo($ctrls);
+    this.$div.on('shown.bs.modal', function () {
+        $('#singleInput').focus();
+    });
 }
 
 VIZ.Modal.prototype.ensemble_body = function(uid, params, plots, conninfo) {
@@ -467,3 +473,24 @@ VIZ.Modal.prototype.make_conn_path_dropdown_list = function($container, others_u
 }
 
 VIZ.modal = new VIZ.Modal($('.modal').first());
+
+//**  A monkey patch to override the default behaviour of the Validator
+/*    plugin, which forces the button to be in the form. Our button is
+/*    in a different div (the footer).
+**/
+$( document ).ready(function() {
+    // Change the delay before showing errors
+    $.fn.validator.Constructor.DEFAULTS["delay"] = 5000;
+    $.fn.validator.Constructor.prototype.toggleSubmit = function () {
+        if (!this.options.disable) return;
+
+        var pointer = 'default';
+        if (!this.isIncomplete() && !this.hasErrors()) {
+            pointer = 'pointer';
+        }
+        var $btn = $('button[type="submit"], input[type="submit"]')
+            .add(this.$element.find('input[type="submit"], button[type="submit"]'))
+        $btn.prop('disabled', this.isIncomplete() || this.hasErrors())
+            .css({'pointer-events': 'all', 'cursor': pointer})
+    }
+});
