@@ -267,6 +267,8 @@ class NetGraph(Component):
     def act_feedforward_layout(self, uid):
         if uid is None:
             network = self.viz.model
+            scale = self.config[network].size[0]
+            x, y = self.config[network].pos
             # self.config[network].pos = 0.0, 0.0
             # self.config[network].size = 1.0, 1.0
             # self.to_be_sent.append(dict(type='pan',
@@ -275,10 +277,15 @@ class NetGraph(Component):
             #                             zoom=self.config[network].size[0]))
         else:
             network = self.uids[uid]
+            scale = 1.0
+            x, y = 0, 0
         pos = self.layout.make_layout(network)
         for obj, layout in pos.items():
-            self.config[obj].pos = layout['y'], layout['x']
-            self.config[obj].size = layout['h'] / 2, layout['w'] / 2
+
+            self.config[obj].pos = (layout['y'] / scale - x,
+                                    layout['x'] / scale - y)
+            self.config[obj].size = (layout['h'] / 2 / scale,
+                                     layout['w'] / 2 / scale)
 
             obj_uid = self.viz.viz.get_uid(obj)
             self.to_be_sent.append(dict(type='pos_size',
