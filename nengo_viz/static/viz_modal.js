@@ -24,7 +24,7 @@ VIZ.Modal.footer = function(type, ok_function){
         $footer.append('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
     } else if (type === "ok_cancel") {
         var $footerBtn = $('<div class="form-group"/>').appendTo($footer);
-        $footerBtn.append('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');        
+        $footerBtn.append('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
         $footerBtn.append('<button id="OK" type="submit" class="btn btn-primary" data-dismiss="modal">OK</button>');
         $('#OK').on('click', ok_function);
     } else {
@@ -437,11 +437,13 @@ function make_conn_path_dropdown_list($container, others_uid, obj_type, conn_uid
     }
 }
 
-Validator.prototype.toggleSubmit = function () {
-    if(!this.options.disable) return
-    var $btn = $('button[type="tester"], input[type="tester"]')
-      .filter('[form="' + this.$element.attr('id') + '"]')
-      .add(this.$element.find('input[type="tester"], button[type="tester"]'))
-    $btn.toggleClass('disabled', this.isIncomplete() || this.hasErrors())
-      .css({'pointer-events': 'all', 'cursor': 'pointer'})
-}
+$( document ).ready(function() {
+    $.fn.validator.Constructor.prototype.toggleSubmit = function () {
+        if(!this.options.disable) return
+        var $btn = $('button[type="tester"], input[type="tester"]')
+            .filter('[form="' + this.$element.attr('id') + '"]')
+            .add(this.$element.find('input[type="tester"], button[type="tester"]'))
+        $btn.toggleClass('disabled', this.isIncomplete() || this.hasErrors())
+            .css({'pointer-events': 'all', 'cursor': 'pointer'})
+    }
+});
