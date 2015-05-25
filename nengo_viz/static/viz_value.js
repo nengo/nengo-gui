@@ -222,5 +222,12 @@ VIZ.Value.prototype.set_range = function() {
             self.save_layout();
         }        
     });
+    var $form = $('#myModal');
+    $form.validator();
+    $form.attr('data-disable','true');   
+    var $input = $('#singleInput');
+    $input.attr('type','email');
+    $input.attr('data-error','Nooooot a number!');
+    $input.attr('required');
     VIZ.Modal.show();
 }
