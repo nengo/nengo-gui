@@ -90,11 +90,11 @@ def ensemble_infomodal(viz, ens, uid):
 
     conninfo = conn_infomodal(ng, uid, conn_in_uids, conn_out_uids)
 
-    js = ['VIZ.Modal.title("Details for \'%s\'");' % ng.viz.viz.get_label(ens)]
-    js.append('VIZ.Modal.footer("close");')
-    js.append('VIZ.Modal.ensemble_body("%s", %s, %s);' % (
-        uid, json.dumps(params), json.dumps(plots)))
-    js.append('VIZ.Modal.show();')
+    js = [add_modal_title_js("Details for \'%s\'" % ng.viz.viz.get_label(ens))]
+    js.append(add_modal_footer_js('close'))
+    js.append('VIZ.Modal.ensemble_body("%s", %s, %s, %s);' % (
+        uid, json.dumps(params), json.dumps(plots), json.dumps(conninfo)))
+    js.append(show_modal_js())
     return '\n'.join(js)
 
 
@@ -125,12 +125,12 @@ def node_infomodal(ng, uid, conn_in_uids, conn_out_uids):
 
     conninfo = conn_infomodal(ng, uid, conn_in_uids, conn_out_uids)
 
-    js = ['VIZ.Modal.title("Details for \'%s\'");' % (
-        ng.viz.viz.get_label(node))]
-    js.append('VIZ.Modal.footer("close");')
+    js = [add_modal_title_js("Details for \'%s\'" % (
+        ng.viz.viz.get_label(node)))]
+    js.append(add_modal_footer_js('close'))
     js.append('VIZ.Modal.node_body("%s", %s, %s, %s);' % (
         uid, json.dumps(params), json.dumps(plots), json.dumps(conninfo)))
-    js.append('VIZ.Modal.show();')
+    js.append(show_modal_js())
     return '\n'.join(js)
 
 
@@ -200,10 +200,10 @@ def net_infomodal(ng, uid, conn_in_uids, conn_out_uids):
 
     conninfo = conn_infomodal(ng, uid, conn_in_uids, conn_out_uids)
 
-    js = ['VIZ.Modal.title("Details for \'%s\'");' % (
+    js = [add_modal_title_js("Details for \'%s\'") % (
         ng.viz.viz.get_label(net))]
-    js.append('VIZ.Modal.footer("close");')
+    js.append(add_modal_footer_js('close'))
     js.append('VIZ.Modal.net_body("%s", %s, %s);' % (
         uid, json.dumps(stats), json.dumps(conninfo)))
-    js.append('VIZ.Modal.show();')
+    js.append(show_modal_js())
     return '\n'.join(js)
