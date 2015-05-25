@@ -19,6 +19,20 @@ def infomodal(ng, uid, **args):
     else:
         raise NotImplementedError()
 
+def add_modal_title_js(title_text):
+    return 'VIZ.Modal.title("%s");' % (title_text)
+
+def add_modal_footer_js(footer_text):
+    return 'VIZ.Modal.footer("%s");' % (footer_text)
+
+def show_modal_js():
+    return 'VIZ.Modal.show();'
+
+def configmodal(): 
+    js = [add_modal_title_js('Config menu')]
+    js.append(add_modal_footer_js('close'))
+    js.append(show_modal_js())
+    return '\n'.join(js)
 
 class PlotInfo(object):
     def __init__(self, title, plot="none"):

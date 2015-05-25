@@ -71,8 +71,7 @@ VIZ.SimControl.prototype.on_message = function(event) {
             location.reload();
         }
         else if (event.data.substring(0, 6) === 'config') {
-            var parsed_data = JSON.parse(event.data.substring(6, event.data.length));
-            toolbar.open_modal(parsed_data['data']);
+            eval(event.data.substring(6, event.data.length));
         } 
     }
 

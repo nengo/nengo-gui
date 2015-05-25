@@ -8,6 +8,7 @@ VIZ.Toolbar = function(filename) {
     console.assert(typeof filename== 'string')
 
     var self = this;
+
     var main = document.getElementById('main');
 
     /** Make sure the file opener is initially hidden */
@@ -39,6 +40,8 @@ VIZ.Toolbar = function(filename) {
     button.setAttribute("role", "presentation");
     toolbar.appendChild(button);
 
+    this.menu = new VIZ.Menu(toolbar);
+
     interact(toolbar).on('tap', function(){
         self.menu.hide_any();
     });
@@ -66,12 +69,6 @@ VIZ.Toolbar.prototype.add_button = function (name, icon_class, fun) {
     button.setAttribute("role", "presentation");
     button.addEventListener('click', function() {fun();});
 }
-
-/** Closes the modal and removes it from the screen */
-VIZ.Toolbar.prototype.close_modal = function() {
-        this.modalWrapper.parentNode.removeChild(this.modalWrapper);
-        this.modalWrapper = false;
-};
 
 /** This lets you browse the files available on the server */
 VIZ.Toolbar.prototype.file_browser = function () {
@@ -108,9 +105,5 @@ VIZ.Toolbar.prototype.reset_model_layout = function () {
  *  First check to make sure modal isn't open already, then send 
  *  call to server to generate modal javascript from config. */
 VIZ.Toolbar.prototype.start_modal = function () {
-    if (this.modalWrapper) {
-        this.close_modal();
-        return; 
-    }
     sim.ws.send('config')
 };
