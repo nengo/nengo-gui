@@ -350,50 +350,52 @@ VIZ.Slider.prototype.send_notify_msg = function() {
 }
 
 VIZ.Slider.prototype.user_value = function () {
+    var self = this;
 
     //First build the prompt string
-    var prompt_string = 'Example: ';
+    var prompt_string = '';
     for (var i = 0; i < this.sliders.length; i++){
-        var rand = (Math.random() * 10).toFixed(1);
-        prompt_string = prompt_string + rand;
+        prompt_string = prompt_string + this.sliders[i].value;
         if (i != this.sliders.length - 1) {
             prompt_string = prompt_string + ", ";
         }
     }
-    var new_value = prompt('Set value\n' + prompt_string);
-    
-    //If the user hits cancel
-    if (new_value == null) {
-        return;
-    };
-
-    //Make the string into a list
-    new_value = new_value.split(',');
-
-    //Update the sliders one at a time, checking input as we go
-    for (var i = 0; i < this.sliders.length; i++){
-        if (!(VIZ.is_num(new_value[i]))) {
-            alert("invalid input :" + new_value[i] + "\nFor the slider in position " + (i + 1) );
-            break;
+    VIZ.Modal.title('Set slider value(s)...');
+    VIZ.Modal.single_input_body(prompt_string,'Value(s):');
+    VIZ.Modal.footer('ok_cancel', function(e) {
+        var new_value = $('#singleInput').val();
+        if (new_value != null) {
+            new_value = new_value.split(',');
+            //Update the sliders one at a time
+            for (var i = 0; i < self.sliders.length; i++){
+                self.set_value(i, Number(new_value[i]), false);
+            }
         }
-        this.set_value(i, Number(new_value[i]), false);
-    }
-};
+    });
+    VIZ.Modal.show();
+}
 
 VIZ.Slider.prototype.set_range = function() {
     var range = this.scale.domain();
-    var new_range = prompt('Set range', '' + range[1] + ',' + range[0]);
-    if (new_range !== null) {
-        new_range = new_range.split(',');
-        var min = parseFloat(new_range[1]);
-        var max = parseFloat(new_range[0]);
-        this.scale.domain([min, max]);
-        this.save_layout();
-    }
-    for (var i in this.sliders) {
-        this.set_value(i, this.sliders[i].value, false); 
-    }
-};
+    var self = this;
+    VIZ.Modal.title('Set slider range...');
+    VIZ.Modal.single_input_body(range,'Range:');
+    VIZ.Modal.footer('ok_cancel', function(e) {
+        var new_range = $('#singleInput').val();
+        if (new_range !== null) {
+            new_range = new_range.split(',');
+            var min = parseFloat(new_range[1]);
+            var max = parseFloat(new_range[0]);
+            self.scale.domain([min, max]);
+            self.save_layout();
+        }
+        for (var i in this.sliders) {
+            this.set_value(i, this.sliders[i].value, false); 
+        }    
+    });
+    VIZ.Modal.show();
+}
+
 
 VIZ.Slider.prototype.layout_info = function () {
     var info = VIZ.Component.prototype.layout_info.call(this);
