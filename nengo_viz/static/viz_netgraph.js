@@ -136,6 +136,7 @@ VIZ.NetGraph = function(parent, args) {
         });
 
     //Get the pan/zoom screen up and running after netgraph is built
+    console.log('calling screen_init');
     VIZ.pan.screen_init();
 
     this.menu = new VIZ.Menu(self.parent);

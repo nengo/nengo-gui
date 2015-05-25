@@ -2,7 +2,6 @@
 var map_on = true;
 
 VIZ.draw_map = function (){
-    console.log("drawing");
     $('.minimap').remove();
     $('.miniregion').remove();
     if (map_on){
@@ -10,7 +9,7 @@ VIZ.draw_map = function (){
             heightRatio : 0.2,
             widthRatio : 0.2,
             offsetHeightRatio : 0.70,
-            offsetWidthRatio : 0.035,
+            offsetWidthRatio : 0.01,
             position : "right",
             touch: true,
             smoothScroll: true,
@@ -19,5 +18,6 @@ VIZ.draw_map = function (){
         });
     }
 }
+
 VIZ.draw_map();
 setInterval(function(){VIZ.draw_map()}, 1000);
