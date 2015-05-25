@@ -26,12 +26,13 @@ VIZ.set_transform = function(element, x, y) {
 
 
 VIZ.get_transform = function(element) {
-    if ($(element).css('transform') !== undefined) {
-        var holde = $(element).css('transform').match(/(-?[0-9\.]+)/g); //Ugly method of finding the current transform of the element
+    if ($(element).css('transform') === undefined) {
+       var target = '-webkit-transform';
+    } else {
+       var target = 'transform';
     }
-    else {
-        var holde = $(element).css('-webkit-transform').match(/(-?[0-9\.]+)/g); //Ugly method of finding the current transform of the element
-    }
+    //Ugly method of finding the current transform of the element
+    var holde = $(element).css(target).match(/(-?[0-9\.]+)/g);
     return {x:Number(holde[4]), y:Number(holde[5])};
 }
 
