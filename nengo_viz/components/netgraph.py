@@ -208,15 +208,17 @@ class NetGraph(Component):
     def act_collapse(self, uid):
         net = self.uids[uid]
         self.config[net].expanded = False
-        for ens in net.ensembles:
-            del self.uids[self.viz.viz.get_uid(ens)]
-        for net in net.networks:
-            del self.uids[self.viz.viz.get_uid(net)]
-        for node in net.nodes:
-            del self.uids[self.viz.viz.get_uid(node)]
-        for conn in net.connections:
-            del self.uids[self.viz.viz.get_uid(conn)]
+        self.remove_uids(net)
         self.modified_config()
+
+    def remove_uids(self, net):
+        for items in [net.ensembles, net.networks, net.nodes, net.connections]:
+            for item in items:
+                uid = self.viz.viz.get_uid(item)
+                if uid in self.uids:
+                    del self.uids[uid]
+        for n in net.networks:
+            self.remove_uids(n)
 
     def act_pan(self, x, y):
         self.config[self.viz.model].pos = x, y
