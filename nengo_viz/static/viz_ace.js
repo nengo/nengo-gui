@@ -1,5 +1,6 @@
 
 VIZ.Ace = function (args, script_code) {
+	var self = this;
 	this.hidden = false;
 	this.ws = VIZ.create_websocket(42) //to be args.uid
 	var code_div = document.createElement('div')
@@ -9,7 +10,15 @@ VIZ.Ace = function (args, script_code) {
 	editor.setTheme('ace/theme/monokai')
 	editor.getSession().setMode("ace/mode/python");
 
+	setTimeout(function(){
+	editor.getSession().on('change', function() {
+    	self.ws.send(editor.getValue());
+	});}, 10);
+
+	
 	editor.setValue('texxxxxxxxxxxxxxxxxxxxxxxtt\nHiodsahfjiodsjfio');
+
+	console.log(editor.getValue());
 
 	var bottom_margin = $(sim.div).height();
 	console.log(bottom_margin);
@@ -19,6 +28,7 @@ VIZ.Ace = function (args, script_code) {
 	code_div.style.bottom = bottom_margin;
 	code_div.style.left = left_margin * 4 / 5
 }
+
 
 VIZ.Ace.prototype.show_editor = function () {
 	var editor = document.getElementById('editor');
