@@ -16,10 +16,13 @@ VIZ.NetGraph = function(parent, args) {
 
     this.in_zoom_delay = false;
     
-    this.window_resize_type = 2; //Testing window resize types:
+    this.window_resize_type = 1; //Testing window resize types:
                                  //0: original (resizes/moves everything)
                                  //1: same_size (moves things, resizes nothing)
                                  //2: static (moves and resizes nothing)
+                                 //3: fit_to_window (zooms on window resize)
+    this.width = $(this.svg).width();
+    this.height = $(this.svg).height();
 
     /** Since connections may go to items that do not exist yet (since they
      *  are inside a collapsed network), this dictionary keeps a list of
@@ -258,16 +261,17 @@ VIZ.NetGraph.prototype.set_scale = function(scale) {
 
 
 /** redraw all elements */
-VIZ.NetGraph.prototype.redraw = function(type) {
+VIZ.NetGraph.prototype.redraw = function(scale_type) {
+    if (scale_type==null) {scale_type="default";}
     for (var key in this.svg_objects) {
-        if (type != "static") {
+        if (scale_type !== "static") {
             this.svg_objects[key].redraw_position();
         }
-        if (type =="default") {
+        if (scale_type == "default") {
             this.svg_objects[key].redraw_size();
         }
     }    
-    if (type !="static") {
+    if (scale_type !=="static") {
         for (var key in this.svg_conns) {
             this.svg_conns[key].redraw();
         }    
@@ -300,6 +304,15 @@ VIZ.NetGraph.prototype.create_connection = function(info) {
 
 /** handler for resizing the full SVG */
 VIZ.NetGraph.prototype.on_resize = function(event) {
+    /*if (this.window.resize_type==3) {
+        var width = $(this.svg).width();
+        var height = $(this.svg).height();
+        
+        var e = jQuery.Event( "DOMMouseScroll",{delta: -650} );
+        // trigger an artificial DOMMouseScroll event with delta -650
+        $( "main" ).trigger( e );                
+        return;
+    }*/
     if (this.window_resize_type==1) {
         this.redraw("same_size");
         VIZ.pan.redraw();
@@ -323,13 +336,21 @@ VIZ.NetGraph.prototype.on_resize = function(event) {
 
 /** return the pixel width of the SVG times the current scale factor */
 VIZ.NetGraph.prototype.get_scaled_width = function() {
-    return $(this.svg).width() * this.scale;
+    if (this.window_resize_type==9) {
+        return this.width * this.scale;
+    } else {
+        return $(this.svg).width() * this.scale;
+    }
 }
 
 
 /** return the pixel height of the SVG times the current scale factor */
 VIZ.NetGraph.prototype.get_scaled_height = function() {
-    return $(this.svg).height() * this.scale;
+    if (this.window_resize_type==9) {
+        return this.height * this.scale;
+    } else {
+        return $(this.svg).height() * this.scale;
+    }
 }
 
 
