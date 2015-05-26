@@ -15,6 +15,11 @@ VIZ.NetGraph = function(parent, args) {
     this.svg_conns = {};       // dict of all VIZ.NetGraphConnections, by uid
 
     this.in_zoom_delay = false;
+    
+    this.window_resize_type = 2; //Testing window resize types:
+                                 //0: original (resizes/moves everything)
+                                 //1: same_size (moves things, resizes nothing)
+                                 //2: static (moves and resizes nothing)
 
     /** Since connections may go to items that do not exist yet (since they
      *  are inside a collapsed network), this dictionary keeps a list of
@@ -253,14 +258,20 @@ VIZ.NetGraph.prototype.set_scale = function(scale) {
 
 
 /** redraw all elements */
-VIZ.NetGraph.prototype.redraw = function() {
+VIZ.NetGraph.prototype.redraw = function(type) {
     for (var key in this.svg_objects) {
-        this.svg_objects[key].redraw_position();
-        this.svg_objects[key].redraw_size();
+        if (type != "static") {
+            this.svg_objects[key].redraw_position();
+        }
+        if (type =="default") {
+            this.svg_objects[key].redraw_size();
+        }
     }    
-    for (var key in this.svg_conns) {
-        this.svg_conns[key].redraw();
-    }    
+    if (type !="static") {
+        for (var key in this.svg_conns) {
+            this.svg_conns[key].redraw();
+        }    
+    }
 }
 
 
@@ -289,14 +300,22 @@ VIZ.NetGraph.prototype.create_connection = function(info) {
 
 /** handler for resizing the full SVG */
 VIZ.NetGraph.prototype.on_resize = function(event) {
-    this.redraw();
-    
-    VIZ.pan.redraw();
-    
+    if (this.window_resize_type==1) {
+        this.redraw("same_size");
+        VIZ.pan.redraw();
+    } else if (this.window_resize_type==2) {
+        this.redraw("static");
+    } else {
+        this.redraw("default");
+        VIZ.pan.redraw();
+    }
+        
     var width = $(this.svg).width();
     var height = $(this.svg).height();
     
-    VIZ.scale.redraw_size(width / this.old_width, height / this.old_height);
+    if (this.window_resize_type == 0) {
+        VIZ.scale.redraw_size(width / this.old_width, height / this.old_height);
+    }
     this.old_width = width;
     this.old_height = height;
 };
