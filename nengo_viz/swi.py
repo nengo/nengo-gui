@@ -542,6 +542,9 @@ class ClientSocket(object):
         mask = (data[1] >> 7) & 0x01
         datalen = data[1] & 0x7F
 
+        if opcode == 8:
+            raise SocketClosedError("Websocket has been closed")
+
         offset = 0
 
         if datalen == 126:
