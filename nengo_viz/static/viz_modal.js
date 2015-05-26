@@ -416,3 +416,51 @@ VIZ.Modal.make_conn_path_dropdown_list = function($container, others_uid, obj_ty
         }
     }
 }
+
+
+function addModal() {
+    var modalFade = document.createElement('div');
+    modalFade.className = 'modal fade';
+    modalFade.setAttribute('style','z-index:100000001');
+
+    var modalDialog = document.createElement('div');
+    modalDialog.className = 'modal-dialog';
+
+    var modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+
+    var modalHeader = document.createElement('div');
+    modalHeader.className = 'modal-header';
+
+    var modalHeaderButton = document.createElement('button');
+    modalHeaderButton.className = 'close';
+    modalHeaderButton.type='button';
+    modalHeaderButton.setAttribute('data-dismiss','modal');
+    modalHeaderButton.setAttribute('aria-label','Close');
+
+    var modalHeaderButtonSpan = document.createElement('span');
+    modalHeaderButtonSpan.setAttribute('aria-hidden','true');
+    modalHeaderButtonSpan.innerHTML = '&times';
+
+    var modalHeaderH4 = document.createElement('h4');
+    modalHeaderH4.className = 'modal-title';
+
+    var modalBody = document.createElement('div');
+    modalBody.className = 'modal-body';
+
+    var modalFooter = document.createElement('div');
+    modalFooter.className = 'modal-footer';
+
+
+    modalContent.appendChild(modalFooter);
+    modalContent.appendChild(modalBody);
+    modalHeader.appendChild(modalHeaderH4);
+    modalHeaderButton.appendChild(modalHeaderButtonSpan);
+    modalHeader.appendChild(modalHeaderButton);
+    modalContent.appendChild(modalHeader);
+    modalDialog.appendChild(modalContent);
+    modalFade.appendChild(modalDialog);
+    document.body.appendChild(modalFade);
+}
+
+addModal();
