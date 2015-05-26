@@ -52,8 +52,7 @@ class Server(swi.SimpleWebInterface):
         try:
             while True:
                 if viz_sim.finished:
-                    component.finish()
-                    return
+                    break
                 if viz_sim.uids[uid] != component:
                     component.finish()
                     component = viz_sim.uids[uid]
