@@ -107,8 +107,11 @@ class SimControl(Component):
                 self.viz.rebuild = True
             self.paused = False
         elif msg[:4] == 'open':
-            self.viz.filename = msg[4:]
-            self.reload = True
+            if os.path.isfile(self.viz.viz.filename):
+                self.viz.viz.load(msg[4:])
+                self.reload = True
+            else:
+                print('File does not exist')
         elif msg == 'reset':
             if os.path.isfile(self.viz.viz.filename + '.cfg') :
                 os.remove(self.viz.viz.filename + '.cfg')
