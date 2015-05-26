@@ -1,6 +1,7 @@
 
-VIZ.Ace = function (script_code) {
+VIZ.Ace = function (args, script_code) {
 	this.hidden = false;
+	this.ws = VIZ.create_websocket(42) //to be args.uid
 	var code_div = document.createElement('div')
 	code_div.id = 'editor'
 	document.getElementsByTagName("BODY")[0].appendChild(code_div);
@@ -39,8 +40,5 @@ VIZ.Ace.prototype.toggle_shown = function () {
 		this.hide_editor();
 	}
 }
-
-
-setTimeout(function(){gg = new VIZ.Ace();}, 100);
 
 setInterval(function(){gg.toggle_shown()}, 1000)
