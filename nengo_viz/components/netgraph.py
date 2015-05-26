@@ -137,14 +137,15 @@ class NetGraph(Component):
         self.layout = nengo_viz.layout.Layout(model)
 
         components = []
-        for c in self.viz.components[:2]:
+        for c in self.viz.components[:3]:
             components.append(c)
             locals[c.uid] = c.template
         self.viz.components = components
         for template in self.viz.viz.find_templates():
             if not isinstance(template,
                               (nengo_viz.components.SimControlTemplate,
-                               nengo_viz.components.NetGraphTemplate)):
+                               nengo_viz.components.NetGraphTemplate,
+                               nengo_viz.components.AceEditorTemplate)):
                 self.viz.add_template(template)
 
         self.viz.changed = True

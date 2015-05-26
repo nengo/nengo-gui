@@ -47,6 +47,7 @@ class Config(nengo.Config):
                 lines.append('%s = %s' % (uid, obj.code_python(uids)))
                 for k in obj.config_params.keys():
                     v = getattr(self[obj], k)
+                    ##print(uid,k,v, 'from dumps')
                     lines.append('_viz_config[%s].%s = %g' % (uid, k, v))
 
         return '\n'.join(lines)
