@@ -39,4 +39,4 @@ class Value(Component):
 
 class ValueTemplate(Template):
     cls = Value
-    config_params = dict(maxy=1, miny=-1, **Template.default_params)
+    config_params = dict(max_value=1, min_value=-1, **Template.default_params)
