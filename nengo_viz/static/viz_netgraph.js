@@ -125,9 +125,10 @@ VIZ.NetGraph = function(parent, args) {
             var yy = y / self.scale - self.offsetY;
             self.offsetX = (self.offsetX + xx) / scale - xx;
             self.offsetY = (self.offsetY + yy) / scale - yy;
-            
+
             self.scale = scale * self.scale;
 
+            self.update_font_size();
             self.redraw();
 
             /** let the server know what happened */
@@ -244,11 +245,17 @@ VIZ.NetGraph.prototype.set_offset = function(x, y) {
 /** zoom the screen (and redraw accordingly) */
 VIZ.NetGraph.prototype.set_scale = function(scale) {
     this.scale = scale;
+    this.update_font_size();
     this.redraw();
 
     VIZ.Screen.lr.x = VIZ.Screen.ul.x + $(this.svg).width() / scale;
     VIZ.Screen.lr.y = VIZ.Screen.ul.y + $(this.svg).height() / scale;
     VIZ.pan.redraw();
+}
+
+
+VIZ.NetGraph.prototype.update_font_size = function(scale) {
+    $('#main').css('font-size', 3 * this.scale + 'em');
 }
 
 
