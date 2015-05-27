@@ -88,3 +88,7 @@ div.modal-backdrop {
 .modal-body .popover-title {
     line-height: 1.2;
 }
+
+div.modal {
+    z-index: 100000001;
+}

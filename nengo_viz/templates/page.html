@@ -19,9 +19,7 @@
 
     <body onload="onload();">
         <div id="main">
-
             <ul id='top_toolbar' class="nav nav-pills"> 
-            
                 <li id='Open_file_button' role="presentation">
                     <a title='Open file' class='glyphicon glyphicon-folder-open'> </a>
                 </li>
@@ -38,41 +36,24 @@
                     <a title='Config panel' class='glyphicon glyphicon-cog'> </a>
                 </li>
                 <li id='filename' role="presentation"> </li>
-
             </ul>
-
         </div>
-
-        <!-- TODO: Is large z-index the method we want to use for keeping simcontrol on top  -->
-        <!-- or do we want to dynamically raise it when other elements have theirs increased -->
         <div id="control">
-
             <div class="time_slider">
-                <div class="shown_time"> 
-                    <!-- where are these used?  -->
-                    <div id="d1">  
-                        <div id="d2">
-                        </div>
-                    </div>
-                </div>
+                <div class="shown_time"></div>
             </div>
-
             <button id='pause_button' class="btn btn-default play-pause-button">
                 <span id='pause_button_icon' class="glyphicon glyphicon-play">
                 </span>
             </button>
-
             <table id='time_table' class='table metrics-container'>
-                <tr id="rate_tr"> </tr>
-                <tr id="ticks_tr"> </tr>
+                <tr id="rate_tr"></tr>
+                <tr id="ticks_tr"></tr>
             </table>
-
         </div>
-
-        <div class="modal fade" style="z-index:100000001;">
+        <div class="modal fade">
           <div class="modal-dialog">
             <div class="modal-content">
-
               <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true"> 
@@ -81,17 +62,12 @@
                 </button>
                 <h4 class="modal-title"></h4>
               </div>
-
-              <div class="modal-body"> </div>
-
-              <div class="modal-footer"> </div>
-
+              <div class="modal-body"></div>
+              <div class="modal-footer"></div>
             </div>
           </div>
         </div>
-
         <div id="filebrowser"></div>
-
         <script>
             function onload() {
                 main = document.getElementById("main");
@@ -99,7 +75,6 @@
                 %(components)s
             }
         </script>
-
         <script src="static/lib/js/interact-1.2.4.js"></script>
         <script src="static/lib/js/d3.v3.min.js" charset="utf-8"></script>
         <script src="static/lib/js/jquery-2.1.3.min.js"></script>
