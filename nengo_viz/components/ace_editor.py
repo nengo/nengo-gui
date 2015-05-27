@@ -11,7 +11,9 @@ class AceEditor(Component):
         self.code = code
 
     def javascript(self):
-        return 'new VIZ.Ace(%s)' % self.code
+        return 'new VIZ.Ace(%s)' % self.code ##feed VIZ.Ace a single string of the code
+
+
 
     def message(self, msg):
         self.code = msg
