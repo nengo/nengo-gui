@@ -48,16 +48,6 @@ VIZ.SimControl = function(div, args) {
     this.rate_tr = $('#rate_tr')[0];
     this.ticks_tr = $('#ticks_tr')[0];
 
-    interact(this.div)
-    .on('tap', function(){
-        self.menu.hide_any();
-    });
-
-    interact(this.div)
-    .on('tap', function(){
-        self.menu.hide_any();
-    });
-
     this.update();
 };
 
@@ -71,6 +61,7 @@ VIZ.SimControl.prototype.on_message = function(event) {
             location.reload();
         }
         else if (event.data.substring(0, 6) === 'config') {
+            console.log(event.data);
             eval(event.data.substring(6, event.data.length));
         } 
     }

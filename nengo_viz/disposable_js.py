@@ -56,19 +56,21 @@ class PlotInfo(object):
             'y': y,
         }
 
-def ensemble_infomodal(viz, ens, uid):
+def ensemble_infomodal(ng, uid, conn_in_uids, conn_out_uids):
+    ens = ng.uids[uid]
+
     params = [(attr, str(getattr(ens, attr))) for attr in (
         'n_neurons', 'dimensions', 'radius', 'encoders', 'intercepts',
         'max_rates', 'eval_points', 'n_eval_points', 'neuron_type',
         'noise', 'seed') if getattr(ens, attr) is not None]
 
-    if viz.sim is None:
+    if ng.viz.sim is None:
         plots = ("Simulation not yet running. "
                  "Start a simulation to see plots.")
     else:
         plots = []
         rc = PlotInfo("Response curves", plot="multiline")
-        rc.x, rc.y = response_curves(ens, viz.sim)
+        rc.x, rc.y = response_curves(ens, ng.viz.sim)
         rc.y = rc.y.T
         if ens.n_neurons > 200:
             rc.warnings.append("Only showing the first 200 neurons.")
@@ -78,7 +80,7 @@ def ensemble_infomodal(viz, ens, uid):
         tc = PlotInfo("Tuning curves")
         if ens.dimensions == 1:
             tc.plot = "multiline"
-            tc.x, tc.y = tuning_curves(ens, viz.sim)
+            tc.x, tc.y = tuning_curves(ens, ng.viz.sim)
             tc.y = tc.y.T
             if ens.n_neurons > 200:
                 tc.warnings.append("Only showing the first 200 neurons.")
@@ -90,13 +92,12 @@ def ensemble_infomodal(viz, ens, uid):
 
     conninfo = conn_infomodal(ng, uid, conn_in_uids, conn_out_uids)
 
-    js = [add_modal_title_js("Details for \'%s\'" % ng.viz.viz.get_label(ens))]
-    js.append(add_modal_footer_js('close'))
+    js = ['VIZ.Modal.title("Details for \'%s\'");' % ng.viz.viz.get_label(ens)]
+    js.append('VIZ.Modal.footer("close");')
     js.append('VIZ.Modal.ensemble_body("%s", %s, %s, %s);' % (
         uid, json.dumps(params), json.dumps(plots), json.dumps(conninfo)))
-    js.append(show_modal_js())
+    js.append('VIZ.Modal.show();')
     return '\n'.join(js)
-
 
 def node_infomodal(ng, uid, conn_in_uids, conn_out_uids):
     node = ng.uids[uid]
