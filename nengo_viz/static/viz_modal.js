@@ -26,7 +26,7 @@ VIZ.Modal.footer = function(type){
     else if (type === 'confirm_reset') {
         $footer.append('<button type="button" id="confirm_reset_button" class="btn btn-primary">Reset</button>');
         $footer.append('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
-        $('#confirm_reset_button').on('click', toolbar.reset_model_layout();});
+        $('#confirm_reset_button').on('click', function() {toolbar.reset_model_layout();});
     }
     else {
         console.warn('Modal footer type ' + type + ' no recognized.')
