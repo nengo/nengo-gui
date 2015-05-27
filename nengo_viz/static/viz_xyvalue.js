@@ -19,69 +19,30 @@ VIZ.XYValue = function(parent, sim, args) {
     /** for storing the accumulated data */
     this.data_store = new VIZ.DataStore(this.n_lines, this.sim, 0.01);
 
-    /** draw the plot as an SVG */
-    this.svg = d3.select(this.div).append('svg')
-        .attr('width', '100%')
-        .attr('height', '100%');
+    this.axes2d = new VIZ.Axes2D(this.div, args);
+    this.axes2d.axis_y.tickValues([args.min_value, args.max_value]);
+    this.axes2d.axis_x.tickValues([args.min_value, args.max_value]);
 
     /** scales for mapping x and y values to pixels */
-    this.scale_x = d3.scale.linear();
-    this.scale_y = d3.scale.linear();
-    this.scale_x.domain([args.min_value, args.max_value]);
-    this.scale_y.domain([args.min_value, args.max_value]);
-    
+    this.axes2d.scale_x.domain([args.min_value, args.max_value]);
+
     this.index_x = args.index_x;
     this.index_y = args.index_y;
-    
-    /** spacing between the graph and the outside edges (in pixels) */
-    this.margin_top = 30;
-    this.margin_bottom = 10;
-    this.margin_left = 15;
-    this.margin_right = 15;
-    
-    /** set up the scales to respect the margins */
-    this.scale_x.range([this.margin_left, args.width - this.margin_right]);
-    this.scale_y.range([args.height - this.margin_bottom, this.margin_top]);
-    
-    var plot_width = args.width - this.margin_left - this.margin_right;
-    var plot_height = args.height - this.margin_top - this.margin_bottom;
-    
-    
-    /** define the x-axis */
-    this.axis_x = d3.svg.axis()
-        .scale(this.scale_x)
-        .orient("bottom")
-        .tickValues([args.min_value, args.max_value]);
-    this.axis_x_g = this.svg.append("g")
-        .attr("class", "axis axis_x")
-        .attr("transform", "translate(0," + (this.margin_top + plot_height / 2) + ")")
-        .call(this.axis_x);
-
-    /** define the y-axis */
-    this.axis_y = d3.svg.axis()
-        .scale(this.scale_y)
-        .orient("left")    
-        .tickValues([args.min_value, args.max_value]);
-    this.axis_y_g = this.svg.append("g")
-        .attr("class", "axis axis_y")
-        .attr("transform", "translate(" + (this.margin_left + plot_width / 2) + ", 0)")
-        .call(this.axis_y);
 
     /** call schedule_update whenever the time is adjusted in the SimControl */    
     this.sim.div.addEventListener('adjust_time', 
             function(e) {self.schedule_update();}, false);
-    
+
     /** create the lines on the plots */
     var line = d3.svg.line()
-        .x(function(d, i) {return self.scale_x(self.data_store.data[this.index_x][i]);})
-        .y(function(d) {return self.scale_y(d);})
-    this.path = this.svg.append("g").selectAll('path')
+        .x(function(d, i) {return self.axes2d.scale_x(self.data_store.data[this.index_x][i]);})
+        .y(function(d) {return self.axe2d.scale_y(d);})
+    this.path = this.axes2d.svg.append("g").selectAll('path')
                                     .data([this.data_store.data[this.index_y]]);
     this.path.enter().append('path')
              .attr('class', 'line');
-                                    
+
     this.on_resize(args.width, args.height);
-    
 };
 VIZ.XYValue.prototype = Object.create(VIZ.Component.prototype);
 VIZ.XYValue.prototype.constructor = VIZ.Value;
@@ -107,10 +68,10 @@ VIZ.XYValue.prototype.update = function() {
     var shown_data = this.data_store.get_shown_data();
     var line = d3.svg.line()
         .x(function(d, i) {
-            return self.scale_x(
+            return self.axes2d.scale_x(
                 shown_data[self.index_x][i]);
             })
-        .y(function(d) {return self.scale_y(d);})
+        .y(function(d) {return self.axes2d.scale_y(d);})
     this.path.data([shown_data[this.index_y]])
              .attr('d', line);
 };
@@ -119,29 +80,28 @@ VIZ.XYValue.prototype.update = function() {
  * Adjust the graph layout due to changed size
  */
 VIZ.XYValue.prototype.on_resize = function(width, height) {
-    this.scale_x.range([this.margin_left, width - this.margin_right]);
-    this.scale_y.range([height - this.margin_bottom, this.margin_top]);
+    this.axes2d.on_resize(width, height);
 
-    var plot_width = width - this.margin_left - this.margin_right;
-    var plot_height = height - this.margin_top - this.margin_bottom;
+    //this.scale_x.range([this.margin_left, width - this.margin_right]);
+    //this.scale_y.range([height - this.margin_bottom, this.margin_top]);
+
+    var plot_width = this.axes2d.ax_right - this.axes2d.ax_left;
+    var plot_height = this.axes2d.ax_bottom - this.axes2d.ax_top;
 
     //Adjust positions of x axis on resize
-    this.axis_x_g         
+    this.axes2d.axis_x_g         
         .attr("transform", 
-              "translate(0," + (this.margin_top + plot_height / 2) + ")");
-    this.axis_y_g         
+              "translate(0," + (this.axes2d.ax_top + plot_height / 2) + ")");
+    this.axes2d.axis_y_g         
         .attr("transform", 
-              "translate(" + (this.margin_left + plot_width / 2) + ",0)");
-    this.axis_y_g.call(this.axis_y);         
+              "translate(" + (this.axes2d.ax_left + plot_width / 2) + ",0)");
     this.update();
-    this.axis_x_g.call(this.axis_x);         
-    
+
     this.label.style.width = width;
     this.width = width;
     this.height = height;
     this.div.style.width = width;
     this.div.style.height = height;
-    
 };
 
 VIZ.XYValue.prototype.generate_menu = function() {
@@ -158,26 +118,27 @@ VIZ.XYValue.prototype.generate_menu = function() {
 
 VIZ.XYValue.prototype.layout_info = function () {
     var info = VIZ.Component.prototype.layout_info.call(this);
-    info.min_value = this.scale_y.domain()[0];
-    info.max_value = this.scale_y.domain()[1];
+    info.min_value = this.axes2d.scale_y.domain()[0];
+    info.max_value = this.axes2d.scale_y.domain()[1];
     info.index_x = this.index_x;
     info.index_y = this.index_y;
     return info;
 }
 
 VIZ.XYValue.prototype.set_range = function() {
-    var range = this.scale_y.domain();
+    var range = this.axes2d.scale_y.domain();
     var new_range = prompt('Set range', '' + range[0] + ',' + range[1]);
     if (new_range !== null) {
         new_range = new_range.split(',');
         var min = parseFloat(new_range[0]);
         var max = parseFloat(new_range[1]);
-        this.scale_x.domain([min, max]);
-        this.scale_y.domain([min, max]);
-        this.axis_x.tickValues([min, max]);
-        this.axis_y.tickValues([min, max]);
-        this.axis_y_g.call(this.axis_y);            
-        this.axis_x_g.call(this.axis_x);            
+        this.axes2d.scale_x.domain([min, max]);
+        this.axes2d.scale_y.domain([min, max]);
+        this.axes2d.axis_x.tickValues([min, max]);
+        this.axes2d.axis_y.tickValues([min, max]);
+        this.axes2d.axis_y_g.call(this.axes2d.axis_y);
+        this.axes2d.axis_x_g.call(this.axes2d.axis_x);
+        this.update();
         this.save_layout();
     }
 }
