@@ -2,6 +2,7 @@ import time
 import struct
 import os
 import traceback
+import collections
 
 import numpy as np
 import nengo
@@ -20,8 +21,8 @@ class NetGraph(Component):
         self.viz = viz
         self.layout = nengo_viz.layout.Layout(self.viz.model)
         self.config = viz.config
-        self.to_be_expanded = [self.viz.model]
-        self.to_be_sent = []
+        self.to_be_expanded = collections.deque([self.viz.model])
+        self.to_be_sent = collections.deque()
         self.uids = {}
         self.parents = {}
         self.networks_to_search = [self.viz.model]
@@ -175,12 +176,12 @@ class NetGraph(Component):
 
         if len(self.to_be_expanded) > 0:
             self.viz.viz.lock.acquire()
-            network = self.to_be_expanded.pop(0)
+            network = self.to_be_expanded.popleft()
             self.expand_network(network, client)
             self.viz.viz.lock.release()
         else:
             while len(self.to_be_sent) > 0:
-                info = self.to_be_sent.pop(0)
+                info = self.to_be_sent.popleft()
                 client.write(json.dumps(info))
 
     def javascript(self):

@@ -1,3 +1,4 @@
+import os
 import time
 import threading
 
@@ -48,16 +49,15 @@ class VizSim(object):
         self.sim = None
 
         # use the lock to make sure only one Simulator is building at a time
-        self.viz.lock.acquire()
-        for c in self.components:
-            c.add_nengo_objects(self.viz)
-        # build the simulation
-        self.sim = nengo.Simulator(self.model)
-        # remove the temporary components added for visualization
-        for c in self.components:
-            c.remove_nengo_objects(self.viz)
-        # TODO: add checks to make sure everything's been removed
-        self.viz.lock.release()
+        with self.viz.lock:
+            for c in self.components:
+                c.add_nengo_objects(self.viz)
+            # build the simulation
+            self.sim = nengo.Simulator(self.model)
+            # remove the temporary components added for visualization
+            for c in self.components:
+                c.remove_nengo_objects(self.viz)
+            # TODO: add checks to make sure everything's been removed
 
         self.building = False
 
@@ -282,19 +282,21 @@ class Viz(object):
         del self.locals[uid]
         del self.default_labels[obj]
 
+    def config_name(self):
+        return self.filename + '.cfg'
+
     def load_config(self):
         config = nengo_viz.config.Config()
         self.locals['_viz_config'] = config
-        try:
-            with open(self.filename + '.cfg') as f:
+        fname = self.config_name()
+        if os.path.exists(fname):
+            with open(fname) as f:
                 config_code = f.readlines()
             for line in config_code:
                 try:
                     exec(line, self.locals)
                 except Exception as e:
                     print('error parsing config', line, e)
-        except IOError:
-            pass
 
         # make sure a SimControl and a NetGraph exist
         if '_viz_sim_control' not in self.locals:
@@ -326,7 +328,7 @@ class Viz(object):
         with self.lock:
             self.config_save_time = now_time
             self.config_save_needed = False
-            with open(self.filename + '.cfg', 'w') as f:
+            with open(self.config_name(), 'w') as f:
                 f.write(self.config.dumps(uids=self.default_labels))
 
     def modified_config(self):
