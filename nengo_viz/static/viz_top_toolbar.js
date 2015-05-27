@@ -20,7 +20,13 @@ VIZ.Toolbar = function(filename) {
     this.toolbar = $('#top_toolbar')[0];
 
     $('#Open_file_button')[0].addEventListener('click', function () {self.file_browser()});
-    $('#Reset_layout_button')[0].addEventListener('click', function () {self.reset_model_layout()});
+    $('#Reset_layout_button')[0].addEventListener('click', function () {
+        VIZ.Modal.title('Are you sure?');
+        VIZ.Modal.info_body([]);
+        VIZ.Modal.footer('confirm_reset');
+        VIZ.Modal.show();
+        });
+
     // TODO: hookup undo and redo
     // $('#Undo_last_button')[0].addEventListener('click', function () {});
     // $('#Redo_last_button')[0].addEventListener('click', function () {});
