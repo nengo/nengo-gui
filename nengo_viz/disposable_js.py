@@ -31,6 +31,7 @@ def show_modal_js():
 def configmodal(): 
     js = [add_modal_title_js('Config menu')]
     js.append(add_modal_footer_js('close'))
+    js.append('VIZ.Modal.info_body([]);')
     js.append(show_modal_js())
     return '\n'.join(js)
 
