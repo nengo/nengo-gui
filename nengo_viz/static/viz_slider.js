@@ -13,142 +13,48 @@ VIZ.Slider = function(parent, sim, args) {
     //Check if user is filling in a number into a slider
     this.filling_slider_value = false;
     this.n_sliders = args.n_sliders;
-    
-    this.notify_msgs = [];
 
-    VIZ.set_transform(this.label, 0, -30);
-    
     this.data_store = null;
-    
- 
-    /** a scale to map from values to pixels */
-    this.scale = d3.scale.linear();
-    this.scale.domain([args.max_value,  args.min_value]);
-    this.scale.range([0, args.height]);
-    
-    /** number of pixels high for the slider itself */
-    this.slider_height = 30;
+
+    this.notify_msgs = [];
+    // TODO: get rid of the immediate parameter once the websocket delay
+    //       fix is merged in (#160)
+    this.immediate_notify = true;
+
+    this.calc_axes_geometry(this.width, this.height);
+
     this.minHeight = 40;
-    
-    this.reset_value = args.start_value;
-    
+
+    this.group = document.createElement('div');
+    this.group.style.height = this.slider_height;
+    this.group.style.marginTop = this.ax_top;
+    this.group.style.whiteSpace = 'nowrap';
+    this.group.position = 'relative';
+    this.div.appendChild(this.group);
+
     /** make the sliders */
     this.sliders = [];
     for (var i = 0; i < args.n_sliders; i++) {
-        var slider = {};
-        this.sliders.push(slider);
-        
-        slider.fixed = false;
+        var slider = new VIZ.SliderControl(args.min_value, args.max_value);
+        slider.container.style.width = (100 / args.n_sliders) + '%';
+        slider.display_value(args.start_value[i]);
         slider.index = i;
-        slider.div = document.createElement('button');
-        slider.div.className = 'btn btn-default';
-        slider.div.style.padding = '5px 0px';
-        slider.div.style.borderColor = '#666';
-        
-        slider.value = args.start_value[i];
+        slider.fixed = false;
 
-        /** Show the slider Value */
-        var valueDisplay = document.createElement('div');
-        valueDisplay.classList.add('value_display');
-        valueDisplay.innerHTML = slider.value;
-        slider.div.appendChild(valueDisplay);
-        slider.value_display = valueDisplay;
-        this.update_value_text(i, slider.value);
-
-        /** put the slider in the container */
-        slider.div.style.position = 'fixed';
-        this.div.appendChild(slider.div);
-        slider.div.style.zIndex = 1;
-        slider.div.slider = slider;
-
-        /** Slider jumps to zero when middle clicked */
-        /** TODO: Replicate this functionality for touch */
-        slider.div.addEventListener("click", 
-            function(event) {
-                /** check if click was the middle mouse button */
-                if (event.which == 2){
-                    self.set_value(this.slider.index, 0, true);
+        slider.on('change', function(event) {
+            event.target.fixed = true;
+            self.send_value(event.target.index, event.value);
+        }).on('changestart', function(event) {
+            self.menu.hide_any();
+            for (var i in this.sliders) {
+                if (this.sliders[i] !== event.target) {
+                    this.sliders[i].deactivate_type_mode();
                 }
             }
-        );
+        });
 
-        interact(slider.div)
-            .on('tap', function(event) {
-                var ind = event.currentTarget.slider.index;
-                self.input_set_value(ind);
-                event.stopPropagation();
-                 })
-
-
-        /** setup slider dragging */
-        interact(slider.div)
-            .draggable({
-                onstart: function () {
-                    self.menu.hide_any();
-                    self.disable_all_slider_inputs();
-                },
-                onmove: function (event) {
-                    var target = event.target;
-
-                    /** load x and y from custom data-x/y attributes */ 
-                    var x = parseFloat(target.getAttribute('fixed-x'));
-                    var y = parseFloat(target.getAttribute('drag-y')) +
-                                                                     event.dy;
-
-                    /** store the actual drag location without bounds */
-                    target.setAttribute('drag-y', y);
-                    /** bound y to within the limits */
-                    if (y > self.scale.range()[1]) {
-                        y = self.scale.range()[1];
-                    }
-                    if (y < self.scale.range()[0]) {
-                        y = self.scale.range()[0];
-                    }
-
-                    VIZ.set_transform(target, x, y - self.slider_height / 2);
-                      
-                    /** update the value and send it to the server */
-                    var old_value = target.slider.value;
-                    
-                    var new_value = self.scale.invert(y);
-
-                    if (new_value != old_value) {
-                        self.set_value(target.slider.index, new_value, true);
-                    }
-                },
-                onend: function(event){
-                    var target = event.target;
-
-                    var y = parseFloat(target.getAttribute('drag-y'));
-
-                    /** important to keep these conditions seperate from above, otherwise
-                    *   sliders will get out of synch
-                    */
-                    if (y > self.scale.range()[1]) {
-                        target.setAttribute('drag-y', self.scale.range()[1]);
-                    }
-                    if (y < self.scale.range()[0]) {
-                        target.setAttribute('drag-y', self.scale.range()[0]);
-                    }
-                }
-            });
-    }
-
-    this.guideline_width = 7;
-    for (var i = 0; i<args.n_sliders;i++){
-        /** show the guideline */
-        var guideline = document.createElement('div');
-        this.sliders[i].guideline = guideline;
-        guideline.classList.add('guideline');
-        guideline.style.position = "fixed";
-        //subtract 2 from height for border
-        guideline.style.height = args.height - 2;
-        guideline.style.width = this.guideline_width;
-        //Good for positioning regardless of # of sliders
-        var guide_x = args.width / (2 * args.n_sliders) + 
-            (args.width / args.n_sliders) * i - this.guideline_width / 2;
-        VIZ.set_transform(guideline, guide_x, 0);
-        this.div.appendChild(guideline);
+        this.group.appendChild(slider.container);
+        this.sliders.push(slider);
     }
 
     /** call schedule_update whenever the time is adjusted in the SimControl */    
@@ -157,59 +63,26 @@ VIZ.Slider = function(parent, sim, args) {
 
     this.on_resize(args.width, args.height);
 };
-
-
 VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Slider.prototype.constructor = VIZ.Slider;
 
-VIZ.Slider.prototype.set_value = function(slider_index, value, immediate) {
+VIZ.Slider.prototype.calc_axes_geometry = function(width, height) {
+    scale = parseFloat($('#main').css('font-size'));
+    this.border_size = 1;
+    this.ax_top = 1.75 * scale;
+    this.slider_height = height - this.ax_top;
+};
+
+VIZ.Slider.prototype.send_value = function(slider_index, value) {
     console.assert(typeof slider_index == 'number');
-    console.assert(typeof value == 'number', value);
-    // TODO: get rid of the immediate parameter once the websocket delay
-    //       fix is merged in (#160)
-    //console.assert(typeof immediate == 'boolean');
+    console.assert(typeof value == 'number');
 
-    //Make sure the new value is in the slider range.
-    value = this.max_min(value);
-
-    //Get the slider
-    var target = this.sliders[slider_index].div;
-
-    //important for 2d sliders
-    var x_pos = target.getAttribute('fixed-x'); 
-    
-    //Get the scaled value
-    var point = this.scale(value);
-
-    //Get the slider height
-    var height = this.slider_height;
-
-    //Change shown text value to new value
-    this.update_value_text(slider_index, value)
-
-    //Change slider's value to value
-    target.slider.value = value;
-
-    //Set sliders attributed position to the middle
-    target.setAttribute('drag-y', point);
-
-    //Move the slider to the middle, subtract half slider height due to pixel offset
-    VIZ.set_transform(target, x_pos, point - height / 2);
-
-    //Send update to the server
-    if (immediate === true) {
+    if (this.immediate_notify) {
         this.ws.send(slider_index + ',' + value);
-        this.sliders[slider_index].fixed = true;
-        this.sim.time_slider.jump_to_end();
-    }
-    else if (immediate === false) {
+    } else {
         this.notify(slider_index + ',' + value);
-        this.sliders[slider_index].fixed = true;
-        this.sim.time_slider.jump_to_end();
     }
-
-    //Value has been set, toggle boolean to false
-    this.filling_slider_value = false;
+    this.sim.time_slider.jump_to_end();
 };
 
 /**
@@ -223,12 +96,13 @@ VIZ.Slider.prototype.on_message = function(event) {
     this.reset_value = [];
     for (var i = 0; i < this.sliders.length; i++) {
         this.reset_value.push(data[i + 1]);
-        
+
         if (this.sliders[i].fixed) {
             data[i + 1] = this.sliders[i].value;
         }
     }
     this.data_store.push(data);
+
     this.schedule_update();
 }
 
@@ -246,37 +120,22 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
     if (height < this.minHeight) {
         height = this.minHeight;
     };
+
+    this.calc_axes_geometry();
+
+    this.group.style.height = height - this.ax_top - 2 * this.border_size;
+    this.group.style.marginTop = this.ax_top;
+
     var N = this.sliders.length;
-    this.scale.range([0, height]);
     for (var i in this.sliders) {
-        var slider = this.sliders[i];
-        /** figure out the size of the slider */
-        slider.div.style.width = width / N - 3;
-        slider.div.style.height = this.slider_height;
-
-        //subtract 2 from height for border
-        slider.guideline.style.height = height - 2;
-
-        var guide_x = width / (2 * N) + (width / N) * i 
-            - this.guideline_width / 2;
-
-        VIZ.set_transform(slider.guideline, guide_x, 0);
-
-        /** figure out the position of the slider */   
-        var x = i * width / N;
-        var y = this.scale(slider.value);
-        VIZ.set_transform(slider.div, x, y - this.slider_height / 2);
-
-        /** store the x and y locations for use in dragging */
-        slider.div.setAttribute('fixed-x', x);
-        slider.div.setAttribute('drag-y', y);
+        this.sliders[i].on_resize();
     }
+
     this.label.style.width = width;
     this.width = width;
     this.height = height;
     this.div.style.width = width;
-    this.div.style.height= height;    
-    
+    this.div.style.height= height;
 };
 
 
@@ -292,75 +151,10 @@ VIZ.Slider.prototype.generate_menu = function() {
     return $.merge(items, VIZ.Component.prototype.generate_menu.call(this));
 };
 
-VIZ.Slider.prototype.input_set_value = function(ind) {
-    console.assert(typeof ind == 'number');
-
-    var self = this;
-    this.disable_all_slider_inputs();
-    this.menu.hide_any();
-    var text_div = this.sliders[ind].value_display;
-    var original_value = text_div.innerHTML;
-    this.filling_slider_value = true;
-    this.filling_slider_index = ind;
-    this.filling_slider_original_value = original_value;
-    text_div.innerHTML = '<input id="value_in_field" style=" border:0; outline:0;"></input>';
-    elem = text_div.querySelector('#value_in_field')
-    elem.value = original_value;
-    elem.focus();
-    elem.select();
-    elem.style.width = '3em';
-    elem.style.textAlign = 'center';
-    $(text_div).on('keypress', function (event) {self.submit_value(event.which, ind, text_div, original_value);});
-};
-
-VIZ.Slider.prototype.disable_all_slider_inputs = function () {
-    component_list = VIZ.Component.components
-    slider_list = []
-
-    //Build the slider list
-    for (var i = 0; i < component_list.length; ++i) {
-        var current = component_list[i];
-        if (current instanceof VIZ.Slider){
-            slider_list.push(current);
-        }
-    }
-
-    //Disable editting on sliders
-    for (var j = 0; j < slider_list.length; ++j) {
-        current = slider_list[j];
-        if (current.filling_slider_value) {
-            var text_div = current.sliders[current.filling_slider_index].value_display;
-            text_div.innerHTML = current.filling_slider_original_value;
-            current.filling_slider_value = false;
-        }
-    }
-}
-
-VIZ.Slider.prototype.submit_value = function (button, ind, text_div, original_value) {
-    console.assert(typeof button == 'number');
-    console.assert(typeof ind == 'number');
-    console.assert(typeof text_div == 'object');
-    console.assert(typeof original_value == 'string');
-
-    if (button == 13) {
-        var msg = text_div.querySelector('#value_in_field').value;
-        $(text_div).off('keypress');
-        if (VIZ.is_num(msg)) {
-            this.set_value(ind, Number(msg), true);
-            return;
-        }
-        else {
-            alert('failed to set value');
-            text_div.innerHTML = original_value;
-            return;
-        }
-    }
-};
-
 /** report an event back to the server */
 VIZ.Slider.prototype.notify = function(info) {
     this.notify_msgs.push(info);
-    
+
     // only send one message at a time
     // TODO: find a better way to figure out when it's safe to send
     // another message, rather than just waiting 1ms....
@@ -391,16 +185,15 @@ VIZ.Slider.prototype.update = function() {
     /** let the data store clear out old values */
     if (this.data_store !== null) {
         this.data_store.update();
-        
+
         var data = this.data_store.get_last_data();
-        
+
         for (var i=0; i< this.sliders.length; i++) {
             if (!this.data_store.is_at_end() || !this.sliders[i].fixed) {
-                this.set_value(i, data[i], 'never');
+                this.sliders[i].display_value(data[i]);
             }
         }
     }
-    
 }
 
 VIZ.Slider.prototype.user_value = function () {
@@ -415,7 +208,7 @@ VIZ.Slider.prototype.user_value = function () {
         }
     }
     var new_value = prompt('Set value\n' + prompt_string);
-    
+
     //If the user hits cancel
     if (new_value == null) {
         return;
@@ -425,72 +218,44 @@ VIZ.Slider.prototype.user_value = function () {
     new_value = new_value.split(',');
 
     //Update the sliders one at a time, checking input as we go
+    this.immediate_notify = false;
     for (var i = 0; i < this.sliders.length; i++){
         if (!(VIZ.is_num(new_value[i]))) {
             alert("invalid input :" + new_value[i] + "\nFor the slider in position " + (i + 1) );
             break;
         }
-        this.set_value(i, Number(new_value[i]), false);
+        this.sliders[i].fixed = true;
+        this.sliders[i].set_value(parseFloat(new_value[i]));
     }
+    this.immediate_notify = true;
 };
 
 VIZ.Slider.prototype.user_reset_value = function() {
     for (var i = 0; i < this.sliders.length; i++){
         this.notify('' + i + ',reset');
         this.sliders[i].fixed = false;
-        this.set_value(i, this.reset_value[i], 'never');
-    }    
+        this.sliders[i].display_value(this.reset_value[i]);
+    }
 }
 
 VIZ.Slider.prototype.set_range = function() {
-    var range = this.scale.domain();
+    var range = this.sliders[0].scale.domain();
     var new_range = prompt('Set range', '' + range[1] + ',' + range[0]);
     if (new_range !== null) {
         new_range = new_range.split(',');
-        var min = parseFloat(new_range[1]);
-        var max = parseFloat(new_range[0]);
-        this.scale.domain([min, max]);
+        var min = parseFloat(new_range[0]);
+        var max = parseFloat(new_range[1]);
+        for (var i in this.sliders) {
+            this.sliders[i].set_range(min, max);
+        }
         this.save_layout();
-    }
-    for (var i in this.sliders) {
-        this.set_value(i, this.sliders[i].value, false); 
     }
 };
 
 VIZ.Slider.prototype.layout_info = function () {
     var info = VIZ.Component.prototype.layout_info.call(this);
-    info.width = info.width/this.n_sliders;
-    info.min_value = this.scale.domain()[1];
-    info.max_value = this.scale.domain()[0];
+    info.width = info.width;
+    info.min_value = this.sliders[0].scale.domain()[1];
+    info.max_value = this.sliders[0].scale.domain()[0];
     return info;
-};
-
-//takes input and outputs the
-//boundary value if input is above/below max/min
-//Otherwise outputs the input
-//max_min: Num -> Num
-VIZ.Slider.prototype.max_min = function(value) {
-    console.assert(typeof value == 'number');
-
-    //Get the max and min slider bounds
-    var slider_range = this.scale.domain();
-    min = slider_range[1];
-    max = slider_range[0];
-
-    if (value < min) {
-        return min;
-    }
-    else if (value > max) {
-        return max;
-    }
-    else {
-        return value;
-    }
-};
-
-//slider_index: Nat, new_shown_value: Num
-//Rounds to 2 decimal places
-VIZ.Slider.prototype.update_value_text = function (slider_index, new_shown_value) {
-    var target = this.sliders[slider_index].value_display;
-    target.innerHTML = new_shown_value.toFixed(2);
 };

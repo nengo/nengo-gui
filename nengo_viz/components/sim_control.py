@@ -3,6 +3,8 @@ import struct
 
 import numpy as np
 import nengo
+import os
+import json
 
 from nengo_viz.components.component import Component, Template
 
@@ -22,6 +24,8 @@ class SimControl(Component):
         self.skipped = 1
         self.time = 0.0
         self.last_status = None
+        self.reload = False
+        self.send_config_options = False
 
     def add_nengo_objects(self, viz):
         with viz.model:
@@ -55,6 +59,10 @@ class SimControl(Component):
             time.sleep(0.01)
             self.last_tick = None
 
+    def config_settings(self, data):
+        for i in data:
+            print(i)
+
     def update_client(self, client):
         if self.viz.changed:
             self.paused = True
@@ -66,6 +74,14 @@ class SimControl(Component):
         if status != self.last_status:
             client.write('status:%s' % status)
             self.last_status = status
+        if self.reload == True:
+            client.write('reload')
+            self.reload = False
+        if self.send_config_options == True:
+            from ..disposable_js import configmodal
+            javascript = configmodal()
+            client.write('config' + javascript)
+            self.send_config_options = False
 
     def get_status(self):
         if self.paused:
@@ -78,16 +94,32 @@ class SimControl(Component):
     def javascript(self):
         info = dict(uid=self.uid)
         json = self.javascript_config(info)
-        return 'sim = new VIZ.SimControl(control, %s)' % json
+        return 'sim = new VIZ.SimControl(control, %s); ' % json + \
+               'toolbar = new VIZ.Toolbar("%s"); ' % self.viz.viz.filename 
 
     def message(self, msg):
         print(msg)
         if msg == 'pause':
             self.paused = True
+        elif msg == 'config':
+            self.send_config_options = True
         elif msg == 'continue':
             if self.viz.sim is None:
                 self.viz.rebuild = True
             self.paused = False
+        elif msg[:4] == 'open':
+            if os.path.isfile(self.viz.viz.filename):
+                self.viz.viz.load(msg[4:])
+                self.reload = True
+            else:
+                print('File does not exist')
+        elif msg == 'reset':
+            if os.path.isfile(self.viz.viz.filename + '.cfg') :
+                os.remove(self.viz.viz.filename + '.cfg')
+            self.viz.viz.load(self.viz.viz.filename)
+            self.reload = True
+        else:
+            print(msg)
 
 class SimControlTemplate(Template):
     cls = SimControl
