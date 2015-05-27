@@ -51,13 +51,13 @@ VIZ.Config = function() {
     };
 
     if(document.addEventListener) {
-        document.getElementById("modal_open").addEventListener('click', 
+        document.getElementById("Config_modal").addEventListener('click', 
                 openModal);
         document.addEventListener("click", clickHandler, false);
         document.addEventListener("keydown", keyHandler, false);
     } 
     else {
-        document.getElementById("modal_open").attachEvent("onclick", 
+        document.getElementById("Config_modal").attachEvent("onclick", 
                 openModal);
         document.attachEvent("onclick", clickHandler);
         document.attachEvent("onkeydown", keyHandler);
@@ -95,13 +95,11 @@ var modal_init = function() {
   };
 
   if(document.addEventListener) {
-    document.getElementById("modal_open").addEventListener("click", openModal, false);
-    document.getElementById("modal_close").addEventListener("click", closeModal, false);
+    document.getElementById("Config_modal").addEventListener("click", openModal, false);
     document.addEventListener("click", clickHandler, false);
     document.addEventListener("keydown", keyHandler, false);
   } else {
-    document.getElementById("modal_open").attachEvent("onclick", openModal);
-    document.getElementById("modal_close").attachEvent("onclick", closeModal);
+    document.getElementById("Config_modal").attachEvent("onclick", openModal);
     document.attachEvent("onclick", clickHandler);
     document.attachEvent("onkeydown", keyHandler);
   }

@@ -1,7 +1,7 @@
 /** namespace for all Nengo visualization */
 var VIZ = {};
 
-VIZ.user_settings = []
+VIZ.user_settings = [];
 
 VIZ.max_zindex = 0;
 
