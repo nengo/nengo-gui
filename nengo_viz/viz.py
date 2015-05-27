@@ -121,6 +121,12 @@ class Viz(object):
         self.viz_sims = []
 
         self.config_save_period = 2.0  # minimum time between saves
+
+        if filename is None:
+            filename = os.path.join(nengo_viz.__path__[0], 
+                                    'examples',
+                                    'default.py')
+
         self.load(filename, model, locals)
 
     def load(self, filename, model=None, locals=None):
