@@ -15,18 +15,32 @@
     </head>
     <body onload="onload();">
         <div id="main"></div>
-        <div id="control"></div>
-        <div class="modal fade" style="z-index:100000001;">
+        <div id="control">
+            <div class="time_slider">
+                <div class="shown_time"></div>
+            </div>
+            <button id='pause_button' class="btn btn-default play-pause-button">
+                <span id='pause_button_icon' class="glyphicon glyphicon-play">
+                </span>
+            </button>
+            <table id='time_table' class='table metrics-container'>
+                <tr id="rate_tr"></tr>
+                <tr id="ticks_tr"></tr>
+            </table>
+        </div>
+        <div class="modal fade">
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true"> 
+                        &times;
+                    </span>
+                </button>
                 <h4 class="modal-title"></h4>
               </div>
-              <div class="modal-body">
-              </div>
-              <div class="modal-footer">
-              </div>
+              <div class="modal-body"></div>
+              <div class="modal-footer"></div>
             </div>
           </div>
         </div>

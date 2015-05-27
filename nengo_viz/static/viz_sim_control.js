@@ -11,10 +11,6 @@ VIZ.SimControl = function(div, args) {
 
     div.classList.add('sim_control');    
     this.div = div;
-    div.style.position = 'fixed';
-    //TODO: Is this the method we want to use for keeping simcontrol on top 
-    //or do we want to dynamically raise it's zindex when other elements have theres increased
-    div.style.zIndex = 99999999; 
 
     /** respond to resize events */
     this.div.addEventListener("resize", function() {self.on_resize();});
@@ -40,27 +36,16 @@ VIZ.SimControl = function(div, args) {
                                            shown_time: args.shown_time,
                                            kept_time: args.kept_time});
     
-    /** Create the pause button */
-    this.pause_button = document.createElement('button');
-    this.pause_button.className = "btn btn-default play-pause-button";
-    this.pause_button_icon = document.createElement('span');
-    this.pause_button_icon.className = "glyphicon glyphicon-play";
-    this.pause_button.appendChild(this.pause_button_icon);
+    /** Get reference to the pause button */
+    this.pause_button = $('#pause_button')[0];
     this.pause_button.onclick = function(event) {self.on_pause_click();};
-    this.pause_button.style.position = 'fixed';
-    this.pause_button.style.width = '60px';
-    this.pause_button.style.height = '60px';
     VIZ.set_transform(this.pause_button, this.div.clientWidth - 100, 30);
-    div.appendChild(this.pause_button);
+
+    this.pause_button_icon = $('#pause_button_icon')[0];
     
-    this.metrics_table = document.createElement('table');
-    this.metrics_table.className = 'table metrics-container';
-    div.appendChild(this.metrics_table);
     /** Create the speed and rate update sliders */
-    this.rate_tr = document.createElement('tr');
-    this.metrics_table.appendChild(this.rate_tr);
-    this.ticks_tr = document.createElement('tr');
-    this.metrics_table.appendChild(this.ticks_tr);
+    this.rate_tr = $('#rate_tr')[0];
+    this.ticks_tr = $('#ticks_tr')[0];
 
     this.update();
 };
@@ -127,7 +112,7 @@ VIZ.SimControl.prototype.register_listener = function(func) {
 /** Update the visual display */    
 VIZ.SimControl.prototype.update = function() {
     this.pending_update = false;
-    
+
     this.ticks_tr.innerHTML = '<th>Time</th><td>' + this.time.toFixed(3) + '</td>';
     this.rate_tr.innerHTML = '<th>Speed</th><td>' + this.rate.toFixed(2) + 'x</td>';
     
@@ -154,7 +139,6 @@ VIZ.SimControl.prototype.on_pause_click = function(event) {
     } else {
         this.pause();
     }
-    //this.pause_button_icon.toggleClass('glyphicon-pause glyphicon-play');
 };
 
 VIZ.SimControl.prototype.on_resize = function(event) {
@@ -170,6 +154,13 @@ VIZ.TimeSlider = function(args) {
     /** The SimControl object */
     this.sim = args.sim;
 
+    /** get reference to the overall div */
+    this.div = $(".time_slider")[0];
+    VIZ.set_transform(this.div, args.x, args.y);
+
+    /** create reference to the div indicating currently shown time */
+    this.shown_div = $(".shown_time")[0];
+
     /** How much time to show in normal graphs */
     this.shown_time = args.shown_time || 0.5;
     /** How much total time to store */
@@ -182,23 +173,6 @@ VIZ.TimeSlider = function(args) {
     /** scale to convert time to x value (in pixels) */
     this.kept_scale = d3.scale.linear();
     
-    /** create the overall div */
-    this.div = document.createElement('div');
-    this.div.classList.add('time_slider');
-    this.div.style.position = 'fixed';
-    this.sim.div.appendChild(this.div);
-    VIZ.set_transform(this.div, args.x, args.y);
-
-    /** create the div indicating currently shown time */
-    this.shown_div = document.createElement('div');
-    this.shown_div.classList.add('shown_time');
-    this.shown_div.style.position = 'absolute';
-    var d1 = document.createElement('div')
-    this.shown_div.appendChild(d1);
-    var d2 = document.createElement('div')
-    d1.appendChild(d2);
-    this.div.appendChild(this.shown_div);
-
     this.kept_scale.domain([0.0 - this.kept_time, 0.0]);
 
     this.resize(args.width, args.height);
@@ -264,7 +238,6 @@ VIZ.TimeSlider = function(args) {
         .attr("class", "axis")
         .attr("transform", "translate(0," + (args.height / 2) + ")")
         .call(this.axis);
-    
 }
 
 VIZ.TimeSlider.prototype.jump_to_end = function() {
