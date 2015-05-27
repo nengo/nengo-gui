@@ -16,59 +16,24 @@ VIZ.Toolbar = function(filename) {
     /** Create event listener to hide file opener when the mouse leaves */
     $('#filebrowser').mouseleave(function(){$(this).hide(200)});
 
-    /** Create the top toolbar which is using Bootstrap styling */
-    var toolbar = document.createElement('ul');
-    toolbar.className = 'nav nav-pills'
-    
     /** keep a reference to the toolbar element */
-    this.toolbar=toolbar;
+    this.toolbar = $('#top_toolbar')[0];
 
-    this.add_button('Open file', 'glyphicon glyphicon-folder-open', 
-            function(){self.file_browser()});
-    this.add_button('Reset model layout', 'glyphicon glyphicon-retweet', 
-            function() {self.reset_model_layout()});
-    this.add_button('Undo last', 'glyphicon glyphicon-backward', 
-            function() {}); //TODO: hookup undo
-    this.add_button('Redo last', 'glyphicon glyphicon-forward', 
-            function() {}); //TODO: hookup redo 
-    this.add_button('Config_modal', 'glyphicon glyphicon-cog', 
-            function() {self.start_modal();});
-    
-    var button = document.createElement('li');
-    button.id = 'filename';
-    button.innerHTML = filename;
-    button.setAttribute("role", "presentation");
-    toolbar.appendChild(button);
+    $('#Open_file_button')[0].addEventListener('click', function () {self.file_browser()});
+    $('#Reset_layout_button')[0].addEventListener('click', function () {self.reset_model_layout()});
+    // TODO: hookup undo and redo
+    // $('#Undo_last_button')[0].addEventListener('click', function () {});
+    // $('#Redo_last_button')[0].addEventListener('click', function () {});
+    $('#Config_button')[0].addEventListener('click', function () {self.start_modal()});
+   
+    $('#filename')[0].innerHTML = filename;
 
-    this.menu = new VIZ.Menu(toolbar);
+    this.menu = new VIZ.Menu(this.toolbar);
 
     interact(toolbar).on('tap', function(){
         self.menu.hide_any();
     });
-
-    main.appendChild(toolbar);
 };
-
-/** 
- * Adds a button to the top toolbar, 
- * {string} name - name of button, shown on hover
- * {string} icon_class - bootstrap glyphicon class
- * {function} function - called when button pressed
- */
-VIZ.Toolbar.prototype.add_button = function (name, icon_class, fun) {
-    console.assert(typeof name == 'string')
-    console.assert(typeof icon_class == 'string')
-    console.assert(typeof fun == 'function')
-    
-    var button = document.createElement('li');
-    var link = document.createElement('a');
-    link.setAttribute('title', name);
-    button.appendChild(link);
-    this.toolbar.appendChild(button);
-    link.className = icon_class;
-    button.setAttribute("role", "presentation");
-    button.addEventListener('click', function() {fun();});
-}
 
 /** This lets you browse the files available on the server */
 VIZ.Toolbar.prototype.file_browser = function () {

@@ -18,7 +18,30 @@
     </head>
 
     <body onload="onload();">
-        <div id="main"></div>
+        <div id="main">
+
+            <ul id='top_toolbar' class="nav nav-pills"> 
+            
+                <li id='Open_file_button' role="presentation">
+                    <a title='Open file' class='glyphicon glyphicon-folder-open'> </a>
+                </li>
+                <li id='Reset_layout_button' role="presentation">
+                    <a title='Reset model layout' class='glyphicon glyphicon-retweet'> </a>
+                </li>
+                <li id='Undo_last_button' role="presentation">
+                    <a title='Undo last' class='glyphicon glyphicon-backward'> </a>
+                </li>
+                <li id='Redo_last_button' role="presentation">
+                    <a title='Redo last' class='glyphicon glyphicon-forward'> </a>
+                </li>
+                <li id='Config_button' role="presentation">
+                    <a title='Config panel' class='glyphicon glyphicon-cog'> </a>
+                </li>
+                <li id='filename' role="presentation"> </li>
+
+            </ul>
+
+        </div>
 
         <!-- TODO: Is large z-index the method we want to use for keeping simcontrol on top  -->
         <!-- or do we want to dynamically raise it when other elements have theirs increased -->
@@ -96,7 +119,6 @@
         <script src="static/viz_netgraph_item.js"></script>
         <script src="static/viz_netgraph_conn.js"></script>
         <script src="static/viz_top_toolbar.js"></script>
-        <script src="static/viz_config.js"></script>
         <script src="static/viz_modal.js"></script>
         <script src="static/viz_tooltips.js"></script>
         <script src="static/viz_menu.js"></script>
