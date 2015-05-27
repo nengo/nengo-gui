@@ -1,0 +1,40 @@
+.glyphicon {
+	color: black;
+}
+
+.nav-pills {
+	position: absolute;
+	width: 100%;
+	z-index: 99999;
+    background-color: #6699ff;
+}
+
+#filename{
+	float: right;
+	margin-top: 0.5em;
+	margin-right: 1em;
+}
+
+#filebrowser {
+    position: absolute;
+    top:40px;
+    left: 5px;
+    width: 200px;
+    height: 300px;
+    border-top: solid 2px #BBB;
+    border-left: solid 2px #BBB;
+    border-bottom: solid 2px #BBB;
+    border-right: solid 2px #BBB;
+    background-color: #99ccff;
+    z-index: 1000;
+    overflow: auto;
+}
+
+#global_config_menu {
+    background: purple;
+    height: 20em;
+    width: 20em;
+    z-index: 99999;
+    margin-top: 3em;
+    position: absolute;
+}

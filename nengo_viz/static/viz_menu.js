@@ -99,5 +99,7 @@ VIZ.Menu.prototype.visible_any = function () {
 }
 
 VIZ.Menu.prototype.hide_any = function () {
-    VIZ.Menu.hide_menu_in(this.div);
+    for(var k in VIZ.Menu.visible_menus) {
+        VIZ.Menu.hide_menu_in(k);
+    }
 }

@@ -19,6 +19,21 @@ def infomodal(ng, uid, **args):
     else:
         raise NotImplementedError()
 
+def add_modal_title_js(title_text):
+    return 'VIZ.Modal.title("%s");' % (title_text)
+
+def add_modal_footer_js(footer_text):
+    return 'VIZ.Modal.footer("%s");' % (footer_text)
+
+def show_modal_js():
+    return 'VIZ.Modal.show();'
+
+def configmodal(): 
+    js = [add_modal_title_js('Config menu')]
+    js.append(add_modal_footer_js('close'))
+    js.append('VIZ.Modal.info_body([]);')
+    js.append(show_modal_js())
+    return '\n'.join(js)
 
 class PlotInfo(object):
     def __init__(self, title, plot="none"):
@@ -41,7 +56,6 @@ class PlotInfo(object):
             'x': x,
             'y': y,
         }
-
 
 def ensemble_infomodal(ng, uid, conn_in_uids, conn_out_uids):
     ens = ng.uids[uid]
@@ -86,7 +100,6 @@ def ensemble_infomodal(ng, uid, conn_in_uids, conn_out_uids):
     js.append('VIZ.Modal.show();')
     return '\n'.join(js)
 
-
 def node_infomodal(ng, uid, conn_in_uids, conn_out_uids):
     node = ng.uids[uid]
 
@@ -114,12 +127,12 @@ def node_infomodal(ng, uid, conn_in_uids, conn_out_uids):
 
     conninfo = conn_infomodal(ng, uid, conn_in_uids, conn_out_uids)
 
-    js = ['VIZ.Modal.title("Details for \'%s\'");' % (
-        ng.viz.viz.get_label(node))]
-    js.append('VIZ.Modal.footer("close");')
+    js = [add_modal_title_js("Details for \'%s\'" % (
+        ng.viz.viz.get_label(node)))]
+    js.append(add_modal_footer_js('close'))
     js.append('VIZ.Modal.node_body("%s", %s, %s, %s);' % (
         uid, json.dumps(params), json.dumps(plots), json.dumps(conninfo)))
-    js.append('VIZ.Modal.show();')
+    js.append(show_modal_js())
     return '\n'.join(js)
 
 
@@ -189,10 +202,10 @@ def net_infomodal(ng, uid, conn_in_uids, conn_out_uids):
 
     conninfo = conn_infomodal(ng, uid, conn_in_uids, conn_out_uids)
 
-    js = ['VIZ.Modal.title("Details for \'%s\'");' % (
+    js = [add_modal_title_js("Details for \'%s\'") % (
         ng.viz.viz.get_label(net))]
-    js.append('VIZ.Modal.footer("close");')
+    js.append(add_modal_footer_js('close'))
     js.append('VIZ.Modal.net_body("%s", %s, %s);' % (
         uid, json.dumps(stats), json.dumps(conninfo)))
-    js.append('VIZ.Modal.show();')
+    js.append(show_modal_js())
     return '\n'.join(js)

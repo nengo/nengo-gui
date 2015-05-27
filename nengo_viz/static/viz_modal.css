@@ -41,12 +41,6 @@ div.modal-backdrop {
     background-color: #dddddd;
 }
 
-.modal-body .tab-pane th .glyphicon,
-.modal-body .tab-pane dt .glyphicon {
-    font-size: 0.8em;
-    font-weight: normal;
-}
-
 .modal-body .tab-pane td {
     font-size: 0.9em;
     border: 0px;
@@ -93,4 +87,8 @@ div.modal-backdrop {
 
 .modal-body .popover-title {
     line-height: 1.2;
+}
+
+div.modal {
+    z-index: 100000001;
 }
