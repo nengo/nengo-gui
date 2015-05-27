@@ -44,8 +44,22 @@ class Server(swi.SimpleWebInterface):
         icon = pkgutil.get_data('nengo_viz', 'static/favicon.ico')
         return ('image/ico', icon)
 
+    def create_login_form(self):
+        if self.attempted_login:
+            message = 'Invalid password.  Try again.'
+        else:
+            message = 'Enter the password:'
+        return """<form action="/" method=GET>%s<br>
+            <input type=hidden name=swi_id value=''>
+            <input type=password name=swi_pwd>
+            <input type=submit value="Log In">
+            </form>""" % message
+
     def swi(self):
         """Handles http://host:port/ by giving the main page"""
+        if self.user is None:
+            return self.create_login_form()
+
         # create a new simulator
         viz_sim = self.viz.create_sim()
 
