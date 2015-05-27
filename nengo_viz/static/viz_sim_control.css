@@ -1,10 +1,12 @@
+/* TODO: Is large z-index the method we want to use for keeping simcontrol on top */
+/* or do we want to dynamically raise it when other elements have theirs increased  */
 .sim_control {
     background-color: #eee;
     box-shadow: 0 0 12px 1px rgba(87,87,87,0.2);
     height: 80px;
     position:fixed;
     width: 100%;
-    z-index:999999999;
+    z-index:99999999;
 }
 
 .time_slider{
