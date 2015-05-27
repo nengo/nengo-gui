@@ -226,6 +226,7 @@ class Viz(object):
     """The master visualization organizer set up for a particular model."""
     def __init__(self, filename, model=None, locals=None):
 
+        self.config_save_period = 2.0  # minimum time between saves
         self.load(filename, model, locals)
     
     def load(self, filename, model=None, locals=None):
@@ -250,6 +251,9 @@ class Viz(object):
             self.default_labels = self.name_finder.known_name
 
             self.config = self.load_config()
+            self.config_save_needed = False
+            self.config_save_needed = False
+            self.config_save_time = None   # time of last config file save
 
             self.lock = threading.Lock()
 
