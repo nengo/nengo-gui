@@ -81,6 +81,7 @@ class SimControl(Component):
         return 'sim = new VIZ.SimControl(control, %s)' % json
 
     def message(self, msg):
+        print(msg)
         if msg == 'pause':
             self.paused = True
         elif msg == 'continue':

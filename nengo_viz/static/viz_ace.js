@@ -10,12 +10,15 @@ VIZ.Ace = function (args, script_code) {
 	editor.setTheme('ace/theme/monokai')
 	editor.getSession().setMode("ace/mode/python");
 
+
+	//TODO: ensure that VIZ.Ace is called after the sim control is built
 	setTimeout(function(){
 	editor.getSession().on('change', function() {
-    	self.ws.send(editor.getValue());
+    	sim.ws.send(editor.getValue());
+    	console.log(editor.getValue());
 	});}, 10);
 
-	
+
 	editor.setValue('texxxxxxxxxxxxxxxxxxxxxxxtt\nHiodsahfjiodsjfio');
 
 	console.log(editor.getValue());
@@ -50,5 +53,3 @@ VIZ.Ace.prototype.toggle_shown = function () {
 		this.hide_editor();
 	}
 }
-
-setInterval(function(){gg.toggle_shown()}, 1000)
