@@ -255,7 +255,10 @@ VIZ.NetGraph.prototype.set_scale = function(scale) {
 
 
 VIZ.NetGraph.prototype.update_font_size = function(scale) {
-    $('#main').css('font-size', 3 * this.scale + 'em');
+    // TODO: text resizing is disabled for now until we can figure out
+    // how best to have it work with large models
+
+    //$('#main').css('font-size', 3 * this.scale + 'em');
 }
 
 
