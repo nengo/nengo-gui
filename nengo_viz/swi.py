@@ -602,8 +602,14 @@ class ClientSocket(object):
 
         if not binary:
             data = data.encode('ascii')
-        self.socket.send(header)
-        self.socket.send(data)
+        try:
+            self.socket.send(header)
+            self.socket.send(data)
+        except socket.error as e:
+            if e.errno == 32:  # Broken pipe
+                raise SocketClosedError("Cannot write to socket.")
+            else:
+                raise
 
 
 if __name__ == '__main__':
