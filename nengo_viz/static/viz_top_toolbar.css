@@ -5,7 +5,8 @@
 }
 
 #top_toolbar .glyphicon:hover {
-    background: #d9edf7;
+    color: #eee;
+    background: #333;
 }
 
 #top_toolbar {
