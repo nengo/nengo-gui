@@ -31,6 +31,10 @@
     overflow: auto;
 }
 
+#Toggle_ace{
+    float: right; 
+}
+
 #global_config_menu {
     background: purple;
     height: 20em;
