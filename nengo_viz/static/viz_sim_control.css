@@ -59,15 +59,19 @@
     font-size: 30px;
 }
 
-.metrics-container.table {
+#time_table {
     display: inline-block;
-    margin-top: 40px;
+    margin-top: 10px;
     margin-left: 10px;
+    width: 130px;
     overflow: hidden;
-    transform: translate(0, -50%);
-    width: 100px;
+}
+
+.metrics-container {
+    width: auto !important;
 }
 
 .metrics-container td, .metrics-container th {
-    padding: 0.2em;
+    padding: 0.2em !important;
+    border: none !important;
 }
