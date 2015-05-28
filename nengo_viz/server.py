@@ -112,3 +112,7 @@ class Server(swi.SimpleWebInterface):
             self.viz.save_config(lazy=False)
         finally:
             component.finish()
+
+            # if there are no simulations left, stop the server
+            if self.viz.count_sims() == 0:
+                self.stop()

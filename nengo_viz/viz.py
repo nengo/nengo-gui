@@ -89,6 +89,7 @@ class VizSim(object):
 
     def finish(self):
         self.finished = True
+        self.viz.remove_sim(self)
 
     def create_javascript(self):
         webpage_title_js = ';document.title = "%s"' %self.viz.filename[:-3]
@@ -249,6 +250,8 @@ class Viz(object):
     """The master visualization organizer set up for a particular model."""
     def __init__(self, filename, model=None, locals=None):
 
+        self.viz_sims = []
+
         self.config_save_period = 2.0  # minimum time between saves
         self.load(filename, model, locals)
 
@@ -384,4 +387,12 @@ class Viz(object):
 
     def create_sim(self):
         """Create a new Simulator with this configuration"""
-        return VizSim(self)
+        viz_sim = VizSim(self)
+        self.viz_sims.append(viz_sim)
+        return viz_sim
+
+    def remove_sim(self, viz_sim):
+        self.viz_sims.remove(viz_sim)
+
+    def count_sims(self):
+        return len(self.viz_sims)
