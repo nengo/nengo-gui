@@ -24,6 +24,7 @@
     float: right;
     margin-top: 0.5em;
     margin-right: 1em;
+    cursor: default !important;
 }
 
 #filebrowser {
