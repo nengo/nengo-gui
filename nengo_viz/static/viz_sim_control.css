@@ -53,6 +53,8 @@
     margin: -20px 15px 0 15px;
     position:fixed;
     width:60px;
+    border-color: #eee !important;
+    background-color: #eee !important;
 }
 
 .play-pause-button:hover {
