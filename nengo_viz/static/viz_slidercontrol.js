@@ -121,7 +121,7 @@ VIZ.SliderControl.prototype.display_value = function(value) {
 VIZ.SliderControl.prototype.set_value = function(value) {
     if (this.value != value) {
         this.display_value(value);
-        this.dispatch('change', {'target': this, 'value': value});
+        this.dispatch('change', {'target': this, 'value': this.value});
     }
 };
 
