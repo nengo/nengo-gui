@@ -10,6 +10,8 @@ import nengo_viz.server
 import nengo_viz.components
 import nengo_viz.config
 from nengo_viz.components.action import ConfigAction, RemoveGraph
+import nengo_viz.monkey
+
 
 class VizSim(object):
     """A single Simulator attached to an html visualization."""
@@ -113,6 +115,8 @@ class VizSim(object):
 class Viz(object):
     """The master visualization organizer set up for a particular model."""
     def __init__(self, filename, model=None, locals=None):
+        if nengo_viz.monkey.is_executing():
+            raise nengo_viz.monkey.StartedVizException()
 
         self.viz_sims = []
 
@@ -122,9 +126,21 @@ class Viz(object):
     def load(self, filename, model=None, locals=None):
         if locals is None:
             locals = {}
+            locals['nengo_viz'] = nengo_viz
+            locals['__file__'] = filename
+
+
             with open(filename) as f:
                 code = f.read()
-            exec(code, locals)
+            nengo_viz.monkey.flag.executing = True
+            try:
+                exec(code, locals)
+            except nengo_viz.monkey.StartedSimulatorException:
+                pass
+            except nengo_viz.monkey.StartedVizException:
+                pass
+            finally:
+                nengo_viz.monkey.flag.executing = False
 
         if model is None:
             if 'model' not in locals:
@@ -134,7 +150,6 @@ class Viz(object):
                 raise VizException('The "model" must be a nengo.Network')
 
 
-        locals['nengo_viz'] = nengo_viz
 
         self.model = model
         self.locals = locals
