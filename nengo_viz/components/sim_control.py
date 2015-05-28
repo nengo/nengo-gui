@@ -1,5 +1,6 @@
 import time
 import struct
+import traceback
 
 import numpy as np
 import nengo
@@ -115,11 +116,11 @@ class SimControl(Component):
                 self.viz.rebuild = True
             self.paused = False
         elif msg[:4] == 'open':
-            if os.path.isfile(self.viz.viz.filename):
+            try:
                 self.viz.viz.load(msg[4:])
                 self.reload = True
-            else:
-                print('File does not exist')
+            except:
+                traceback.print_exc()
         elif msg == 'reset':
             if os.path.isfile(self.viz.viz.filename + '.cfg') :
                 os.remove(self.viz.viz.filename + '.cfg')
