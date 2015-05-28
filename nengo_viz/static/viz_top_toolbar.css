@@ -37,10 +37,12 @@
     background-color: #eee;
     z-index: 1000;
     overflow: auto;
+    cursor: pointer !important;
 }
 
 #filebrowser a:hover {
-    background: #d9edf7;
+    color: #eee;
+    background: #666;
 }
 
 #global_config_menu {
