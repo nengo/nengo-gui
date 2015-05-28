@@ -18,24 +18,27 @@
     </head>
 
     <body onload="onload();">
-        <ul id='top_toolbar' class="nav nav-pills"> 
-            <li id='Open_file_button' role="presentation">
-                <a title='Open file' class='glyphicon glyphicon-folder-open'> </a>
-            </li>
-            <li id='Reset_layout_button' role="presentation">
-                <a title='Reset model layout' class='glyphicon glyphicon-retweet'> </a>
-            </li>
-            <li id='Undo_last_button' role="presentation">
-                <a title='Undo last' class='glyphicon glyphicon-backward'> </a>
-            </li>
-            <li id='Redo_last_button' role="presentation">
-                <a title='Redo last' class='glyphicon glyphicon-forward'> </a>
-            </li>
-            <li id='Config_button' role="presentation">
-                <a title='Config panel' class='glyphicon glyphicon-cog'> </a>
-            </li>
-            <li id='filename' role="presentation"> </li>
-        </ul>
+        <div id="top_toolbar">
+            <ul class="nav nav-pills"> 
+                <li id='Open_file_button' role="presentation">
+                    <a title='Open file' class='glyphicon glyphicon-folder-open'> </a>
+                </li>
+                <li id='Reset_layout_button' role="presentation">
+                    <a title='Reset model layout' class='glyphicon glyphicon-retweet'> </a>
+                </li>
+                <li id='Undo_last_button' role="presentation">
+                    <a title='Undo last' class='glyphicon glyphicon-backward'> </a>
+                </li>
+                <li id='Redo_last_button' role="presentation">
+                    <a title='Redo last' class='glyphicon glyphicon-forward'> </a>
+                </li>
+                <li id='Config_button' role="presentation">
+                    <a title='Config panel' class='glyphicon glyphicon-cog'> </a>
+                </li>
+                <li id='filename' role="presentation"> </li>
+            </ul>
+            <div id="filebrowser"></div>
+        </div>
         <div id="main">
         </div>
         <div id="control">
@@ -71,7 +74,6 @@
             </div>
           </div>
         </div>
-        <div id="filebrowser"></div>
         <script>
             function onload() {
                 main = document.getElementById("main");
