@@ -21,15 +21,15 @@ VIZ.Ace = function (args, script_code) {
 
 	editor.setValue('texxxxxxxxxxxxxxxxxxxxxxxtt\nHiodsahfjiodsjfio');
 
-	console.log(editor.getValue());
+	var top_margin = $(toolbar.toolbar).height();
 
 	var bottom_margin = $(sim.div).height();
-	console.log(bottom_margin);
 
-	var left_margin = $(window).width()
-	console.log(left_margin);
+	var left_margin = $(window).width();
+
+	code_div.style.top = top_margin;
 	code_div.style.bottom = bottom_margin;
-	code_div.style.left = left_margin * 4 / 5
+	code_div.style.left = left_margin * 4 / 5; //Positions code editor so it takes up the right 20% of the screen.
 }
 
 
