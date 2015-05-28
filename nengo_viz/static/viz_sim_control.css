@@ -51,8 +51,13 @@
 .play-pause-button {
     height:60px;
     margin: -20px 15px 0 15px;
-    position:fixed; 
-    width:60px; 
+    position:fixed;
+    width:60px;
+}
+
+.play-pause-button:hover {
+    background: #666 !important;
+    color: #eee !important;
 }
 
 .play-pause-button span {
