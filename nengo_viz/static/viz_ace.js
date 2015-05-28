@@ -10,6 +10,7 @@ VIZ.Ace = function (args, script_code) {
 	editor.setTheme('ace/theme/monokai')
 	editor.getSession().setMode("ace/mode/python");
 
+	$('#Toggle_ace').on('click', function(){self.toggle_shown();});
 
 	//TODO: ensure that VIZ.Ace is called after the sim control is built
 	setTimeout(function(){
@@ -21,10 +22,9 @@ VIZ.Ace = function (args, script_code) {
 
 	editor.setValue('texxxxxxxxxxxxxxxxxxxxxxxtt\nHiodsahfjiodsjfio');
 
+	//Set the positioning of the code_div
 	var top_margin = $(toolbar.toolbar).height();
-
 	var bottom_margin = $(sim.div).height();
-
 	var left_margin = $(window).width();
 
 	code_div.style.top = top_margin;
@@ -46,6 +46,7 @@ VIZ.Ace.prototype.hide_editor = function () {
 }
 
 VIZ.Ace.prototype.toggle_shown = function () {
+	console.log('ran')
 	if (this.hidden) {
 		this.show_editor();
 	}
