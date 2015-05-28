@@ -282,6 +282,14 @@ class Viz(object):
             addr = 'localhost'
         nengo_viz.server.Server.start(port=port, browser=browser, addr=addr)
 
+    def prepare_server(self, port=8080, browser=True):
+        nengo_viz.server.Server.viz = self
+        return nengo_viz.server.Server.prepare_server(
+            port=port, browser=browser)
+
+    def begin_lifecycle(self, server):
+        nengo_viz.server.Server.begin_lifecycle(server)
+
     def create_sim(self):
         """Create a new Simulator with this configuration"""
         viz_sim = VizSim(self)
