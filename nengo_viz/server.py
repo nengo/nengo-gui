@@ -92,7 +92,7 @@ class Server(swi.SimpleWebInterface):
                             self.viz_sim.config_change(component, cfg, old_cfg)
                         for k, v in cfg.items():
                             setattr(self.viz.config[component.template], k, v)
-                        self.viz.save_config()
+                        self.viz.modified_config()
                     elif msg.startswith('remove'):
                         if msg != 'remove_undo':
                             # Register graph removal to the undo stack

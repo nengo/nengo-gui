@@ -314,9 +314,6 @@ VIZ.Component.prototype.save_layout = function () {
 }
 
 VIZ.Component.prototype.update_layout = function (config) {
-    //VIZ.set_transform(this.div, parseFloat(config.x), parseFloat(config.y));
-    //this.div.setAttribute('data-x', parseFloat(config.x));
-    //this.div.setAttribute('data-y', parseFloat(config.y));
     this.w = config.width;
     this.h = config.height;
     this.x = config.x;

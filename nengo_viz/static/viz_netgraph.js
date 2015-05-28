@@ -333,8 +333,6 @@ VIZ.NetGraph.prototype.on_resize = function(event) {
     var width = $(this.svg).width();
     var height = $(this.svg).height();
     
-    
-    //VIZ.scale.redraw_size(width / this.old_width, height / this.old_height);
     this.old_width = width;
     this.old_height = height;
 };

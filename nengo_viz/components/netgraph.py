@@ -1,17 +1,17 @@
 import time
-import struct
 import os
 import traceback
 import collections
 
-import numpy as np
 import nengo
 import json
 
 from nengo_viz.components.component import Component, Template
 from nengo_viz.disposable_js import infomodal
 import nengo_viz.layout
-from action import create_action
+
+from .action import create_action
+
 
 class NetGraph(Component):
     configs = {}
@@ -76,8 +76,8 @@ class NetGraph(Component):
                                          nengo.Ensemble,
                                          nengo.Network)):
                     old_label = self.viz.viz.get_label(old_item)
-                    new_label = self.viz.viz.get_label(new_item,
-                        default_labels=name_finder.known_name)
+                    new_label = self.viz.viz.get_label(
+                        new_item, default_labels=name_finder.known_name)
 
                     if old_label != new_label:
                         self.to_be_sent.append(dict(
@@ -98,16 +98,18 @@ class NetGraph(Component):
 
                     old_pre = self.viz.viz.get_uid(old_pre)
                     old_post = self.viz.viz.get_uid(old_post)
-                    new_pre = self.viz.viz.get_uid(new_pre,
-                            default_labels=name_finder.known_name)
-                    new_post = self.viz.viz.get_uid(new_post,
-                            default_labels=name_finder.known_name)
+                    new_pre = self.viz.viz.get_uid(
+                        new_pre, default_labels=name_finder.known_name)
+                    new_post = self.viz.viz.get_uid(
+                        new_post, default_labels=name_finder.known_name)
 
                     if new_pre != old_pre or new_post != old_post:
                         # if the connection has changed, tell javascript
-                        pres = self.get_parents(new_pre,
+                        pres = self.get_parents(
+                            new_pre,
                             default_labels=name_finder.known_name)[:-1]
-                        posts = self.get_parents(new_post,
+                        posts = self.get_parents(
+                            new_post,
                             default_labels=name_finder.known_name)[:-1]
                         self.to_be_sent.append(dict(
                             type='reconnect', uid=uid,
@@ -140,7 +142,6 @@ class NetGraph(Component):
                 self.viz.add_template(template)
 
         self.viz.changed = True
-
 
     def get_parents(self, uid, default_labels=None):
         while uid not in self.parents:
@@ -197,15 +198,15 @@ class NetGraph(Component):
         undo = info.get('undo', None)
         if action is not None:
             del info['act']
-            if action == 'auto_expand' or action == 'auto_collapse':
+            if action in ('auto_expand', 'auto_collapse'):
                 getattr(self, 'act_' + action[5:])(**info)
-            # Pan and Zoom should not use the undo stack
-            elif not (action == 'pan' or action == 'zoom'):
+            elif action in ('pan', 'zoom', 'create_modal'):
+                # These should not use the undo stack
+                getattr(self, 'act_' + action)(**info)
+            else:
                 act = create_action(action, self, **info)
                 self.viz.undo_stack.append([act])
                 del self.viz.redo_stack[:]
-            else:
-                getattr(self, 'act_' + action)(**info)
         elif undo is not None:
             if undo == '1':
                 self.undo()
@@ -313,8 +314,8 @@ class NetGraph(Component):
         if type == 'ens' or type == 'node':
             info['dimensions'] = int(obj.size_out)
 
-        info['sp_targets'] = \
-            nengo_viz.components.pointer.Pointer.applicable_targets(obj)
+        info['sp_targets'] = (
+            nengo_viz.components.pointer.Pointer.applicable_targets(obj))
 
         client.write(json.dumps(info))
 
