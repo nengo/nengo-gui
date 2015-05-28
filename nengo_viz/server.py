@@ -23,7 +23,7 @@ class Server(swi.SimpleWebInterface):
         d = unquote(dir)
         ex_tag = '//examples//'
         if d == '.':
-            r.append('<li class="directory collapsed">'
+            r.append('<li class="directory collapsed examples_dir">'
                      '<a href="#" rel="%s">%s</a></li>' % (ex_tag, ex_tag))
             path = '.'
         elif d.startswith(ex_tag):

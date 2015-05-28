@@ -56,6 +56,10 @@
     background: #666;
 }
 
+#filebrowser li.examples_dir {
+    background-color: #aaeeff;
+}
+
 #global_config_menu {
     background: purple;
     height: 20em;
