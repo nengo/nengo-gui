@@ -182,10 +182,6 @@ VIZ.NetGraph.prototype.generate_menu = function() {
     items.push(['Auto-layout', 
                 function() {self.notify({act:"feedforward_layout",
                             uid:null});}]);
-    items.push(['Undo', 
-                function() {self.notify({undo:"1"});}]);
-    items.push(['Redo', 
-                function() {self.notify({undo:"0"});}]);
     return items;
 
 }

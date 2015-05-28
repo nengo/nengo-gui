@@ -19,18 +19,25 @@ VIZ.Toolbar = function(filename) {
     /** keep a reference to the toolbar element */
     this.toolbar = $('#top_toolbar')[0];
 
-    $('#Open_file_button')[0].addEventListener('click', function () {self.file_browser()});
+    $('#Open_file_button')[0].addEventListener('click', function () {
+        self.file_browser();
+    });
     $('#Reset_layout_button')[0].addEventListener('click', function () {
         VIZ.Modal.title("Are you sure you wish to reset this layout, removing all the graphs and resetting the position of all items?");
         VIZ.Modal.info_body([]);
         VIZ.Modal.footer('confirm_reset');
         VIZ.Modal.show();
-        });
+    });
 
-    // TODO: hookup undo and redo
-    // $('#Undo_last_button')[0].addEventListener('click', function () {});
-    // $('#Redo_last_button')[0].addEventListener('click', function () {});
-    $('#Config_button')[0].addEventListener('click', function () {self.start_modal()});
+    $('#Undo_last_button')[0].addEventListener('click', function() {
+        VIZ.netgraph.notify({ undo: "1" });
+    });
+    $('#Redo_last_button')[0].addEventListener('click', function () {
+        VIZ.netgraph.notify({ undo: "0" });
+    });
+    $('#Config_button')[0].addEventListener('click', function () {
+        self.start_modal();
+    });
    
     $('#filename')[0].innerHTML = filename;
 
