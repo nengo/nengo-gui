@@ -114,7 +114,7 @@ VIZ.NetGraph = function(parent, args) {
             var x = (event.clientX / $(self.svg).width())
             var y = (event.clientY / $(self.svg).height());
 
-            this.normalize_mousewheel(event);
+            self.normalize_mousewheel(event);
             var delta = event.wheelDeltaY || -event.deltaY
             VIZ.scale.step_size = 1.05
             var scale = delta > 0 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size; // will either be 1.1 or ~0.9
