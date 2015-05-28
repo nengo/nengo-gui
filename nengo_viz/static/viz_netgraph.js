@@ -8,9 +8,9 @@
  */
 VIZ.NetGraph = function(parent, args) {
     this.scale = 1.0;          // global scaling factor
-    this.offsetX = 0;          // global x,y pan offset 
+    this.offsetX = 0;          // global x,y pan offset
     this.offsetY = 0;
-    
+
     this.svg_objects = {};     // dict of all VIZ.NetGraphItems, by uid
     this.svg_conns = {};       // dict of all VIZ.NetGraphConnections, by uid
 
@@ -22,35 +22,35 @@ VIZ.NetGraph = function(parent, args) {
      *  key in the dictionary is the uid of the nonexistent item, and the
      *  value is a list of VIZ.NetGraphConnections that should be notified
      *  when that item appears. */
-    this.collapsed_conns = {}; 
-    
+    this.collapsed_conns = {};
+
     /** create the master SVG element */
     this.svg = this.createSVGElement('svg');
-    this.svg.classList.add('netgraph');    
+    this.svg.classList.add('netgraph');
     this.svg.style.width = '100%';
     this.svg.id = 'netgraph';
     this.svg.style.height = 'calc(100% - 80px)';
-    this.svg.style.position = 'fixed';    
-        
+    this.svg.style.position = 'fixed';
+
     interact(this.svg).styleCursor(false);
-           
+
     VIZ.netgraph = this;
     parent.appendChild(this.svg);
     this.parent = parent;
 
     this.old_width = $(this.svg).width();
     this.old_height = $(this.svg).height();
-    
+
     /** three separate layers, so that expanded networks are at the back,
      *  then connection lines, and then other items (nodes, ensembles, and
      *  collapsed networks) are drawn on top. */
-    this.g_networks = this.createSVGElement('g'); 
+    this.g_networks = this.createSVGElement('g');
     this.svg.appendChild(this.g_networks);
     this.g_conns = this.createSVGElement('g');
     this.svg.appendChild(this.g_conns);
     this.g_items = this.createSVGElement('g');
     this.svg.appendChild(this.g_items);
-    
+
     /** connect to server */
     this.ws = VIZ.create_websocket(args.uid);
     this.ws.onmessage = function(event) {self.on_message(event);}
@@ -58,7 +58,7 @@ VIZ.NetGraph = function(parent, args) {
     /** respond to resize events */
     this.svg.addEventListener("resize", function() {self.on_resize();});
     window.addEventListener("resize", function() {self.on_resize();});
-        
+
     /** dragging the background pans the full area by changing offsetX,Y */
     var self = this;
 
@@ -67,12 +67,12 @@ VIZ.NetGraph = function(parent, args) {
         .on('mousedown', function() {
             var cursor = document.documentElement.getAttribute('style');
             if (cursor !== null) {
-                if (cursor.match(/resize/) == null) {  // don't change resize cursor             
+                if (cursor.match(/resize/) == null) {  // don't change resize cursor
                     document.documentElement.setAttribute('style','cursor:move;');
                 }
             }
         })
-        .on('mouseup', function() {             
+        .on('mouseup', function() {
             document.documentElement.setAttribute('style','cursor:default;')
         });
 
@@ -87,10 +87,10 @@ VIZ.NetGraph = function(parent, args) {
                 self.offsetY += event.dy / self.get_scaled_height();
                 for (var key in self.svg_objects) {
                     self.svg_objects[key].redraw_position();
-                }    
+                }
                 for (var key in self.svg_conns) {
                     self.svg_conns[key].redraw();
-                }    
+                }
             },
             onend: function(event) {
                 /** let the server know what happened */
@@ -114,7 +114,9 @@ VIZ.NetGraph = function(parent, args) {
             var x = (event.clientX / $(self.svg).width())
             var y = (event.clientY / $(self.svg).height());
 
+            this.normalize_mousewheel(event);
             var delta = event.wheelDeltaY || -event.deltaY
+            VIZ.scale.step_size = 1.05
             var scale = delta > 0 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size; // will either be 1.1 or ~0.9
 
             //scale and save components
@@ -132,7 +134,7 @@ VIZ.NetGraph = function(parent, args) {
             self.redraw();
 
             /** let the server know what happened */
-            self.notify({act:"zoom", scale:self.scale, 
+            self.notify({act:"zoom", scale:self.scale,
                          x:self.offsetX, y:self.offsetY});
         });
 
@@ -148,10 +150,10 @@ VIZ.NetGraph = function(parent, args) {
                 if (self.menu.visible_any()) {
                     self.menu.hide_any();
                 } else {
-                    self.menu.show(event.clientX, event.clientY, 
+                    self.menu.show(event.clientX, event.clientY,
                                    self.generate_menu());
                 }
-                event.stopPropagation();  
+                event.stopPropagation();
             }
         })
         .on('tap', function(event) { //get rid of menus when clicking off
@@ -163,20 +165,20 @@ VIZ.NetGraph = function(parent, args) {
         });
 
     $(this.svg).bind('contextmenu', function(event) {
-            event.preventDefault();  
+            event.preventDefault();
             if (self.menu.visible_any()) {
                 self.menu.hide_any();
             } else {
-                self.menu.show(event.clientX, event.clientY, 
+                self.menu.show(event.clientX, event.clientY,
                                self.generate_menu());
         }
-    }); 
+    });
 };
 
 VIZ.NetGraph.prototype.generate_menu = function() {
     var self = this;
     var items = [];
-    items.push(['Auto-layout', 
+    items.push(['Auto-layout',
                 function() {self.notify({act:"feedforward_layout",
                             uid:null});}]);
     return items;
@@ -206,13 +208,13 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         eval(data.code);
     } else if (data.type === 'rename') {
         var item = this.svg_objects[data.uid];
-        item.set_label(data.name);    
+        item.set_label(data.name);
     } else if (data.type === 'remove') {
         var item = this.svg_objects[data.uid];
         if (item === undefined) {
             item = this.svg_conns[data.uid];
         }
-        item.remove();    
+        item.remove();
     } else if (data.type === 'reconnect') {
         var conn = this.svg_conns[data.uid];
         conn.set_pres(data.pres);
@@ -222,7 +224,7 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         console.log('invalid message');
         console.log(data);
     }
-};  
+};
 
 
 /** report an event back to the server */
@@ -235,10 +237,10 @@ VIZ.NetGraph.prototype.set_offset = function(x, y) {
     this.offsetX = x;
     this.offsetY = y;
     this.redraw();
-    
+
     var dx = VIZ.Screen.ul.x - x * this.get_scaled_width();
     var dy = VIZ.Screen.ul.y - y * this.get_scaled_height();
-    VIZ.pan.shift(-dx, -dy);    
+    VIZ.pan.shift(-dx, -dy);
 }
 
 
@@ -267,10 +269,10 @@ VIZ.NetGraph.prototype.redraw = function() {
     for (var key in this.svg_objects) {
         this.svg_objects[key].redraw_position();
         this.svg_objects[key].redraw_size();
-    }    
+    }
     for (var key in this.svg_conns) {
         this.svg_conns[key].redraw();
-    }    
+    }
 }
 
 
@@ -280,12 +282,12 @@ VIZ.NetGraph.prototype.createSVGElement = function(tag) {
 }
 
 
-/** Create a new NetGraphItem 
+/** Create a new NetGraphItem
  *  if an existing NetGraphConnection is looking for this item, it will be
  *  notified */
 VIZ.NetGraph.prototype.create_object = function(info) {
     var item = new VIZ.NetGraphItem(this, info);
-    this.svg_objects[info.uid] = item;    
+    this.svg_objects[info.uid] = item;
     this.detect_collapsed_conns(item.uid);
 };
 
@@ -293,19 +295,19 @@ VIZ.NetGraph.prototype.create_object = function(info) {
 /** create a new NetGraphConnection */
 VIZ.NetGraph.prototype.create_connection = function(info) {
     var conn = new VIZ.NetGraphConnection(this, info);
-    this.svg_conns[info.uid] = conn;    
+    this.svg_conns[info.uid] = conn;
 };
 
 
 /** handler for resizing the full SVG */
 VIZ.NetGraph.prototype.on_resize = function(event) {
     this.redraw();
-    
+
     VIZ.pan.redraw();
-    
+
     var width = $(this.svg).width();
     var height = $(this.svg).height();
-    
+
     VIZ.scale.redraw_size(width / this.old_width, height / this.old_height);
     this.old_width = width;
     this.old_height = height;
@@ -372,3 +374,19 @@ VIZ.NetGraph.prototype.detect_collapsed_conns = function(uid) {
         }
     }
 }
+
+/** Normalize scrolling speed across browsers
+ * From: http://stackoverflow.com/questions/5527601/
+ * normalizing-mousewheel-speed-across-browsers  */
+VIZ.NetGraph.prototype.normalize_mousewheel = function (e) {
+        var o = e,
+            d = o.detail, w = o.wheelDelta,
+            n = 225, n1 = n-1;
+
+        // Normalize delta
+        d = d ? w && (f = w/d) ? d/f : -d/1.35 : w/120;
+        // Quadratic scale if |d| > 1
+        d = d < 1 ? d < -1 ? (-Math.pow(d, 2) - n1) / n : d : (Math.pow(d, 2) + n1) / n;
+        // Delta *should* not be greater than 2...
+        e.delta = Math.min(Math.max(d / 2, -1), 1);
+    }
