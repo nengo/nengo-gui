@@ -1,73 +1,68 @@
-VIZ.Modal = {};
+VIZ.Modal = function($div) {
+    var self = this;
+    this.$div = $div;
+    this.$title = this.$div.find('.modal-title').first();
+    this.$footer = this.$div.find('.modal-footer').first();
+    this.$body = this.$div.find('.modal-body').first();
 
-VIZ.Modal.show = function() {
+    this.sim_was_running = false;
+
+    this.$div.on('hidden.bs.modal', function () {
+        if (self.sim_was_running) {
+            sim.play();
+        }
+    })
+}
+
+VIZ.Modal.prototype.show = function() {
     this.sim_was_running = !sim.paused;
-    $('.modal').first().modal('show');
+    this.$div.modal('show');
     sim.pause()
 }
 
-$('.modal').first().on('hidden.bs.modal', function () {
-    if (VIZ.Modal.sim_was_running) {
-        sim.play();
-    }
-})
-
-VIZ.Modal.title = function(title) {
-    $('.modal-title').first().text(title);
+VIZ.Modal.prototype.title = function(title) {
+    this.$title.text(title);
 }
 
-VIZ.Modal.footer = function(type){
-    var $footer = $('.modal-footer').first();
-    $footer.empty();
+VIZ.Modal.prototype.footer = function(type){
+    this.$footer.empty();
 
     if (type === "close") {
-        $footer.append('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
-    } 
-    else if (type === 'confirm_reset') {
-        $footer.append('<button type="button" id="confirm_reset_button" class="btn btn-primary">Reset</button>');
-        $footer.append('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
-        $('#confirm_reset_button').on('click', function() {toolbar.reset_model_layout();});
+        this.$footer.append('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
+    } else if (type === 'confirm_reset') {
+        this.$footer.append('<button type="button" id="confirm_reset_button" class="btn btn-primary">Reset</button>');
+        this.$footer.append('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
+        $('#confirm_reset_button').on('click', function() {
+            toolbar.reset_model_layout();
+        });
+    } else {
+        console.warn('Modal footer type ' + type + ' not recognized.')
     }
-    else {
-        console.warn('Modal footer type ' + type + ' no recognized.')
-    }
 }
 
-VIZ.Modal.ensemble_body = function(uid, params, plots, conninfo) {
-    var tabs = VIZ.Modal.info_body([{id: 'params', title: 'Parameters'},
-                                    {id: 'plots', title: 'Plots'},
-                                    {id: 'connections', title: 'Connections'}]);
-    VIZ.Modal.render_params(tabs.params, params, VIZ.tooltips.ens);
-    VIZ.Modal.render_plots(tabs.plots, plots);
-    VIZ.Modal.render_connections(tabs.connections, uid, conninfo);
+VIZ.Modal.prototype.clear_body = function() {
+    this.$body.empty();
 }
 
-VIZ.Modal.node_body = function(uid, params, plots, conninfo) {
-    var tabs = VIZ.Modal.info_body([{id: 'params', title: 'Parameters'},
-                                    {id: 'plots', title: 'Plots'},
-                                    {id: 'connections', title: 'Connections'}]);
-    VIZ.Modal.render_params(tabs.params, params, VIZ.tooltips.node);
-    VIZ.Modal.render_plots(tabs.plots, plots);
-    VIZ.Modal.render_connections(tabs.connections, uid, conninfo);
-}
+VIZ.Modal.prototype.text_body = function(text, type) {
+    if (typeof type === 'undefined') { type = "info"; }
 
-VIZ.Modal.net_body = function(uid, stats, conninfo) {
-    var tabs = VIZ.Modal.info_body([{id: 'stats', title: 'Statistics'},
-                                    {id: 'connections', title: 'Connections'}]);
-    VIZ.Modal.render_stats(tabs.stats, stats);
-    VIZ.Modal.render_connections(tabs.connections, uid, conninfo);
+    this.clear_body();
+    var $alert = $('<div class="alert alert-' + type + '" role="alert"/>')
+        .appendTo(this.$body);
+    var $p = $('<p/>').appendTo($alert);
+    $p.append('<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>');
+    $p.append(document.createTextNode(text));
 }
 
 /**
  * Sets up the tabs for Info modals.
  */
-VIZ.Modal.info_body = function(tabinfo) {
+VIZ.Modal.prototype.tabbed_body = function(tabinfo) {
+    this.clear_body();
     var tabdivs = {}
-    var $body = $('.modal-body').first();
-    $body.empty();
-
-    var $tab_ul = $('<ul class="nav nav-tabs"/>').appendTo($body);
-    var $content = $('<div class="tab-content"/>').appendTo($body);
+    var $tab_ul = $('<ul class="nav nav-tabs"/>').appendTo(this.$body);
+    var $content = $('<div class="tab-content"/>').appendTo(this.$body);
 
     for (var i = 0; i < tabinfo.length; i++) {
         // <li> for the tab label
@@ -87,10 +82,35 @@ VIZ.Modal.info_body = function(tabinfo) {
     return tabdivs;
 }
 
+VIZ.Modal.prototype.ensemble_body = function(uid, params, plots, conninfo) {
+    var tabs = this.tabbed_body([{id: 'params', title: 'Parameters'},
+                                 {id: 'plots', title: 'Plots'},
+                                 {id: 'connections', title: 'Connections'}]);
+    this.render_params(tabs.params, params, VIZ.tooltips.ens);
+    this.render_plots(tabs.plots, plots);
+    this.render_connections(tabs.connections, uid, conninfo);
+}
+
+VIZ.Modal.prototype.node_body = function(uid, params, plots, conninfo) {
+    var tabs = this.tabbed_body([{id: 'params', title: 'Parameters'},
+                                 {id: 'plots', title: 'Plots'},
+                                 {id: 'connections', title: 'Connections'}]);
+    this.render_params(tabs.params, params, VIZ.tooltips.node);
+    this.render_plots(tabs.plots, plots);
+    this.render_connections(tabs.connections, uid, conninfo);
+}
+
+VIZ.Modal.prototype.net_body = function(uid, stats, conninfo) {
+    var tabs = this.tabbed_body([{id: 'stats', title: 'Statistics'},
+                                 {id: 'connections', title: 'Connections'}]);
+    this.render_stats(tabs.stats, stats);
+    this.render_connections(tabs.connections, uid, conninfo);
+}
+
 /**
  * Renders information about the parameters of an object.
  */
-VIZ.Modal.render_params = function($parent, params, tooltips) {
+VIZ.Modal.prototype.render_params = function($parent, params, tooltips) {
     var $plist = $('<dl class="dl-horizontal"/>').appendTo($parent);
     for (var i = 0; i < params.length; i++) {
         var $dt = $('<dt/>').appendTo($plist);
@@ -107,7 +127,7 @@ VIZ.Modal.render_params = function($parent, params, tooltips) {
 /**
  * Renders information about some statistics of an object.
  */
-VIZ.Modal.render_stats = function($parent, stats) {
+VIZ.Modal.prototype.render_stats = function($parent, stats) {
     for (var i = 0; i < stats.length; i++) {
         $parent.append('<h3>' + stats[i].title + '</h3>')
         var $stable = $('<table class="table table-condensed table-hover"/>')
@@ -126,7 +146,7 @@ VIZ.Modal.render_stats = function($parent, stats) {
 /**
  * Renders information about plots related to an object.
  */
-VIZ.Modal.render_plots = function($parent, plots) {
+VIZ.Modal.prototype.render_plots = function($parent, plots) {
     // This indicates an error (usually no sim running)
     if (typeof plots === 'string') {
         var $err = $('<div class="alert alert-danger" role="alert"/>')
@@ -137,7 +157,7 @@ VIZ.Modal.render_plots = function($parent, plots) {
     }
     else {
         for (var i=0; i < plots.length; i++) {
-            VIZ.Modal.render_plot($parent, plots[i]);
+            this.render_plot($parent, plots[i]);
         }
     }
 }
@@ -145,7 +165,7 @@ VIZ.Modal.render_plots = function($parent, plots) {
 /**
  * Renders information about a single plot.
  */
-VIZ.Modal.render_plot = function($parent, plotinfo) {
+VIZ.Modal.prototype.render_plot = function($parent, plotinfo) {
     $parent.append("<h4>" + plotinfo.title + "</h4>")
 
     if (plotinfo.warnings.length > 0) {
@@ -161,7 +181,7 @@ VIZ.Modal.render_plot = function($parent, plotinfo) {
     }
 
     if (plotinfo.plot === 'multiline') {
-        VIZ.Modal.multiline_plot($parent.get(0), plotinfo.x, plotinfo.y);
+        this.multiline_plot($parent.get(0), plotinfo.x, plotinfo.y);
     } else if (plotinfo.plot !== 'none') {
         console.warn("Plot type " + plotinfo.plot +
                      " not understood, or not implemented yet.");
@@ -175,7 +195,7 @@ VIZ.Modal.render_plot = function($parent, plotinfo) {
  * @param {Array of Float} x - The shared x-axis
  * @param {Array of Array of Float} ys - The y data for each line
  */
-VIZ.Modal.multiline_plot = function(selector, x, ys) {
+VIZ.Modal.prototype.multiline_plot = function(selector, x, ys) {
     var m = {left: 50, top: 10, right: 0, bottom: 30};
     var w = 500 - m.left - m.right;
     var h = 220 - m.bottom - m.top;
@@ -230,7 +250,7 @@ VIZ.Modal.multiline_plot = function(selector, x, ys) {
 /*
  *  Renders information about connections related to an object.
  */
-VIZ.Modal.render_connections = function($parent, uid, conninfo) {
+VIZ.Modal.prototype.render_connections = function($parent, uid, conninfo) {
     var ngi = VIZ.netgraph.svg_objects[uid];
     var conn_in_objs = ngi.conn_in;
     if (conn_in_objs.length > 0) {
@@ -261,7 +281,7 @@ VIZ.Modal.render_connections = function($parent, uid, conninfo) {
                              "be the sum of the numbers in this column.",
                              "top");
 
-        VIZ.Modal.make_connections_table_row(
+        this.make_connections_table_row(
             $conn_in_table, conninfo, conn_in_objs,
             function (conn_obj) { return conn_obj.pre },
             function (conn_obj) { return conn_obj.pres });
@@ -300,7 +320,7 @@ VIZ.Modal.render_connections = function($parent, uid, conninfo) {
                              "be the sum of the numbers in this column.",
                              "top");
 
-        VIZ.Modal.make_connections_table_row(
+        this.make_connections_table_row(
             $conn_out_table, conninfo, conn_out_objs,
             function (conn_obj) { return conn_obj.post },
             function (conn_obj) { return conn_obj.posts });
@@ -324,7 +344,7 @@ VIZ.Modal.render_connections = function($parent, uid, conninfo) {
 /*
  *  Generates one row in the connections table in the connections tab.
  */
-VIZ.Modal.make_connections_table_row = function($table, conninfo, conn_objs, get_conn_other, get_conn_conn_uid_list) {
+VIZ.Modal.prototype.make_connections_table_row = function($table, conninfo, conn_objs, get_conn_other, get_conn_conn_uid_list) {
     for (var i = 0; i < conn_objs.length; i++) {
         // Get a reference to the object that the current object is connected to
         var conn_other = get_conn_other(conn_objs[i]);
@@ -335,7 +355,7 @@ VIZ.Modal.make_connections_table_row = function($table, conninfo, conn_objs, get
         // Make the objects column
         var $objs_td = $('<td>' + String(conn_other.label.innerHTML) +
                          '</td>').appendTo($tr);
-        VIZ.Modal.make_conn_path_dropdown_list(
+        this.make_conn_path_dropdown_list(
             $objs_td,
             conn_other.uid,
             conninfo["obj_type"][String(conn_objs[i].uid)],
@@ -356,7 +376,7 @@ VIZ.Modal.make_connections_table_row = function($table, conninfo, conn_objs, get
 /*
  *  Generates the connection path dropdown list for the connections tab.
  */
-VIZ.Modal.make_conn_path_dropdown_list = function($container, others_uid, obj_type, conn_uid_list) {
+VIZ.Modal.prototype.make_conn_path_dropdown_list = function($container, others_uid, obj_type, conn_uid_list) {
     if (conn_uid_list.length > 1) {
         // Add expand control and the tooltip to the <dd> object
         var $lg_header = $('<a data-toggle="collapse" href="#pathlist' +
@@ -422,3 +442,5 @@ VIZ.Modal.make_conn_path_dropdown_list = function($container, others_uid, obj_ty
         }
     }
 }
+
+VIZ.modal = new VIZ.Modal($('.modal').first());
