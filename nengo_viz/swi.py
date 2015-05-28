@@ -91,6 +91,8 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
     current_cookies = {}
     passwords = {}
 
+    log_file = sys.stderr
+
     def add_header(self, key, value):
         if self.pending_headers is None:
             self.pending_headers = []
@@ -371,6 +373,12 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
                 val = val[:i] + c + val[i + 3:]
             i += 1
         return val
+
+    def log_message(self, format, *args):
+        if self.log_file is not None:
+            self.log_file.write( "%s - - [%s] %s\n" % (
+                    self.client_address[0], self.log_date_time_string(),
+                    format % args))
 
     @classmethod
     def start(cls, port=80, asynch=True, addr='', browser=False):
