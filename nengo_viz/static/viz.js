@@ -328,7 +328,6 @@ VIZ.Component.prototype.update_layout = function (config) {
     } else {
         this.hide_label();
     }
-    VIZ.pan.redraw();          
 }
 
 
