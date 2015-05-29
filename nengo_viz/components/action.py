@@ -101,6 +101,7 @@ class RemoveGraph(Action):
     def __init__(self, net_graph, component):
         super(RemoveGraph, self).__init__(net_graph, component.uid)
         self.component = component
+        self.uid_graph = None
 
     def apply(self):
         self.send('delete_graph')

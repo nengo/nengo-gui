@@ -120,7 +120,7 @@ VIZ.Value.prototype.layout_info = function () {
 }
 
 VIZ.Value.prototype.update_layout = function(config) {
-    this.update_range(config.miny, config.maxy);
+    this.update_range(config.min_value, config.max_value);
     VIZ.Component.prototype.update_layout.call(this, config);
 }
 
