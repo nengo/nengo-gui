@@ -447,14 +447,22 @@ class AsyncHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         BaseHTTPServer.HTTPServer.__init__(self, *args, **kwargs)
 
         # keep track of open threads, so we can close them when we exit
-        self.requests = []
+        self._requests = []
+        self._requests_lock = threading.Lock()
+
+    @property
+    def requests(self):
+        with self._requests_lock:
+            return list(self._requests)
 
     def process_request_thread(self, request, client_address):
         thread = threading.current_thread()
-        self.requests.append((thread, request))
+        with self._requests_lock:
+            self._requests.append((thread, request))
         SocketServer.ThreadingMixIn.process_request_thread(
             self, request, client_address)
-        self.requests.remove((thread, request))
+        with self._requests_lock:
+            self._requests.remove((thread, request))
 
     def handle_error(self, request, client_address):
         exc_type, exc_value, _ = sys.exc_info()
