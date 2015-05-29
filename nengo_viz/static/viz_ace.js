@@ -2,6 +2,7 @@
 VIZ.Ace = function (args, script_code) {
 	var self = this;
 	this.hidden = false;
+	this.min_width = 50;
 	this.ws = VIZ.create_websocket(42) //to be args.uid
 	var code_div = document.createElement('div')
 	code_div.id = 'editor'
@@ -20,10 +21,21 @@ VIZ.Ace = function (args, script_code) {
 	});}, 10);
 
 	editor.setValue('texxxxxxxxxxxxxxxxxxxxxxxtt\nHiodsahfjiodsjfio');
+	this.width = $(window).width() / 5;
+	this.set_width();
 
-	this.set_position();
+	interact('#editor')
+		.resizable({
+			edges: { left: true, right: false, bottom: false, top: false}
+		})
+		.on('resizemove', function (event) {
+			var x = event.deltaRect.left;
+			self.width -= x;
+			self.set_width()
+		})
 
-	$(window).on('resize', function() {self.set_position()});
+
+	$(window).on('resize', function() {self.set_width()});
 }
 
 
@@ -49,14 +61,20 @@ VIZ.Ace.prototype.toggle_shown = function () {
 	}
 }
 
-VIZ.Ace.prototype.set_position = function () {
+VIZ.Ace.prototype.set_width = function () {
 	var code_div = document.getElementById('editor');
 	//Set the positioning of the code_div
 	var top_margin = $(toolbar.toolbar).height();
 	var bottom_margin = $(sim.div).height();
-	var left_margin = $(window).width();
+	
+	if (this.width < this.min_width) {
+		this.width = this.min_width;
+	}
+	var left_margin = $(window).width() - this.width;
+
+
 
 	code_div.style.top = top_margin;
 	code_div.style.bottom = bottom_margin;
-	code_div.style.left = left_margin * 4 / 5; //Positions code editor so it takes up the right 20% of the screen.
+	code_div.style.left = left_margin ; //Positions code editor so it takes up the right 20% of the screen.
 }
