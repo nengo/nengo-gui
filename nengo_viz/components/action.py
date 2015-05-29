@@ -149,7 +149,7 @@ class CreateGraph(Action):
         self.act_create_graph()
 
     def undo(self):
-        self.send('delete_graph')
+        self.send('delete_graph', uid=self.graph_uid)
 
 
 class PosSize(Action):
