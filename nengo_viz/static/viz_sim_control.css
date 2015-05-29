@@ -48,12 +48,16 @@
     font-family: sans-serif;
 }
 
+#pause_button {
+    border-radius:0px;
+    border-width:0px;
+}
+
 .play-pause-button {
     height:60px;
     margin: -20px 15px 0 15px;
     position:fixed;
     width:60px;
-    border-color: #eee !important;
     background-color: #eee !important;
 }
 
