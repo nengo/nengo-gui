@@ -149,11 +149,9 @@ VIZ.Component = function(parent, args) {
             var dz = event.deltaRect.right;
             var da = event.deltaRect.bottom;
 
-            var x = self.x + (dx + dz) / 2 / (viewport.w * viewport.scale);
-            var y = self.y + (dy + da) / 2 / (viewport.h * viewport.scale);
+            self.x += (dx + dz) / 2 / (viewport.w * viewport.scale);
+            self.y += (dy + da) / 2 / (viewport.h * viewport.scale);
             
-            self.x = x;
-            self.y = y;
             self.w = newWidth / (viewport.w * viewport.scale) / 2;
             self.h = newHeight / (viewport.h * viewport.scale) / 2;
             
