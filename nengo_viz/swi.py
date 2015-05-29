@@ -419,7 +419,7 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
                     if thread.is_alive():
                         # giving the first thread more time to close
                         # effectively gives all threads more time to close
-                        thread.join(0.05 if first else 0.01)
+                        thread.join(0.2 if first else 0.01)
                         first = False
 
                 n_zombie = sum(thread.is_alive()
