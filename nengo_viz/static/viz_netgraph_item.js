@@ -56,6 +56,21 @@ VIZ.NetGraphItem = function(ng, info) {
     g.classList.add(this.type);
 
     this.menu = new VIZ.Menu(this.ng.parent);
+
+    if (info.type !== 'net') {
+        this.border = this.ng.createSVGElement('rect');
+        this.border.classList.add('border');
+        g.appendChild(this.border);
+
+        this.g.addEventListener('mouseenter',
+                                function() {
+                                    self.border.classList.add('highlight');
+                                });
+        this.g.addEventListener('mouseleave',
+                                function() {
+                                    self.border.classList.remove('highlight');
+                                });
+    }
     
     /** different types use different SVG elements for display */
     if (info.type === 'node') {
@@ -120,16 +135,16 @@ VIZ.NetGraphItem = function(ng, info) {
 
     if (!this.passthrough) {
         /** dragging the edge of item to change its size */
-        var tmp = this.shape
-        if(info.type === 'ens') {
-            tmp = $(this.shape.getElementsByClassName('mainCircle'))[0];
-        }
+        var tmp = this.border === undefined ? this.shape : this.border;
         interact(tmp)
             .resizable({
                 edges: { left: true, right: true, bottom: true, top: true }
                 })
             .on('resizestart', function(event) {
                 self.menu.hide_any();
+                if (self.border !== undefined) {
+                    self.border.classList.add('dragging');
+                }
                 })
             .on('resizemove', function(event) {
                 var item = ng.svg_objects[uid];
@@ -194,6 +209,9 @@ VIZ.NetGraphItem = function(ng, info) {
                 }
             })
             .on('resizeend', function(event) {
+                if (self.border !== undefined) {
+                    self.border.classList.remove('dragging');
+                }
                 var item = ng.svg_objects[uid];
                 item.constrain_position();                
                 ng.notify({act:"pos_size", uid:uid, 
@@ -618,7 +636,12 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
             screen_h = screen_w / this.aspect;
         }
     }
-
+    if (this.border !== undefined) {
+        this.border.setAttribute('width', screen_w);
+        this.border.setAttribute('height', screen_h);
+        this.border.setAttribute('transform', 
+            'translate(-' + (screen_w / 2) + ', -' + (screen_h / 2) + ')');
+    }
     if (this.type === 'ens') {
         var scale = Math.sqrt(screen_h * screen_h + screen_w * screen_w) / Math.sqrt(2);
         var r = 18;  //TODO: Don't hardcode the size of the ensemble
@@ -627,17 +650,21 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
     } else if (this.passthrough) {
         this.shape.setAttribute('rx', screen_w / 2);
         this.shape.setAttribute('ry', screen_h / 2);    
-    } else {
+    } else if (this.type == 'net') {
         this.shape.setAttribute('transform', 
-                            'translate(-' + (screen_w / 2) + ', -' + (screen_h / 2) + ')');
+               'translate(-' + (screen_w / 2) + ', -' + (screen_h / 2) + ')');
         this.shape.setAttribute('width', screen_w);
         this.shape.setAttribute('height', screen_h);
-        if (this.type === 'net') {
-            var radius = Math.min(screen_w, screen_h);
-            // TODO: Don't hardcode .1 as the corner radius scale
-            this.shape.setAttribute('rx', radius*.1);
-            this.shape.setAttribute('ry', radius*.1);
-        }
+    } else if (this.type === 'node') {
+        var radius = Math.min(screen_w, screen_h);
+        this.shape.setAttribute('rx', radius*.2);
+        this.shape.setAttribute('ry', radius*.2);
+        screen_w *= 0.95;
+        screen_h *= 0.95;
+        this.shape.setAttribute('width', screen_w);
+        this.shape.setAttribute('height', screen_h);
+        this.shape.setAttribute('transform', 
+               'translate(-' + (screen_w / 2) + ', -' + (screen_h / 2) + ')');
     }
     
     this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
