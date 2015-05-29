@@ -402,7 +402,11 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             # shut down any remaining threads
             if asynch and server.requests is not None:
                 for _, sock in server.requests:
-                    sock.close()
+                    try:
+                        sock.shutdown(socket.SHUT_RDWR)
+                        sock.close()
+                    except socket.error:
+                        pass
 
                 first = True
                 for thread, _ in server.requests:
