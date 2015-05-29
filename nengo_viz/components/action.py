@@ -119,6 +119,7 @@ class RemoveGraph(Action):
 class CreateGraph(Action):
     def __init__(self, net_graph, uid, type, x, y, width, height, **kwargs):
         super(CreateGraph, self).__init__(net_graph, uid)
+        self.graph_uid = None
         self.type = type
         self.x, self.y = x, y
         self.width, self.height = width, height
@@ -128,12 +129,12 @@ class CreateGraph(Action):
         self.act_create_graph()
 
     def act_create_graph(self):
-        if self.uid is None:
+        if self.graph_uid is None:
             self.net_graph.viz.viz.generate_uid(self.template, prefix='_viz_')
-            self.uid = self.net_graph.viz.viz.get_uid(self.template)
+            self.graph_uid = self.net_graph.viz.viz.get_uid(self.template)
         else:
-            self.net_graph.viz.viz.locals[self.uid] = self.template
-            self.net_graph.viz.viz.default_labels[self.template] = self.uid
+            self.net_graph.viz.viz.locals[self.graph_uid] = self.template
+            self.net_graph.viz.viz.default_labels[self.template] = self.graph_uid
         self.net_graph.config[self.template].x = self.x
         self.net_graph.config[self.template].y = self.y
         self.net_graph.config[self.template].width = self.width
