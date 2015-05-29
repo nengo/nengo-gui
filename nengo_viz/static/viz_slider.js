@@ -33,6 +33,7 @@ VIZ.Slider = function(parent, sim, args) {
     this.div.appendChild(this.group);
 
     /** make the sliders */
+    this.reset_value = args.start_value;
     this.sliders = [];
     for (var i = 0; i < args.n_sliders; i++) {
         var slider = new VIZ.SliderControl(args.min_value, args.max_value);
