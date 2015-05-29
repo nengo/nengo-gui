@@ -8,7 +8,7 @@
  * @param {float} args.max_value - maximum value on y-axis
  * @param {VIZ.SimControl} args.sim - the simulation controller
  */
- 
+
 VIZ.Value = function(parent, sim, args) {
     VIZ.Component.call(this, parent, args);
     var self = this;
@@ -21,8 +21,8 @@ VIZ.Value = function(parent, sim, args) {
 
     this.axes2d = new VIZ.TimeAxes(this.div, args);
 
-    /** call schedule_update whenever the time is adjusted in the SimControl */    
-    this.sim.div.addEventListener('adjust_time', 
+    /** call schedule_update whenever the time is adjusted in the SimControl */
+    this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
 
     /** create the lines on the plots */
@@ -38,7 +38,7 @@ VIZ.Value = function(parent, sim, args) {
              .style('stroke', function(d, i) {return colors[i];});
 
     this.update();
-    this.on_resize(args.width, args.height);
+    this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
 VIZ.Value.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Value.prototype.constructor = VIZ.Value;
@@ -78,7 +78,7 @@ VIZ.Value.prototype.update = function() {
              .attr('d', line);
 };
 
-/** 
+/**
  * Adjust the graph layout due to changed size
  */
 VIZ.Value.prototype.on_resize = function(width, height) {
@@ -119,6 +119,11 @@ VIZ.Value.prototype.layout_info = function () {
     return info;
 }
 
+VIZ.Value.prototype.update_layout = function(config) {
+    this.update_range(config.min_value, config.max_value);
+    VIZ.Component.prototype.update_layout.call(this, config);
+}
+
 VIZ.Value.prototype.set_range = function() {
     var range = this.axes2d.scale_y.domain();
     var new_range = prompt('Set range', '' + range[0] + ',' + range[1]);
@@ -126,9 +131,12 @@ VIZ.Value.prototype.set_range = function() {
         new_range = new_range.split(',');
         var min = parseFloat(new_range[0]);
         var max = parseFloat(new_range[1]);
-        this.axes2d.scale_y.domain([min, max]);
-        this.axes2d.axis_y_g.call(this.axes2d.axis_y);
-        this.update();
+        this.update_range(min, max);
         this.save_layout();
     }
+}
+
+VIZ.Value.prototype.update_range = function(min, max) {
+    this.axes2d.scale_y.domain([min, max]);
+    this.axes2d.axis_y_g.call(this.axes2d.axis_y);
 }

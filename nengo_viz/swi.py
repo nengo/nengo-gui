@@ -585,6 +585,7 @@ class ClientSocket(object):
             code = 0b10000010
         else:
             code = 0b10000001
+            data += '\r\n'
 
         N = len(data)
         if N < 126:

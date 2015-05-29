@@ -29,7 +29,7 @@ VIZ.Pointer = function(parent, sim, args) {
     this.sim.div.addEventListener('adjust_time', 
             function(e) {self.schedule_update();}, false);
     
-    this.on_resize(args.width, args.height);
+    this.on_resize(this.get_screen_width(), this.get_screen_height()); 
     
     this.fixed_value = '';
     var self = this;
@@ -181,4 +181,9 @@ VIZ.Pointer.prototype.layout_info = function () {
     var info = VIZ.Component.prototype.layout_info.call(this);
     info.show_pairs = this.show_pairs;
     return info;
+}
+
+VIZ.Pointer.prototype.update_layout = function (config) {
+    this.show_pairs = config.show_pairs;
+    VIZ.Component.prototype.update_layout.call(this, config);
 }

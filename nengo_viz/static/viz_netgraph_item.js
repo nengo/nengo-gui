@@ -250,7 +250,8 @@ VIZ.NetGraphItem = function(ng, info) {
     if (info.type === 'net') {
         /** if a network is flagged to expand on creation, then expand it */
         if (info.expanded) {
-            this.expand();
+            // Report to server but do not add to the undo stack
+            this.expand(true,true);
         }
     }
 };
@@ -299,16 +300,21 @@ VIZ.NetGraphItem.prototype.create_graph = function (type, args) {
     var info = {};
     info.act = 'create_graph';
     info.type = type;
+    var w = this.get_nested_width();
+    var h = this.get_nested_height();
+    
     var pos = this.get_screen_location();
-    var cords = VIZ.pan.map_px_to_cord(VIZ.Screen, {x:pos[0], y:pos[1]});
-    info.x = cords.x;
-    info.y = cords.y;
+    
+    info.x = pos[0] / (viewport.w * viewport.scale) - viewport.x + w; 
+    info.y = pos[1] / (viewport.h * viewport.scale) - viewport.y + h;
+    
+    
     if (info.type == 'Slider') {
-        info.width = 50;
+        info.width = w*0.5;
     } else {
-        info.width = 200;
+        info.width = w*2;
     }
-    info.height = 200;
+    info.height = h*2;
     info.uid = this.uid;
     if (typeof(args) != 'undefined') { info.args = args; }
     this.ng.notify(info);
@@ -328,7 +334,11 @@ VIZ.NetGraphItem.prototype.request_feedforward_layout = function () {
 };
 
 /** expand a collapsed network */
-VIZ.NetGraphItem.prototype.expand = function() {
+VIZ.NetGraphItem.prototype.expand = function(rts, auto) {
+    // default to true if no parameter is specified
+    rts = typeof rts !== 'undefined' ? rts : true;
+    auto = typeof auto !== 'undefined' ? auto : false;
+    
     this.g.classList.add('expanded');
     
     if (!this.expanded) {
@@ -340,12 +350,29 @@ VIZ.NetGraphItem.prototype.expand = function() {
         console.log(this);
     }
 
-    this.ng.notify({act:"expand", uid:this.uid});
+    if (rts) {    
+        if (auto) {
+            // Update the server, but do not place on the undo stack
+            this.ng.notify({act:"auto_expand", uid:this.uid});
+        } else {
+            this.ng.notify({act:"expand", uid:this.uid});
+        }
+    }
+}
+
+VIZ.NetGraphItem.prototype.set_label_below = function(flag) {
+    if (flag && !this.label_below) {        
+        var screen_h = this.get_height();
+        this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
+    } else if (!flag && this.label_below) {
+        this.label.setAttribute('transform', '');
+    }
 }
 
 
 /** collapse an expanded network */
-VIZ.NetGraphItem.prototype.collapse = function(report_to_server) {
+VIZ.NetGraphItem.prototype.collapse = function(report_to_server, auto) {
+    auto = typeof auto !== 'undefined' ? auto : false;
     this.g.classList.remove('expanded');
     
     /** remove child NetGraphItems and NetGraphConnections */
@@ -365,8 +392,13 @@ VIZ.NetGraphItem.prototype.collapse = function(report_to_server) {
         console.log(this);
     }
     
-    if (report_to_server) {    
-        this.ng.notify({act:"collapse", uid:this.uid});
+    if (report_to_server) {
+        if (auto) {
+            // Update the server, but do not place on the undo stack
+            this.ng.notify({act:"auto_collapse", uid:this.uid});
+        } else {
+            this.ng.notify({act:"collapse", uid:this.uid});
+        }
     }
 }
 

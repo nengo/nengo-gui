@@ -8,7 +8,7 @@ import nengo_viz
 import nengo_viz.server
 import nengo_viz.components
 import nengo_viz.config
-
+from nengo_viz.components.action import ConfigAction, RemoveGraph
 
 class VizSim(object):
     """A single Simulator attached to an html visualization."""
@@ -23,15 +23,25 @@ class VizSim(object):
         self.rebuild = False    # should we rebuild the model?
         self.sim = None
         self.changed = False    # has something changed the model, so it
+        self.undo_stack = []
+        self.redo_stack = []
                                 #  should be rebuilt?
 
         for template in self.viz.find_templates():
             self.add_template(template)
 
+        self.net_graph = self.get_net_graph()
+
         # build and run the model in a separate thread
         t = threading.Thread(target=self.runner)
         t.daemon = True
         t.start()
+
+    def get_net_graph(self):
+        for c in self.components:
+            if isinstance(c, nengo_viz.components.NetGraph):
+                return c
+        return None
 
     def add_template(self, template):
         c = template.create(self)
@@ -85,6 +95,17 @@ class VizSim(object):
         component_js = '\n'.join([c.javascript() for c in self.components])
         component_js = component_js + webpage_title_js
         return component_js
+
+    def config_change(self, component, new_cfg, old_cfg):
+        act = ConfigAction(self, component=component,
+                           new_cfg=new_cfg, old_cfg=old_cfg)
+        self.undo_stack.append([act])
+
+    def remove_graph(self, component):
+        net_graph = self.get_net_graph()
+        act = RemoveGraph(net_graph, component)
+        self.undo_stack.append([act])
+
 
 class Template(object):
     def __init__(self, cls, *args, **kwargs):
@@ -222,13 +243,15 @@ class Config(nengo.Config):
 
         return '\n'.join(lines)
 
+
+
 class Viz(object):
     """The master visualization organizer set up for a particular model."""
     def __init__(self, filename, model=None, locals=None):
 
         self.config_save_period = 2.0  # minimum time between saves
         self.load(filename, model, locals)
-    
+
     def load(self, filename, model=None, locals=None):
         try:
             if locals is None:
@@ -236,7 +259,7 @@ class Viz(object):
                 with open(filename) as f:
                     code = f.read()
                 exec(code, locals)
-        
+
             if model is None:
                 model = locals['model']
 
@@ -245,7 +268,7 @@ class Viz(object):
 
             self.model = model
             self.locals = locals
-                
+
             self.filename = filename
             self.name_finder = nengo_viz.NameFinder(locals, model)
             self.default_labels = self.name_finder.known_name

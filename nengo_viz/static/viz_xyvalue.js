@@ -8,7 +8,7 @@
  * @param {float} args.maxy - maximum value on y-axis
  * @param {VIZ.SimControl} args.sim - the simulation controller
  */
- 
+
 VIZ.XYValue = function(parent, sim, args) {
     VIZ.Component.call(this, parent, args);
     var self = this;
@@ -29,8 +29,8 @@ VIZ.XYValue = function(parent, sim, args) {
     this.index_x = args.index_x;
     this.index_y = args.index_y;
 
-    /** call schedule_update whenever the time is adjusted in the SimControl */    
-    this.sim.div.addEventListener('adjust_time', 
+    /** call schedule_update whenever the time is adjusted in the SimControl */
+    this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
 
     /** create the lines on the plots */
@@ -42,7 +42,7 @@ VIZ.XYValue = function(parent, sim, args) {
     this.path.enter().append('path')
              .attr('class', 'line');
 
-    this.on_resize(args.width, args.height);
+    this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
 VIZ.XYValue.prototype = Object.create(VIZ.Component.prototype);
 VIZ.XYValue.prototype.constructor = VIZ.Value;
@@ -55,14 +55,14 @@ VIZ.XYValue.prototype.on_message = function(event) {
     this.data_store.push(data);
     this.schedule_update();
 }
-   
+
 /**
  * Redraw the lines and axis due to changed data
  */
 VIZ.XYValue.prototype.update = function() {
     /** let the data store clear out old values */
     this.data_store.update();
-            
+
     /** update the lines */
     var self = this;
     var shown_data = this.data_store.get_shown_data();
@@ -76,7 +76,7 @@ VIZ.XYValue.prototype.update = function() {
              .attr('d', line);
 };
 
-/** 
+/**
  * Adjust the graph layout due to changed size
  */
 VIZ.XYValue.prototype.on_resize = function(width, height) {
@@ -89,11 +89,11 @@ VIZ.XYValue.prototype.on_resize = function(width, height) {
     var plot_height = this.axes2d.ax_bottom - this.axes2d.ax_top;
 
     //Adjust positions of x axis on resize
-    this.axes2d.axis_x_g         
-        .attr("transform", 
+    this.axes2d.axis_x_g
+        .attr("transform",
               "translate(0," + (this.axes2d.ax_top + plot_height / 2) + ")");
-    this.axes2d.axis_y_g         
-        .attr("transform", 
+    this.axes2d.axis_y_g
+        .attr("transform",
               "translate(" + (this.axes2d.ax_left + plot_width / 2) + ",0)");
     this.update();
 
@@ -107,8 +107,8 @@ VIZ.XYValue.prototype.on_resize = function(width, height) {
 VIZ.XYValue.prototype.generate_menu = function() {
     var self = this;
     var items = [];
-    items.push(['Set range...', function() {self.set_range();}]);
-    items.push(['Set X, Y indices...', function() {self.set_indexes();}]);
+    items.push(['Set range', function() {self.set_range();}]);
+    items.push(['Set X, Y indices', function() {self.set_indices();}]);
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
@@ -125,6 +125,12 @@ VIZ.XYValue.prototype.layout_info = function () {
     return info;
 }
 
+VIZ.XYValue.prototype.update_layout = function (config) {
+    this.update_indices(config.index_x, config.index_y);
+    this.update_range(config.min_value, config.max_value);
+    VIZ.Component.prototype.update_layout.call(this, config);
+}
+
 VIZ.XYValue.prototype.set_range = function() {
     var range = this.axes2d.scale_y.domain();
     var new_range = prompt('Set range', '' + range[0] + ',' + range[1]);
@@ -132,24 +138,32 @@ VIZ.XYValue.prototype.set_range = function() {
         new_range = new_range.split(',');
         var min = parseFloat(new_range[0]);
         var max = parseFloat(new_range[1]);
-        this.axes2d.scale_x.domain([min, max]);
-        this.axes2d.scale_y.domain([min, max]);
-        this.axes2d.axis_x.tickValues([min, max]);
-        this.axes2d.axis_y.tickValues([min, max]);
-        this.axes2d.axis_y_g.call(this.axes2d.axis_y);
-        this.axes2d.axis_x_g.call(this.axes2d.axis_x);
+        this.update_range(min, max);
         this.update();
         this.save_layout();
     }
 }
 
-VIZ.XYValue.prototype.set_indexes = function() {
-    var new_indexes = prompt('Specify X and Y indexes', '' + this.index_x + ',' + this.index_y);
-    if (new_indexes !== null) {
-        new_indexes = new_indexes.split(',');
-        this.index_x = parseInt(new_indexes[0]);
-        this.index_y = parseInt(new_indexes[1]);
-        this.update();
+VIZ.XYValue.prototype.update_range = function(min, max) {
+    this.axes2d.scale_x.domain([min, max]);
+    this.axes2d.scale_y.domain([min, max]);
+    this.axes2d.axis_x.tickValues([min, max]);
+    this.axes2d.axis_y.tickValues([min, max]);
+    this.axes2d.axis_y_g.call(this.axes2d.axis_y);
+    this.axes2d.axis_x_g.call(this.axes2d.axis_x);
+}
+
+VIZ.XYValue.prototype.set_indices = function() {
+    var new_indices = prompt('Specify X and Y indices', '' + this.index_x + ',' + this.index_y);
+    if (new_indices !== null) {
+        new_indices = new_indices.split(',');
+        this.update_indices(parseInt(new_indices[0]),parseInt(new_indices[1]));
         this.save_layout();
     }
+}
+
+VIZ.XYValue.prototype.update_indices = function(index_x, index_y) {
+    this.index_x = index_x;
+    this.index_y = index_y;
+    this.update();
 }

@@ -31,11 +31,16 @@ VIZ.Toolbar = function(filename) {
         VIZ.modal.show();
     });
 
-    // TODO: hookup undo and redo
-    // $('#Undo_last_button')[0].addEventListener('click', function () {});
-    // $('#Redo_last_button')[0].addEventListener('click', function () {});
-    $('#Config_button')[0].addEventListener('click', function () {self.start_modal()});
-
+    $('#Undo_last_button')[0].addEventListener('click', function() {
+        VIZ.netgraph.notify({ undo: "1" });
+    });
+    $('#Redo_last_button')[0].addEventListener('click', function () {
+        VIZ.netgraph.notify({ undo: "0" });
+    });
+    $('#Config_button')[0].addEventListener('click', function () {
+        self.start_modal();
+    });
+   
     $('#filename')[0].innerHTML = filename;
 
     this.menu = new VIZ.Menu(this.toolbar);
