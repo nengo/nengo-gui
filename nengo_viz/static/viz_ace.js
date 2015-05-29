@@ -19,17 +19,11 @@ VIZ.Ace = function (args, script_code) {
     	console.log(editor.getValue());
 	});}, 10);
 
-
 	editor.setValue('texxxxxxxxxxxxxxxxxxxxxxxtt\nHiodsahfjiodsjfio');
 
-	//Set the positioning of the code_div
-	var top_margin = $(toolbar.toolbar).height();
-	var bottom_margin = $(sim.div).height();
-	var left_margin = $(window).width();
+	this.set_position();
 
-	code_div.style.top = top_margin;
-	code_div.style.bottom = bottom_margin;
-	code_div.style.left = left_margin * 4 / 5; //Positions code editor so it takes up the right 20% of the screen.
+	$(window).on('resize', function() {self.set_position()});
 }
 
 
@@ -53,4 +47,16 @@ VIZ.Ace.prototype.toggle_shown = function () {
 	else{
 		this.hide_editor();
 	}
+}
+
+VIZ.Ace.prototype.set_position = function () {
+	var code_div = document.getElementById('editor');
+	//Set the positioning of the code_div
+	var top_margin = $(toolbar.toolbar).height();
+	var bottom_margin = $(sim.div).height();
+	var left_margin = $(window).width();
+
+	code_div.style.top = top_margin;
+	code_div.style.bottom = bottom_margin;
+	code_div.style.left = left_margin * 4 / 5; //Positions code editor so it takes up the right 20% of the screen.
 }
