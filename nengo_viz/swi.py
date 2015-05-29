@@ -49,6 +49,7 @@ import random
 import select
 import string
 import sys
+import errno
 import os
 try:
     import StringIO
@@ -223,6 +224,11 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             self.user = self.testing_user
         try:
             getattr(self, command)(*[client] + args[1:], **db)
+        except socket.error as err:
+            # Only print traceback if it isn't likely to be caused by the
+            # server shutting down.
+            if err.args[0] != errno.EPIPE and err.args[0] != errno.EBADF:
+                traceback.print_exc()
         except Exception:
             traceback.print_exc()
         client.socket.close()
@@ -449,6 +455,16 @@ class AsyncHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         SocketServer.ThreadingMixIn.process_request_thread(
             self, request, client_address)
         self.requests.remove((thread, request))
+
+    def handle_error(self, request, client_address):
+        exc_type, exc_value, _ = sys.exc_info()
+        if exc_type is socket.error and (exc_value.args[0] == errno.EPIPE or
+                exc_value.args[0] == errno.EBADF):
+            return  # Probably caused by a server shutdown
+        else:
+            print exc_type, exc_value, dir(exc_value)
+            BaseHTTPServer.HTTPServer.handle_error(
+                self, request, client_address)
 
 
 favicon = ('\x00\x00\x01\x00\x01\x00\x10\x10\x00\x00\x01\x00\x18\x00h\x03\x00'
