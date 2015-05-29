@@ -18,8 +18,8 @@
     </head>
 
     <body onload="onload();">
-        <div id="main">
-            <ul id='top_toolbar' class="nav nav-pills"> 
+        <div id="top_toolbar">
+            <ul class="nav nav-pills"> 
                 <li id='Open_file_button' role="presentation">
                     <a title='Open file' class='glyphicon glyphicon-folder-open'> </a>
                 </li>
@@ -37,6 +37,9 @@
                 </li>
                 <li id='filename' role="presentation"> </li>
             </ul>
+            <div id="filebrowser"></div>
+        </div>
+        <div id="main">
         </div>
         <div id="control">
             <div class="time_slider">
@@ -46,10 +49,14 @@
                 <span id='pause_button_icon' class="glyphicon glyphicon-play">
                 </span>
             </button>
-            <table id='time_table' class='table metrics-container'>
-                <tr id="rate_tr"></tr>
-                <tr id="ticks_tr"></tr>
-            </table>
+            <div id='time_table' >
+                <table class='table metrics-container'>
+                    <tbody>
+                        <tr id="rate_tr"><td></td><td></td></tr>
+                        <tr id="ticks_tr"><td></td><td></td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
         <div class="modal fade">
           <div class="modal-dialog">
@@ -67,7 +74,6 @@
             </div>
           </div>
         </div>
-        <div id="filebrowser"></div>
         <script>
             function onload() {
                 main = document.getElementById("main");

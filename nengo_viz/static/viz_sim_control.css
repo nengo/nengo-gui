@@ -48,26 +48,41 @@
     font-family: sans-serif;
 }
 
+#pause_button {
+    border-radius:0px;
+    border-width:0px;
+}
+
 .play-pause-button {
     height:60px;
     margin: -20px 15px 0 15px;
-    position:fixed; 
-    width:60px; 
+    position:fixed;
+    width:60px;
+    background-color: #eee !important;
+}
+
+.play-pause-button:hover {
+    background: #666 !important;
+    color: #eee !important;
 }
 
 .play-pause-button span {
     font-size: 30px;
 }
 
-.metrics-container.table {
+#time_table {
     display: inline-block;
-    margin-top: 40px;
+    margin-top: 10px;
     margin-left: 10px;
+    width: 130px;
     overflow: hidden;
-    transform: translate(0, -50%);
-    width: 100px;
+}
+
+.metrics-container {
+    width: auto !important;
 }
 
 .metrics-container td, .metrics-container th {
-    padding: 0.2em;
+    padding: 0.2em !important;
+    border: none !important;
 }

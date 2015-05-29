@@ -31,8 +31,8 @@ VIZ.SimControl = function(div, args) {
     this.ws.onmessage = function(event) {self.on_message(event);}
     
     /** Create the TimeSlider */
-    this.time_slider = new VIZ.TimeSlider({x: 140, y: 10, sim:this,
-                                           width: this.div.clientWidth-240, 
+    this.time_slider = new VIZ.TimeSlider({x: 150, y: 10, sim:this,
+                                           width: this.div.clientWidth-250, 
                                            height: this.div.clientHeight-20,
                                            shown_time: args.shown_time,
                                            kept_time: args.kept_time});
