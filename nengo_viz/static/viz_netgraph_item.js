@@ -182,7 +182,7 @@ VIZ.NetGraphItem = function(ng, info) {
 
                     if (horizontal_resize && vertical_resize) {
                         var p = (screen_w * w + screen_h * h) / Math.sqrt(
-                            screen_w * screen_w + screen_h * screen_h);
+                            2 * (screen_w * screen_w + screen_h * screen_h));
                         h = p / self.aspect;
                         w = p * self.aspect;
                     } else if (horizontal_resize) {
