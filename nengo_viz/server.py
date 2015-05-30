@@ -99,6 +99,7 @@ class Server(swi.SimpleWebInterface):
                             self.viz_sim.remove_graph(component)
                         self.viz.remove_uid(uid)
                         self.viz.modified_config()
+                        return
                     else:
                         component.message(msg)
                     msg = client.read()
