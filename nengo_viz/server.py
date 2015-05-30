@@ -11,6 +11,7 @@ except ImportError:
     from urllib.parse import unquote
 
 import nengo_viz.swi as swi
+import nengo_viz
 
 
 class Server(swi.SimpleWebInterface):
@@ -115,4 +116,6 @@ class Server(swi.SimpleWebInterface):
 
             # if there are no simulations left, stop the server
             if self.viz.count_sims() == 0:
-                self.stop()
+                if isinstance(component, nengo_viz.components.SimControl):
+                    print("No connections remaining to the nengo_viz server.")
+                    self.stop()
