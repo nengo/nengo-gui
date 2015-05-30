@@ -363,6 +363,8 @@ class Viz(object):
         label = obj.label
         if label is None:
             label = default_labels.get(obj, None)
+            if '.' in label:
+                label = label.rsplit('.', 1)[1]
         if label is None:
             label = repr(obj)
         return label
