@@ -136,9 +136,13 @@ class Viz(object):
             try:
                 exec(code, locals)
             except nengo_viz.monkey.StartedSimulatorException:
-                pass
+                line = nengo_viz.monkey.determine_line_number()
+                print('nengo.Simulator() started on line %d. '
+                      'Ignoring all subsequent lines.' % line)
             except nengo_viz.monkey.StartedVizException:
-                pass
+                line = nengo_viz.monkey.determine_line_number()
+                print('nengo.Viz() started on line %d. '
+                      'Ignoring all subsequent lines.' % line)
             finally:
                 nengo_viz.monkey.flag.executing = False
 

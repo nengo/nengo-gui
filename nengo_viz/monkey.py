@@ -1,5 +1,7 @@
 import importlib
 import threading
+import sys
+import traceback
 
 # list of Simulators to check for
 known_modules = ['nengo', 'nengo_ocl']
@@ -32,3 +34,16 @@ flag = threading.local()
 
 def is_executing():
     return getattr(flag, 'executing', False)
+
+def determine_line_number(filename='<string>'):
+    '''Checks stack trace to determine the line number we are currently at.
+
+    The default filname argument of "<string>" indicates it should only
+    pay attention to the line numbers in the main evaluated script (which
+    is evaluated using exec(), so it doesn't have a normal filename).
+    '''
+    tb = traceback.extract_tb(sys.exc_traceback)
+    for fn, line, function, code in reversed(tb):
+        if fn == filename:
+            return line
+    return None
