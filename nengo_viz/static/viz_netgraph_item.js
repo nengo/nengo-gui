@@ -93,10 +93,12 @@ VIZ.NetGraphItem = function(ng, info, minimap) {
 
     this.compute_fill();
 
-    var label = this.ng.createSVGElement('text');
-    this.label = label;
-    label.innerHTML = info.label;
-    g.appendChild(label); 
+    if (this.minimap == false) {
+        var label = this.ng.createSVGElement('text');
+        this.label = label;
+        label.innerHTML = info.label;
+        g.appendChild(label); 
+    };
     
     this.set_position(info.pos[0], info.pos[1]);
     this.set_size(info.size[0], info.size[1]);
@@ -684,8 +686,10 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
             this.shape.setAttribute('ry', radius*.1);
         }
     }
-    
-    this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
+   
+    if (this.minimap == false) {
+        this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
+    };
 };
 
 VIZ.NetGraphItem.prototype.get_width = function() {
