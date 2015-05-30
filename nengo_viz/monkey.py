@@ -2,6 +2,7 @@ import importlib
 import threading
 import sys
 import traceback
+import contextlib
 
 # list of Simulators to check for
 known_modules = ['nengo', 'nengo_ocl']
@@ -22,13 +23,6 @@ def make_dummy(cls):
             super(DummySimulator, self).__init__(*args, **kwargs)
     return DummySimulator
 
-for name in known_modules:
-    try:
-        mod = importlib.import_module(name)
-        mod.Simulator = make_dummy(mod.Simulator)
-    except ImportError:
-        pass
-
 # thread local storage for storing whether we are executing a script
 flag = threading.local()
 
@@ -47,3 +41,23 @@ def determine_line_number(filename='<string>'):
         if fn == filename:
             return line
     return None
+
+@contextlib.contextmanager
+def patch():
+    flag.executing = True
+    simulators = {}
+    for name in known_modules:
+        try:
+            mod = importlib.import_module(name)
+            simulators[mod] = mod.Simulator
+            mod.Simulator = make_dummy(mod.Simulator)
+        except ImportError:
+            pass
+    yield
+    for mod, cls in simulators.items():
+        mod.Simulator = cls
+    flag.executing = False
+
+
+
+

@@ -132,19 +132,17 @@ class Viz(object):
 
             with open(filename) as f:
                 code = f.read()
-            nengo_viz.monkey.flag.executing = True
-            try:
-                exec(code, locals)
-            except nengo_viz.monkey.StartedSimulatorException:
-                line = nengo_viz.monkey.determine_line_number()
-                print('nengo.Simulator() started on line %d. '
-                      'Ignoring all subsequent lines.' % line)
-            except nengo_viz.monkey.StartedVizException:
-                line = nengo_viz.monkey.determine_line_number()
-                print('nengo.Viz() started on line %d. '
-                      'Ignoring all subsequent lines.' % line)
-            finally:
-                nengo_viz.monkey.flag.executing = False
+            with nengo_viz.monkey.patch():
+                try:
+                    exec(code, locals)
+                except nengo_viz.monkey.StartedSimulatorException:
+                    line = nengo_viz.monkey.determine_line_number()
+                    print('nengo.Simulator() started on line %d. '
+                          'Ignoring all subsequent lines.' % line)
+                except nengo_viz.monkey.StartedVizException:
+                    line = nengo_viz.monkey.determine_line_number()
+                    print('nengo.Viz() started on line %d. '
+                          'Ignoring all subsequent lines.' % line)
 
         if model is None:
             if 'model' not in locals:
