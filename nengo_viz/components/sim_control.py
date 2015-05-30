@@ -100,11 +100,9 @@ class SimControl(Component):
 
     def javascript(self):
         info = dict(uid=self.uid)
-        json = self.javascript_config(info)
-        fn = repr(self.viz.viz.filename)
-        if fn.startswith('u'):
-            fn = fn[1:]
-        return 'sim = new VIZ.SimControl(control, %s); ' % json + \
+        fn = json.dumps(self.viz.viz.filename)
+        js = self.javascript_config(info)
+        return 'sim = new VIZ.SimControl(control, %s); ' % js + \
                'toolbar = new VIZ.Toolbar(%s); ' % fn
 
     def message(self, msg):
