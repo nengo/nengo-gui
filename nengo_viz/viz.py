@@ -123,18 +123,18 @@ class Viz(object):
         self.config_save_period = 2.0  # minimum time between saves
 
         if filename is None:
-            filename = os.path.join(nengo_viz.__path__[0], 
+            filename = os.path.join(nengo_viz.__path__[0],
                                     'examples',
                                     'default.py')
 
         self.load(filename, model, locals)
 
     def load(self, filename, model=None, locals=None):
+        filename = os.path.relpath(filename)
         if locals is None:
             locals = {}
             locals['nengo_viz'] = nengo_viz
             locals['__file__'] = filename
-
 
             with open(filename) as f:
                 code = f.read()
