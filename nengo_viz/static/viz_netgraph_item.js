@@ -57,7 +57,6 @@ VIZ.NetGraphItem = function(ng, info) {
 
     this.area = this.ng.createSVGElement('rect');
     this.area.style.fill = 'transparent';
-    g.appendChild(this.area);
 
     this.menu = new VIZ.Menu(this.ng.parent);
     
@@ -92,8 +91,9 @@ VIZ.NetGraphItem = function(ng, info) {
     this.set_size(info.size[0], info.size[1]);
 
     g.appendChild(this.shape);
+    g.appendChild(this.area);
 
-    interact.margin(15);
+    interact.margin(10);
 
     /** dragging an item to change its position */
     var uid = this.uid;
@@ -125,13 +125,7 @@ VIZ.NetGraphItem = function(ng, info) {
 
     if (!this.passthrough) {
         /** dragging the edge of item to change its size */
-        var items = [this.area];
-        if (info.type !== 'ens') {
-            items.push(this.shape);
-        }
-        for (var i = 0; i < items.length; i++) {
-          var tmp = items[i];
-          interact(tmp)
+        interact(this.area)
             .resizable({
                 edges: { left: true, right: true, bottom: true, top: true }
                 })
@@ -207,7 +201,6 @@ VIZ.NetGraphItem = function(ng, info) {
                            x:item.pos[0], y:item.pos[1],
                            width:item.size[0], height:item.size[1]});
                 });
-        }
     }
     
     var self = this;
