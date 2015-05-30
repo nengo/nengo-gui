@@ -1,6 +1,7 @@
 import os
 import time
 import threading
+import json
 
 import nengo
 
@@ -92,7 +93,8 @@ class VizSim(object):
         self.viz.remove_sim(self)
 
     def create_javascript(self):
-        webpage_title_js = ';document.title = "%s"' %self.viz.filename[:-3]
+        fn = json.dumps(self.viz.filename[:-3])
+        webpage_title_js = ';document.title = %s' % fn
         component_js = '\n'.join([c.javascript() for c in self.components])
         component_js = component_js + webpage_title_js
         return component_js
