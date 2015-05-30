@@ -102,7 +102,7 @@ class SimControl(Component):
         info = dict(uid=self.uid)
         fn = json.dumps(self.viz.viz.filename)
         js = self.javascript_config(info)
-        return ('sim = new VIZ.SimControl(control, %s);\n' \
+        return ('sim = new VIZ.SimControl(control, %s);\n'
                 'toolbar = new VIZ.Toolbar(%s); ' % (js, fn))
 
     def message(self, msg):
