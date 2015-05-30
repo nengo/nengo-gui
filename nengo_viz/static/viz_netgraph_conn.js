@@ -22,8 +22,10 @@ VIZ.NetGraphConnection = function(ng, info, minimap) {
 
     if (minimap == false) {
         this.g_conns = ng.g_conns;
+        this.objects = ng.svg_objects;
     } else {
         this.g_conns = ng.g_conns_mini;
+        this.objects = ng.minimap_objects;
     }
     
     /** the uids for the pre and post items in the connection
@@ -45,7 +47,7 @@ VIZ.NetGraphConnection = function(ng, info, minimap) {
     if (info.parent === null) {
         this.parent = null;
     } else {
-        this.parent = ng.svg_objects[info.parent];
+        this.parent = this.objects[info.parent];
         this.parent.child_connections.push(this);
     }
     
@@ -119,7 +121,7 @@ VIZ.NetGraphConnection.prototype.set_post = function(post) {
 /** determine the best available item to connect from */
 VIZ.NetGraphConnection.prototype.find_pre = function() {
     for (var i in this.pres) {
-        var pre = this.ng.svg_objects[this.pres[i]];
+        var pre = this.objects[this.pres[i]];
         if (pre !== undefined) {
             return pre;
         } else {
@@ -134,7 +136,7 @@ VIZ.NetGraphConnection.prototype.find_pre = function() {
 /** determine the best available item to connect to */
 VIZ.NetGraphConnection.prototype.find_post = function() {
     for (var i in this.posts) {
-        var post = this.ng.svg_objects[this.posts[i]];
+        var post = this.objects[this.posts[i]];
         if (post !== undefined) {
             return post;
         } else {
@@ -204,9 +206,11 @@ VIZ.NetGraphConnection.prototype.redraw = function() {
         this.marker.setAttribute('visibility', 'visible');
     }
     var pre_pos = this.pre.get_screen_location();
+
+    if (this.minimap == true) { console.log('setnhasneotuhaoesnu'); };
     
     if (this.recurrent) {
-        var item = this.ng.svg_objects[this.pres[0]];
+        var item = this.objects[this.pres[0]];
         if (item === undefined) {
             this.marker.setAttribute('visibility', 'hidden');
             this.recurrent_ellipse.setAttribute('visibility', 'hidden');

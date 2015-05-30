@@ -289,10 +289,10 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         conn.set_posts(data.posts);
         conn.redraw();
 
-        var conn = this.minimap_conns[data.uid];
-        conn.set_pres(data.pres);
-        conn.set_posts(data.posts);
-        conn.redraw();
+        var conn_mini = this.minimap_conns[data.uid];
+        conn_mini.set_pres(data.pres);
+        conn_mini.set_posts(data.posts);
+        conn_mini.redraw();
 
     } else if (data.type === 'delete_graph') {
         var uid = data.uid;
