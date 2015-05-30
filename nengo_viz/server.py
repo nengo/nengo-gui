@@ -27,7 +27,7 @@ class Server(swi.SimpleWebInterface):
                      '<a href="#" rel="%s">%s</a></li>' % (ex_tag, ex_tag))
             path = '.'
         elif d.startswith(ex_tag):
-            path = os.path.join(nengo_viz.__path__[0], 
+            path = os.path.join(nengo_viz.__path__[0],
                                 'examples', d[len(ex_tag):])
         else:
             path = os.path.join('.', d)
@@ -59,7 +59,7 @@ class Server(swi.SimpleWebInterface):
 
     def create_login_form(self):
         if self.attempted_login:
-            message = 'Invalid password.  Try again.'
+            message = 'Invalid password. Try again.'
         else:
             message = 'Enter the password:'
         return """<form action="/" method=GET>%s<br>
