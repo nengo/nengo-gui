@@ -15,6 +15,8 @@ VIZ.NetGraph = function(parent, args) {
 
     this.svg_objects = {};     // dict of all VIZ.NetGraphItems, by uid
     this.svg_conns = {};       // dict of all VIZ.NetGraphConnections, by uid
+    this.minimap_objects = {};
+    this.minimap_conns = {};
 
     this.in_zoom_delay = false;
 
@@ -30,8 +32,10 @@ VIZ.NetGraph = function(parent, args) {
     this.svg = this.createSVGElement('svg');
     this.svg.classList.add('netgraph');    
     this.svg.style.width = '100%';
+    this.svg.style.top = '-80px';
     this.svg.id = 'netgraph';
-    this.svg.style.height = 'calc(100% - 80px)';
+    // this.svg.style.height = 'calc(100% - 80px)';
+    this.svg.style.height = '100%';
     this.svg.style.position = 'fixed';    
         
     interact(this.svg).styleCursor(false);
@@ -52,7 +56,7 @@ VIZ.NetGraph = function(parent, args) {
     this.svg.appendChild(this.g_conns);
     this.g_items = this.createSVGElement('g');
     this.svg.appendChild(this.g_items);
-    
+
     /** connect to server */
     this.ws = VIZ.create_websocket(args.uid);
     this.ws.onmessage = function(event) {self.on_message(event);}
@@ -88,9 +92,11 @@ VIZ.NetGraph = function(parent, args) {
                 self.offsetY += event.dy / self.get_scaled_height();
                 for (var key in self.svg_objects) {
                     self.svg_objects[key].redraw_position();
+                    self.minimap_objects[key].redraw_position();
                 }    
                 for (var key in self.svg_conns) {
                     self.svg_conns[key].redraw();
+                    self.minimap_conns[key].redraw();
                 }    
                 
                 viewport.x = self.offsetX;
@@ -194,6 +200,8 @@ VIZ.NetGraph = function(parent, args) {
                                self.generate_menu());
         }
     }); 
+
+    this.create_minimap();
 };
 
 VIZ.NetGraph.prototype.generate_menu = function() {
@@ -224,13 +232,26 @@ VIZ.NetGraph.prototype.on_message = function(event) {
     } else if (data.type === 'expand') {
         var item = this.svg_objects[data.uid];
         item.expand(true,true)
+
+        var item = this.minimap_objects[data.uid];
+        item.expand(true,true)
+
     } else if (data.type === 'collapse') {
         var item = this.svg_objects[data.uid];
         item.collapse(true,true)
+
+        var item = this.minimap_objects[data.uid];
+        item.collapse(true,true)
+
     } else if (data.type === 'pos_size') {
         var item = this.svg_objects[data.uid];
         item.set_position(data.pos[0], data.pos[1]);
         item.set_size(data.size[0], data.size[1]);
+
+        var item = this.minimap_objects[data.uid];
+        item.set_position(data.pos[0], data.pos[1]);
+        item.set_size(data.size[0], data.size[1]);
+
     } else if (data.type === 'config') {
         // Anything about the config of a component has changed
         var uid = data.uid;
@@ -245,17 +266,34 @@ VIZ.NetGraph.prototype.on_message = function(event) {
     } else if (data.type === 'rename') {
         var item = this.svg_objects[data.uid];
         item.set_label(data.name);    
+
+        var item = this.minimap_objects[data.uid];
+        item.set_label(data.name);    
+
     } else if (data.type === 'remove') {
         var item = this.svg_objects[data.uid];
         if (item === undefined) {
             item = this.svg_conns[data.uid];
         }
         item.remove();    
+
+        var item = this.minimap_objects[data.uid];
+        if (item === undefined) {
+            item = this.minimap_conns[data.uid];
+        }
+        item.remove();    
+
     } else if (data.type === 'reconnect') {
         var conn = this.svg_conns[data.uid];
         conn.set_pres(data.pres);
         conn.set_posts(data.posts);
         conn.redraw();
+
+        var conn = this.minimap_conns[data.uid];
+        conn.set_pres(data.pres);
+        conn.set_posts(data.posts);
+        conn.redraw();
+
     } else if (data.type === 'delete_graph') {
         var uid = data.uid;
         for (var i = 0; i < VIZ.Component.components.length; i++) {
@@ -330,9 +368,15 @@ VIZ.NetGraph.prototype.redraw = function() {
     for (var key in this.svg_objects) {
         this.svg_objects[key].redraw_position();
         this.svg_objects[key].redraw_size();
+
+        this.minimap_objects[key].pos = this.svg_objects[key].pos
+        this.minimap_objects[key].size = this.svg_objects[key].size
+        this.minimap_objects[key].redraw_position();
+        this.minimap_objects[key].redraw_size();
     }    
     for (var key in this.svg_conns) {
         this.svg_conns[key].redraw();
+        this.minimap_conns[key].redraw();
     }    
 }
 
@@ -347,16 +391,24 @@ VIZ.NetGraph.prototype.createSVGElement = function(tag) {
  *  if an existing NetGraphConnection is looking for this item, it will be
  *  notified */
 VIZ.NetGraph.prototype.create_object = function(info) {
-    var item = new VIZ.NetGraphItem(this, info);
+    var item = new VIZ.NetGraphItem(this, info, false);
     this.svg_objects[info.uid] = item;    
+
+    var item_mini = new VIZ.NetGraphItem(this, info, true);
+    this.minimap_objects[info.uid] = item_mini;    
+
     this.detect_collapsed_conns(item.uid);
+    this.detect_collapsed_conns(item_mini.uid);
 };
 
 
 /** create a new NetGraphConnection */
 VIZ.NetGraph.prototype.create_connection = function(info) {
-    var conn = new VIZ.NetGraphConnection(this, info);
+    var conn = new VIZ.NetGraphConnection(this, info, false);
     this.svg_conns[info.uid] = conn;    
+
+    var conn_mini = new VIZ.NetGraphConnection(this, info, true);
+    this.minimap_conns[info.uid] = conn_mini;    
 };
 
 
@@ -387,6 +439,12 @@ VIZ.NetGraph.prototype.get_scaled_height = function() {
 /** expand or collapse a network */
 VIZ.NetGraph.prototype.toggle_network = function(uid) {
     var item = this.svg_objects[uid];
+    if (item.expanded) {
+        item.collapse(true);
+    } else {
+        item.expand();
+    }
+    var item = this.minimap_objects[uid];
     if (item.expanded) {
         item.collapse(true);
     } else {
@@ -431,4 +489,28 @@ VIZ.NetGraph.prototype.detect_collapsed_conns = function(uid) {
             }
         }
     }
+}
+
+VIZ.NetGraph.prototype.create_minimap = function () {
+
+    /** create a minimap */
+    // there has to be an SVG element for each element in the main
+    // but instead of each having it's own position and size etc 
+    // that will be entirely based off the g_regular counterparts
+    // also the size scaling will be as if there's no config (i.e. 
+    // full zoom out the whole time)
+    this.minimap = this.createSVGElement('svg');
+    this.minimap.classList.add('minimap');    
+    this.minimap.style.width = '100%';
+    this.minimap.id = 'minimap';
+    this.minimap.style.height = '100%';
+    this.minimap.style.position = 'relative';    
+    $('.minimap')[0].appendChild(this.minimap);
+
+    this.g_networks_mini = this.createSVGElement('g'); 
+    this.minimap.appendChild(this.g_networks_mini);
+    this.g_conns_mini = this.createSVGElement('g');
+    this.minimap.appendChild(this.g_conns_mini);
+    this.g_items_mini = this.createSVGElement('g');
+    this.minimap.appendChild(this.g_items_mini);
 }

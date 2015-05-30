@@ -14,7 +14,21 @@ body {
     width: 100%;
     height: calc(100% - 80px);
     position: relative;
+}
 
+div.minimap {
+    background: white;
+    border: 2px solid #787878;
+    height: 20%;
+    width: 20%;
+    left: 75%;
+    top: 75%;
+    /* height: 15%; */
+    /* width: 15%; */
+    /* left: 82.5%; */
+    /* top: 82.5%; */
+    position: relative;
+    z-index: 1000000000000;
 }
 
 .graph {

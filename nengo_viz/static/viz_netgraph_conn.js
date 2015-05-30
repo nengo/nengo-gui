@@ -9,7 +9,7 @@
  * @param {array of strings} info.pre - uid to connect from and its parents
  * @param {array of strings} info.post - uid to connect to and its parents
  */
-VIZ.NetGraphConnection = function(ng, info) {
+VIZ.NetGraphConnection = function(ng, info, minimap) {
     this.ng = ng;
     this.uid = info.uid;
 
@@ -19,6 +19,12 @@ VIZ.NetGraphConnection = function(ng, info) {
     /** the actual NetGraphItem currently connected to/from */
     this.pre = null;
     this.post = null;    
+
+    if (minimap == false) {
+        this.g_conns = ng.g_conns;
+    } else {
+        this.g_conns = ng.g_conns_mini;
+    }
     
     /** the uids for the pre and post items in the connection
      *  The lists start with the ideal target item, followed by the parent
@@ -70,7 +76,7 @@ VIZ.NetGraphConnection = function(ng, info) {
 
     this.redraw();
 
-    ng.g_conns.appendChild(this.g);
+    this.g_conns.appendChild(this.g);
 }
 
 
@@ -176,7 +182,7 @@ VIZ.NetGraphConnection.prototype.remove = function() {
     }
 
     
-    this.ng.g_conns.removeChild(this.g);
+    this.g_conns.removeChild(this.g);
     this.removed = true;
 
     delete this.ng.svg_conns[this.uid];    

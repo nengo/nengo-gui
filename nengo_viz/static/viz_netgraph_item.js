@@ -10,7 +10,9 @@
  * @param {string} info.uid - unique identifier
  * @param {string or null} info.parent - a NetGraphItem with .type=='net'
  */
-VIZ.NetGraphItem = function(ng, info) {
+VIZ.NetGraphItem = function(ng, info, minimap) {
+    var self = this;
+
     this.ng = ng;
     this.pos = info.pos;
     this.size = info.size;
@@ -21,6 +23,15 @@ VIZ.NetGraphItem = function(ng, info) {
     this.fixed_width = null;
     this.fixed_height = null;
     this.dimensions = info.dimensions;
+    this.minimap = minimap;
+    if (minimap == false) {
+        this.g_networks = ng.g_networks;
+        this.g_items = ng.g_items;
+    } else {
+        this.g_networks = ng.g_networks_mini;
+        this.g_items = ng.g_items_mini;
+        this.minimap_scale = .15
+    }
 
     /** if this is a network, the children list is the set of NetGraphItems
      *  and NetGraphConnections that are inside this network */
@@ -52,7 +63,7 @@ VIZ.NetGraphItem = function(ng, info) {
     /** create the SVG group to hold this item */
     var g = this.ng.createSVGElement('g');
     this.g = g;
-    ng.g_items.appendChild(g);    
+    this.g_items.appendChild(g);    
     g.classList.add(this.type);
 
     this.area = this.ng.createSVGElement('rect');
@@ -95,166 +106,180 @@ VIZ.NetGraphItem = function(ng, info) {
 
     interact.margin(10);
 
-    /** dragging an item to change its position */
-    var uid = this.uid;
-    var ng = ng;
-    interact(g)
-        .draggable({
-            onstart: function () {
-                self.menu.hide_any();
-                self.move_to_front();
-            },
-            onmove: function(event) {
-                var w = ng.get_scaled_width();
-                var h = ng.get_scaled_height();    
-                var item = ng.svg_objects[uid];
-                var parent = item.parent;
-                while (parent !== null) {
-                    w = w * parent.size[0] * 2;
-                    h = h * parent.size[1] * 2;
-                    parent = parent.parent;
-                }
-                item.set_position(item.pos[0] + event.dx / w, 
-                                  item.pos[1] + event.dy / h);
-            },
-            onend: function(event) {
-                var item = ng.svg_objects[uid];
-                item.constrain_position();                
-                ng.notify({act:"pos", uid:uid, x:item.pos[0], y:item.pos[1]});
-            }});
+    if (this.minimap == false) {
+        /** dragging an item to change its position */
+        var uid = this.uid;
+        var ng = ng;
+        interact(g)
+            .draggable({
+                onstart: function () {
+                    self.menu.hide_any();
+                    self.move_to_front();
+                },
+                onmove: function(event) {
+                    var w = ng.get_scaled_width();
+                    var h = ng.get_scaled_height();    
+                    var item = ng.svg_objects[uid];
+                    var parent = item.parent;
+                    while (parent !== null) {
+                        w = w * parent.size[0] * 2;
+                        h = h * parent.size[1] * 2;
+                        parent = parent.parent;
+                    }
+                    item.set_position(item.pos[0] + event.dx / w, 
+                                    item.pos[1] + event.dy / h);
 
-    if (!this.passthrough) {
-        /** dragging the edge of item to change its size */
-        interact(this.area)
+                    var item_mini = ng.minimap_objects[uid];
+                    item_mini.set_position(item.pos[0], item.pos[1])
+                    item_mini.set_size(item.size[0], item.size[1]);
+                },
+                onend: function(event) {
+                    var item = ng.svg_objects[uid];
+                    item.constrain_position();                
+                    ng.notify({act:"pos", uid:uid, x:item.pos[0], y:item.pos[1]});
+
+                    var item_mini = ng.minimap_objects[uid];
+                    item_mini.set_position(item.pos[0], item.pos[1])
+                    item_mini.set_size(item.size[0], item.size[1]);
+                }});
+
+        if (!this.passthrough) {
+            /** dragging the edge of item to change its size */
+            var tmp = this.shape
+            if(info.type === 'ens') {
+                tmp = $(this.shape.getElementsByClassName('mainCircle'))[0];
+            }        
+            interact(this.area)
             .resizable({
                 edges: { left: true, right: true, bottom: true, top: true },
                 invert: this.type == 'ens' ? 'reposition' : 'none'
                 })
-            .on('resizestart', function(event) {
-                self.menu.hide_any();
-                })
-            .on('resizemove', function(event) {
-                var item = ng.svg_objects[uid];
-                var pos = item.get_screen_location();
-                var h_scale = ng.get_scaled_width();
-                var v_scale = ng.get_scaled_height();
-                var parent = item.parent;
-                while (parent !== null) {
-                    h_scale = h_scale * parent.size[0] * 2;
-                    v_scale = v_scale * parent.size[1] * 2;
-                    parent = parent.parent;
-                }
-
-                if (self.aspect !== null) {
-                    self.constrain_aspect();
-
-                    var vertical_resize = event.edges.bottom || event.edges.top;
-                    var horizontal_resize = event.edges.left || event.edges.right;
-
-                    var w = pos[0] - event.clientX;
-                    var h = pos[1] - event.clientY;
-                    if (event.edges.right) {
-                        w *= -1;
-                    }
-                    if (event.edges.bottom) {
-                        h *= -1;
+                .on('resizestart', function(event) {
+                    self.menu.hide_any();
+                    })
+                .on('resizemove', function(event) {
+                    var item = ng.svg_objects[uid];
+                    var pos = item.get_screen_location();
+                    var h_scale = ng.get_scaled_width();
+                    var v_scale = ng.get_scaled_height();
+                    var parent = item.parent;
+                    while (parent !== null) {
+                        h_scale = h_scale * parent.size[0] * 2;
+                        v_scale = v_scale * parent.size[1] * 2;
+                        parent = parent.parent;
                     }
 
-                    var screen_w = self.get_width();
-                    var screen_h = self.get_height();
+                    if (self.aspect !== null) {
+                        self.constrain_aspect();
 
-                    if (horizontal_resize && vertical_resize) {
-                        var p = (screen_w * w + screen_h * h) / Math.sqrt(
-                            2 * (screen_w * screen_w + screen_h * screen_h));
-                        h = p / self.aspect;
-                        w = p * self.aspect;
-                    } else if (horizontal_resize) {
-                        h = w / self.aspect;
+                        var vertical_resize = event.edges.bottom || event.edges.top;
+                        var horizontal_resize = event.edges.left || event.edges.right;
+
+                        var w = pos[0] - event.clientX;
+                        var h = pos[1] - event.clientY;
+                        if (event.edges.right) {
+                            w *= -1;
+                        }
+                        if (event.edges.bottom) {
+                            h *= -1;
+                        }
+                        if (w < 0) {
+                            w = 1;
+                        }
+                        if (h < 0) {
+                            h = 1;
+                        }
+
+                        var screen_w = self.get_width();
+                        var screen_h = self.get_height();
+
+                        if (horizontal_resize && vertical_resize) {
+                            var p = (screen_w * w + screen_h * h) / Math.sqrt(
+                                screen_w * screen_w + screen_h * screen_h);
+                            h = p / self.aspect;
+                            w = p * self.aspect;
+                        } else if (horizontal_resize) {
+                            h = w / self.aspect;
+                        } else {
+                            w = h * self.aspect;
+                        }
+
+                        var scaled_w = w / h_scale;
+                        var scaled_h = h / v_scale;
+
+                        item.set_size(scaled_w, scaled_h);
                     } else {
-                        w = h * self.aspect;
+                        var dw = event.deltaRect.width / h_scale / 2;
+                        var dh = event.deltaRect.height / v_scale / 2;
+                        var offset_x = dw + event.deltaRect.left / h_scale;
+                        var offset_y = dh + event.deltaRect.top / v_scale;
+
+                        item.set_size(item.size[0] + dw, item.size[1] + dh);
+                        item.set_position(item.pos[0] + offset_x,
+                                        item.pos[1] + offset_y);
                     }
 
-                    if (w < 0 && h < 0) {
-                        w = -w;
-                        h = -h;
+                    var item_mini = ng.minimap_objects[uid];
+                    item_mini.set_position(item.pos[0], item.pos[1])
+                    item_mini.set_size(item.size[0], item.size[1]);
+                })
+                .on('resizeend', function(event) {
+                    var item = ng.svg_objects[uid];
+                    item.constrain_position();                
+                    ng.notify({act:"pos_size", uid:uid, 
+                            x:item.pos[0], y:item.pos[1],
+                            width:item.size[0], height:item.size[1]});
+
+                    var item_mini = ng.minimap_objects[uid];
+                    item_mini.set_position(item.pos[0], item.pos[1])
+                    item_mini.set_size(item.size[0], item.size[1]);
+                    });
+        }
+    
+        //Determine when to pull up the menu
+        interact(this.g)
+            .on('hold', function(event) { //change to 'tap' for right click
+                if (event.button == 0) {
+                    if (self.menu.visible_any()) {
+                        self.menu.hide_any();
+                    } else {
+                        self.menu.show(event.clientX, event.clientY, 
+                                    self.generate_menu());
                     }
-
-                    var scaled_w = w / h_scale;
-                    var scaled_h = h / v_scale;
-
-                    item.set_size(scaled_w, scaled_h);
-                } else {
-                    var dw = event.deltaRect.width / h_scale / 2;
-                    var dh = event.deltaRect.height / v_scale / 2;
-                    var offset_x = dw + event.deltaRect.left / h_scale;
-                    var offset_y = dh + event.deltaRect.top / v_scale;
-
-                    item.set_size(item.size[0] + dw, item.size[1] + dh);
-                    item.set_position(item.pos[0] + offset_x,
-                                      item.pos[1] + offset_y);
+                    event.stopPropagation();  
                 }
             })
-            .on('resizeend', function(event) {
-                var item = ng.svg_objects[uid];
-                item.constrain_position();                
-                ng.notify({act:"pos_size", uid:uid, 
-                           x:item.pos[0], y:item.pos[1],
-                           width:item.size[0], height:item.size[1]});
-                });
-    }
-    
-    var self = this;
-    //Determine when to pull up the menu
-    interact(this.g)
-        .on('hold', function(event) { //change to 'tap' for right click
-            if (event.button == 0) {
+            .on('tap', function(event) { //get rid of menus when clicking off
+                if (event.button == 0) {
+                    if (self.menu.visible_any()) {
+                        self.menu.hide_any();
+                    }
+                }
+            })
+            .on('doubletap', function(event) { //get rid of menus when clicking off
+                if (event.button == 0) {
+                    if (self.menu.visible_any()) {
+                        self.menu.hide_any();
+                    } else if (self.type === 'net') {
+                        if (self.expanded) {
+                            self.collapse(true);
+                        } else {
+                            self.expand();
+                        }
+                    }
+                }
+            });        
+        $(this.g).bind('contextmenu', function(event) {
+                event.preventDefault();   
+                event.stopPropagation();        
                 if (self.menu.visible_any()) {
                     self.menu.hide_any();
                 } else {
                     self.menu.show(event.clientX, event.clientY, 
-                                   self.generate_menu());
-                }
-                event.stopPropagation();  
+                                self.generate_menu());
             }
-        })
-        .on('tap', function(event) { //get rid of menus when clicking off
-            if (event.button == 0) {
-                if (self.menu.visible_any()) {
-                    self.menu.hide_any();
-                }
-            }
-        })
-        .on('doubletap', function(event) { //get rid of menus when clicking off
-            if (event.button == 0) {
-                if (self.menu.visible_any()) {
-                    self.menu.hide_any();
-                } else if (self.type === 'net') {
-                    if (self.expanded) {
-                        self.collapse(true);
-                    } else {
-                        self.expand();
-                    }
-                }
-            }
-        });        
-    $(this.g).bind('contextmenu', function(event) {
-            event.preventDefault();   
-            event.stopPropagation();        
-            if (self.menu.visible_any()) {
-                self.menu.hide_any();
-            } else {
-                self.menu.show(event.clientX, event.clientY, 
-                               self.generate_menu());
-        }
-    });
-               
-    if (info.type === 'net') {
-        /** if a network is flagged to expand on creation, then expand it */
-        if (info.expanded) {
-            // Report to server but do not add to the undo stack
-            this.expand(true,true);
-        }
-    }
+        });
+    };
 };
 
 VIZ.NetGraphItem.prototype.set_label = function(label) {
@@ -355,8 +380,8 @@ VIZ.NetGraphItem.prototype.expand = function(rts, auto) {
     
     if (!this.expanded) {
         this.expanded = true;
-        this.ng.g_items.removeChild(this.g);
-        this.ng.g_networks.appendChild(this.g);
+        this.g_items.removeChild(this.g);
+        this.g_networks.appendChild(this.g);
     } else {
         console.log("expanded a network that was already expanded");
         console.log(this);
@@ -397,8 +422,8 @@ VIZ.NetGraphItem.prototype.collapse = function(report_to_server, auto) {
 
     if (this.expanded) {
         this.expanded = false;
-        this.ng.g_networks.removeChild(this.g);
-        this.ng.g_items.appendChild(this.g);
+        this.g_networks.removeChild(this.g);
+        this.g_items.appendChild(this.g);
     } else {
         console.log("collapsed a network that was already collapsed");
         console.log(this);
@@ -457,7 +482,7 @@ VIZ.NetGraphItem.prototype.remove = function() {
     }
 
     /** remove from the SVG */
-    this.ng.g_items.removeChild(this.g);    
+    this.g_items.removeChild(this.g);    
 };
 
 VIZ.NetGraphItem.prototype.constrain_aspect = function() {
@@ -669,8 +694,12 @@ VIZ.NetGraphItem.prototype.get_width = function() {
     }
 
     var w = $(this.ng.svg).width();
-    
-    var screen_w = this.get_nested_width() * w * this.ng.scale;
+   
+    if (this.minimap == false) {
+        var screen_w = this.get_nested_width() * w * this.ng.scale;
+    } else {
+        var screen_w = this.get_nested_width() * w * this.minimap_scale;
+    };
         
     if (screen_w < this.minWidth) {
         screen_w = this.minWidth;
@@ -685,8 +714,12 @@ VIZ.NetGraphItem.prototype.get_height = function() {
     }
 
     var h = $(this.ng.svg).height();
-    
-    var screen_h = this.get_nested_height() * h * this.ng.scale;
+   
+    if (this.minimap == false) {
+        var screen_h = this.get_nested_height() * h * this.ng.scale;
+    } else {
+        var screen_h = this.get_nested_height() * h * this.minimap_scale;
+    };
         
     if (screen_h < this.minHeight) {
         screen_h = this.minHeight;
@@ -707,11 +740,19 @@ VIZ.NetGraphItem.prototype.redraw = function() {
 /** determine the pixel location of the centre of the item */
 VIZ.NetGraphItem.prototype.get_screen_location = function() {
     // FIXME this should probably use this.ng.get_scaled_width and this.ng.get_scaled_height
-    var w = $(this.ng.svg).width() * this.ng.scale;
-    var h = $(this.ng.svg).height() * this.ng.scale;
+    if (this.minimap == false) {
+        var w = $(this.ng.svg).width() * this.ng.scale;
+        var h = $(this.ng.svg).height() * this.ng.scale;
 
-    var offsetX = this.ng.offsetX * w;
-    var offsetY = this.ng.offsetY * h;
+        var offsetX = this.ng.offsetX * w;
+        var offsetY = this.ng.offsetY * h;
+    } else {
+        var w = $(this.ng.svg).width() * this.minimap_scale;
+        var h = $(this.ng.svg).height() * this.minimap_scale;
+
+        var offsetX = 0;
+        var offsetY = 0;
+    };
     
     var dx = 0;
     var dy = 0;
