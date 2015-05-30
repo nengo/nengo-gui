@@ -22,9 +22,10 @@ class Server(swi.SimpleWebInterface):
         r = ['<ul class="jqueryFileTree" style="display: none;">']
         d = unquote(dir)
         ex_tag = '//examples//'
+        ex_html = '<em>built-in examples</em>'
         if d == '.':
             r.append('<li class="directory collapsed examples_dir">'
-                     '<a href="#" rel="%s">%s</a></li>' % (ex_tag, ex_tag))
+                     '<a href="#" rel="%s">%s</a></li>' % (ex_tag, ex_html))
             path = '.'
         elif d.startswith(ex_tag):
             path = os.path.join(nengo_viz.__path__[0],
