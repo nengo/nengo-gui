@@ -558,7 +558,7 @@ class ClientSocket(object):
                 datalen = (datalen << 8) + data[2 + i]
             offset += 8
 
-        if opcode != 1 or fin != 1 or mask != 1 or rsv != 0:
+        if (opcode != 1 and opcode != 10) or fin != 1 or mask != 1 or rsv != 0:
             print(dict(fin=fin, rsv=rsv, opcode=opcode, mask=mask,
                        datalen=datalen))
             return None
@@ -578,11 +578,16 @@ class ClientSocket(object):
 
                 self.buffered_data = data[stop_index:]
 
-        return str_data
+        if opcode == 10:
+            return None  # pong response
+        else:
+            return str_data
 
-    def write(self, data, binary=False):
+    def write(self, data, binary=False, ping=False):
         if binary:
             code = 0b10000010
+        elif ping:
+            code = 0b10001001
         else:
             code = 0b10000001
             data += '\r\n'
@@ -597,8 +602,14 @@ class ClientSocket(object):
 
         if not binary:
             data = data.encode('ascii')
-        self.socket.send(header)
-        self.socket.send(data)
+        try:
+            self.socket.send(header)
+            self.socket.send(data)
+        except socket.error as e:
+            if e.errno == 32:  # Broken pipe
+                raise SocketClosedError("Cannot write to socket.")
+            else:
+                raise
 
 
 if __name__ == '__main__':
