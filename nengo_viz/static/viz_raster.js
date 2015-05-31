@@ -31,8 +31,8 @@ VIZ.Raster = function(parent, sim, args) {
                                     .data(this.data_store.data);
 
     this.path.enter().append('path')
-             .attr('class', 'line')
-             .style('stroke', 'black');
+             .attr('class', 'line');
+    this.colors = VIZ.make_colors(this.n_neurons);
 
     this.spikes = this.axes2d.svg.append("g").attr('class', 'spikes');
 
@@ -74,7 +74,11 @@ VIZ.Raster.prototype.update = function() {
         var t = this.axes2d.scale_x(this.data_store.times[this.data_store.first_shown_index + i]);
 
         for (var j = 0; j < shown_data[0][i].length; j++) {
-            loc.push([t, this.axes2d.scale_y(shown_data[0][i][j]), this.axes2d.scale_y(shown_data[0][i][j]+1)]);
+            loc.push([
+                t,
+                this.axes2d.scale_y(shown_data[0][i][j]),
+                this.axes2d.scale_y(shown_data[0][i][j]+1), 
+                shown_data[0][i][j]]);
         }
     }
 
@@ -82,13 +86,15 @@ VIZ.Raster.prototype.update = function() {
             .attr('x1', function(d) {return d[0]})
             .attr('x2', function(d) {return d[0]})
             .attr('y1', function(d) {return d[1]})
-            .attr('y2', function(d) {return d[2]});
+            .attr('y2', function(d) {return d[2]})
+            .style('stroke', function(d) {return self.colors[d[3]]});
     spikes.enter()
             .append('line')
             .attr('x1', function(d) {return d[0]})
             .attr('x2', function(d) {return d[0]})
             .attr('y1', function(d) {return d[1]})
-            .attr('y2', function(d) {return d[2]});
+            .attr('y2', function(d) {return d[2]})
+            .style('stroke', function(d) {return self.colors[d[3]]});
     spikes.exit().remove();
 };
 
