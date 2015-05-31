@@ -233,14 +233,14 @@ class FeedforwardLayout(Action):
             self.scale = 1.0
             self.x, self.y = 0, 0
 
+        self.pos = self.net_graph.layout.make_layout(self.network)
         # record the current positions and sizes of everything in the network
         self.old_state = self.save_network()
         self.act_feedforward_layout()
         self.new_state = self.save_network()
 
     def act_feedforward_layout(self):
-        pos = self.net_graph.layout.make_layout(self.network)
-        for obj, layout in iteritems(pos):
+        for obj, layout in iteritems(self.pos):
             obj_cfg = self.net_graph.config[obj]
             obj_cfg.pos = (layout['y'] / self.scale - self.x,
                            layout['x'] / self.scale - self.y)
@@ -256,9 +256,8 @@ class FeedforwardLayout(Action):
         self.net_graph.modified_config()
 
     def save_network(self):
-        pos = self.net_graph.layout.make_layout(self.network)
         state = []
-        for obj, layout in iteritems(pos):
+        for obj, layout in iteritems(self.pos):
             state.append({
                 'uid': self.net_graph.viz.viz.get_uid(obj),
                 'pos': self.net_graph.config[obj].pos,
