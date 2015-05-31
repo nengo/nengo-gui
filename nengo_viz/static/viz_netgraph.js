@@ -114,9 +114,7 @@ VIZ.NetGraph = function(parent, args) {
             var x = (event.clientX / $(self.svg).width())
             var y = (event.clientY / $(self.svg).height());
 
-            self.normalize_mousewheel(event);
             var delta = event.wheelDeltaY || -event.deltaY;
-
             var scale = delta > 0 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size; // will either be 1.1 or ~0.9
 
             //scale and save components
@@ -374,4 +372,3 @@ VIZ.NetGraph.prototype.detect_collapsed_conns = function(uid) {
         }
     }
 }
-
