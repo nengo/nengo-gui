@@ -108,8 +108,8 @@ VIZ.XYValue.prototype.on_resize = function(width, height) {
 VIZ.XYValue.prototype.generate_menu = function() {
     var self = this;
     var items = [];
-    items.push(['Set range', function() {self.set_range();}]);
-    items.push(['Set X, Y indices', function() {self.set_indices();}]);
+    items.push(['Set range...', function() {self.set_range();}]);
+    items.push(['Set X, Y indices...', function() {self.set_indices();}]);
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
