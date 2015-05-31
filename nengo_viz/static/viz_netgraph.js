@@ -42,10 +42,8 @@ VIZ.NetGraph = function(parent, args) {
     this.svg.style.width = '100%';
     this.svg.style.top = '0px';
     this.svg.id = 'netgraph';
-    this.svg.style.height = 'calc(100% - 80px)';
     this.svg.style.height = '100%';
-    // switch to absolute OK??
-    this.svg.style.position = 'absolute';
+    this.svg.style.position = 'fixed';
         
     interact(this.svg).styleCursor(false);
            
@@ -507,23 +505,20 @@ VIZ.NetGraph.prototype.detect_collapsed_conns = function(uid) {
 VIZ.NetGraph.prototype.create_minimap = function () {
     this.minimap = this.createSVGElement('svg');
     this.minimap.classList.add('minimap');    
-    this.minimap.style.width = '100%';
     this.minimap.id = 'minimap';
-    this.minimap.style.height = '100%';
-    this.minimap.style.position = 'relative';    
     $('.minimap')[0].appendChild(this.minimap);
 
     this.g_networks_mini = this.createSVGElement('g'); 
-    this.minimap.appendChild(this.g_networks_mini);
     this.g_conns_mini = this.createSVGElement('g');
-    this.minimap.appendChild(this.g_conns_mini);
     this.g_items_mini = this.createSVGElement('g');
+    // order these are appended is important for layering
+    this.minimap.appendChild(this.g_networks_mini);
+    this.minimap.appendChild(this.g_conns_mini);
     this.minimap.appendChild(this.g_items_mini);
-
+    // default display minimap
     this.display = true;
-
+    // allow toggling of minimap display with ctrl+M
     document.addEventListener('keydown', function(ev) {
-        // hide and display on ctrl+M
         if (ev.ctrlKey == true && ev.keyCode == 77) {
             if (this.display == true) {
                 $('.minimap')[0].style.visibility = 'hidden';

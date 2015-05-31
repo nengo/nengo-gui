@@ -28,13 +28,15 @@ g.net rect{
     stroke-width: 2px;
 }
 
-.netgraph-mini {
-    background: #9479fa;
-    box-shadow: 0 -4px 2px -2px rgba(0,0,0,0.2);
-    border-radius: 15px/60px;
+.minimap {
+    border-radius: 10px/60px;
+    height: 100%;
+    opacity: 0.85;
+    position: 'relative';
+    width: 100%;
 }
 
-.netgraph-mini line {
+.minimap line {
     stroke: black;
     stroke-width: 1px;
 }
