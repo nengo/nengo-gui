@@ -141,7 +141,7 @@ class Viz(object):
                           'Ignoring all subsequent lines.' % line)
                 except nengo_viz.monkey.StartedVizException:
                     line = nengo_viz.monkey.determine_line_number()
-                    print('nengo.Viz() started on line %d. '
+                    print('nengo_viz.Viz() started on line %d. '
                           'Ignoring all subsequent lines.' % line)
 
         if model is None:
