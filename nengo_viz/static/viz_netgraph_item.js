@@ -127,7 +127,8 @@ VIZ.NetGraphItem = function(ng, info) {
         /** dragging the edge of item to change its size */
         interact(this.area)
             .resizable({
-                edges: { left: true, right: true, bottom: true, top: true }
+                edges: { left: true, right: true, bottom: true, top: true },
+                invert: 'reposition'
                 })
             .on('resizestart', function(event) {
                 self.menu.hide_any();
@@ -158,12 +159,6 @@ VIZ.NetGraphItem = function(ng, info) {
                     if (event.edges.bottom) {
                         h *= -1;
                     }
-                    if (w < 0) {
-                        w = 1;
-                    }
-                    if (h < 0) {
-                        h = 1;
-                    }
 
                     var screen_w = self.get_width();
                     var screen_h = self.get_height();
@@ -177,6 +172,11 @@ VIZ.NetGraphItem = function(ng, info) {
                         h = w / self.aspect;
                     } else {
                         w = h * self.aspect;
+                    }
+
+                    if (w < 0 && h < 0) {
+                        w = -w;
+                        h = -h;
                     }
 
                     var scaled_w = w / h_scale;
