@@ -98,6 +98,7 @@ VIZ.NetGraphItem = function(ng, info) {
         .draggable({
             onstart: function () {
                 self.menu.hide_any();
+                self.move_to_front();
             },
             onmove: function(event) {
                 var w = ng.get_scaled_width();
@@ -259,6 +260,14 @@ VIZ.NetGraphItem = function(ng, info) {
 VIZ.NetGraphItem.prototype.set_label = function(label) {
     this.label.innerHTML = label;
 }
+
+VIZ.NetGraphItem.prototype.move_to_front = function() {
+    this.g.parentNode.appendChild(this.g);
+
+    for (var item in this.children) {
+        this.children[item].move_to_front();
+    }
+};
 
 VIZ.NetGraphItem.prototype.generate_menu = function () {
     var self = this;
