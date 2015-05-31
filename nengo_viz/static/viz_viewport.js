@@ -3,9 +3,9 @@ VIZ.Viewport = function() {
     this.y = 0;
     this.scale = 1.0;
 
-    this.scale.step_size = 1.1;
+    this.scale_step_size = 1.1;
     if (navigator.appVersion.indexOf("Mac")!=-1) {
-        this.scale.step_size = 1.05;
+        this.scale_step_size = 1.05;
     }
     this.w = $("#main").width();
     this.h = $("#main").height();
