@@ -51,10 +51,10 @@ g.net rect{
 
 .netgraph rect.highlight {
     stroke-width: 1;
-    stroke: #888;
+    stroke: rgba(0,0,0,0.1);
 }
 
 .netgraph rect.dragging {
     stroke-width: 1;
-    stroke: #888;
+    stroke: rgba(0,0,0,0.1);
 }
