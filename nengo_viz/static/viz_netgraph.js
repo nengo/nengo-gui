@@ -519,6 +519,21 @@ VIZ.NetGraph.prototype.create_minimap = function () {
     this.minimap.appendChild(this.g_conns_mini);
     this.g_items_mini = this.createSVGElement('g');
     this.minimap.appendChild(this.g_items_mini);
+
+    this.display = true;
+
+    document.addEventListener('keydown', function(ev) {
+        // hide and display on ctrl+M
+        if (ev.ctrlKey == true && ev.keyCode == 77) {
+            if (this.display == true) {
+                $('.minimap')[0].style.visibility = 'hidden';
+                this.display = false
+            } else {
+                $('.minimap')[0].style.visibility = 'visible';
+                this.display = true 
+            }
+        }
+    });
 }
 
 /** Calculate the minimap position offsets and scaling **/
