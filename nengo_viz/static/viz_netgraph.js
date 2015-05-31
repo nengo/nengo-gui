@@ -107,19 +107,37 @@ VIZ.NetGraph = function(parent, args) {
     interact(document.getElementById('main'))
         .on('wheel', function(event) {
             event.preventDefault();
-            if (self.in_zoom_delay) {
-                return;
-            }
-            self.in_zoom_delay = true;
-            setTimeout(function () { self.in_zoom_delay = false; }, 50);
 
             self.menu.hide_any();
 
             var x = (event.clientX / $(self.svg).width())
             var y = (event.clientY / $(self.svg).height());
 
-            var delta = event.wheelDeltaY || -event.deltaY
-            var scale = delta > 0 ? viewport.scale_step_size : 1.0 / viewport.scale_step_size; // will either be 1.1 or ~0.9
+            switch (event.deltaMode) {
+                case 1:  // DOM_DELTA_LINE
+                    if (event.deltaY != 0) {
+                        var delta = Math.log(1. + Math.abs(event.deltaY)) * 30;
+                        if (event.deltaY < 0) {
+                            delta *= -1;
+                        }
+                    } else {
+                        var delta = 0;
+                    }
+                    break;
+                case 2:  // DOM_DELTA_PAGE
+                    // No idea what device would generate scrolling by a page
+                    var delta = 0;
+                    break;
+                case 0:  // DOM_DELTA_PIXEL
+                default:  // Assume pixel if unknown
+                    var delta = event.deltaY;
+                    break;
+            }
+
+            var scale = 1. + Math.abs(delta) / 400.;
+            if (delta < 0) {
+                scale = 1. / scale;
+            }
 
             VIZ.Component.save_components();
 
