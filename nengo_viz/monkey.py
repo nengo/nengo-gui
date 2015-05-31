@@ -57,10 +57,10 @@ def patch():
     for name in known_modules:
         try:
             mod = importlib.import_module(name)
-            simulators[mod] = mod.Simulator
-            mod.Simulator = make_dummy(mod.Simulator)
-        except ImportError:
-            pass
+        except:
+            continue
+        simulators[mod] = mod.Simulator
+        mod.Simulator = make_dummy(mod.Simulator)
     yield
     for mod, cls in simulators.items():
         mod.Simulator = cls
