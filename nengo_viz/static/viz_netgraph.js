@@ -242,15 +242,15 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         var item = this.svg_objects[data.uid];
         item.expand(true,true)
 
-        var item = this.minimap_objects[data.uid];
-        item.expand(true,true)
+        var item_mini = this.minimap_objects[data.uid];
+        item_mini.expand(true,true)
 
     } else if (data.type === 'collapse') {
         var item = this.svg_objects[data.uid];
         item.collapse(true,true)
 
-        var item = this.minimap_objects[data.uid];
-        item.collapse(true,true)
+        var item_mini = this.minimap_objects[data.uid];
+        item_mini.collapse(true,true)
 
     } else if (data.type === 'pos_size') {
         var item = this.svg_objects[data.uid];
@@ -400,11 +400,11 @@ VIZ.NetGraph.prototype.createSVGElement = function(tag) {
  *  if an existing NetGraphConnection is looking for this item, it will be
  *  notified */
 VIZ.NetGraph.prototype.create_object = function(info) {
-    var item = new VIZ.NetGraphItem(this, info, false);
-    this.svg_objects[info.uid] = item;    
-
     var item_mini = new VIZ.NetGraphItem(this, info, true);
     this.minimap_objects[info.uid] = item_mini;    
+
+    var item = new VIZ.NetGraphItem(this, info, false, item_mini);
+    this.svg_objects[info.uid] = item;    
 
     this.detect_collapsed_conns(item.uid);
     this.detect_collapsed_conns(item_mini.uid);

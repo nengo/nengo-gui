@@ -10,7 +10,7 @@
  * @param {string} info.uid - unique identifier
  * @param {string or null} info.parent - a NetGraphItem with .type=='net'
  */
-VIZ.NetGraphItem = function(ng, info, minimap) {
+VIZ.NetGraphItem = function(ng, info, minimap, mini_item) {
     var self = this;
 
     this.ng = ng;
@@ -27,6 +27,7 @@ VIZ.NetGraphItem = function(ng, info, minimap) {
     if (minimap == false) {
         this.g_networks = ng.g_networks;
         this.g_items = ng.g_items;
+        this.mini_item = mini_item;
     } else {
         this.g_networks = ng.g_networks_mini;
         this.g_items = ng.g_items_mini;
@@ -391,6 +392,9 @@ VIZ.NetGraphItem.prototype.expand = function(rts, auto) {
         this.expanded = true;
         this.g_items.removeChild(this.g);
         this.g_networks.appendChild(this.g);
+        if (this.minimap == false) {
+            this.mini_item.expand(rts, auto);
+        }
     } else {
         console.log("expanded a network that was already expanded");
         console.log(this);
@@ -433,6 +437,9 @@ VIZ.NetGraphItem.prototype.collapse = function(report_to_server, auto) {
         this.expanded = false;
         this.g_networks.removeChild(this.g);
         this.g_items.appendChild(this.g);
+        if (this.minimap == false) {
+            this.mini_item.collapse(report_to_server, auto);
+        }
     } else {
         console.log("collapsed a network that was already collapsed");
         console.log(this);
@@ -492,7 +499,7 @@ VIZ.NetGraphItem.prototype.remove = function() {
 
     /** remove from the SVG */
     this.g_items.removeChild(this.g);    
-    if (this.minimap == true && this.depth < 2) {
+    if (this.minimap == true && this.depth == 1) {
         this.ng.scaleMiniMap();
     }
 };
