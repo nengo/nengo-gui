@@ -98,6 +98,9 @@ VIZ.NetGraphItem = function(ng, info) {
         .draggable({
             onstart: function () {
                 self.menu.hide_any();
+                if (!self.expanded) {
+                    self.g.parentNode.appendChild(self.g); // move to front
+                }
             },
             onmove: function(event) {
                 var w = ng.get_scaled_width();
