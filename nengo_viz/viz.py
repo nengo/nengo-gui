@@ -10,6 +10,8 @@ import nengo_viz.server
 import nengo_viz.components
 import nengo_viz.config
 from nengo_viz.components.action import ConfigAction, RemoveGraph
+import nengo_viz.monkey
+
 
 class VizSim(object):
     """A single Simulator attached to an html visualization."""
@@ -113,6 +115,8 @@ class VizSim(object):
 class Viz(object):
     """The master visualization organizer set up for a particular model."""
     def __init__(self, filename, model=None, locals=None):
+        if nengo_viz.monkey.is_executing():
+            raise nengo_viz.monkey.StartedVizException()
 
         self.viz_sims = []
 
@@ -120,36 +124,50 @@ class Viz(object):
         self.load(filename, model, locals)
 
     def load(self, filename, model=None, locals=None):
-        try:
-            if locals is None:
-                locals = {}
-                with open(filename) as f:
-                    code = f.read()
-                exec(code, locals)
-
-            if model is None:
-                model = locals['model']
-
-
+        if locals is None:
+            locals = {}
             locals['nengo_viz'] = nengo_viz
+            locals['__file__'] = filename
 
-            self.model = model
-            self.locals = locals
 
-            self.filename = filename
-            self.name_finder = nengo_viz.NameFinder(locals, model)
-            self.default_labels = self.name_finder.known_name
+            with open(filename) as f:
+                code = f.read()
+            with nengo_viz.monkey.patch():
+                try:
+                    exec(code, locals)
+                except nengo_viz.monkey.StartedSimulatorException:
+                    line = nengo_viz.monkey.determine_line_number()
+                    print('nengo.Simulator() started on line %d. '
+                          'Ignoring all subsequent lines.' % line)
+                except nengo_viz.monkey.StartedVizException:
+                    line = nengo_viz.monkey.determine_line_number()
+                    print('nengo_viz.Viz() started on line %d. '
+                          'Ignoring all subsequent lines.' % line)
 
-            self.config = self.load_config()
-            self.config_save_needed = False
-            self.config_save_needed = False
-            self.config_save_time = None   # time of last config file save
+        if model is None:
+            if 'model' not in locals:
+                raise VizException('No object called "model" in the code')
+            model = locals['model']
+            if not isinstance(model, nengo.Network):
+                raise VizException('The "model" must be a nengo.Network')
 
-            self.lock = threading.Lock()
 
-            self.uid_prefix_counter = {}
-        except:
-            return 'failure'
+
+        self.model = model
+        self.locals = locals
+
+        self.filename = filename
+        self.name_finder = nengo_viz.NameFinder(locals, model)
+        self.default_labels = self.name_finder.known_name
+
+        self.config = self.load_config()
+        self.config_save_needed = False
+        self.config_save_needed = False
+        self.config_save_time = None   # time of last config file save
+
+        self.lock = threading.Lock()
+
+        self.uid_prefix_counter = {}
 
     def find_templates(self):
         for k, v in self.locals.items():
