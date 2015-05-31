@@ -226,8 +226,12 @@ class FeedforwardLayout(Action):
 
         if self.uid is None:
             self.network = self.net_graph.viz.model
+            self.scale = self.net_graph.config[self.network].size[0]
+            self.x, self.y = self.net_graph.config[self.network].pos
         else:
             self.network = self.obj
+            self.scale = 1.0
+            self.x, self.y = 0, 0
 
         # record the current positions and sizes of everything in the network
         self.old_state = self.save_network()
@@ -238,8 +242,10 @@ class FeedforwardLayout(Action):
         pos = self.net_graph.layout.make_layout(self.network)
         for obj, layout in iteritems(pos):
             obj_cfg = self.net_graph.config[obj]
-            obj_cfg.pos = layout['y'], layout['x']
-            obj_cfg.size = layout['h'] / 2, layout['w'] / 2
+            obj_cfg.pos = (layout['y'] / self.scale - self.x,
+                           layout['x'] / self.scale - self.y)
+            obj_cfg.size = (layout['h'] / 2 / self.scale,
+                            layout['w'] / 2 / self.scale)
 
             obj_uid = self.net_graph.viz.viz.get_uid(obj)
 
