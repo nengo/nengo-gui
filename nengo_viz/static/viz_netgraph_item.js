@@ -634,9 +634,14 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
             screen_h = screen_w / this.aspect;
         }
     }
+
+    var border_size = 3;
     if (this.border !== undefined) {
-        var border_w = screen_w * 0.97 + 6;
-        var border_h = screen_h + 6;
+        var border_w = screen_w + border_size * 2;
+        var border_h = screen_h + border_size * 2;
+        if (this.type == 'ens') {
+            border_w = screen_w * 0.97 + border_size * 2;
+        }
 
         this.border.setAttribute('width', border_w);
         this.border.setAttribute('height', border_h);
@@ -667,7 +672,8 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
                'translate(-' + (screen_w / 2) + ', -' + (screen_h / 2) + ')');
     }
     
-    this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
+    this.label.setAttribute('transform', 'translate(0, ' + 
+                                         ((screen_h / 2) + border_size) + ')');
 };
 
 VIZ.NetGraphItem.prototype.get_width = function() {
