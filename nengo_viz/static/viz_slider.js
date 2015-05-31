@@ -198,38 +198,33 @@ VIZ.Slider.prototype.update = function() {
 }
 
 VIZ.Slider.prototype.user_value = function () {
+    var self = this;
 
     //First build the prompt string
-    var prompt_string = 'Example: ';
+    var prompt_string = '';
     for (var i = 0; i < this.sliders.length; i++){
-        var rand = (Math.random() * 10).toFixed(1);
-        prompt_string = prompt_string + rand;
+        prompt_string = prompt_string + this.sliders[i].value;
         if (i != this.sliders.length - 1) {
             prompt_string = prompt_string + ", ";
         }
     }
-    var new_value = prompt('Set value\n' + prompt_string);
-
-    //If the user hits cancel
-    if (new_value == null) {
-        return;
-    };
-
-    //Make the string into a list
-    new_value = new_value.split(',');
-
-    //Update the sliders one at a time, checking input as we go
-    this.immediate_notify = false;
-    for (var i = 0; i < this.sliders.length; i++){
-        if (!(VIZ.is_num(new_value[i]))) {
-            alert("invalid input :" + new_value[i] + "\nFor the slider in position " + (i + 1) );
-            break;
+    VIZ.modal.title('Set slider value(s)...');
+    VIZ.modal.single_input_body(prompt_string, 'New value(s):');
+    VIZ.modal.footer('ok_cancel', function(e) {
+        var new_value = $('#singleInput').val();
+        self.immediate_notify = false;
+        if (new_value !== null) {
+            new_value = new_value.split(',');
+            //Update the sliders one at a time
+            for (var i = 0; i < self.sliders.length; i++){
+                self.sliders[i].fixed = true;
+                self.sliders[i].set_value(parseFloat(new_value[i]));
+            }
         }
-        this.sliders[i].fixed = true;
-        this.sliders[i].set_value(parseFloat(new_value[i]));
-    }
-    this.immediate_notify = true;
-};
+        self.immediate_notify = true;
+    });
+    VIZ.modal.show();
+}
 
 VIZ.Slider.prototype.user_reset_value = function() {
     for (var i = 0; i < this.sliders.length; i++){
@@ -241,17 +236,23 @@ VIZ.Slider.prototype.user_reset_value = function() {
 
 VIZ.Slider.prototype.set_range = function() {
     var range = this.sliders[0].scale.domain();
-    var new_range = prompt('Set range', '' + range[1] + ',' + range[0]);
-    if (new_range !== null) {
-        new_range = new_range.split(',');
-        var min = parseFloat(new_range[0]);
-        var max = parseFloat(new_range[1]);
-        for (var i in this.sliders) {
-            this.sliders[i].set_range(min, max);
+    var self = this;
+    VIZ.modal.title('Set slider range...');
+    VIZ.modal.single_input_body('' + range[1] + ',' + range[0], 'New range:');
+    VIZ.modal.footer('ok_cancel', function(e) {
+        var new_range = $('#singleInput').val();
+        if (new_range !== null) {
+            new_range = new_range.split(',');
+            var min = parseFloat(new_range[0]);
+            var max = parseFloat(new_range[1]);
+            for (var i in self.sliders) {
+                self.sliders[i].set_range(min, max);
+            }
+            self.save_layout();
         }
-        this.save_layout();
-    }
-};
+    });
+    VIZ.modal.show();
+}
 
 VIZ.Slider.prototype.layout_info = function () {
     var info = VIZ.Component.prototype.layout_info.call(this);

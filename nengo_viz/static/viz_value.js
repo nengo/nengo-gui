@@ -126,14 +126,20 @@ VIZ.Value.prototype.update_layout = function(config) {
 
 VIZ.Value.prototype.set_range = function() {
     var range = this.axes2d.scale_y.domain();
-    var new_range = prompt('Set range', '' + range[0] + ',' + range[1]);
-    if (new_range !== null) {
-        new_range = new_range.split(',');
-        var min = parseFloat(new_range[0]);
-        var max = parseFloat(new_range[1]);
-        this.update_range(min, max);
-        this.save_layout();
-    }
+    var self = this;
+    VIZ.modal.title('Set graph range...');
+    VIZ.modal.single_input_body(range, 'New range:');
+    VIZ.modal.footer('ok_cancel', function(e) {
+        var new_range = $('#singleInput').val();
+        if (new_range !== null) {
+            new_range = new_range.split(',');
+            var min = parseFloat(new_range[0]);
+            var max = parseFloat(new_range[1]);
+            self.update_range(min, max);
+            self.save_layout();
+        }
+    });
+    VIZ.modal.show();
 }
 
 VIZ.Value.prototype.update_range = function(min, max) {
