@@ -42,7 +42,7 @@ VIZ.Menu.prototype.show = function (x, y, items) {
     this.menu_div.appendChild(this.menu);
     this.div.appendChild(this.menu_div);
 
-    VIZ.set_transform(this.menu_div, x - 20, y - 20);
+    VIZ.set_transform(this.menu_div, x - 20, y - $('.minimap').height());
 
     this.actions = {}
 

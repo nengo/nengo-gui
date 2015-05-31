@@ -40,9 +40,8 @@ VIZ.NetGraph = function(parent, args) {
     this.svg = this.createSVGElement('svg');
     this.svg.classList.add('netgraph');    
     this.svg.style.width = '100%';
-    this.svg.style.top = '0px';
     this.svg.id = 'netgraph';
-    this.svg.style.height = '100%';
+    this.svg.style.height = 'calc(100% - 80px)';
     this.svg.style.position = 'fixed';
         
     interact(this.svg).styleCursor(false);
@@ -503,10 +502,14 @@ VIZ.NetGraph.prototype.detect_collapsed_conns = function(uid) {
 
 /** create a minimap */
 VIZ.NetGraph.prototype.create_minimap = function () {
+    this.minimap_div = document.createElement('div');
+    this.minimap_div.className = 'minimap';
+    this.parent.appendChild(this.minimap_div);
+
     this.minimap = this.createSVGElement('svg');
     this.minimap.classList.add('minimap');    
     this.minimap.id = 'minimap';
-    $('.minimap')[0].appendChild(this.minimap);
+    this.minimap_div.appendChild(this.minimap);
 
     this.g_networks_mini = this.createSVGElement('g'); 
     this.g_conns_mini = this.createSVGElement('g');
@@ -562,9 +565,6 @@ VIZ.NetGraph.prototype.scaleMiniMap = function () {
             this.maxItemY = item_max_y;
         }
     }
-
-    mm_width = $('.minimap').width()
-    mm_height = $('.minimap').height()
 
     this.minimap_scale_x =  1 / (this.maxItemX - this.minItemX);
     this.minimap_scale_y = 1 / (this.maxItemY - this.minItemY);
