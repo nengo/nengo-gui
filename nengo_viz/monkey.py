@@ -1,17 +1,21 @@
+import contextlib
 import importlib
 import threading
-import sys
 import traceback
-import contextlib
+import sys
+
 
 # list of Simulators to check for
-known_modules = ['nengo', 'nengo_ocl']
+known_modules = ['nengo', 'nengo_ocl', 'nengo_brainstorm', 'nengo_distilled']
+
 
 class StartedSimulatorException(Exception):
     pass
 
+
 class StartedVizException(Exception):
     pass
+
 
 # create a wrapper class that will throw an exception if we are
 # currently executing a script
@@ -23,11 +27,14 @@ def make_dummy(cls):
             super(DummySimulator, self).__init__(*args, **kwargs)
     return DummySimulator
 
+
 # thread local storage for storing whether we are executing a script
 flag = threading.local()
 
+
 def is_executing():
     return getattr(flag, 'executing', False)
+
 
 def determine_line_number(filename='<string>'):
     '''Checks stack trace to determine the line number we are currently at.
@@ -41,6 +48,7 @@ def determine_line_number(filename='<string>'):
         if fn == filename:
             return line
     return None
+
 
 @contextlib.contextmanager
 def patch():
@@ -57,7 +65,3 @@ def patch():
     for mod, cls in simulators.items():
         mod.Simulator = cls
     flag.executing = False
-
-
-
-
