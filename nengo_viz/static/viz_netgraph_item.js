@@ -134,7 +134,9 @@ VIZ.NetGraphItem = function(ng, info, minimap) {
                     item_mini.set_position(item.pos[0], item.pos[1])
                     item_mini.set_size(item.size[0], item.size[1]);
 
-                    self.ng.scaleMiniMap();
+                    if (self.depth === 1) {
+                        self.ng.scaleMiniMap();
+                    }
                 },
                 onend: function(event) {
                     var item = ng.svg_objects[uid];
@@ -226,7 +228,9 @@ VIZ.NetGraphItem = function(ng, info, minimap) {
                     item_mini.set_position(item.pos[0], item.pos[1])
                     item_mini.set_size(item.size[0], item.size[1]);
 
-                    self.ng.scaleMiniMap();
+                    if (self.depth === 1) {
+                        self.ng.scaleMiniMap();
+                    }
                 })
                 .on('resizeend', function(event) {
                     var item = ng.svg_objects[uid];
@@ -488,7 +492,7 @@ VIZ.NetGraphItem.prototype.remove = function() {
 
     /** remove from the SVG */
     this.g_items.removeChild(this.g);    
-    if (this.minimap == true) {
+    if (this.minimap == true && this.depth < 2) {
         this.ng.scaleMiniMap();
     }
 };
