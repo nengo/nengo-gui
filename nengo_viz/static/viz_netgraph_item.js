@@ -128,7 +128,7 @@ VIZ.NetGraphItem = function(ng, info) {
         interact(this.area)
             .resizable({
                 edges: { left: true, right: true, bottom: true, top: true },
-                invert: 'reposition'
+                invert: this.type == 'ens' ? 'reposition' : 'none'
                 })
             .on('resizestart', function(event) {
                 self.menu.hide_any();
