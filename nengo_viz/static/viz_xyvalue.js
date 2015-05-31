@@ -40,7 +40,8 @@ VIZ.XYValue = function(parent, sim, args) {
     this.path = this.axes2d.svg.append("g").selectAll('path')
                                     .data([this.data_store.data[this.index_y]]);
     this.path.enter().append('path')
-             .attr('class', 'line');
+             .attr('class', 'line')
+             .style('stroke', VIZ.make_colors(1));
 
     this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
