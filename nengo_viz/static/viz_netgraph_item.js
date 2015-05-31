@@ -30,7 +30,6 @@ VIZ.NetGraphItem = function(ng, info, minimap) {
     } else {
         this.g_networks = ng.g_networks_mini;
         this.g_items = ng.g_items_mini;
-        this.minimap_scale = .15
     }
 
     /** if this is a network, the children list is the set of NetGraphItems
@@ -134,6 +133,8 @@ VIZ.NetGraphItem = function(ng, info, minimap) {
                     var item_mini = ng.minimap_objects[uid];
                     item_mini.set_position(item.pos[0], item.pos[1])
                     item_mini.set_size(item.size[0], item.size[1]);
+
+                    self.ng.scaleMiniMap();
                 },
                 onend: function(event) {
                     var item = ng.svg_objects[uid];
@@ -224,6 +225,8 @@ VIZ.NetGraphItem = function(ng, info, minimap) {
                     var item_mini = ng.minimap_objects[uid];
                     item_mini.set_position(item.pos[0], item.pos[1])
                     item_mini.set_size(item.size[0], item.size[1]);
+
+                    self.ng.scaleMiniMap();
                 })
                 .on('resizeend', function(event) {
                     var item = ng.svg_objects[uid];
@@ -485,6 +488,9 @@ VIZ.NetGraphItem.prototype.remove = function() {
 
     /** remove from the SVG */
     this.g_items.removeChild(this.g);    
+    if (this.minimap == true) {
+        this.ng.scaleMiniMap();
+    }
 };
 
 VIZ.NetGraphItem.prototype.constrain_aspect = function() {
@@ -697,12 +703,13 @@ VIZ.NetGraphItem.prototype.get_width = function() {
         return this.fixed_width;
     }
 
-    var w = $(this.ng.svg).width();
    
     if (this.minimap == false) {
+        var w = $(this.ng.svg).width();
         var screen_w = this.get_nested_width() * w * this.ng.scale;
     } else {
-        var screen_w = this.get_nested_width() * w * this.minimap_scale;
+        var w = $(this.ng.minimap).width();
+        var screen_w = this.get_nested_width() * w * this.ng.minimap_scale_x;
     };
         
     if (screen_w < this.minWidth) {
@@ -717,12 +724,12 @@ VIZ.NetGraphItem.prototype.get_height = function() {
         return this.fixed_height;
     }
 
-    var h = $(this.ng.svg).height();
-   
     if (this.minimap == false) {
+        var h = $(this.ng.svg).height();
         var screen_h = this.get_nested_height() * h * this.ng.scale;
     } else {
-        var screen_h = this.get_nested_height() * h * this.minimap_scale;
+        var h = $(this.ng.minimap).height();
+        var screen_h = this.get_nested_height() * h * this.ng.minimap_scale_y;
     };
         
     if (screen_h < this.minHeight) {
@@ -751,11 +758,11 @@ VIZ.NetGraphItem.prototype.get_screen_location = function() {
         var offsetX = this.ng.offsetX * w;
         var offsetY = this.ng.offsetY * h;
     } else {
-        var w = $(this.ng.svg).width() * this.minimap_scale;
-        var h = $(this.ng.svg).height() * this.minimap_scale;
+        var w = $(this.ng.minimap).width() * this.ng.minimap_scale_x;
+        var h = $(this.ng.minimap).height() * this.ng.minimap_scale_y;
 
-        var offsetX = 0;
-        var offsetY = 0;
+        var offsetX = -this.ng.minItemX * w;
+        var offsetY = -this.ng.minItemY * h;
     };
     
     var dx = 0;

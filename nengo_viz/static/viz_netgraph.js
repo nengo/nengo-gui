@@ -18,6 +18,14 @@ VIZ.NetGraph = function(parent, args) {
     this.minimap_objects = {};
     this.minimap_conns = {};
 
+    this.minItemX = 0;
+    this.maxItemX = 0;
+    this.minItemY = 0;
+    this.maxItemY = 0;
+
+    this.minimap_scale_x = .1;
+    this.minimap_scale_y = .1;
+
     this.in_zoom_delay = false;
 
     /** Since connections may go to items that do not exist yet (since they
@@ -32,11 +40,12 @@ VIZ.NetGraph = function(parent, args) {
     this.svg = this.createSVGElement('svg');
     this.svg.classList.add('netgraph');    
     this.svg.style.width = '100%';
-    this.svg.style.top = '-80px';
+    this.svg.style.top = '0px';
     this.svg.id = 'netgraph';
-    // this.svg.style.height = 'calc(100% - 80px)';
+    this.svg.style.height = 'calc(100% - 80px)';
     this.svg.style.height = '100%';
-    this.svg.style.position = 'fixed';    
+    // switch to absolute OK??
+    this.svg.style.position = 'absolute';
         
     interact(this.svg).styleCursor(false);
            
@@ -399,6 +408,8 @@ VIZ.NetGraph.prototype.create_object = function(info) {
 
     this.detect_collapsed_conns(item.uid);
     this.detect_collapsed_conns(item_mini.uid);
+
+    this.scaleMiniMap();
 };
 
 
@@ -444,11 +455,12 @@ VIZ.NetGraph.prototype.toggle_network = function(uid) {
     } else {
         item.expand();
     }
-    var item = this.minimap_objects[uid];
-    if (item.expanded) {
-        item.collapse(true);
+
+    var item_mini = this.minimap_objects[uid];
+    if (item_mini.expanded) {
+        item_mini.collapse(true);
     } else {
-        item.expand();
+        item_mini.expand();
     }
 }
 
@@ -491,14 +503,8 @@ VIZ.NetGraph.prototype.detect_collapsed_conns = function(uid) {
     }
 }
 
+/** create a minimap */
 VIZ.NetGraph.prototype.create_minimap = function () {
-
-    /** create a minimap */
-    // there has to be an SVG element for each element in the main
-    // but instead of each having it's own position and size etc 
-    // that will be entirely based off the g_regular counterparts
-    // also the size scaling will be as if there's no config (i.e. 
-    // full zoom out the whole time)
     this.minimap = this.createSVGElement('svg');
     this.minimap.classList.add('minimap');    
     this.minimap.style.width = '100%';
@@ -513,4 +519,54 @@ VIZ.NetGraph.prototype.create_minimap = function () {
     this.minimap.appendChild(this.g_conns_mini);
     this.g_items_mini = this.createSVGElement('g');
     this.minimap.appendChild(this.g_items_mini);
+}
+
+/** Calculate the minimap position offsets and scaling **/
+VIZ.NetGraph.prototype.scaleMiniMap = function () {
+
+    keys = Object.keys(this.svg_objects);
+    if (keys.length === 0) {
+        return;
+    } 
+
+    key = keys[0]
+    this.minItemX = this.svg_objects[key].pos[0];
+    this.minItemY = this.svg_objects[key].pos[1];
+    this.maxItemX = this.svg_objects[key].pos[0];
+    this.maxItemY = this.svg_objects[key].pos[1];
+
+    for (var key in this.svg_objects) {
+        item_min_x = this.svg_objects[key].pos[0] - this.svg_objects[key].size[0];
+        item_max_x = this.svg_objects[key].pos[0] + this.svg_objects[key].size[0];
+        item_min_y = this.svg_objects[key].pos[1] - this.svg_objects[key].size[1];
+        item_max_y = this.svg_objects[key].pos[1] + this.svg_objects[key].size[1];
+
+        if (this.minItemX > item_min_x) {
+            this.minItemX = item_min_x;
+        } else if (this.maxItemX < item_max_x) {
+            this.maxItemX = item_max_x;
+        }
+        if (this.minItemY > item_min_y) {
+            this.minItemY = item_min_y;
+        } else if (this.maxItemY < item_max_y) {
+            this.maxItemY = item_max_y;
+        }
+    }
+
+    mm_width = $('.minimap').width()
+    mm_height = $('.minimap').height()
+
+    this.minimap_scale_x =  1 / (this.maxItemX - this.minItemX);
+    this.minimap_scale_y = 1 / (this.maxItemY - this.minItemY);
+
+    // give a bit of a border
+    this.minItemX -= this.minimap_scale_x * .05;
+    this.maxItemX += this.minimap_scale_x * .05;
+    this.minItemY -= this.minimap_scale_y * .05;
+    this.maxItemY += this.minimap_scale_y * .05;
+    // TODO: there is a better way to do this than recalculate
+    this.minimap_scale_x =  1 / (this.maxItemX - this.minItemX);
+    this.minimap_scale_y = 1 / (this.maxItemY - this.minItemY);
+
+    this.redraw();
 }
