@@ -114,6 +114,9 @@ class Server(swi.SimpleWebInterface):
         finally:
             component.finish()
 
+            # wait a moment before checking if the server should be stopped
+            time.sleep(2)
+
             # if there are no simulations left, stop the server
             if self.viz.count_sims() == 0:
                 if isinstance(component, nengo_viz.components.SimControl):
