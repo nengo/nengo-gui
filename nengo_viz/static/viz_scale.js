@@ -4,7 +4,10 @@ VIZ.scale = {};
 VIZ.scale.cumulative = 1;
 
 //The magnitude of the zoom being applied to the netgraph and the components
-VIZ.scale.step_size = 1.05;
+VIZ.scale.step_size = 1.1;
+if (navigator.appVersion.indexOf("Mac")!=-1) {
+    VIZ.scale.step_size = 1.05;
+}
 
 //A posn is an object with {x: int , y: int}
 

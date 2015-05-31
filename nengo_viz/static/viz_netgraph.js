@@ -115,8 +115,8 @@ VIZ.NetGraph = function(parent, args) {
             var y = (event.clientY / $(self.svg).height());
 
             self.normalize_mousewheel(event);
-            var delta = event.wheelDeltaY || -event.deltaY
-            VIZ.scale.step_size = 1.05
+            var delta = event.wheelDeltaY || -event.deltaY;
+
             var scale = delta > 0 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size; // will either be 1.1 or ~0.9
 
             //scale and save components
@@ -375,18 +375,3 @@ VIZ.NetGraph.prototype.detect_collapsed_conns = function(uid) {
     }
 }
 
-/** Normalize scrolling speed across browsers
- * From: http://stackoverflow.com/questions/5527601/
- * normalizing-mousewheel-speed-across-browsers  */
-VIZ.NetGraph.prototype.normalize_mousewheel = function (e) {
-        var o = e,
-            d = o.detail, w = o.wheelDelta,
-            n = 225, n1 = n-1;
-
-        // Normalize delta
-        d = d ? w && (f = w/d) ? d/f : -d/1.35 : w/120;
-        // Quadratic scale if |d| > 1
-        d = d < 1 ? d < -1 ? (-Math.pow(d, 2) - n1) / n : d : (Math.pow(d, 2) + n1) / n;
-        // Delta *should* not be greater than 2...
-        e.delta = Math.min(Math.max(d / 2, -1), 1);
-    }
