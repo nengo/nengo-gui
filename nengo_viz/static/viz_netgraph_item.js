@@ -628,14 +628,16 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
         }
     }
 
+    var area_w = screen_w * 0.97; // the circle pattern isn't perfectly square
+    var area_h = screen_h;
     this.area.setAttribute('transform', 
-                        'translate(-' + (screen_w / 2) + ', -' + (screen_h / 2) + ')');
-    this.area.setAttribute('width', screen_w);
-    this.area.setAttribute('height', screen_h);
+            'translate(-' + (area_w / 2) + ', -' + (area_h / 2) + ')');
+    this.area.setAttribute('width', area_w);
+    this.area.setAttribute('height', area_h);
 
     if (this.type === 'ens') {
         var scale = Math.sqrt(screen_h * screen_h + screen_w * screen_w) / Math.sqrt(2);
-        var r = 18;  //TODO: Don't hardcode the size of the ensemble
+        var r = 17.8;  //TODO: Don't hardcode the size of the ensemble
         this.shape.setAttribute('transform', 'scale(' + scale / 2 / r + ')');
         this.shape.style.setProperty('stroke-width', 20/scale);              
     } else if (this.passthrough) {
@@ -737,25 +739,26 @@ VIZ.NetGraphItem.prototype.ensemble_svg = function() {
     var shape = this.ng.createSVGElement('g');
     shape.setAttribute('class', 'ensemble');
 
-    var dx = -0.5;
+    var dx = -1.25;
+    var dy = 0.25;
     
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':-11.157 + dx,'cy':'-7.481','r':'4.843'});
+    this.setAttributes(circle, {'cx':-11.157 + dx,'cy':-7.481 + dy,'r':'4.843'});
     shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':0.186 + dx,'cy':'-0.127','r':'4.843'});
+    this.setAttributes(circle, {'cx':0.186 + dx,'cy':-0.127 + dy,'r':'4.843'});
     shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':5.012 + dx,'cy':'12.56','r':'4.843'});
+    this.setAttributes(circle, {'cx':5.012 + dx,'cy':12.56 + dy,'r':'4.843'});
     shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':13.704 + dx,'cy':'-0.771','r':'4.843'});
+    this.setAttributes(circle, {'cx':13.704 + dx,'cy':-0.771 + dy,'r':'4.843'});
     shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':-10.353 + dx,'cy':'8.413','r':'4.843'});
+    this.setAttributes(circle, {'cx':-10.353 + dx,'cy':8.413 + dy,'r':'4.843'});
     shape.appendChild(circle);            
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':3.894 + dx,'cy':'-13.158','r':'4.843'});
+    this.setAttributes(circle, {'cx':3.894 + dx,'cy':-13.158 + dy,'r':'4.843'});
     shape.appendChild(circle);
 
     return shape;
