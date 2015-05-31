@@ -2,9 +2,7 @@ VIZ.Viewport = function() {
     this.x = 0;
     this.y = 0;
     this.scale = 1.0;
-    
-    this.scale_step_size = 1.1;
-    
+
     this.w = $("#main").width();
     this.h = $("#main").height();
     var self = this;
