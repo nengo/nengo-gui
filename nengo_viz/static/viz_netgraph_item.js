@@ -75,8 +75,13 @@ VIZ.NetGraphItem = function(ng, info, minimap, mini_item) {
     if (info.type === 'node') {
         if (this.passthrough) {
             this.shape = this.ng.createSVGElement('ellipse');
-            this.fixed_width = 10;
-            this.fixed_height = 10;
+            if (this.minimap == false) {
+                this.fixed_width = 10;
+                this.fixed_height = 10;
+            } else {
+                this.fixed_width = 3;
+                this.fixed_height = 3;
+            }
             this.g.classList.add('passthrough');
         } else {
             this.shape = this.ng.createSVGElement('rect');

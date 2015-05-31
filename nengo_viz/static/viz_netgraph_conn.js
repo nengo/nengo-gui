@@ -20,6 +20,7 @@ VIZ.NetGraphConnection = function(ng, info, minimap) {
     this.pre = null;
     this.post = null;    
 
+    this.minimap = minimap;
     if (minimap == false) {
         this.g_conns = ng.g_conns;
         this.objects = ng.svg_objects;
@@ -72,7 +73,11 @@ VIZ.NetGraphConnection = function(ng, info, minimap) {
         this.line = ng.createSVGElement('line');
         this.g.appendChild(this.line);    
         this.marker = ng.createSVGElement('path');
-        this.marker.setAttribute('d', "M 10 0 L -5 -5 L -5 5 z");
+        if (this.minimap == false) {
+            this.marker.setAttribute('d', "M 10 0 L -5 -5 L -5 5 z");
+        } else {
+            this.marker.setAttribute('d', "M 3 0 L -2.5 -2.5 L -2.5 2.5 z");
+        }
         this.g.appendChild(this.marker);
     }
 
@@ -207,8 +212,6 @@ VIZ.NetGraphConnection.prototype.redraw = function() {
     }
     var pre_pos = this.pre.get_screen_location();
 
-    if (this.minimap == true) { console.log('setnhasneotuhaoesnu'); };
-    
     if (this.recurrent) {
         var item = this.objects[this.pres[0]];
         if (item === undefined) {
