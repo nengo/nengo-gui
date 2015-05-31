@@ -628,7 +628,8 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
         }
     }
 
-    var area_w = screen_w * 0.97; // the circle pattern isn't perfectly square
+    // the circle pattern isn't perfectly square, so make its area smaller
+    var area_w = this.type === 'ens' ? screen_w * 0.97 : screen_w;
     var area_h = screen_h;
     this.area.setAttribute('transform', 
             'translate(-' + (area_w / 2) + ', -' + (area_h / 2) + ')');
