@@ -543,6 +543,9 @@ class ClientSocket(object):
         datalen = data[1] & 0x7F
 
         if opcode == 8:
+            code = 0b10001000
+            ack = struct.pack('!BB', code, 0)
+            self.socket.send(ack)
             raise SocketClosedError("Websocket has been closed")
 
         offset = 0
