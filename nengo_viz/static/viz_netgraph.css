@@ -45,16 +45,13 @@ g.net rect{
 
 .netgraph rect.border {
     stroke-width: 0;
-    stroke: black;
     fill: transparent;
 }
 
 .netgraph rect.highlight {
-    stroke-width: 1;
-    stroke: #888;
+    fill: rgba(0,0,0,0.05);
 }
 
 .netgraph rect.dragging {
-    stroke-width: 1;
-    stroke: #888;
+    fill: rgba(0,0,0,0.05);
 }

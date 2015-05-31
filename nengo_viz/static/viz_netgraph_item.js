@@ -59,7 +59,6 @@ VIZ.NetGraphItem = function(ng, info) {
 
     this.border = this.ng.createSVGElement('rect');
     this.border.classList.add('border');
-    g.appendChild(this.border);
 
     this.g.addEventListener('mouseenter',
                             function() {
@@ -101,6 +100,7 @@ VIZ.NetGraphItem = function(ng, info) {
     this.set_size(info.size[0], info.size[1]);
 
     g.appendChild(this.shape);
+    g.appendChild(this.border);
 
     interact.margin(20);
 
@@ -635,7 +635,7 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
         }
     }
 
-    var border_size = 3;
+    var border_size = 0;
     if (this.border !== undefined) {
         var border_w = screen_w + border_size * 2;
         var border_h = screen_h + border_size * 2;
