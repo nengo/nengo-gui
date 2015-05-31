@@ -17,6 +17,24 @@ Nengo.NetGraph = function(parent, args) {
     this.font_size = 100;       // font size as a percent of base
     this.aspect_resize = false;  //preserve aspect ratios on window resize
 
+    var transparent_nets = false;  // Do networks have transparent backgrounds?
+    Object.defineProperty(this, 'transparent_nets', {
+        get: function() {
+            return transparent_nets;
+        },
+        set: function(val) {
+            if (val === transparent_nets) { return; }
+            transparent_nets = val;
+            for (var key in this.svg_objects) {
+                var ngi = this.svg_objects[key];
+                ngi.compute_fill();
+                if (ngi.type === 'net' && ngi.expanded) {
+                    ngi.shape.style["fill-opacity"] = val ? 0.0 : 1.0;
+                }
+            }
+        }
+    });
+
     this.svg_objects = {};     // dict of all Nengo.NetGraphItems, by uid
     this.svg_conns = {};       // dict of all Nengo.NetGraphConnections, by uid
     this.minimap_objects = {};
@@ -439,7 +457,7 @@ Nengo.NetGraph.prototype.on_resize = function(event) {
                     this.old_width/width / this.scale;
                 var new_height = item.get_height()*
                     this.old_height/height / this.scale;
-                item.size = [new_width/(2*width), 
+                item.size = [new_width/(2*width),
                     new_height/(2*height)];               }
         }
     }
@@ -447,7 +465,7 @@ Nengo.NetGraph.prototype.on_resize = function(event) {
     this.old_width = width;
     this.old_height = height;
 
-    this.redraw();    
+    this.redraw();
 };
 
 

@@ -160,6 +160,15 @@ Nengo.Modal.prototype.main_config = function(options) {
             '<input type="checkbox" id="fixed-resize">' +
             'Fix aspect ratio of elements on canvas resize' +
           '</label>' +
+          '<div class="help-block with-errors"></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<div class="checkbox">' +
+          '<label for="transparent-nets" class="control-label">' +
+            '<input type="checkbox" id="transparent-nets">' +
+            'Expanded networks are transparent' +
+          '</label>' +
         '<div class="help-block with-errors"></div>' +
       '</div>' +
       '<div class="select">' +
@@ -183,6 +192,12 @@ Nengo.Modal.prototype.main_config = function(options) {
     $('#fixed-resize').prop('checked', options["aspect_resize"]);
 
     $('#config-fontsize').val(options["font_size"]);
+
+    $('#transparent-nets').prop('checked', options["transparent_nets"]);
+    $('#transparent-nets').change(function () {
+        Nengo.netgraph.transparent_nets = $('#transparent-nets').prop('checked');
+    });
+
     $('#config-fontsize').bind('keyup input', function () {
         Nengo.netgraph.set_font_size(parseInt($('#config-fontsize').val()));
     });
