@@ -116,7 +116,7 @@ VIZ.NetGraph = function(parent, args) {
             switch (event.deltaMode) {
                 case 1:  // DOM_DELTA_LINE
                     if (event.deltaY != 0) {
-                        var delta = Math.log(1. + Math.abs(event.deltaY)) * 30;
+                        var delta = Math.log(1. + Math.abs(event.deltaY)) * 60;
                         if (event.deltaY < 0) {
                             delta *= -1;
                         }
@@ -134,7 +134,7 @@ VIZ.NetGraph = function(parent, args) {
                     break;
             }
 
-            var scale = 1. + Math.abs(delta) / 400.;
+            var scale = 1. + Math.abs(delta) / 600.;
             if (delta < 0) {
                 scale = 1. / scale;
             }
