@@ -212,6 +212,12 @@ VIZ.Slider.prototype.user_value = function () {
     VIZ.modal.single_input_body(prompt_string, 'New value(s):');
     VIZ.modal.footer('ok_cancel', function(e) {
         var new_value = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
         self.immediate_notify = false;
         if (new_value !== null) {
             new_value = new_value.split(',');
@@ -226,7 +232,7 @@ VIZ.Slider.prototype.user_value = function () {
 
     var $form = $('#myModalForm').validator({
         custom: {
-            valuegraph: function($item) {
+            myValidator: function($item) {
                 var nums = $item.val().split(',');
                 if (nums.length != self.sliders.length) {
                     return false;
@@ -237,10 +243,8 @@ VIZ.Slider.prototype.user_value = function () {
                     }
                 }
                 return true;
-            }},
-        errors: {
-            valuegraph: 'Does not match'
-        }
+            }
+        },
     });
 
     var $input = $('#singleInput');

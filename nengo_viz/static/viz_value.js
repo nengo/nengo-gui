@@ -131,6 +131,12 @@ VIZ.Value.prototype.set_range = function() {
     VIZ.modal.single_input_body(range, 'New range:');
     VIZ.modal.footer('ok_cancel', function(e) {
         var new_range = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
         if (new_range !== null) {
             new_range = new_range.split(',');
             var min = parseFloat(new_range[0]);
@@ -138,24 +144,26 @@ VIZ.Value.prototype.set_range = function() {
             self.update_range(min, max);
             self.save_layout();
         }
+        $('#OK').attr('data-dismiss', 'modal');
     });
     var $form = $('#myModalForm').validator({
         custom: {
-            valuegraph: function($item) {
+            my_validator: function($item) {
                 var nums = $item.val().split(',');
-                return (nums.length==2
-                        && $.isNumeric(nums[0])
-                        && $.isNumeric(nums[1]));
-            }},
-        errors: {
-            valuegraph: 'Does not match'
-        }
+                var valid = false;
+                if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
+                    if (nums[0] < nums[1]) {
+                        valid = true; //Two numbers, 1st less than 2nd
+                    }
+                }
+                return (nums.length==2 && valid);
+            }
+        },
     });
 
     var $input = $('#singleInput');
-    $input.attr('data-valuegraph', 'number');
+    $input.attr('data-my_validator', 'custom');
     $input.attr('data-error', 'Input should be in the form "<min>,<max>".');
-    $('#OK').prop('disabled', true);
     VIZ.modal.show();
 }
 
