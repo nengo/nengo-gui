@@ -9,13 +9,13 @@
 VIZ.SimControl = function(div, args) {
     var self = this;
 
-    div.classList.add('sim_control');    
+    div.classList.add('sim_control');
     this.div = div;
 
     /** respond to resize events */
     this.div.addEventListener("resize", function() {self.on_resize();});
     window.addEventListener("resize", function() {self.on_resize();});
-    
+
     /** the most recent time from the simulator */
     this.time = 0.0;
     /** the most recent rate information from the simulator */
@@ -25,25 +25,29 @@ VIZ.SimControl = function(div, args) {
     /** do we have an update() call scheduled? */
     this.pending_update = false;
 
-    /** Create the WebSocket to communicate with the server */ 
+    /** Create the WebSocket to communicate with the server */
     this.ws = VIZ.create_websocket(args.uid);
-    
+
     this.ws.onmessage = function(event) {self.on_message(event);}
-    
+
     /** Create the TimeSlider */
     this.time_slider = new VIZ.TimeSlider({x: 150, y: 10, sim:this,
-                                           width: this.div.clientWidth-250, 
+                                           width: this.div.clientWidth-250,
                                            height: this.div.clientHeight-20,
                                            shown_time: args.shown_time,
                                            kept_time: args.kept_time});
-    
+
     /** Get reference to the pause button */
     this.pause_button = $('#pause_button')[0];
     this.pause_button.onclick = function(event) {self.on_pause_click();};
     VIZ.set_transform(this.pause_button, this.div.clientWidth - 100, 30);
-
     this.pause_button_icon = $('#pause_button_icon')[0];
-    
+
+    /** Get reference to the options button */
+    $('#options_button')[0]
+        .addEventListener('click', function() {self.on_options_click();});
+    VIZ.set_transform(this.options_button, 10, 10);
+
     /** Create the speed and rate update sliders */
     this.rate_tr = $('#rate_tr')[0];
     this.ticks_tr = $('#ticks_tr')[0];
@@ -63,7 +67,7 @@ VIZ.SimControl.prototype.on_message = function(event) {
         else if (event.data.substring(0, 6) === 'config') {
             console.log(event.data);
             eval(event.data.substring(6, event.data.length));
-        } 
+        }
     }
 
     else {
@@ -120,13 +124,13 @@ VIZ.SimControl.prototype.register_listener = function(func) {
     this.listeners.push(func);
 };
 
-/** Update the visual display */    
+/** Update the visual display */
 VIZ.SimControl.prototype.update = function() {
     this.pending_update = false;
 
-    this.ticks_tr.innerHTML = '<th>Time</th><td>' + this.time.toFixed(3) + '</td>';
-    this.rate_tr.innerHTML = '<th>Speed</th><td>' + this.rate.toFixed(2) + 'x</td>';
-    
+    this.ticks_tr.innerHTML = '<td>' + this.time.toFixed(3) + '</td>';
+    this.rate_tr.innerHTML = '<td>' + this.rate.toFixed(2) + 'x</td>';
+
     this.time_slider.update_times(this.time);
 };
 
@@ -152,8 +156,16 @@ VIZ.SimControl.prototype.on_pause_click = function(event) {
     }
 };
 
+VIZ.SimControl.prototype.on_options_click = function(event) {
+    if (this.paused) {
+        this.play();
+    } else {
+        this.pause();
+    }
+};
+
 VIZ.SimControl.prototype.on_resize = function(event) {
-    this.time_slider.resize(this.div.clientWidth - 240, 
+    this.time_slider.resize(this.div.clientWidth - 240,
                             this.div.clientHeight - 20);
     VIZ.set_transform(this.pause_button, this.div.clientWidth - 100, 30);
 }
@@ -180,10 +192,10 @@ VIZ.TimeSlider = function(args) {
     this.last_time = 0.0;
     /** First time shown on graphs */
     this.first_shown_time = this.last_time - this.shown_time;
-    
+
     /** scale to convert time to x value (in pixels) */
     this.kept_scale = d3.scale.linear();
-    
+
     this.kept_scale.domain([0.0 - this.kept_time, 0.0]);
 
     this.resize(args.width, args.height);
@@ -253,7 +265,7 @@ VIZ.TimeSlider = function(args) {
 
 VIZ.TimeSlider.prototype.jump_to_end = function() {
     this.first_shown_time = this.last_time - this.shown_time;
-    
+
     x = this.kept_scale(this.first_shown_time);
     VIZ.set_transform(this.shown_div, x, 0);
 
@@ -270,7 +282,7 @@ VIZ.TimeSlider.prototype.resize = function(width, height) {
     this.kept_scale.range([0, width]);
     this.shown_div.style.height = height;
     this.shown_div.style.width = width * this.shown_time / this.kept_time;
-    VIZ.set_transform(this.shown_div, 
+    VIZ.set_transform(this.shown_div,
                       this.kept_scale(this.first_shown_time), 0);
 }
 
@@ -284,7 +296,7 @@ VIZ.TimeSlider.prototype.update_times = function(time) {
 
     /** update the limits on the time axis */
     this.kept_scale.domain([time - this.kept_time, time]);
-    
+
     /** update the time axis display */
     this.axis_g
         .call(this.axis);
