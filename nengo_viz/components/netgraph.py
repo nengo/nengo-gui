@@ -138,7 +138,8 @@ class NetGraph(Component):
         for template in self.viz.viz.find_templates():
             if not isinstance(template,
                               (nengo_viz.components.SimControlTemplate,
-                               nengo_viz.components.NetGraphTemplate)):
+                               nengo_viz.components.NetGraphTemplate,
+                               nengo_viz.components.AceEditorTemplate)):
                 self.viz.add_template(template)
 
         self.viz.changed = True

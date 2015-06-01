@@ -1,8 +1,9 @@
 
-VIZ.Ace = function (args, script_code) {
+VIZ.Ace = function (script_code, uid) {
 	var self = this;
 	this.hidden = false;
 	this.min_width = 50;
+	this.ws = VIZ.create_websocket(uid);
 	//this.ws = VIZ.create_websocket(42) //to be args.uid
 	var code_div = document.createElement('div')
 	code_div.id = 'editor'
@@ -10,20 +11,24 @@ VIZ.Ace = function (args, script_code) {
 	var editor = ace.edit('editor')
 	editor.setTheme('ace/theme/monokai')
 	editor.getSession().setMode("ace/mode/python");
+	editor.setValue(script_code);
 
 	//Setup the button to toggle the code editor
 	$('#Toggle_ace').on('click', function(){self.toggle_shown();});
 
 	//TODO: ensure that VIZ.Ace is called after the sim control is built
 	setTimeout(function(){
+	self.set_width();
+
 	editor.getSession().on('change', function(event) {
-    	sim.ws.send(editor.getValue());
+    	self.ws.send(editor.getValue());
     	console.log(editor.getValue() === '', event);
-	});}, 10);
+	});
+	}, 10);
 
 	
 	this.width = $(window).width() / 5;
-	this.set_width();
+	
 
 	interact('#editor')
 		.resizable({

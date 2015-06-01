@@ -47,10 +47,12 @@ class VizSim(object):
         return None
 
     def add_template(self, template):
+        print(self, template, 'adding template')
         c = template.create(self)
         self.uids[c.uid] = c
         if isinstance(template, (nengo_viz.components.SimControlTemplate,
-                                 nengo_viz.components.NetGraphTemplate)):
+                                 nengo_viz.components.NetGraphTemplate,
+                                 nengo_viz.components.AceEditorTemplate)):
             self.components[:0] = [c]
         else:
             self.components.append(c)
@@ -170,7 +172,6 @@ class Viz(object):
 
     def find_templates(self):
         for k, v in self.locals.items():
-            print(k,v)
             if isinstance(v, nengo_viz.components.component.Template):
                 yield v
 
@@ -213,6 +214,9 @@ class Viz(object):
         if '_viz_net_graph' not in self.locals:
             template = nengo_viz.components.NetGraphTemplate()
             self.locals['_viz_net_graph'] = template
+        if '_viz_ace_editor' not in self.locals:
+            template = nengo_viz.components.AceEditorTemplate()
+            self.locals['_viz_ace_editor'] = template
 
         if config[self.model].pos is None:
             config[self.model].pos = (0, 0)
