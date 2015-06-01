@@ -3,7 +3,10 @@ VIZ.Ace = function (script_code, uid) {
 	var self = this;
 	this.hidden = true;
 	this.min_width = 50;
+
 	this.ws = VIZ.create_websocket(uid);
+	this.ws.onmessage = function(event) {self.on_message(event);}
+
 	this.current_code = script_code;
 	var code_div = document.createElement('div')
 	code_div.id = 'editor'
@@ -47,6 +50,13 @@ VIZ.Ace.prototype.schedule_updates = function () {
 			self.current_code = editor_code;
 		}
 	}, 100)
+}
+
+VIZ.Ace.prototype.on_message = function (event) {
+	console.log(event.line);
+	console.log(event.data);
+	this.editor.gotoLine(event.line);
+	this.editor.setValue(event.data);
 }
 
 VIZ.Ace.prototype.show_editor = function () {
