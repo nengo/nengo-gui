@@ -19,8 +19,8 @@ VIZ.Raster = function(parent, sim, args) {
     this.axes2d.scale_y.domain([0, args.n_neurons]);
 
 
-    /** call schedule_update whenever the time is adjusted in the SimControl */    
-    this.sim.div.addEventListener('adjust_time', 
+    /** call schedule_update whenever the time is adjusted in the SimControl */
+    this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
 
     /** create the lines on the plots */
@@ -31,13 +31,14 @@ VIZ.Raster = function(parent, sim, args) {
                                     .data(this.data_store.data);
 
     this.path.enter().append('path')
-             .attr('class', 'line')
-             .style('stroke', 'black');
+             .attr('class', 'line');
 
-    this.spikes = this.axes2d.svg.append("g").attr('class', 'spikes');
+    this.spikes = this.axes2d.svg.append("g")
+        .attr('class', 'spikes')
+        .style('stroke', VIZ.make_colors(1));
 
     this.update();
-    this.on_resize(args.width, args.height);
+    this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
 VIZ.Raster.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Raster.prototype.constructor = VIZ.Raster;
@@ -74,7 +75,10 @@ VIZ.Raster.prototype.update = function() {
         var t = this.axes2d.scale_x(this.data_store.times[this.data_store.first_shown_index + i]);
 
         for (var j = 0; j < shown_data[0][i].length; j++) {
-            loc.push([t, this.axes2d.scale_y(shown_data[0][i][j]), this.axes2d.scale_y(shown_data[0][i][j]+1)]);
+            loc.push([
+                t,
+                this.axes2d.scale_y(shown_data[0][i][j]),
+                this.axes2d.scale_y(shown_data[0][i][j]+1)]);
         }
     }
 
@@ -83,7 +87,7 @@ VIZ.Raster.prototype.update = function() {
             .attr('x2', function(d) {return d[0]})
             .attr('y1', function(d) {return d[1]})
             .attr('y2', function(d) {return d[2]});
-    spikes.enter()            
+    spikes.enter()
             .append('line')
             .attr('x1', function(d) {return d[0]})
             .attr('x2', function(d) {return d[0]})
@@ -92,7 +96,7 @@ VIZ.Raster.prototype.update = function() {
     spikes.exit().remove();
 };
 
-/** 
+/**
  * Adjust the graph layout due to changed size
  */
 VIZ.Raster.prototype.on_resize = function(width, height) {

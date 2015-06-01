@@ -1,5 +1,6 @@
 import time
 import struct
+import traceback
 
 import numpy as np
 import nengo
@@ -24,6 +25,7 @@ class SimControl(Component):
         self.skipped = 1
         self.time = 0.0
         self.last_status = None
+        self.next_ping_time = None
         self.reload = False
         self.send_config_options = False
 
@@ -64,6 +66,12 @@ class SimControl(Component):
             print(i)
 
     def update_client(self, client):
+        now = time.time()
+        # send off a ping now and then so we'll notice when connection closes
+        if self.next_ping_time is None or now > self.next_ping_time:
+            client.write('', ping=True)
+            self.next_ping_time = now + 2.0
+
         if self.viz.changed:
             self.paused = True
             self.viz.sim = None
@@ -93,9 +101,10 @@ class SimControl(Component):
 
     def javascript(self):
         info = dict(uid=self.uid)
-        json = self.javascript_config(info)
-        return 'sim = new VIZ.SimControl(control, %s); ' % json + \
-               'toolbar = new VIZ.Toolbar("%s"); ' % self.viz.viz.filename 
+        fn = json.dumps(self.viz.viz.filename)
+        js = self.javascript_config(info)
+        return ('sim = new VIZ.SimControl(control, %s);\n'
+                'toolbar = new VIZ.Toolbar(%s); ' % (js, fn))
 
     def message(self, msg):
         if msg == 'pause':
@@ -107,11 +116,11 @@ class SimControl(Component):
                 self.viz.rebuild = True
             self.paused = False
         elif msg[:4] == 'open':
-            if os.path.isfile(self.viz.viz.filename):
+            try:
                 self.viz.viz.load(msg[4:])
                 self.reload = True
-            else:
-                print('File does not exist')
+            except:
+                traceback.print_exc()
         elif msg == 'reset':
             if os.path.isfile(self.viz.viz.filename + '.cfg') :
                 os.remove(self.viz.viz.filename + '.cfg')

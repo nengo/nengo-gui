@@ -80,6 +80,7 @@
         </div>
         <script>
             function onload() {
+                viewport = new VIZ.Viewport();
                 main = document.getElementById("main");
                 control = document.getElementById("control");
                 %(components)s
@@ -94,7 +95,6 @@
         <script src="static/viz.js"></script>
         <script src="static/viz_2d_axes.js"></script>
         <script src="static/viz_time_axes.js"></script>
-        <script src="static/viz_pan.js"></script>
         <script src="static/viz_value.js"></script>
         <script src="static/viz_xyvalue.js"></script>
         <script src="static/viz_raster.js"></script>
@@ -102,7 +102,6 @@
         <script src="static/viz_slidercontrol.js"></script>
         <script src="static/viz_sim_control.js"></script>
         <script src="static/viz_netgraph.js"></script>
-        <script src="static/viz_scale.js"></script>
         <script src="static/viz_pointer.js"></script>
         <script src="static/viz_netgraph_item.js"></script>
         <script src="static/viz_netgraph_conn.js"></script>
@@ -110,5 +109,6 @@
         <script src="static/viz_modal.js"></script>
         <script src="static/viz_tooltips.js"></script>
         <script src="static/viz_menu.js"></script>
+        <script src="static/viz_viewport.js"></script>
     </body>
 </html>

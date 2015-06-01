@@ -1,16 +1,16 @@
 import time
-import struct
 import os
 import traceback
 import collections
 
-import numpy as np
 import nengo
 import json
 
 from nengo_viz.components.component import Component, Template
 from nengo_viz.disposable_js import infomodal
 import nengo_viz.layout
+
+from .action import create_action
 
 
 class NetGraph(Component):
@@ -76,8 +76,8 @@ class NetGraph(Component):
                                          nengo.Ensemble,
                                          nengo.Network)):
                     old_label = self.viz.viz.get_label(old_item)
-                    new_label = self.viz.viz.get_label(new_item,
-                        default_labels=name_finder.known_name)
+                    new_label = self.viz.viz.get_label(
+                        new_item, default_labels=name_finder.known_name)
 
                     if old_label != new_label:
                         self.to_be_sent.append(dict(
@@ -98,16 +98,18 @@ class NetGraph(Component):
 
                     old_pre = self.viz.viz.get_uid(old_pre)
                     old_post = self.viz.viz.get_uid(old_post)
-                    new_pre = self.viz.viz.get_uid(new_pre,
-                            default_labels=name_finder.known_name)
-                    new_post = self.viz.viz.get_uid(new_post,
-                            default_labels=name_finder.known_name)
+                    new_pre = self.viz.viz.get_uid(
+                        new_pre, default_labels=name_finder.known_name)
+                    new_post = self.viz.viz.get_uid(
+                        new_post, default_labels=name_finder.known_name)
 
                     if new_pre != old_pre or new_post != old_post:
                         # if the connection has changed, tell javascript
-                        pres = self.get_parents(new_pre,
+                        pres = self.get_parents(
+                            new_pre,
                             default_labels=name_finder.known_name)[:-1]
-                        posts = self.get_parents(new_post,
+                        posts = self.get_parents(
+                            new_post,
                             default_labels=name_finder.known_name)[:-1]
                         self.to_be_sent.append(dict(
                             type='reconnect', uid=uid,
@@ -140,7 +142,6 @@ class NetGraph(Component):
                 self.viz.add_template(template)
 
         self.viz.changed = True
-
 
     def get_parents(self, uid, default_labels=None):
         while uid not in self.parents:
@@ -194,11 +195,43 @@ class NetGraph(Component):
             print('invalid message', repr(msg))
             return
         action = info.get('act', None)
+        undo = info.get('undo', None)
         if action is not None:
             del info['act']
-            getattr(self, 'act_' + action)(**info)
+            if action in ('auto_expand', 'auto_collapse'):
+                getattr(self, 'act_' + action[5:])(**info)
+            elif action in ('pan', 'zoom', 'create_modal'):
+                # These should not use the undo stack
+                getattr(self, 'act_' + action)(**info)
+            else:
+                act = create_action(action, self, **info)
+                self.viz.undo_stack.append([act])
+                del self.viz.redo_stack[:]
+        elif undo is not None:
+            if undo == '1':
+                self.undo()
+            else:
+                self.redo()
         else:
             print('received message', msg)
+
+    def undo(self):
+        if self.viz.undo_stack:
+            action = self.viz.undo_stack.pop()
+            re = []
+            for act in action:
+                act.undo()
+                re.insert(0, act)
+            self.viz.redo_stack.append(re)
+
+    def redo(self):
+        if self.viz.redo_stack:
+            action = self.viz.redo_stack.pop()
+            un = []
+            for act in action:
+                act.apply()
+                un.insert(0, act)
+            self.viz.undo_stack.append(un)
 
     def act_expand(self, uid):
         net = self.uids[uid]
@@ -230,71 +263,9 @@ class NetGraph(Component):
         self.config[self.viz.model].pos = x, y
         self.modified_config()
 
-    def act_pos(self, uid, x, y):
-        obj = self.uids[uid]
-        self.config[obj].pos = x, y
-        self.modified_config()
-
-    def act_size(self, uid, width, height):
-        obj = self.uids[uid]
-        self.config[obj].size = width, height
-        self.modified_config()
-
-    def act_pos_size(self, uid, x, y, width, height):
-        obj = self.uids[uid]
-        self.config[obj].pos = x, y
-        self.config[obj].size = width, height
-        self.modified_config()
-
-    def act_create_graph(self, uid, type, x, y, width, height, **kwargs):
-        cls = getattr(nengo_viz.components, type + 'Template')
-        obj = self.uids[uid]
-        template = cls(obj, **kwargs)
-        self.viz.viz.generate_uid(template, prefix='_viz_')
-        self.config[template].x = x
-        self.config[template].y = y
-        self.config[template].width = width
-        self.config[template].height = height
-        self.modified_config()
-
-        c = self.viz.add_template(template)
-        self.viz.changed = True
-        self.to_be_sent.append(dict(type='js', code=c.javascript()))
-
     def act_create_modal(self, uid, **info):
         js = infomodal(self, uid, **info)
         self.to_be_sent.append(dict(type='js', code=js))
-
-    def act_feedforward_layout(self, uid):
-        if uid is None:
-            network = self.viz.model
-            scale = self.config[network].size[0]
-            x, y = self.config[network].pos
-            # self.config[network].pos = 0.0, 0.0
-            # self.config[network].size = 1.0, 1.0
-            # self.to_be_sent.append(dict(type='pan',
-            #                             pan=self.config[network].pos))
-            # self.to_be_sent.append(dict(type='zoom',
-            #                             zoom=self.config[network].size[0]))
-        else:
-            network = self.uids[uid]
-            scale = 1.0
-            x, y = 0, 0
-        pos = self.layout.make_layout(network)
-        for obj, layout in pos.items():
-
-            self.config[obj].pos = (layout['y'] / scale - x,
-                                    layout['x'] / scale - y)
-            self.config[obj].size = (layout['h'] / 2 / scale,
-                                     layout['w'] / 2 / scale)
-
-            obj_uid = self.viz.viz.get_uid(obj)
-            self.to_be_sent.append(dict(type='pos_size',
-                                        uid=obj_uid,
-                                        pos=self.config[obj].pos,
-                                        size=self.config[obj].size))
-        self.config[network].has_layout = True
-        self.modified_config()
 
     def expand_network(self, network, client):
         if not self.config[network].has_layout:
@@ -343,8 +314,8 @@ class NetGraph(Component):
         if type == 'ens' or type == 'node':
             info['dimensions'] = int(obj.size_out)
 
-        info['sp_targets'] = \
-            nengo_viz.components.pointer.Pointer.applicable_targets(obj)
+        info['sp_targets'] = (
+            nengo_viz.components.pointer.Pointer.applicable_targets(obj))
 
         client.write(json.dumps(info))
 
