@@ -122,3 +122,7 @@ class Server(swi.SimpleWebInterface):
                 if isinstance(component, nengo_viz.components.SimControl):
                     print("No connections remaining to the nengo_viz server.")
                     self.stop()
+
+    def log_message(self, format, *args):
+        # suppress all the log messages
+        pass
