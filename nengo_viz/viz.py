@@ -130,12 +130,11 @@ class Viz(object):
             locals['__file__'] = filename
 
             with open(filename) as f:
-                code = f.read()
-                self.code = code.split('\n')
+                self.code = f.read()
 
             with nengo_viz.monkey.patch():
                 try:
-                    exec(code, locals)
+                    exec(self.code, locals)
                 except nengo_viz.monkey.StartedSimulatorException:
                     line = nengo_viz.monkey.determine_line_number()
                     print('nengo.Simulator() started on line %d. '

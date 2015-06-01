@@ -1,7 +1,7 @@
 
 VIZ.Ace = function (script_code, uid) {
 	var self = this;
-	this.hidden = true;
+	this.hidden = false;
 	this.min_width = 50;
 
 	this.ws = VIZ.create_websocket(uid);
@@ -53,10 +53,8 @@ VIZ.Ace.prototype.schedule_updates = function () {
 }
 
 VIZ.Ace.prototype.on_message = function (event) {
-	console.log(event.line);
-	console.log(event.data);
-	this.editor.gotoLine(event.line);
-	this.editor.setValue(event.data);
+	var msg = JSON.parse(event.data)
+	this.editor.setValue(msg.code);
 }
 
 VIZ.Ace.prototype.show_editor = function () {
@@ -82,6 +80,7 @@ VIZ.Ace.prototype.toggle_shown = function () {
 }
 
 VIZ.Ace.prototype.set_width = function () {
+	this.editor.resize()
 	var code_div = document.getElementById('editor');
 	
 	if (this.width < this.min_width) {

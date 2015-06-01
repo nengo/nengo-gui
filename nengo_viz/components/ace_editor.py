@@ -12,12 +12,8 @@ class AceEditor(Component):
 
     def update_client(self, client):
     	if self.serve_code:
-    		counter = 1
-    		for i in self.current_code:
-    			i = json.dumps({'line': counter, 'data': i})
-    			print('told client', i)
-    			client.write(i)
-    			counter = counter + 1
+    		i = json.dumps({'code': self.current_code})
+    		client.write(i)
     		self.serve_code = False
 
     def javascript(self):
@@ -25,7 +21,6 @@ class AceEditor(Component):
 
     def message(self, msg):
         self.current_code = msg
-        print(self.current_code)
 
 class AceEditorTemplate(Template):
     cls = AceEditor
