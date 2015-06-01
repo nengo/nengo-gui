@@ -26,8 +26,10 @@ Nengo Viz depends on several open source libraries.
   Used under GPL license
 * [Bootstrap](http://getbootstrap.com/) - Used under
   [MIT license](https://raw.githubusercontent.com/twbs/bootstrap/master/LICENSE)
-* [Grandalf](https://github.com/bdcht/grandalf) - Used under 
+* [Grandalf](https://github.com/bdcht/grandalf) - Used under
   [EPL license](https://github.com/bdcht/grandalf/blob/master/LICENSE)
+* [Validator](https://github.com/1000hz/bootstrap-validator) - Used under
+  [MIT license](http://www.abeautifulsite.net/blog/2008/03/jquery-file-tree/)
 
 Contributor Assignment Agreement
 ================================

@@ -108,8 +108,8 @@ VIZ.XYValue.prototype.on_resize = function(width, height) {
 VIZ.XYValue.prototype.generate_menu = function() {
     var self = this;
     var items = [];
-    items.push(['Set range', function() {self.set_range();}]);
-    items.push(['Set X, Y indices', function() {self.set_indices();}]);
+    items.push(['Set range...', function() {self.set_range();}]);
+    items.push(['Set X, Y indices...', function() {self.set_indices();}]);
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
@@ -139,6 +139,12 @@ VIZ.XYValue.prototype.set_range = function() {
     VIZ.modal.single_input_body(range, 'New range:');
     VIZ.modal.footer('ok_cancel', function(e) {
         var new_range = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
         if (new_range !== null) {
             new_range = new_range.split(',');
             var min = parseFloat(new_range[0]);
@@ -147,7 +153,25 @@ VIZ.XYValue.prototype.set_range = function() {
             self.update();
             self.save_layout();
         }
+        $('#OK').attr('data-dismiss', 'modal');
     });
+    var $form = $('#myModalForm').validator({
+        custom: {
+            my_validator: function($item) {
+                var nums = $item.val().split(',');
+                var valid = false;
+                if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
+                    if (nums[0]<nums[1]) {
+                        valid = true; //Two numbers, 1st less than 2nd
+                    }
+                }
+                return (nums.length == 2 && valid);
+            }
+        }
+    });
+
+    $('#singleInput').attr('data-error', 'Input should be in the form ' +
+                           '"<min>,<max>".');
     VIZ.modal.show();
 }
 
@@ -166,13 +190,37 @@ VIZ.XYValue.prototype.set_indices = function() {
     VIZ.modal.single_input_body([this.index_x,this.index_y], 'New indices:');
     VIZ.modal.footer('ok_cancel', function(e) {
         var new_indices = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
         if (new_indices !== null) {
             new_indices = new_indices.split(',');
             self.update_indices(parseInt(new_indices[0]),
                                 parseInt(new_indices[1]));
             self.save_layout();
         }
+        $('#OK').attr('data-dismiss', 'modal');
     });
+    var $form = $('#myModalForm').validator({
+        custom: {
+            my_validator: function($item) {
+                var nums = $item.val().split(',');
+                return ((parseInt(Number(nums[0])) == nums[0]) &&
+                        (parseInt(Number(nums[1])) == nums[1]) &&
+                        (nums.length == 2) &&
+                        (nums[1]<self.n_lines && nums[1]>=0) &&
+                        (nums[0]<self.n_lines && nums[0]>=0));
+            }
+        }
+    });
+
+    $('#singleInput').attr('data-error', 'Input should be two positive ' +
+                           'integers in the form "<dimension 1>,<dimension 2>". ' +
+                           'Dimensions are zero indexed.');
+
     VIZ.modal.show();
 }
 
