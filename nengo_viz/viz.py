@@ -118,12 +118,15 @@ class VizSim(object):
 
 class Viz(object):
     """The master visualization organizer set up for a particular model."""
-    def __init__(self, filename=None, model=None, locals=None, cfg=None):
+    def __init__(
+            self, filename=None, model=None, locals=None, cfg=None,
+            interactive=True):
         if nengo_viz.monkey.is_executing():
             raise nengo_viz.monkey.StartedVizException()
 
         self.viz_sims = []
         self.cfg = cfg
+        self.interactive = interactive;
 
         self.config_save_period = 2.0  # minimum time between saves
 
@@ -147,13 +150,15 @@ class Viz(object):
                 try:
                     exec(code, locals)
                 except nengo_viz.monkey.StartedSimulatorException:
-                    line = nengo_viz.monkey.determine_line_number()
-                    print('nengo.Simulator() started on line %d. '
-                          'Ignoring all subsequent lines.' % line)
+                    if self.interactive:
+                        line = nengo_viz.monkey.determine_line_number()
+                        print('nengo.Simulator() started on line %d. '
+                              'Ignoring all subsequent lines.' % line)
                 except nengo_viz.monkey.StartedVizException:
-                    line = nengo_viz.monkey.determine_line_number()
-                    print('nengo_viz.Viz() started on line %d. '
-                          'Ignoring all subsequent lines.' % line)
+                    if self.interactive:
+                        line = nengo_viz.monkey.determine_line_number()
+                        print('nengo_viz.Viz() started on line %d. '
+                              'Ignoring all subsequent lines.' % line)
 
         if model is None:
             if 'model' not in locals:
@@ -217,7 +222,8 @@ class Viz(object):
                 try:
                     exec(line, self.locals)
                 except Exception as e:
-                    print('error parsing config', line, e)
+                    if self.interactive:
+                        print('error parsing config', line, e)
 
         # make sure a SimControl and a NetGraph exist
         if '_viz_sim_control' not in self.locals:
@@ -291,9 +297,9 @@ class Viz(object):
         return nengo_viz.server.Server.prepare_server(
             port=port, browser=browser)
 
-    def begin_lifecycle(self, server, interactive=True):
+    def begin_lifecycle(self, server):
         nengo_viz.server.Server.begin_lifecycle(
-            server, interactive=interactive)
+            server, interactive=self.interactive)
 
     def create_sim(self):
         """Create a new Simulator with this configuration"""

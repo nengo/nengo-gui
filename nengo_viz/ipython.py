@@ -56,11 +56,12 @@ class IPythonViz(object):
     def start_server(cls, cfg, model):
         name = model.label if model.label is not None else ''
         viz = nengo_viz.Viz(
-            name, cfg=cfg, model=model, locals=get_ipython().user_ns)
+            name, cfg=cfg, model=model, locals=get_ipython().user_ns,
+            interactive=False)
         server = viz.prepare_server(port=0, browser=False)
         server_thread = threading.Thread(
             target=viz.begin_lifecycle,
-            kwargs={'server': server, 'interactive': False})
+            kwargs={'server': server})
         server_thread.start()
         cls.servers[cfg] = server
         cls.threads[cfg] = server_thread
