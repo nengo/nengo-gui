@@ -100,15 +100,6 @@ class IPythonViz(object):
         if self._server_thread.is_alive():
             display(HTML('''
                 <div id="{id}">
-                    <form>
-                        <input
-                            type="button"
-                            onclick="
-                                var target = $('#{id} iframe');
-                                target.attr('src', '{url}' + '/shutdown');
-                                target.load(function () {{ $('#{id}').replaceWith('') }});"
-                            value="Close viz" />
-                    </form>
                     <iframe
                         src="{url}"
                         width="100%"
