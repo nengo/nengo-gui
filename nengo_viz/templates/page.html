@@ -17,7 +17,8 @@
         <link href="static/lib/js/jqueryFileTree/jqueryFileTree.css" rel="stylesheet" type="text/css">
     </head>
 
-    <body onload="onload();">
+    <!-- body needs an ID to fix cursor in Firefox -->
+    <body id="body" onload="onload();">
         <div id="top_toolbar">
             <ul class="nav nav-pills">
                 <li id='Open_file_button' role="presentation">
