@@ -2,25 +2,21 @@ VIZ.tooltips = {};
 
 VIZ.tooltips.tooltip = function($parent, content, placement, icon) {
     if (typeof(placement) === 'undefined') { placement = "bottom"; }
-    if (typeof(icon) === 'undefined') { icon = "glyphicon-question-sign"; }
 
     var $tooltip = $('<a href="#" data-toggle="tooltip" ' +
                      'data-placement="' + placement + '" ' + 'title="' +
                      content + '"/>');
-    $tooltip.append('<span class="glyphicon ' + icon + '" ' +
-                    'aria-hidden="true"/>').appendTo($parent);
+    $tooltip.append('<sup>?</>').appendTo($parent);
     $tooltip.tooltip();
 }
 
 VIZ.tooltips.popover = function($parent, title, content, placement, icon) {
     if (typeof(placement) === 'undefined') { placement = "bottom"; }
-    if (typeof(icon) === 'undefined') { icon = "glyphicon-question-sign"; }
 
     var $tooltip = $('<a href="#" data-toggle="popover" ' +
                      'data-placement="' + placement + '" ' + 'title="' +
                      title + '"' + 'data-content="' + content + '"/>');
-    $tooltip.append('<span class="glyphicon glyphicon-question-sign" ' +
-                    'aria-hidden="true"/>').appendTo($parent);
+    $tooltip.append('<sup>?</>').appendTo($parent);
     $tooltip.popover({"trigger": "hover"});
 }
 
@@ -28,15 +24,15 @@ VIZ.tooltips.popover = function($parent, title, content, placement, icon) {
 VIZ.tooltips.ens = {};
 VIZ.tooltips.ens.n_neurons = ["Type: int", "The number of neurons."];
 VIZ.tooltips.ens.dimensions = [
-    "Type: int", "The number of representational dimensions."];
+    "Type: int", "The number of dimensions in the represented state space."];
 VIZ.tooltips.ens.radius = [
-    "Type: int\nDefault: 1.0", "The representational radius of the ensemble."];
+    "Type: int\nDefault: 1.0", "The radius of the state space represented by the  ensemble."];
 VIZ.tooltips.ens.encoders = [
     "Type: Distribution or ndarray (`n_neurons`, `dimensions`)\n"+
         "Default: UniformHypersphere(surface=True)",
-    "The encoders, used to transform from representational space to neuron "+
+    "The encoders, used to transform from state space to neuron "+
         "space. Each row is a neuron's encoder, each column is a "+
-        "representational dimension."];
+        "dimension of the state space."];
 VIZ.tooltips.ens.intercepts = [
     "Type: Distribution or ndarray (`n_neurons`)\nDefault: Uniform(-1.0, 1.0)",
     "The point along each neuron's encoder where its activity is zero. "+
@@ -59,7 +55,7 @@ VIZ.tooltips.ens.n_eval_points = [
         "determine the number of evaluation points."];
 VIZ.tooltips.ens.neuron_type = [
     "Type: Neurons\nDefault: LIF()",
-    "The model that simulates all neurons in the ensemble."];
+    "The single cell model used to simulate all neurons in the ensemble."];
 VIZ.tooltips.ens.noise = [
     "Type: StochasticProcess\nDefault: None",
     "Random noise injected directly into each neuron in the ensemble " +
@@ -72,13 +68,15 @@ VIZ.tooltips.ens.seed = ["Type: int\nDefault: None",
 VIZ.tooltips.node = {};
 VIZ.tooltips.node.output = [
     "Type: callable, array_like, or None",
-    "Function that transforms the Node inputs into outputs, or a constant " +
-        "output value. If ``None``, the input will be returned unchanged."];
+    "The function that transforms the Node inputs into outputs, or a " +
+        "constant output value. If ``None``, the input will be " +
+        "returned unchanged."];
 VIZ.tooltips.node.size_in = [
     "Type: int\nDefault: 0",
-    "The number of dimensions of the input data parameter."];
+    "The number of dimensions in the input signal."];
 VIZ.tooltips.node.size_out = [
-    "Type: int", "The size of the output signal. If not specified, it will " +
+    "Type: int", "The number of dimensions in the output signal. If not " +
+        "specified, it will " +
         "be determined based on the values of ``output`` and ``size_in``."];
 
 

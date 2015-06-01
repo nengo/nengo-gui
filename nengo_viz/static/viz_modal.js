@@ -287,17 +287,19 @@ VIZ.Modal.prototype.render_connections = function($parent, uid, conninfo) {
                              "top");
         VIZ.tooltips.popover($conn_in_table.find('.conn-funcs').first(),
                              "Connection function",
-                             "This function being computed across this " +
+                             "The function being computed across this " +
                              "connection (in vector space).",
                              "top");
         VIZ.tooltips.popover($conn_in_table.find('.conn-fan').first(),
                              "Neuron fan-in",
                              "The number of incoming neural connections. " +
-                             "In biological terms, this is the number of " +
+                             "In biological terms, this is the maximum number" +
+                             " of " +
                              "synapses in the dendritic tree of a single " +
                              "neuron in this object, resulting from this " +
                              "connection. The total number of synapses would " +
-                             "be the sum of the numbers in this column.",
+                             "be the sum of the non-zero numbers in this " +
+                             "column.",
                              "top");
 
         this.make_connections_table_row(
@@ -326,17 +328,19 @@ VIZ.Modal.prototype.render_connections = function($parent, uid, conninfo) {
                              "top");
         VIZ.tooltips.popover($conn_out_table.find('.conn-funcs').first(),
                              "Connection function",
-                             "This function being computed across this " +
+                             "The function being computed across this " +
                              "connection (in vector space).",
                              "top");
         VIZ.tooltips.popover($conn_out_table.find('.conn-fan').first(),
                              "Neuron fan-out",
                              "The number of outgoing neural connections. " +
-                             "In biological terms, this is the number of " +
+                             "In biological terms, this is the maximum number" +
+                             " of " +
                              "synapses from axon terminals of a single " +
                              "neuron in this object, resulting from this " +
                              "connection. The total number of synapses would " +
-                             "be the sum of the numbers in this column.",
+                             "be the sum of the non-zero numbers in this " +
+                             "column.",
                              "top");
 
         this.make_connections_table_row(
