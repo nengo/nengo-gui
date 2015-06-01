@@ -518,6 +518,17 @@ VIZ.NetGraph.prototype.create_minimap = function () {
     this.minimap.appendChild(this.g_networks_mini);
     this.minimap.appendChild(this.g_conns_mini);
     this.minimap.appendChild(this.g_items_mini);
+
+    // box to show current view
+    this.view = this.createSVGElement('rect');
+    this.view.classList.add('view');
+    this.view.setAttributeNS(null, 'x', 0);
+    this.view.setAttributeNS(null, 'y', 0);
+    this.view.setAttributeNS(null, 'height', '100%');
+    this.view.setAttributeNS(null, 'width', '100%');
+    this.minimap.appendChild(this.view);
+
+
     // default display minimap
     this.display = true;
     // allow toggling of minimap display with ctrl+M

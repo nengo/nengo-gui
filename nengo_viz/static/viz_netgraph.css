@@ -41,6 +41,13 @@ g.net rect{
     stroke-width: 1px;
 }
 
+rect.view{
+    fill: none;
+    stroke: black;
+    stroke-width: 5px;
+    stroke-dasharray: 10 3;
+}
+
 .recur {
     stroke: black;
     stroke-width: 2px;
