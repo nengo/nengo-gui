@@ -287,8 +287,9 @@ class Viz(object):
         return nengo_viz.server.Server.prepare_server(
             port=port, browser=browser)
 
-    def begin_lifecycle(self, server):
-        nengo_viz.server.Server.begin_lifecycle(server)
+    def begin_lifecycle(self, server, interactive=True):
+        nengo_viz.server.Server.begin_lifecycle(
+            server, interactive=interactive)
 
     def create_sim(self):
         """Create a new Simulator with this configuration"""

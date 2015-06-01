@@ -23,7 +23,8 @@ class IPythonViz(object):
         self.port = server.server_port
 
         self._server_thread = threading.Thread(
-            target=self.viz.begin_lifecycle, kwargs={'server': server})
+            target=self.viz.begin_lifecycle,
+            kwargs={'server': server, 'interactive': False})
         self._server_thread.start()
 
         self.url = 'http://{host}:{port}'.format(host=self.host, port=self.port)

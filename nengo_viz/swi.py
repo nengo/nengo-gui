@@ -399,7 +399,7 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
         return server
 
     @classmethod
-    def begin_lifecycle(cls, server, asynch=True):
+    def begin_lifecycle(cls, server, asynch=True, interactive=True):
         try:
             server.running = True
             while server.running:
@@ -407,6 +407,9 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
                     server.serve_forever(poll_interval=0.02)
                     server.running = False
                 except KeyboardInterrupt:
+                    if not interactive:
+                        raise
+
                     # Check that user wants to shut down
                     sys.stdout.write(
                         "\nShut-down this web server (y/[n])? ")
@@ -421,7 +424,8 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
                     else:
                         print("No confirmation received. Resuming...")
         finally:
-            print("Shutting down server...")
+            if interactive:
+                print("Shutting down server...")
 
             # shut down any remaining threads
             # server.requests might be modified from other threads, so we need
@@ -440,7 +444,7 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
 
                 n_zombie = sum(thread.is_alive()
                         for thread, _ in server.requests)
-                if n_zombie > 0:
+                if interactive and n_zombie > 0:
                     print("%d zombie threads will close abruptly" % n_zombie)
 
             cls.servers.remove(server)
