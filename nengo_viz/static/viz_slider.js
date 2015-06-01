@@ -203,7 +203,7 @@ VIZ.Slider.prototype.user_value = function () {
     //First build the prompt string
     var prompt_string = '';
     for (var i = 0; i < this.sliders.length; i++){
-        prompt_string = prompt_string + this.sliders[i].value;
+        prompt_string = prompt_string + this.sliders[i].value.toFixed(2);
         if (i != this.sliders.length - 1) {
             prompt_string = prompt_string + ", ";
         }

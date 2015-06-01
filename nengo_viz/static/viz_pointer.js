@@ -5,13 +5,13 @@
  * @param {dict} args - A set of constructor arguments (see VIZ.Component)
  * @param {VIZ.SimControl} args.sim - the simulation controller
  */
- 
+
 VIZ.Pointer = function(parent, sim, args) {
     VIZ.Component.call(this, parent, args);
     var self = this;
 
     this.sim = sim;
-        
+
     this.pdiv = document.createElement('div');
     this.pdiv.style.width = args.width;
     this.pdiv.style.height = args.height;
@@ -19,22 +19,22 @@ VIZ.Pointer = function(parent, sim, args) {
     this.pdiv.style.position = 'fixed';
     this.pdiv.classList.add('pointer');
     this.div.appendChild(this.pdiv);
-    
+
     this.show_pairs = args.show_pairs;
-    
+
     /** for storing the accumulated data */
     this.data_store = new VIZ.DataStore(1, this.sim, 0);
 
-    /** call schedule_update whenever the time is adjusted in the SimControl */    
-    this.sim.div.addEventListener('adjust_time', 
+    /** call schedule_update whenever the time is adjusted in the SimControl */
+    this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
-    
-    this.on_resize(this.get_screen_width(), this.get_screen_height()); 
-    
+
+    this.on_resize(this.get_screen_width(), this.get_screen_height());
+
     this.fixed_value = '';
     var self = this;
-    
-    this.div.addEventListener("mouseup", 
+
+    this.div.addEventListener("mouseup",
         function(event) {
             // for some reason 'tap' doesn't seem to work here while the
             // simulation is running, so I'm doing the timing myself
@@ -46,21 +46,21 @@ VIZ.Pointer = function(parent, sim, args) {
                 if (self.menu.visible) {
                     self.menu.hide();
                 } else {
-                    self.menu.show(event.clientX, event.clientY, 
+                    self.menu.show(event.clientX, event.clientY,
                                    self.generate_menu());
                 }
             }
         }
-    );    
+    );
 
-    this.div.addEventListener("mousedown", 
+    this.div.addEventListener("mousedown",
         function(event) {
             self.mouse_down_time = new Date().getTime() / 1000;
         }
-    );        
-    
+    );
 
-    
+
+
 };
 VIZ.Pointer.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Pointer.prototype.constructor = VIZ.Pointer;
@@ -110,7 +110,7 @@ VIZ.Pointer.prototype.set_value = function() {
         custom: {
             my_validator: function($item) {
                 var ptr = $item.val();
-                return (ptr.charAt(0).match(/[a-z]/i));
+                return (ptr.charAt(0).match(/[a-z]/i) || ptr=='');
             }
         }
     });
@@ -127,36 +127,36 @@ VIZ.Pointer.prototype.set_value = function() {
 VIZ.Pointer.prototype.on_message = function(event) {
     data = event.data.split(" ");
     var time = parseFloat(data[0]);
-    
+
     var items = data[1].split(";");
-    
+
     this.data_store.push([time, items]);
     this.schedule_update();
 }
-   
+
 /**
  * Redraw the lines and axis due to changed data
  */
 VIZ.Pointer.prototype.update = function() {
     /** let the data store clear out old values */
     this.data_store.update();
-    
+
     var data = this.data_store.get_last_data()[0];
-    
+
     while(this.pdiv.firstChild) {
         this.pdiv.removeChild(this.pdiv.firstChild);
     }
     this.pdiv.style.width = this.width;
     this.pdiv.style.height = this.height;
-    
+
     if (data === undefined) {
         return;
     }
-    
+
     var total_size = 0;
-    
+
     var items = [];
-    
+
     for (var i=0; i < data.length; i++) {
         var size = parseFloat(data[i].substring(0,4));
         var span = document.createElement('span');
@@ -169,16 +169,16 @@ VIZ.Pointer.prototype.update = function() {
         span.style.color = 'rgb('+c+','+c+','+c+')';
         items.push(span);
     }
-    
+
     var scale = this.height / total_size * 0.75;
-    
+
     for (var i=0; i < data.length; i++) {
         var size = parseFloat(data[i].substring(0,4));
         items[i].style.fontSize = '' + (size * scale) + 'px'
     }
 };
 
-/** 
+/**
  * Adjust the graph layout due to changed size
  */
 VIZ.Pointer.prototype.on_resize = function(width, height) {
@@ -195,7 +195,7 @@ VIZ.Pointer.prototype.on_resize = function(width, height) {
     this.div.style.height = height;
 
     this.label.style.width = width;
-    
+
     this.update();
 };
 
