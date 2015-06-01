@@ -6,7 +6,7 @@ VIZ.tooltips.tooltip = function($parent, content, placement, icon) {
     var $tooltip = $('<a href="#" data-toggle="tooltip" ' +
                      'data-placement="' + placement + '" ' + 'title="' +
                      content + '"/>');
-    $tooltip.append('<sup>?</>').appendTo($parent);
+    $tooltip.append('<sup>?</sup>').appendTo($parent);
     $tooltip.tooltip();
 }
 
@@ -16,7 +16,7 @@ VIZ.tooltips.popover = function($parent, title, content, placement, icon) {
     var $tooltip = $('<a href="#" data-toggle="popover" ' +
                      'data-placement="' + placement + '" ' + 'title="' +
                      title + '"' + 'data-content="' + content + '"/>');
-    $tooltip.append('<sup>?</>').appendTo($parent);
+    $tooltip.append('<sup>?</sup>').appendTo($parent);
     $tooltip.popover({"trigger": "hover"});
 }
 
