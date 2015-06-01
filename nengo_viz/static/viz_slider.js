@@ -377,10 +377,11 @@ VIZ.Slider.prototype.user_value = function () {
                 self.set_value(i, Number(new_value[i]), false);
             }
         }
+        $('#OK').attr('data-dismiss','modal');
     });
 
     var $form = $('#myModalForm').validator({
-        custom: {myValidator: function($item) {
+        custom: {my_validator: function($item) {
             var nums = $item.val().split(',');
             if (nums.length != self.sliders.length) {
                 return false;
@@ -394,10 +395,8 @@ VIZ.Slider.prototype.user_value = function () {
         }},
     });
 
-    var $input = $('#singleInput');
-    $input.attr('data-valuegraph','number');
-    $input.attr('data-error','Input should be one comma-separated numerical value for each slider.');
-    $('#OK').prop('disabled',true);
+    $('#singleInput').attr('data-error','Input should be one ' +
+        'comma-separated numerical value for each slider.');
     VIZ.Modal.show();
 }
 
@@ -405,31 +404,43 @@ VIZ.Slider.prototype.set_range = function() {
     var range = this.scale.domain();
     var self = this;
     VIZ.Modal.title('Set slider range...');
-    VIZ.Modal.single_input_body(range,'Range:');
+    VIZ.Modal.single_input_body([range[1],range[0]],'Range:');
     VIZ.Modal.footer('ok_cancel', function(e) {
         var new_range = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
         if (new_range !== null) {
             new_range = new_range.split(',');
-            var min = parseFloat(new_range[1]);
-            var max = parseFloat(new_range[0]);
-            self.scale.domain([min, max]);
+            var min = parseFloat(new_range[0]);
+            var max = parseFloat(new_range[1]);
+            self.scale.domain([max, min]);
             self.save_layout();
         }
         for (var i in this.sliders) {
             this.set_value(i, this.sliders[i].value, false);
         }
+        $('#OK').attr('data-dismiss','modal');
     });
-    var $form = $('#myModalForm').validator({custom: {valuegraph: function($item) {
+    var $form = $('#myModalForm').validator({
+        custom: {my_validator: function($item) {
             var nums = $item.val().split(',');
-            return (nums.length==2 && $.isNumeric(nums[0]) && $.isNumeric(nums[1]))
-        }},
-        errors: {valuegraph: 'Does not match'}
+            var valid = false;
+            if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
+                if (nums[0]<nums[1]) {
+                    valid = true; //Two numbers, 1st less than 2nd
+                }
+            }
+            return (nums.length == 2 && valid);
+        }}
     });
 
-    var $input = $('#singleInput');
-    $input.attr('data-valuegraph','number');
-    $input.attr('data-error','Input should be in the form "<min>,<max>".');
-    $('#OK').prop('disabled',true);
+    $('#singleInput').attr('data-error','Input should be in the ' +
+        'form "<min>,<max>".');
+
     VIZ.Modal.show();
 }
 

@@ -50,6 +50,9 @@ VIZ.Modal.single_input_body = function(start_values, label) {
         $('#singleInput').focus();
     })
 
+    //Add custom validator
+    $('#singleInput').attr('data-my_validator','custom');
+
     //Allow the enter key to submit
     $("#singleInput").keypress(function(event) {
         if (event.which == 13) {

@@ -8,7 +8,7 @@
  * @param {float} args.maxy - maximum value on y-axis
  * @param {VIZ.SimControl} args.sim - the simulation controller
  */
- 
+
 VIZ.XYValue = function(parent, sim, args) {
     VIZ.Component.call(this, parent, args);
     var self = this;
@@ -29,24 +29,24 @@ VIZ.XYValue = function(parent, sim, args) {
     this.scale_y = d3.scale.linear();
     this.scale_x.domain([args.min_value, args.max_value]);
     this.scale_y.domain([args.min_value, args.max_value]);
-    
+
     this.index_x = args.index_x;
     this.index_y = args.index_y;
-    
+
     /** spacing between the graph and the outside edges (in pixels) */
     this.margin_top = 30;
     this.margin_bottom = 10;
     this.margin_left = 15;
     this.margin_right = 15;
-    
+
     /** set up the scales to respect the margins */
     this.scale_x.range([this.margin_left, args.width - this.margin_right]);
     this.scale_y.range([args.height - this.margin_bottom, this.margin_top]);
-    
+
     var plot_width = args.width - this.margin_left - this.margin_right;
     var plot_height = args.height - this.margin_top - this.margin_bottom;
-    
-    
+
+
     /** define the x-axis */
     this.axis_x = d3.svg.axis()
         .scale(this.scale_x)
@@ -60,17 +60,17 @@ VIZ.XYValue = function(parent, sim, args) {
     /** define the y-axis */
     this.axis_y = d3.svg.axis()
         .scale(this.scale_y)
-        .orient("left")    
+        .orient("left")
         .tickValues([args.min_value, args.max_value]);
     this.axis_y_g = this.svg.append("g")
         .attr("class", "axis axis_y")
         .attr("transform", "translate(" + (this.margin_left + plot_width / 2) + ", 0)")
         .call(this.axis_y);
 
-    /** call schedule_update whenever the time is adjusted in the SimControl */    
-    this.sim.div.addEventListener('adjust_time', 
+    /** call schedule_update whenever the time is adjusted in the SimControl */
+    this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
-    
+
     /** create the lines on the plots */
     var line = d3.svg.line()
         .x(function(d, i) {return self.scale_x(self.data_store.data[this.index_x][i]);})
@@ -79,9 +79,9 @@ VIZ.XYValue = function(parent, sim, args) {
                                     .data([this.data_store.data[this.index_y]]);
     this.path.enter().append('path')
              .attr('class', 'line');
-                                    
+
     this.on_resize(args.width, args.height);
-    
+
 };
 VIZ.XYValue.prototype = Object.create(VIZ.Component.prototype);
 VIZ.XYValue.prototype.constructor = VIZ.Value;
@@ -94,14 +94,14 @@ VIZ.XYValue.prototype.on_message = function(event) {
     this.data_store.push(data);
     this.schedule_update();
 }
-   
+
 /**
  * Redraw the lines and axis due to changed data
  */
 VIZ.XYValue.prototype.update = function() {
     /** let the data store clear out old values */
     this.data_store.update();
-            
+
     /** update the lines */
     var self = this;
     var shown_data = this.data_store.get_shown_data();
@@ -115,7 +115,7 @@ VIZ.XYValue.prototype.update = function() {
              .attr('d', line);
 };
 
-/** 
+/**
  * Adjust the graph layout due to changed size
  */
 VIZ.XYValue.prototype.on_resize = function(width, height) {
@@ -126,22 +126,22 @@ VIZ.XYValue.prototype.on_resize = function(width, height) {
     var plot_height = height - this.margin_top - this.margin_bottom;
 
     //Adjust positions of x axis on resize
-    this.axis_x_g         
-        .attr("transform", 
+    this.axis_x_g
+        .attr("transform",
               "translate(0," + (this.margin_top + plot_height / 2) + ")");
-    this.axis_y_g         
-        .attr("transform", 
+    this.axis_y_g
+        .attr("transform",
               "translate(" + (this.margin_left + plot_width / 2) + ",0)");
-    this.axis_y_g.call(this.axis_y);         
+    this.axis_y_g.call(this.axis_y);
     this.update();
-    this.axis_x_g.call(this.axis_x);         
-    
+    this.axis_x_g.call(this.axis_x);
+
     this.label.style.width = width;
     this.width = width;
     this.height = height;
     this.div.style.width = width;
     this.div.style.height = height;
-    
+
 };
 
 VIZ.XYValue.prototype.generate_menu = function() {
@@ -172,6 +172,12 @@ VIZ.XYValue.prototype.set_range = function() {
     VIZ.Modal.single_input_body(range,'Range:');
     VIZ.Modal.footer('ok_cancel', function(e) {
         var new_range = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
         if (new_range !== null) {
             new_range = new_range.split(',');
             var min = parseFloat(new_range[0]);
@@ -180,41 +186,43 @@ VIZ.XYValue.prototype.set_range = function() {
             self.scale_y.domain([min, max]);
             self.axis_x.tickValues([min, max]);
             self.axis_y.tickValues([min, max]);
-            self.axis_y_g.call(self.axis_y);            
-            self.axis_x_g.call(self.axis_x);            
+            self.axis_y_g.call(self.axis_y);
+            self.axis_x_g.call(self.axis_x);
             self.save_layout();
-        }      
+        }
+        $('#OK').attr('data-dismiss','modal');
     });
-    var $form = $('#myModalForm').validator({custom: {valuegraph: function($item) {
+    var $form = $('#myModalForm').validator({
+        custom: {my_validator: function($item) {
             var nums = $item.val().split(',');
-            return (nums.length==2 && $.isNumeric(nums[0]) && $.isNumeric(nums[1]))
-        }},
-        errors: {valuegraph: 'Does not match'}
+            var valid = false;
+            if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
+                if (nums[0]<nums[1]) {
+                    valid = true; //Two numbers, 1st less than 2nd
+                }
+            }
+            return (nums.length == 2 && valid);
+        }}
     });
-    
-    var $input = $('#singleInput');
-    $input.attr('data-valuegraph','number');
-    $input.attr('data-error','Input should be in the form "<min>,<max>".');
-    $('#OK').prop('disabled',true);
+
+    $('#singleInput').attr('data-error','Input should be in the form ' +
+        '"<min>,<max>".');
+
     VIZ.Modal.show();
 }
 
-VIZ.XYValue.prototype.set_indexes = function() {
-    var new_indexes = prompt('Specify X and Y indexes', '' + this.index_x + ',' + this.index_y);
-    if (new_indexes !== null) {
-        new_indexes = new_indexes.split(',');
-        this.index_x = parseInt(new_indexes[0]);
-        this.index_y = parseInt(new_indexes[1]);
-        this.update();
-        this.save_layout();
-    }
-}
 VIZ.XYValue.prototype.set_indexes = function() {
     var self = this;
     VIZ.Modal.title('Set X and Y indices...');
     VIZ.Modal.single_input_body([this.index_x,this.index_y],'Indices:');
     VIZ.Modal.footer('ok_cancel', function(e) {
         var new_indexes = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
         if (new_indexes !== null) {
             new_indexes = new_indexes.split(',');
             self.index_x = parseInt(new_indexes[0]);
@@ -222,6 +230,22 @@ VIZ.XYValue.prototype.set_indexes = function() {
             self.update();
             self.save_layout();
         }
+        $('#OK').attr('data-dismiss','modal');
     });
+    var $form = $('#myModalForm').validator({
+        custom: {my_validator: function($item) {
+            var nums = $item.val().split(',');
+            return ((parseInt(Number(nums[0])) == nums[0]) &&
+                (parseInt(Number(nums[1])) == nums[1]) &&
+                (nums.length == 2) &&
+                (nums[1]<self.n_lines && nums[1]>=0) &&
+                (nums[0]<self.n_lines && nums[0]>=0));
+        }}
+    });
+
+    $('#singleInput').attr('data-error','Input should be two positive ' +
+        'integers in the form "<dimension 1>,<dimension 2>". Dimensions' +
+        'are zero indexed.');
+
     VIZ.Modal.show();
 }
