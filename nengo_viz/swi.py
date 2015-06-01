@@ -36,40 +36,41 @@ Websockets are also supported via functions that begin with ws_:
                 client.write('received: ' + msg)
 """
 
+import base64
 try:
     import BaseHTTPServer
 except ImportError:
     import http.server as BaseHTTPServer
-try:
-    import SocketServer
-except ImportError:
-    import socketserver as SocketServer
-import traceback
-import random
-import select
-import string
-import sys
-import os
-try:
-    import StringIO
-except ImportError:
-    import io as StringIO
+import errno
+import hashlib
 try:
     import mimetools
 except ImportError:
     import email as mimetools
+import mimetypes
 try:
     import multifile
 except ImportError:
     import email as multifile
+import os
+import random
 import re
-import webbrowser
-import mimetypes
-import base64
-import hashlib
+import select
 import socket
+try:
+    import SocketServer
+except ImportError:
+    import socketserver as SocketServer
+import string
 import struct
+try:
+    import StringIO
+except ImportError:
+    import io as StringIO
+import sys
 import threading
+import traceback
+import webbrowser
 
 
 class SocketClosedError(IOError):
@@ -223,6 +224,11 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             self.user = self.testing_user
         try:
             getattr(self, command)(*[client] + args[1:], **db)
+        except socket.error as err:
+            # Only print traceback if it isn't likely to be caused by the
+            # server shutting down.
+            if err.args[0] != errno.EPIPE and err.args[0] != errno.EBADF:
+                traceback.print_exc()
         except Exception:
             traceback.print_exc()
         client.socket.close()
@@ -400,20 +406,26 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             print("Shutting down server...")
 
             # shut down any remaining threads
+            # server.requests might be modified from other threads, so we need
+            # a copy which we get in a thread-safe way be slicing it with [:].
             if asynch and server.requests is not None:
-                for _, sock in server.requests:
-                    sock.close()
+                for _, sock in server.requests[:]:
+                    try:
+                        sock.shutdown(socket.SHUT_RDWR)
+                        sock.close()
+                    except socket.error:
+                        pass
 
                 first = True
-                for thread, _ in server.requests:
+                for thread, _ in server.requests[:]:
                     if thread.is_alive():
                         # giving the first thread more time to close
                         # effectively gives all threads more time to close
-                        thread.join(0.05 if first else 0.01)
+                        thread.join(0.2 if first else 0.01)
                         first = False
 
                 n_zombie = sum(thread.is_alive()
-                               for thread, _ in server.requests)
+                        for thread, _ in server.requests[:])
                 if n_zombie > 0:
                     print("%d zombie threads will close abruptly" % n_zombie)
 
@@ -445,6 +457,16 @@ class AsyncHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         SocketServer.ThreadingMixIn.process_request_thread(
             self, request, client_address)
         self.requests.remove((thread, request))
+
+    def handle_error(self, request, client_address):
+        exc_type, exc_value, _ = sys.exc_info()
+        if exc_type is socket.error and (exc_value.args[0] == errno.EPIPE or
+                exc_value.args[0] == errno.EBADF):
+            return  # Probably caused by a server shutdown
+        else:
+            print exc_type, exc_value, dir(exc_value)
+            BaseHTTPServer.HTTPServer.handle_error(
+                self, request, client_address)
 
 
 favicon = ('\x00\x00\x01\x00\x01\x00\x10\x10\x00\x00\x01\x00\x18\x00h\x03\x00'
