@@ -515,14 +515,6 @@ VIZ.NetGraph.prototype.create_minimap = function () {
     this.minimap.id = 'minimap';
     this.minimap_div.appendChild(this.minimap);
 
-    this.g_networks_mini = this.createSVGElement('g'); 
-    this.g_conns_mini = this.createSVGElement('g');
-    this.g_items_mini = this.createSVGElement('g');
-    // order these are appended is important for layering
-    this.minimap.appendChild(this.g_networks_mini);
-    this.minimap.appendChild(this.g_conns_mini);
-    this.minimap.appendChild(this.g_items_mini);
-
     // box to show current view
     this.view = this.createSVGElement('rect');
     this.view.classList.add('view');
@@ -531,6 +523,14 @@ VIZ.NetGraph.prototype.create_minimap = function () {
     this.view.setAttributeNS(null, 'height', '120%');
     this.view.setAttributeNS(null, 'width', '120%');
     this.minimap.appendChild(this.view);
+
+    this.g_networks_mini = this.createSVGElement('g'); 
+    this.g_conns_mini = this.createSVGElement('g');
+    this.g_items_mini = this.createSVGElement('g');
+    // order these are appended is important for layering
+    this.minimap.appendChild(this.g_networks_mini);
+    this.minimap.appendChild(this.g_conns_mini);
+    this.minimap.appendChild(this.g_items_mini);
 
     // default display minimap
     this.display = true;
@@ -602,20 +602,14 @@ VIZ.NetGraph.prototype.scaleMiniMap = function () {
 /** Calculate which part of the map is being displayed on the 
  * main viewport and scale the viewbox to reflect that. */
 VIZ.NetGraph.prototype.scaleMiniMapViewBox = function () {
-
-    // calculate view box X and Y base location
-    var w = ($(this.minimap).width() * this.minimap_scale_x) / this.scale;
-    var h = ($(this.minimap).height() * this.minimap_scale_y) / this.scale;
-    // console.log(w_scale);
-    // console.log(h_scale);
+    var w = $(this.minimap).width() * this.minimap_scale_x;
+    var h = $(this.minimap).height() * this.minimap_scale_y;
 
     var view_offsetX = -(this.minItemX + this.offsetX) * w;
     var view_offsetY = -(this.minItemY + this.offsetY) * h;
-    // console.log(view_offsetX);
-    // console.log(view_offsetY);
- 
+
     this.view.setAttributeNS(null, 'x', view_offsetX);
     this.view.setAttributeNS(null, 'y', view_offsetY);
-    this.view.setAttribute('width', w);
-    this.view.setAttribute('height', h);
+    this.view.setAttribute('width', w / this.scale);
+    this.view.setAttribute('height', h / this.scale);
 }

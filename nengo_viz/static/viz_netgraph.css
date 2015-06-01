@@ -42,10 +42,8 @@ g.net rect{
 }
 
 rect.view{
-    fill: black;
-    stroke: black;
-    /* stroke-width: 5px; */
-    opacity:.2;
+    fill: #d9edf7;
+    stroke: #ccc;
 }
 
 .recur {
