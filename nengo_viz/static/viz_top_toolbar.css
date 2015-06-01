@@ -1,4 +1,4 @@
-#top_toolbar .glyphicon {
+#top_toolbar_div .glyphicon {
     color: #333;
     cursor: default;
     top: 0;
@@ -14,12 +14,12 @@
     background-color: #6699ff;
 }
 
-#top_toolbar .glyphicon:hover {
+#top_toolbar_div .glyphicon:hover {
     color: #eee;
     background: #666;
 }
 
-#top_toolbar {
+#top_toolbar_div {
     position: absolute;
     width: 100%;
     z-index: 99999;
@@ -34,7 +34,7 @@
         -ms-filter: "FlipH";
 }
 
-#top_toolbar .nav {
+#top_toolbar_div .nav {
     background: #eee;
     box-shadow: 0 0 12px 1px rgba(87,87,87,0.2);
 }

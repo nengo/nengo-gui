@@ -134,3 +134,4 @@ class SimControl(Component):
 class SimControlTemplate(Template):
     cls = SimControl
     config_params = dict(shown_time=0.5, kept_time=4.0)
+

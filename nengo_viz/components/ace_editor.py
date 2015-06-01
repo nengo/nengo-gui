@@ -11,9 +11,11 @@ class AceEditor(Component):
         self.code = code
 
     def javascript(self):
-        return 'new VIZ.Ace(%s)' % self.code ##feed VIZ.Ace a single string of the code
-
-
+        return 'new VIZ.Ace(%s)' % self.code ##feed VIZ.Ace a single string representing all the code for the model
 
     def message(self, msg):
         self.code = msg
+
+class AceEditorTemplate(Template):
+    cls = AceEditor
+    config_params = dict(current_code = '')

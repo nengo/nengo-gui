@@ -170,6 +170,7 @@ class Viz(object):
 
     def find_templates(self):
         for k, v in self.locals.items():
+            print(k,v)
             if isinstance(v, nengo_viz.components.component.Template):
                 yield v
 

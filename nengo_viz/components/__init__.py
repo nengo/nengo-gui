@@ -5,3 +5,4 @@ from .sim_control import SimControl, SimControlTemplate
 from .raster import Raster, RasterTemplate
 from .pointer import Pointer, PointerTemplate
 from .netgraph import NetGraph, NetGraphTemplate
+from .ace_editor import AceEditor, AceEditorTemplate

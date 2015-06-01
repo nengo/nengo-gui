@@ -40,6 +40,8 @@ VIZ.Toolbar = function(filename) {
    
     $('#filename')[0].innerHTML = filename;
 
+    this.toolbar = $('#toolbar_object')[0];
+
     this.menu = new VIZ.Menu(this.toolbar);
 
     interact(toolbar).on('tap', function(){
