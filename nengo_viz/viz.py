@@ -47,7 +47,6 @@ class VizSim(object):
         return None
 
     def add_template(self, template):
-        print(self, template, 'adding template')
         c = template.create(self)
         self.uids[c.uid] = c
         if isinstance(template, (nengo_viz.components.SimControlTemplate,

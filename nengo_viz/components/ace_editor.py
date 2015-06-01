@@ -15,8 +15,9 @@ class AceEditor(Component):
         return 'new VIZ.Ace("%s", "%s")' % (self.current_code, self.uid) ##feed VIZ.Ace a single string representing all the code for the model
 
     def message(self, msg):
-        print('msg received');
+        self.current_code = msg
+        print(self.current_code)
 
 class AceEditorTemplate(Template):
     cls = AceEditor
-    config_params = dict(current_code = '')
+    config_params = {}

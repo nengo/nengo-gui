@@ -8,7 +8,7 @@ import os
 import json
 
 from nengo_viz.components.component import Component, Template
-a = 0
+
 class SimControl(Component):
     def __init__(self, viz, config, uid, dt=0.001):
         super(SimControl, self).__init__(viz, config, uid)
@@ -107,7 +107,6 @@ class SimControl(Component):
                 'toolbar = new VIZ.Toolbar(%s); ' % (js, fn))
 
     def message(self, msg):
-        global a
         if msg == 'pause':
             self.paused = True
         elif msg == 'config':
@@ -127,9 +126,6 @@ class SimControl(Component):
                 os.remove(self.viz.viz.filename + '.cfg')
             self.viz.viz.load(self.viz.viz.filename)
             self.reload = True
-        else:
-            print('msg received' + str(a))
-            a = a +1
 
 class SimControlTemplate(Template):
     cls = SimControl

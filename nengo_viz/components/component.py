@@ -33,11 +33,6 @@ class Template(object):
         self.kwargs = kwargs
     def create(self, vizsim):
         uid = vizsim.viz.get_uid(self)
-        print(uid, 'in component creation uid')
-        print(vizsim, 'viz.sim')
-        print(vizsim.viz.config[self], 'config')
-        print(self.args, 'args')
-        print(self.kwargs, 'kwargs')
         c = self.cls(vizsim, vizsim.viz.config[self], uid,
                      *self.args, **self.kwargs)
         c.template = self

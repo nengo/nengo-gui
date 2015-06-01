@@ -1,34 +1,29 @@
 
 VIZ.Ace = function (script_code, uid) {
 	var self = this;
-	this.hidden = false;
+	this.hidden = true;
 	this.min_width = 50;
 	this.ws = VIZ.create_websocket(uid);
-	//this.ws = VIZ.create_websocket(42) //to be args.uid
+	this.current_code = script_code;
 	var code_div = document.createElement('div')
 	code_div.id = 'editor'
 	document.getElementsByTagName("BODY")[0].appendChild(code_div);
-	var editor = ace.edit('editor')
-	editor.setTheme('ace/theme/monokai')
-	editor.getSession().setMode("ace/mode/python");
-	editor.setValue(script_code);
+	this.editor = ace.edit('editor')
+	this.editor.setTheme('ace/theme/monokai')
+	this.editor.getSession().setMode("ace/mode/python");
+	this.editor.setValue(script_code);
 
 	//Setup the button to toggle the code editor
 	$('#Toggle_ace').on('click', function(){self.toggle_shown();});
 
 	//TODO: ensure that VIZ.Ace is called after the sim control is built
-	setTimeout(function(){
-	self.set_width();
+	this.schedule_updates();
 
-	editor.getSession().on('change', function(event) {
-    	self.ws.send(editor.getValue());
-    	console.log(editor.getValue() === '', event);
-	});
-	}, 10);
-
-	
 	this.width = $(window).width() / 5;
-	
+
+	//needs to wait to enure that the sim object is created
+	setTimeout(function(){
+		self.set_width();}, 1);	
 
 	interact('#editor')
 		.resizable({
@@ -39,9 +34,19 @@ VIZ.Ace = function (script_code, uid) {
 			self.width -= x;
 			self.set_width()
 		})
-
-
 	$(window).on('resize', function() {self.set_width()});
+}
+
+//Send changes to the code every 100ms 
+VIZ.Ace.prototype.schedule_updates = function () {
+	var self = this;
+	setInterval(function () {
+		var editor_code = self.editor.getValue();
+		if (editor_code != self.current_code) {
+			self.ws.send(editor_code);
+			self.current_code = editor_code;
+		}
+	}, 100)
 }
 
 VIZ.Ace.prototype.show_editor = function () {
@@ -58,6 +63,7 @@ VIZ.Ace.prototype.hide_editor = function () {
 
 VIZ.Ace.prototype.toggle_shown = function () {
 	if (this.hidden) {
+		this.set_width();
 		this.show_editor();
 	}
 	else{
@@ -67,15 +73,14 @@ VIZ.Ace.prototype.toggle_shown = function () {
 
 VIZ.Ace.prototype.set_width = function () {
 	var code_div = document.getElementById('editor');
-	//Set the positioning of the code_div
-	var top_margin = $(toolbar.toolbar).height();
-	var bottom_margin = $(sim.div).height();
 	
 	if (this.width < this.min_width) {
 		this.width = this.min_width;
 	}
+	//Set the positioning of the code_div
+	var top_margin = $(toolbar.toolbar).height();
+	var bottom_margin = $(sim.div).height();
 	var left_margin = $(window).width() - this.width;
-
 
 	code_div.style.top = top_margin;
 	code_div.style.bottom = bottom_margin;
