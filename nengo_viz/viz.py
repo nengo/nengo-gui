@@ -118,11 +118,12 @@ class VizSim(object):
 
 class Viz(object):
     """The master visualization organizer set up for a particular model."""
-    def __init__(self, filename, model=None, locals=None):
+    def __init__(self, filename=None, model=None, locals=None, cfg=None):
         if nengo_viz.monkey.is_executing():
             raise nengo_viz.monkey.StartedVizException()
 
         self.viz_sims = []
+        self.cfg = cfg
 
         self.config_save_period = 2.0  # minimum time between saves
 
@@ -200,7 +201,10 @@ class Viz(object):
         del self.default_labels[obj]
 
     def config_name(self):
-        return self.filename + '.cfg'
+        if self.cfg is None:
+            return self.filename + '.cfg'
+        else:
+            return self.cfg
 
     def load_config(self):
         config = nengo_viz.config.Config()
