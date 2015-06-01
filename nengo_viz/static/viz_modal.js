@@ -25,7 +25,7 @@ VIZ.Modal.footer = function(type, ok_function){
     } else if (type === "ok_cancel") {
         var $footerBtn = $('<div class="form-group"/>').appendTo($footer);
         $footerBtn.append('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
-        $footerBtn.append('<button id="OK" type="submit" class="btn btn-primary" data-dismiss="modal">OK</button>');
+        $footerBtn.append('<button id="OK" type="submit" class="btn btn-primary" >OK</button>');
         $('#OK').on('click', ok_function);
     } else {
         console.warn('Modal footer type ' + type + ' not recognized.')
@@ -49,6 +49,15 @@ VIZ.Modal.single_input_body = function(start_values, label) {
     $('.modal').on('shown.bs.modal', function () {
         $('#singleInput').focus();
     })
+
+    //Allow the enter key to submit
+    $("#singleInput").keypress(function(event) {
+        if (event.which == 13) {
+            event.preventDefault();
+            $('#OK').click();
+        }
+    });
+
 }
 
 VIZ.Modal.ensemble_body = function(uid, params, plots, conninfo) {
@@ -438,23 +447,14 @@ function make_conn_path_dropdown_list($container, others_uid, obj_type, conn_uid
     }
 }
 
-//**  A monkey patch to override the default behaviour of the Validator
-/*    plugin, which forces the button to be in the form. Our button is
-/*    in a different div (the footer).
-**/
+//Change the global defaults of the modal validator
 $( document ).ready(function() {
-    $.fn.validator.Constructor.DEFAULTS["delay"]=5000  //Change the delay before showing errors
-    $.fn.validator.Constructor.prototype.toggleSubmit = function () {
-        if(!this.options.disable) return
-        
-        var pointer = 'default';
-        if (!this.isIncomplete() && !this.hasErrors()) {
-            pointer = 'pointer';
-        }
-        var $btn = $('button[type="submit"], input[type="submit"]')
-            //.filter('[form="' + this.$element.attr('id') + '"]')
-            .add(this.$element.find('input[type="submit"], button[type="submit"]'))
-        $btn.prop('disabled', this.isIncomplete() || this.hasErrors())
-            .css({'pointer-events': 'all', 'cursor': pointer})
-    }
+    $validator = $.fn.validator.Constructor.DEFAULTS;
+    //Change the delay before showing errors
+    $validator["delay"] = 5000;
+    //Leave the ok button on
+    $validator["disable"] = false;
+    //Set the error messages for new validators
+    $validator["errors"] = {myValidator: 'Does not match'};
+
 });

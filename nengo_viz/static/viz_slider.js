@@ -12,32 +12,32 @@ VIZ.Slider = function(parent, args) {
     //Check if user is filling in a number into a slider
     this.filling_slider_value = false;
     this.n_sliders = args.n_sliders;
-    
+
     this.notify_msgs = [];
 
     VIZ.set_transform(this.label, 0, -30);
- 
+
     /** a scale to map from values to pixels */
     this.scale = d3.scale.linear();
     this.scale.domain([args.max_value,  args.min_value]);
     this.scale.range([0, args.height]);
-    
+
     /** number of pixels high for the slider itself */
     this.slider_height = 30;
     this.minHeight = 40;
-    
+
     /** make the sliders */
     this.sliders = [];
     for (var i = 0; i < args.n_sliders; i++) {
         var slider = {};
         this.sliders.push(slider);
-        
+
         slider.index = i;
         slider.div = document.createElement('button');
         slider.div.className = 'btn btn-default';
         slider.div.style.padding = '5px 0px';
         slider.div.style.borderColor = '#666';
-        
+
         slider.value = args.start_value[i];
 
         /** Show the slider Value */
@@ -56,7 +56,7 @@ VIZ.Slider = function(parent, args) {
 
         /** Slider jumps to zero when middle clicked */
         /** TODO: Replicate this functionality for touch */
-        slider.div.addEventListener("click", 
+        slider.div.addEventListener("click",
             function(event) {
                 /** check if click was the middle mouse button */
                 if (event.which == 2){
@@ -83,7 +83,7 @@ VIZ.Slider = function(parent, args) {
                 onmove: function (event) {
                     var target = event.target;
 
-                    /** load x and y from custom data-x/y attributes */ 
+                    /** load x and y from custom data-x/y attributes */
                     var x = parseFloat(target.getAttribute('fixed-x'));
                     var y = parseFloat(target.getAttribute('drag-y')) +
                                                                      event.dy;
@@ -99,10 +99,10 @@ VIZ.Slider = function(parent, args) {
                     }
 
                     VIZ.set_transform(target, x, y - self.slider_height / 2);
-                      
+
                     /** update the value and send it to the server */
                     var old_value = target.slider.value;
-                    
+
                     var new_value = self.scale.invert(y);
 
                     if (new_value != old_value) {
@@ -138,12 +138,12 @@ VIZ.Slider = function(parent, args) {
         guideline.style.height = args.height - 2;
         guideline.style.width = this.guideline_width;
         //Good for positioning regardless of # of sliders
-        var guide_x = args.width / (2 * args.n_sliders) + 
+        var guide_x = args.width / (2 * args.n_sliders) +
             (args.width / args.n_sliders) * i - this.guideline_width / 2;
         VIZ.set_transform(guideline, guide_x, 0);
         this.div.appendChild(guideline);
     }
-    
+
     var width = args.n_sliders * args.width;
     this.on_resize(width, args.height);
 };
@@ -164,8 +164,8 @@ VIZ.Slider.prototype.set_value = function(slider_index, value, immediate) {
     var target = this.sliders[slider_index].div;
 
     //important for 2d sliders
-    var x_pos = target.getAttribute('fixed-x'); 
-    
+    var x_pos = target.getAttribute('fixed-x');
+
     //Get the scaled value
     var point = this.scale(value);
 
@@ -220,12 +220,12 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         //subtract 2 from height for border
         slider.guideline.style.height = height - 2;
 
-        var guide_x = width / (2 * N) + (width / N) * i 
+        var guide_x = width / (2 * N) + (width / N) * i
             - this.guideline_width / 2;
 
         VIZ.set_transform(slider.guideline, guide_x, 0);
 
-        /** figure out the position of the slider */   
+        /** figure out the position of the slider */
         var x = i * width / N;
         var y = this.scale(slider.value);
         VIZ.set_transform(slider.div, x, y - this.slider_height / 2);
@@ -238,8 +238,8 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
     this.width = width;
     this.height = height;
     this.div.style.width = width;
-    this.div.style.height= height;    
-    
+    this.div.style.height= height;
+
 };
 
 
@@ -322,7 +322,7 @@ VIZ.Slider.prototype.submit_value = function (button, ind, text_div, original_va
 /** report an event back to the server */
 VIZ.Slider.prototype.notify = function(info) {
     this.notify_msgs.push(info);
-    
+
     // only send one message at a time
     // TODO: find a better way to figure out when it's safe to send
     // another message, rather than just waiting 1ms....
@@ -364,6 +364,12 @@ VIZ.Slider.prototype.user_value = function () {
     VIZ.Modal.single_input_body(prompt_string,'Value(s):');
     VIZ.Modal.footer('ok_cancel', function(e) {
         var new_value = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
         if (new_value != null) {
             new_value = new_value.split(',');
             //Update the sliders one at a time
@@ -372,8 +378,9 @@ VIZ.Slider.prototype.user_value = function () {
             }
         }
     });
-    
-    var $form = $('#myModalForm').validator({custom: {valuegraph: function($item) {
+
+    var $form = $('#myModalForm').validator({
+        custom: {myValidator: function($item) {
             var nums = $item.val().split(',');
             if (nums.length != self.sliders.length) {
                 return false;
@@ -385,9 +392,8 @@ VIZ.Slider.prototype.user_value = function () {
             }
             return true;
         }},
-        errors: {valuegraph: 'Does not match'}
     });
-    
+
     var $input = $('#singleInput');
     $input.attr('data-valuegraph','number');
     $input.attr('data-error','Input should be one comma-separated numerical value for each slider.');
@@ -410,8 +416,8 @@ VIZ.Slider.prototype.set_range = function() {
             self.save_layout();
         }
         for (var i in this.sliders) {
-            this.set_value(i, this.sliders[i].value, false); 
-        }    
+            this.set_value(i, this.sliders[i].value, false);
+        }
     });
     var $form = $('#myModalForm').validator({custom: {valuegraph: function($item) {
             var nums = $item.val().split(',');
@@ -419,7 +425,7 @@ VIZ.Slider.prototype.set_range = function() {
         }},
         errors: {valuegraph: 'Does not match'}
     });
-    
+
     var $input = $('#singleInput');
     $input.attr('data-valuegraph','number');
     $input.attr('data-error','Input should be in the form "<min>,<max>".');

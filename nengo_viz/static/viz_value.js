@@ -8,7 +8,7 @@
  * @param {float} args.maxy - maximum value on y-axis
  * @param {VIZ.SimControl} args.sim - the simulation controller
  */
- 
+
 VIZ.Value = function(parent, sim, args) {
     VIZ.Component.call(this, parent, args);
     var self = this;
@@ -41,17 +41,17 @@ VIZ.Value = function(parent, sim, args) {
                     .attr('class', 'graph_text unselectable')
                     .attr('y', args.height - (this.margin_bottom-20))
                     .attr('x', args.width - (this.margin_right + 20));
-        
-    this.axis_time_end = axis_time_end[0][0];  
+
+    this.axis_time_end = axis_time_end[0][0];
 
     var axis_time_start =this.svg.append("text")
                     .text("Time: NULL")
                     .attr('class','graph_text unselectable')
                     .attr('y', args.height - (this.margin_bottom-20))
                     .attr('x',this.margin_left - 10);
-        
-    this.axis_time_start = axis_time_start[0][0];    
-    
+
+    this.axis_time_start = axis_time_start[0][0];
+
     if (this.display_time == false) {
         this.axis_time_start.style.display = 'none';
         this.axis_time_end.style.display = 'none';
@@ -60,7 +60,7 @@ VIZ.Value = function(parent, sim, args) {
     /** set up the scales to respect the margins */
     this.scale_x.range([this.margin_left, args.width - this.margin_right]);
     this.scale_y.range([args.height - this.margin_bottom, this.margin_top]);
-    
+
     /** define the x-axis */
     this.axis_x = d3.svg.axis()
         .scale(this.scale_x)
@@ -68,38 +68,38 @@ VIZ.Value = function(parent, sim, args) {
         .ticks(0);
     this.axis_x_g = this.svg.append("g")
         .attr("class", "axis axis_x unselectable")
-        .attr("transform", "translate(0," + (args.height - 
+        .attr("transform", "translate(0," + (args.height -
                                              this.margin_bottom) + ")")
         .call(this.axis_x);
 
     /** define the y-axis */
     this.axis_y = d3.svg.axis()
         .scale(this.scale_y)
-        .orient("left")    
+        .orient("left")
         .ticks(2);
     this.axis_y_g = this.svg.append("g")
         .attr("class", "axis axis_y unselectable")
         .attr("transform", "translate(" + this.margin_left+ ", 0)")
         .call(this.axis_y);
 
-    /** call schedule_update whenever the time is adjusted in the SimControl */    
-    this.sim.div.addEventListener('adjust_time', 
+    /** call schedule_update whenever the time is adjusted in the SimControl */
+    this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
-    
+
     /** create the lines on the plots */
     var line = d3.svg.line()
         .x(function(d, i) {return self.scale_x(times[i]);})
         .y(function(d) {return self.scale_y(d);})
     this.path = this.svg.append("g").selectAll('path')
                                     .data(this.data_store.data);
-                                    
-    var colors = VIZ.make_colors(this.n_lines);    
+
+    var colors = VIZ.make_colors(this.n_lines);
     this.path.enter().append('path')
              .attr('class', 'line')
              .style('stroke', function(d, i) {return colors[i];});
 
     this.on_resize(args.width, args.height);
-    
+
 };
 VIZ.Value.prototype = Object.create(VIZ.Component.prototype);
 VIZ.Value.prototype.constructor = VIZ.Value;
@@ -112,19 +112,19 @@ VIZ.Value.prototype.on_message = function(event) {
     this.data_store.push(data);
     this.schedule_update();
 }
-   
+
 /**
  * Redraw the lines and axis due to changed data
  */
 VIZ.Value.prototype.update = function() {
     /** let the data store clear out old values */
     this.data_store.update();
-        
+
     /** determine visible range from the VIZ.SimControl */
     var t1 = this.sim.time_slider.first_shown_time;
     var t2 = t1 + this.sim.time_slider.shown_time;
     this.scale_x.domain([t1, t2]);
-    
+
     /** update the lines */
     var self = this;
     var shown_data = this.data_store.get_shown_data();
@@ -142,10 +142,10 @@ VIZ.Value.prototype.update = function() {
     this.axis_time_end.textContent =  t2.toFixed(3);
 
     /** update the x-axis */
-    this.axis_x_g.call(this.axis_x);         
+    this.axis_x_g.call(this.axis_x);
 };
 
-/** 
+/**
  * Adjust the graph layout due to changed size
  */
 VIZ.Value.prototype.on_resize = function(width, height) {
@@ -174,12 +174,12 @@ VIZ.Value.prototype.on_resize = function(width, height) {
     this.axis_time_end.setAttribute('x', width - (this.margin_right + 20));
 
     //Adjust positions of x axis on resize
-    this.axis_x_g         
-        .attr("transform", 
+    this.axis_x_g
+        .attr("transform",
               "translate(0," + (height - this.margin_bottom) + ")");
-    this.axis_y_g.call(this.axis_y);         
+    this.axis_y_g.call(this.axis_y);
     this.update();
-    
+
     this.label.style.width = width;
 
     this.width = width;
@@ -209,30 +209,44 @@ VIZ.Value.prototype.layout_info = function () {
 VIZ.Value.prototype.set_range = function() {
     var range = this.scale_y.domain();
     var self = this;
+
     VIZ.Modal.title('Set graph range...');
     VIZ.Modal.single_input_body(range,'Range:');
     VIZ.Modal.footer('ok_cancel', function(e) {
         var new_range = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
         if (new_range !== null) {
             new_range = new_range.split(',');
             var min = parseFloat(new_range[0]);
             var max = parseFloat(new_range[1]);
             self.scale_y.domain([min, max]);
-            self.axis_y_g.call(self.axis_y); 
+            self.axis_y_g.call(self.axis_y);
             self.save_layout();
-        }        
+        }
+        $('#OK').attr('data-dismiss','modal');
     });
-    
-    var $form = $('#myModalForm').validator({custom: {valuegraph: function($item) {
+
+    var $form = $('#myModalForm').validator({
+        custom: {myValidator: function($item) {
             var nums = $item.val().split(',');
-            return (nums.length==2 && $.isNumeric(nums[0]) && $.isNumeric(nums[1]))
-        }},
-        errors: {valuegraph: 'Does not match'}
+            var valid = false;
+            if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
+                if (nums[0]<nums[1]) {
+                    valid = true; //Two numbers, 1st less than 2nd
+                }
+            }
+            return (nums.length == 2 && valid);
+            }}
     });
-    
+
     var $input = $('#singleInput');
-    $input.attr('data-valuegraph','number');
+    $input.attr('data-valuegraph','custom');
     $input.attr('data-error','Input should be in the form "<min>,<max>".');
-    $('#OK').prop('disabled',true);
+
     VIZ.Modal.show();
 }
