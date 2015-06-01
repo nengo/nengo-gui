@@ -265,6 +265,7 @@ class Viz(object):
     def start(self, port=8080, browser=True):
         """Start the web server"""
         nengo_viz.server.Server.viz = self
+        print("Starting nengo_viz server at http://localhost:%d" % port)
         nengo_viz.server.Server.start(port=port, browser=browser)
 
     def create_sim(self):
