@@ -455,6 +455,6 @@ $( document ).ready(function() {
     //Leave the ok button on
     $validator["disable"] = false;
     //Set the error messages for new validators
-    $validator["errors"] = {myValidator: 'Does not match'};
+    $validator["errors"] = {my_validator: 'Does not match'};
 
 });

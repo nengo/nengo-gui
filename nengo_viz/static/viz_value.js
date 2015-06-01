@@ -232,7 +232,7 @@ VIZ.Value.prototype.set_range = function() {
     });
 
     var $form = $('#myModalForm').validator({
-        custom: {myValidator: function($item) {
+        custom: {my_validator: function($item) {
             var nums = $item.val().split(',');
             var valid = false;
             if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
@@ -245,8 +245,8 @@ VIZ.Value.prototype.set_range = function() {
     });
 
     var $input = $('#singleInput');
-    $input.attr('data-valuegraph','custom');
-    $input.attr('data-error','Input should be in the form "<min>,<max>".');
 
+    $input.attr('data-my_validator','custom');
+    $input.attr('data-error','Input should be in the form "<min>,<max>".');
     VIZ.Modal.show();
 }
