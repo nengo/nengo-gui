@@ -26,7 +26,8 @@ VIZ.tooltips.ens.n_neurons = ["Type: int", "The number of neurons."];
 VIZ.tooltips.ens.dimensions = [
     "Type: int", "The number of dimensions in the represented state space."];
 VIZ.tooltips.ens.radius = [
-    "Type: int\nDefault: 1.0", "The radius of the state space represented by the  ensemble."];
+    "Type: int\nDefault: 1.0", "The radius of the state space represented by " +
+        "the ensemble."];
 VIZ.tooltips.ens.encoders = [
     "Type: Distribution or ndarray (`n_neurons`, `dimensions`)\n"+
         "Default: UniformHypersphere(surface=True)",
