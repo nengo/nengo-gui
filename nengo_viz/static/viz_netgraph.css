@@ -43,3 +43,18 @@ g.net rect{
     dominant-baseline: text-before-edge;
     }    
 
+.netgraph rect.border {
+    stroke-width: 0;
+    stroke: black;
+    fill: transparent;
+}
+
+.netgraph rect.highlight {
+    stroke-width: 1;
+    stroke: rgba(0,0,0,0.1);
+}
+
+.netgraph rect.dragging {
+    stroke-width: 1;
+    stroke: rgba(0,0,0,0.1);
+}

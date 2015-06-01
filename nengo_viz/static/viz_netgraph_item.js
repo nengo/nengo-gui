@@ -56,7 +56,20 @@ VIZ.NetGraphItem = function(ng, info) {
     g.classList.add(this.type);
 
     this.menu = new VIZ.Menu(this.ng.parent);
-    
+
+    this.border = this.ng.createSVGElement('rect');
+    this.border.classList.add('border');
+    g.appendChild(this.border);
+
+    this.g.addEventListener('mouseenter',
+                            function() {
+                                self.border.classList.add('highlight');
+                            });
+    this.g.addEventListener('mouseleave',
+                            function() {
+                                self.border.classList.remove('highlight');
+                            });
+
     /** different types use different SVG elements for display */
     if (info.type === 'node') {
         if (this.passthrough) {
@@ -121,16 +134,17 @@ VIZ.NetGraphItem = function(ng, info) {
 
     if (!this.passthrough) {
         /** dragging the edge of item to change its size */
-        var tmp = this.shape
-        if(info.type === 'ens') {
-            tmp = $(this.shape.getElementsByClassName('mainCircle'))[0];
-        }
+        var tmp = this.border === undefined ? this.shape : this.border;
         interact(tmp)
             .resizable({
-                edges: { left: true, right: true, bottom: true, top: true }
+                edges: { left: true, right: true, bottom: true, top: true },
+                invert: 'reposition'
                 })
             .on('resizestart', function(event) {
                 self.menu.hide_any();
+                if (self.border !== undefined) {
+                    self.border.classList.add('dragging');
+                }
                 })
             .on('resizemove', function(event) {
                 var item = ng.svg_objects[uid];
@@ -158,25 +172,24 @@ VIZ.NetGraphItem = function(ng, info) {
                     if (event.edges.bottom) {
                         h *= -1;
                     }
-                    if (w < 0) {
-                        w = 1;
-                    }
-                    if (h < 0) {
-                        h = 1;
-                    }
 
                     var screen_w = self.get_width();
                     var screen_h = self.get_height();
 
                     if (horizontal_resize && vertical_resize) {
                         var p = (screen_w * w + screen_h * h) / Math.sqrt(
-                            screen_w * screen_w + screen_h * screen_h);
+                            2 * (screen_w * screen_w + screen_h * screen_h));
                         h = p / self.aspect;
                         w = p * self.aspect;
                     } else if (horizontal_resize) {
                         h = w / self.aspect;
                     } else {
                         w = h * self.aspect;
+                    }
+
+                    if (w < 0 && h < 0) {
+                        w = -w;
+                        h = -h;
                     }
 
                     var scaled_w = w / h_scale;
@@ -195,6 +208,9 @@ VIZ.NetGraphItem = function(ng, info) {
                 }
             })
             .on('resizeend', function(event) {
+                if (self.border !== undefined) {
+                    self.border.classList.remove('dragging');
+                }
                 var item = ng.svg_objects[uid];
                 item.constrain_position();                
                 ng.notify({act:"pos_size", uid:uid, 
@@ -628,28 +644,45 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
         }
     }
 
+    var border_size = 3;
+    if (this.border !== undefined) {
+        var border_w = screen_w + border_size * 2;
+        var border_h = screen_h + border_size * 2;
+        if (this.type == 'ens') {
+            border_w = screen_w * 0.97 + border_size * 2;
+        }
+
+        this.border.setAttribute('width', border_w);
+        this.border.setAttribute('height', border_h);
+        this.border.setAttribute('transform', 
+            'translate(-' + (border_w / 2) + ', -' + (border_h / 2) + ')');
+    }
+
     if (this.type === 'ens') {
         var scale = Math.sqrt(screen_h * screen_h + screen_w * screen_w) / Math.sqrt(2);
-        var r = 18;  //TODO: Don't hardcode the size of the ensemble
+        var r = 17.8;  //TODO: Don't hardcode the size of the ensemble
         this.shape.setAttribute('transform', 'scale(' + scale / 2 / r + ')');
         this.shape.style.setProperty('stroke-width', 20/scale);              
     } else if (this.passthrough) {
         this.shape.setAttribute('rx', screen_w / 2);
         this.shape.setAttribute('ry', screen_h / 2);    
-    } else {
+    } else if (this.type == 'net') {
         this.shape.setAttribute('transform', 
-                            'translate(-' + (screen_w / 2) + ', -' + (screen_h / 2) + ')');
+               'translate(-' + (screen_w / 2) + ', -' + (screen_h / 2) + ')');
         this.shape.setAttribute('width', screen_w);
         this.shape.setAttribute('height', screen_h);
-        if (this.type === 'net') {
-            var radius = Math.min(screen_w, screen_h);
-            // TODO: Don't hardcode .1 as the corner radius scale
-            this.shape.setAttribute('rx', radius*.1);
-            this.shape.setAttribute('ry', radius*.1);
-        }
+    } else if (this.type === 'node') {
+        var radius = Math.min(screen_w, screen_h);
+        this.shape.setAttribute('rx', radius*.2);
+        this.shape.setAttribute('ry', radius*.2);
+        this.shape.setAttribute('width', screen_w);
+        this.shape.setAttribute('height', screen_h);
+        this.shape.setAttribute('transform', 
+               'translate(-' + (screen_w / 2) + ', -' + (screen_h / 2) + ')');
     }
     
-    this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
+    this.label.setAttribute('transform', 'translate(0, ' + 
+                                         ((screen_h / 2) + border_size) + ')');
 };
 
 VIZ.NetGraphItem.prototype.get_width = function() {
@@ -731,24 +764,27 @@ VIZ.NetGraphItem.prototype.get_screen_location = function() {
 VIZ.NetGraphItem.prototype.ensemble_svg = function() {
     var shape = this.ng.createSVGElement('g');
     shape.setAttribute('class', 'ensemble');        
+
+    var dx = -1.25;
+    var dy = 0.25;
     
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':'-11.157','cy':'-7.481','r':'4.843'});
+    this.setAttributes(circle, {'cx':-11.157 + dx,'cy':-7.481 + dy,'r':'4.843'});
     shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':'0.186','cy':'-0.127','r':'4.843'});
+    this.setAttributes(circle, {'cx':0.186 + dx,'cy':-0.127 + dy,'r':'4.843'});
     shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':'5.012','cy':'12.56','r':'4.843'});
+    this.setAttributes(circle, {'cx':5.012 + dx,'cy':12.56 + dy,'r':'4.843'});
     shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':'13.704','cy':'-0.771','r':'4.843'});
+    this.setAttributes(circle, {'cx':13.704 + dx,'cy':-0.771 + dy,'r':'4.843'});
     shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':'-10.353','cy':'8.413','r':'4.843'});
+    this.setAttributes(circle, {'cx':-10.353 + dx,'cy':8.413 + dy,'r':'4.843'});
     shape.appendChild(circle);            
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':'3.894','cy':'-13.158','r':'4.843'});
+    this.setAttributes(circle, {'cx':3.894 + dx,'cy':-13.158 + dy,'r':'4.843'});
     shape.appendChild(circle);
 
     var main_circle = this.ng.createSVGElement('circle');
