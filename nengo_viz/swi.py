@@ -69,6 +69,7 @@ except ImportError:
     import io as StringIO
 import sys
 import threading
+import time
 import traceback
 import webbrowser
 
@@ -416,13 +417,9 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
                     except socket.error:
                         pass
 
-                first = True
                 for thread, _ in server.requests[:]:
                     if thread.is_alive():
-                        # giving the first thread more time to close
-                        # effectively gives all threads more time to close
-                        thread.join(0.2 if first else 0.01)
-                        first = False
+                        thread.join(0.05)
 
                 n_zombie = sum(thread.is_alive()
                         for thread, _ in server.requests[:])
