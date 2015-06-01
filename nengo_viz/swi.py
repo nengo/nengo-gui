@@ -36,41 +36,41 @@ Websockets are also supported via functions that begin with ws_:
                 client.write('received: ' + msg)
 """
 
+import base64
 try:
     import BaseHTTPServer
 except ImportError:
     import http.server as BaseHTTPServer
-try:
-    import SocketServer
-except ImportError:
-    import socketserver as SocketServer
-import traceback
-import random
-import select
-import string
-import sys
 import errno
-import os
-try:
-    import StringIO
-except ImportError:
-    import io as StringIO
+import hashlib
 try:
     import mimetools
 except ImportError:
     import email as mimetools
+import mimetypes
 try:
     import multifile
 except ImportError:
     import email as multifile
+import os
+import random
 import re
-import webbrowser
-import mimetypes
-import base64
-import hashlib
+import select
 import socket
+try:
+    import SocketServer
+except ImportError:
+    import socketserver as SocketServer
+import string
 import struct
+try:
+    import StringIO
+except ImportError:
+    import io as StringIO
+import sys
 import threading
+import traceback
+import webbrowser
 
 
 class SocketClosedError(IOError):
