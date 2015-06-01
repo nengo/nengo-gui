@@ -518,10 +518,6 @@ VIZ.NetGraph.prototype.create_minimap = function () {
     // box to show current view
     this.view = this.createSVGElement('rect');
     this.view.classList.add('view');
-    this.view.setAttributeNS(null, 'x', -10);
-    this.view.setAttributeNS(null, 'y', -10);
-    this.view.setAttributeNS(null, 'height', '120%');
-    this.view.setAttributeNS(null, 'width', '120%');
     this.minimap.appendChild(this.view);
 
     this.g_networks_mini = this.createSVGElement('g'); 
@@ -597,6 +593,7 @@ VIZ.NetGraph.prototype.scaleMiniMap = function () {
     this.minimap_scale_y = 1 / (this.maxItemY - this.minItemY);
 
     this.redraw();
+    this.scaleMiniMapViewBox();
 }
 
 /** Calculate which part of the map is being displayed on the 
