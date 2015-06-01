@@ -125,8 +125,6 @@ class SimControl(Component):
                 os.remove(self.viz.viz.filename + '.cfg')
             self.viz.viz.load(self.viz.viz.filename)
             self.reload = True
-        else:
-            print(msg)
 
 class SimControlTemplate(Template):
     cls = SimControl
