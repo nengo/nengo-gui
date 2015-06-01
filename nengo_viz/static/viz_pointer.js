@@ -93,12 +93,31 @@ VIZ.Pointer.prototype.set_value = function() {
     VIZ.modal.single_input_body('Pointer', 'New value:');
     VIZ.modal.footer('ok_cancel', function(e) {
         var value = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
         if (value === null) {
             value = '';
         }
         self.fixed_value = value;
         self.ws.send(value);
+        $('#OK').attr('data-dismiss', 'modal');
     });
+    var $form = $('#myModalForm').validator({
+        custom: {
+            my_validator: function($item) {
+                var ptr = $item.val();
+                return (ptr.charAt(0).match(/[a-z]/i));
+            }
+        }
+    });
+
+    $('#singleInput').attr('data-error', 'Semantic pointers must ' +
+                           'start with a letter.');
+
     VIZ.modal.show();
 }
 

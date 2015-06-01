@@ -161,9 +161,8 @@ VIZ.Value.prototype.set_range = function() {
         },
     });
 
-    var $input = $('#singleInput');
-    $input.attr('data-my_validator', 'custom');
-    $input.attr('data-error', 'Input should be in the form "<min>,<max>".');
+    $('#singleInput').attr('data-error', 'Input should be in the ' +
+                           'form "<min>,<max>".');
     VIZ.modal.show();
 }
 
