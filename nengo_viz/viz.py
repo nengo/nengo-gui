@@ -98,6 +98,14 @@ class Template(object):
         c.template = self
         return c
 
+class AceEditor(Template):
+    def __init__(self, target):
+        super(AceEditor, self).__init__(nengo_viz.components.AceEditor, target)
+        self.target = target
+
+    def code_python(self, uids):
+        return 'nengo_viz.AceEditor(%s)' % uids[self.target]
+
 class Slider(Template):
     def __init__(self, target):
         super(Slider, self).__init__(nengo_viz.components.Slider, target)
