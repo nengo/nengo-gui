@@ -10,6 +10,15 @@
     background: #666;
 }
 
+#top_toolbar .deactivated .glyphicon {
+    color: #ccc;
+}
+
+#top_toolbar .deactivated .glyphicon:hover {
+    color: #ccc;
+    background: none;
+}
+
 #top_toolbar {
     position: absolute;
     width: 100%;

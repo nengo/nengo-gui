@@ -57,7 +57,7 @@ class IPythonViz(object):
         name = model.label if model.label is not None else ''
         viz = nengo_viz.Viz(
             name, cfg=cfg, model=model, locals=get_ipython().user_ns,
-            interactive=False)
+            interactive=False, allow_file_change=False)
         server = viz.prepare_server(port=0, browser=False)
         server_thread = threading.Thread(
             target=viz.begin_lifecycle,

@@ -20,7 +20,9 @@ VIZ.Toolbar = function(filename) {
     this.toolbar = $('#top_toolbar')[0];
 
     $('#Open_file_button')[0].addEventListener('click', function () {
-        self.file_browser();
+        if (!$(this).hasClass('deactivated')) {
+            self.file_browser();
+        }
     });
     $('#Reset_layout_button')[0].addEventListener('click', function () {
         VIZ.modal.title("Are you sure you wish to reset this layout, " +

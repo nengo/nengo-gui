@@ -100,9 +100,12 @@ class VizSim(object):
 
     def create_javascript(self):
         fn = json.dumps(self.viz.filename[:-3])
-        webpage_title_js = ';document.title = %s' % fn
+        webpage_title_js = ';document.title = %s;' % fn
         component_js = '\n'.join([c.javascript() for c in self.components])
-        component_js = component_js + webpage_title_js
+        component_js += webpage_title_js
+        if not self.viz.allow_file_change:
+            component_js += "$('#Open_file_button').addClass('deactivated');"
+            pass
         return component_js
 
     def config_change(self, component, new_cfg, old_cfg):
@@ -120,9 +123,11 @@ class Viz(object):
     """The master visualization organizer set up for a particular model."""
     def __init__(
             self, filename=None, model=None, locals=None, cfg=None,
-            interactive=True):
+            interactive=True, allow_file_change=True):
         if nengo_viz.monkey.is_executing():
             raise nengo_viz.monkey.StartedVizException()
+
+        self.allow_file_change = allow_file_change
 
         self.viz_sims = []
         self.cfg = cfg
