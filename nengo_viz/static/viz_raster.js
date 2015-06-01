@@ -31,10 +31,11 @@ VIZ.Raster = function(parent, sim, args) {
                                     .data(this.data_store.data);
 
     this.path.enter().append('path')
-             .attr('class', 'line')
-             .style('stroke', 'black');
+             .attr('class', 'line');
 
-    this.spikes = this.axes2d.svg.append("g").attr('class', 'spikes');
+    this.spikes = this.axes2d.svg.append("g")
+        .attr('class', 'spikes')
+        .style('stroke', VIZ.make_colors(1));
 
     this.update();
     this.on_resize(this.get_screen_width(), this.get_screen_height());
@@ -74,7 +75,10 @@ VIZ.Raster.prototype.update = function() {
         var t = this.axes2d.scale_x(this.data_store.times[this.data_store.first_shown_index + i]);
 
         for (var j = 0; j < shown_data[0][i].length; j++) {
-            loc.push([t, this.axes2d.scale_y(shown_data[0][i][j]), this.axes2d.scale_y(shown_data[0][i][j]+1)]);
+            loc.push([
+                t,
+                this.axes2d.scale_y(shown_data[0][i][j]),
+                this.axes2d.scale_y(shown_data[0][i][j]+1)]);
         }
     }
 
