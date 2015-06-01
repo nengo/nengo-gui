@@ -29,7 +29,7 @@ VIZ.Pointer = function(parent, sim, args) {
     this.sim.div.addEventListener('adjust_time', 
             function(e) {self.schedule_update();}, false);
     
-    this.on_resize(args.width, args.height);
+    this.on_resize(this.get_screen_width(), this.get_screen_height()); 
     
     this.fixed_value = '';
     var self = this;
@@ -88,15 +88,19 @@ VIZ.Pointer.prototype.set_show_pairs = function(value) {
 };
 
 VIZ.Pointer.prototype.set_value = function() {
-    var value = prompt('Enter a Semantic Pointer value', 
-                       this.fixed_value);
-    if (value == null) { 
-        value = ''; 
-    }
-    this.fixed_value = value;
-    this.ws.send(value);
-};
-
+    var self = this;
+    VIZ.modal.title('Enter a Semantic Pointer value...');
+    VIZ.modal.single_input_body('Pointer', 'New value:');
+    VIZ.modal.footer('ok_cancel', function(e) {
+        var value = $('#singleInput').val();
+        if (value === null) {
+            value = '';
+        }
+        self.fixed_value = value;
+        self.ws.send(value);
+    });
+    VIZ.modal.show();
+}
 
 /**
  * Receive new line data from the server
@@ -181,4 +185,9 @@ VIZ.Pointer.prototype.layout_info = function () {
     var info = VIZ.Component.prototype.layout_info.call(this);
     info.show_pairs = this.show_pairs;
     return info;
+}
+
+VIZ.Pointer.prototype.update_layout = function (config) {
+    this.show_pairs = config.show_pairs;
+    VIZ.Component.prototype.update_layout.call(this, config);
 }

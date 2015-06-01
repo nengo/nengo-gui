@@ -82,7 +82,6 @@ VIZ.NetGraph = function(parent, args) {
                 self.menu.hide_any();
             },
             onmove: function(event) {
-                VIZ.pan.shift(event.dx, event.dy);
                 self.offsetX += event.dx / self.get_scaled_width();
                 self.offsetY += event.dy / self.get_scaled_height();
                 for (var key in self.svg_objects) {
@@ -91,6 +90,11 @@ VIZ.NetGraph = function(parent, args) {
                 for (var key in self.svg_conns) {
                     self.svg_conns[key].redraw();
                 }    
+                
+                viewport.x = self.offsetX;
+                viewport.y = self.offsetY;
+                viewport.redraw_all();
+                
             },
             onend: function(event) {
                 /** let the server know what happened */
@@ -103,22 +107,38 @@ VIZ.NetGraph = function(parent, args) {
     interact(document.getElementById('main'))
         .on('wheel', function(event) {
             event.preventDefault();
-            if (self.in_zoom_delay) {
-                return;
-            }
-            self.in_zoom_delay = true;
-            setTimeout(function () { self.in_zoom_delay = false; }, 50);
 
             self.menu.hide_any();
 
             var x = (event.clientX / $(self.svg).width())
             var y = (event.clientY / $(self.svg).height());
 
-            var delta = event.wheelDeltaY || -event.deltaY
-            var scale = delta > 0 ? VIZ.scale.step_size : 1.0 / VIZ.scale.step_size; // will either be 1.1 or ~0.9
+            switch (event.deltaMode) {
+                case 1:  // DOM_DELTA_LINE
+                    if (event.deltaY != 0) {
+                        var delta = Math.log(1. + Math.abs(event.deltaY)) * 60;
+                        if (event.deltaY < 0) {
+                            delta *= -1;
+                        }
+                    } else {
+                        var delta = 0;
+                    }
+                    break;
+                case 2:  // DOM_DELTA_PAGE
+                    // No idea what device would generate scrolling by a page
+                    var delta = 0;
+                    break;
+                case 0:  // DOM_DELTA_PIXEL
+                default:  // Assume pixel if unknown
+                    var delta = event.deltaY;
+                    break;
+            }
 
-            //scale and save components
-            VIZ.scale.zoom(scale, event.clientX, event.clientY);
+            var scale = 1. + Math.abs(delta) / 600.;
+            if (delta < 0) {
+                scale = 1. / scale;
+            }
+
             VIZ.Component.save_components();
 
             var xx = x / self.scale - self.offsetX;
@@ -127,6 +147,10 @@ VIZ.NetGraph = function(parent, args) {
             self.offsetY = (self.offsetY + yy) / scale - yy;
 
             self.scale = scale * self.scale;
+            viewport.scale = self.scale;
+            viewport.x = self.offsetX;
+            viewport.y = self.offsetY;
+            viewport.redraw_all();
 
             self.update_font_size();
             self.redraw();
@@ -135,9 +159,6 @@ VIZ.NetGraph = function(parent, args) {
             self.notify({act:"zoom", scale:self.scale, 
                          x:self.offsetX, y:self.offsetY});
         });
-
-    //Get the pan/zoom screen up and running after netgraph is built
-    VIZ.pan.screen_init();
 
     this.menu = new VIZ.Menu(self.parent);
 
@@ -198,10 +219,25 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         this.set_offset(data.pan[0], data.pan[1]);
     } else if (data.type === 'zoom') {
         this.set_scale(data.zoom);
+    } else if (data.type === 'expand') {
+        var item = this.svg_objects[data.uid];
+        item.expand(true,true)
+    } else if (data.type === 'collapse') {
+        var item = this.svg_objects[data.uid];
+        item.collapse(true,true)
     } else if (data.type === 'pos_size') {
         var item = this.svg_objects[data.uid];
         item.set_position(data.pos[0], data.pos[1]);
         item.set_size(data.size[0], data.size[1]);
+    } else if (data.type === 'config') {
+        // Anything about the config of a component has changed
+        var uid = data.uid;
+        for (var i = 0; i < VIZ.Component.components.length; i++) {
+            if (VIZ.Component.components[i].uid === uid) {
+                VIZ.Component.components[i].update_layout(data.config);
+                break;
+            }
+        }
     } else if (data.type === 'js') {
         eval(data.code);
     } else if (data.type === 'rename') {
@@ -218,6 +254,14 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         conn.set_pres(data.pres);
         conn.set_posts(data.posts);
         conn.redraw();
+    } else if (data.type === 'delete_graph') {
+        var uid = data.uid;
+        for (var i = 0; i < VIZ.Component.components.length; i++) {
+            if (VIZ.Component.components[i].uid === uid) {
+                VIZ.Component.components[i].remove(true);
+                break;
+            }
+        }
     } else {
         console.log('invalid message');
         console.log(data);
@@ -235,10 +279,10 @@ VIZ.NetGraph.prototype.set_offset = function(x, y) {
     this.offsetX = x;
     this.offsetY = y;
     this.redraw();
-    
-    var dx = VIZ.Screen.ul.x - x * this.get_scaled_width();
-    var dy = VIZ.Screen.ul.y - y * this.get_scaled_height();
-    VIZ.pan.shift(-dx, -dy);    
+
+    viewport.x = x;
+    viewport.y = y;
+    viewport.redraw_all();
 }
 
 
@@ -248,9 +292,8 @@ VIZ.NetGraph.prototype.set_scale = function(scale) {
     this.update_font_size();
     this.redraw();
 
-    VIZ.Screen.lr.x = VIZ.Screen.ul.x + $(this.svg).width() / scale;
-    VIZ.Screen.lr.y = VIZ.Screen.ul.y + $(this.svg).height() / scale;
-    VIZ.pan.redraw();
+    viewport.scale = scale;
+    viewport.redraw_all();
 }
 
 
@@ -301,12 +344,9 @@ VIZ.NetGraph.prototype.create_connection = function(info) {
 VIZ.NetGraph.prototype.on_resize = function(event) {
     this.redraw();
     
-    VIZ.pan.redraw();
-    
     var width = $(this.svg).width();
     var height = $(this.svg).height();
     
-    VIZ.scale.redraw_size(width / this.old_width, height / this.old_height);
     this.old_width = width;
     this.old_height = height;
 };

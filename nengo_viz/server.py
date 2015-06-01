@@ -11,6 +11,7 @@ except ImportError:
     from urllib.parse import unquote
 
 import nengo_viz.swi as swi
+import nengo_viz
 
 
 class Server(swi.SimpleWebInterface):
@@ -83,12 +84,23 @@ class Server(swi.SimpleWebInterface):
                 while msg is not None:
                     if msg.startswith('config:'):
                         cfg = json.loads(msg[7:])
+                        old_cfg = {}
+                        for k in component.template.config_params.keys():
+                            v = getattr(self.viz.config[component.template], k)
+                            old_cfg[k] = v
+                        if not(cfg == old_cfg):
+                            # Register config change to the undo stack
+                            self.viz_sim.config_change(component, cfg, old_cfg)
                         for k, v in cfg.items():
                             setattr(self.viz.config[component.template], k, v)
                         self.viz.modified_config()
-                    elif msg == 'remove':
+                    elif msg.startswith('remove'):
+                        if msg != 'remove_undo':
+                            # Register graph removal to the undo stack
+                            self.viz_sim.remove_graph(component)
                         self.viz.remove_uid(uid)
                         self.viz.modified_config()
+                        return
                     else:
                         component.message(msg)
                     msg = client.read()
@@ -101,3 +113,16 @@ class Server(swi.SimpleWebInterface):
             self.viz.save_config(lazy=False)
         finally:
             component.finish()
+
+            # wait a moment before checking if the server should be stopped
+            time.sleep(2)
+
+            # if there are no simulations left, stop the server
+            if self.viz.count_sims() == 0:
+                if isinstance(component, nengo_viz.components.SimControl):
+                    print("No connections remaining to the nengo_viz server.")
+                    self.stop()
+
+    def log_message(self, format, *args):
+        # suppress all the log messages
+        pass

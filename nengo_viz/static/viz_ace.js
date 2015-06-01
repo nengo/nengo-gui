@@ -11,6 +11,7 @@ VIZ.Ace = function (args, script_code) {
 	editor.setTheme('ace/theme/monokai')
 	editor.getSession().setMode("ace/mode/python");
 
+	//Setup the button to toggle the code editor
 	$('#Toggle_ace').on('click', function(){self.toggle_shown();});
 
 	//TODO: ensure that VIZ.Ace is called after the sim control is built

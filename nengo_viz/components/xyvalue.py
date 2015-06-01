@@ -1,6 +1,8 @@
+import struct
+import collections
+
 import nengo
 import numpy as np
-import struct
 
 from nengo_viz.components.component import Component, Template
 
@@ -10,7 +12,7 @@ class XYValue(Component):
         super(XYValue, self).__init__(viz, config, uid)
         self.obj = obj
         self.label = viz.viz.get_label(obj)
-        self.data = []
+        self.data = collections.deque()
         self.n_lines = obj.size_out
         self.struct = struct.Struct('<%df' % (1 + self.n_lines))
 
@@ -29,7 +31,7 @@ class XYValue(Component):
 
     def update_client(self, client):
         while len(self.data) > 0:
-            data = self.data.pop(0)
+            data = self.data.popleft()
             client.write(data, binary=True)
 
     def javascript(self):
