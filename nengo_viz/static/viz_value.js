@@ -131,6 +131,12 @@ VIZ.Value.prototype.set_range = function() {
     VIZ.modal.single_input_body(range, 'New range:');
     VIZ.modal.footer('ok_cancel', function(e) {
         var new_range = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
         if (new_range !== null) {
             new_range = new_range.split(',');
             var min = parseFloat(new_range[0]);
@@ -138,7 +144,25 @@ VIZ.Value.prototype.set_range = function() {
             self.update_range(min, max);
             self.save_layout();
         }
+        $('#OK').attr('data-dismiss', 'modal');
     });
+    var $form = $('#myModalForm').validator({
+        custom: {
+            my_validator: function($item) {
+                var nums = $item.val().split(',');
+                var valid = false;
+                if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
+                    if (nums[0] < nums[1]) {
+                        valid = true; //Two numbers, 1st less than 2nd
+                    }
+                }
+                return (nums.length==2 && valid);
+            }
+        },
+    });
+
+    $('#singleInput').attr('data-error', 'Input should be in the ' +
+                           'form "<min>,<max>".');
     VIZ.modal.show();
 }
 

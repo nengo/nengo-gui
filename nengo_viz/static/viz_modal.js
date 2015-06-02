@@ -30,8 +30,9 @@ VIZ.Modal.prototype.footer = function(type, ok_function){
     if (type === "close") {
         this.$footer.append('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
     } else if (type === "ok_cancel") {
-        this.$footer.append('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
-        this.$footer.append('<button id="OK" type="button" class="btn btn-primary" data-dismiss="modal">OK</button>');
+        var $footerBtn = $('<div class="form-group"/>').appendTo(this.$footer);
+        $footerBtn.append('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
+        $footerBtn.append('<button id="OK" type="submit" class="btn btn-primary" >OK</button>');
         $('#OK').on('click', ok_function);
     } else if (type === 'confirm_reset') {
         this.$footer.append('<button type="button" id="confirm_reset_button" class="btn btn-primary">Reset</button>');
@@ -46,6 +47,7 @@ VIZ.Modal.prototype.footer = function(type, ok_function){
 
 VIZ.Modal.prototype.clear_body = function() {
     this.$body.empty();
+    this.$div.off('shown.bs.modal');
 }
 
 VIZ.Modal.prototype.text_body = function(text, type) {
@@ -92,13 +94,28 @@ VIZ.Modal.prototype.tabbed_body = function(tabinfo) {
 VIZ.Modal.prototype.single_input_body = function(start_values, label) {
     this.clear_body();
 
-    var $form = $('<form class="form-horizontal"/>').appendTo(this.$body);
-    var $ctrlg = $('<div class="control-group"/>').appendTo($form);
-    $ctrlg.append('<label class="control-label" for="singleInput">'+label+
+    var $form = $('<form class="form-horizontal" id ="myModalForm"/>').appendTo(this.$body);
+    var $ctrlg = $('<div class="form-group"/>').appendTo($form);
+    $ctrlg.append('<label class="control-label" for="singleInput">' + label +
                   '</label>');
-    var $ctrls = $('<div class="controls">').appendTo($ctrlg);
+    var $ctrls = $('<div class="controls"/>').appendTo($ctrlg);
     $ctrls.append('<input id="singleInput" type="text" placeholder="' +
-                  start_values + '">');
+                  start_values + '"/>');
+    $('<div class="help-block with-errors"/>').appendTo($ctrls);
+    this.$div.on('shown.bs.modal', function () {
+        $('#singleInput').focus();
+    });
+
+    //Add custom validator
+    $('#singleInput').attr('data-my_validator', 'custom');
+
+    //Allow the enter key to submit
+    $("#singleInput").keypress(function(event) {
+        if (event.which == 13) {
+            event.preventDefault();
+            $('#OK').click();
+        }
+    });
 }
 
 VIZ.Modal.prototype.ensemble_body = function(uid, params, plots, conninfo) {
@@ -287,17 +304,19 @@ VIZ.Modal.prototype.render_connections = function($parent, uid, conninfo) {
                              "top");
         VIZ.tooltips.popover($conn_in_table.find('.conn-funcs').first(),
                              "Connection function",
-                             "This function being computed across this " +
+                             "The function being computed across this " +
                              "connection (in vector space).",
                              "top");
         VIZ.tooltips.popover($conn_in_table.find('.conn-fan').first(),
                              "Neuron fan-in",
                              "The number of incoming neural connections. " +
-                             "In biological terms, this is the number of " +
+                             "In biological terms, this is the maximum number" +
+                             " of " +
                              "synapses in the dendritic tree of a single " +
                              "neuron in this object, resulting from this " +
                              "connection. The total number of synapses would " +
-                             "be the sum of the numbers in this column.",
+                             "be the sum of the non-zero numbers in this " +
+                             "column.",
                              "top");
 
         this.make_connections_table_row(
@@ -326,17 +345,19 @@ VIZ.Modal.prototype.render_connections = function($parent, uid, conninfo) {
                              "top");
         VIZ.tooltips.popover($conn_out_table.find('.conn-funcs').first(),
                              "Connection function",
-                             "This function being computed across this " +
+                             "The function being computed across this " +
                              "connection (in vector space).",
                              "top");
         VIZ.tooltips.popover($conn_out_table.find('.conn-fan').first(),
                              "Neuron fan-out",
                              "The number of outgoing neural connections. " +
-                             "In biological terms, this is the number of " +
+                             "In biological terms, this is the maximum number" +
+                             " of " +
                              "synapses from axon terminals of a single " +
                              "neuron in this object, resulting from this " +
                              "connection. The total number of synapses would " +
-                             "be the sum of the numbers in this column.",
+                             "be the sum of the non-zero numbers in this " +
+                             "column.",
                              "top");
 
         this.make_connections_table_row(
@@ -463,3 +484,14 @@ VIZ.Modal.prototype.make_conn_path_dropdown_list = function($container, others_u
 }
 
 VIZ.modal = new VIZ.Modal($('.modal').first());
+
+//Change the global defaults of the modal validator
+$( document ).ready(function() {
+    $validator = $.fn.validator.Constructor.DEFAULTS;
+    //Change the delay before showing errors
+    $validator["delay"] = 5000;
+    //Leave the ok button on
+    $validator["disable"] = false;
+    //Set the error messages for new validators
+    $validator["errors"] = {my_validator: 'Does not match'};
+});
