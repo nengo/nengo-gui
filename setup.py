@@ -24,6 +24,11 @@ setup(
     author_email="celiasmith@uwaterloo.ca",
     packages=find_packages(),
     include_package_data=True,
+    entry_points={
+        'console_scripts': [
+            'nengo_viz = nengo_viz:main',
+        ]
+    },
     scripts=[],
     url="https://github.com/nengo/nengo_viz",
     license="https://github.com/nengo/nengo_viz/blob/master/LICENSE.md",

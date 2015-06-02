@@ -18,18 +18,32 @@ class Server(swi.SimpleWebInterface):
     """Web server interface to nengo_viz"""
 
     def swi_browse(self, dir):
-        self.script_path = '.'
         if self.user is None: return
         r = ['<ul class="jqueryFileTree" style="display: none;">']
         d = unquote(dir)
-        for f in sorted(os.listdir(os.path.join(self.script_path, d))):
-            ff = os.path.relpath(os.path.join(self.script_path, d,f), self.script_path)
-            if os.path.isdir(os.path.join(self.script_path, d, ff)):
-                r.append('<li class="directory collapsed"><a href="#" rel="%s/">%s</a></li>' % (ff,f))
+        ex_tag = '//examples//'
+        ex_html = '<em>built-in examples</em>'
+        if d == '.':
+            r.append('<li class="directory collapsed examples_dir">'
+                     '<a href="#" rel="%s">%s</a></li>' % (ex_tag, ex_html))
+            path = '.'
+        elif d.startswith(ex_tag):
+            path = os.path.join(nengo_viz.__path__[0],
+                                'examples', d[len(ex_tag):])
+        else:
+            path = os.path.join('.', d)
+
+        for f in sorted(os.listdir(path)):
+            ff = os.path.relpath(os.path.join(path, f), '.')
+            ff = os.path.join(path, f)
+            if os.path.isdir(os.path.join(path, f)):
+                r.append('<li class="directory collapsed">'
+                         '<a href="#" rel="%s/">%s</a></li>' % (ff,f))
             else:
                 e = os.path.splitext(f)[1][1:] # get .ext and remove dot
                 if e == 'py':
-                    r.append('<li class="file ext_%s"><a href="#" rel="%s">%s</a></li>' % (e,ff,f))
+                    r.append('<li class="file ext_%s">'
+                             '<a href="#" rel="%s">%s</a></li>' % (e,ff,f))
         r.append('</ul>')
         return ''.join(r)
 
@@ -44,8 +58,22 @@ class Server(swi.SimpleWebInterface):
         icon = pkgutil.get_data('nengo_viz', 'static/favicon.ico')
         return ('image/ico', icon)
 
+    def create_login_form(self):
+        if self.attempted_login:
+            message = 'Invalid password. Try again.'
+        else:
+            message = 'Enter the password:'
+        return """<form action="/" method=GET>%s<br>
+            <input type=hidden name=swi_id value=''>
+            <input type=password name=swi_pwd>
+            <input type=submit value="Log In">
+            </form>""" % message
+
     def swi(self):
         """Handles http://host:port/ by giving the main page"""
+        if self.user is None:
+            return self.create_login_form()
+
         # create a new simulator
         viz_sim = self.viz.create_sim()
 

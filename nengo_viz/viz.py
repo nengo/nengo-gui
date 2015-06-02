@@ -132,9 +132,16 @@ class Viz(object):
         self.viz_sims = []
 
         self.config_save_period = 2.0  # minimum time between saves
+
+        if filename is None:
+            filename = os.path.join(nengo_viz.__path__[0],
+                                    'examples',
+                                    'default.py')
+
         self.load(filename, model, locals)
 
     def load(self, filename, model=None, locals=None):
+        filename = os.path.relpath(filename)
         if locals is None:
             locals = {}
             locals['nengo_viz'] = nengo_viz
@@ -276,11 +283,16 @@ class Viz(object):
             uid = repr(obj)
         return uid
 
-    def start(self, port=8080, browser=True):
+    def start(self, port=8080, browser=True, password=None):
         """Start the web server"""
         nengo_viz.server.Server.viz = self
         print("Starting nengo_viz server at http://localhost:%d" % port)
-        nengo_viz.server.Server.start(port=port, browser=browser)
+        if password is not None:
+            nengo_viz.server.Server.add_user('', password)
+            addr = ''
+        else:
+            addr = 'localhost'
+        nengo_viz.server.Server.start(port=port, browser=browser, addr=addr)
 
     def create_sim(self):
         """Create a new Simulator with this configuration"""
