@@ -12,7 +12,7 @@ VIZ.Ace = function (script_code, uid) {
 	code_div.id = 'editor'
 	document.getElementsByTagName("BODY")[0].appendChild(code_div);
 	this.editor = ace.edit('editor')
-	this.editor.setTheme('ace/theme/monokai')
+	this.editor.setTheme('ace/theme/dawn')
 	this.editor.getSession().setMode("ace/mode/python");
 	this.editor.setValue(script_code);
 
@@ -26,7 +26,7 @@ VIZ.Ace = function (script_code, uid) {
 
 	//needs to wait to enure that the sim object is created
 	setTimeout(function(){
-		self.set_width();}, 1);	
+		self.set_width(); }, 1);	
 
 	interact('#editor')
 		.resizable({
@@ -80,7 +80,7 @@ VIZ.Ace.prototype.toggle_shown = function () {
 }
 
 VIZ.Ace.prototype.set_width = function () {
-	this.editor.resize()
+	this.editor.resize();
 	var code_div = document.getElementById('editor');
 	
 	if (this.width < this.min_width) {
