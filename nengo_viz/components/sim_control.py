@@ -28,6 +28,7 @@ class SimControl(Component):
         self.next_ping_time = None
         self.reload = False
         self.send_config_options = False
+        self.send_help = False
 
     def add_nengo_objects(self, viz):
         with viz.model:
@@ -90,6 +91,11 @@ class SimControl(Component):
             javascript = configmodal()
             client.write('config' + javascript)
             self.send_config_options = False
+        if self.send_help == True:
+            from ..disposable_js import helpmodal
+            javascript = helpmodal()
+            client.write('help' + javascript)
+            self.send_help = False
 
     def get_status(self):
         if self.paused:
@@ -115,6 +121,8 @@ class SimControl(Component):
             if self.viz.sim is None:
                 self.viz.rebuild = True
             self.paused = False
+        elif msg == 'help':
+            self.send_help = True
         elif msg[:4] == 'open':
             try:
                 self.viz.viz.load(msg[4:])

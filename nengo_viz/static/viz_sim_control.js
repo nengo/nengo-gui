@@ -64,6 +64,9 @@ VIZ.SimControl.prototype.on_message = function(event) {
             console.log(event.data);
             eval(event.data.substring(6, event.data.length));
         } 
+        else if (event.data.substring(0, 4) === 'help') {
+            eval(event.data.substring(4, event.data.length));
+        }
     }
 
     else {

@@ -61,6 +61,19 @@ VIZ.Modal.prototype.text_body = function(text, type) {
     $p.append(document.createTextNode(text));
 }
 
+VIZ.Modal.prototype.help_body = function() {
+    this.clear_body();
+
+    var $body = $('<ul class="list-group">');
+    $body.append('<li class="list-group-item">Spacebar: Play / pause</li>');
+    $body.append('<li class="list-group-item">Ctrl-z: Undo</li>');
+    $body.append('<li class="list-group-item">Ctrl-shift-z: Redo</li>');
+    $body.append('<li class="list-group-item">Ctrl-y: Redo</li>');
+    $body.append('</ul>');
+    $body.appendTo(this.$body);
+}
+    
+
 /**
  * Sets up the tabs for Info modals.
  */
