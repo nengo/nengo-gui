@@ -1,3 +1,5 @@
+from __future__ import division
+
 import nengo
 import numpy as np
 import struct
@@ -39,6 +41,7 @@ class Voltage(Component):
         trange = sim.trange()[-len(data):]
 
         for t, datum in zip(trange, data):
+            datum = (datum + np.arange(self.n_neurons)) / self.n_neurons
             packet = self.struct.pack(t, *datum)
             client.write(packet, binary=True)
 
