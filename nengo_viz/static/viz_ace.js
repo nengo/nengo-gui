@@ -20,7 +20,6 @@ VIZ.Ace = function (script_code, uid) {
 	//Setup the button to toggle the code editor
 	$('#Toggle_ace').on('click', function(){self.toggle_shown();});
 
-	//TODO: ensure that VIZ.Ace is called after the sim control is built
 	this.schedule_updates();
 
 	this.width = $(window).width() / 5;
