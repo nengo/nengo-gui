@@ -86,11 +86,8 @@ class SimControl(Component):
             client.write('reload')
             self.reload = False
         if self.send_config_options == True:
-            options = ["zoom"] #This is ignored by the client for now
-                               #But will be useful when saving/loading options
-            js_options = json.dumps(options)
             client.write('config' +
-                'VIZ.Toolbar.prototype.config_modal_show(%s);' % js_options)
+                'VIZ.Toolbar.prototype.config_modal_show();')
             self.send_config_options = False
 
     def get_status(self):

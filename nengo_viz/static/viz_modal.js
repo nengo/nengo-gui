@@ -105,7 +105,7 @@ VIZ.Modal.prototype.tabbed_body = function(tabinfo) {
 /**
  * Sets up the body for main configuration
  */
-VIZ.Modal.prototype.main_config = function(options) {
+VIZ.Modal.prototype.main_config = function() {
     this.clear_body();
 
     var $form = $('<form class="form-horizontal" id ' +

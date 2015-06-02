@@ -90,15 +90,14 @@ VIZ.Toolbar.prototype.config_modal = function () {
     sim.ws.send('config');  //Doing it this way in case we need to save options to a file later
 }
 
-VIZ.Toolbar.prototype.config_modal_show = function(options) {
+VIZ.Toolbar.prototype.config_modal_show = function() {
     var self = this;
-    console.log(options); //Options are ignored for now
 
     options = [VIZ.netgraph.get_zoom_fonts(),
         VIZ.netgraph.get_font_size()];
 
     VIZ.modal.title('Configure Options');
-    VIZ.modal.main_config(options);
+    VIZ.modal.main_config();
     VIZ.modal.footer('ok_cancel', function(e) {
         var zoom = $('#zoom-fonts').prop('checked');
         var font_size = $('#config-fontsize').val();
