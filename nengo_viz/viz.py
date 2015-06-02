@@ -164,6 +164,7 @@ class Viz(object):
                         line = nengo_viz.monkey.determine_line_number()
                         print('nengo_viz.Viz() started on line %d. '
                               'Ignoring all subsequent lines.' % line)
+        self.orig_locals = dict(locals)
 
         if model is None:
             if 'model' not in locals:
