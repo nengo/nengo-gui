@@ -103,6 +103,29 @@ VIZ.Modal.prototype.tabbed_body = function(tabinfo) {
 }
 
 /**
+ * Sets up the body for main configuration
+ */
+VIZ.Modal.prototype.main_config = function(options) {
+    this.clear_body();
+
+    var $form = $('<form class="form-horizontal" id ' +
+        '="myModalForm"/>').appendTo(this.$body);
+    $(' <div class="form-group">' +
+        '<div class="checkbox">' +
+          '<label>' +
+            '<input type="checkbox" id="zoomFonts">' +
+            'Allow fonts to zoom' +
+          '</label>' +
+          '<div class="help-block with-errors"></div>' +
+        '</div>' +
+    '</div>').appendTo($form);
+
+    $('#zoomFonts').prop('checked', options[0]);
+
+    $form.validator(); //Enable validation
+}
+
+/**
  * Sets up the body for standard input forms
  */
 VIZ.Modal.prototype.single_input_body = function(start_values, label) {

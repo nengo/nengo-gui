@@ -172,7 +172,6 @@ class Viz(object):
 
         self.config = self.load_config()
         self.config_save_needed = False
-        self.config_save_needed = False
         self.config_save_time = None   # time of last config file save
 
         self.lock = threading.Lock()

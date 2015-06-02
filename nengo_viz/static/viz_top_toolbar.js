@@ -38,7 +38,7 @@ VIZ.Toolbar = function(filename) {
         VIZ.netgraph.notify({ undo: "0" });
     });
     $('#Config_button')[0].addEventListener('click', function () {
-        self.start_modal();
+        self.config_modal();
     });
     $('#Help_button')[0].addEventListener('click', function () {
         VIZ.hotkeys.callMenu();
@@ -85,8 +85,30 @@ VIZ.Toolbar.prototype.reset_model_layout = function () {
 }
 
 /** Function called by event handler in order to launch modal.
- *  First check to make sure modal isn't open already, then send
- *  call to server to generate modal javascript from config. */
-VIZ.Toolbar.prototype.start_modal = function () {
-    sim.ws.send('config')
+ *  call to server to call config_modal_show with config data. */
+VIZ.Toolbar.prototype.config_modal = function () {
+    sim.ws.send('config');  //Doing it this way in case we need to save options to a file later
+}
+
+VIZ.Toolbar.prototype.config_modal_show = function(options) {
+    var self = this;
+    console.log(options); //Options are ignored for now
+
+    options = [VIZ.netgraph.get_zoomFonts()];
+
+    VIZ.modal.title('Configure Options');
+    VIZ.modal.main_config(options);
+    VIZ.modal.footer('ok_cancel', function(e) {
+        var zoom = $('#zoomFonts').prop('checked');
+        var modal = $('#myModalForm').data('bs.validator');
+
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
+        VIZ.netgraph.set_zoomFonts(zoom);
+        $('#OK').attr('data-dismiss', 'modal');
+    });
+
+    VIZ.modal.show();
 };
