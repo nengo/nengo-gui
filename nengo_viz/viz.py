@@ -13,6 +13,10 @@ from nengo_viz.components.action import ConfigAction, RemoveGraph
 import nengo_viz.monkey
 
 
+class VizException(Exception):
+    pass
+
+
 class VizSim(object):
     """A single Simulator attached to an html visualization."""
     def __init__(self, viz):
