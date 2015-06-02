@@ -52,8 +52,7 @@ Nengo.Image = function(parent, sim, args) {
         .attr("style", [
             "image-rendering: -webkit-optimize-contrast;",
             "image-rendering: -moz-crisp-edges;",
-            "image-rendering: -o-crisp-edges;",
-            "image-rendering: crisp-edges;"
+            "image-rendering: pixelated;"
         ].join(""));
 
     self.canvas = document.createElement('CANVAS');
