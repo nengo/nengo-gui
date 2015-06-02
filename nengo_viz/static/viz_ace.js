@@ -15,6 +15,7 @@ VIZ.Ace = function (script_code, uid) {
 	this.editor.setTheme('ace/theme/dawn')
 	this.editor.getSession().setMode("ace/mode/python");
 	this.editor.setValue(script_code);
+	this.editor.gotoLine(1);
 
 	//Setup the button to toggle the code editor
 	$('#Toggle_ace').on('click', function(){self.toggle_shown();});
@@ -24,7 +25,6 @@ VIZ.Ace = function (script_code, uid) {
 
 	this.width = $(window).width() / 5;
 
-	//needs to wait to enure that the sim object is created
 	self.set_width();	
 
 	interact('#editor')
