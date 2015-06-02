@@ -649,7 +649,7 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
                             'translate(-' + (screen_w / 2) + ', -' + (screen_h / 2) + ')');
         this.shape.setAttribute('width', screen_w);
         this.shape.setAttribute('height', screen_h);
-        if (this.type === 'net') {
+        if (this.type === 'node') {
             var radius = Math.min(screen_w, screen_h);
             // TODO: Don't hardcode .1 as the corner radius scale
             this.shape.setAttribute('rx', radius*.1);
