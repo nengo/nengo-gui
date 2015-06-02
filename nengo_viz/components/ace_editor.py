@@ -21,6 +21,8 @@ class AceEditor(Component):
 
     def message(self, msg):
         self.current_code = msg
+        with open(self.viz.viz.filename, 'w') as f:
+            f.write(self.current_code)
 
 class AceEditorTemplate(Template):
     cls = AceEditor
