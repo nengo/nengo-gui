@@ -64,6 +64,7 @@ VIZ.Modal.prototype.text_body = function(text, type) {
 VIZ.Modal.prototype.help_body = function() {
     this.clear_body();
 
+    $('.modal-dialog').addClass('modal-sm');
     var $body = $('<ul class="list-group">');
     $body.append('<li class="list-group-item">Spacebar: Play / pause</li>');
     $body.append('<li class="list-group-item">Ctrl-z: Undo</li>');
@@ -72,7 +73,7 @@ VIZ.Modal.prototype.help_body = function() {
     $body.append('</ul>');
     $body.appendTo(this.$body);
 }
-    
+
 
 /**
  * Sets up the tabs for Info modals.
