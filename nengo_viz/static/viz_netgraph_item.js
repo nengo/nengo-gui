@@ -55,6 +55,9 @@ VIZ.NetGraphItem = function(ng, info) {
     ng.g_items.appendChild(g);    
     g.classList.add(this.type);
 
+    this.area = this.ng.createSVGElement('rect');
+    this.area.style.fill = 'transparent';
+
     this.menu = new VIZ.Menu(this.ng.parent);
     
     /** different types use different SVG elements for display */
@@ -88,8 +91,9 @@ VIZ.NetGraphItem = function(ng, info) {
     this.set_size(info.size[0], info.size[1]);
 
     g.appendChild(this.shape);
+    g.appendChild(this.area);
 
-    interact.margin(20);
+    interact.margin(10);
 
     /** dragging an item to change its position */
     var uid = this.uid;
@@ -121,13 +125,10 @@ VIZ.NetGraphItem = function(ng, info) {
 
     if (!this.passthrough) {
         /** dragging the edge of item to change its size */
-        var tmp = this.shape
-        if(info.type === 'ens') {
-            tmp = $(this.shape.getElementsByClassName('mainCircle'))[0];
-        }
-        interact(tmp)
+        interact(this.area)
             .resizable({
-                edges: { left: true, right: true, bottom: true, top: true }
+                edges: { left: true, right: true, bottom: true, top: true },
+                invert: this.type == 'ens' ? 'reposition' : 'none'
                 })
             .on('resizestart', function(event) {
                 self.menu.hide_any();
@@ -158,25 +159,24 @@ VIZ.NetGraphItem = function(ng, info) {
                     if (event.edges.bottom) {
                         h *= -1;
                     }
-                    if (w < 0) {
-                        w = 1;
-                    }
-                    if (h < 0) {
-                        h = 1;
-                    }
 
                     var screen_w = self.get_width();
                     var screen_h = self.get_height();
 
                     if (horizontal_resize && vertical_resize) {
                         var p = (screen_w * w + screen_h * h) / Math.sqrt(
-                            screen_w * screen_w + screen_h * screen_h);
+                            2 * (screen_w * screen_w + screen_h * screen_h));
                         h = p / self.aspect;
                         w = p * self.aspect;
                     } else if (horizontal_resize) {
                         h = w / self.aspect;
                     } else {
                         w = h * self.aspect;
+                    }
+
+                    if (w < 0 && h < 0) {
+                        w = -w;
+                        h = -h;
                     }
 
                     var scaled_w = w / h_scale;
@@ -628,9 +628,17 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
         }
     }
 
+    // the circle pattern isn't perfectly square, so make its area smaller
+    var area_w = this.type === 'ens' ? screen_w * 0.97 : screen_w;
+    var area_h = screen_h;
+    this.area.setAttribute('transform', 
+            'translate(-' + (area_w / 2) + ', -' + (area_h / 2) + ')');
+    this.area.setAttribute('width', area_w);
+    this.area.setAttribute('height', area_h);
+
     if (this.type === 'ens') {
         var scale = Math.sqrt(screen_h * screen_h + screen_w * screen_w) / Math.sqrt(2);
-        var r = 18;  //TODO: Don't hardcode the size of the ensemble
+        var r = 17.8;  //TODO: Don't hardcode the size of the ensemble
         this.shape.setAttribute('transform', 'scale(' + scale / 2 / r + ')');
         this.shape.style.setProperty('stroke-width', 20/scale);              
     } else if (this.passthrough) {
@@ -730,35 +738,30 @@ VIZ.NetGraphItem.prototype.get_screen_location = function() {
 /**Function for drawing ensemble svg*/
 VIZ.NetGraphItem.prototype.ensemble_svg = function() {
     var shape = this.ng.createSVGElement('g');
-    shape.setAttribute('class', 'ensemble');        
+    shape.setAttribute('class', 'ensemble');
+
+    var dx = -1.25;
+    var dy = 0.25;
     
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':'-11.157','cy':'-7.481','r':'4.843'});
+    this.setAttributes(circle, {'cx':-11.157 + dx,'cy':-7.481 + dy,'r':'4.843'});
     shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':'0.186','cy':'-0.127','r':'4.843'});
+    this.setAttributes(circle, {'cx':0.186 + dx,'cy':-0.127 + dy,'r':'4.843'});
     shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':'5.012','cy':'12.56','r':'4.843'});
+    this.setAttributes(circle, {'cx':5.012 + dx,'cy':12.56 + dy,'r':'4.843'});
     shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':'13.704','cy':'-0.771','r':'4.843'});
+    this.setAttributes(circle, {'cx':13.704 + dx,'cy':-0.771 + dy,'r':'4.843'});
     shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':'-10.353','cy':'8.413','r':'4.843'});
+    this.setAttributes(circle, {'cx':-10.353 + dx,'cy':8.413 + dy,'r':'4.843'});
     shape.appendChild(circle);            
     var circle = this.ng.createSVGElement('circle');
-    this.setAttributes(circle, {'cx':'3.894','cy':'-13.158','r':'4.843'});
+    this.setAttributes(circle, {'cx':3.894 + dx,'cy':-13.158 + dy,'r':'4.843'});
     shape.appendChild(circle);
 
-    var main_circle = this.ng.createSVGElement('circle');
-    main_circle.setAttribute('class', 'mainCircle');
-    main_circle.setAttribute('style', 'fill: transparent; stroke-width: 0;');
-    main_circle.setAttribute('cx', '0');
-    main_circle.setAttribute('cy', '0');
-    main_circle.setAttribute('r', '18');
-    shape.appendChild(main_circle);
-    
     return shape;
 }
 /** Helper function for setting attributions*/
