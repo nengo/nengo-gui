@@ -294,6 +294,14 @@ VIZ.NetGraphItem = function(ng, info, minimap, mini_item) {
                                 self.generate_menu());
             }
         });
+
+        if (info.type === 'net') {
+            /** if a network is flagged to expand on creation, then expand it */
+            if (info.expanded) {
+                // Report to server but do not add to the undo stack
+                this.expand(true,true);
+            }
+        }
     };
 };
 
