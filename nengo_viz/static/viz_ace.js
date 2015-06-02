@@ -25,8 +25,7 @@ VIZ.Ace = function (script_code, uid) {
 	this.width = $(window).width() / 5;
 
 	//needs to wait to enure that the sim object is created
-	setTimeout(function(){
-		self.set_width(); }, 1);	
+	self.set_width();	
 
 	interact('#editor')
 		.resizable({
@@ -80,7 +79,7 @@ VIZ.Ace.prototype.toggle_shown = function () {
 }
 
 VIZ.Ace.prototype.set_width = function () {
-	//this.editor.resize();
+	this.editor.resize();
 	var code_div = document.getElementById('editor');
 	
 	if (this.width < this.min_width) {
@@ -94,4 +93,6 @@ VIZ.Ace.prototype.set_width = function () {
 	code_div.style.top = top_margin;
 	code_div.style.bottom = bottom_margin;
 	code_div.style.left = left_margin ; //Positions code editor so it takes up the right 20% of the screen.
+
+	$('#main').width(left_margin)
 }

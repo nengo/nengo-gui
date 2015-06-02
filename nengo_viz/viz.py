@@ -98,6 +98,17 @@ class VizSim(object):
     def create_javascript(self):
         fn = json.dumps(self.viz.filename[:-3])
         webpage_title_js = ';document.title = %s' % fn
+
+        ##Ensure that sim control is first
+        temp = self.components[0]
+        counter = 0
+        for t in self.components:
+            if isinstance(t, nengo_viz.components.SimControl):
+                self.components[0] = t
+                self.components[counter] = temp
+                break
+            counter += 1
+
         component_js = '\n'.join([c.javascript() for c in self.components])
         component_js = component_js + webpage_title_js
         return component_js
