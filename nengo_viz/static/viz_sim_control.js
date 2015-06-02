@@ -44,13 +44,13 @@ VIZ.SimControl = function(div, args) {
     this.pause_button_icon = $('#pause_button_icon')[0];
 
     /** Get reference to the options button */
-    $('#options_button')[0]
-        .addEventListener('click', function() {self.on_options_click();});
-    VIZ.set_transform(this.options_button, 10, 10);
+    this.options_button = $('#options_button')[0];
+    this.options_button.onclick = function(event) {self.on_options_click();};
+    VIZ.set_transform(this.options_button, 0, 0);
 
     /** Create the speed and rate update sliders */
-    this.rate_tr = $('#rate_tr')[0];
-    this.ticks_tr = $('#ticks_tr')[0];
+    this.rate_text = $('#run_speed span');
+    VIZ.set_transform($('#run_speed')[0], 10, 55);
 
     this.update();
 };
@@ -131,8 +131,8 @@ VIZ.SimControl.prototype.register_listener = function(func) {
 VIZ.SimControl.prototype.update = function() {
     this.pending_update = false;
 
-    this.ticks_tr.innerHTML = '<td>' + this.time.toFixed(3) + '</td>';
-    this.rate_tr.innerHTML = '<td>' + this.rate.toFixed(2) + 'x</td>';
+    //this.ticks_tr.innerHTML = '<td>' + this.time.toFixed(3) + '</td>';
+    this.rate_text.text(this.rate.toFixed(2)+'x');
 
     this.time_slider.update_times(this.time);
 };
@@ -171,8 +171,13 @@ VIZ.SimControl.prototype.on_resize = function(event) {
     this.time_slider.resize(this.div.clientWidth - 240,
                             this.div.clientHeight - 20);
     VIZ.set_transform(this.pause_button, this.div.clientWidth - 100, 30);
+    VIZ.set_transform(this.options_button, 0, 0);
 }
 
+VIZ.SimControl.prototype.set_options = function(event) {
+
+
+}
 
 VIZ.TimeSlider = function(args) {
     var self = this;

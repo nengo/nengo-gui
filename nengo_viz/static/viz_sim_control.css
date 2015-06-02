@@ -51,6 +51,17 @@
 #pause_button {
     border-radius:0px;
     border-width:0px;
+    float:left;
+}
+
+.options-button:hover {
+    background: #666 !important;
+    color: #eee !important;
+}
+
+.options-button {
+    position:fixed;
+    background-color: #eee !important;
 }
 
 .play-pause-button {
@@ -70,12 +81,14 @@
     font-size: 30px;
 }
 
-#time_table {
-    display: inline-block;
-    margin-top: 10px;
-    margin-left: 10px;
-    width: 130px;
-    overflow: hidden;
+#run_speed {
+    position:fixed;
+    width:50px;
+}
+
+#options_button {
+    border-radius:0px;
+    border-width:0px;
 }
 
 .metrics-container {
