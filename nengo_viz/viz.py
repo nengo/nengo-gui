@@ -288,19 +288,17 @@ class Viz(object):
 
     def start(self, port=8080, browser=True, password=None):
         """Start the web server"""
-        nengo_viz.server.Server.viz = self
         print("Starting nengo_viz server at http://localhost:%d" % port)
         if password is not None:
             nengo_viz.server.Server.add_user('', password)
             addr = ''
         else:
             addr = 'localhost'
-        nengo_viz.server.Server.start(port=port, browser=browser, addr=addr)
+        nengo_viz.server.Server.start(self, port=port, browser=browser, addr=addr)
 
-    def prepare_server(self, port=8080, browser=True):
-        nengo_viz.server.Server.viz = self
+    def prepare_server(self, viz, port=8080, browser=True):
         return nengo_viz.server.Server.prepare_server(
-            port=port, browser=browser)
+            self, port=port, browser=browser)
 
     def begin_lifecycle(self, server):
         nengo_viz.server.Server.begin_lifecycle(

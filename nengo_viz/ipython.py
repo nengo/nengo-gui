@@ -4,12 +4,17 @@ import threading
 import time
 import urllib2
 import uuid
+import warnings
 import weakref
 
 from IPython import get_ipython
 from IPython.display import display, HTML
 
 import nengo_viz
+
+
+class ConfigReuseWarning(UserWarning):
+    pass
 
 
 class IPythonViz(object):
@@ -29,7 +34,7 @@ class IPythonViz(object):
         if cfg is None:
             cfg = get_ipython().mktempfile()
 
-        self._server_thread, server = self.get_server(cfg, model)
+        self._server_thread, server = self.start_server(cfg, model)
         self.port = server.server_port
 
         self.url = self.get_url(self.host, self.port)
@@ -43,22 +48,25 @@ class IPythonViz(object):
         return url
 
     @classmethod
-    def get_server(cls, cfg, model):
+    def start_server(cls, cfg, model):
+        # Make sure only one server is writing the same config.
         server_thread = cls.threads.get(cfg, None)
         server = cls.servers.get(cfg, None)
         existent = server_thread is not None and server is not None
         if existent and server_thread.is_alive():
-            return server_thread, server
-        else:
-            return cls.start_server(cfg, model)
+            warnings.warn(ConfigReuseWarning(
+                "Reusing config. Only the most recent visualization will "
+                "update the config."))
+            server.viz.save_config(force=True)
+            server.viz.cfg = get_ipython().mktempfile()
+            cls.servers[server.viz.cfg] = server
+            cls.threads[server.viz.cfg] = server_thread
 
-    @classmethod
-    def start_server(cls, cfg, model):
         name = model.label if model.label is not None else ''
         viz = nengo_viz.Viz(
             name, cfg=cfg, model=model, locals=get_ipython().user_ns,
             interactive=False, allow_file_change=False)
-        server = viz.prepare_server(port=0, browser=False)
+        server = viz.prepare_server(viz, port=0, browser=False)
         server_thread = threading.Thread(
             target=viz.begin_lifecycle,
             kwargs={'server': server})
