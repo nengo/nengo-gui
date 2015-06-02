@@ -44,18 +44,25 @@ class NetGraph(Component):
             pass
 
     def reload(self):
+        current_error = None
         locals = {}
         with open(self.viz.viz.filename) as f:
             code = f.read()
         try:
             exec(code, locals)
         except:
+            line = nengo_viz.monkey.determine_line_number()
+            current_error = dict(trace=traceback.format_exc(), line=line)
             traceback.print_exc()
         try:
             model = locals['model']
         except:
-            traceback.print_exc()
+            if current_error is None:
+                line = nengo_viz.monkey.determine_line_number()
+                current_error = dict(trace=traceback.format_exc(), line=line)
+                traceback.print_exc()
             return
+        self.viz.current_error = current_error
 
         locals['nengo_viz'] = nengo_viz
         name_finder = nengo_viz.NameFinder(locals, model)

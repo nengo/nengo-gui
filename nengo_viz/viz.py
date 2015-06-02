@@ -30,6 +30,7 @@ class VizSim(object):
         self.rebuild = False    # should we rebuild the model?
         self.sim = None
         self.changed = False    # has something changed the model, so it
+        self.current_error = None
         self.undo_stack = []
         self.redo_stack = []
                                 #  should be rebuilt?
