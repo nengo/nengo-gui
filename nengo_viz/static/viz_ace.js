@@ -1,3 +1,5 @@
+var aceRange = ace.require('ace/range').Range;
+
 
 VIZ.Ace = function (script_code, uid) {
 	var self = this;
@@ -16,6 +18,7 @@ VIZ.Ace = function (script_code, uid) {
 	this.editor.getSession().setMode("ace/mode/python");
 	this.editor.setValue(script_code);
 	this.editor.gotoLine(1);
+    this.marker = null;
 
 	//Setup the button to toggle the code editor
 	$('#Toggle_ace').on('click', function(){self.toggle_shown();});
@@ -52,7 +55,28 @@ VIZ.Ace.prototype.schedule_updates = function () {
 
 VIZ.Ace.prototype.on_message = function (event) {
 	var msg = JSON.parse(event.data)
-	this.editor.setValue(msg.code);
+    if (msg.code !== undefined) {
+        this.editor.setValue(msg.code);
+    } else if (msg.error === null) {
+        if (this.marker !== null) {
+            this.editor.getSession().removeMarker(this.marker);
+            this.marker = null;
+            this.editor.getSession().clearAnnotations();
+        }
+    } else if (msg.error !== undefined) {
+        var line = msg.error.line;
+        var trace = msg.error.trace;
+        this.marker = this.editor.getSession()
+            .addMarker(new aceRange(line - 1, 0, line - 1, 10), 
+            'highlight', 'fullLine', true);
+        this.editor.getSession().setAnnotations([{
+            row: line - 1,
+            type: 'error',
+            text: trace,
+        }]);
+    } else {
+        console.log(msg);
+    }
 }
 
 VIZ.Ace.prototype.show_editor = function () {

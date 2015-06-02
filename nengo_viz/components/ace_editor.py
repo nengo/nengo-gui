@@ -9,12 +9,17 @@ class AceEditor(Component):
         self.uid = uid
         self.current_code = self.viz.viz.code
         self.serve_code = True
+        self.last_error = None
 
     def update_client(self, client):
-    	if self.serve_code:
-    		i = json.dumps({'code': self.current_code})
-    		client.write(i)
-    		self.serve_code = False
+        if self.serve_code:
+            i = json.dumps({'code': self.current_code})
+            client.write(i)
+            self.serve_code = False
+        error = self.viz.current_error
+        if error != self.last_error:
+            client.write(json.dumps({'error': error}))
+            self.last_error = error
 
     def javascript(self):
         return 'new VIZ.Ace("%s", "%s")' % ('stringified', self.uid) ##feed VIZ.Ace a single string representing all the code for the model
