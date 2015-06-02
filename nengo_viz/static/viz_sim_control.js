@@ -221,7 +221,7 @@ VIZ.TimeSlider = function(args) {
             var xa1 = xa0 + event.deltaRect.left;
             var xb1 = xb0 + event.deltaRect.right;
 
-            var min_width = 15;
+            var min_width = 45;
             xa1 = VIZ.clip(xa1, xmin, xb0 - min_width);
             xb1 = VIZ.clip(xb1, xa0 + min_width, xmax);
 
