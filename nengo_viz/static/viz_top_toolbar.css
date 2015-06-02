@@ -72,3 +72,24 @@
     margin-top: 3em;
     position: absolute;
 }
+
+#config-fontsize-group {
+    margin-left:20;
+}
+
+#config-fontsize.form-control {
+    padding: 6px 6px;
+    height: 35px;
+}
+
+#config-fontsize-group .control-label {
+    margin-left: -20px;
+}
+
+
+.input-group .input-group-addon{
+    text-indent:0px;
+
+}
+
+

@@ -110,17 +110,26 @@ VIZ.Modal.prototype.main_config = function(options) {
 
     var $form = $('<form class="form-horizontal" id ' +
         '="myModalForm"/>').appendTo(this.$body);
-    $(' <div class="form-group">' +
+    $('<div class="form-group" id="config-fontsize-group">' +
+            '<label for="config-fontsize" class="control-label">Font size</label>' +
+            '<div class="input-group col-xs-2">' +
+              '<input type="number" maxlength="3" class="form-control" id="config-fontsize" data-error="Zero to 999 percent of the base size" required>' +
+              '<span class="input-group-addon">%</span>' +
+            '</div>' +
+            '<span class="help-block with-errors">As a percentage of the base size</span>' +
+          '</div>' +
+    '<div class="form-group">' +
         '<div class="checkbox">' +
-          '<label>' +
-            '<input type="checkbox" id="zoomFonts">' +
+          '<label for="zoom-fonts" class="control-label">' +
+            '<input type="checkbox" id="zoom-fonts">' +
             'Allow fonts to zoom' +
           '</label>' +
           '<div class="help-block with-errors"></div>' +
         '</div>' +
     '</div>').appendTo($form);
 
-    $('#zoomFonts').prop('checked', options[0]);
+    $('#zoom-fonts').prop('checked', options[0]);
+    $('#config-fontsize').val(options[1]);
 
     $form.validator(); //Enable validation
 }

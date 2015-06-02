@@ -10,7 +10,8 @@ VIZ.NetGraph = function(parent, args) {
     this.scale = 1.0;          // global scaling factor
     this.offsetX = 0;          // global x,y pan offset 
     this.offsetY = 0;
-    this.zoomFonts = false;    // scale fonts when zooming
+    this.zoom_fonts = false;    // scale fonts when zooming
+    this.font_size = 100;       // font size as a percent of base
 
     this.svg_objects = {};     // dict of all VIZ.NetGraphItems, by uid
     this.svg_conns = {};       // dict of all VIZ.NetGraphConnections, by uid
@@ -299,20 +300,29 @@ VIZ.NetGraph.prototype.set_scale = function(scale) {
 
 
 VIZ.NetGraph.prototype.update_font_size = function(scale) {
-    if (this.zoomFonts) {
-        $('#main').css('font-size', 3 * this.scale + 'em');
+    if (this.zoom_fonts) {
+        $('#main').css('font-size', 3 * this.scale * this.font_size/100 + 'em');
     } else {
-        $('#main').css('font-size', '');
+        $('#main').css('font-size', this.font_size/100 + 'em');
     }
 }
 
-VIZ.NetGraph.prototype.set_zoomFonts = function(value) {
-    this.zoomFonts = value;
+VIZ.NetGraph.prototype.set_zoom_fonts = function(value) {
+    this.zoom_fonts = value;
     this.update_font_size();
 }
 
-VIZ.NetGraph.prototype.get_zoomFonts = function() {
-    return this.zoomFonts;
+VIZ.NetGraph.prototype.get_zoom_fonts = function() {
+    return this.zoom_fonts;
+}
+
+VIZ.NetGraph.prototype.set_font_size = function(value) {
+    this.font_size = value;
+    this.update_font_size();
+}
+
+VIZ.NetGraph.prototype.get_font_size = function() {
+    return this.font_size;
 }
 
 /** redraw all elements */
