@@ -262,6 +262,8 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         item.set_position(data.pos[0], data.pos[1]);
         item.set_size(data.size[0], data.size[1]);
 
+        this.scaleMiniMap();
+
     } else if (data.type === 'config') {
         // Anything about the config of a component has changed
         var uid = data.uid;
@@ -563,6 +565,10 @@ VIZ.NetGraph.prototype.scaleMiniMap = function () {
     this.maxItemY = this.svg_objects[key].pos[1];
 
     for (var key in this.svg_objects) {
+        if (this.svg_objects[key].depth > 1) {
+            continue;
+        }
+
         item_min_x = this.svg_objects[key].pos[0] - this.svg_objects[key].size[0];
         item_max_x = this.svg_objects[key].pos[0] + this.svg_objects[key].size[0];
         item_min_y = this.svg_objects[key].pos[1] - this.svg_objects[key].size[1];
