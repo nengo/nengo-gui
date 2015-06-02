@@ -135,7 +135,7 @@ VIZ.NetGraph = function(parent, args) {
             }
 
             var scale = 1. + Math.abs(delta) / 600.;
-            if (delta < 0) {
+            if (delta > 0) {
                 scale = 1. / scale;
             }
 
