@@ -40,7 +40,7 @@ VIZ.Ace = function (script_code, uid) {
 	$(window).on('resize', function() {self.set_width()});
 }
 
-//Send changes to the code every 100ms 
+//Send changes to the code to server every 100ms 
 VIZ.Ace.prototype.schedule_updates = function () {
 	var self = this;
 	setInterval(function () {
@@ -80,7 +80,7 @@ VIZ.Ace.prototype.toggle_shown = function () {
 }
 
 VIZ.Ace.prototype.set_width = function () {
-	this.editor.resize();
+	//this.editor.resize();
 	var code_div = document.getElementById('editor');
 	
 	if (this.width < this.min_width) {

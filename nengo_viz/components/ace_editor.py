@@ -21,7 +21,6 @@ class AceEditor(Component):
 
     def message(self, msg):
         self.current_code = msg
-        print(self.current_code)
 
 class AceEditorTemplate(Template):
     cls = AceEditor
