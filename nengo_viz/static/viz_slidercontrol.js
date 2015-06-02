@@ -71,17 +71,6 @@ VIZ.SliderControl = function(min, max) {
             event.stopPropagation();
          }).on('keydown', function(event) { self.handle_keypress(event); });
 
-    //[>* Slider jumps to zero when middle clicked <]
-    //[>* TODO: Replicate this functionality for touch <]
-    this.handle.addEventListener("click",
-        function(event) {
-            //[>* check if click was the middle mouse button <]
-            if (event.which == 2){
-                self.set_value(0.);
-            }
-        }
-    );
-
     this.listeners = {};
 };
 
