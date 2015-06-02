@@ -69,6 +69,7 @@ except ImportError:
     import io as StringIO
 import sys
 import threading
+import time
 import traceback
 import webbrowser
 
@@ -409,23 +410,19 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             # server.requests might be modified from other threads, so we need
             # a copy which we get in a thread-safe way be slicing it with [:].
             if asynch and server.requests is not None:
-                for _, sock in server.requests[:]:
+                for _, sock in server.requests:
                     try:
                         sock.shutdown(socket.SHUT_RDWR)
                         sock.close()
                     except socket.error:
                         pass
 
-                first = True
-                for thread, _ in server.requests[:]:
+                for thread, _ in server.requests:
                     if thread.is_alive():
-                        # giving the first thread more time to close
-                        # effectively gives all threads more time to close
-                        thread.join(0.2 if first else 0.01)
-                        first = False
+                        thread.join(0.05)
 
                 n_zombie = sum(thread.is_alive()
-                        for thread, _ in server.requests[:])
+                        for thread, _ in server.requests)
                 if n_zombie > 0:
                     print("%d zombie threads will close abruptly" % n_zombie)
 
@@ -449,14 +446,18 @@ class AsyncHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         BaseHTTPServer.HTTPServer.__init__(self, *args, **kwargs)
 
         # keep track of open threads, so we can close them when we exit
-        self.requests = []
+        self._requests = []
+
+    @property
+    def requests(self):
+        return self._requests[:]
 
     def process_request_thread(self, request, client_address):
         thread = threading.current_thread()
-        self.requests.append((thread, request))
+        self._requests.append((thread, request))
         SocketServer.ThreadingMixIn.process_request_thread(
             self, request, client_address)
-        self.requests.remove((thread, request))
+        self._requests.remove((thread, request))
 
     def handle_error(self, request, client_address):
         exc_type, exc_value, _ = sys.exc_info()

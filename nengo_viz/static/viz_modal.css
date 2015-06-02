@@ -13,6 +13,14 @@
     shape-rendering: crispEdges;
 }
 
+.modal-body .form-group {
+    text-indent: 20px;
+}
+
+.modal-body .with-errors {
+    font-size: .8em;
+}
+
 div.modal-backdrop {
     z-index: 100000000;
 }

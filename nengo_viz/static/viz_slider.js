@@ -203,7 +203,7 @@ VIZ.Slider.prototype.user_value = function () {
     //First build the prompt string
     var prompt_string = '';
     for (var i = 0; i < this.sliders.length; i++){
-        prompt_string = prompt_string + this.sliders[i].value;
+        prompt_string = prompt_string + this.sliders[i].value.toFixed(2);
         if (i != this.sliders.length - 1) {
             prompt_string = prompt_string + ", ";
         }
@@ -212,6 +212,12 @@ VIZ.Slider.prototype.user_value = function () {
     VIZ.modal.single_input_body(prompt_string, 'New value(s):');
     VIZ.modal.footer('ok_cancel', function(e) {
         var new_value = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
         self.immediate_notify = false;
         if (new_value !== null) {
             new_value = new_value.split(',');
@@ -222,7 +228,28 @@ VIZ.Slider.prototype.user_value = function () {
             }
         }
         self.immediate_notify = true;
+        $('#OK').attr('data-dismiss', 'modal');
     });
+
+    var $form = $('#myModalForm').validator({
+        custom: {
+            my_validator: function($item) {
+                var nums = $item.val().split(',');
+                if (nums.length != self.sliders.length) {
+                    return false;
+                }
+                for (var i=0; i<nums.length; i++) {
+                    if (!$.isNumeric(nums[i])) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        },
+    });
+
+    $('#singleInput').attr('data-error', 'Input should be one ' +
+                           'comma-separated numerical value for each slider.');
     VIZ.modal.show();
 }
 
@@ -238,9 +265,15 @@ VIZ.Slider.prototype.set_range = function() {
     var range = this.sliders[0].scale.domain();
     var self = this;
     VIZ.modal.title('Set slider range...');
-    VIZ.modal.single_input_body('' + range[1] + ',' + range[0], 'New range:');
+    VIZ.modal.single_input_body([range[1], range[0]], 'New range:');
     VIZ.modal.footer('ok_cancel', function(e) {
         var new_range = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
         if (new_range !== null) {
             new_range = new_range.split(',');
             var min = parseFloat(new_range[0]);
@@ -250,7 +283,25 @@ VIZ.Slider.prototype.set_range = function() {
             }
             self.save_layout();
         }
+        $('#OK').attr('data-dismiss','modal');
     });
+    var $form = $('#myModalForm').validator({
+        custom: {
+            my_validator: function($item) {
+                var nums = $item.val().split(',');
+                var valid = false;
+                if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
+                    if (nums[0]<nums[1]) {
+                        valid = true; //Two numbers, 1st less than 2nd
+                    }
+                }
+                return (nums.length == 2 && valid);
+            }
+        },
+    });
+
+    $('#singleInput').attr('data-error', 'Input should be in the ' +
+                           'form "<min>,<max>".');
     VIZ.modal.show();
 }
 
