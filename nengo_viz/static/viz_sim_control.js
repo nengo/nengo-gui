@@ -45,7 +45,7 @@ VIZ.SimControl = function(div, args) {
 
     /** Get reference to the options button */
     this.options_button = $('#options_button')[0];
-    this.options_button.onclick = function(event) {self.on_options_click();};
+    this.options_button.onclick = function(event) {self.set_options();};
     VIZ.set_transform(this.options_button, 0, 0);
 
     /** Create the speed and rate update sliders */
@@ -175,8 +175,32 @@ VIZ.SimControl.prototype.on_resize = function(event) {
 }
 
 VIZ.SimControl.prototype.set_options = function(event) {
+    var self = this;
+    //This should gather all the current state information
+    //and send it to the modal for display
+    var cur_state = ["Fastest", "Python",
+        "5", "0.5", "0.03"];
+    VIZ.modal.title('Simulation Options');
+    VIZ.modal.sim_options_body(cur_state);
+    VIZ.modal.footer('ok_cancel', function(e) {
+        var run_speed = $('#runSpeed').val();
+        var backend = $('#backend').val();
+        //var sim_mode = $('#simMode').val();
+        var recording_time = $('#recordingTime').val();
+        var shown_time = $('#shownTime').val();
+        var filter_tc = $('#filterTC').val();
 
+        var modal = $('#myModalForm').data('bs.validator');
 
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
+        //put what to do with returned data here
+        $('#OK').attr('data-dismiss', 'modal');
+    });
+
+    VIZ.modal.show();
 }
 
 VIZ.TimeSlider = function(args) {

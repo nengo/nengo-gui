@@ -28,15 +28,20 @@ VIZ.Modal.prototype.footer = function(type, ok_function){
     this.$footer.empty();
 
     if (type === "close") {
-        this.$footer.append('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
+        this.$footer.append('<button type="button" ' +
+            'class="btn btn-default" data-dismiss="modal">Close</button>');
     } else if (type === "ok_cancel") {
         var $footerBtn = $('<div class="form-group"/>').appendTo(this.$footer);
-        $footerBtn.append('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
-        $footerBtn.append('<button id="OK" type="submit" class="btn btn-primary" >OK</button>');
+        $footerBtn.append('<button type="button" ' +
+            'class="btn btn-default" data-dismiss="modal">Cancel</button>');
+        $footerBtn.append('<button id="OK" type="submit" ' +
+            'class="btn btn-primary" >OK</button>');
         $('#OK').on('click', ok_function);
     } else if (type === 'confirm_reset') {
-        this.$footer.append('<button type="button" id="confirm_reset_button" class="btn btn-primary">Reset</button>');
-        this.$footer.append('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
+        this.$footer.append('<button type="button" ' +
+            'id="confirm_reset_button" class="btn btn-primary">Reset</button>');
+        this.$footer.append('<button type="button" ' +
+            'class="btn btn-default" data-dismiss="modal">Close</button>');
         $('#confirm_reset_button').on('click', function() {
             toolbar.reset_model_layout();
         });
@@ -89,18 +94,19 @@ VIZ.Modal.prototype.tabbed_body = function(tabinfo) {
 }
 
 /**
- * Sets up the body for standard input forms
+ * Sets up the body for standard single input forms
  */
 VIZ.Modal.prototype.single_input_body = function(start_values, label) {
     this.clear_body();
 
-    var $form = $('<form class="form-horizontal" id ="myModalForm"/>').appendTo(this.$body);
+    var $form = $('<form class="form-horizontal" id ' +
+        '="myModalForm"/>').appendTo(this.$body);
     var $ctrlg = $('<div class="form-group"/>').appendTo($form);
     $ctrlg.append('<label class="control-label" for="singleInput">' + label +
-                  '</label>');
+        '</label>');
     var $ctrls = $('<div class="controls"/>').appendTo($ctrlg);
     $ctrls.append('<input id="singleInput" type="text" placeholder="' +
-                  start_values + '"/>');
+        start_values + '"/>');
     $('<div class="help-block with-errors"/>').appendTo($ctrls);
     this.$div.on('shown.bs.modal', function () {
         $('#singleInput').focus();
@@ -116,6 +122,83 @@ VIZ.Modal.prototype.single_input_body = function(start_values, label) {
             $('#OK').click();
         }
     });
+}
+
+/**
+ * Sets up the body for simulator options
+ */
+VIZ.Modal.prototype.sim_options_body = function(cur_state) {
+    this.clear_body();
+    //extract info from cur_state and put it in the form
+    var $form = $('<form class="form-horizontal" ' +
+        'id ="myModalForm"/>').appendTo(this.$body);
+    var $main_body = $('<div class="form-group">' +
+    '<label for="runSpeed" class="control-label">Desired run speed</label>' +
+    '<select id="runSpeed" class="form-control">' +
+        '<option><a href="#">Fastest</a></option>' +
+        '<option><a href="#">1x</a></option>' +
+        '<option><a href="#">0.5x</a></option>' +
+        '<option><a href="#">0.1x</a></option>' +
+        '<option><a href="#">0.05x</a></option>' +
+        '<option><a href="#">0.01x</a></option>' +
+        '<option><a href="#">0.001x</a></option>' +
+    '</select>' +
+   '</div>' +
+  '<div class="form-group">' +
+    '<label for="backend" class="control-label">Backend simulator</label>' +
+    '<select id="backend" class="form-control">' +
+        '<option><a href="#">Python</a></option>' +
+        '<option id="ocl" class="disabled"><a href="#">Nengo-OCL</a></option>' +
+        '<option id="spinnaker" class="disabled"><a href="#">SpiNNaker Hardware</a></option>' +
+        '<option id="brainstormssw" class="disabled"><a href="#">Brainstorms Software</a></option>' +
+        '<option id="brainstormshw" class="disabled"><a href="#">Brainstorms Hardware</a></option>' +
+        '<option id="neurogridsw" class="disabled"><a href="#">Neurogrid Software</a></option>' +
+        '<option id="neurogridhw" class="disabled"><a href="#">Neurogrid Hardware</a></option>' +
+    '</select>' +
+   '</div>' +
+//  '<div class="form-group">' +
+//    '<label for="simMode" class="control-label">Simulation mode</label>' +
+//    '<select id="simMode" class="form-control">' +
+//        '<option><a href="#">Spiking</a></option>' +
+//        '<option><a href="#">Rate</a></option>' +
+//        '<option><a href="#">Direct</a></option>' +
+//    '</select>' +
+//   '</div>' +
+  '<div class="form-group">' +
+        '<label for="recordingTime" class="control-label">Length of recorded data</label>' +
+        '<div class="input-group">' +
+            '<input type="number" class="form-control" id="recordingTime" placeholder="curlength?" data-error="Time must be a number of seconds." required>' +
+            '<span class="input-group-addon">seconds</span>' +
+        '</div>' +
+        '<span class="help-block with-errors"></span>' +
+  '</div>' +
+
+  '<div class="form-group">' +
+        '<label for="shownTime" class="control-label">Time shown on graphs</label>' +
+        '<div class="input-group">' +
+            '<input type="number" class="form-control" id="shownTime" placeholder="curshown?" data-error="Time must be a number of seconds." required>' +
+            '<span class="input-group-addon">seconds</span>' +
+        '</div>' +
+        '<span class="help-block with-errors"></span>' +
+      '</div>' +
+    '<div class="form-group">' +
+        '<label for="filterTC" class="control-label">Filter time constant</label>' +
+        '<div class="input-group">' +
+            '<input type="number" class="form-control" id="filterTC" placeholder="curTC?" data-error="Time constant must be a number of seconds." required>' +
+            '<span class="input-group-addon">seconds</span>' +
+        '</div>' +
+        '<div class="help-block with-errors"></div>' +
+    '</div>').appendTo($form);
+
+    //Set the current values for all options
+    $('#runSpeed').val(cur_state[0]);
+    $('#backend').val(cur_state[1]);
+    //$('#simMode').val(cur_state[2]);
+    $('#recordingTime').val(cur_state[2]);
+    $('#shownTime').val(cur_state[3]);
+    $('#filterTC').val(cur_state[4]);
+
+    $form.validator();  //Enable validation
 }
 
 VIZ.Modal.prototype.ensemble_body = function(uid, params, plots, conninfo) {

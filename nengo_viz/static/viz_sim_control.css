@@ -99,3 +99,9 @@
     padding: 0.2em !important;
     border: none !important;
 }
+
+.scrollable-menu {
+    height: auto;
+    max-height: 100px;
+    overflow-x: hidden;
+}
