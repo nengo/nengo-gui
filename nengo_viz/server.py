@@ -152,7 +152,10 @@ class Server(swi.SimpleWebInterface):
             # if there are no simulations left, stop the server
             if self.server.viz.count_sims() == 0:
                 if isinstance(component, nengo_viz.components.SimControl):
-                    print("No connections remaining to the nengo_viz server.")
+                    if self.server.viz.interactive:
+                        print(
+                            "No connections remaining to the nengo_viz "
+                            "server.")
                     self.stop()
 
     def log_message(self, format, *args):
