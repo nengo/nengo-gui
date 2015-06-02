@@ -37,6 +37,10 @@
     cursor: default !important;
 }
 
+#Help_button{
+    float: right;
+}
+
 #filebrowser {
     position: relative;
     width: 200px;

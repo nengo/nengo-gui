@@ -1,10 +1,6 @@
 VIZ.Hotkeys = function () { 
 
     document.addEventListener('keydown', function(ev) {
-        // bring up help sheet with ctrl-/ (which is the ? button)
-        if (ev.ctrlKey == true && ev.keyCode == 191) {
-            sim.ws.send('help');
-        }
         // undoo with ctrl-z
         if (ev.ctrlKey == true && ev.keyCode == 90) {
             VIZ.netgraph.notify({ undo: "1" });
