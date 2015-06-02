@@ -52,6 +52,13 @@ class NetGraph(Component):
             return
 
         locals['nengo_viz'] = nengo_viz
+
+        components = []
+        for c in self.viz.components[:2]:
+            components.append(c)
+            locals[c.uid] = c.template
+        self.viz.components = components
+
         name_finder = nengo_viz.NameFinder(locals, model)
 
         self.networks_to_search = [model]
@@ -130,11 +137,6 @@ class NetGraph(Component):
         self.viz.viz.uid_prefix_counter = {}
         self.layout = nengo_viz.layout.Layout(model)
 
-        components = []
-        for c in self.viz.components[:2]:
-            components.append(c)
-            locals[c.uid] = c.template
-        self.viz.components = components
         for template in self.viz.viz.find_templates():
             if not isinstance(template,
                               (nengo_viz.components.SimControlTemplate,
