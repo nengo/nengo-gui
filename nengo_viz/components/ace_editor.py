@@ -17,7 +17,7 @@ class AceEditor(Component):
     		self.serve_code = False
 
     def javascript(self):
-        return 'new VIZ.Ace("%s", "%s")' % ('stringified', self.uid) ##feed VIZ.Ace a single string representing all the code for the model
+        return 'ace_editor = new VIZ.Ace("%s", "%s")' % ('stringified', self.uid) ##feed VIZ.Ace a single string representing all the code for the model
 
     def message(self, msg):
         self.current_code = msg
