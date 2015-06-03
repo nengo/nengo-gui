@@ -33,6 +33,7 @@ class VizSim(object):
         self.current_error = None
         self.undo_stack = []
         self.redo_stack = []
+        self.new_code = None
                                 #  should be rebuilt?
 
         for template in self.viz.find_templates():

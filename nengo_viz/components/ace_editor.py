@@ -25,9 +25,15 @@ class AceEditor(Component):
         return 'ace_editor = new VIZ.Ace("%s")' % self.uid
 
     def message(self, msg):
-        self.current_code = msg
-        with open(self.viz.viz.filename, 'w') as f:
-            f.write(self.current_code)
+        data = json.loads(msg)
+        self.current_code = data['code']
+
+        if data['save']:
+            with open(self.viz.viz.filename, 'w') as f:
+                f.write(self.current_code)
+        else:
+            self.viz.new_code = self.current_code
+
 
 class AceEditorTemplate(Template):
     cls = AceEditor

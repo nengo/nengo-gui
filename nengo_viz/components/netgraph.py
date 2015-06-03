@@ -43,11 +43,18 @@ class NetGraph(Component):
             self.reload()
             self.last_modify_time = t
 
-    def reload(self):
+        new_code = self.viz.new_code
+        self.viz.new_code = None
+        if new_code is not None:
+            self.reload(code=new_code)
+
+    def reload(self, code=None):
         current_error = None
         locals = {}
-        with open(self.viz.viz.filename) as f:
-            code = f.read()
+        if code is None:
+            with open(self.viz.viz.filename) as f:
+                code = f.read()
+
         try:
             exec(code, locals)
         except:

@@ -80,12 +80,20 @@
     background: #666;
 }
 
-#filebrowser li.examples_dir {
-    background-color: #ccc;
-}
-
 #Toggle_ace{
     float: right; 
+}
+
+#Save_file{
+    float: right; 
+}
+#top_toolbar_div li.disabled a.glyphicon {
+    color: #ccc;
+    background: #eee;
+}
+
+#filebrowser li.examples_dir {
+    background-color: #ccc;
 }
 
 #global_config_menu {

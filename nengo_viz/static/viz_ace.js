@@ -18,8 +18,12 @@ VIZ.Ace = function (uid) {
     this.editor.gotoLine(1);
     this.marker = null;
 
+    this.save_disabled = true;
+
     //Setup the button to toggle the code editor
     $('#Toggle_ace').on('click', function(){self.toggle_shown();});
+
+    $('#Save_file').on('click', function(){self.save_file();});
 
     this.schedule_updates();
 
@@ -48,18 +52,37 @@ VIZ.Ace.prototype.schedule_updates = function () {
     setInterval(function () {
         var editor_code = self.editor.getValue();
         if (editor_code != self.current_code) {
-            self.ws.send(editor_code);
+            self.ws.send(JSON.stringify({code:editor_code, save:false}));
             self.current_code = editor_code;
+            self.enable_save();
         }
     }, 100)
+}
+
+VIZ.Ace.prototype.save_file = function () {
+    if (!($('#Save_file').hasClass('disabled'))) {
+        var editor_code = this.editor.getValue();
+        this.ws.send(JSON.stringify({code:editor_code, save:true}));
+        this.disable_save();
+    }
+}
+
+VIZ.Ace.prototype.enable_save = function () {
+    $('#Save_file').removeClass('disabled');
+}
+
+VIZ.Ace.prototype.disable_save = function () {
+    $('#Save_file').addClass('disabled');
 }
 
 VIZ.Ace.prototype.on_message = function (event) {
     var msg = JSON.parse(event.data)
     if (msg.code !== undefined) {
         this.editor.setValue(msg.code);
+        this.current_code = msg.code;
         this.editor.gotoLine(1);
         this.set_width();
+        this.disable_save();
     } else if (msg.error === null) {
         if (this.marker !== null) {
             this.editor.getSession().removeMarker(this.marker);
