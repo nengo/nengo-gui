@@ -61,6 +61,7 @@ class NetGraph(Component):
                 line = nengo_viz.monkey.determine_line_number()
                 current_error = dict(trace=traceback.format_exc(), line=line)
                 traceback.print_exc()
+            self.viz.current_error = current_error
             return
         self.viz.current_error = current_error
 
