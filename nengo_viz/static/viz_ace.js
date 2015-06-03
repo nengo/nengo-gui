@@ -1,7 +1,7 @@
 var aceRange = ace.require('ace/range').Range;
 
 
-VIZ.Ace = function (script_code, uid) {
+VIZ.Ace = function (uid) {
 	var self = this;
 	this.hidden = false;
 	this.min_width = 50;
@@ -9,13 +9,12 @@ VIZ.Ace = function (script_code, uid) {
 	this.ws = VIZ.create_websocket(uid);
 	this.ws.onmessage = function(event) {self.on_message(event);}
 
-	this.current_code = script_code;
+	this.current_code = '';
 	var code_div = document.createElement('div')
 	code_div.id = 'editor'
 	document.getElementsByTagName("BODY")[0].appendChild(code_div);
 	this.editor = ace.edit('editor')
 	this.editor.getSession().setMode("ace/mode/python");
-	this.editor.setValue(script_code);
 	this.editor.gotoLine(1);
     this.marker = null;
 
@@ -23,7 +22,7 @@ VIZ.Ace = function (script_code, uid) {
 
 	this.schedule_updates();
 
-	this.width = $(window).width() / 5;
+	this.width = $(window).width() / 3;
 
 	self.set_width();	
 
@@ -37,6 +36,7 @@ VIZ.Ace = function (script_code, uid) {
 			self.set_width()
 		})
 	$(window).on('resize', function() {self.set_width(); });
+	this.update_main_width();
 }
 
 //Send changes to the code to server every 100ms 
@@ -55,6 +55,8 @@ VIZ.Ace.prototype.on_message = function (event) {
 	var msg = JSON.parse(event.data)
     if (msg.code !== undefined) {
         this.editor.setValue(msg.code);
+	    this.editor.gotoLine(1);
+        this.set_width();
     } else if (msg.error === null) {
         if (this.marker !== null) {
             this.editor.getSession().removeMarker(this.marker);
@@ -91,12 +93,12 @@ VIZ.Ace.prototype.hide_editor = function () {
 
 VIZ.Ace.prototype.toggle_shown = function () {
 	if (this.hidden) {
-		this.set_width();
 		this.show_editor();
 	}
 	else{
 		this.hide_editor();
 	}
+    this.set_width();
 }
 
 VIZ.Ace.prototype.set_width = function () {
@@ -121,13 +123,19 @@ VIZ.Ace.prototype.set_width = function () {
 
 	code_div.style.top = top_margin;
 	code_div.style.bottom = bottom_margin;
-	code_div.style.left = left_margin ; //Positions code editor so it takes up the right 20% of the screen.
+	code_div.style.left = left_margin; 
 
-	$('#main').width(left_margin)
+	this.update_main_width();
+}
+
+VIZ.Ace.prototype.update_main_width = function () {
+    var width = this.hidden ? 0 : this.width;
+	var left_margin = $(window).width() - width;
+
+	$('#main').width(left_margin);
 
 	if (VIZ.netgraph !== undefined){
 		VIZ.netgraph.on_resize();
-		viewport.on_resize()
-	}
-	
+    }
+	viewport.on_resize();
 }

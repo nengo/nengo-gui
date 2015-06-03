@@ -22,7 +22,7 @@ class AceEditor(Component):
             self.last_error = error
 
     def javascript(self):
-        return 'ace_editor = new VIZ.Ace("%s", "%s")' % ('stringified', self.uid) ##feed VIZ.Ace a single string representing all the code for the model
+        return 'ace_editor = new VIZ.Ace("%s")' % self.uid
 
     def message(self, msg):
         self.current_code = msg
