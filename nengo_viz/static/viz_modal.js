@@ -114,10 +114,11 @@ VIZ.Modal.prototype.main_config = function() {
             '<label for="config-fontsize" class="control-label">Font size</label>' +
             '<div class="input-group col-xs-2">' +
               '<input type="number" min="10" max="999" step="10" maxlength="3" class="form-control" id="config-fontsize" data-error="Zero to 999 percent of the base size" required>' +
-              //'<span class="input-group-addon">%</span>' +
+              '<span class="input-group-addon">%</span>' +
             '</div>' +
             '<span class="help-block with-errors">As a percentage of the base size</span>' +
-          '</div>' +
+        '</div>' +
+        '<div><input type=text></div>' +
     '<div class="form-group">' +
         '<div class="checkbox">' +
           '<label for="zoom-fonts" class="control-label">' +
@@ -128,6 +129,9 @@ VIZ.Modal.prototype.main_config = function() {
         '</div>' +
     '</div>').appendTo($form);
 
+    this.$div.on('shown.bs.modal', function () {
+        $('#config-fontsize').focus();
+    });
     $('#zoom-fonts').prop('checked', options[0]);
     $('#config-fontsize').val(options[1]);
 
