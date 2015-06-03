@@ -145,6 +145,7 @@ class NetGraph(Component):
         self.config = self.viz.viz.config
         self.viz.viz.uid_prefix_counter = {}
         self.layout = nengo_viz.layout.Layout(model)
+        self.viz.viz.code = code
 
         components = []
         for c in self.viz.components[:3]:
