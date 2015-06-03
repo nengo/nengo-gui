@@ -22,21 +22,12 @@ Nengo.Image = function(parent, sim, args) {
     /** for storing the accumulated data */
     self.data_store = new Nengo.DataStore(self.n_pixels, self.sim, 0.01);
 
-    /** spacing between the graph and the outside edges (in pixels) */
-    self.margin_top = 30;
-    self.margin_bottom = 0;
-    self.margin_left = 0;
-    self.margin_right = 0;
-
     /** draw the plot as an SVG */
     self.svg = d3.select(self.div).append('svg')
         .attr('width', '100%')
         .attr('height', '100%')
         .attr('style', [
-            'margin-top:', self.margin_top, 'px;',
-            'margin-bottom:', self.margin_bottom, 'px;',
-            'margin-left:', self.margin_left, 'px;',
-            'margin-right:', self.margin_right, 'px;'
+            'padding-top:', '2em',
         ].join(""));
 
     /** call schedule_update whenever the time is adjusted in the SimControl */
@@ -112,8 +103,8 @@ Nengo.Image.prototype.on_resize = function(width, height) {
     };
 
     self.svg
-        .attr("width", width - self.margin_left - self.margin_right)
-        .attr("height", height - self.margin_top - self.margin_bottom);
+        .attr("width", width)
+        .attr("height", height);
 
     self.update();
 
