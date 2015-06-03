@@ -135,6 +135,7 @@ VIZ.Ace.prototype.update_main_width = function () {
 	$('#main').width(left_margin);
 
 	if (VIZ.netgraph !== undefined){
+        VIZ.netgraph.svg.style.width = left_margin;
 		VIZ.netgraph.on_resize();
     }
 	viewport.on_resize();
