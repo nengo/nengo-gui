@@ -22,7 +22,9 @@ VIZ.Ace = function (uid) {
 
 	this.schedule_updates();
 
-	this.width = $(window).width() / 3;
+    this.font_size = 12;
+    this.editor.setFontSize(this.font_size);
+	this.width = 580;  // pixels needed to do 80 chars at 12pt font
 
 	self.set_width();	
 
