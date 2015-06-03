@@ -531,16 +531,18 @@ VIZ.NetGraph.prototype.create_minimap = function () {
     this.minimap.appendChild(this.g_items_mini);
 
     // default display minimap
-    this.display = true;
+    this.mm_display = true;
+
     // allow toggling of minimap display with ctrl+M
     document.addEventListener('keydown', function(ev) {
         if (ev.ctrlKey == true && ev.keyCode == 77) {
-            if (this.display == true) {
+            console.log(this.mm_display);
+            if (this.mm_display == true) {
                 $('.minimap')[0].style.visibility = 'hidden';
-                this.display = false
+                this.mm_display = false
             } else {
                 $('.minimap')[0].style.visibility = 'visible';
-                this.display = true 
+                this.mm_display = true 
             }
         }
     });
@@ -582,10 +584,10 @@ VIZ.NetGraph.prototype.scaleMiniMap = function () {
         if (this.mm_max_x < minmax_xy[1]) {
             this.mm_max_x = minmax_xy[1];
         }
-        if (this.mm_max_y > minmax_xy[2]) {
+        if (this.mm_min_y > minmax_xy[2]) {
             this.mm_min_y = minmax_xy[2];
         }
-        if (this.mm_min_y < minmax_xy[3]) {
+        if (this.mm_max_y < minmax_xy[3]) {
             this.mm_max_y = minmax_xy[3];
         }
     }
