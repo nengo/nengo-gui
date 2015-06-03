@@ -35,12 +35,6 @@ def configmodal():
     js.append(show_modal_js())
     return '\n'.join(js)
 
-def helpmodal():
-    js = [add_modal_title_js('Hotkeys list')]
-    js.append('VIZ.modal.help_body();')
-    js.append(show_modal_js())
-    return '\n'.join(js)
-
 class PlotInfo(object):
     def __init__(self, title, plot="none"):
         self.title = title

@@ -41,7 +41,9 @@ VIZ.Toolbar = function(filename) {
         self.start_modal();
     });
     $('#Help_button')[0].addEventListener('click', function () {
-        sim.ws.send('help');
+        VIZ.modal.title("Hotkeys list");
+        VIZ.modal.help_body();
+        VIZ.modal.show()
     });
    
     $('#filename')[0].innerHTML = filename;
