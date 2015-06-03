@@ -29,12 +29,12 @@
 
 .graph text.graph_text {
     font-size: .8em;
-    cursor: default !important;
+    pointer-events: none;
 }
 
 .graph .axis text {
     font-size: .8em;
-    cursor: default !important;
+    pointer-events: none;
 }
 
 .graph .label {
@@ -42,9 +42,5 @@
     font-family: sans-serif;
     font-weight: normal;
     color: black;
-    cursor: ns-resize !important;
-}
-
-.graph .label:active {
-    cursor: ns-resize;
+    pointer-events: none;
 }
