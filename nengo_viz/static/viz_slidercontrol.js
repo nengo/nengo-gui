@@ -26,8 +26,11 @@ VIZ.SliderControl = function(min, max) {
     this.guideline.style.margin = 'auto';
     this.container.appendChild(this.guideline);
 
-    this.handle = document.createElement('button');
-    this.handle.className = 'btn btn-default';
+
+    this.handle = document.createElement('div');
+    this.handle.classList.add('btn');
+    this.handle.classList.add('btn-default');
+    this.handle.innerHTML = 'n/a';
     this.handle.style.position = 'absolute';
     this.handle.style.height = '1.5em';
     this.handle.style.marginTop = '0.75em';
@@ -40,11 +43,6 @@ VIZ.SliderControl = function(min, max) {
     this.handle.style.transform = 'translate(0, -50%)';
     this.update_handle_pos(0);
     this.container.appendChild(this.handle);
-
-    this.valueDisplay = document.createElement('div');
-    this.valueDisplay.classList.add('value_display');
-    this.valueDisplay.innerHTML = 'n/a';
-    this.handle.appendChild(this.valueDisplay);
 
     interact(this.handle)
         .draggable({
@@ -126,8 +124,8 @@ VIZ.SliderControl.prototype.activate_type_mode = function() {
 
     this.type_mode = true;
 
-    this.valueDisplay.innerHTML = '<input id="value_in_field" style=" border:0; outline:0;"></input>';
-    var elem = this.valueDisplay.querySelector('#value_in_field')
+    this.handle.innerHTML = '<input id="value_in_field" style=" border:0; outline:0;"></input>';
+    var elem = this.handle.querySelector('#value_in_field')
     elem.value = this.format_value(this.value);
     elem.focus();
     elem.select();
@@ -154,9 +152,9 @@ VIZ.SliderControl.prototype.deactivate_type_mode = function(event) {
 
     this.type_mode = false;
 
-    $(this.value_display).off('keydown');
+    $(this.handle).off('keydown');
     this.handle.style.backgroundColor = '';
-    this.valueDisplay.innerHTML = this.format_value(this.value);
+    this.handle.innerHTML = this.format_value(this.value);
 };
 
 VIZ.SliderControl.prototype.handle_keypress = function(event) {
@@ -169,7 +167,7 @@ VIZ.SliderControl.prototype.handle_keypress = function(event) {
     var key = event.which;
 
     if (key == enter_keycode) {
-        var input = this.valueDisplay.querySelector('#value_in_field').value;
+        var input = this.handle.querySelector('#value_in_field').value;
         if (VIZ.is_num(input)) {
             this.deactivate_type_mode();
             this.set_value(parseFloat(input));
@@ -188,7 +186,7 @@ VIZ.SliderControl.prototype.get_handle_pos = function() {
 };
 
 VIZ.SliderControl.prototype.update_value_text = function(value) {
-    this.valueDisplay.innerHTML = this.format_value(value);
+    this.handle.innerHTML = this.format_value(value);
 };
 
 VIZ.SliderControl.prototype.format_value = function(value) {
