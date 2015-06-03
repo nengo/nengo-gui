@@ -148,8 +148,11 @@ class Viz(object):
             locals['nengo_viz'] = nengo_viz
             locals['__file__'] = filename
 
-            with open(filename) as f:
-                self.code = f.read()
+            try:
+                with open(filename) as f:
+                    self.code = f.read()
+            except IOError:
+                self.code = ''
 
             with nengo_viz.monkey.patch():
                 try:
@@ -270,8 +273,11 @@ class Viz(object):
         label = obj.label
         if label is None:
             label = default_labels.get(obj, None)
-            if '.' in label:
-                label = label.rsplit('.', 1)[1]
+            if label is None:
+                print 'ERROR finding label', obj
+            else:
+                if '.' in label:
+                    label = label.rsplit('.', 1)[1]
         if label is None:
             label = repr(obj)
         return label
