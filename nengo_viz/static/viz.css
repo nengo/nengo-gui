@@ -7,7 +7,7 @@
     border: 1px solid #888888;
 }
 
-.graph text { 
+.graph text {
     cursor: default;
 }
 
@@ -18,7 +18,7 @@
 .graph .line {
     fill: none;
     stroke: black;
-    stroke-width: 1.5px;    
+    stroke-width: 1.5px;
 }
 
 .graph svg .axis path {
@@ -29,10 +29,12 @@
 
 .graph text.graph_text {
     font-size: .8em;
+    cursor: default !important;
 }
 
 .graph .axis text {
     font-size: .8em;
+    cursor: default !important;
 }
 
 .graph .label {
@@ -40,7 +42,7 @@
     font-family: sans-serif;
     font-weight: normal;
     color: black;
-    cursor: default;
+    cursor: ns-resize !important;
 }
 
 .graph .label:active {

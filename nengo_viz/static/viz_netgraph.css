@@ -4,20 +4,21 @@
 .ensemble{
     stroke-width:1;
     }
-    
+
 g.node rect{
     stroke-width:1;
-    }  
+    }
 
 g.net rect{
     stroke-width:1;
-    }  
+    }
 
 .netgraph g text {
     text-anchor: middle;
     dominant-baseline: text-before-edge;
-    cursor: default;
-    }  
+    cursor: default !important;
+    }
+
 .netgraph g text:active {
     cursor: move;
 }
@@ -41,5 +42,5 @@ g.net rect{
 .netgraph g.passthrough text {
     text-anchor: middle;
     dominant-baseline: text-before-edge;
-    }    
+    }
 
