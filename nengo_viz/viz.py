@@ -124,6 +124,9 @@ class VizSim(object):
         act = RemoveGraph(net_graph, component)
         self.undo_stack.append([act])
 
+class VizException(Exception):
+    pass
+
 class Viz(object):
     """The master visualization organizer set up for a particular model."""
     def __init__(self, filename, model=None, locals=None):
@@ -139,9 +142,9 @@ class Viz(object):
                                     'examples',
                                     'default.py')
 
-        self.load(filename, model, locals)
+        self.load(filename, model, locals, force=True)
 
-    def load(self, filename, model=None, locals=None):
+    def load(self, filename, model=None, locals=None, force=False):
         filename = os.path.relpath(filename)
         if locals is None:
             locals = {}
@@ -152,7 +155,10 @@ class Viz(object):
                 with open(filename) as f:
                     self.code = f.read()
             except IOError:
-                self.code = ''
+                self.code = ('import nengo\n\n'
+                            'model = nengo.Network()\n'
+                            'with model:\n'
+                            '    ')
 
             with nengo_viz.monkey.patch():
                 try:
@@ -165,13 +171,23 @@ class Viz(object):
                     line = nengo_viz.monkey.determine_line_number()
                     print('nengo_viz.Viz() started on line %d. '
                           'Ignoring all subsequent lines.' % line)
+                except:
+                    if not force:
+                        raise
 
         if model is None:
             if 'model' not in locals:
-                raise VizException('No object called "model" in the code')
+                if force:
+                    locals['model'] = nengo.Network()
+                else:
+                    raise VizException('No object called "model" in the code')
             model = locals['model']
             if not isinstance(model, nengo.Network):
-                raise VizException('The "model" must be a nengo.Network')
+                if force:
+                    locals['model'] = nengo.Network()
+                    model = locals['model']
+                else:
+                    raise VizException('The "model" must be a nengo.Network')
 
 
 
