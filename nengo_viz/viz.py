@@ -241,9 +241,10 @@ class Viz(object):
         self.default_labels[obj] = uid
 
     def remove_uid(self, uid):
-        obj = self.locals[uid]
-        del self.locals[uid]
-        del self.default_labels[obj]
+        if uid in self.locals:
+            obj = self.locals[uid]
+            del self.locals[uid]
+            del self.default_labels[obj]
 
     def config_name(self):
         if self.cfg is None:

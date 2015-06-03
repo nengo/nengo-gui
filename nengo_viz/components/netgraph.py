@@ -170,10 +170,10 @@ class NetGraph(Component):
         removed_items = list(removed_uids.keys())
         for c in self.viz.components:
             for item in c.template.args:
-                if item in remove_items:
-                    print 'remove', c.template
+                if item in removed_items:
+                    self.to_be_sent.append(dict(type='delete_graph',
+                                                uid=c.uid))
                     break
-            #print 'comp', c.template, c.template.args
 
         components = []
         for c in self.viz.components[:3]:
