@@ -1,6 +1,6 @@
 .menu-item{
     font-size: .8em;
     text-align: left;
-    pointer-events: none;
+    cursor: default;
 }
 
