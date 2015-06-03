@@ -1,7 +1,8 @@
 VIZ.Hotkeys = function () { 
+    var self = this;
 
-    document.addEventListener('keydown', function(ev) {
-        // undoo with ctrl-z
+    document.addEventListener('keypress', function(ev) {
+        // undo with ctrl-z
         if (ev.ctrlKey == true && ev.keyCode == 90) {
             VIZ.netgraph.notify({ undo: "1" });
         }
@@ -17,7 +18,18 @@ VIZ.Hotkeys = function () {
         if (ev.keyCode == 32) {
             sim.on_pause_click();
         }
+        // bring up help menu with ? 
+        if (ev.shiftKey && ev.keyCode == 63) {
+            self.callMenu();
+        }
+        console.log(ev.keyCode);
     });
+}
+
+VIZ.Hotkeys.prototype.callMenu = function () {
+        VIZ.modal.title("Hotkeys list");
+        VIZ.modal.help_body();
+        VIZ.modal.show();
 }
 
 VIZ.hotkeys = new VIZ.Hotkeys();
