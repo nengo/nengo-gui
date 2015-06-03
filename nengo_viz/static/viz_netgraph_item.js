@@ -733,7 +733,7 @@ VIZ.NetGraphItem.prototype.get_width = function() {
         var screen_w = this.get_nested_width() * w * this.ng.scale;
     } else {
         var w = $(this.ng.minimap).width();
-        var screen_w = this.get_nested_width() * w * this.ng.minimap_scale_x;
+        var screen_w = this.get_nested_width() * w * this.ng.mm_scale_x;
     };
         
     if (screen_w < this.minWidth) {
@@ -753,7 +753,7 @@ VIZ.NetGraphItem.prototype.get_height = function() {
         var screen_h = this.get_nested_height() * h * this.ng.scale;
     } else {
         var h = $(this.ng.minimap).height();
-        var screen_h = this.get_nested_height() * h * this.ng.minimap_scale_y;
+        var screen_h = this.get_nested_height() * h * this.ng.mm_scale_y;
     };
         
     if (screen_h < this.minHeight) {
@@ -782,11 +782,11 @@ VIZ.NetGraphItem.prototype.get_screen_location = function() {
         var offsetX = this.ng.offsetX * w;
         var offsetY = this.ng.offsetY * h;
     } else {
-        var w = $(this.ng.minimap).width() * this.ng.minimap_scale_x;
-        var h = $(this.ng.minimap).height() * this.ng.minimap_scale_y;
+        var w = $(this.ng.minimap).width() * this.ng.mm_scale_x;
+        var h = $(this.ng.minimap).height() * this.ng.mm_scale_y;
 
-        var offsetX = -this.ng.minItemX * w;
-        var offsetY = -this.ng.minItemY * h;
+        var offsetX = -this.ng.mm_min_x * w;
+        var offsetY = -this.ng.mm_min_y * h;
     };
     
     var dx = 0;
@@ -848,4 +848,12 @@ VIZ.NetGraphItem.prototype.setAttributes = function(el, attrs) {
   for(var key in attrs) {
     el.setAttribute(key, attrs[key]);
   }
+}
+
+VIZ.NetGraphItem.prototype.getMinMaxXY = function () {
+    min_x = this.pos[0] - this.size[0];
+    max_x = this.pos[0] + this.size[0];
+    min_y = this.pos[1] - this.size[1];
+    max_y = this.pos[1] + this.size[1];
+    return [min_x, max_x, min_y, max_y];
 }

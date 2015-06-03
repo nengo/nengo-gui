@@ -62,13 +62,17 @@ VIZ.NetGraphConnection = function(ng, info, minimap) {
                         10.051,10.801,3.262,24.125,3.262 \
                     S48.25,10.051,48.25,18.425c0,6.453-6.412,11.964-15.45,14.153");
         this.recurrent_ellipse.setAttribute('class','recur');
-        this.recurrent_ellipse.setAttribute('transform','translate(-18, -17.5)');
         this.g.appendChild(this.recurrent_ellipse);
 
         this.marker = ng.createSVGElement('path');
-        this.marker.setAttribute('d', "M 8 0 L 0 4 L 8 8 z");
         this.g.appendChild(this.marker);
-        
+
+        if (this.minimap == false) {
+            this.marker.setAttribute('d', "M 8 0 L 0 4 L 8 8 z");
+        } else {
+            this.marker.setAttribute('d', "M 5 0 L 0 4 L 5 5 z");
+        }
+
     } else {
         this.line = ng.createSVGElement('line');
         this.g.appendChild(this.line);    
@@ -226,8 +230,13 @@ VIZ.NetGraphConnection.prototype.redraw = function() {
             var scale = item.shape.getAttribute('transform');
             var scale_value = parseFloat(scale.split(/[()]+/)[1]);
 
-            this.recurrent_ellipse.setAttribute('style','stroke-width:' + 
-                        2/scale_value+';');              
+            if (this.minimap == false) {
+                this.recurrent_ellipse.setAttribute('style','stroke-width:' + 
+                            2/scale_value+';');              
+            } else {
+                this.recurrent_ellipse.setAttribute('style','stroke-width:' + 
+                            1/scale_value+';');              
+            }
                           
             var ex = pre_pos[0] - scale_value*17.5;
             var ey = pre_pos[1] - height - scale_value*36;

@@ -18,13 +18,13 @@ VIZ.NetGraph = function(parent, args) {
     this.minimap_objects = {};
     this.minimap_conns = {};
 
-    this.minItemX = 0;
-    this.maxItemX = 0;
-    this.minItemY = 0;
-    this.maxItemY = 0;
+    this.mm_min_x = 0;
+    this.mm_max_x = 0;
+    this.mm_min_y = 0;
+    this.mm_max_y = 0;
 
-    this.minimap_scale_x = .1;
-    this.minimap_scale_y = .1;
+    this.mm_scale_x = .1;
+    this.mm_scale_y = .1;
 
     this.in_zoom_delay = false;
 
@@ -558,45 +558,49 @@ VIZ.NetGraph.prototype.scaleMiniMap = function () {
     // and only compare against those, or check against all items
     // in the lists when they move. Might be important for larger
     // networks.
-    key = keys[0]
-    this.minItemX = this.svg_objects[key].pos[0];
-    this.minItemY = this.svg_objects[key].pos[1];
-    this.maxItemX = this.svg_objects[key].pos[0];
-    this.maxItemY = this.svg_objects[key].pos[1];
-
+    var first_item = true;
     for (var key in this.svg_objects) {
-        if (this.svg_objects[key].depth > 1) {
+        item = this.svg_objects[key];
+        // ignore anything inside a subnetwork
+        if (item.depth > 1) {
             continue;
         }
 
-        item_min_x = this.svg_objects[key].pos[0] - this.svg_objects[key].size[0];
-        item_max_x = this.svg_objects[key].pos[0] + this.svg_objects[key].size[0];
-        item_min_y = this.svg_objects[key].pos[1] - this.svg_objects[key].size[1];
-        item_max_y = this.svg_objects[key].pos[1] + this.svg_objects[key].size[1];
-
-        if (this.minItemX > item_min_x) {
-            this.minItemX = item_min_x;
-        } else if (this.maxItemX < item_max_x) {
-            this.maxItemX = item_max_x;
+        var minmax_xy = item.getMinMaxXY();
+        if (first_item == true) {
+            this.mm_min_x = minmax_xy[0];
+            this.mm_max_x = minmax_xy[1];
+            this.mm_min_y = minmax_xy[2];
+            this.mm_max_y = minmax_xy[3];
+            first_item = false;
+            continue;
         }
-        if (this.minItemY > item_min_y) {
-            this.minItemY = item_min_y;
-        } else if (this.maxItemY < item_max_y) {
-            this.maxItemY = item_max_y;
+
+        if (this.mm_min_x > minmax_xy[0]) {
+            this.mm_min_x = minmax_xy[0];
+        }
+        if (this.mm_max_x < minmax_xy[1]) {
+            this.mm_max_x = minmax_xy[1];
+        }
+        if (this.mm_max_y > minmax_xy[2]) {
+            this.mm_min_y = minmax_xy[2];
+        }
+        if (this.mm_min_y < minmax_xy[3]) {
+            this.mm_max_y = minmax_xy[3];
         }
     }
 
-    this.minimap_scale_x =  1 / (this.maxItemX - this.minItemX);
-    this.minimap_scale_y = 1 / (this.maxItemY - this.minItemY);
+    this.mm_scale_x =  1 / (this.mm_max_x - this.mm_min_x);
+    this.mm_scale_y = 1 / (this.mm_max_y - this.mm_min_y);
 
     // give a bit of a border
-    this.minItemX -= this.minimap_scale_x * .05;
-    this.maxItemX += this.minimap_scale_x * .05;
-    this.minItemY -= this.minimap_scale_y * .05;
-    this.maxItemY += this.minimap_scale_y * .05;
+    this.mm_min_x -= this.mm_scale_x * .05;
+    this.mm_max_x += this.mm_scale_x * .05;
+    this.mm_min_y -= this.mm_scale_y * .05;
+    this.mm_max_y += this.mm_scale_y * .05;
     // TODO: there is a better way to do this than recalculate
-    this.minimap_scale_x =  1 / (this.maxItemX - this.minItemX);
-    this.minimap_scale_y = 1 / (this.maxItemY - this.minItemY);
+    this.mm_scale_x =  1 / (this.mm_max_x - this.mm_min_x);
+    this.mm_scale_y = 1 / (this.mm_max_y - this.mm_min_y);
 
     this.redraw();
     this.scaleMiniMapViewBox();
@@ -605,11 +609,11 @@ VIZ.NetGraph.prototype.scaleMiniMap = function () {
 /** Calculate which part of the map is being displayed on the 
  * main viewport and scale the viewbox to reflect that. */
 VIZ.NetGraph.prototype.scaleMiniMapViewBox = function () {
-    var w = $(this.minimap).width() * this.minimap_scale_x;
-    var h = $(this.minimap).height() * this.minimap_scale_y;
+    var w = $(this.minimap).width() * this.mm_scale_x;
+    var h = $(this.minimap).height() * this.mm_scale_y;
 
-    var view_offsetX = -(this.minItemX + this.offsetX) * w;
-    var view_offsetY = -(this.minItemY + this.offsetY) * h;
+    var view_offsetX = -(this.mm_min_x + this.offsetX) * w;
+    var view_offsetY = -(this.mm_min_y + this.offsetY) * h;
 
     this.view.setAttributeNS(null, 'x', view_offsetX);
     this.view.setAttributeNS(null, 'y', view_offsetY);
