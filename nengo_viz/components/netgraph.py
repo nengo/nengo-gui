@@ -27,13 +27,19 @@ class NetGraph(Component):
         self.parents = {}
         self.networks_to_search = [self.viz.model]
         self.initialized_pan_and_zoom = False
-        self.last_modify_time = os.path.getmtime(self.viz.viz.filename)
+        try:
+            self.last_modify_time = os.path.getmtime(self.viz.viz.filename)
+        except OSError:
+            self.last_modify_time = None
         self.last_reload_check = time.time()
 
     def check_for_reload(self):
-        t = os.path.getmtime(self.viz.viz.filename)
+        try:
+            t = os.path.getmtime(self.viz.viz.filename)
+        except OSError:
+            return
 
-        if self.last_modify_time < t:
+        if self.last_modify_time < t or self.last_modify_time is None:
             self.reload()
             self.last_modify_time = t
 
