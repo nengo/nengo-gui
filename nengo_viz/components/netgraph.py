@@ -83,7 +83,11 @@ class NetGraph(Component):
             except:
                 new_item = None
 
-            if new_item is None:
+            if new_item is None or not isinstance(new_item, old_item.__class__):
+                self.to_be_sent.append(dict(
+                    type='remove', uid=uid))
+                del self.uids[uid]
+            elif not isinstance(new_item, old_item.__class__):
                 self.to_be_sent.append(dict(
                     type='remove', uid=uid))
                 del self.uids[uid]
@@ -98,6 +102,10 @@ class NetGraph(Component):
                     if old_label != new_label:
                         self.to_be_sent.append(dict(
                             type='rename', uid=uid, name=new_label))
+                    if isinstance(old_item, nengo.Network):
+                        if self.viz.viz.config[old_item].expanded:
+                            self.to_be_expanded.append(new_item)
+
                 elif isinstance(old_item, nengo.Connection):
                     old_pre = old_item.pre_obj
                     old_post = old_item.post_obj
