@@ -29,19 +29,19 @@ class NetGraph(Component):
         self.initialized_pan_and_zoom = False
         try:
             self.last_modify_time = os.path.getmtime(self.viz.viz.filename)
-        except:
-            self.last_modify_time = None;
+        except OSError:
+            self.last_modify_time = None
         self.last_reload_check = time.time()
 
     def check_for_reload(self):
         try:
             t = os.path.getmtime(self.viz.viz.filename)
+        except OSError:
+            return
 
-            if self.last_modify_time < t:
-                self.reload()
-                self.last_modify_time = t
-        except:
-            pass
+        if self.last_modify_time < t or self.last_modify_time is None:
+            self.reload()
+            self.last_modify_time = t
 
     def reload(self):
         current_error = None
