@@ -69,8 +69,7 @@ VIZ.Modal.prototype.help_body = function() {
     var $body = $('<table width=100%>');
     $body.append('<tr> <td>Play / pause</td> <td align="right">Spacebar</td></tr>');
     $body.append('<tr> <td>Undo</td> <td align="right">Ctrl-z</td></tr>');
-    $body.append('<tr> <td>Redo</td> <td align="right">Ctrl-Shift-z</td></tr>');
-    $body.append('<tr> <td>Redo</td> <td align="right">Ctrl-y</td></tr>');
+    $body.append('<tr> <td>Redo</td> <td align="right">Ctrl-Shift-z || Ctrl-y</td></tr>');
     $body.append('</table>');
     $body.appendTo(this.$body);
 }
