@@ -108,6 +108,12 @@ VIZ.Ace.prototype.set_width = function () {
 	if (this.width < this.min_width) {
 		this.width = this.min_width;
 	}
+
+	this.max_width = $(window).width() - 100;
+
+	if (this.width > this.max_width){
+		this.width = this.max_width;
+	}
 	//Set the positioning of the code_div
 	var top_margin = $(toolbar.toolbar).height();
 	var bottom_margin = $(sim.div).height();
