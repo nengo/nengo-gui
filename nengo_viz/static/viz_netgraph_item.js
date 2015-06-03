@@ -733,7 +733,7 @@ VIZ.NetGraphItem.prototype.get_width = function() {
         var screen_w = this.get_nested_width() * w * this.ng.scale;
     } else {
         var w = $(this.ng.minimap).width();
-        var screen_w = this.get_nested_width() * w * this.ng.mm_scale_x;
+        var screen_w = this.get_nested_width() * w * this.ng.mm_scale;
     };
         
     if (screen_w < this.minWidth) {
@@ -753,7 +753,7 @@ VIZ.NetGraphItem.prototype.get_height = function() {
         var screen_h = this.get_nested_height() * h * this.ng.scale;
     } else {
         var h = $(this.ng.minimap).height();
-        var screen_h = this.get_nested_height() * h * this.ng.mm_scale_y;
+        var screen_h = this.get_nested_height() * h * this.ng.mm_scale;
     };
         
     if (screen_h < this.minHeight) {
@@ -782,8 +782,8 @@ VIZ.NetGraphItem.prototype.get_screen_location = function() {
         var offsetX = this.ng.offsetX * w;
         var offsetY = this.ng.offsetY * h;
     } else {
-        var w = $(this.ng.minimap).width() * this.ng.mm_scale_x;
-        var h = $(this.ng.minimap).height() * this.ng.mm_scale_y;
+        var w = $(this.ng.minimap).width() * this.ng.mm_scale;
+        var h = $(this.ng.minimap).height() * this.ng.mm_scale;
 
         var offsetX = -this.ng.mm_min_x * w;
         var offsetY = -this.ng.mm_min_y * h;

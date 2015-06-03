@@ -23,8 +23,7 @@ VIZ.NetGraph = function(parent, args) {
     this.mm_min_y = 0;
     this.mm_max_y = 0;
 
-    this.mm_scale_x = .1;
-    this.mm_scale_y = .1;
+    this.mm_scale = .1;
 
     this.in_zoom_delay = false;
 
@@ -592,29 +591,15 @@ VIZ.NetGraph.prototype.scaleMiniMap = function () {
         }
     }
 
-    this.mm_scale_x =  1 / (this.mm_max_x - this.mm_min_x);
-    this.mm_scale_y = 1 / (this.mm_max_y - this.mm_min_y);
-
-    if (this.mm_scale_x < this.mm_scale_y) {
-        this.mm_scale_y = this.mm_scale_x
-    } else {
-        this.mm_scale_x = this.mm_scale_y
-    }
+    this.mm_scale =  1 / Math.max(this.mm_max_x - this.mm_min_x, this.mm_max_y - this.mm_min_y);
 
     // give a bit of a border
-    this.mm_min_x -= this.mm_scale_x * .05;
-    this.mm_max_x += this.mm_scale_x * .05;
-    this.mm_min_y -= this.mm_scale_y * .05;
-    this.mm_max_y += this.mm_scale_y * .05;
+    this.mm_min_x -= this.mm_scale * .05;
+    this.mm_max_x += this.mm_scale * .05;
+    this.mm_min_y -= this.mm_scale * .05;
+    this.mm_max_y += this.mm_scale * .05;
     // TODO: there is a better way to do this than recalculate
-    this.mm_scale_x =  1 / (this.mm_max_x - this.mm_min_x);
-    this.mm_scale_y = 1 / (this.mm_max_y - this.mm_min_y);
-
-    if (this.mm_scale_x < this.mm_scale_y) {
-        this.mm_scale_y = this.mm_scale_x
-    } else {
-        this.mm_scale_x = this.mm_scale_y
-    }
+    this.mm_scale =  1 / Math.max(this.mm_max_x - this.mm_min_x, this.mm_max_y - this.mm_min_y);
 
     this.redraw();
     this.scaleMiniMapViewBox();
@@ -623,8 +608,8 @@ VIZ.NetGraph.prototype.scaleMiniMap = function () {
 /** Calculate which part of the map is being displayed on the 
  * main viewport and scale the viewbox to reflect that. */
 VIZ.NetGraph.prototype.scaleMiniMapViewBox = function () {
-    var w = $(this.minimap).width() * this.mm_scale_x;
-    var h = $(this.minimap).height() * this.mm_scale_y;
+    var w = $(this.minimap).width() * this.mm_scale;
+    var h = $(this.minimap).height() * this.mm_scale;
 
     var view_offsetX = -(this.mm_min_x + this.offsetX) * w;
     var view_offsetY = -(this.mm_min_y + this.offsetY) * h;
