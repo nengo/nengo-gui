@@ -10,6 +10,8 @@ VIZ.NetGraph = function(parent, args) {
     this.scale = 1.0;          // global scaling factor
     this.offsetX = 0;          // global x,y pan offset 
     this.offsetY = 0;
+
+    this.aspect_resize = true;  //preserve aspect ratios on window resize
     
     this.svg_objects = {};     // dict of all VIZ.NetGraphItems, by uid
     this.svg_conns = {};       // dict of all VIZ.NetGraphConnections, by uid
@@ -346,6 +348,20 @@ VIZ.NetGraph.prototype.on_resize = function(event) {
     
     var width = $(this.svg).width();
     var height = $(this.svg).height();
+    
+    if (this.aspect_resize) {
+        for (var key in this.svg_objects) {
+            var item = this.svg_objects[key];
+            if (item.depth == 1) {
+                var new_width = item.get_width()*
+                    this.old_width/width / this.scale;
+                var new_height = item.get_height()*
+                    this.old_height/height / this.scale;
+                item.set_size(new_width/(2*width), 
+                    new_height/(2*height));   
+            }
+        }
+    }
     
     this.old_width = width;
     this.old_height = height;

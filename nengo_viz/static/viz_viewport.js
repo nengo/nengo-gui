@@ -19,7 +19,16 @@ VIZ.Viewport.prototype.redraw_all = function(event) {
 };
 
 VIZ.Viewport.prototype.on_resize = function(event) {
+    var ow = this.w;
+    var oh = this.h;
+    
     this.w = $("#main").width();
     this.h = $("#main").height();
-    this.redraw_all();
+    //this.redraw_all();
+    for (var i in VIZ.Component.components) {
+        var c = VIZ.Component.components[i];
+        c.on_resize(c.w * this.scale * ow * 2, c.h * this.scale * oh * 2);
+        c.redraw_size();
+        c.redraw_pos();
+    }
 }

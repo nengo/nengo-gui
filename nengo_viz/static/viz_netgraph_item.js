@@ -21,7 +21,7 @@ VIZ.NetGraphItem = function(ng, info) {
     this.fixed_width = null;
     this.fixed_height = null;
     this.dimensions = info.dimensions;
-
+    
     /** if this is a network, the children list is the set of NetGraphItems
      *  and NetGraphConnections that are inside this network */
     this.children = [];
