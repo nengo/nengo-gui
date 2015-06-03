@@ -128,7 +128,8 @@ class CreateGraph(Action):
 
         # Remove any existing sliders associated with the same node
         for component in self.net_graph.viz.components:
-            if isinstance(component, nengo_viz.components.slider.Slider) and component.node == self.obj: 
+            if (isinstance(component, nengo_viz.components.slider.Slider)
+                    and component.node is self.obj):
                 self.send('delete_graph', uid=component.uid)
 
         self.act_create_graph()
@@ -139,7 +140,8 @@ class CreateGraph(Action):
             self.graph_uid = self.net_graph.viz.viz.get_uid(self.template)
         else:
             self.net_graph.viz.viz.locals[self.graph_uid] = self.template
-            self.net_graph.viz.viz.default_labels[self.template] = self.graph_uid
+            self.net_graph.viz.viz.default_labels[self.template] = (
+                self.graph_uid)
         self.net_graph.config[self.template].x = self.x
         self.net_graph.config[self.template].y = self.y
         self.net_graph.config[self.template].width = self.width
