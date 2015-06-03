@@ -7,13 +7,26 @@ body {
     height: 100%;
     width: 100%;
     cursor: inherit;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
 }
+
 
 #main {
     background: white;
     width: 100%;
-    height: calc(100% - 80px);
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#vmiddle {
     position: relative;
+    flex: 1 1 auto;
+    -webkit-flex: 1 1 auto;
 }
 
 div.minimap {

@@ -20,7 +20,9 @@
 }
 
 #top_toolbar {
-    position: absolute;
+    position: relative;
+    flex: 0 0 auto;
+    -webkit-flex: 0 0 auto;
     width: 100%;
     z-index: 99999;
 }
@@ -51,7 +53,9 @@
 }
 
 #filebrowser {
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 200px;
     height: 300px;
     border: solid 1px #ccc;
@@ -59,7 +63,7 @@
     box-shadow: 2px 2px 4px 0px #999;
     padding: 0.2em;
     background-color: #eee;
-    z-index: 1000;
+    z-index: 99999;
     overflow: auto;
     cursor: pointer !important;
 }
