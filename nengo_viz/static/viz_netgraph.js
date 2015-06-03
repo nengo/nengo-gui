@@ -595,6 +595,12 @@ VIZ.NetGraph.prototype.scaleMiniMap = function () {
     this.mm_scale_x =  1 / (this.mm_max_x - this.mm_min_x);
     this.mm_scale_y = 1 / (this.mm_max_y - this.mm_min_y);
 
+    if (this.mm_scale_x < this.mm_scale_y) {
+        this.mm_scale_y = this.mm_scale_x
+    } else {
+        this.mm_scale_x = this.mm_scale_y
+    }
+
     // give a bit of a border
     this.mm_min_x -= this.mm_scale_x * .05;
     this.mm_max_x += this.mm_scale_x * .05;
@@ -603,6 +609,12 @@ VIZ.NetGraph.prototype.scaleMiniMap = function () {
     // TODO: there is a better way to do this than recalculate
     this.mm_scale_x =  1 / (this.mm_max_x - this.mm_min_x);
     this.mm_scale_y = 1 / (this.mm_max_y - this.mm_min_y);
+
+    if (this.mm_scale_x < this.mm_scale_y) {
+        this.mm_scale_y = this.mm_scale_x
+    } else {
+        this.mm_scale_x = this.mm_scale_y
+    }
 
     this.redraw();
     this.scaleMiniMapViewBox();
