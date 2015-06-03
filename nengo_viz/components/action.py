@@ -126,6 +126,11 @@ class CreateGraph(Action):
         cls = getattr(nengo_viz.components, self.type + 'Template')
         self.template = cls(self.obj, **kwargs)
 
+        # Remove any existing sliders associated with the same node
+        for component in self.net_graph.viz.components:
+            if isinstance(component, nengo_viz.components.slider.Slider) and component.node == self.obj: 
+                self.send('delete_graph', uid=component.uid)
+
         self.act_create_graph()
 
     def act_create_graph(self):
