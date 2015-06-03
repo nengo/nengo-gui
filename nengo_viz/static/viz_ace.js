@@ -14,7 +14,6 @@ VIZ.Ace = function (script_code, uid) {
 	code_div.id = 'editor'
 	document.getElementsByTagName("BODY")[0].appendChild(code_div);
 	this.editor = ace.edit('editor')
-	this.editor.setTheme('ace/theme/dawn')
 	this.editor.getSession().setMode("ace/mode/python");
 	this.editor.setValue(script_code);
 	this.editor.gotoLine(1);
