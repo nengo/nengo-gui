@@ -275,6 +275,10 @@ VIZ.TimeSlider.prototype.resize = function(width, height) {
     this.shown_div.style.width = width * this.shown_time / this.kept_time;
     VIZ.set_transform(this.shown_div, 
                       this.kept_scale(this.first_shown_time), 0);
+
+    if (this.axis_g !== undefined) {
+        this.axis_g.call(this.axis);
+    }
 }
 
 /**
