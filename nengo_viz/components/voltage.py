@@ -41,7 +41,7 @@ class Voltage(Component):
         trange = sim.trange()[-len(data):]
 
         for t, datum in zip(trange, data):
-            datum = (datum + np.arange(self.n_neurons)) / self.n_neurons
+            datum = (datum + np.arange(self.n_neurons))
             packet = self.struct.pack(t, *datum)
             client.write(packet, binary=True)
 
@@ -55,4 +55,4 @@ class Voltage(Component):
 class VoltageTemplate(Template):
     cls = Voltage
     config_params = dict(
-        max_value=1.0, min_value=0.0, **Template.default_params)
+        max_value=5.0, min_value=0.0, **Template.default_params)
