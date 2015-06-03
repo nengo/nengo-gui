@@ -132,8 +132,14 @@ VIZ.Modal.prototype.main_config = function() {
         $('#config-fontsize').focus();
     });
     $('#zoom-fonts').prop('checked', options[0]);
+    $('#zoom-fonts').change(function () {
+        VIZ.netgraph.set_zoom_fonts($('#zoom-fonts').prop('checked'));        
+    });
+    
     $('#config-fontsize').val(options[1]);
-
+    $('#config-fontsize').change(function () {
+        VIZ.netgraph.set_font_size(parseInt($('#config-fontsize').val()));
+    });
     $('#config-fontsize').attr('data-my_validator', 'custom');
 
     //Allow the enter key to submit
