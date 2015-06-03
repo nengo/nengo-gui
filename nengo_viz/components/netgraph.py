@@ -80,6 +80,8 @@ class NetGraph(Component):
         self.networks_to_search = [model]
         self.parents = {}
 
+        removed_uids = {}
+
         # for each item in the old model, find the matching new item
         # for Nodes, Ensembles, and Networks, this means to find the item
         # with the same uid.  For Connections, we don't really have a uid,
@@ -94,10 +96,12 @@ class NetGraph(Component):
                 self.to_be_sent.append(dict(
                     type='remove', uid=uid))
                 del self.uids[uid]
+                removed_uids[old_item] = uid
             elif not isinstance(new_item, old_item.__class__):
                 self.to_be_sent.append(dict(
                     type='remove', uid=uid))
                 del self.uids[uid]
+                removed_uids[old_item] = uid
             else:
                 if isinstance(old_item, (nengo.Node,
                                          nengo.Ensemble,
@@ -161,6 +165,15 @@ class NetGraph(Component):
         self.viz.viz.uid_prefix_counter = {}
         self.layout = nengo_viz.layout.Layout(model)
         self.viz.viz.code = code
+
+
+        removed_items = list(removed_uids.keys())
+        for c in self.viz.components:
+            for item in c.template.args:
+                if item in remove_items:
+                    print 'remove', c.template
+                    break
+            #print 'comp', c.template, c.template.args
 
         components = []
         for c in self.viz.components[:3]:
