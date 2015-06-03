@@ -20,4 +20,4 @@ VIZ.Hotkeys = function () {
     });
 }
 
-VIZ.Hotkeys = new VIZ.Hotkeys();
+VIZ.hotkeys = new VIZ.Hotkeys();
