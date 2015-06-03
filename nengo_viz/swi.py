@@ -169,7 +169,7 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def do_POST(self):
         self.clear_headers()
-        data = self.rfile.read(int(self.headers['Content-Length']))
+        data = self.rfile.read(int(self.headers['Content-Length'])).decode('ascii')
         if 'multipart/form-data' in self.headers['Content-Type']:
             db = self.make_db_from_multipart(data)
         else:
@@ -465,7 +465,7 @@ class AsyncHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
                 exc_value.args[0] == errno.EBADF):
             return  # Probably caused by a server shutdown
         else:
-            print exc_type, exc_value, dir(exc_value)
+            print(exc_type, exc_value, dir(exc_value))
             BaseHTTPServer.HTTPServer.handle_error(
                 self, request, client_address)
 
