@@ -118,7 +118,6 @@ VIZ.Modal.prototype.main_config = function() {
             '</div>' +
             '<span class="help-block with-errors">As a percentage of the base size</span>' +
         '</div>' +
-        '<div><input type=text></div>' +
     '<div class="form-group">' +
         '<div class="checkbox">' +
           '<label for="zoom-fonts" class="control-label">' +
@@ -135,7 +134,8 @@ VIZ.Modal.prototype.main_config = function() {
     $('#zoom-fonts').prop('checked', options[0]);
     $('#config-fontsize').val(options[1]);
 
-    $form.validator(); //Enable validation
+    $('#config-fontsize').attr('data-my_validator', 'custom');
+
     //Allow the enter key to submit
     $("#config-fontsize").keypress(function(event) {
         if (event.which == 13) {

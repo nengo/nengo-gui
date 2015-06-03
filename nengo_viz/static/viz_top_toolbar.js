@@ -112,5 +112,14 @@ VIZ.Toolbar.prototype.config_modal_show = function() {
         $('#OK').attr('data-dismiss', 'modal');
     });
 
+    var $form = $('#myModalForm').validator({
+        custom: {
+            my_validator: function($item) {
+                var num = $item.val();
+                return (num.length<=3 && num>10);
+            }
+        },
+    });
+
     VIZ.modal.show();
 };
