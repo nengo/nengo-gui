@@ -292,7 +292,9 @@ VIZ.NetGraphItem.prototype.generate_menu = function () {
     }
     if (this.type == 'node') {
         items.push(['Slider', function() {self.create_graph('Slider');}])
-        items.push(['Value', function() {self.create_graph('Value');}])
+        if (this.dimensions > 0) {
+            items.push(['Value', function() {self.create_graph('Value');}])
+        }
         if (this.dimensions > 1) {
             items.push(['XY-value', function() {self.create_graph('XYValue');}])
         }
