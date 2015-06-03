@@ -38,7 +38,7 @@ VIZ.NetGraph = function(parent, args) {
     /** create the master SVG element */
     this.svg = this.createSVGElement('svg');
     this.svg.classList.add('netgraph');    
-    this.svg.style.width = '100%';
+    this.svg.style.width = $(window).width() - $('#editor').width();
     this.svg.id = 'netgraph';
     this.svg.style.height = '100%';
     this.svg.style.position = 'absolute';
@@ -427,11 +427,15 @@ VIZ.NetGraph.prototype.create_connection = function(info) {
 
 /** handler for resizing the full SVG */
 VIZ.NetGraph.prototype.on_resize = function(event) {
+
     this.redraw();
     
     var width = $(this.svg).width();
     var height = $(this.svg).height();
     
+    //Resizing the svg
+    this.svg.style.width = $(window).width() - $('#editor').width();
+
     this.old_width = width;
     this.old_height = height;
 };

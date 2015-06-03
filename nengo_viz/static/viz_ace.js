@@ -34,7 +34,7 @@ VIZ.Ace = function (script_code, uid) {
 			self.width -= x;
 			self.set_width()
 		})
-	$(window).on('resize', function() {self.set_width()});
+	$(window).on('resize', function() {self.set_width(); });
 }
 
 //Send changes to the code to server every 100ms 
@@ -78,6 +78,8 @@ VIZ.Ace.prototype.toggle_shown = function () {
 
 VIZ.Ace.prototype.set_width = function () {
 	this.editor.resize();
+
+
 	var code_div = document.getElementById('editor');
 	
 	if (this.width < this.min_width) {
@@ -93,4 +95,10 @@ VIZ.Ace.prototype.set_width = function () {
 	code_div.style.left = left_margin ; //Positions code editor so it takes up the right 20% of the screen.
 
 	$('#main').width(left_margin)
+
+	if (VIZ.netgraph !== undefined){
+		VIZ.netgraph.on_resize();
+		viewport.on_resize()
+	}
+	
 }
