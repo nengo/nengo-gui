@@ -68,9 +68,9 @@ VIZ.NetGraphConnection = function(ng, info, minimap) {
         this.g.appendChild(this.marker);
 
         if (this.minimap == false) {
-            this.marker.setAttribute('d', "M 8 0 L 0 4 L 8 8 z");
+            this.marker.setAttribute('d', "M 6.5 0 L 0 5.0 L 7.5 8.0 z");
         } else {
-            this.marker.setAttribute('d', "M 5 0 L 0 4 L 5 5 z");
+            this.marker.setAttribute('d', "M 4 0 L 0 2 L 4 4 z");
         }
 
     } else {
@@ -244,8 +244,12 @@ VIZ.NetGraphConnection.prototype.redraw = function() {
             this.recurrent_ellipse.setAttribute('transform',
                           'translate(' + ex + ',' + ey + ')' + scale);
                           
-            var mx = pre_pos[0];
-            var my = pre_pos[1] - height - scale_value*32 - 5;
+            var mx = pre_pos[0]-1;
+            if (this.minimap == false) {
+                var my = pre_pos[1] - height - scale_value*32.15 - 5;
+            } else {
+                var my = pre_pos[1] - height - scale_value*32 - 2;
+            }
             this.marker.setAttribute('transform', 
                           'translate(' + mx + ',' + my + ')');
         }
