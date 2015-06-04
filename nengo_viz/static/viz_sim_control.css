@@ -76,6 +76,7 @@
     margin-left: 10px;
     width: 130px;
     overflow: hidden;
+    cursor: default;
 }
 
 .metrics-container {
