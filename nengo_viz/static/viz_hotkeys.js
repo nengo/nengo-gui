@@ -1,28 +1,48 @@
 VIZ.Hotkeys = function () { 
     var self = this;
 
-    document.addEventListener('keypress', function(ev) {
+    document.addEventListener('keydown', function(ev) {
+        if (typeof ev.key != 'undefined') {
+            var key = ev.key;
+        } else {
+            switch (ev.keyCode) {
+                case 191:
+                    var key = '?';
+                    break;
+                default:
+                    var key = String.fromCharCode(ev.keyCode)
+            }
+        }
+        var key = key.toLowerCase();
+        var ctrl = ev.ctrlKey || ev.metaKey;
+
         // undo with ctrl-z
-        if (ev.ctrlKey == true && ev.keyCode == 90) {
+        if (ctrl && key == 'z') {
             VIZ.netgraph.notify({ undo: "1" });
+            ev.preventDefault();
         }
         // redo with shift-ctrl-z
-        if (ev.ctrlKey == true && ev.shiftKey == true && ev.keyCode == 90) {
+        if (ctrl && ev.shiftKey && key == 'z') {
             VIZ.netgraph.notify({ undo: "0" });
+            ev.preventDefault();
         }
         // redo with ctrl-y
-        if (ev.ctrlKey == true && ev.keyCode == 89) {
+        if (ctrl && key == 'y') {
             VIZ.netgraph.notify({ undo: "0" });
+            ev.preventDefault();
         }
         // run model with spacebar
-        if (ev.keyCode == 32) {
-            sim.on_pause_click();
+        if (key == ' ') {
+            if (!ev.repeat) {
+                sim.on_pause_click();
+            }
+            ev.preventDefault();
         }
         // bring up help menu with ? 
-        if (ev.shiftKey && ev.keyCode == 63) {
+        if (key == '?') {
             self.callMenu();
+            ev.preventDefault();
         }
-        console.log(ev.keyCode);
     });
 }
 
