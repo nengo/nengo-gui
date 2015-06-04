@@ -21,17 +21,20 @@ class Raster(Component):
 
     def add_nengo_objects(self, viz):
         with viz.model:
+            self.node = nengo.Node(self.gather_data, size_in=self.obj.size_out)
             if 'spikes' in self.neuron_type.probeable:
-                self.node = nengo.Node(self.gather_data, size_in=self.obj.size_out)
                 self.conn = nengo.Connection(self.obj, self.node, synapse=None)
 
     def remove_nengo_objects(self, viz):
+        viz.model.nodes.remove(self.node)
         if 'spikes' in self.neuron_type.probeable:
             viz.model.connections.remove(self.conn)
-            viz.model.nodes.remove(self.node)
 
-    def gather_data(self, t, x):
-        indices = np.nonzero(x[:self.n_neurons])[0]
+    def gather_data(self, t, x=None):
+        if x is None:
+            indices = []
+        else:
+            indices = np.nonzero(x[:self.n_neurons])[0]
         data = struct.pack('<f%dH' % len(indices), t, *indices)
         self.data.append(data)
 
@@ -50,4 +53,3 @@ class Raster(Component):
 class RasterTemplate(Template):
     cls = Raster
     config_params = dict(**Template.default_params)
-
