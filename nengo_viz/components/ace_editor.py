@@ -7,11 +7,14 @@ class AceEditor(Component):
         super(AceEditor, self).__init__(viz, config, uid)
         self.viz = viz
         self.uid = uid
-        self.current_code = self.viz.viz.code
-        self.serve_code = True
-        self.last_error = None
+        if self.viz.viz.interactive:
+            self.current_code = self.viz.viz.code
+            self.serve_code = True
+            self.last_error = None
 
     def update_client(self, client):
+        if not self.viz.viz.interactive:
+            return
         if self.serve_code:
             i = json.dumps({'code': self.current_code})
             client.write(i)
@@ -22,9 +25,12 @@ class AceEditor(Component):
             self.last_error = error
 
     def javascript(self):
-        return 'ace_editor = new VIZ.Ace("%s")' % self.uid
+        args = json.dumps(dict(active=self.viz.viz.interactive))
+        return 'ace_editor = new VIZ.Ace("%s", %s)' % (self.uid, args)
 
     def message(self, msg):
+        if not self.viz.viz.interactive:
+            return
         data = json.loads(msg)
         self.current_code = data['code']
 

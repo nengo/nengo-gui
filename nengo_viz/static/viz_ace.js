@@ -1,10 +1,18 @@
 var aceRange = ace.require('ace/range').Range;
 
 
-VIZ.Ace = function (uid) {
+VIZ.Ace = function (uid, args) {
     var self = this;
     this.hidden = false;
     this.min_width = 50;
+
+    if (args.active === false) {
+        $('#Toggle_ace').css('display', 'none');
+        $('#Save_file').css('display', 'none');
+        $('#Font_increase').css('display', 'none');
+        $('#Font_decrease').css('display', 'none');
+        return;
+    }
 
     this.ws = VIZ.create_websocket(uid);
     this.ws.onmessage = function(event) {self.on_message(event);}
