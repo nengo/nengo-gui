@@ -9,7 +9,6 @@
 VIZ.SimControl = function(div, args) {
     if (args.uid[0] === '<') {
         console.log("invalid uid for SimControl: " + args.uid);
-        return;
     }
     var self = this;
 

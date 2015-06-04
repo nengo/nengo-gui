@@ -9,7 +9,6 @@
 VIZ.NetGraph = function(parent, args) {
     if (args.uid[0] === '<') {
         console.log("invalid uid for NetGraph: " + args.uid);
-        return;
     }
     this.scale = 1.0;          // global scaling factor
     this.offsetX = 0;          // global x,y pan offset 

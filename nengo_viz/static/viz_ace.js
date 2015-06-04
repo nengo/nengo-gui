@@ -4,7 +4,6 @@ var aceRange = ace.require('ace/range').Range;
 VIZ.Ace = function (uid, args) {
     if (uid[0] === '<') {
         console.log("invalid uid for Ace: " + uid);
-        return;
     }
     VIZ.ace = this;  // make a global pointing to this
     var self = this;
