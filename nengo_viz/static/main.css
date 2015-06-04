@@ -19,18 +19,9 @@ body {
 .graph {
     background: #eeeeee;
 }
-    
+
 .line {
     fill: none;
     stroke: black;
-    stroke-width: 1.5px;    
-}
-
-* {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+    stroke-width: 1.5px;
 }

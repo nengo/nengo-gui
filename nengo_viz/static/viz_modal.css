@@ -2,6 +2,10 @@
     margin: 20px;
 }
 
+.modal-body input {
+    cursor: text !important;
+}
+
 .modal-body .tab-pane .dt-connections {
     margin-top: 20px;
 }
@@ -99,4 +103,5 @@ div.modal-backdrop {
 
 div.modal {
     z-index: 100000001;
+    cursor: default !important;
 }
