@@ -2,11 +2,11 @@
  * A slider to adjust Node values
  * @constructor
  *
- * @params {dict} args - a set of constructor arguments (see VIZ.Component)
+ * @params {dict} args - a set of constructor arguments (see Nengo.Component)
  * @params {int} args.n_sliders - the number of sliders to show
  */
-VIZ.Slider = function(parent, sim, args) {
-    VIZ.Component.call(this, parent, args);
+Nengo.Slider = function(parent, sim, args) {
+    Nengo.Component.call(this, parent, args);
     var self = this;
     this.sim = sim;
 
@@ -36,7 +36,7 @@ VIZ.Slider = function(parent, sim, args) {
     this.reset_value = args.start_value;
     this.sliders = [];
     for (var i = 0; i < args.n_sliders; i++) {
-        var slider = new VIZ.SliderControl(args.min_value, args.max_value);
+        var slider = new Nengo.SliderControl(args.min_value, args.max_value);
         slider.container.style.width = (100 / args.n_sliders) + '%';
         slider.display_value(args.start_value[i]);
         slider.index = i;
@@ -64,17 +64,17 @@ VIZ.Slider = function(parent, sim, args) {
 
     this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
-VIZ.Slider.prototype = Object.create(VIZ.Component.prototype);
-VIZ.Slider.prototype.constructor = VIZ.Slider;
+Nengo.Slider.prototype = Object.create(Nengo.Component.prototype);
+Nengo.Slider.prototype.constructor = Nengo.Slider;
 
-VIZ.Slider.prototype.calc_axes_geometry = function(width, height) {
+Nengo.Slider.prototype.calc_axes_geometry = function(width, height) {
     scale = parseFloat($('#main').css('font-size'));
     this.border_size = 1;
     this.ax_top = 1.75 * scale;
     this.slider_height = height - this.ax_top;
 };
 
-VIZ.Slider.prototype.send_value = function(slider_index, value) {
+Nengo.Slider.prototype.send_value = function(slider_index, value) {
     console.assert(typeof slider_index == 'number');
     console.assert(typeof value == 'number');
 
@@ -89,10 +89,10 @@ VIZ.Slider.prototype.send_value = function(slider_index, value) {
 /**
  * Receive new line data from the server
  */
-VIZ.Slider.prototype.on_message = function(event) {
+Nengo.Slider.prototype.on_message = function(event) {
     var data = new Float32Array(event.data);
     if (this.data_store === null) {
-        this.data_store = new VIZ.DataStore(this.sliders.length, this.sim, 0);
+        this.data_store = new Nengo.DataStore(this.sliders.length, this.sim, 0);
     }
     this.reset_value = [];
     for (var i = 0; i < this.sliders.length; i++) {
@@ -111,7 +111,7 @@ VIZ.Slider.prototype.on_message = function(event) {
 /**
  * update visual display based when component is resized
  */
-VIZ.Slider.prototype.on_resize = function(width, height) {
+Nengo.Slider.prototype.on_resize = function(width, height) {
     console.assert(typeof width == 'number');
     console.assert(typeof height == 'number');
 
@@ -140,7 +140,7 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
 };
 
 
-VIZ.Slider.prototype.generate_menu = function() {
+Nengo.Slider.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['Set range...', function() {self.set_range();}]);
@@ -149,11 +149,11 @@ VIZ.Slider.prototype.generate_menu = function() {
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
-    return $.merge(items, VIZ.Component.prototype.generate_menu.call(this));
+    return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
 };
 
 /** report an event back to the server */
-VIZ.Slider.prototype.notify = function(info) {
+Nengo.Slider.prototype.notify = function(info) {
     this.notify_msgs.push(info);
 
     // only send one message at a time
@@ -170,7 +170,7 @@ VIZ.Slider.prototype.notify = function(info) {
 /** send exactly one message back to server
  *  and schedule the next message to be sent, if any
  */
-VIZ.Slider.prototype.send_notify_msg = function() {
+Nengo.Slider.prototype.send_notify_msg = function() {
     msg = this.notify_msgs[0];
     this.ws.send(msg);
     if (this.notify_msgs.length > 1) {
@@ -182,7 +182,7 @@ VIZ.Slider.prototype.send_notify_msg = function() {
     this.notify_msgs.splice(0, 1);
 }
 
-VIZ.Slider.prototype.update = function() {
+Nengo.Slider.prototype.update = function() {
     /** let the data store clear out old values */
     if (this.data_store !== null) {
         this.data_store.update();
@@ -197,7 +197,7 @@ VIZ.Slider.prototype.update = function() {
     }
 }
 
-VIZ.Slider.prototype.user_value = function () {
+Nengo.Slider.prototype.user_value = function () {
     var self = this;
 
     //First build the prompt string
@@ -208,9 +208,9 @@ VIZ.Slider.prototype.user_value = function () {
             prompt_string = prompt_string + ", ";
         }
     }
-    VIZ.modal.title('Set slider value(s)...');
-    VIZ.modal.single_input_body(prompt_string, 'New value(s)');
-    VIZ.modal.footer('ok_cancel', function(e) {
+    Nengo.modal.title('Set slider value(s)...');
+    Nengo.modal.single_input_body(prompt_string, 'New value(s)');
+    Nengo.modal.footer('ok_cancel', function(e) {
         var new_value = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
 
@@ -250,10 +250,10 @@ VIZ.Slider.prototype.user_value = function () {
 
     $('#singleInput').attr('data-error', 'Input should be one ' +
                            'comma-separated numerical value for each slider.');
-    VIZ.modal.show();
+    Nengo.modal.show();
 }
 
-VIZ.Slider.prototype.user_reset_value = function() {
+Nengo.Slider.prototype.user_reset_value = function() {
     for (var i = 0; i < this.sliders.length; i++){
         this.notify('' + i + ',reset');
         this.sliders[i].fixed = false;
@@ -261,12 +261,12 @@ VIZ.Slider.prototype.user_reset_value = function() {
     }
 }
 
-VIZ.Slider.prototype.set_range = function() {
+Nengo.Slider.prototype.set_range = function() {
     var range = this.sliders[0].scale.domain();
     var self = this;
-    VIZ.modal.title('Set slider range...');
-    VIZ.modal.single_input_body([range[1], range[0]], 'New range');
-    VIZ.modal.footer('ok_cancel', function(e) {
+    Nengo.modal.title('Set slider range...');
+    Nengo.modal.single_input_body([range[1], range[0]], 'New range');
+    Nengo.modal.footer('ok_cancel', function(e) {
         var new_range = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
 
@@ -302,30 +302,30 @@ VIZ.Slider.prototype.set_range = function() {
 
     $('#singleInput').attr('data-error', 'Input should be in the ' +
                            'form "<min>,<max>".');
-    VIZ.modal.show();
+    Nengo.modal.show();
 }
 
-VIZ.Slider.prototype.layout_info = function () {
-    var info = VIZ.Component.prototype.layout_info.call(this);
+Nengo.Slider.prototype.layout_info = function () {
+    var info = Nengo.Component.prototype.layout_info.call(this);
     info.width = info.width;
     info.min_value = this.sliders[0].scale.domain()[1];
     info.max_value = this.sliders[0].scale.domain()[0];
     return info;
 };
 
-VIZ.Slider.prototype.update_layout = function (config) {
+Nengo.Slider.prototype.update_layout = function (config) {
     //FIXME: this has to be backwards to work. Something fishy must be going on
     for (var i in this.sliders) {
         this.sliders[i].set_range(config.min_value, config.max_value);
     }
-    VIZ.Component.prototype.update_layout.call(this, config);
+    Nengo.Component.prototype.update_layout.call(this, config);
 }
 
 //takes input and outputs the
 //boundary value if input is above/below max/min
 //Otherwise outputs the input
 //max_min: Num -> Num
-VIZ.Slider.prototype.max_min = function(value) {
+Nengo.Slider.prototype.max_min = function(value) {
     console.assert(typeof value == 'number');
 
     //Get the max and min slider bounds
@@ -346,7 +346,7 @@ VIZ.Slider.prototype.max_min = function(value) {
 
 //slider_index: Nat, new_shown_value: Num
 //Rounds to 2 decimal places
-VIZ.Slider.prototype.update_value_text = function (slider_index, new_shown_value) {
+Nengo.Slider.prototype.update_value_text = function (slider_index, new_shown_value) {
     var target = this.sliders[slider_index].value_display;
     target.innerHTML = new_shown_value.toFixed(2);
 };

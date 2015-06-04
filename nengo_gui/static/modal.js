@@ -1,4 +1,4 @@
-VIZ.Modal = function($div) {
+Nengo.Modal = function($div) {
     var self = this;
     this.$div = $div;
     this.$title = this.$div.find('.modal-title').first();
@@ -14,17 +14,17 @@ VIZ.Modal = function($div) {
     })
 }
 
-VIZ.Modal.prototype.show = function() {
+Nengo.Modal.prototype.show = function() {
     this.sim_was_running = !sim.paused;
     this.$div.modal('show');
     sim.pause()
 }
 
-VIZ.Modal.prototype.title = function(title) {
+Nengo.Modal.prototype.title = function(title) {
     this.$title.text(title);
 }
 
-VIZ.Modal.prototype.footer = function(type, ok_function, cancel_function){
+Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function){
     this.$footer.empty();
 
     if (type === "close") {
@@ -34,7 +34,7 @@ VIZ.Modal.prototype.footer = function(type, ok_function, cancel_function){
         var $footerBtn = $('<div class="form-group"/>').appendTo(this.$footer);
         $footerBtn.append('<button id="cancel-button" type="button" ' +
             'class="btn btn-default">Cancel</button>');
-        $footerBtn.append('<button id="OK" type="submit" ' + 
+        $footerBtn.append('<button id="OK" type="submit" ' +
             'class="btn btn-primary" >OK</button>');
         $('#OK').on('click', ok_function);
         if (typeof cancel_function !== 'undefined') {
@@ -57,13 +57,13 @@ VIZ.Modal.prototype.footer = function(type, ok_function, cancel_function){
     }
 }
 
-VIZ.Modal.prototype.clear_body = function() {
+Nengo.Modal.prototype.clear_body = function() {
     this.$body.empty();
     this.$div.find('.modal-dialog').removeClass('modal-sm');
     this.$div.off('shown.bs.modal');
 }
 
-VIZ.Modal.prototype.text_body = function(text, type) {
+Nengo.Modal.prototype.text_body = function(text, type) {
     if (typeof type === 'undefined') { type = "info"; }
 
     this.clear_body();
@@ -75,7 +75,7 @@ VIZ.Modal.prototype.text_body = function(text, type) {
     $p.append(document.createTextNode(text));
 }
 
-VIZ.Modal.prototype.help_body = function() {
+Nengo.Modal.prototype.help_body = function() {
     this.clear_body();
 
     this.$div.find('.modal-dialog').addClass('modal-sm');
@@ -100,7 +100,7 @@ VIZ.Modal.prototype.help_body = function() {
 /**
  * Sets up the tabs for Info modals.
  */
-VIZ.Modal.prototype.tabbed_body = function(tabinfo) {
+Nengo.Modal.prototype.tabbed_body = function(tabinfo) {
     this.clear_body();
     var tabdivs = {}
     var $tab_ul = $('<ul class="nav nav-tabs"/>').appendTo(this.$body);
@@ -127,7 +127,7 @@ VIZ.Modal.prototype.tabbed_body = function(tabinfo) {
 /**
  * Sets up the body for main configuration
  */
-VIZ.Modal.prototype.main_config = function(options) {
+Nengo.Modal.prototype.main_config = function(options) {
     this.clear_body();
 
     var $form = $('<form class="form-horizontal" id ' +
@@ -160,14 +160,14 @@ VIZ.Modal.prototype.main_config = function(options) {
     });
     $('#zoom-fonts').prop('checked', options[0]);
     $('#zoom-fonts').change(function () {
-        VIZ.netgraph.set_zoom_fonts($('#zoom-fonts').prop('checked'));        
+        Nengo.netgraph.set_zoom_fonts($('#zoom-fonts').prop('checked'));
     });
-    
+
     $('#config-fontsize').val(options[1]);
     $('#config-fontsize').bind('keyup input', function () {
-        VIZ.netgraph.set_font_size(parseInt($('#config-fontsize').val()));
+        Nengo.netgraph.set_font_size(parseInt($('#config-fontsize').val()));
     });
-    
+
     $('#config-fontsize').attr('data-my_validator', 'custom');
 
     //Allow the enter key to submit
@@ -181,7 +181,7 @@ VIZ.Modal.prototype.main_config = function(options) {
 /**
  * Sets up the body for standard input forms
  */
-VIZ.Modal.prototype.single_input_body = function(start_values, label) {
+Nengo.Modal.prototype.single_input_body = function(start_values, label) {
     this.clear_body();
 
     var $form = $('<form class="form-horizontal" id ="myModalForm"/>').appendTo(this.$body);
@@ -208,25 +208,25 @@ VIZ.Modal.prototype.single_input_body = function(start_values, label) {
     });
 }
 
-VIZ.Modal.prototype.ensemble_body = function(uid, params, plots, conninfo) {
+Nengo.Modal.prototype.ensemble_body = function(uid, params, plots, conninfo) {
     var tabs = this.tabbed_body([{id: 'params', title: 'Parameters'},
                                  {id: 'plots', title: 'Plots'},
                                  {id: 'connections', title: 'Connections'}]);
-    this.render_params(tabs.params, params, VIZ.tooltips.ens);
+    this.render_params(tabs.params, params, Nengo.tooltips.ens);
     this.render_plots(tabs.plots, plots);
     this.render_connections(tabs.connections, uid, conninfo);
 }
 
-VIZ.Modal.prototype.node_body = function(uid, params, plots, conninfo) {
+Nengo.Modal.prototype.node_body = function(uid, params, plots, conninfo) {
     var tabs = this.tabbed_body([{id: 'params', title: 'Parameters'},
                                  {id: 'plots', title: 'Plots'},
                                  {id: 'connections', title: 'Connections'}]);
-    this.render_params(tabs.params, params, VIZ.tooltips.node);
+    this.render_params(tabs.params, params, Nengo.tooltips.node);
     this.render_plots(tabs.plots, plots);
     this.render_connections(tabs.connections, uid, conninfo);
 }
 
-VIZ.Modal.prototype.net_body = function(uid, stats, conninfo) {
+Nengo.Modal.prototype.net_body = function(uid, stats, conninfo) {
     var tabs = this.tabbed_body([{id: 'stats', title: 'Statistics'},
                                  {id: 'connections', title: 'Connections'}]);
     this.render_stats(tabs.stats, stats);
@@ -236,7 +236,7 @@ VIZ.Modal.prototype.net_body = function(uid, stats, conninfo) {
 /**
  * Renders information about the parameters of an object.
  */
-VIZ.Modal.prototype.render_params = function($parent, params, tooltips) {
+Nengo.Modal.prototype.render_params = function($parent, params, tooltips) {
     var $plist = $('<dl class="dl-horizontal"/>').appendTo($parent);
     for (var i = 0; i < params.length; i++) {
         var $dt = $('<dt/>').appendTo($plist);
@@ -244,7 +244,7 @@ VIZ.Modal.prototype.render_params = function($parent, params, tooltips) {
 
         var $dd = $('<dd/>').appendTo($plist);
         $dd.text(params[i][1]);
-        VIZ.tooltips.popover($dt,
+        Nengo.tooltips.popover($dt,
                              tooltips[String(params[i][0])][0],
                              tooltips[String(params[i][0])][1]);
     }
@@ -253,7 +253,7 @@ VIZ.Modal.prototype.render_params = function($parent, params, tooltips) {
 /**
  * Renders information about some statistics of an object.
  */
-VIZ.Modal.prototype.render_stats = function($parent, stats) {
+Nengo.Modal.prototype.render_stats = function($parent, stats) {
     for (var i = 0; i < stats.length; i++) {
         $parent.append('<h3>' + stats[i].title + '</h3>')
         var $stable = $('<table class="table table-condensed table-hover"/>')
@@ -272,7 +272,7 @@ VIZ.Modal.prototype.render_stats = function($parent, stats) {
 /**
  * Renders information about plots related to an object.
  */
-VIZ.Modal.prototype.render_plots = function($parent, plots) {
+Nengo.Modal.prototype.render_plots = function($parent, plots) {
     // This indicates an error (usually no sim running)
     if (typeof plots === 'string') {
         var $err = $('<div class="alert alert-danger" role="alert"/>')
@@ -291,7 +291,7 @@ VIZ.Modal.prototype.render_plots = function($parent, plots) {
 /**
  * Renders information about a single plot.
  */
-VIZ.Modal.prototype.render_plot = function($parent, plotinfo) {
+Nengo.Modal.prototype.render_plot = function($parent, plotinfo) {
     $parent.append("<h4>" + plotinfo.title + "</h4>")
 
     if (plotinfo.warnings.length > 0) {
@@ -321,7 +321,7 @@ VIZ.Modal.prototype.render_plot = function($parent, plotinfo) {
  * @param {Array of Float} x - The shared x-axis
  * @param {Array of Array of Float} ys - The y data for each line
  */
-VIZ.Modal.prototype.multiline_plot = function(selector, x, ys) {
+Nengo.Modal.prototype.multiline_plot = function(selector, x, ys) {
     var m = {left: 50, top: 10, right: 0, bottom: 30};
     var w = 500 - m.left - m.right;
     var h = 220 - m.bottom - m.top;
@@ -357,7 +357,7 @@ VIZ.Modal.prototype.multiline_plot = function(selector, x, ys) {
         .attr("transform", "translate(" + m.left + ",0)")
         .call(yAxisLeft);
 
-    var colors = VIZ.make_colors(ys.length);
+    var colors = Nengo.make_colors(ys.length);
 
     var line = d3.svg.line()
         .x(function(d, i) { return scale_x(x[i]); })
@@ -376,8 +376,8 @@ VIZ.Modal.prototype.multiline_plot = function(selector, x, ys) {
 /*
  *  Renders information about connections related to an object.
  */
-VIZ.Modal.prototype.render_connections = function($parent, uid, conninfo) {
-    var ngi = VIZ.netgraph.svg_objects[uid];
+Nengo.Modal.prototype.render_connections = function($parent, uid, conninfo) {
+    var ngi = Nengo.netgraph.svg_objects[uid];
     var conn_in_objs = ngi.conn_in;
     if (conn_in_objs.length > 0) {
         $parent.append('<h3>Incoming Connections</h3>');
@@ -387,17 +387,17 @@ VIZ.Modal.prototype.render_connections = function($parent, uid, conninfo) {
                                '<th class="conn-funcs">Function</th>' +
                                '<th class="conn-fan">Fan In</th></tr>')
             .appendTo($parent);
-        VIZ.tooltips.popover($conn_in_table.find('.conn-objs').first(),
+        Nengo.tooltips.popover($conn_in_table.find('.conn-objs').first(),
                              "'Pre' object",
                              "This object plays the role of 'Pre' in the " +
                              "connection to this object.",
                              "top");
-        VIZ.tooltips.popover($conn_in_table.find('.conn-funcs').first(),
+        Nengo.tooltips.popover($conn_in_table.find('.conn-funcs').first(),
                              "Connection function",
                              "The function being computed across this " +
                              "connection (in vector space).",
                              "top");
-        VIZ.tooltips.popover($conn_in_table.find('.conn-fan').first(),
+        Nengo.tooltips.popover($conn_in_table.find('.conn-fan').first(),
                              "Neuron fan-in",
                              "The number of incoming neural connections. " +
                              "In biological terms, this is the maximum number" +
@@ -428,17 +428,17 @@ VIZ.Modal.prototype.render_connections = function($parent, uid, conninfo) {
                                 '<th class="conn-fan">Fan Out</th></tr>')
             .appendTo($parent);
 
-        VIZ.tooltips.popover($conn_out_table.find('.conn-objs').first(),
+        Nengo.tooltips.popover($conn_out_table.find('.conn-objs').first(),
                              "'Post' object",
                              "This object plays the role of 'Post' in the " +
                              "connection from this object.",
                              "top");
-        VIZ.tooltips.popover($conn_out_table.find('.conn-funcs').first(),
+        Nengo.tooltips.popover($conn_out_table.find('.conn-funcs').first(),
                              "Connection function",
                              "The function being computed across this " +
                              "connection (in vector space).",
                              "top");
-        VIZ.tooltips.popover($conn_out_table.find('.conn-fan').first(),
+        Nengo.tooltips.popover($conn_out_table.find('.conn-fan').first(),
                              "Neuron fan-out",
                              "The number of outgoing neural connections. " +
                              "In biological terms, this is the maximum number" +
@@ -474,7 +474,7 @@ VIZ.Modal.prototype.render_connections = function($parent, uid, conninfo) {
 /*
  *  Generates one row in the connections table in the connections tab.
  */
-VIZ.Modal.prototype.make_connections_table_row = function($table, conninfo, conn_objs, get_conn_other, get_conn_conn_uid_list) {
+Nengo.Modal.prototype.make_connections_table_row = function($table, conninfo, conn_objs, get_conn_other, get_conn_conn_uid_list) {
     for (var i = 0; i < conn_objs.length; i++) {
         // Get a reference to the object that the current object is connected to
         var conn_other = get_conn_other(conn_objs[i]);
@@ -498,7 +498,7 @@ VIZ.Modal.prototype.make_connections_table_row = function($table, conninfo, conn
         // Make the fan data column
         var $fan_td = $('<td>' + conninfo["fan"][String(conn_objs[i].uid)] + '</td>').appendTo($tr);
         if (conninfo["obj_type"][String(conn_objs[i].uid)] === "passthrough") {
-            VIZ.tooltips.tooltip($fan_td, VIZ.tooltips.conn.fan_passthrough);
+            Nengo.tooltips.tooltip($fan_td, Nengo.tooltips.conn.fan_passthrough);
         }
     }
 }
@@ -506,7 +506,7 @@ VIZ.Modal.prototype.make_connections_table_row = function($table, conninfo, conn
 /*
  *  Generates the connection path dropdown list for the connections tab.
  */
-VIZ.Modal.prototype.make_conn_path_dropdown_list = function($container, others_uid, obj_type, conn_uid_list) {
+Nengo.Modal.prototype.make_conn_path_dropdown_list = function($container, others_uid, obj_type, conn_uid_list) {
     if (conn_uid_list.length > 1) {
         // Add expand control and the tooltip to the <dd> object
         var $lg_header = $('<a data-toggle="collapse" href="#pathlist' +
@@ -514,7 +514,7 @@ VIZ.Modal.prototype.make_conn_path_dropdown_list = function($container, others_u
                            '" aria-expanded="false"/>').appendTo($container);
 
         // Make the "expand down" tooltip
-        VIZ.tooltips.tooltip($lg_header, VIZ.tooltips.conn.expand,
+        Nengo.tooltips.tooltip($lg_header, Nengo.tooltips.conn.expand,
                              "right", "glyphicon-collapse-down");
 
         // Make a list-group for the drop down items
@@ -531,9 +531,9 @@ VIZ.Modal.prototype.make_conn_path_dropdown_list = function($container, others_u
         var shaded_option = "shaded";
         var endpoint_icon = "glyphicon glyphicon-triangle-right";
         for (var p = conn_uid_list.length - 1; p >= 0; p--) {
-            if (conn_uid_list[p] in VIZ.netgraph.svg_objects){
+            if (conn_uid_list[p] in Nengo.netgraph.svg_objects){
                 // If the uid is in netgraph.svg_objects, use the object's label
-                var path_item = VIZ.netgraph.svg_objects[conn_uid_list[p]].label.innerHTML;
+                var path_item = Nengo.netgraph.svg_objects[conn_uid_list[p]].label.innerHTML;
             }
             else {
                 // Otherwise, use the object's uid (with brackets to indicate that the UI
@@ -573,7 +573,7 @@ VIZ.Modal.prototype.make_conn_path_dropdown_list = function($container, others_u
     }
 }
 
-VIZ.modal = new VIZ.Modal($('.modal').first());
+Nengo.modal = new Nengo.Modal($('.modal').first());
 
 //Change the global defaults of the modal validator
 $( document ).ready(function() {

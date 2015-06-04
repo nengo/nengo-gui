@@ -67,7 +67,7 @@ class Pointer(Component):
     def javascript(self):
         info = dict(uid=self.uid, label=self.label)
         json = self.javascript_config(info)
-        return 'new VIZ.Pointer(main, sim, %s);' % json
+        return 'new Nengo.Pointer(main, sim, %s);' % json
 
     def message(self, msg):
         if len(msg) == 0:

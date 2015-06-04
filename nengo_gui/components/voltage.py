@@ -49,7 +49,7 @@ class Voltage(Component):
         info = dict(uid=self.uid, label=self.label,
                     n_lines=self.n_neurons, synapse=0)
         json = self.javascript_config(info)
-        return 'new VIZ.Value(main, sim, %s);' % json
+        return 'new Nengo.Value(main, sim, %s);' % json
 
 
 class VoltageTemplate(Template):

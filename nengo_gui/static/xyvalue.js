@@ -2,24 +2,24 @@
  * Line graph showing decoded values over time
  * @constructor
  *
- * @param {dict} args - A set of constructor arguments (see VIZ.Component)
+ * @param {dict} args - A set of constructor arguments (see Nengo.Component)
  * @param {int} args.n_lines - number of decoded values
  * @param {float} args.miny - minimum value on y-axis
  * @param {float} args.maxy - maximum value on y-axis
- * @param {VIZ.SimControl} args.sim - the simulation controller
+ * @param {Nengo.SimControl} args.sim - the simulation controller
  */
 
-VIZ.XYValue = function(parent, sim, args) {
-    VIZ.Component.call(this, parent, args);
+Nengo.XYValue = function(parent, sim, args) {
+    Nengo.Component.call(this, parent, args);
     var self = this;
 
     this.n_lines = args.n_lines || 1;
     this.sim = sim;
 
     /** for storing the accumulated data */
-    this.data_store = new VIZ.DataStore(this.n_lines, this.sim, 0.01);
+    this.data_store = new Nengo.DataStore(this.n_lines, this.sim, 0.01);
 
-    this.axes2d = new VIZ.Axes2D(this.div, args);
+    this.axes2d = new Nengo.Axes2D(this.div, args);
     this.axes2d.axis_y.tickValues([args.min_value, args.max_value]);
     this.axes2d.axis_x.tickValues([args.min_value, args.max_value]);
 
@@ -41,17 +41,17 @@ VIZ.XYValue = function(parent, sim, args) {
                                     .data([this.data_store.data[this.index_y]]);
     this.path.enter().append('path')
              .attr('class', 'line')
-             .style('stroke', VIZ.make_colors(1));
+             .style('stroke', Nengo.make_colors(1));
 
     this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
-VIZ.XYValue.prototype = Object.create(VIZ.Component.prototype);
-VIZ.XYValue.prototype.constructor = VIZ.Value;
+Nengo.XYValue.prototype = Object.create(Nengo.Component.prototype);
+Nengo.XYValue.prototype.constructor = Nengo.Value;
 
 /**
  * Receive new line data from the server
  */
-VIZ.XYValue.prototype.on_message = function(event) {
+Nengo.XYValue.prototype.on_message = function(event) {
     var data = new Float32Array(event.data);
     this.data_store.push(data);
     this.schedule_update();
@@ -60,7 +60,7 @@ VIZ.XYValue.prototype.on_message = function(event) {
 /**
  * Redraw the lines and axis due to changed data
  */
-VIZ.XYValue.prototype.update = function() {
+Nengo.XYValue.prototype.update = function() {
     /** let the data store clear out old values */
     this.data_store.update();
 
@@ -80,7 +80,7 @@ VIZ.XYValue.prototype.update = function() {
 /**
  * Adjust the graph layout due to changed size
  */
-VIZ.XYValue.prototype.on_resize = function(width, height) {
+Nengo.XYValue.prototype.on_resize = function(width, height) {
     this.axes2d.on_resize(width, height);
 
     //this.scale_x.range([this.margin_left, width - this.margin_right]);
@@ -105,7 +105,7 @@ VIZ.XYValue.prototype.on_resize = function(width, height) {
     this.div.style.height = height;
 };
 
-VIZ.XYValue.prototype.generate_menu = function() {
+Nengo.XYValue.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['Set range...', function() {self.set_range();}]);
@@ -113,12 +113,12 @@ VIZ.XYValue.prototype.generate_menu = function() {
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
-    return $.merge(items, VIZ.Component.prototype.generate_menu.call(this));
+    return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
 };
 
 
-VIZ.XYValue.prototype.layout_info = function () {
-    var info = VIZ.Component.prototype.layout_info.call(this);
+Nengo.XYValue.prototype.layout_info = function () {
+    var info = Nengo.Component.prototype.layout_info.call(this);
     info.min_value = this.axes2d.scale_y.domain()[0];
     info.max_value = this.axes2d.scale_y.domain()[1];
     info.index_x = this.index_x;
@@ -126,18 +126,18 @@ VIZ.XYValue.prototype.layout_info = function () {
     return info;
 }
 
-VIZ.XYValue.prototype.update_layout = function (config) {
+Nengo.XYValue.prototype.update_layout = function (config) {
     this.update_indices(config.index_x, config.index_y);
     this.update_range(config.min_value, config.max_value);
-    VIZ.Component.prototype.update_layout.call(this, config);
+    Nengo.Component.prototype.update_layout.call(this, config);
 }
 
-VIZ.XYValue.prototype.set_range = function() {
+Nengo.XYValue.prototype.set_range = function() {
     var range = this.axes2d.scale_y.domain();
     var self = this;
-    VIZ.modal.title('Set graph range...');
-    VIZ.modal.single_input_body(range, 'New range');
-    VIZ.modal.footer('ok_cancel', function(e) {
+    Nengo.modal.title('Set graph range...');
+    Nengo.modal.single_input_body(range, 'New range');
+    Nengo.modal.footer('ok_cancel', function(e) {
         var new_range = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
 
@@ -172,10 +172,10 @@ VIZ.XYValue.prototype.set_range = function() {
 
     $('#singleInput').attr('data-error', 'Input should be in the form ' +
                            '"<min>,<max>".');
-    VIZ.modal.show();
+    Nengo.modal.show();
 }
 
-VIZ.XYValue.prototype.update_range = function(min, max) {
+Nengo.XYValue.prototype.update_range = function(min, max) {
     this.axes2d.scale_x.domain([min, max]);
     this.axes2d.scale_y.domain([min, max]);
     this.axes2d.axis_x.tickValues([min, max]);
@@ -184,11 +184,11 @@ VIZ.XYValue.prototype.update_range = function(min, max) {
     this.axes2d.axis_x_g.call(this.axes2d.axis_x);
 }
 
-VIZ.XYValue.prototype.set_indices = function() {
+Nengo.XYValue.prototype.set_indices = function() {
     var self = this;
-    VIZ.modal.title('Set X and Y indices...');
-    VIZ.modal.single_input_body([this.index_x,this.index_y], 'New indices');
-    VIZ.modal.footer('ok_cancel', function(e) {
+    Nengo.modal.title('Set X and Y indices...');
+    Nengo.modal.single_input_body([this.index_x,this.index_y], 'New indices');
+    Nengo.modal.footer('ok_cancel', function(e) {
         var new_indices = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
 
@@ -221,10 +221,10 @@ VIZ.XYValue.prototype.set_indices = function() {
                            'integers in the form "<dimension 1>,<dimension 2>". ' +
                            'Dimensions are zero indexed.');
 
-    VIZ.modal.show();
+    Nengo.modal.show();
 }
 
-VIZ.XYValue.prototype.update_indices = function(index_x, index_y) {
+Nengo.XYValue.prototype.update_indices = function(index_x, index_y) {
     this.index_x = index_x;
     this.index_y = index_y;
     this.update();

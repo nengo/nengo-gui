@@ -20,13 +20,13 @@ def infomodal(ng, uid, **args):
         raise NotImplementedError()
 
 def add_modal_title_js(title_text):
-    return 'VIZ.modal.title("%s");' % (title_text)
+    return 'Nengo.modal.title("%s");' % (title_text)
 
 def add_modal_footer_js(footer_text):
-    return 'VIZ.modal.footer("%s");' % (footer_text)
+    return 'Nengo.modal.footer("%s");' % (footer_text)
 
 def show_modal_js():
-    return 'VIZ.modal.show();'
+    return 'Nengo.modal.show();'
 
 class PlotInfo(object):
     def __init__(self, title, plot="none"):
@@ -86,11 +86,11 @@ def ensemble_infomodal(ng, uid, conn_in_uids, conn_out_uids):
 
     conninfo = conn_infomodal(ng, uid, conn_in_uids, conn_out_uids)
 
-    js = ['VIZ.modal.title("Details for \'%s\'");' % ng.viz.viz.get_label(ens)]
-    js.append('VIZ.modal.footer("close");')
-    js.append('VIZ.modal.ensemble_body("%s", %s, %s, %s);' % (
+    js = ['Nengo.modal.title("Details for \'%s\'");' % ng.viz.viz.get_label(ens)]
+    js.append('Nengo.modal.footer("close");')
+    js.append('Nengo.modal.ensemble_body("%s", %s, %s, %s);' % (
         uid, json.dumps(params), json.dumps(plots), json.dumps(conninfo)))
-    js.append('VIZ.modal.show();')
+    js.append('Nengo.modal.show();')
     return '\n'.join(js)
 
 def node_infomodal(ng, uid, conn_in_uids, conn_out_uids):
@@ -123,7 +123,7 @@ def node_infomodal(ng, uid, conn_in_uids, conn_out_uids):
     js = [add_modal_title_js("Details for \'%s\'" % (
         ng.viz.viz.get_label(node)))]
     js.append(add_modal_footer_js('close'))
-    js.append('VIZ.modal.node_body("%s", %s, %s, %s);' % (
+    js.append('Nengo.modal.node_body("%s", %s, %s, %s);' % (
         uid, json.dumps(params), json.dumps(plots), json.dumps(conninfo)))
     js.append(show_modal_js())
     return '\n'.join(js)
@@ -198,7 +198,7 @@ def net_infomodal(ng, uid, conn_in_uids, conn_out_uids):
     js = [add_modal_title_js("Details for \'%s\'") % (
         ng.viz.viz.get_label(net))]
     js.append(add_modal_footer_js('close'))
-    js.append('VIZ.modal.net_body("%s", %s, %s);' % (
+    js.append('Nengo.modal.net_body("%s", %s, %s);' % (
         uid, json.dumps(stats), json.dumps(conninfo)))
     js.append(show_modal_js())
     return '\n'.join(js)

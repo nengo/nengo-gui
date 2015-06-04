@@ -88,7 +88,7 @@ class SimControl(Component):
             self.reload = False
         if self.send_config_options == True:
             client.write('config' +
-                'VIZ.Toolbar.prototype.config_modal_show();')
+                'Nengo.Toolbar.prototype.config_modal_show();')
             self.send_config_options = False
 
     def get_status(self):
@@ -103,8 +103,8 @@ class SimControl(Component):
         info = dict(uid=self.uid)
         fn = json.dumps(self.viz.viz.filename)
         js = self.javascript_config(info)
-        return ('sim = new VIZ.SimControl(control, %s);\n'
-                'toolbar = new VIZ.Toolbar(%s); ' % (js, fn))
+        return ('sim = new Nengo.SimControl(control, %s);\n'
+                'toolbar = new Nengo.Toolbar(%s); ' % (js, fn))
 
     def message(self, msg):
         if msg == 'pause':

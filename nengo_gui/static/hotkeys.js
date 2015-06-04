@@ -1,4 +1,4 @@
-VIZ.Hotkeys = function () { 
+Nengo.Hotkeys = function () {
     var self = this;
 
     document.addEventListener('keydown', function(ev) {
@@ -18,22 +18,22 @@ VIZ.Hotkeys = function () {
 
         // toggle editor with ctrl-e
         if (ctrl && key == 'e') {
-            VIZ.ace.toggle_shown();
+            Nengo.ace.toggle_shown();
             ev.preventDefault();
         }
         // undo with ctrl-z
         if (ctrl && key == 'z') {
-            VIZ.netgraph.notify({ undo: "1" });
+            Nengo.netgraph.notify({ undo: "1" });
             ev.preventDefault();
         }
         // redo with shift-ctrl-z
         if (ctrl && ev.shiftKey && key == 'z') {
-            VIZ.netgraph.notify({ undo: "0" });
+            Nengo.netgraph.notify({ undo: "0" });
             ev.preventDefault();
         }
         // redo with ctrl-y
         if (ctrl && key == 'y') {
-            VIZ.netgraph.notify({ undo: "0" });
+            Nengo.netgraph.notify({ undo: "0" });
             ev.preventDefault();
         }
         // run model with spacebar
@@ -43,23 +43,23 @@ VIZ.Hotkeys = function () {
             }
             ev.preventDefault();
         }
-        // bring up help menu with ? 
+        // bring up help menu with ?
         if (key == '?') {
             self.callMenu();
             ev.preventDefault();
         }
         // bring up minimap with ctrl-m
         if (ctrl && key == 'm') {
-            VIZ.netgraph.toggleMiniMap();
+            Nengo.netgraph.toggleMiniMap();
             ev.preventDefault();
         }
     });
 }
 
-VIZ.Hotkeys.prototype.callMenu = function () {
-    VIZ.modal.title("Hotkeys list");
-    VIZ.modal.help_body();
-    VIZ.modal.show();
+Nengo.Hotkeys.prototype.callMenu = function () {
+    Nengo.modal.title("Hotkeys list");
+    Nengo.modal.help_body();
+    Nengo.modal.show();
 }
 
-VIZ.hotkeys = new VIZ.Hotkeys();
+Nengo.hotkeys = new Nengo.Hotkeys();

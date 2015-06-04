@@ -2,20 +2,20 @@
  * Raster plot showing spike events over time
  * @constructor
  *
- * @param {dict} args - A set of constructor arguments (see VIZ.Component)
+ * @param {dict} args - A set of constructor arguments (see Nengo.Component)
  * @param {int} args.n_neurons - number of neurons
- * @param {VIZ.SimControl} args.sim - the simulation controller
+ * @param {Nengo.SimControl} args.sim - the simulation controller
  */
-VIZ.Raster = function(parent, sim, args) {
-    VIZ.Component.call(this, parent, args);
+Nengo.Raster = function(parent, sim, args) {
+    Nengo.Component.call(this, parent, args);
     var self = this;
     this.n_neurons = args.n_neurons || 1;
     this.sim = sim;
 
     /** for storing the accumulated data */
-    this.data_store = new VIZ.DataStore(1, this.sim, 0);
+    this.data_store = new Nengo.DataStore(1, this.sim, 0);
 
-    this.axes2d = new VIZ.TimeAxes(this.div, args);
+    this.axes2d = new Nengo.TimeAxes(this.div, args);
     this.axes2d.scale_y.domain([0, args.n_neurons]);
 
 
@@ -35,18 +35,18 @@ VIZ.Raster = function(parent, sim, args) {
 
     this.spikes = this.axes2d.svg.append("g")
         .attr('class', 'spikes')
-        .style('stroke', VIZ.make_colors(1));
+        .style('stroke', Nengo.make_colors(1));
 
     this.update();
     this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
-VIZ.Raster.prototype = Object.create(VIZ.Component.prototype);
-VIZ.Raster.prototype.constructor = VIZ.Raster;
+Nengo.Raster.prototype = Object.create(Nengo.Component.prototype);
+Nengo.Raster.prototype.constructor = Nengo.Raster;
 
 /**
  * Receive new line data from the server
  */
-VIZ.Raster.prototype.on_message = function(event) {
+Nengo.Raster.prototype.on_message = function(event) {
     var time = new Float32Array(event.data, 0, 1);
     var data = new Int16Array(event.data, 4);
     this.data_store.push([time[0], data]);
@@ -56,11 +56,11 @@ VIZ.Raster.prototype.on_message = function(event) {
 /**
  * Redraw the lines and axis due to changed data
  */
-VIZ.Raster.prototype.update = function() {
+Nengo.Raster.prototype.update = function() {
     /** let the data store clear out old values */
     this.data_store.update();
 
-    /** determine visible range from the VIZ.SimControl */
+    /** determine visible range from the Nengo.SimControl */
     var t1 = this.sim.time_slider.first_shown_time;
     var t2 = t1 + this.sim.time_slider.shown_time;
 
@@ -99,7 +99,7 @@ VIZ.Raster.prototype.update = function() {
 /**
  * Adjust the graph layout due to changed size
  */
-VIZ.Raster.prototype.on_resize = function(width, height) {
+Nengo.Raster.prototype.on_resize = function(width, height) {
     if (width < this.minWidth) {
         width = this.minWidth;
     }

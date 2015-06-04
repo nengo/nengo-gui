@@ -4,7 +4,7 @@
  *
  * @param {string} filename - The name of the file opened
  */
-VIZ.Toolbar = function(filename) {
+Nengo.Toolbar = function(filename) {
     console.assert(typeof filename== 'string')
 
     var self = this;
@@ -22,35 +22,35 @@ VIZ.Toolbar = function(filename) {
         }
     });
     $('#Reset_layout_button')[0].addEventListener('click', function () {
-        VIZ.modal.title("Are you sure you wish to reset this layout, " +
+        Nengo.modal.title("Are you sure you wish to reset this layout, " +
                         "removing all the graphs and resetting the position " +
                         "of all items?");
-        VIZ.modal.text_body("This operation cannot be undone!", "danger");
-        VIZ.modal.footer('confirm_reset');
-        VIZ.modal.show();
+        Nengo.modal.text_body("This operation cannot be undone!", "danger");
+        Nengo.modal.footer('confirm_reset');
+        Nengo.modal.show();
     });
 
     $('#Undo_last_button')[0].addEventListener('click', function() {
-        VIZ.netgraph.notify({ undo: "1" });
+        Nengo.netgraph.notify({ undo: "1" });
     });
     $('#Redo_last_button')[0].addEventListener('click', function () {
-        VIZ.netgraph.notify({ undo: "0" });
+        Nengo.netgraph.notify({ undo: "0" });
     });
     $('#Minimap_button')[0].addEventListener('click', function () {
-        VIZ.netgraph.toggleMiniMap();
+        Nengo.netgraph.toggleMiniMap();
     });
     $('#Config_button')[0].addEventListener('click', function () {
         self.config_modal();
     });
     $('#Help_button')[0].addEventListener('click', function () {
-        VIZ.hotkeys.callMenu();
+        Nengo.hotkeys.callMenu();
     });
-   
+
     $('#filename')[0].innerHTML = filename;
 
     this.toolbar = $('#toolbar_object')[0];
 
-    this.menu = new VIZ.Menu(this.toolbar);
+    this.menu = new Nengo.Menu(this.toolbar);
 
     interact(toolbar).on('tap', function(){
         self.menu.hide_any();
@@ -58,7 +58,7 @@ VIZ.Toolbar = function(filename) {
 };
 
 /** This lets you browse the files available on the server */
-VIZ.Toolbar.prototype.file_browser = function () {
+Nengo.Toolbar.prototype.file_browser = function () {
     sim.ws.send('browse');
 
     fb = $('#filebrowser');
@@ -76,7 +76,7 @@ VIZ.Toolbar.prototype.file_browser = function () {
 
 /** This is run once a file is selected, trims the filename
  *  and sends it to the server. */
-VIZ.Toolbar.prototype.file_name = function() {
+Nengo.Toolbar.prototype.file_name = function() {
     var filename = document.getElementById('open_file').value;
     filename = filename.replace("C:\\fakepath\\", "");
     sim.ws.send('open' + filename);
@@ -84,25 +84,25 @@ VIZ.Toolbar.prototype.file_name = function() {
 
 /** Tells the server to reset the model layout to the default,
  *  by deleting the config file and reloading the script */
-VIZ.Toolbar.prototype.reset_model_layout = function () {
+Nengo.Toolbar.prototype.reset_model_layout = function () {
     sim.ws.send('reset');
 }
 
 /** Function called by event handler in order to launch modal.
  *  call to server to call config_modal_show with config data. */
-VIZ.Toolbar.prototype.config_modal = function () {
+Nengo.Toolbar.prototype.config_modal = function () {
     sim.ws.send('config');  //Doing it this way in case we need to save options to a file later
 }
 
-VIZ.Toolbar.prototype.config_modal_show = function() {
+Nengo.Toolbar.prototype.config_modal_show = function() {
     var self = this;
 
-    var options = [VIZ.netgraph.get_zoom_fonts(),
-        VIZ.netgraph.get_font_size()];
+    var options = [Nengo.netgraph.get_zoom_fonts(),
+        Nengo.netgraph.get_font_size()];
 
-    VIZ.modal.title('Configure Options');
-    VIZ.modal.main_config(options);
-    VIZ.modal.footer('ok_cancel', function(e) {
+    Nengo.modal.title('Configure Options');
+    Nengo.modal.main_config(options);
+    Nengo.modal.footer('ok_cancel', function(e) {
         var zoom = $('#zoom-fonts').prop('checked');
         var font_size = $('#config-fontsize').val();
         var modal = $('#myModalForm').data('bs.validator');
@@ -111,13 +111,13 @@ VIZ.Toolbar.prototype.config_modal_show = function() {
         if (modal.hasErrors() || modal.isIncomplete()) {
             return;
         }
-        VIZ.netgraph.set_zoom_fonts(zoom);
-        VIZ.netgraph.set_font_size(parseInt(font_size));
+        Nengo.netgraph.set_zoom_fonts(zoom);
+        Nengo.netgraph.set_font_size(parseInt(font_size));
         $('#OK').attr('data-dismiss', 'modal');
     },
         function () {  //cancel_function
-            VIZ.netgraph.set_zoom_fonts(options[0]);
-            VIZ.netgraph.set_font_size(options[1]);
+            Nengo.netgraph.set_zoom_fonts(options[0]);
+            Nengo.netgraph.set_font_size(options[1]);
             $('#cancel-button').attr('data-dismiss', 'modal');
     });
 
@@ -130,5 +130,5 @@ VIZ.Toolbar.prototype.config_modal_show = function() {
         },
     });
 
-    VIZ.modal.show();
+    Nengo.modal.show();
 };

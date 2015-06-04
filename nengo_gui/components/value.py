@@ -38,7 +38,7 @@ class Value(Component):
         info = dict(uid=self.uid, label=self.label,
                     n_lines=self.n_lines, synapse=0.01)
         json = self.javascript_config(info)
-        return 'new VIZ.Value(main, sim, %s);' % json
+        return 'new Nengo.Value(main, sim, %s);' % json
 
 class ValueTemplate(Template):
     cls = Value

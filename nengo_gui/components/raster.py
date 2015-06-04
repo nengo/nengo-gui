@@ -44,7 +44,7 @@ class Raster(Component):
         info = dict(uid=self.uid, n_neurons=self.n_neurons, label=self.label,
                     max_neurons=self.max_neurons)
         json = self.javascript_config(info)
-        return 'new VIZ.Raster(main, sim, %s);' % json
+        return 'new Nengo.Raster(main, sim, %s);' % json
 
 
 class RasterTemplate(Template):

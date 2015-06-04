@@ -3,12 +3,12 @@
  * @constructor
  *
  * @param {float} args.width - the width of the axes (in pixels)
- * @param {float} args.height - the height of the axes (in pixels) 
+ * @param {float} args.height - the height of the axes (in pixels)
  * @param {float} args.min_value - minimum value on y-axis
  * @param {float} args.max_value - maximum value on y-axis
  */
- 
-VIZ.Axes2D = function(parent, args) {
+
+Nengo.Axes2D = function(parent, args) {
     var self = this;
 
     /** draw the plot as an SVG */
@@ -36,14 +36,14 @@ VIZ.Axes2D = function(parent, args) {
     /** define the y-axis */
     this.axis_y = d3.svg.axis()
         .scale(this.scale_y)
-        .orient("left")    
+        .orient("left")
         .ticks(2)
     this.axis_y_g = this.svg.append("g")
         .attr("class", "axis axis_y unselectable")
         .call(this.axis_y);
 };
 
-VIZ.Axes2D.prototype.calc_axes_geometry = function(width, height) {
+Nengo.Axes2D.prototype.calc_axes_geometry = function(width, height) {
     scale = parseFloat($('#main').css('font-size'));
 
     this.ax_left = 1.75 * scale;
@@ -58,7 +58,7 @@ VIZ.Axes2D.prototype.calc_axes_geometry = function(width, height) {
 /**
  * Adjust the graph layout due to changed size
  */
-VIZ.Axes2D.prototype.on_resize = function(width, height) {
+Nengo.Axes2D.prototype.on_resize = function(width, height) {
     if (width < this.minWidth) {
         width = this.minWidth;
     }

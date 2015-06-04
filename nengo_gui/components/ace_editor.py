@@ -26,7 +26,7 @@ class AceEditor(Component):
 
     def javascript(self):
         args = json.dumps(dict(active=self.viz.viz.interactive))
-        return 'ace_editor = new VIZ.Ace("%s", %s)' % (self.uid, args)
+        return 'ace_editor = new Nengo.Ace("%s", %s)' % (self.uid, args)
 
     def message(self, msg):
         if not self.viz.viz.interactive:

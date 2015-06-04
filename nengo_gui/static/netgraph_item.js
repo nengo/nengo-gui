@@ -2,7 +2,7 @@
  * Network diagram individual item (node)
  * @constructor
  *
- * @param {VIZ.NetGraph} ng - The VIZ.NetGraph this Item is inside
+ * @param {Nengo.NetGraph} ng - The Nengo.NetGraph this Item is inside
  * @param {dict} info - A dictionary of settings for the item, including:
  * @param {float array} info.pos - x,y position
  * @param {float array} info.size - half width, half height of item
@@ -10,7 +10,7 @@
  * @param {string} info.uid - unique identifier
  * @param {string or null} info.parent - a NetGraphItem with .type=='net'
  */
-VIZ.NetGraphItem = function(ng, info, minimap, mini_item) {
+Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
     var self = this;
 
     this.ng = ng;
@@ -48,7 +48,7 @@ VIZ.NetGraphItem = function(ng, info, minimap, mini_item) {
     this.aspect = null;
 
     this.expanded = false;
-    
+
     /** determine the parent NetGraphItem (if any) and the nested depth
      *  of this item */
     if (info.parent === null) {
@@ -63,14 +63,14 @@ VIZ.NetGraphItem = function(ng, info, minimap, mini_item) {
     /** create the SVG group to hold this item */
     var g = this.ng.createSVGElement('g');
     this.g = g;
-    this.g_items.appendChild(g);    
+    this.g_items.appendChild(g);
     g.classList.add(this.type);
 
     this.area = this.ng.createSVGElement('rect');
     this.area.style.fill = 'transparent';
 
-    this.menu = new VIZ.Menu(this.ng.parent);
-    
+    this.menu = new Nengo.Menu(this.ng.parent);
+
     /** different types use different SVG elements for display */
     if (info.type === 'node') {
         if (this.passthrough) {
@@ -102,9 +102,9 @@ VIZ.NetGraphItem = function(ng, info, minimap, mini_item) {
         var label = this.ng.createSVGElement('text');
         this.label = label;
         label.innerHTML = info.label;
-        g.appendChild(label); 
+        g.appendChild(label);
     };
-    
+
     this.set_position(info.pos[0], info.pos[1]);
     this.set_size(info.size[0], info.size[1]);
 
@@ -125,7 +125,7 @@ VIZ.NetGraphItem = function(ng, info, minimap, mini_item) {
                 },
                 onmove: function(event) {
                     var w = ng.get_scaled_width();
-                    var h = ng.get_scaled_height();    
+                    var h = ng.get_scaled_height();
                     var item = ng.svg_objects[uid];
                     var parent = item.parent;
                     while (parent !== null) {
@@ -133,7 +133,7 @@ VIZ.NetGraphItem = function(ng, info, minimap, mini_item) {
                         h = h * parent.size[1] * 2;
                         parent = parent.parent;
                     }
-                    item.set_position(item.pos[0] + event.dx / w, 
+                    item.set_position(item.pos[0] + event.dx / w,
                                     item.pos[1] + event.dy / h);
 
                     var item_mini = ng.minimap_objects[uid];
@@ -146,7 +146,7 @@ VIZ.NetGraphItem = function(ng, info, minimap, mini_item) {
                 },
                 onend: function(event) {
                     var item = ng.svg_objects[uid];
-                    item.constrain_position();                
+                    item.constrain_position();
                     ng.notify({act:"pos", uid:uid, x:item.pos[0], y:item.pos[1]});
 
                     var item_mini = ng.minimap_objects[uid];
@@ -159,7 +159,7 @@ VIZ.NetGraphItem = function(ng, info, minimap, mini_item) {
             var tmp = this.shape
             if(info.type === 'ens') {
                 tmp = $(this.shape.getElementsByClassName('mainCircle'))[0];
-            }        
+            }
             interact(this.area)
             .resizable({
                 edges: { left: true, right: true, bottom: true, top: true },
@@ -240,8 +240,8 @@ VIZ.NetGraphItem = function(ng, info, minimap, mini_item) {
                 })
                 .on('resizeend', function(event) {
                     var item = ng.svg_objects[uid];
-                    item.constrain_position();                
-                    ng.notify({act:"pos_size", uid:uid, 
+                    item.constrain_position();
+                    ng.notify({act:"pos_size", uid:uid,
                             x:item.pos[0], y:item.pos[1],
                             width:item.size[0], height:item.size[1]});
 
@@ -250,7 +250,7 @@ VIZ.NetGraphItem = function(ng, info, minimap, mini_item) {
                     item_mini.set_size(item.size[0], item.size[1]);
                     });
         }
-    
+
         //Determine when to pull up the menu
         interact(this.g)
             .on('hold', function(event) { //change to 'tap' for right click
@@ -258,10 +258,10 @@ VIZ.NetGraphItem = function(ng, info, minimap, mini_item) {
                     if (self.menu.visible_any()) {
                         self.menu.hide_any();
                     } else {
-                        self.menu.show(event.clientX, event.clientY, 
+                        self.menu.show(event.clientX, event.clientY,
                                     self.generate_menu());
                     }
-                    event.stopPropagation();  
+                    event.stopPropagation();
                 }
             })
             .on('tap', function(event) { //get rid of menus when clicking off
@@ -283,14 +283,14 @@ VIZ.NetGraphItem = function(ng, info, minimap, mini_item) {
                         }
                     }
                 }
-            });        
+            });
         $(this.g).bind('contextmenu', function(event) {
-                event.preventDefault();   
-                event.stopPropagation();        
+                event.preventDefault();
+                event.stopPropagation();
                 if (self.menu.visible_any()) {
                     self.menu.hide_any();
                 } else {
-                    self.menu.show(event.clientX, event.clientY, 
+                    self.menu.show(event.clientX, event.clientY,
                                 self.generate_menu());
             }
         });
@@ -305,11 +305,11 @@ VIZ.NetGraphItem = function(ng, info, minimap, mini_item) {
     };
 };
 
-VIZ.NetGraphItem.prototype.set_label = function(label) {
+Nengo.NetGraphItem.prototype.set_label = function(label) {
     this.label.innerHTML = label;
 }
 
-VIZ.NetGraphItem.prototype.move_to_front = function() {
+Nengo.NetGraphItem.prototype.move_to_front = function() {
     this.g.parentNode.appendChild(this.g);
 
     for (var item in this.children) {
@@ -317,17 +317,17 @@ VIZ.NetGraphItem.prototype.move_to_front = function() {
     }
 };
 
-VIZ.NetGraphItem.prototype.generate_menu = function () {
+Nengo.NetGraphItem.prototype.generate_menu = function () {
     var self = this;
     var items = [];
     if (this.type === 'net') {
         if (this.expanded) {
-            items.push(['Collapse network', 
+            items.push(['Collapse network',
                         function() {self.collapse(true);}]);
-            items.push(['Auto-layout', 
+            items.push(['Auto-layout',
                         function() {self.request_feedforward_layout();}]);
         } else {
-            items.push(['Expand network', 
+            items.push(['Expand network',
                         function() {self.expand();}]);
         }
     }
@@ -356,19 +356,19 @@ VIZ.NetGraphItem.prototype.generate_menu = function () {
     return items;
 };
 
-VIZ.NetGraphItem.prototype.create_graph = function (type, args) {
+Nengo.NetGraphItem.prototype.create_graph = function (type, args) {
     var info = {};
     info.act = 'create_graph';
     info.type = type;
     var w = this.get_nested_width();
     var h = this.get_nested_height();
-    
+
     var pos = this.get_screen_location();
-    
-    info.x = pos[0] / (viewport.w * viewport.scale) - viewport.x + w; 
+
+    info.x = pos[0] / (viewport.w * viewport.scale) - viewport.x + w;
     info.y = pos[1] / (viewport.h * viewport.scale) - viewport.y + h;
-    
-    
+
+
     if (info.type == 'Slider') {
         info.width = w*0.5;
     } else {
@@ -380,7 +380,7 @@ VIZ.NetGraphItem.prototype.create_graph = function (type, args) {
     this.ng.notify(info);
 };
 
-VIZ.NetGraphItem.prototype.create_modal = function () {
+Nengo.NetGraphItem.prototype.create_modal = function () {
     var info = {};
     info.act = 'create_modal';
     info.uid = this.uid;
@@ -389,18 +389,18 @@ VIZ.NetGraphItem.prototype.create_modal = function () {
     this.ng.notify(info);
 }
 
-VIZ.NetGraphItem.prototype.request_feedforward_layout = function () {
+Nengo.NetGraphItem.prototype.request_feedforward_layout = function () {
     this.ng.notify({act:"feedforward_layout", uid:this.uid});
 };
 
 /** expand a collapsed network */
-VIZ.NetGraphItem.prototype.expand = function(rts, auto) {
+Nengo.NetGraphItem.prototype.expand = function(rts, auto) {
     // default to true if no parameter is specified
     rts = typeof rts !== 'undefined' ? rts : true;
     auto = typeof auto !== 'undefined' ? auto : false;
-    
+
     this.g.classList.add('expanded');
-    
+
     if (!this.expanded) {
         this.expanded = true;
         this.g_items.removeChild(this.g);
@@ -413,7 +413,7 @@ VIZ.NetGraphItem.prototype.expand = function(rts, auto) {
         console.log(this);
     }
 
-    if (rts) {    
+    if (rts) {
         if (auto) {
             // Update the server, but do not place on the undo stack
             this.ng.notify({act:"auto_expand", uid:this.uid});
@@ -423,8 +423,8 @@ VIZ.NetGraphItem.prototype.expand = function(rts, auto) {
     }
 }
 
-VIZ.NetGraphItem.prototype.set_label_below = function(flag) {
-    if (flag && !this.label_below) {        
+Nengo.NetGraphItem.prototype.set_label_below = function(flag) {
+    if (flag && !this.label_below) {
         var screen_h = this.get_height();
         this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
     } else if (!flag && this.label_below) {
@@ -434,10 +434,10 @@ VIZ.NetGraphItem.prototype.set_label_below = function(flag) {
 
 
 /** collapse an expanded network */
-VIZ.NetGraphItem.prototype.collapse = function(report_to_server, auto) {
+Nengo.NetGraphItem.prototype.collapse = function(report_to_server, auto) {
     auto = typeof auto !== 'undefined' ? auto : false;
     this.g.classList.remove('expanded');
-    
+
     /** remove child NetGraphItems and NetGraphConnections */
     while (this.child_connections.length > 0) {
         this.child_connections[0].remove();
@@ -457,7 +457,7 @@ VIZ.NetGraphItem.prototype.collapse = function(report_to_server, auto) {
         console.log("collapsed a network that was already collapsed");
         console.log(this);
     }
-    
+
     if (report_to_server) {
         if (auto) {
             // Update the server, but do not place on the undo stack
@@ -470,7 +470,7 @@ VIZ.NetGraphItem.prototype.collapse = function(report_to_server, auto) {
 
 
 /** determine the fill color based on the depth */
-VIZ.NetGraphItem.prototype.compute_fill = function() {
+Nengo.NetGraphItem.prototype.compute_fill = function() {
     if (!this.passthrough) {
         var fill = Math.round(255 * Math.pow(0.8, this.depth));
         this.shape.style.fill = 'rgb(' + fill + ',' + fill + ',' + fill + ')';
@@ -481,7 +481,7 @@ VIZ.NetGraphItem.prototype.compute_fill = function() {
 
 
 /** remove the item from the graph */
-VIZ.NetGraphItem.prototype.remove = function() {
+Nengo.NetGraphItem.prototype.remove = function() {
     if (this.expanded) {
         /** collapse the item, but don't tell the server since that would
          *  update the server's config */
@@ -491,10 +491,10 @@ VIZ.NetGraphItem.prototype.remove = function() {
     /** remove the item from the parent's children list */
     if (this.parent !== null) {
         var index = this.parent.children.indexOf(this);
-        this.parent.children.splice(index, 1);    
+        this.parent.children.splice(index, 1);
     }
 
-    delete this.ng.svg_objects[this.uid];    
+    delete this.ng.svg_objects[this.uid];
 
     /** update any connections into or out of this item */
     var conn_in = this.conn_in.slice();
@@ -511,17 +511,17 @@ VIZ.NetGraphItem.prototype.remove = function() {
     }
 
     /** remove from the SVG */
-    this.g_items.removeChild(this.g);    
+    this.g_items.removeChild(this.g);
     if (this.minimap == true && this.depth == 1) {
         this.ng.scaleMiniMap();
     }
 };
 
-VIZ.NetGraphItem.prototype.constrain_aspect = function() {
+Nengo.NetGraphItem.prototype.constrain_aspect = function() {
     this.size = this.get_displayed_size();
 };
 
-VIZ.NetGraphItem.prototype.get_displayed_size = function() {
+Nengo.NetGraphItem.prototype.get_displayed_size = function() {
     if (this.aspect !== null) {
         var h_scale = this.ng.get_scaled_width();
         var v_scale = this.ng.get_scaled_height();
@@ -547,7 +547,7 @@ VIZ.NetGraphItem.prototype.get_displayed_size = function() {
     }
 };
 
-VIZ.NetGraphItem.prototype.constrain_position = function() {
+Nengo.NetGraphItem.prototype.constrain_position = function() {
     this.constrain_aspect();
 
     var changed = false;
@@ -559,19 +559,19 @@ VIZ.NetGraphItem.prototype.constrain_position = function() {
             this.size[0] = 0.5;
             changed = true;
         }
-        
+
         if (this.size[1] > 0.5) {
             this.size[1] = 0.5;
             changed = true;
         }
-    
+
         if (this.pos[0] + this.size[0] > 1.0) {
             this.pos[0] = 1.0 - this.size[0];
             changed = true;
         } else if (this.pos[0] - this.size[0] < 0.0) {
             this.pos[0] = this.size[0];
             changed = true;
-        } 
+        }
         if (this.pos[1] + this.size[1] > 1.0) {
             this.pos[1] = 1.0 - this.size[1];
             changed = true;
@@ -580,39 +580,39 @@ VIZ.NetGraphItem.prototype.constrain_position = function() {
             changed = true;
         }
     }
-    
+
     if (changed) {
         this.redraw_position();
         this.redraw_size();
-        
+
         this.redraw_children();
         this.redraw_child_connections();
-        this.redraw_connections();    
+        this.redraw_connections();
     }
 };
 
 
 /** set the position of the item and redraw it appropriately*/
-VIZ.NetGraphItem.prototype.set_position = function(x, y) {
+Nengo.NetGraphItem.prototype.set_position = function(x, y) {
 
     this.pos = [x, y];
 
     this.redraw_position();
-    
+
     this.redraw_children();
     this.redraw_child_connections();
     this.redraw_connections();
 };
 
-VIZ.NetGraphItem.prototype.redraw_position = function() {
+Nengo.NetGraphItem.prototype.redraw_position = function() {
     var screen = this.get_screen_location();
-    
+
     /** update my position */
-    this.g.setAttribute('transform', 'translate(' + screen[0] + ', ' + 
+    this.g.setAttribute('transform', 'translate(' + screen[0] + ', ' +
                                                     screen[1] + ')');
 };
 
-VIZ.NetGraphItem.prototype.redraw_children = function() {
+Nengo.NetGraphItem.prototype.redraw_children = function() {
     /** update any children's positions */
     for (var i in this.children) {
         var item = this.children[i];
@@ -620,7 +620,7 @@ VIZ.NetGraphItem.prototype.redraw_children = function() {
     }
 };
 
-VIZ.NetGraphItem.prototype.redraw_child_connections = function() {
+Nengo.NetGraphItem.prototype.redraw_child_connections = function() {
     /** update any children's positions */
     for (var i in this.child_connections) {
         var item = this.child_connections[i];
@@ -630,7 +630,7 @@ VIZ.NetGraphItem.prototype.redraw_child_connections = function() {
 
 
 
-VIZ.NetGraphItem.prototype.redraw_connections = function() {
+Nengo.NetGraphItem.prototype.redraw_connections = function() {
     /** update any connections into and out of this */
     for (var i in this.conn_in) {
         var item = this.conn_in[i];
@@ -643,7 +643,7 @@ VIZ.NetGraphItem.prototype.redraw_connections = function() {
 };
 
 /** return the width of the item, taking into account parent widths */
-VIZ.NetGraphItem.prototype.get_nested_width = function() {
+Nengo.NetGraphItem.prototype.get_nested_width = function() {
     var w = this.size[0];
     var parent = this.parent;
     while (parent !== null) {
@@ -654,7 +654,7 @@ VIZ.NetGraphItem.prototype.get_nested_width = function() {
 }
 
 /** return the height of the item, taking into account parent heights */
-VIZ.NetGraphItem.prototype.get_nested_height = function() {
+Nengo.NetGraphItem.prototype.get_nested_height = function() {
     var h = this.size[1];
     var parent = this.parent;
     while (parent !== null) {
@@ -666,17 +666,17 @@ VIZ.NetGraphItem.prototype.get_nested_height = function() {
 
 
 /** set the size of the item, updating SVG as appropriate */
-VIZ.NetGraphItem.prototype.set_size = function(width, height) {
+Nengo.NetGraphItem.prototype.set_size = function(width, height) {
     this.size = [width, height];
-    
+
     this.redraw_size();
-    
+
     this.redraw_children();
     this.redraw_child_connections();
     this.redraw_connections();
 };
 
-VIZ.NetGraphItem.prototype.redraw_size = function() {    
+Nengo.NetGraphItem.prototype.redraw_size = function() {
     var screen_w = this.get_width();
     var screen_h = this.get_height();
 
@@ -691,7 +691,7 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
     // the circle pattern isn't perfectly square, so make its area smaller
     var area_w = this.type === 'ens' ? screen_w * 0.97 : screen_w;
     var area_h = screen_h;
-    this.area.setAttribute('transform', 
+    this.area.setAttribute('transform',
             'translate(-' + (area_w / 2) + ', -' + (area_h / 2) + ')');
     this.area.setAttribute('width', area_w);
     this.area.setAttribute('height', area_h);
@@ -700,12 +700,12 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
         var scale = Math.sqrt(screen_h * screen_h + screen_w * screen_w) / Math.sqrt(2);
         var r = 17.8;  //TODO: Don't hardcode the size of the ensemble
         this.shape.setAttribute('transform', 'scale(' + scale / 2 / r + ')');
-        this.shape.style.setProperty('stroke-width', 20/scale);              
+        this.shape.style.setProperty('stroke-width', 20/scale);
     } else if (this.passthrough) {
         this.shape.setAttribute('rx', screen_w / 2);
-        this.shape.setAttribute('ry', screen_h / 2);    
+        this.shape.setAttribute('ry', screen_h / 2);
     } else {
-        this.shape.setAttribute('transform', 
+        this.shape.setAttribute('transform',
                             'translate(-' + (screen_w / 2) + ', -' + (screen_h / 2) + ')');
         this.shape.setAttribute('width', screen_w);
         this.shape.setAttribute('height', screen_h);
@@ -716,18 +716,18 @@ VIZ.NetGraphItem.prototype.redraw_size = function() {
             this.shape.setAttribute('ry', radius*.1);
         }
     }
-   
+
     if (this.minimap == false) {
         this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
     };
 };
 
-VIZ.NetGraphItem.prototype.get_width = function() {
+Nengo.NetGraphItem.prototype.get_width = function() {
     if (this.fixed_width !== null) {
         return this.fixed_width;
     }
 
-   
+
     if (this.minimap == false) {
         var w = $(this.ng.svg).width();
         var screen_w = this.get_nested_width() * w * this.ng.scale;
@@ -735,15 +735,15 @@ VIZ.NetGraphItem.prototype.get_width = function() {
         var w = $(this.ng.minimap).width();
         var screen_w = this.get_nested_width() * w * this.ng.mm_scale;
     };
-        
+
     if (screen_w < this.minWidth) {
         screen_w = this.minWidth;
     }
-    
+
     return screen_w * 2;
 }
 
-VIZ.NetGraphItem.prototype.get_height = function() {
+Nengo.NetGraphItem.prototype.get_height = function() {
     if (this.fixed_height !== null) {
         return this.fixed_height;
     }
@@ -755,25 +755,25 @@ VIZ.NetGraphItem.prototype.get_height = function() {
         var h = $(this.ng.minimap).height();
         var screen_h = this.get_nested_height() * h * this.ng.mm_scale;
     };
-        
+
     if (screen_h < this.minHeight) {
         screen_h = this.minHeight;
     }
-    
+
     return screen_h * 2;
 }
 
 
 
 /** force a redraw of the item */
-VIZ.NetGraphItem.prototype.redraw = function() {
+Nengo.NetGraphItem.prototype.redraw = function() {
     this.set_position(this.pos[0], this.pos[1]);
     this.set_size(this.size[0], this.size[1]);
 }
 
 
 /** determine the pixel location of the centre of the item */
-VIZ.NetGraphItem.prototype.get_screen_location = function() {
+Nengo.NetGraphItem.prototype.get_screen_location = function() {
     // FIXME this should probably use this.ng.get_scaled_width and this.ng.get_scaled_height
     if (this.minimap == false) {
         var w = $(this.ng.svg).width() * this.ng.scale;
@@ -788,21 +788,21 @@ VIZ.NetGraphItem.prototype.get_screen_location = function() {
         var offsetX = -this.ng.mm_min_x * w;
         var offsetY = -this.ng.mm_min_y * h;
     };
-    
+
     var dx = 0;
     var dy = 0;
     var parent = this.parent;
     while (parent !== null) {
         dx *= parent.size[0] * 2;
         dy *= parent.size[1] * 2;
-        
+
         dx += (parent.pos[0] - parent.size[0]);
         dy += (parent.pos[1] - parent.size[1]);
         parent = parent.parent;
     }
     dx *= w;
     dy *= h;
-    
+
     var ww = w;
     var hh = h;
     if (this.parent !== null) {
@@ -810,18 +810,18 @@ VIZ.NetGraphItem.prototype.get_screen_location = function() {
         hh *= this.parent.get_nested_height() * 2;
     }
 
-    return [this.pos[0] * ww + dx + offsetX, 
+    return [this.pos[0] * ww + dx + offsetX,
             this.pos[1] * hh + dy + offsetY];
 }
 
 /**Function for drawing ensemble svg*/
-VIZ.NetGraphItem.prototype.ensemble_svg = function() {
+Nengo.NetGraphItem.prototype.ensemble_svg = function() {
     var shape = this.ng.createSVGElement('g');
     shape.setAttribute('class', 'ensemble');
 
     var dx = -1.25;
     var dy = 0.25;
-    
+
     var circle = this.ng.createSVGElement('circle');
     this.setAttributes(circle, {'cx':-11.157 + dx,'cy':-7.481 + dy,'r':'4.843'});
     shape.appendChild(circle);
@@ -836,7 +836,7 @@ VIZ.NetGraphItem.prototype.ensemble_svg = function() {
     shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
     this.setAttributes(circle, {'cx':-10.353 + dx,'cy':8.413 + dy,'r':'4.843'});
-    shape.appendChild(circle);            
+    shape.appendChild(circle);
     var circle = this.ng.createSVGElement('circle');
     this.setAttributes(circle, {'cx':3.894 + dx,'cy':-13.158 + dy,'r':'4.843'});
     shape.appendChild(circle);
@@ -844,13 +844,13 @@ VIZ.NetGraphItem.prototype.ensemble_svg = function() {
     return shape;
 }
 /** Helper function for setting attributions*/
-VIZ.NetGraphItem.prototype.setAttributes = function(el, attrs) {
+Nengo.NetGraphItem.prototype.setAttributes = function(el, attrs) {
   for(var key in attrs) {
     el.setAttribute(key, attrs[key]);
   }
 }
 
-VIZ.NetGraphItem.prototype.getMinMaxXY = function () {
+Nengo.NetGraphItem.prototype.getMinMaxXY = function () {
     min_x = this.pos[0] - this.size[0];
     max_x = this.pos[0] + this.size[0];
     min_y = this.pos[1] - this.size[1];

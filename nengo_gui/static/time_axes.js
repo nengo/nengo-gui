@@ -2,11 +2,11 @@
  * 2d axes set with the horizontal axis being a time axis.
  * @constructor
  *
- * @param {dict} args - A set of constructor arguments (see VIZ.Axes2D)
+ * @param {dict} args - A set of constructor arguments (see Nengo.Axes2D)
  */
- 
-VIZ.TimeAxes = function(parent, args) {
-    VIZ.Axes2D.call(this, parent, args);
+
+Nengo.TimeAxes = function(parent, args) {
+    Nengo.Axes2D.call(this, parent, args);
     var self = this;
     this.display_time = args.display_time;
 
@@ -25,18 +25,18 @@ VIZ.TimeAxes = function(parent, args) {
         this.axis_time_end.style.display = 'none';
     }
 };
-VIZ.TimeAxes.prototype = Object.create(VIZ.Axes2D.prototype);
-VIZ.TimeAxes.prototype.constructor = VIZ.TimeAxes;
+Nengo.TimeAxes.prototype = Object.create(Nengo.Axes2D.prototype);
+Nengo.TimeAxes.prototype.constructor = Nengo.TimeAxes;
 
-VIZ.TimeAxes.prototype.set_time_range = function(start, end) {
+Nengo.TimeAxes.prototype.set_time_range = function(start, end) {
     this.scale_x.domain([start, end]);
     this.axis_time_start.textContent = start.toFixed(3);
     this.axis_time_end.textContent = end.toFixed(3);
     this.axis_x_g.call(this.axis_x);
 };
 
-VIZ.TimeAxes.prototype.on_resize = function(width, height) {
-    VIZ.Axes2D.prototype.on_resize.call(this, width, height);
+Nengo.TimeAxes.prototype.on_resize = function(width, height) {
+    Nengo.Axes2D.prototype.on_resize.call(this, width, height);
 
     scale = parseFloat($('#main').css('font-size'));
     var suppression_width = 6 * scale;

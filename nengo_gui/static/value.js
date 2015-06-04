@@ -2,15 +2,15 @@
  * Line graph showing decoded values over time
  * @constructor
  *
- * @param {dict} args - A set of constructor arguments (see VIZ.Component)
+ * @param {dict} args - A set of constructor arguments (see Nengo.Component)
  * @param {int} args.n_lines - number of decoded values
  * @param {float} args.min_value - minimum value on y-axis
  * @param {float} args.max_value - maximum value on y-axis
- * @param {VIZ.SimControl} args.sim - the simulation controller
+ * @param {Nengo.SimControl} args.sim - the simulation controller
  */
 
-VIZ.Value = function(parent, sim, args) {
-    VIZ.Component.call(this, parent, args);
+Nengo.Value = function(parent, sim, args) {
+    Nengo.Component.call(this, parent, args);
     var self = this;
     this.n_lines = args.n_lines || 1;
     this.sim = sim;
@@ -18,9 +18,9 @@ VIZ.Value = function(parent, sim, args) {
 
     /** for storing the accumulated data */
     var synapse = (args.synapse !== null) ? args.synapse : 0.01;
-    this.data_store = new VIZ.DataStore(this.n_lines, this.sim, synapse);
+    this.data_store = new Nengo.DataStore(this.n_lines, this.sim, synapse);
 
-    this.axes2d = new VIZ.TimeAxes(this.div, args);
+    this.axes2d = new Nengo.TimeAxes(this.div, args);
 
     /** call schedule_update whenever the time is adjusted in the SimControl */
     this.sim.div.addEventListener('adjust_time',
@@ -33,7 +33,7 @@ VIZ.Value = function(parent, sim, args) {
     this.path = this.axes2d.svg.append("g").selectAll('path')
                                     .data(this.data_store.data);
 
-    var colors = VIZ.make_colors(this.n_lines);
+    var colors = Nengo.make_colors(this.n_lines);
     this.path.enter().append('path')
              .attr('class', 'line')
              .style('stroke', function(d, i) {return colors[i];});
@@ -41,13 +41,13 @@ VIZ.Value = function(parent, sim, args) {
     this.update();
     this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
-VIZ.Value.prototype = Object.create(VIZ.Component.prototype);
-VIZ.Value.prototype.constructor = VIZ.Value;
+Nengo.Value.prototype = Object.create(Nengo.Component.prototype);
+Nengo.Value.prototype.constructor = Nengo.Value;
 
 /**
  * Receive new line data from the server
  */
-VIZ.Value.prototype.on_message = function(event) {
+Nengo.Value.prototype.on_message = function(event) {
     var data = new Float32Array(event.data);
     this.data_store.push(data);
     this.schedule_update();
@@ -56,11 +56,11 @@ VIZ.Value.prototype.on_message = function(event) {
 /**
  * Redraw the lines and axis due to changed data
  */
-VIZ.Value.prototype.update = function() {
+Nengo.Value.prototype.update = function() {
     /** let the data store clear out old values */
     this.data_store.update();
 
-    /** determine visible range from the VIZ.SimControl */
+    /** determine visible range from the Nengo.SimControl */
     var t1 = this.sim.time_slider.first_shown_time;
     var t2 = t1 + this.sim.time_slider.shown_time;
 
@@ -82,7 +82,7 @@ VIZ.Value.prototype.update = function() {
 /**
  * Adjust the graph layout due to changed size
  */
-VIZ.Value.prototype.on_resize = function(width, height) {
+Nengo.Value.prototype.on_resize = function(width, height) {
     if (width < this.minWidth) {
         width = this.minWidth;
     }
@@ -102,35 +102,35 @@ VIZ.Value.prototype.on_resize = function(width, height) {
     this.div.style.height= height;
 };
 
-VIZ.Value.prototype.generate_menu = function() {
+Nengo.Value.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['Set range...', function() {self.set_range();}]);
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
-    return $.merge(items, VIZ.Component.prototype.generate_menu.call(this));
+    return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
 };
 
 
-VIZ.Value.prototype.layout_info = function () {
-    var info = VIZ.Component.prototype.layout_info.call(this);
+Nengo.Value.prototype.layout_info = function () {
+    var info = Nengo.Component.prototype.layout_info.call(this);
     info.min_value = this.axes2d.scale_y.domain()[0];
     info.max_value = this.axes2d.scale_y.domain()[1];
     return info;
 }
 
-VIZ.Value.prototype.update_layout = function(config) {
+Nengo.Value.prototype.update_layout = function(config) {
     this.update_range(config.min_value, config.max_value);
-    VIZ.Component.prototype.update_layout.call(this, config);
+    Nengo.Component.prototype.update_layout.call(this, config);
 }
 
-VIZ.Value.prototype.set_range = function() {
+Nengo.Value.prototype.set_range = function() {
     var range = this.axes2d.scale_y.domain();
     var self = this;
-    VIZ.modal.title('Set graph range...');
-    VIZ.modal.single_input_body(range, 'New range');
-    VIZ.modal.footer('ok_cancel', function(e) {
+    Nengo.modal.title('Set graph range...');
+    Nengo.modal.single_input_body(range, 'New range');
+    Nengo.modal.footer('ok_cancel', function(e) {
         var new_range = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
 
@@ -164,10 +164,10 @@ VIZ.Value.prototype.set_range = function() {
 
     $('#singleInput').attr('data-error', 'Input should be in the ' +
                            'form "<min>,<max>".');
-    VIZ.modal.show();
+    Nengo.modal.show();
 }
 
-VIZ.Value.prototype.update_range = function(min, max) {
+Nengo.Value.prototype.update_range = function(min, max) {
     this.axes2d.scale_y.domain([min, max]);
     this.axes2d.axis_y_g.call(this.axes2d.axis_y);
 }

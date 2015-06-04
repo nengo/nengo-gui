@@ -37,7 +37,7 @@ class XYValue(Component):
     def javascript(self):
         info = dict(uid=self.uid, n_lines=self.n_lines, label=self.label)
         json = self.javascript_config(info)
-        return 'new VIZ.XYValue(main, sim, %s);' % json
+        return 'new Nengo.XYValue(main, sim, %s);' % json
 
 class XYValueTemplate(Template):
     cls = XYValue

@@ -2,12 +2,12 @@
  * Decoded pointer display
  * @constructor
  *
- * @param {dict} args - A set of constructor arguments (see VIZ.Component)
- * @param {VIZ.SimControl} args.sim - the simulation controller
+ * @param {dict} args - A set of constructor arguments (see Nengo.Component)
+ * @param {Nengo.SimControl} args.sim - the simulation controller
  */
 
-VIZ.Pointer = function(parent, sim, args) {
-    VIZ.Component.call(this, parent, args);
+Nengo.Pointer = function(parent, sim, args) {
+    Nengo.Component.call(this, parent, args);
     var self = this;
 
     this.sim = sim;
@@ -15,7 +15,7 @@ VIZ.Pointer = function(parent, sim, args) {
     this.pdiv = document.createElement('div');
     this.pdiv.style.width = args.width;
     this.pdiv.style.height = args.height;
-    VIZ.set_transform(this.pdiv, 0, 0);
+    Nengo.set_transform(this.pdiv, 0, 0);
     this.pdiv.style.position = 'fixed';
     this.pdiv.classList.add('pointer');
     this.div.appendChild(this.pdiv);
@@ -23,7 +23,7 @@ VIZ.Pointer = function(parent, sim, args) {
     this.show_pairs = args.show_pairs;
 
     /** for storing the accumulated data */
-    this.data_store = new VIZ.DataStore(1, this.sim, 0);
+    this.data_store = new Nengo.DataStore(1, this.sim, 0);
 
     /** call schedule_update whenever the time is adjusted in the SimControl */
     this.sim.div.addEventListener('adjust_time',
@@ -62,10 +62,10 @@ VIZ.Pointer = function(parent, sim, args) {
 
 
 };
-VIZ.Pointer.prototype = Object.create(VIZ.Component.prototype);
-VIZ.Pointer.prototype.constructor = VIZ.Pointer;
+Nengo.Pointer.prototype = Object.create(Nengo.Component.prototype);
+Nengo.Pointer.prototype.constructor = Nengo.Pointer;
 
-VIZ.Pointer.prototype.generate_menu = function() {
+Nengo.Pointer.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['Set value...', function() {self.set_value();}]);
@@ -77,21 +77,21 @@ VIZ.Pointer.prototype.generate_menu = function() {
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
-    return $.merge(items, VIZ.Component.prototype.generate_menu.call(this));
+    return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
 };
 
-VIZ.Pointer.prototype.set_show_pairs = function(value) {
+Nengo.Pointer.prototype.set_show_pairs = function(value) {
     if (this.show_pairs !== value) {
         this.show_pairs = value;
         this.save_layout();
     }
 };
 
-VIZ.Pointer.prototype.set_value = function() {
+Nengo.Pointer.prototype.set_value = function() {
     var self = this;
-    VIZ.modal.title('Enter a Semantic Pointer value...');
-    VIZ.modal.single_input_body('Pointer', 'New value');
-    VIZ.modal.footer('ok_cancel', function(e) {
+    Nengo.modal.title('Enter a Semantic Pointer value...');
+    Nengo.modal.single_input_body('Pointer', 'New value');
+    Nengo.modal.footer('ok_cancel', function(e) {
         var value = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
 
@@ -118,13 +118,13 @@ VIZ.Pointer.prototype.set_value = function() {
     $('#singleInput').attr('data-error', 'Semantic pointers must ' +
                            'start with a letter.');
 
-    VIZ.modal.show();
+    Nengo.modal.show();
 }
 
 /**
  * Receive new line data from the server
  */
-VIZ.Pointer.prototype.on_message = function(event) {
+Nengo.Pointer.prototype.on_message = function(event) {
     data = event.data.split(" ");
     var time = parseFloat(data[0]);
 
@@ -137,7 +137,7 @@ VIZ.Pointer.prototype.on_message = function(event) {
 /**
  * Redraw the lines and axis due to changed data
  */
-VIZ.Pointer.prototype.update = function() {
+Nengo.Pointer.prototype.update = function() {
     /** let the data store clear out old values */
     this.data_store.update();
 
@@ -181,7 +181,7 @@ VIZ.Pointer.prototype.update = function() {
 /**
  * Adjust the graph layout due to changed size
  */
-VIZ.Pointer.prototype.on_resize = function(width, height) {
+Nengo.Pointer.prototype.on_resize = function(width, height) {
     if (width < this.minWidth) {
         width = this.minWidth;
     }
@@ -200,13 +200,13 @@ VIZ.Pointer.prototype.on_resize = function(width, height) {
 };
 
 
-VIZ.Pointer.prototype.layout_info = function () {
-    var info = VIZ.Component.prototype.layout_info.call(this);
+Nengo.Pointer.prototype.layout_info = function () {
+    var info = Nengo.Component.prototype.layout_info.call(this);
     info.show_pairs = this.show_pairs;
     return info;
 }
 
-VIZ.Pointer.prototype.update_layout = function (config) {
+Nengo.Pointer.prototype.update_layout = function (config) {
     this.show_pairs = config.show_pairs;
-    VIZ.Component.prototype.update_layout.call(this, config);
+    Nengo.Component.prototype.update_layout.call(this, config);
 }

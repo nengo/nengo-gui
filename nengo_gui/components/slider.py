@@ -41,7 +41,7 @@ class Slider(Component):
                     label=self.label,
                     start_value=[float(x) for x in self.start_value])
         json = self.javascript_config(info)
-        return 'new VIZ.Slider(main, sim, %s);' % json
+        return 'new Nengo.Slider(main, sim, %s);' % json
 
 
     def update_client(self, client):

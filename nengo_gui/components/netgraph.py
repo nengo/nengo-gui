@@ -248,7 +248,7 @@ class NetGraph(Component):
                 client.write(json.dumps(info))
 
     def javascript(self):
-        return 'new VIZ.NetGraph(main, {uid:"%s"});' % self.uid
+        return 'new Nengo.NetGraph(main, {uid:"%s"});' % self.uid
 
     def message(self, msg):
         try:

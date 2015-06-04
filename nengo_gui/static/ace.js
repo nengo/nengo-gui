@@ -1,11 +1,11 @@
 var aceRange = ace.require('ace/range').Range;
 
 
-VIZ.Ace = function (uid, args) {
+Nengo.Ace = function (uid, args) {
     if (uid[0] === '<') {
         console.log("invalid uid for Ace: " + uid);
     }
-    VIZ.ace = this;  // make a global pointing to this
+    Nengo.ace = this;  // make a global pointing to this
     var self = this;
     this.hidden = false;
     this.min_width = 50;
@@ -18,7 +18,7 @@ VIZ.Ace = function (uid, args) {
         return;
     }
 
-    this.ws = VIZ.create_websocket(uid);
+    this.ws = Nengo.create_websocket(uid);
     this.ws.onmessage = function(event) {self.on_message(event);}
 
     this.current_code = '';
@@ -44,7 +44,7 @@ VIZ.Ace = function (uid, args) {
     this.set_font_size(12);
     this.width = 580;  // pixels needed to do 80 chars at 12pt font
 
-    self.set_width();    
+    self.set_width();
 
     interact('#editor')
         .resizable({
@@ -59,8 +59,8 @@ VIZ.Ace = function (uid, args) {
     this.update_main_width();
 }
 
-//Send changes to the code to server every 100ms 
-VIZ.Ace.prototype.schedule_updates = function () {
+//Send changes to the code to server every 100ms
+Nengo.Ace.prototype.schedule_updates = function () {
     var self = this;
     setInterval(function () {
         var editor_code = self.editor.getValue();
@@ -72,21 +72,21 @@ VIZ.Ace.prototype.schedule_updates = function () {
     }, 100)
 }
 
-VIZ.Ace.prototype.set_font_size = function (font_size) {
+Nengo.Ace.prototype.set_font_size = function (font_size) {
     this.font_size = font_size;
     this.editor.setFontSize(font_size);
 }
 
-VIZ.Ace.prototype.font_increase = function () {
+Nengo.Ace.prototype.font_increase = function () {
     this.set_font_size(this.font_size + 1);
 }
-VIZ.Ace.prototype.font_decrease = function () {
+Nengo.Ace.prototype.font_decrease = function () {
     if (this.font_size > 6) {
         this.set_font_size(this.font_size - 1);
     }
 }
 
-VIZ.Ace.prototype.save_file = function () {
+Nengo.Ace.prototype.save_file = function () {
     if (!($('#Save_file').hasClass('disabled'))) {
         var editor_code = this.editor.getValue();
         this.ws.send(JSON.stringify({code:editor_code, save:true}));
@@ -94,15 +94,15 @@ VIZ.Ace.prototype.save_file = function () {
     }
 }
 
-VIZ.Ace.prototype.enable_save = function () {
+Nengo.Ace.prototype.enable_save = function () {
     $('#Save_file').removeClass('disabled');
 }
 
-VIZ.Ace.prototype.disable_save = function () {
+Nengo.Ace.prototype.disable_save = function () {
     $('#Save_file').addClass('disabled');
 }
 
-VIZ.Ace.prototype.on_message = function (event) {
+Nengo.Ace.prototype.on_message = function (event) {
     var msg = JSON.parse(event.data)
     if (msg.code !== undefined) {
         this.editor.setValue(msg.code);
@@ -120,7 +120,7 @@ VIZ.Ace.prototype.on_message = function (event) {
         var line = msg.error.line;
         var trace = msg.error.trace;
         this.marker = this.editor.getSession()
-            .addMarker(new aceRange(line - 1, 0, line - 1, 10), 
+            .addMarker(new aceRange(line - 1, 0, line - 1, 10),
             'highlight', 'fullLine', true);
         this.editor.getSession().setAnnotations([{
             row: line - 1,
@@ -132,19 +132,19 @@ VIZ.Ace.prototype.on_message = function (event) {
     }
 }
 
-VIZ.Ace.prototype.show_editor = function () {
+Nengo.Ace.prototype.show_editor = function () {
     var editor = document.getElementById('editor');
     editor.style.display = 'block';
     this.hidden = false;
 }
 
-VIZ.Ace.prototype.hide_editor = function () {
+Nengo.Ace.prototype.hide_editor = function () {
     var editor = document.getElementById('editor');
     editor.style.display = 'none';
     this.hidden = true;
 }
 
-VIZ.Ace.prototype.toggle_shown = function () {
+Nengo.Ace.prototype.toggle_shown = function () {
     if (this.hidden) {
         this.show_editor();
     }
@@ -154,12 +154,12 @@ VIZ.Ace.prototype.toggle_shown = function () {
     this.set_width();
 }
 
-VIZ.Ace.prototype.set_width = function () {
+Nengo.Ace.prototype.set_width = function () {
     this.editor.resize();
 
 
     var code_div = document.getElementById('editor');
-    
+
     if (this.width < this.min_width) {
         this.width = this.min_width;
     }
@@ -176,20 +176,20 @@ VIZ.Ace.prototype.set_width = function () {
 
     code_div.style.top = top_margin;
     code_div.style.bottom = bottom_margin;
-    code_div.style.left = left_margin; 
+    code_div.style.left = left_margin;
 
     this.update_main_width();
 }
 
-VIZ.Ace.prototype.update_main_width = function () {
+Nengo.Ace.prototype.update_main_width = function () {
     var width = this.hidden ? 0 : this.width;
     var left_margin = $(window).width() - width;
 
     $('#main').width(left_margin);
 
-    if (VIZ.netgraph !== undefined){
-        VIZ.netgraph.svg.style.width = left_margin;
-        VIZ.netgraph.on_resize();
+    if (Nengo.netgraph !== undefined){
+        Nengo.netgraph.svg.style.width = left_margin;
+        Nengo.netgraph.on_resize();
     }
     viewport.on_resize();
 }

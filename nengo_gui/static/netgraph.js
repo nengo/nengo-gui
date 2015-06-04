@@ -6,18 +6,18 @@
  * @param {int} args.id - the id of the server-side NetGraph to connect to
  * @param {DOMElement} args.parent - the element to add this component to
  */
-VIZ.NetGraph = function(parent, args) {
+Nengo.NetGraph = function(parent, args) {
     if (args.uid[0] === '<') {
         console.log("invalid uid for NetGraph: " + args.uid);
     }
     this.scale = 1.0;          // global scaling factor
-    this.offsetX = 0;          // global x,y pan offset 
+    this.offsetX = 0;          // global x,y pan offset
     this.offsetY = 0;
     this.zoom_fonts = false;    // scale fonts when zooming
     this.font_size = 100;       // font size as a percent of base
 
-    this.svg_objects = {};     // dict of all VIZ.NetGraphItems, by uid
-    this.svg_conns = {};       // dict of all VIZ.NetGraphConnections, by uid
+    this.svg_objects = {};     // dict of all Nengo.NetGraphItems, by uid
+    this.svg_conns = {};       // dict of all Nengo.NetGraphConnections, by uid
     this.minimap_objects = {};
     this.minimap_conns = {};
 
@@ -34,31 +34,31 @@ VIZ.NetGraph = function(parent, args) {
      *  are inside a collapsed network), this dictionary keeps a list of
      *  connections to be notified when a particular item appears.  The
      *  key in the dictionary is the uid of the nonexistent item, and the
-     *  value is a list of VIZ.NetGraphConnections that should be notified
+     *  value is a list of Nengo.NetGraphConnections that should be notified
      *  when that item appears. */
-    this.collapsed_conns = {}; 
-    
+    this.collapsed_conns = {};
+
     /** create the master SVG element */
     this.svg = this.createSVGElement('svg');
-    this.svg.classList.add('netgraph');    
+    this.svg.classList.add('netgraph');
     this.svg.style.width = '100%';
     this.svg.id = 'netgraph';
     this.svg.style.height = '100%';
     this.svg.style.position = 'absolute';
-        
+
     interact(this.svg).styleCursor(false);
-           
-    VIZ.netgraph = this;
+
+    Nengo.netgraph = this;
     parent.appendChild(this.svg);
     this.parent = parent;
 
     this.old_width = $(this.svg).width();
     this.old_height = $(this.svg).height();
-    
+
     /** three separate layers, so that expanded networks are at the back,
      *  then connection lines, and then other items (nodes, ensembles, and
      *  collapsed networks) are drawn on top. */
-    this.g_networks = this.createSVGElement('g'); 
+    this.g_networks = this.createSVGElement('g');
     this.svg.appendChild(this.g_networks);
     this.g_conns = this.createSVGElement('g');
     this.svg.appendChild(this.g_conns);
@@ -66,13 +66,13 @@ VIZ.NetGraph = function(parent, args) {
     this.svg.appendChild(this.g_items);
 
     /** connect to server */
-    this.ws = VIZ.create_websocket(args.uid);
+    this.ws = Nengo.create_websocket(args.uid);
     this.ws.onmessage = function(event) {self.on_message(event);}
 
     /** respond to resize events */
     this.svg.addEventListener("resize", function() {self.on_resize();});
     window.addEventListener("resize", function() {self.on_resize();});
-        
+
     /** dragging the background pans the full area by changing offsetX,Y */
     var self = this;
 
@@ -81,12 +81,12 @@ VIZ.NetGraph = function(parent, args) {
         .on('mousedown', function() {
             var cursor = document.documentElement.getAttribute('style');
             if (cursor !== null) {
-                if (cursor.match(/resize/) == null) {  // don't change resize cursor             
+                if (cursor.match(/resize/) == null) {  // don't change resize cursor
                     document.documentElement.setAttribute('style','cursor:move;');
                 }
             }
         })
-        .on('mouseup', function() {             
+        .on('mouseup', function() {
             document.documentElement.setAttribute('style','cursor:default;')
         });
 
@@ -101,18 +101,18 @@ VIZ.NetGraph = function(parent, args) {
                 for (var key in self.svg_objects) {
                     self.svg_objects[key].redraw_position();
                     self.minimap_objects[key].redraw_position();
-                }    
+                }
                 for (var key in self.svg_conns) {
                     self.svg_conns[key].redraw();
                     self.minimap_conns[key].redraw();
-                }    
-                
+                }
+
                 viewport.x = self.offsetX;
                 viewport.y = self.offsetY;
                 viewport.redraw_all();
 
                 self.scaleMiniMapViewBox();
-                
+
             },
             onend: function(event) {
                 /** let the server know what happened */
@@ -157,7 +157,7 @@ VIZ.NetGraph = function(parent, args) {
                 scale = 1. / scale;
             }
 
-            VIZ.Component.save_components();
+            Nengo.Component.save_components();
 
             var xx = x / self.scale - self.offsetX;
             var yy = y / self.scale - self.offsetY;
@@ -176,11 +176,11 @@ VIZ.NetGraph = function(parent, args) {
             self.redraw();
 
             /** let the server know what happened */
-            self.notify({act:"zoom", scale:self.scale, 
+            self.notify({act:"zoom", scale:self.scale,
                          x:self.offsetX, y:self.offsetY});
         });
 
-    this.menu = new VIZ.Menu(self.parent);
+    this.menu = new Nengo.Menu(self.parent);
 
     //Determine when to pull up the menu
     interact(this.svg)
@@ -189,10 +189,10 @@ VIZ.NetGraph = function(parent, args) {
                 if (self.menu.visible_any()) {
                     self.menu.hide_any();
                 } else {
-                    self.menu.show(event.clientX, event.clientY, 
+                    self.menu.show(event.clientX, event.clientY,
                                    self.generate_menu());
                 }
-                event.stopPropagation();  
+                event.stopPropagation();
             }
         })
         .on('tap', function(event) { //get rid of menus when clicking off
@@ -204,22 +204,22 @@ VIZ.NetGraph = function(parent, args) {
         });
 
     $(this.svg).bind('contextmenu', function(event) {
-            event.preventDefault();  
+            event.preventDefault();
             if (self.menu.visible_any()) {
                 self.menu.hide_any();
             } else {
-                self.menu.show(event.clientX, event.clientY, 
+                self.menu.show(event.clientX, event.clientY,
                                self.generate_menu());
         }
-    }); 
+    });
 
     this.create_minimap();
 };
 
-VIZ.NetGraph.prototype.generate_menu = function() {
+Nengo.NetGraph.prototype.generate_menu = function() {
     var self = this;
     var items = [];
-    items.push(['Auto-layout', 
+    items.push(['Auto-layout',
                 function() {self.notify({act:"feedforward_layout",
                             uid:null});}]);
     return items;
@@ -227,7 +227,7 @@ VIZ.NetGraph.prototype.generate_menu = function() {
 }
 
 /** Event handler for received WebSocket messages */
-VIZ.NetGraph.prototype.on_message = function(event) {
+Nengo.NetGraph.prototype.on_message = function(event) {
     data = JSON.parse(event.data);
     if (data.type === 'net') {
         this.create_object(data);
@@ -269,9 +269,9 @@ VIZ.NetGraph.prototype.on_message = function(event) {
     } else if (data.type === 'config') {
         // Anything about the config of a component has changed
         var uid = data.uid;
-        for (var i = 0; i < VIZ.Component.components.length; i++) {
-            if (VIZ.Component.components[i].uid === uid) {
-                VIZ.Component.components[i].update_layout(data.config);
+        for (var i = 0; i < Nengo.Component.components.length; i++) {
+            if (Nengo.Component.components[i].uid === uid) {
+                Nengo.Component.components[i].update_layout(data.config);
                 break;
             }
         }
@@ -279,23 +279,23 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         eval(data.code);
     } else if (data.type === 'rename') {
         var item = this.svg_objects[data.uid];
-        item.set_label(data.name);    
+        item.set_label(data.name);
 
         var item_mini = this.minimap_objects[data.uid];
-        item_mini.set_label(data.name);    
+        item_mini.set_label(data.name);
 
     } else if (data.type === 'remove') {
         var item = this.svg_objects[data.uid];
         if (item === undefined) {
             item = this.svg_conns[data.uid];
         }
-        item.remove();    
+        item.remove();
 
         var item_mini = this.minimap_objects[data.uid];
         if (item_mini === undefined) {
             item_mini = this.minimap_conns[data.uid];
         }
-        item_mini.remove();    
+        item_mini.remove();
 
     } else if (data.type === 'reconnect') {
         var conn = this.svg_conns[data.uid];
@@ -311,9 +311,9 @@ VIZ.NetGraph.prototype.on_message = function(event) {
 
     } else if (data.type === 'delete_graph') {
         var uid = data.uid;
-        for (var i = 0; i < VIZ.Component.components.length; i++) {
-            if (VIZ.Component.components[i].uid === uid) {
-                VIZ.Component.components[i].remove(true);
+        for (var i = 0; i < Nengo.Component.components.length; i++) {
+            if (Nengo.Component.components[i].uid === uid) {
+                Nengo.Component.components[i].remove(true);
                 break;
             }
         }
@@ -321,16 +321,16 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         console.log('invalid message');
         console.log(data);
     }
-};  
+};
 
 
 /** report an event back to the server */
-VIZ.NetGraph.prototype.notify = function(info) {
+Nengo.NetGraph.prototype.notify = function(info) {
     this.ws.send(JSON.stringify(info));
 }
 
 /** pan the screen (and redraw accordingly) */
-VIZ.NetGraph.prototype.set_offset = function(x, y) {
+Nengo.NetGraph.prototype.set_offset = function(x, y) {
     this.offsetX = x;
     this.offsetY = y;
     this.redraw();
@@ -342,7 +342,7 @@ VIZ.NetGraph.prototype.set_offset = function(x, y) {
 
 
 /** zoom the screen (and redraw accordingly) */
-VIZ.NetGraph.prototype.set_scale = function(scale) {
+Nengo.NetGraph.prototype.set_scale = function(scale) {
     this.scale = scale;
     this.update_font_size();
     this.redraw();
@@ -352,7 +352,7 @@ VIZ.NetGraph.prototype.set_scale = function(scale) {
 }
 
 
-VIZ.NetGraph.prototype.update_font_size = function(scale) {
+Nengo.NetGraph.prototype.update_font_size = function(scale) {
     if (this.zoom_fonts) {
         $('#main').css('font-size', 3 * this.scale * this.font_size/100 + 'em');
     } else {
@@ -360,26 +360,26 @@ VIZ.NetGraph.prototype.update_font_size = function(scale) {
     }
 }
 
-VIZ.NetGraph.prototype.set_zoom_fonts = function(value) {
+Nengo.NetGraph.prototype.set_zoom_fonts = function(value) {
     this.zoom_fonts = value;
     this.update_font_size();
 }
 
-VIZ.NetGraph.prototype.get_zoom_fonts = function() {
+Nengo.NetGraph.prototype.get_zoom_fonts = function() {
     return this.zoom_fonts;
 }
 
-VIZ.NetGraph.prototype.set_font_size = function(value) {
+Nengo.NetGraph.prototype.set_font_size = function(value) {
     this.font_size = value;
     this.update_font_size();
 }
 
-VIZ.NetGraph.prototype.get_font_size = function() {
+Nengo.NetGraph.prototype.get_font_size = function() {
     return this.font_size;
 }
 
 /** redraw all elements */
-VIZ.NetGraph.prototype.redraw = function() {
+Nengo.NetGraph.prototype.redraw = function() {
     for (var key in this.svg_objects) {
         this.svg_objects[key].redraw_position();
         this.svg_objects[key].redraw_size();
@@ -388,29 +388,29 @@ VIZ.NetGraph.prototype.redraw = function() {
         this.minimap_objects[key].size = this.svg_objects[key].size
         this.minimap_objects[key].redraw_position();
         this.minimap_objects[key].redraw_size();
-    }    
+    }
     for (var key in this.svg_conns) {
         this.svg_conns[key].redraw();
         this.minimap_conns[key].redraw();
-    }    
+    }
 }
 
 
 /** helper function for correctly creating SVG elements */
-VIZ.NetGraph.prototype.createSVGElement = function(tag) {
+Nengo.NetGraph.prototype.createSVGElement = function(tag) {
     return document.createElementNS("http://www.w3.org/2000/svg", tag);
 }
 
 
-/** Create a new NetGraphItem 
+/** Create a new NetGraphItem
  *  if an existing NetGraphConnection is looking for this item, it will be
  *  notified */
-VIZ.NetGraph.prototype.create_object = function(info) {
-    var item_mini = new VIZ.NetGraphItem(this, info, true);
-    this.minimap_objects[info.uid] = item_mini;    
+Nengo.NetGraph.prototype.create_object = function(info) {
+    var item_mini = new Nengo.NetGraphItem(this, info, true);
+    this.minimap_objects[info.uid] = item_mini;
 
-    var item = new VIZ.NetGraphItem(this, info, false, item_mini);
-    this.svg_objects[info.uid] = item;    
+    var item = new Nengo.NetGraphItem(this, info, false, item_mini);
+    this.svg_objects[info.uid] = item;
 
     this.detect_collapsed_conns(item.uid);
     this.detect_collapsed_conns(item_mini.uid);
@@ -420,42 +420,42 @@ VIZ.NetGraph.prototype.create_object = function(info) {
 
 
 /** create a new NetGraphConnection */
-VIZ.NetGraph.prototype.create_connection = function(info) {
-    var conn = new VIZ.NetGraphConnection(this, info, false);
-    this.svg_conns[info.uid] = conn;    
+Nengo.NetGraph.prototype.create_connection = function(info) {
+    var conn = new Nengo.NetGraphConnection(this, info, false);
+    this.svg_conns[info.uid] = conn;
 
-    var conn_mini = new VIZ.NetGraphConnection(this, info, true);
-    this.minimap_conns[info.uid] = conn_mini;    
+    var conn_mini = new Nengo.NetGraphConnection(this, info, true);
+    this.minimap_conns[info.uid] = conn_mini;
 };
 
 
 /** handler for resizing the full SVG */
-VIZ.NetGraph.prototype.on_resize = function(event) {
+Nengo.NetGraph.prototype.on_resize = function(event) {
 
     this.redraw();
-    
+
     var width = $(this.svg).width();
     var height = $(this.svg).height();
-    
+
     this.old_width = width;
     this.old_height = height;
 };
 
 
 /** return the pixel width of the SVG times the current scale factor */
-VIZ.NetGraph.prototype.get_scaled_width = function() {
+Nengo.NetGraph.prototype.get_scaled_width = function() {
     return $(this.svg).width() * this.scale;
 }
 
 
 /** return the pixel height of the SVG times the current scale factor */
-VIZ.NetGraph.prototype.get_scaled_height = function() {
+Nengo.NetGraph.prototype.get_scaled_height = function() {
     return $(this.svg).height() * this.scale;
 }
 
 
 /** expand or collapse a network */
-VIZ.NetGraph.prototype.toggle_network = function(uid) {
+Nengo.NetGraph.prototype.toggle_network = function(uid) {
     var item = this.svg_objects[uid];
     if (item.expanded) {
         item.collapse(true);
@@ -476,7 +476,7 @@ VIZ.NetGraph.prototype.toggle_network = function(uid) {
  *  This is a NetGraphItem that does not exist yet, because it is inside a
  *  collapsed network.  When it does appear, NetGraph.detect_collapsed will
  *  handle notifying the NetGraphConnection. */
-VIZ.NetGraph.prototype.register_conn = function(conn, target) {
+Nengo.NetGraph.prototype.register_conn = function(conn, target) {
     if (this.collapsed_conns[target] === undefined) {
         this.collapsed_conns[target] = [conn];
     } else {
@@ -493,7 +493,7 @@ VIZ.NetGraph.prototype.register_conn = function(conn, target) {
  *  network), then it is added to the collapsed_conns dicutionary.  When
  *  an item is create, this function is used to see if any NetGraphConnections
  *  are waiting for it, and notifies them. */
-VIZ.NetGraph.prototype.detect_collapsed_conns = function(uid) {
+Nengo.NetGraph.prototype.detect_collapsed_conns = function(uid) {
     var conns = this.collapsed_conns[uid];
     if (conns !== undefined) {
         delete this.collapsed_conns[uid];
@@ -511,7 +511,7 @@ VIZ.NetGraph.prototype.detect_collapsed_conns = function(uid) {
 }
 
 /** create a minimap */
-VIZ.NetGraph.prototype.create_minimap = function () {
+Nengo.NetGraph.prototype.create_minimap = function () {
     var self = this;
 
     this.minimap_div = document.createElement('div');
@@ -519,7 +519,7 @@ VIZ.NetGraph.prototype.create_minimap = function () {
     this.parent.appendChild(this.minimap_div);
 
     this.minimap = this.createSVGElement('svg');
-    this.minimap.classList.add('minimap');    
+    this.minimap.classList.add('minimap');
     this.minimap.id = 'minimap';
     this.minimap_div.appendChild(this.minimap);
 
@@ -528,7 +528,7 @@ VIZ.NetGraph.prototype.create_minimap = function () {
     this.view.classList.add('view');
     this.minimap.appendChild(this.view);
 
-    this.g_networks_mini = this.createSVGElement('g'); 
+    this.g_networks_mini = this.createSVGElement('g');
     this.g_conns_mini = this.createSVGElement('g');
     this.g_items_mini = this.createSVGElement('g');
     // order these are appended is important for layering
@@ -541,7 +541,7 @@ VIZ.NetGraph.prototype.create_minimap = function () {
     this.toggleMiniMap();
 }
 
-VIZ.NetGraph.prototype.toggleMiniMap = function () {
+Nengo.NetGraph.prototype.toggleMiniMap = function () {
     if (this.mm_display == true) {
         $('.minimap')[0].style.visibility = 'hidden';
         this.g_conns_mini.style.opacity = 0;
@@ -554,14 +554,14 @@ VIZ.NetGraph.prototype.toggleMiniMap = function () {
 }
 
 /** Calculate the minimap position offsets and scaling **/
-VIZ.NetGraph.prototype.scaleMiniMap = function () {
+Nengo.NetGraph.prototype.scaleMiniMap = function () {
 
     keys = Object.keys(this.svg_objects);
     if (keys.length === 0) {
         return;
-    } 
+    }
 
-    // TODO: Could also store the items at the four min max values 
+    // TODO: Could also store the items at the four min max values
     // and only compare against those, or check against all items
     // in the lists when they move. Might be important for larger
     // networks.
@@ -611,9 +611,9 @@ VIZ.NetGraph.prototype.scaleMiniMap = function () {
     this.scaleMiniMapViewBox();
 }
 
-/** Calculate which part of the map is being displayed on the 
+/** Calculate which part of the map is being displayed on the
  * main viewport and scale the viewbox to reflect that. */
-VIZ.NetGraph.prototype.scaleMiniMapViewBox = function () {
+Nengo.NetGraph.prototype.scaleMiniMapViewBox = function () {
     var w = $(this.minimap).width() * this.mm_scale;
     var h = $(this.minimap).height() * this.mm_scale;
 

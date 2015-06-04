@@ -1,4 +1,4 @@
-VIZ.SliderControl = function(min, max) {
+Nengo.SliderControl = function(min, max) {
     var self = this;
 
     this.min = min;
@@ -72,18 +72,18 @@ VIZ.SliderControl = function(min, max) {
     this.listeners = {};
 };
 
-VIZ.SliderControl.prototype.on = function(type, fn) {
+Nengo.SliderControl.prototype.on = function(type, fn) {
     this.listeners[type] = fn;
     return this;
 }
 
-VIZ.SliderControl.prototype.dispatch = function(type, ev) {
+Nengo.SliderControl.prototype.dispatch = function(type, ev) {
     if (type in this.listeners) {
         this.listeners[type].call(this, ev);
     }
 }
 
-VIZ.SliderControl.prototype.set_range = function(min, max) {
+Nengo.SliderControl.prototype.set_range = function(min, max) {
     this.min = min;
     this.max = max;
     this.scale.domain([max,  min]);
@@ -91,7 +91,7 @@ VIZ.SliderControl.prototype.set_range = function(min, max) {
     this.on_resize();
 };
 
-VIZ.SliderControl.prototype.display_value = function(value) {
+Nengo.SliderControl.prototype.display_value = function(value) {
     if (value < this.min) {
         value = this.min;
     }
@@ -105,7 +105,7 @@ VIZ.SliderControl.prototype.display_value = function(value) {
     this.update_value_text(value);
 }
 
-VIZ.SliderControl.prototype.set_value = function(value) {
+Nengo.SliderControl.prototype.set_value = function(value) {
     var old_value = this.value;
     this.display_value(value);
     if (old_value != this.value) {
@@ -113,7 +113,7 @@ VIZ.SliderControl.prototype.set_value = function(value) {
     }
 };
 
-VIZ.SliderControl.prototype.activate_type_mode = function() {
+Nengo.SliderControl.prototype.activate_type_mode = function() {
     if (this.type_mode) {
         return;
     }
@@ -133,7 +133,7 @@ VIZ.SliderControl.prototype.activate_type_mode = function() {
     elem.style.textAlign = 'center';
     elem.style.backgroundColor = 'transparent';
     $(elem).on('input', function (event) {
-        if (VIZ.is_num(elem.value)) {
+        if (Nengo.is_num(elem.value)) {
             self.handle.style.backgroundColor = '';
         } else {
             self.handle.style.backgroundColor = 'salmon';
@@ -143,7 +143,7 @@ VIZ.SliderControl.prototype.activate_type_mode = function() {
     });
 };
 
-VIZ.SliderControl.prototype.deactivate_type_mode = function(event) {
+Nengo.SliderControl.prototype.deactivate_type_mode = function(event) {
     if (!this.type_mode) {
         return;
     }
@@ -157,7 +157,7 @@ VIZ.SliderControl.prototype.deactivate_type_mode = function(event) {
     this.handle.innerHTML = this.format_value(this.value);
 };
 
-VIZ.SliderControl.prototype.handle_keypress = function(event) {
+Nengo.SliderControl.prototype.handle_keypress = function(event) {
     if (!this.type_mode) {
         return;
     }
@@ -168,7 +168,7 @@ VIZ.SliderControl.prototype.handle_keypress = function(event) {
 
     if (key == enter_keycode) {
         var input = this.handle.querySelector('#value_in_field').value;
-        if (VIZ.is_num(input)) {
+        if (Nengo.is_num(input)) {
             this.deactivate_type_mode();
             this.set_value(parseFloat(input));
         }
@@ -177,23 +177,23 @@ VIZ.SliderControl.prototype.handle_keypress = function(event) {
     }
 };
 
-VIZ.SliderControl.prototype.update_handle_pos = function(value) {
+Nengo.SliderControl.prototype.update_handle_pos = function(value) {
     this.handle.style.top = this.scale(value) + this.border_width;
 };
 
-VIZ.SliderControl.prototype.get_handle_pos = function() {
+Nengo.SliderControl.prototype.get_handle_pos = function() {
     return parseFloat(this.handle.style.top) - this.border_width;
 };
 
-VIZ.SliderControl.prototype.update_value_text = function(value) {
+Nengo.SliderControl.prototype.update_value_text = function(value) {
     this.handle.innerHTML = this.format_value(value);
 };
 
-VIZ.SliderControl.prototype.format_value = function(value) {
+Nengo.SliderControl.prototype.format_value = function(value) {
     return value.toFixed(2);
 }
 
-VIZ.SliderControl.prototype.on_resize = function() {
+Nengo.SliderControl.prototype.on_resize = function() {
     this.scale.range([0, this.guideline.clientHeight]);
     this.update_handle_pos(this.value);
 };
