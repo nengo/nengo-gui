@@ -24,5 +24,6 @@ Please keep this list sorted alphabetically by first name.
 - Jan Gosmann <jan@hyper-world.de>
 - Sugandha Sharma <sugandha974@gmail.com>
 - Terry Stewart <terry.stewart@gmail.com>
+- Travis DeWolf <travis.dewolf@gmail.com>
 - Trevor Bekolay <tbekolay@gmail.com>
 - Ziying Zhang <zy8zhang@uwaterloo.ca>
