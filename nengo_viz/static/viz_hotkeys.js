@@ -52,9 +52,9 @@ VIZ.Hotkeys = function () {
 }
 
 VIZ.Hotkeys.prototype.callMenu = function () {
-        VIZ.modal.title("Hotkeys list");
-        VIZ.modal.help_body();
-        VIZ.modal.show();
+    VIZ.modal.title("Hotkeys list");
+    VIZ.modal.help_body();
+    VIZ.modal.show();
 }
 
 VIZ.hotkeys = new VIZ.Hotkeys();
