@@ -278,8 +278,8 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         var item = this.svg_objects[data.uid];
         item.set_label(data.name);    
 
-        var item = this.minimap_objects[data.uid];
-        item.set_label(data.name);    
+        var item_mini = this.minimap_objects[data.uid];
+        item_mini.set_label(data.name);    
 
     } else if (data.type === 'remove') {
         var item = this.svg_objects[data.uid];
@@ -288,11 +288,11 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         }
         item.remove();    
 
-        var item = this.minimap_objects[data.uid];
-        if (item === undefined) {
-            item = this.minimap_conns[data.uid];
+        var item_mini = this.minimap_objects[data.uid];
+        if (item_mini === undefined) {
+            item_mini = this.minimap_conns[data.uid];
         }
-        item.remove();    
+        item_mini.remove();    
 
     } else if (data.type === 'reconnect') {
         var conn = this.svg_conns[data.uid];
@@ -507,6 +507,8 @@ VIZ.NetGraph.prototype.detect_collapsed_conns = function(uid) {
 
 /** create a minimap */
 VIZ.NetGraph.prototype.create_minimap = function () {
+    var self = this;
+
     this.minimap_div = document.createElement('div');
     this.minimap_div.className = 'minimap';
     this.parent.appendChild(this.minimap_div);
@@ -535,13 +537,14 @@ VIZ.NetGraph.prototype.create_minimap = function () {
     // allow toggling of minimap display with ctrl+M
     document.addEventListener('keydown', function(ev) {
         if (ev.ctrlKey == true && ev.keyCode == 77) {
-            console.log(this.mm_display);
-            if (this.mm_display == true) {
+            if (self.mm_display == true) {
                 $('.minimap')[0].style.visibility = 'hidden';
-                this.mm_display = false
+                self.g_conns_mini.style.opacity = 0;
+                self.mm_display = false;
             } else {
                 $('.minimap')[0].style.visibility = 'visible';
-                this.mm_display = true 
+                self.g_conns_mini.style.opacity = 1;
+                self.mm_display = true ;
             }
         }
     });
