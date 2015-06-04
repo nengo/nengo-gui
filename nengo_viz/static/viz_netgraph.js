@@ -534,13 +534,6 @@ VIZ.NetGraph.prototype.create_minimap = function () {
     // default display minimap
     this.mm_display = true;
     this.toggleMiniMap();
-
-    // allow toggling of minimap display with ctrl+M
-    document.addEventListener('keydown', function(ev) {
-        if (ev.ctrlKey == true && ev.keyCode == 77) {
-            self.toggleMiniMap();
-        }
-    });
 }
 
 VIZ.NetGraph.prototype.toggleMiniMap = function () {

@@ -43,6 +43,11 @@ VIZ.Hotkeys = function () {
             self.callMenu();
             ev.preventDefault();
         }
+        // bring up minimap with ctrl-m
+        if (ctrl && key == 'm') {
+            VIZ.netgraph.toggleMiniMap();
+            ev.preventDefault();
+        }
     });
 }
 
