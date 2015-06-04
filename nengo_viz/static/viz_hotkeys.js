@@ -16,6 +16,11 @@ VIZ.Hotkeys = function () {
         var key = key.toLowerCase();
         var ctrl = ev.ctrlKey || ev.metaKey;
 
+        // toggle editor with ctrl-e
+        if (ctrl && key == 'e') {
+            VIZ.ace.toggle_shown();
+            ev.preventDefault();
+        }
         // undo with ctrl-z
         if (ctrl && key == 'z') {
             VIZ.netgraph.notify({ undo: "1" });

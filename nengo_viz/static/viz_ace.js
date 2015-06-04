@@ -2,6 +2,7 @@ var aceRange = ace.require('ace/range').Range;
 
 
 VIZ.Ace = function (uid, args) {
+    VIZ.ace = this;  // make a global pointing to this
     var self = this;
     this.hidden = false;
     this.min_width = 50;
