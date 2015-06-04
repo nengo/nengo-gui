@@ -126,10 +126,15 @@ class CreateGraph(Action):
         cls = getattr(nengo_viz.components, self.type + 'Template')
         self.template = cls(self.obj, **kwargs)
 
+        # If only one instance of the component is allowed, and another had to be 
+        # destroyed to create this one, keep track of it here so it can be undone
+        self.duplicate = None
+
         # Remove any existing sliders associated with the same node
         for component in self.net_graph.viz.components:
             if (isinstance(component, nengo_viz.components.slider.Slider)
                     and component.node is self.obj):
+                self.duplicate = RemoveGraph(net_graph, component)
                 self.send('delete_graph', uid=component.uid)
 
         self.act_create_graph()
@@ -153,10 +158,14 @@ class CreateGraph(Action):
         self.send('js', code=c.javascript())
 
     def apply(self):
+        if self.duplicate is not None:
+            self.duplicate.apply()
         self.act_create_graph()
 
     def undo(self):
         self.send('delete_graph', uid=self.graph_uid)
+        if self.duplicate is not None:
+            self.duplicate.undo()
 
 
 class PosSize(Action):
