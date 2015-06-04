@@ -720,9 +720,7 @@ class ClientSocket(object):
     def _sendall(self, data):
         bytes_sent = 0
         while bytes_sent < len(data):
-            _, wlist, _ = select.select([], [self.socket], [], 0.01)
-            if wlist:
-                bytes_sent += self.socket.send(data[bytes_sent:])
+            bytes_sent += self.socket.send(data[bytes_sent:])
 
 
 if __name__ == '__main__':
