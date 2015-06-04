@@ -35,7 +35,8 @@ class Value(Component):
             client.write(item, binary=True)
 
     def javascript(self):
-        info = dict(uid=self.uid, n_lines=self.n_lines, label=self.label)
+        info = dict(uid=self.uid, label=self.label,
+                    n_lines=self.n_lines, synapse=0.01)
         json = self.javascript_config(info)
         return 'new VIZ.Value(main, sim, %s);' % json
 
