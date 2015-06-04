@@ -146,6 +146,8 @@ class Viz(object):
         self.cfg = cfg
         self.interactive = interactive;
 
+        self.lock = threading.Lock()
+
         self.config_save_period = 2.0  # minimum time between saves
 
         if filename is None:
@@ -156,73 +158,73 @@ class Viz(object):
         self.load(filename, model, locals, force=True)
 
     def load(self, filename, model=None, locals=None, force=False):
-        try:
-            filename = os.path.relpath(filename)
-        except ValueError:
-            pass
-
-        if locals is None:
-            locals = {}
-            locals['nengo_viz'] = nengo_viz
-            locals['__file__'] = filename
-
+        with self.lock:
             try:
-                with open(filename) as f:
-                    self.code = f.read()
-            except IOError:
-                self.code = ('import nengo\n\n'
-                            'model = nengo.Network()\n'
-                            'with model:\n'
-                            '    ')
+                filename = os.path.relpath(filename)
+            except ValueError:
+                pass
 
-            with nengo_viz.monkey.patch():
+            if locals is None:
+                locals = {}
+                locals['nengo_viz'] = nengo_viz
+                locals['__file__'] = filename
+
                 try:
-                    exec(self.code, locals)
-                except nengo_viz.monkey.StartedSimulatorException:
-                    if self.interactive:
-                        line = nengo_viz.monkey.determine_line_number()
-                        print('nengo.Simulator() started on line %d. '
-                              'Ignoring all subsequent lines.' % line)
-                except nengo_viz.monkey.StartedVizException:
-                    if self.interactive:
-                        line = nengo_viz.monkey.determine_line_number()
-                        print('nengo_viz.Viz() started on line %d. '
-                              'Ignoring all subsequent lines.' % line)
-                except:
-                    if not force:
-                        raise
-        self.orig_locals = dict(locals)
+                    with open(filename) as f:
+                        self.code = f.read()
+                except IOError:
+                    self.code = ('import nengo\n\n'
+                                'model = nengo.Network()\n'
+                                'with model:\n'
+                                '    ')
 
-        if model is None:
-            if 'model' not in locals:
-                if force:
-                    locals['model'] = nengo.Network()
-                else:
-                    raise VizException('No object called "model" in the code')
-            model = locals['model']
-            if not isinstance(model, nengo.Network):
-                if force:
-                    locals['model'] = nengo.Network()
-                    model = locals['model']
-                else:
-                    raise VizException('The "model" must be a nengo.Network')
+                with nengo_viz.monkey.patch():
+                    try:
+                        exec(self.code, locals)
+                    except nengo_viz.monkey.StartedSimulatorException:
+                        if self.interactive:
+                            line = nengo_viz.monkey.determine_line_number()
+                            print('nengo.Simulator() started on line %d. '
+                                  'Ignoring all subsequent lines.' % line)
+                    except nengo_viz.monkey.StartedVizException:
+                        if self.interactive:
+                            line = nengo_viz.monkey.determine_line_number()
+                            print('nengo_viz.Viz() started on line %d. '
+                                  'Ignoring all subsequent lines.' % line)
+                    except:
+                        if not force:
+                            raise
+            self.orig_locals = dict(locals)
+
+            if model is None:
+                if 'model' not in locals:
+                    if force:
+                        locals['model'] = nengo.Network()
+                    else:
+                        raise VizException('No object called "model" in the code')
+                model = locals['model']
+                if not isinstance(model, nengo.Network):
+                    if force:
+                        locals['model'] = nengo.Network()
+                        model = locals['model']
+                    else:
+                        raise VizException('The "model" must be a nengo.Network')
 
 
 
-        self.model = model
-        self.locals = dict(locals)
+            self.model = model
+            self.locals = dict(locals)
 
-        self.filename = filename
-        self.name_finder = nengo_viz.NameFinder(locals, model)
-        self.default_labels = self.name_finder.known_name
+            self.filename = filename
+            self.name_finder = nengo_viz.NameFinder(locals, model)
+            self.default_labels = self.name_finder.known_name
 
-        self.config = self.load_config()
-        self.config_save_needed = False
-        self.config_save_time = None   # time of last config file save
+            self.config = self.load_config()
+            self.config_save_needed = False
+            self.config_save_time = None   # time of last config file save
 
-        self.lock = threading.Lock()
 
-        self.uid_prefix_counter = {}
+            self.uid_prefix_counter = {}
 
     def find_templates(self):
         for k, v in self.locals.items():
