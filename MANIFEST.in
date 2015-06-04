@@ -1,0 +1,17 @@
+include *.md
+include *.py
+recursive-include examples *.ipynb
+recursive-include examples *.py
+recursive-include nengo_gui *.css
+recursive-include nengo_gui *.eot
+recursive-include nengo_gui *.gif
+recursive-include nengo_gui *.html
+recursive-include nengo_gui *.ico
+recursive-include nengo_gui *.js
+recursive-include nengo_gui *.png
+recursive-include nengo_gui *.py
+recursive-include nengo_gui *.rst
+recursive-include nengo_gui *.svg
+recursive-include nengo_gui *.ttf
+recursive-include nengo_gui *.woff
+recursive-include nengo_gui *.woff2
