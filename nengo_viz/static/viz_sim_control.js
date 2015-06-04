@@ -40,6 +40,12 @@ VIZ.SimControl = function(div, args) {
     /** Get reference to the pause button */
     this.pause_button = $('#pause_button')[0];
     this.pause_button.onclick = function(event) {self.on_pause_click();};
+    this.pause_button.onkeydown = function(event) {
+        var key = event.key || String.fromCharCode(event.keyCode);
+        if (key = ' ') {
+            event.stopPropagation();
+        }
+    };
     VIZ.set_transform(this.pause_button, this.div.clientWidth - 100, 30);
 
     this.pause_button_icon = $('#pause_button_icon')[0];
