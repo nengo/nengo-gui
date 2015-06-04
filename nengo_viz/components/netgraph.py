@@ -37,11 +37,12 @@ class NetGraph(Component):
         try:
             t = os.path.getmtime(self.viz.viz.filename)
         except OSError:
-            return
+            t = None
 
-        if self.last_modify_time < t or self.last_modify_time is None:
-            self.reload()
-            self.last_modify_time = t
+        if t is not None:
+            if self.last_modify_time < t or self.last_modify_time is None:
+                self.reload()
+                self.last_modify_time = t
 
         new_code = self.viz.new_code
         self.viz.new_code = None
