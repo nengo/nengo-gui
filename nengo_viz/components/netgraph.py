@@ -93,6 +93,17 @@ class NetGraph(Component):
             except:
                 new_item = None
 
+            # check to make sure the new item's uid is the same as the
+            # old item.  This is to catch situations where an old uid
+            # happens to still refer to something in the new model, but that's
+            # not the normal uid for that item.  For example, the uid
+            # "ensembles[0]" might still refer to something even after that
+            # ensemble is removed.
+            new_uid = self.viz.viz.get_uid(new_item,
+                        default_labels=name_finder.known_name)
+            if new_uid != uid:
+                new_item = None
+
             if new_item is None or not isinstance(new_item, old_item.__class__):
                 self.to_be_sent.append(dict(
                     type='remove', uid=uid))
