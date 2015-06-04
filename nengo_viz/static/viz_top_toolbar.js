@@ -93,11 +93,11 @@ VIZ.Toolbar.prototype.config_modal = function () {
 VIZ.Toolbar.prototype.config_modal_show = function() {
     var self = this;
 
-    options = [VIZ.netgraph.get_zoom_fonts(),
+    var options = [VIZ.netgraph.get_zoom_fonts(),
         VIZ.netgraph.get_font_size()];
 
     VIZ.modal.title('Configure Options');
-    VIZ.modal.main_config();
+    VIZ.modal.main_config(options);
     VIZ.modal.footer('ok_cancel', function(e) {
         var zoom = $('#zoom-fonts').prop('checked');
         var font_size = $('#config-fontsize').val();
@@ -110,6 +110,11 @@ VIZ.Toolbar.prototype.config_modal_show = function() {
         VIZ.netgraph.set_zoom_fonts(zoom);
         VIZ.netgraph.set_font_size(parseInt(font_size));
         $('#OK').attr('data-dismiss', 'modal');
+    },
+        function () {  //cancel_function
+            VIZ.netgraph.set_zoom_fonts(options[0]);
+            VIZ.netgraph.set_font_size(options[1]);
+            $('#cancel-button').attr('data-dismiss', 'modal');
     });
 
     var $form = $('#myModalForm').validator({

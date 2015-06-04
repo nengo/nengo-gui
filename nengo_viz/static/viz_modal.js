@@ -24,19 +24,31 @@ VIZ.Modal.prototype.title = function(title) {
     this.$title.text(title);
 }
 
-VIZ.Modal.prototype.footer = function(type, ok_function){
+VIZ.Modal.prototype.footer = function(type, ok_function, cancel_function){
     this.$footer.empty();
 
     if (type === "close") {
-        this.$footer.append('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
+        this.$footer.append('<button type="button" class="btn btn-default"' +
+            ' data-dismiss="modal">Close</button>');
     } else if (type === "ok_cancel") {
         var $footerBtn = $('<div class="form-group"/>').appendTo(this.$footer);
-        $footerBtn.append('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
-        $footerBtn.append('<button id="OK" type="submit" class="btn btn-primary" >OK</button>');
+        $footerBtn.append('<button id="cancel-button" type="button" ' +
+            'class="btn btn-default">Cancel</button>');
+        $footerBtn.append('<button id="OK" type="submit" ' + 
+            'class="btn btn-primary" >OK</button>');
         $('#OK').on('click', ok_function);
+        if (typeof cancel_function !== 'undefined') {
+            $('#cancel-button').on('click', cancel_function);
+        } else {
+            $('#cancel-button').on('click', function () {
+                $('#cancel-button').attr('data-dismiss', 'modal');
+            });
+        }
     } else if (type === 'confirm_reset') {
-        this.$footer.append('<button type="button" id="confirm_reset_button" class="btn btn-primary">Reset</button>');
-        this.$footer.append('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
+        this.$footer.append('<button type="button" ' +
+            'id="confirm_reset_button" class="btn btn-primary">Reset</button>');
+        this.$footer.append('<button type="button" ' +
+            'class="btn btn-default" data-dismiss="modal">Close</button>');
         $('#confirm_reset_button').on('click', function() {
             toolbar.reset_model_layout();
         });
@@ -58,7 +70,8 @@ VIZ.Modal.prototype.text_body = function(text, type) {
     var $alert = $('<div class="alert alert-' + type + '" role="alert"/>')
         .appendTo(this.$body);
     var $p = $('<p/>').appendTo($alert);
-    $p.append('<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>');
+    $p.append('<span class="glyphicon glyphicon-exclamation-sign"' +
+        ' aria-hidden="true"></span>');
     $p.append(document.createTextNode(text));
 }
 
@@ -105,19 +118,24 @@ VIZ.Modal.prototype.tabbed_body = function(tabinfo) {
 /**
  * Sets up the body for main configuration
  */
-VIZ.Modal.prototype.main_config = function() {
+VIZ.Modal.prototype.main_config = function(options) {
     this.clear_body();
 
     var $form = $('<form class="form-horizontal" id ' +
         '="myModalForm"/>').appendTo(this.$body);
     $('<div class="form-group" id="config-fontsize-group">' +
-            '<label for="config-fontsize" class="control-label">Font size</label>' +
-            '<div class="input-group col-xs-2">' +
-              '<input type="number" min="20" max="999" step="1" maxlength="3" class="form-control" id="config-fontsize" data-error="Twenty to 999 percent of the base size" required>' +
-              '<span class="input-group-addon">%</span>' +
-            '</div>' +
-            '<span class="help-block with-errors">As a percentage of the base size</span>' +
+        '<label for="config-fontsize" class="control-label">' +
+            'Font size</label>' +
+        '<div class="input-group col-xs-2">' +
+          '<input type="number" min="20" max="999" step="1" ' +
+            'maxlength="3" class="form-control" id="config-fontsize"' +
+                ' data-error="Twenty to 999 percent of the base size"' +
+                ' required>' +
+          '<span class="input-group-addon">%</span>' +
         '</div>' +
+        '<span class="help-block with-errors">As a percentage of' +
+            ' the base size</span>' +
+    '</div>' +
     '<div class="form-group">' +
         '<div class="checkbox">' +
           '<label for="zoom-fonts" class="control-label">' +
@@ -140,6 +158,7 @@ VIZ.Modal.prototype.main_config = function() {
     $('#config-fontsize').bind('keyup input', function () {
         VIZ.netgraph.set_font_size(parseInt($('#config-fontsize').val()));
     });
+    
     $('#config-fontsize').attr('data-my_validator', 'custom');
 
     //Allow the enter key to submit
