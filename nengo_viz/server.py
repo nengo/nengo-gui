@@ -75,10 +75,10 @@ class Server(swi.SimpleWebInterface):
             return self.create_login_form()
 
         # create a new simulator
-        viz_sim = self.viz.create_sim()
+        viz_sim = self.server.viz.create_sim()
 
         #TODO: handle multiple viz_sims at the same time
-        Server.viz_sim = viz_sim
+        self.server.viz_sim = viz_sim
 
         # read the template for the main page
         html = pkgutil.get_data('nengo_viz', 'templates/page.html')
@@ -97,7 +97,7 @@ class Server(swi.SimpleWebInterface):
         """Handles ws://host:port/viz_component with a websocket"""
         # figure out what component is being connected to
 
-        viz_sim = Server.viz_sim
+        viz_sim = self.server.viz_sim
 
         component = viz_sim.uids[uid]
         try:
@@ -114,31 +114,35 @@ class Server(swi.SimpleWebInterface):
                         cfg = json.loads(msg[7:])
                         old_cfg = {}
                         for k in component.template.config_params.keys():
-                            v = getattr(self.viz.config[component.template], k)
+                            v = getattr(
+                                self.server.viz.config[component.template], k)
                             old_cfg[k] = v
                         if not(cfg == old_cfg):
                             # Register config change to the undo stack
-                            self.viz_sim.config_change(component, cfg, old_cfg)
+                            self.server.viz_sim.config_change(
+                                component, cfg, old_cfg)
                         for k, v in cfg.items():
-                            setattr(self.viz.config[component.template], k, v)
-                        self.viz.modified_config()
+                            setattr(
+                                self.server.viz.config[component.template],
+                                k, v)
+                        self.server.viz.modified_config()
                     elif msg.startswith('remove'):
                         if msg != 'remove_undo':
                             # Register graph removal to the undo stack
-                            self.viz_sim.remove_graph(component)
-                        self.viz.remove_uid(uid)
-                        self.viz.modified_config()
+                            self.server.viz_sim.remove_graph(component)
+                        self.server.viz.remove_uid(uid)
+                        self.server.viz.modified_config()
                         return
                     else:
                         component.message(msg)
                     msg = client.read()
                 # send data to the component
                 component.update_client(client)
-                self.viz.save_config(lazy=True)
+                self.server.viz.save_config(lazy=True)
                 time.sleep(0.01)
         except swi.SocketClosedError:
             # This error means the server has shut down, we should stop nicely.
-            self.viz.save_config(lazy=False)
+            self.server.viz.save_config(lazy=False)
         finally:
             component.finish()
 
@@ -146,10 +150,12 @@ class Server(swi.SimpleWebInterface):
             time.sleep(2)
 
             # if there are no simulations left, stop the server
-            if self.viz.count_sims() == 0:
-                if isinstance(component, nengo_viz.components.SimControl):
-                    print("No connections remaining to the nengo_viz server.")
-                    self.stop()
+            if isinstance(component, nengo_viz.components.SimControl):
+                if self.server.viz.interactive:
+                    print(
+                        "No connections remaining to the nengo_viz "
+                        "server.")
+                self.server.shutdown()
 
     def log_message(self, format, *args):
         # suppress all the log messages

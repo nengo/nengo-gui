@@ -100,9 +100,12 @@ class VizSim(object):
 
     def create_javascript(self):
         fn = json.dumps(self.viz.filename[:-3])
-        webpage_title_js = ';document.title = %s' % fn
+        webpage_title_js = ';document.title = %s;' % fn
         component_js = '\n'.join([c.javascript() for c in self.components])
-        component_js = component_js + webpage_title_js
+        component_js += webpage_title_js
+        if not self.viz.allow_file_change:
+            component_js += "$('#Open_file_button').addClass('deactivated');"
+            pass
         return component_js
 
     def config_change(self, component, new_cfg, old_cfg):
@@ -118,11 +121,17 @@ class VizSim(object):
 
 class Viz(object):
     """The master visualization organizer set up for a particular model."""
-    def __init__(self, filename, model=None, locals=None):
+    def __init__(
+            self, filename=None, model=None, locals=None, cfg=None,
+            interactive=True, allow_file_change=True):
         if nengo_viz.monkey.is_executing():
             raise nengo_viz.monkey.StartedVizException()
 
+        self.allow_file_change = allow_file_change
+
         self.viz_sims = []
+        self.cfg = cfg
+        self.interactive = interactive;
 
         self.config_save_period = 2.0  # minimum time between saves
 
@@ -134,7 +143,11 @@ class Viz(object):
         self.load(filename, model, locals)
 
     def load(self, filename, model=None, locals=None):
-        filename = os.path.relpath(filename)
+        try:
+            filename = os.path.relpath(filename)
+        except ValueError:
+            pass
+
         if locals is None:
             locals = {}
             locals['nengo_viz'] = nengo_viz
@@ -146,13 +159,16 @@ class Viz(object):
                 try:
                     exec(code, locals)
                 except nengo_viz.monkey.StartedSimulatorException:
-                    line = nengo_viz.monkey.determine_line_number()
-                    print('nengo.Simulator() started on line %d. '
-                          'Ignoring all subsequent lines.' % line)
+                    if self.interactive:
+                        line = nengo_viz.monkey.determine_line_number()
+                        print('nengo.Simulator() started on line %d. '
+                              'Ignoring all subsequent lines.' % line)
                 except nengo_viz.monkey.StartedVizException:
-                    line = nengo_viz.monkey.determine_line_number()
-                    print('nengo_viz.Viz() started on line %d. '
-                          'Ignoring all subsequent lines.' % line)
+                    if self.interactive:
+                        line = nengo_viz.monkey.determine_line_number()
+                        print('nengo_viz.Viz() started on line %d. '
+                              'Ignoring all subsequent lines.' % line)
+        self.orig_locals = dict(locals)
 
         if model is None:
             if 'model' not in locals:
@@ -164,7 +180,7 @@ class Viz(object):
 
 
         self.model = model
-        self.locals = locals
+        self.locals = dict(locals)
 
         self.filename = filename
         self.name_finder = nengo_viz.NameFinder(locals, model)
@@ -200,10 +216,14 @@ class Viz(object):
         del self.default_labels[obj]
 
     def config_name(self):
-        return self.filename + '.cfg'
+        if self.cfg is None:
+            return self.filename + '.cfg'
+        else:
+            return self.cfg
 
     def load_config(self):
         config = nengo_viz.config.Config()
+        self.locals['nengo_viz'] = nengo_viz
         self.locals['_viz_config'] = config
         fname = self.config_name()
         if os.path.exists(fname):
@@ -213,7 +233,8 @@ class Viz(object):
                 try:
                     exec(line, self.locals)
                 except Exception as e:
-                    print('error parsing config', line, e)
+                    if self.interactive:
+                        print('error parsing config', line, e)
 
         # make sure a SimControl and a NetGraph exist
         if '_viz_sim_control' not in self.locals:
@@ -273,14 +294,21 @@ class Viz(object):
 
     def start(self, port=8080, browser=True, password=None):
         """Start the web server"""
-        nengo_viz.server.Server.viz = self
         print("Starting nengo_viz server at http://localhost:%d" % port)
         if password is not None:
             nengo_viz.server.Server.add_user('', password)
             addr = ''
         else:
             addr = 'localhost'
-        nengo_viz.server.Server.start(port=port, browser=browser, addr=addr)
+        nengo_viz.server.Server.start(self, port=port, browser=browser, addr=addr)
+
+    def prepare_server(self, viz, port=8080, browser=True):
+        return nengo_viz.server.Server.prepare_server(
+            self, port=port, browser=browser)
+
+    def begin_lifecycle(self, server):
+        nengo_viz.server.Server.begin_lifecycle(
+            server, interactive=self.interactive)
 
     def create_sim(self):
         """Create a new Simulator with this configuration"""

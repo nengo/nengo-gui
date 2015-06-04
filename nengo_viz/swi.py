@@ -91,6 +91,8 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
     current_cookies = {}
     passwords = {}
 
+    log_file = sys.stderr
+
     def add_header(self, key, value):
         if self.pending_headers is None:
             self.pending_headers = []
@@ -372,17 +374,33 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             i += 1
         return val
 
+    def log_message(self, format, *args):
+        if self.log_file is not None:
+            self.log_file.write( "%s - - [%s] %s\n" % (
+                    self.client_address[0], self.log_date_time_string(),
+                    format % args))
+
     @classmethod
-    def start(cls, port=80, asynch=True, addr='', browser=False):
-        if browser:
-            cls.browser(port=port)
+    def start(cls, viz, port=80, asynch=True, addr='', browser=False):
+        server = cls.prepare_server(viz, port, asynch, addr, browser)
+        cls.begin_lifecycle(server, asynch)
+
+    @classmethod
+    def prepare_server(cls, viz, port=80, asynch=True, addr='', browser=False):
         if asynch:
             server = AsyncHTTPServer((addr, port), cls)
         else:
             server = BaseHTTPServer.HTTPServer((addr, port), cls)
+        server.viz = viz
+        port = server.server_port
+        if browser:
+            cls.browser(port=port)
 
         cls.servers.append(server)
+        return server
 
+    @classmethod
+    def begin_lifecycle(cls, server, asynch=True, interactive=True):
         try:
             server.running = True
             while server.running:
@@ -390,6 +408,9 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
                     server.serve_forever(poll_interval=0.02)
                     server.running = False
                 except KeyboardInterrupt:
+                    if not interactive:
+                        raise
+
                     # Check that user wants to shut down
                     sys.stdout.write(
                         "\nShut-down this web server (y/[n])? ")
@@ -404,7 +425,8 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
                     else:
                         print("No confirmation received. Resuming...")
         finally:
-            print("Shutting down server...")
+            if interactive:
+                print("Shutting down server...")
 
             # shut down any remaining threads
             # server.requests might be modified from other threads, so we need
@@ -423,7 +445,7 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
 
                 n_zombie = sum(thread.is_alive()
                         for thread, _ in server.requests)
-                if n_zombie > 0:
+                if interactive and n_zombie > 0:
                     print("%d zombie threads will close abruptly" % n_zombie)
 
             cls.servers.remove(server)

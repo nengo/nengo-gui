@@ -5,6 +5,7 @@ import traceback
 import numpy as np
 import nengo
 import os
+import os.path
 import json
 
 from nengo_viz.components.component import Component, Template
@@ -121,12 +122,13 @@ class SimControl(Component):
             except:
                 traceback.print_exc()
         elif msg == 'reset':
-            if os.path.isfile(self.viz.viz.filename + '.cfg') :
-                os.remove(self.viz.viz.filename + '.cfg')
-            self.viz.viz.load(self.viz.viz.filename)
+            if os.path.isfile(self.viz.viz.config_name()) :
+                os.remove(self.viz.viz.config_name())
+            self.viz.viz.config = self.viz.viz.load_config()
+            self.viz.viz.load(
+                self.viz.viz.filename, self.viz.viz.model,
+                self.viz.viz.orig_locals)
             self.reload = True
-        else:
-            print(msg)
 
 class SimControlTemplate(Template):
     cls = SimControl
