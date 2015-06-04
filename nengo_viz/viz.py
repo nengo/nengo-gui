@@ -176,7 +176,7 @@ class Viz(object):
 
 
         self.model = model
-        self.locals = locals
+        self.locals = dict(locals)
 
         self.filename = filename
         self.name_finder = nengo_viz.NameFinder(locals, model)
