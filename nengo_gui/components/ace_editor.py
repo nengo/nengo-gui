@@ -1,6 +1,6 @@
 import nengo
 import json
-from nengo_viz.components.component import Component, Template
+from nengo_gui.components.component import Component, Template
 
 class AceEditor(Component):
     def __init__(self, viz, config, uid):

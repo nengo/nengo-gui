@@ -10,7 +10,7 @@ import weakref
 from IPython import get_ipython
 from IPython.display import display, HTML
 
-import nengo_viz
+import nengo_gui
 
 
 class ConfigReuseWarning(UserWarning):
@@ -25,7 +25,7 @@ class IPythonViz(object):
     host = 'localhost'
 
     def __init__(self, model, cfg=None, height=600):
-        nengo_viz.server.Server.log_file = None
+        nengo_gui.server.Server.log_file = None
 
         self.height = height
 
@@ -63,7 +63,7 @@ class IPythonViz(object):
             cls.threads[server.viz.cfg] = server_thread
 
         name = model.label if model.label is not None else ''
-        viz = nengo_viz.Viz(
+        viz = nengo_gui.Viz(
             name, cfg=cfg, model=model, locals=get_ipython().user_ns,
             interactive=False, allow_file_change=False)
         server = viz.prepare_server(viz, port=0, browser=False)

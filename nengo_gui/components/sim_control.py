@@ -8,7 +8,7 @@ import os
 import os.path
 import json
 
-from nengo_viz.components.component import Component, Template
+from nengo_gui.components.component import Component, Template
 
 class SimControl(Component):
     def __init__(self, viz, config, uid, dt=0.001):
@@ -133,4 +133,3 @@ class SimControl(Component):
 class SimControlTemplate(Template):
     cls = SimControl
     config_params = dict(shown_time=0.5, kept_time=4.0)
-

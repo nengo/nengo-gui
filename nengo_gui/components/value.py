@@ -4,7 +4,7 @@ import collections
 import nengo
 import numpy as np
 
-from nengo_viz.components.component import Component, Template
+from nengo_gui.components.component import Component, Template
 
 
 class Value(Component):

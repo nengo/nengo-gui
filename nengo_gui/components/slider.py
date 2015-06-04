@@ -2,7 +2,7 @@ import numpy as np
 import struct
 import collections
 
-from nengo_viz.components.component import Component, Template
+from nengo_gui.components.component import Component, Template
 
 class Slider(Component):
     def __init__(self, viz, config, uid, node):

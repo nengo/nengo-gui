@@ -10,12 +10,12 @@ try:
 except ImportError:
     from urllib.parse import unquote
 
-import nengo_viz.swi as swi
-import nengo_viz
+import nengo_gui.swi as swi
+import nengo_gui
 
 
 class Server(swi.SimpleWebInterface):
-    """Web server interface to nengo_viz"""
+    """Web server interface to nengo_gui"""
 
     def swi_browse(self, dir):
         if self.user is None: return
@@ -28,7 +28,7 @@ class Server(swi.SimpleWebInterface):
                      '<a href="#" rel="%s">%s</a></li>' % (ex_tag, ex_html))
             path = '.'
         elif d.startswith(ex_tag):
-            path = os.path.join(nengo_viz.__path__[0],
+            path = os.path.join(nengo_gui.__path__[0],
                                 'examples', d[len(ex_tag):])
         else:
             path = os.path.join('.', d)
@@ -51,11 +51,11 @@ class Server(swi.SimpleWebInterface):
         """Handles http://host:port/static/* by returning pkg data"""
         fn = os.path.join('static', *path)
         mimetype, encoding = mimetypes.guess_type(fn)
-        data = pkgutil.get_data('nengo_viz', fn)
+        data = pkgutil.get_data('nengo_gui', fn)
         return (mimetype, data)
 
     def swi_favicon_ico(self):
-        icon = pkgutil.get_data('nengo_viz', 'static/favicon.ico')
+        icon = pkgutil.get_data('nengo_gui', 'static/favicon.ico')
         return ('image/ico', icon)
 
     def create_login_form(self):
@@ -81,7 +81,7 @@ class Server(swi.SimpleWebInterface):
         self.server.viz_sim = viz_sim
 
         # read the template for the main page
-        html = pkgutil.get_data('nengo_viz', 'templates/page.html')
+        html = pkgutil.get_data('nengo_gui', 'templates/page.html')
         if isinstance(html, bytes):
             html = html.decode("utf-8")
 
@@ -151,11 +151,11 @@ class Server(swi.SimpleWebInterface):
                 time.sleep(2)
 
                 # if there are no simulations left, stop the server
-                if isinstance(component, nengo_viz.components.SimControl):
+                if isinstance(component, nengo_gui.components.SimControl):
                     if self.server.viz.interactive:
                         if self.server.viz.count_sims() == 0:
                             print(
-                                "No connections remaining to the nengo_viz "
+                                "No connections remaining to the nengo_gui "
                                 "server.")
                             self.server.shutdown()
                     else:

@@ -1,6 +1,6 @@
 import argparse
 
-import nengo_viz
+import nengo_gui
 
 def main():
     parser = argparse.ArgumentParser()
@@ -14,7 +14,7 @@ def main():
         'filename', nargs='?', type=str, help='initial file to load')
     args = parser.parse_args()
 
-    viz = nengo_viz.Viz(filename=args.filename)
+    viz = nengo_gui.Viz(filename=args.filename)
     viz.start(port=args.port, password=args.password)
 
 if __name__ == '__main__':

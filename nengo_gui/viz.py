@@ -5,12 +5,12 @@ import json
 
 import nengo
 
-import nengo_viz
-import nengo_viz.server
-import nengo_viz.components
-import nengo_viz.config
-from nengo_viz.components.action import ConfigAction, RemoveGraph
-import nengo_viz.monkey
+import nengo_gui
+import nengo_gui.server
+import nengo_gui.components
+import nengo_gui.config
+from nengo_gui.components.action import ConfigAction, RemoveGraph
+import nengo_gui.monkey
 
 
 class VizException(Exception):
@@ -48,16 +48,16 @@ class VizSim(object):
 
     def get_net_graph(self):
         for c in self.components:
-            if isinstance(c, nengo_viz.components.NetGraph):
+            if isinstance(c, nengo_gui.components.NetGraph):
                 return c
         return None
 
     def add_template(self, template):
         c = template.create(self)
         self.uids[c.uid] = c
-        if isinstance(template, (nengo_viz.components.SimControlTemplate,
-                                 nengo_viz.components.NetGraphTemplate,
-                                 nengo_viz.components.AceEditorTemplate)):
+        if isinstance(template, (nengo_gui.components.SimControlTemplate,
+                                 nengo_gui.components.NetGraphTemplate,
+                                 nengo_gui.components.AceEditorTemplate)):
             self.components[:0] = [c]
         else:
             self.components.append(c)
@@ -109,7 +109,7 @@ class VizSim(object):
         temp = self.components[0]
         counter = 0
         for t in self.components:
-            if isinstance(t, nengo_viz.components.SimControl):
+            if isinstance(t, nengo_gui.components.SimControl):
                 self.components[0] = t
                 self.components[counter] = temp
                 break
@@ -137,8 +137,8 @@ class Viz(object):
     def __init__(
             self, filename=None, model=None, locals=None, cfg=None,
             interactive=True, allow_file_change=True):
-        if nengo_viz.monkey.is_executing():
-            raise nengo_viz.monkey.StartedVizException()
+        if nengo_gui.monkey.is_executing():
+            raise nengo_gui.monkey.StartedVizException()
 
         self.allow_file_change = allow_file_change
 
@@ -151,7 +151,7 @@ class Viz(object):
         self.config_save_period = 2.0  # minimum time between saves
 
         if filename is None:
-            filename = os.path.join(nengo_viz.__path__[0],
+            filename = os.path.join(nengo_gui.__path__[0],
                                     'examples',
                                     'default.py')
 
@@ -166,7 +166,7 @@ class Viz(object):
 
             if locals is None:
                 locals = {}
-                locals['nengo_viz'] = nengo_viz
+                locals['nengo_gui'] = nengo_gui
                 locals['__file__'] = filename
 
                 try:
@@ -178,18 +178,18 @@ class Viz(object):
                                 'with model:\n'
                                 '    ')
 
-                with nengo_viz.monkey.patch():
+                with nengo_gui.monkey.patch():
                     try:
                         exec(self.code, locals)
-                    except nengo_viz.monkey.StartedSimulatorException:
+                    except nengo_gui.monkey.StartedSimulatorException:
                         if self.interactive:
-                            line = nengo_viz.monkey.determine_line_number()
+                            line = nengo_gui.monkey.determine_line_number()
                             print('nengo.Simulator() started on line %d. '
                                   'Ignoring all subsequent lines.' % line)
-                    except nengo_viz.monkey.StartedVizException:
+                    except nengo_gui.monkey.StartedVizException:
                         if self.interactive:
-                            line = nengo_viz.monkey.determine_line_number()
-                            print('nengo_viz.Viz() started on line %d. '
+                            line = nengo_gui.monkey.determine_line_number()
+                            print('nengo_gui.Viz() started on line %d. '
                                   'Ignoring all subsequent lines.' % line)
                     except:
                         if not force:
@@ -216,7 +216,7 @@ class Viz(object):
             self.locals = dict(locals)
 
             self.filename = filename
-            self.name_finder = nengo_viz.NameFinder(locals, model)
+            self.name_finder = nengo_gui.NameFinder(locals, model)
             self.default_labels = self.name_finder.known_name
 
             self.config = self.load_config()
@@ -228,7 +228,7 @@ class Viz(object):
 
     def find_templates(self):
         for k, v in self.locals.items():
-            if isinstance(v, nengo_viz.components.component.Template):
+            if isinstance(v, nengo_gui.components.component.Template):
                 yield v
 
     def generate_uid(self, obj, prefix):
@@ -255,8 +255,8 @@ class Viz(object):
             return self.cfg
 
     def load_config(self):
-        config = nengo_viz.config.Config()
-        self.locals['nengo_viz'] = nengo_viz
+        config = nengo_gui.config.Config()
+        self.locals['nengo_gui'] = nengo_gui
         self.locals['_viz_config'] = config
         fname = self.config_name()
         if os.path.exists(fname):
@@ -271,13 +271,13 @@ class Viz(object):
 
         # make sure a SimControl and a NetGraph exist
         if '_viz_sim_control' not in self.locals:
-            template = nengo_viz.components.SimControlTemplate()
+            template = nengo_gui.components.SimControlTemplate()
             self.locals['_viz_sim_control'] = template
         if '_viz_net_graph' not in self.locals:
-            template = nengo_viz.components.NetGraphTemplate()
+            template = nengo_gui.components.NetGraphTemplate()
             self.locals['_viz_net_graph'] = template
         if '_viz_ace_editor' not in self.locals:
-            template = nengo_viz.components.AceEditorTemplate()
+            template = nengo_gui.components.AceEditorTemplate()
             self.locals['_viz_ace_editor'] = template
 
         if config[self.model].pos is None:
@@ -286,7 +286,7 @@ class Viz(object):
             config[self.model].size = (1.0, 1.0)
 
         for k, v in self.locals.items():
-            if isinstance(v, nengo_viz.components.component.Template):
+            if isinstance(v, nengo_gui.components.component.Template):
                 self.default_labels[v] = k
         return config
 
@@ -333,20 +333,20 @@ class Viz(object):
 
     def start(self, port=8080, browser=True, password=None):
         """Start the web server"""
-        print("Starting nengo_viz server at http://localhost:%d" % port)
+        print("Starting nengo_gui server at http://localhost:%d" % port)
         if password is not None:
-            nengo_viz.server.Server.add_user('', password)
+            nengo_gui.server.Server.add_user('', password)
             addr = ''
         else:
             addr = 'localhost'
-        nengo_viz.server.Server.start(self, port=port, browser=browser, addr=addr)
+        nengo_gui.server.Server.start(self, port=port, browser=browser, addr=addr)
 
     def prepare_server(self, viz, port=8080, browser=True):
-        return nengo_viz.server.Server.prepare_server(
+        return nengo_gui.server.Server.prepare_server(
             self, port=port, browser=browser)
 
     def begin_lifecycle(self, server):
-        nengo_viz.server.Server.begin_lifecycle(
+        nengo_gui.server.Server.begin_lifecycle(
             server, interactive=self.interactive)
 
     def create_sim(self):

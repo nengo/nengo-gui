@@ -1,6 +1,6 @@
 from nengo.utils.compat import iteritems
 
-import nengo_viz.components
+import nengo_gui.components
 
 
 def create_action(action, net_graph, **kwargs):
@@ -123,16 +123,16 @@ class CreateGraph(Action):
         self.type = type
         self.x, self.y = x, y
         self.width, self.height = width, height
-        cls = getattr(nengo_viz.components, self.type + 'Template')
+        cls = getattr(nengo_gui.components, self.type + 'Template')
         self.template = cls(self.obj, **kwargs)
 
-        # If only one instance of the component is allowed, and another had to be 
+        # If only one instance of the component is allowed, and another had to be
         # destroyed to create this one, keep track of it here so it can be undone
         self.duplicate = None
 
         # Remove any existing sliders associated with the same node
         for component in self.net_graph.viz.components:
-            if (isinstance(component, nengo_viz.components.slider.Slider)
+            if (isinstance(component, nengo_gui.components.slider.Slider)
                     and component.node is self.obj):
                 self.duplicate = RemoveGraph(net_graph, component)
                 self.send('delete_graph', uid=component.uid)

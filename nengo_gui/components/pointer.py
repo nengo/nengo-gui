@@ -6,7 +6,7 @@ import nengo.spa
 from nengo.spa.module import Module
 import numpy as np
 
-from nengo_viz.components.component import Component, Template
+from nengo_gui.components.component import Component, Template
 
 
 class Pointer(Component):
@@ -89,4 +89,3 @@ class Pointer(Component):
 class PointerTemplate(Template):
     cls = Pointer
     config_params = dict(show_pairs=False, **Template.default_params)
-

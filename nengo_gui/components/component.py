@@ -40,5 +40,4 @@ class Template(object):
     def code_python(self, uids):
         args = [uids[x] for x in self.args]
         name = self.__class__.__name__
-        return 'nengo_viz.components.%s(%s)' % (name, ','.join(args))
-
+        return 'nengo_gui.components.%s(%s)' % (name, ','.join(args))

@@ -6,9 +6,9 @@ import collections
 import nengo
 import json
 
-from nengo_viz.components.component import Component, Template
-from nengo_viz.disposable_js import infomodal
-import nengo_viz.layout
+from nengo_gui.components.component import Component, Template
+from nengo_gui.disposable_js import infomodal
+import nengo_gui.layout
 
 from .action import create_action
 
@@ -19,7 +19,7 @@ class NetGraph(Component):
     def __init__(self, viz, config, uid):
         super(NetGraph, self).__init__(viz, config, uid)
         self.viz = viz
-        self.layout = nengo_viz.layout.Layout(self.viz.model)
+        self.layout = nengo_gui.layout.Layout(self.viz.model)
         self.config = viz.config
         self.to_be_expanded = collections.deque([self.viz.model])
         self.to_be_sent = collections.deque()
@@ -63,7 +63,7 @@ class NetGraph(Component):
         try:
             exec(code, locals)
         except:
-            line = nengo_viz.monkey.determine_line_number()
+            line = nengo_gui.monkey.determine_line_number()
             current_error = dict(trace=traceback.format_exc(), line=line)
             traceback.print_exc()
             self.viz.current_error = current_error
@@ -72,15 +72,15 @@ class NetGraph(Component):
             model = locals['model']
         except:
             if current_error is None:
-                line = nengo_viz.monkey.determine_line_number()
+                line = nengo_gui.monkey.determine_line_number()
                 current_error = dict(trace=traceback.format_exc(), line=line)
                 traceback.print_exc()
             self.viz.current_error = current_error
             return
         self.viz.current_error = current_error
 
-        locals['nengo_viz'] = nengo_viz
-        name_finder = nengo_viz.NameFinder(locals, model)
+        locals['nengo_gui'] = nengo_gui
+        name_finder = nengo_gui.NameFinder(locals, model)
 
         self.networks_to_search = [model]
         self.parents = {}
@@ -179,7 +179,7 @@ class NetGraph(Component):
         self.viz.config = self.viz.viz.config
         self.config = self.viz.viz.config
         self.viz.viz.uid_prefix_counter = {}
-        self.layout = nengo_viz.layout.Layout(model)
+        self.layout = nengo_gui.layout.Layout(model)
         self.viz.viz.code = code
 
 
@@ -198,9 +198,9 @@ class NetGraph(Component):
         self.viz.components = components
         for template in self.viz.viz.find_templates():
             if not isinstance(template,
-                              (nengo_viz.components.SimControlTemplate,
-                               nengo_viz.components.NetGraphTemplate,
-                               nengo_viz.components.AceEditorTemplate)):
+                              (nengo_gui.components.SimControlTemplate,
+                               nengo_gui.components.NetGraphTemplate,
+                               nengo_gui.components.AceEditorTemplate)):
                 self.viz.add_template(template)
 
         self.viz.changed = True
@@ -377,7 +377,7 @@ class NetGraph(Component):
             info['dimensions'] = int(obj.size_out)
 
         info['sp_targets'] = (
-            nengo_viz.components.pointer.Pointer.applicable_targets(obj))
+            nengo_gui.components.pointer.Pointer.applicable_targets(obj))
 
         client.write(json.dumps(info))
 

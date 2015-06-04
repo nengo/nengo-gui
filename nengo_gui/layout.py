@@ -1,6 +1,6 @@
 import nengo
-from nengo_viz.grandalf.graphs import Vertex, Edge, Graph
-from nengo_viz.grandalf.layouts import VertexViewer, SugiyamaLayout
+from nengo_gui.grandalf.graphs import Vertex, Edge, Graph
+from nengo_gui.grandalf.layouts import VertexViewer, SugiyamaLayout
 
 
 class Layout(object):
@@ -76,7 +76,7 @@ class Layout(object):
 
         # build the graph to pass into grandalf
         # note that grandalf flows from top to bottom, so x and y are switched
-        # from what we do in nengo_viz (so the flow is left to right)
+        # from what we do in nengo_gui (so the flow is left to right)
         vertices = {}
         for n in network.nodes:
             vertices[n] = Vertex(n)
