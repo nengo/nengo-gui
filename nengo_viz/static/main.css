@@ -37,7 +37,7 @@ div.minimap {
     left: 84.5%;
     top: 82.5%;
     position: relative;
-    z-index: 1000000000000;
+    z-index: 99999999;
 }
 
 .graph {

@@ -533,21 +533,26 @@ VIZ.NetGraph.prototype.create_minimap = function () {
 
     // default display minimap
     this.mm_display = true;
+    this.toggleMiniMap();
 
     // allow toggling of minimap display with ctrl+M
     document.addEventListener('keydown', function(ev) {
         if (ev.ctrlKey == true && ev.keyCode == 77) {
-            if (self.mm_display == true) {
-                $('.minimap')[0].style.visibility = 'hidden';
-                self.g_conns_mini.style.opacity = 0;
-                self.mm_display = false;
-            } else {
-                $('.minimap')[0].style.visibility = 'visible';
-                self.g_conns_mini.style.opacity = 1;
-                self.mm_display = true ;
-            }
+            self.toggleMiniMap();
         }
     });
+}
+
+VIZ.NetGraph.prototype.toggleMiniMap = function () {
+    if (this.mm_display == true) {
+        $('.minimap')[0].style.visibility = 'hidden';
+        this.g_conns_mini.style.opacity = 0;
+        this.mm_display = false;
+    } else {
+        $('.minimap')[0].style.visibility = 'visible';
+        this.g_conns_mini.style.opacity = 1;
+        this.mm_display = true ;
+    }
 }
 
 /** Calculate the minimap position offsets and scaling **/
