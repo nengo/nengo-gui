@@ -10,9 +10,7 @@ from nengo_viz.components.component import Component, Template
 class Raster(Component):
     def __init__(self, viz, config, uid, obj, n_neurons=None):
         super(Raster, self).__init__(viz, config, uid)
-        if getattr(obj, 'neuron_type') is not None:
-            type = (getattr(obj, 'neuron_type'))
-        self.neuron_type = type
+        self.neuron_type = obj.neuron_type
         self.obj = obj.neurons
         self.data = collections.deque()
         self.label = viz.viz.get_label(obj)
