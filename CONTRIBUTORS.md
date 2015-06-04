@@ -20,6 +20,7 @@ Please keep this list sorted alphabetically by first name.
 
 - Chris Eliasmith <celiasmith@uwaterloo.ca>
 - Christopher Chan <c88chan@uwaterloo.ca>
+- Jan Gosmann <jan@hyper-world.de>
 - Terry Stewart <terry.stewart@gmail.com>
 - Trevor Bekolay <tbekolay@gmail.com>
 - Ziying Zhang <zy8zhang@uwaterloo.ca>
