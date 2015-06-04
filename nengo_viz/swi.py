@@ -609,8 +609,11 @@ class ClientSocket(object):
                 self.close()  # acknowledge the close request
                 self.remote_close = True;
             self._closed = True;
-            self.socket.shutdown(socket.SHUT_RDWR)
-            self.socket.close()
+            try:
+                self.socket.shutdown(socket.SHUT_RDWR)
+                self.socket.close()
+            except socket.error:
+                pass
             raise SocketClosedError("Websocket has been closed")
 
         offset = 0
