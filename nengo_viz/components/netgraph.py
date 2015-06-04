@@ -50,6 +50,10 @@ class NetGraph(Component):
             self.reload(code=new_code)
 
     def reload(self, code=None):
+        with self.viz.viz.lock:
+            self._reload(code=code)
+
+    def _reload(self, code=None):
         current_error = None
         locals = {}
         if code is None:
