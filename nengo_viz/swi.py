@@ -227,7 +227,7 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
         key = key.encode('ascii')
         resp_data = (HSHAKE_RESP %
                      base64.b64encode(hashlib.sha1(key).digest()).decode('ascii'))
-        client.socket.send(resp_data.encode('ascii'))
+        client.socket.sendall(resp_data.encode('ascii'))
         client.set_blocking(False)
 
         self.user = self.get_user_from_cookie()
@@ -693,8 +693,8 @@ class ClientSocket(object):
         if not binary:
             data = data.encode('ascii')
         try:
-            self.socket.send(header)
-            self.socket.send(data)
+            self._sendall(header)
+            self._sendall(data)
         except socket.error as e:
             if e.errno == 32:  # Broken pipe
                 raise SocketClosedError("Cannot write to socket.")
@@ -706,7 +706,7 @@ class ClientSocket(object):
             self._closing = True
             code = 0b10001000
             packet = struct.pack('!BB', code, 0)
-            self.socket.send(packet)
+            self._sendall(packet)
 
     def wait_for_close(self):
         if not self._closed:
@@ -716,6 +716,13 @@ class ClientSocket(object):
                     time.sleep(0.01)
             except SocketClosedError:
                 return
+
+    def _sendall(self, data):
+        bytes_sent = 0
+        while bytes_sent < len(data):
+            _, wlist, _ = select.select([], [self.socket], [], 0.01)
+            if wlist:
+                bytes_sent += self.socket.send(data[bytes_sent:])
 
 
 if __name__ == '__main__':
