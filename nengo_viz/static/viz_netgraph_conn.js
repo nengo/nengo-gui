@@ -59,7 +59,7 @@ VIZ.NetGraphConnection = function(ng, info, minimap) {
 
     this.redraw();
 
-    ng.g_conns.appendChild(this.g);
+    this.g_conns.appendChild(this.g);
 }
 
 VIZ.NetGraphConnection.prototype.set_recurrent = function(recurrent) {
