@@ -7,6 +7,10 @@
  * @param {int} args.id - the id of the server-side SimControl to connect to
  */
 VIZ.SimControl = function(div, args) {
+    if (args.uid[0] === '<') {
+        console.log("invalid uid for SimControl: " + args.uid);
+        return;
+    }
     var self = this;
 
     div.classList.add('sim_control');    
