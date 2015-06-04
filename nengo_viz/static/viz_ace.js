@@ -24,11 +24,12 @@ VIZ.Ace = function (uid) {
     $('#Toggle_ace').on('click', function(){self.toggle_shown();});
 
     $('#Save_file').on('click', function(){self.save_file();});
+    $('#Font_increase').on('click', function(){self.font_increase();});
+    $('#Font_decrease').on('click', function(){self.font_decrease();});
 
     this.schedule_updates();
 
-    this.font_size = 12;
-    this.editor.setFontSize(this.font_size);
+    this.set_font_size(12);
     this.width = 580;  // pixels needed to do 80 chars at 12pt font
 
     self.set_width();    
@@ -57,6 +58,20 @@ VIZ.Ace.prototype.schedule_updates = function () {
             self.enable_save();
         }
     }, 100)
+}
+
+VIZ.Ace.prototype.set_font_size = function (font_size) {
+    this.font_size = font_size;
+    this.editor.setFontSize(font_size);
+}
+
+VIZ.Ace.prototype.font_increase = function () {
+    this.set_font_size(this.font_size + 1);
+}
+VIZ.Ace.prototype.font_decrease = function () {
+    if (this.font_size > 6) {
+        this.set_font_size(this.font_size - 1);
+    }
 }
 
 VIZ.Ace.prototype.save_file = function () {

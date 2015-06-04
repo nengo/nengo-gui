@@ -80,13 +80,10 @@
     background: #666;
 }
 
-#Toggle_ace{
+#Toggle_ace, #Save_file, #Font_increase, #Font_decrease{
     float: right; 
 }
 
-#Save_file{
-    float: right; 
-}
 #top_toolbar_div li.disabled a.glyphicon {
     color: #ccc;
     background: #eee;
