@@ -30,8 +30,10 @@ class VizSim(object):
         self.rebuild = False    # should we rebuild the model?
         self.sim = None
         self.changed = False    # has something changed the model, so it
+        self.current_error = None
         self.undo_stack = []
         self.redo_stack = []
+        self.new_code = None
                                 #  should be rebuilt?
 
         for template in self.viz.find_templates():
@@ -54,7 +56,8 @@ class VizSim(object):
         c = template.create(self)
         self.uids[c.uid] = c
         if isinstance(template, (nengo_viz.components.SimControlTemplate,
-                                 nengo_viz.components.NetGraphTemplate)):
+                                 nengo_viz.components.NetGraphTemplate,
+                                 nengo_viz.components.AceEditorTemplate)):
             self.components[:0] = [c]
         else:
             self.components.append(c)
@@ -101,6 +104,17 @@ class VizSim(object):
     def create_javascript(self):
         fn = json.dumps(self.viz.filename[:-3])
         webpage_title_js = ';document.title = %s;' % fn
+
+        ##Ensure that sim control is first
+        temp = self.components[0]
+        counter = 0
+        for t in self.components:
+            if isinstance(t, nengo_viz.components.SimControl):
+                self.components[0] = t
+                self.components[counter] = temp
+                break
+            counter += 1
+
         component_js = '\n'.join([c.javascript() for c in self.components])
         component_js += webpage_title_js
         if not self.viz.allow_file_change:
@@ -118,7 +132,6 @@ class VizSim(object):
         act = RemoveGraph(net_graph, component)
         self.undo_stack.append([act])
 
-
 class Viz(object):
     """The master visualization organizer set up for a particular model."""
     def __init__(
@@ -133,6 +146,8 @@ class Viz(object):
         self.cfg = cfg
         self.interactive = interactive;
 
+        self.lock = threading.Lock()
+
         self.config_save_period = 2.0  # minimum time between saves
 
         if filename is None:
@@ -140,59 +155,76 @@ class Viz(object):
                                     'examples',
                                     'default.py')
 
-        self.load(filename, model, locals)
+        self.load(filename, model, locals, force=True)
 
-    def load(self, filename, model=None, locals=None):
-        try:
-            filename = os.path.relpath(filename)
-        except ValueError:
-            pass
+    def load(self, filename, model=None, locals=None, force=False):
+        with self.lock:
+            try:
+                filename = os.path.relpath(filename)
+            except ValueError:
+                pass
 
-        if locals is None:
-            locals = {}
-            locals['nengo_viz'] = nengo_viz
-            locals['__file__'] = filename
+            if locals is None:
+                locals = {}
+                locals['nengo_viz'] = nengo_viz
+                locals['__file__'] = filename
 
-            with open(filename) as f:
-                code = f.read()
-            with nengo_viz.monkey.patch():
                 try:
-                    exec(code, locals)
-                except nengo_viz.monkey.StartedSimulatorException:
-                    if self.interactive:
-                        line = nengo_viz.monkey.determine_line_number()
-                        print('nengo.Simulator() started on line %d. '
-                              'Ignoring all subsequent lines.' % line)
-                except nengo_viz.monkey.StartedVizException:
-                    if self.interactive:
-                        line = nengo_viz.monkey.determine_line_number()
-                        print('nengo_viz.Viz() started on line %d. '
-                              'Ignoring all subsequent lines.' % line)
-        self.orig_locals = dict(locals)
+                    with open(filename) as f:
+                        self.code = f.read()
+                except IOError:
+                    self.code = ('import nengo\n\n'
+                                'model = nengo.Network()\n'
+                                'with model:\n'
+                                '    ')
 
-        if model is None:
-            if 'model' not in locals:
-                raise VizException('No object called "model" in the code')
-            model = locals['model']
-            if not isinstance(model, nengo.Network):
-                raise VizException('The "model" must be a nengo.Network')
+                with nengo_viz.monkey.patch():
+                    try:
+                        exec(self.code, locals)
+                    except nengo_viz.monkey.StartedSimulatorException:
+                        if self.interactive:
+                            line = nengo_viz.monkey.determine_line_number()
+                            print('nengo.Simulator() started on line %d. '
+                                  'Ignoring all subsequent lines.' % line)
+                    except nengo_viz.monkey.StartedVizException:
+                        if self.interactive:
+                            line = nengo_viz.monkey.determine_line_number()
+                            print('nengo_viz.Viz() started on line %d. '
+                                  'Ignoring all subsequent lines.' % line)
+                    except:
+                        if not force:
+                            raise
+            self.orig_locals = dict(locals)
+
+            if model is None:
+                if 'model' not in locals:
+                    if force:
+                        locals['model'] = nengo.Network()
+                    else:
+                        raise VizException('No object called "model" in the code')
+                model = locals['model']
+                if not isinstance(model, nengo.Network):
+                    if force:
+                        locals['model'] = nengo.Network()
+                        model = locals['model']
+                    else:
+                        raise VizException('The "model" must be a nengo.Network')
 
 
 
-        self.model = model
-        self.locals = dict(locals)
+            self.model = model
+            self.locals = dict(locals)
 
-        self.filename = filename
-        self.name_finder = nengo_viz.NameFinder(locals, model)
-        self.default_labels = self.name_finder.known_name
+            self.filename = filename
+            self.name_finder = nengo_viz.NameFinder(locals, model)
+            self.default_labels = self.name_finder.known_name
 
-        self.config = self.load_config()
-        self.config_save_needed = False
-        self.config_save_time = None   # time of last config file save
+            self.config = self.load_config()
+            self.config_save_needed = False
+            self.config_save_time = None   # time of last config file save
 
-        self.lock = threading.Lock()
 
-        self.uid_prefix_counter = {}
+            self.uid_prefix_counter = {}
 
     def find_templates(self):
         for k, v in self.locals.items():
@@ -211,9 +243,10 @@ class Viz(object):
         self.default_labels[obj] = uid
 
     def remove_uid(self, uid):
-        obj = self.locals[uid]
-        del self.locals[uid]
-        del self.default_labels[obj]
+        if uid in self.locals:
+            obj = self.locals[uid]
+            del self.locals[uid]
+            del self.default_labels[obj]
 
     def config_name(self):
         if self.cfg is None:
@@ -243,6 +276,9 @@ class Viz(object):
         if '_viz_net_graph' not in self.locals:
             template = nengo_viz.components.NetGraphTemplate()
             self.locals['_viz_net_graph'] = template
+        if '_viz_ace_editor' not in self.locals:
+            template = nengo_viz.components.AceEditorTemplate()
+            self.locals['_viz_ace_editor'] = template
 
         if config[self.model].pos is None:
             config[self.model].pos = (0, 0)
@@ -278,8 +314,11 @@ class Viz(object):
         label = obj.label
         if label is None:
             label = default_labels.get(obj, None)
-            if '.' in label:
-                label = label.rsplit('.', 1)[1]
+            if label is None:
+                print 'ERROR finding label', obj
+            else:
+                if '.' in label:
+                    label = label.rsplit('.', 1)[1]
         if label is None:
             label = repr(obj)
         return label

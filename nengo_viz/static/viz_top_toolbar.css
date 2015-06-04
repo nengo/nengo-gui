@@ -1,25 +1,25 @@
-#top_toolbar .glyphicon {
+#top_toolbar_div .glyphicon {
     color: #333;
     cursor: default;
     top: 0;
     border-radius: 0;
 }
 
-#top_toolbar .glyphicon:hover {
+#top_toolbar_div .glyphicon:hover {
     color: #eee;
     background: #666;
 }
 
-#top_toolbar .deactivated .glyphicon {
+#top_toolbar_div .deactivated .glyphicon {
     color: #ccc;
 }
 
-#top_toolbar .deactivated .glyphicon:hover {
+#top_toolbar_div .deactivated .glyphicon:hover {
     color: #ccc;
     background: none;
 }
 
-#top_toolbar {
+#top_toolbar_div {
     position: relative;
     flex: 0 0 auto;
     -webkit-flex: 0 0 auto;
@@ -36,7 +36,7 @@
         -ms-filter: "FlipH";
 }
 
-#top_toolbar .nav {
+#top_toolbar_div .nav {
     background: #eee;
     box-shadow: 0px 2px 4px 0px #999;
 }
@@ -71,6 +71,15 @@
 #filebrowser a:hover {
     color: #eee;
     background: #666;
+}
+
+#Toggle_ace, #Save_file, #Font_increase, #Font_decrease{
+    float: right; 
+}
+
+#top_toolbar_div li.disabled a.glyphicon {
+    color: #ccc;
+    background: #eee;
 }
 
 #filebrowser li.examples_dir {

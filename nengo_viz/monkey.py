@@ -47,6 +47,16 @@ def determine_line_number(filename='<string>'):
     for fn, line, function, code in reversed(tb):
         if fn == filename:
             return line
+
+    # if we can't find it that way, parse the text of the stack trace
+    #  note that this is required for indentation errors and other syntax
+    #  problems
+    trace = traceback.format_exc()
+    pattern = 'File "%s", line ' % filename
+    index = trace.find(pattern)
+    if index >=0:
+        line = int(trace[index + len(pattern):].split('\n', 1)[0])
+        return line
     return None
 
 

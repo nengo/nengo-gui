@@ -88,6 +88,8 @@ VIZ.Modal.prototype.help_body = function() {
                  '<td align="right">Ctrl-Shift-z, Ctrl-y</td></tr>');
     $body.append('<tr><td>Toggle minimap</td>'+
                  '<td align="right">Ctrl-m</td></tr>');
+    $body.append('<tr><td>Toggle editor</td>'+
+                 '<td align="right">Ctrl-e</td></tr>');
     $body.append('<tr><td>Show hotkeys</td>'+
                  '<td align="right">?</td></tr>');
     $body.append('</table>');

@@ -7,6 +7,9 @@
  * @param {DOMElement} args.parent - the element to add this component to
  */
 VIZ.NetGraph = function(parent, args) {
+    if (args.uid[0] === '<') {
+        console.log("invalid uid for NetGraph: " + args.uid);
+    }
     this.scale = 1.0;          // global scaling factor
     this.offsetX = 0;          // global x,y pan offset 
     this.offsetY = 0;
@@ -298,6 +301,7 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         var conn = this.svg_conns[data.uid];
         conn.set_pres(data.pres);
         conn.set_posts(data.posts);
+        conn.set_recurrent(data.pres[0] === data.posts[0]);
         conn.redraw();
 
         var conn_mini = this.minimap_conns[data.uid];
@@ -427,6 +431,7 @@ VIZ.NetGraph.prototype.create_connection = function(info) {
 
 /** handler for resizing the full SVG */
 VIZ.NetGraph.prototype.on_resize = function(event) {
+
     this.redraw();
     
     var width = $(this.svg).width();

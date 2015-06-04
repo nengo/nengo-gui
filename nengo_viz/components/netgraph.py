@@ -29,39 +29,63 @@ class NetGraph(Component):
         self.initialized_pan_and_zoom = False
         try:
             self.last_modify_time = os.path.getmtime(self.viz.viz.filename)
-        except:
-            self.last_modify_time = None;
+        except OSError:
+            self.last_modify_time = None
         self.last_reload_check = time.time()
 
     def check_for_reload(self):
         try:
             t = os.path.getmtime(self.viz.viz.filename)
+        except OSError:
+            t = None
 
-            if self.last_modify_time < t:
+        if t is not None:
+            if self.last_modify_time < t or self.last_modify_time is None:
                 self.reload()
                 self.last_modify_time = t
-        except:
-            pass
 
-    def reload(self):
+        new_code = self.viz.new_code
+        self.viz.new_code = None
+        if new_code is not None:
+            self.reload(code=new_code)
+
+    def reload(self, code=None):
+        with self.viz.viz.lock:
+            self._reload(code=code)
+
+    def _reload(self, code=None):
+        current_error = None
         locals = {}
-        with open(self.viz.viz.filename) as f:
-            code = f.read()
+        if code is None:
+            with open(self.viz.viz.filename) as f:
+                code = f.read()
+
         try:
             exec(code, locals)
         except:
+            line = nengo_viz.monkey.determine_line_number()
+            current_error = dict(trace=traceback.format_exc(), line=line)
             traceback.print_exc()
+            self.viz.current_error = current_error
+            return
         try:
             model = locals['model']
         except:
-            traceback.print_exc()
+            if current_error is None:
+                line = nengo_viz.monkey.determine_line_number()
+                current_error = dict(trace=traceback.format_exc(), line=line)
+                traceback.print_exc()
+            self.viz.current_error = current_error
             return
+        self.viz.current_error = current_error
 
         locals['nengo_viz'] = nengo_viz
         name_finder = nengo_viz.NameFinder(locals, model)
 
         self.networks_to_search = [model]
         self.parents = {}
+
+        removed_uids = {}
 
         # for each item in the old model, find the matching new item
         # for Nodes, Ensembles, and Networks, this means to find the item
@@ -73,10 +97,27 @@ class NetGraph(Component):
             except:
                 new_item = None
 
-            if new_item is None:
+            # check to make sure the new item's uid is the same as the
+            # old item.  This is to catch situations where an old uid
+            # happens to still refer to something in the new model, but that's
+            # not the normal uid for that item.  For example, the uid
+            # "ensembles[0]" might still refer to something even after that
+            # ensemble is removed.
+            new_uid = self.viz.viz.get_uid(new_item,
+                        default_labels=name_finder.known_name)
+            if new_uid != uid:
+                new_item = None
+
+            if new_item is None or not isinstance(new_item, old_item.__class__):
                 self.to_be_sent.append(dict(
                     type='remove', uid=uid))
                 del self.uids[uid]
+                removed_uids[old_item] = uid
+            elif not isinstance(new_item, old_item.__class__):
+                self.to_be_sent.append(dict(
+                    type='remove', uid=uid))
+                del self.uids[uid]
+                removed_uids[old_item] = uid
             else:
                 if isinstance(old_item, (nengo.Node,
                                          nengo.Ensemble,
@@ -88,6 +129,10 @@ class NetGraph(Component):
                     if old_label != new_label:
                         self.to_be_sent.append(dict(
                             type='rename', uid=uid, name=new_label))
+                    if isinstance(old_item, nengo.Network):
+                        if self.viz.viz.config[old_item].expanded:
+                            self.to_be_expanded.append(new_item)
+
                 elif isinstance(old_item, nengo.Connection):
                     old_pre = old_item.pre_obj
                     old_post = old_item.post_obj
@@ -135,16 +180,27 @@ class NetGraph(Component):
         self.config = self.viz.viz.config
         self.viz.viz.uid_prefix_counter = {}
         self.layout = nengo_viz.layout.Layout(model)
+        self.viz.viz.code = code
+
+
+        removed_items = list(removed_uids.keys())
+        for c in self.viz.components:
+            for item in c.template.args:
+                if item in removed_items:
+                    self.to_be_sent.append(dict(type='delete_graph',
+                                                uid=c.uid))
+                    break
 
         components = []
-        for c in self.viz.components[:2]:
+        for c in self.viz.components[:3]:
             components.append(c)
             locals[c.uid] = c.template
         self.viz.components = components
         for template in self.viz.viz.find_templates():
             if not isinstance(template,
                               (nengo_viz.components.SimControlTemplate,
-                               nengo_viz.components.NetGraphTemplate)):
+                               nengo_viz.components.NetGraphTemplate,
+                               nengo_viz.components.AceEditorTemplate)):
                 self.viz.add_template(template)
 
         self.viz.changed = True
