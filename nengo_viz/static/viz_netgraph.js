@@ -298,6 +298,7 @@ VIZ.NetGraph.prototype.on_message = function(event) {
         var conn = this.svg_conns[data.uid];
         conn.set_pres(data.pres);
         conn.set_posts(data.posts);
+        conn.set_recurrent(data.pres[0] === data.posts[0]);
         conn.redraw();
 
         var conn_mini = this.minimap_conns[data.uid];

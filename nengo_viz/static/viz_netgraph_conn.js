@@ -55,6 +55,23 @@ VIZ.NetGraphConnection = function(ng, info, minimap) {
     /** create the line and its arrowhead marker */
     this.g = ng.createSVGElement('g');
 
+    this.create_line();
+
+    this.redraw();
+
+    ng.g_conns.appendChild(this.g);
+}
+
+VIZ.NetGraphConnection.prototype.set_recurrent = function(recurrent) {
+    if (this.recurrent === recurrent) {
+        return;
+    }
+    this.remove_line();
+    this.recurrent = recurrent;
+    this.create_line();
+}
+
+VIZ.NetGraphConnection.prototype.create_line = function() {
     if (this.recurrent) {
         this.recurrent_ellipse = this.ng.createSVGElement('path');
         this.recurrent_ellipse.setAttribute('d', 
@@ -64,7 +81,7 @@ VIZ.NetGraphConnection = function(ng, info, minimap) {
         this.recurrent_ellipse.setAttribute('class','recur');
         this.g.appendChild(this.recurrent_ellipse);
 
-        this.marker = ng.createSVGElement('path');
+        this.marker = this.ng.createSVGElement('path');
         this.g.appendChild(this.marker);
 
         if (this.minimap == false) {
@@ -74,9 +91,9 @@ VIZ.NetGraphConnection = function(ng, info, minimap) {
         }
 
     } else {
-        this.line = ng.createSVGElement('line');
+        this.line = this.ng.createSVGElement('line');
         this.g.appendChild(this.line);    
-        this.marker = ng.createSVGElement('path');
+        this.marker = this.ng.createSVGElement('path');
         if (this.minimap == false) {
             this.marker.setAttribute('d', "M 10 0 L -5 -5 L -5 5 z");
         } else {
@@ -84,11 +101,22 @@ VIZ.NetGraphConnection = function(ng, info, minimap) {
         }
         this.g.appendChild(this.marker);
     }
-
-    this.redraw();
-
-    this.g_conns.appendChild(this.g);
 }
+
+VIZ.NetGraphConnection.prototype.remove_line = function() {
+    if (this.recurrent) {
+        this.g.removeChild(this.recurrent_ellipse);
+        this.g.removeChild(this.marker);
+        this.recurrent_ellipse = undefined;
+        this.marker = undefined;
+    } else {
+        this.g.removeChild(this.line);
+        this.g.removeChild(this.marker);
+        this.line = undefined;
+        this.marker = undefined;
+    }
+}
+
 
 
 /** set the item connecting from */
