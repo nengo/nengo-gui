@@ -143,7 +143,11 @@ class Viz(object):
         self.load(filename, model, locals)
 
     def load(self, filename, model=None, locals=None):
-        filename = os.path.relpath(filename)
+        try:
+            filename = os.path.relpath(filename)
+        except ValueError:
+            pass
+
         if locals is None:
             locals = {}
             locals['nengo_viz'] = nengo_viz
