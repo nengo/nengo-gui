@@ -28,4 +28,5 @@ Please keep this list sorted alphabetically by first name.
 - Terry Stewart <terry.stewart@gmail.com>
 - Travis DeWolf <travis.dewolf@gmail.com>
 - Trevor Bekolay <tbekolay@gmail.com>
+- Xuan Choo <fxchoo@gmail.com>
 - Ziying Zhang <zy8zhang@uwaterloo.ca>
