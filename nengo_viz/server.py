@@ -146,16 +146,17 @@ class Server(swi.SimpleWebInterface):
         finally:
             component.finish()
 
-            # wait a moment before checking if the server should be stopped
-            time.sleep(2)
+            if client.remote_close:
+                # wait a moment before checking if the server should be stopped
+                time.sleep(2)
 
-            # if there are no simulations left, stop the server
-            if isinstance(component, nengo_viz.components.SimControl):
-                if self.server.viz.interactive:
-                    print(
-                        "No connections remaining to the nengo_viz "
-                        "server.")
-                self.server.shutdown()
+                # if there are no simulations left, stop the server
+                if isinstance(component, nengo_viz.components.SimControl):
+                    if self.server.viz.interactive:
+                        print(
+                            "No connections remaining to the nengo_viz "
+                            "server.")
+                    self.server.shutdown()
 
     def log_message(self, format, *args):
         # suppress all the log messages

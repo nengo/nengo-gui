@@ -71,6 +71,7 @@ import sys
 import threading
 import time
 import traceback
+import weakref
 import webbrowser
 
 
@@ -214,7 +215,7 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
         else:
             command = 'ws_%s' % args[0]
 
-        client = ClientSocket(self.request, '')
+        client = self.server.create_websocket(self.request)
         key = self.headers['Sec-WebSocket-Key'] + MAGIC
         key = key.encode('ascii')
         resp_data = (HSHAKE_RESP %
@@ -234,7 +235,8 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
                 traceback.print_exc()
         except Exception:
             traceback.print_exc()
-        client.socket.close()
+        client.close()
+        client.wait_for_close()
 
     def handle_request(self, args, db):
         self.currentArgs = args
@@ -428,16 +430,22 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
             if interactive:
                 print("Shutting down server...")
 
+            ws_requests = []
+            for ws in server.websockets:
+                ws_requests.append(ws.socket)
+                ws.close()
+
             # shut down any remaining threads
             # server.requests might be modified from other threads, so we need
             # a copy which we get in a thread-safe way be slicing it with [:].
             if asynch and server.requests is not None:
                 for _, sock in server.requests:
-                    try:
-                        sock.shutdown(socket.SHUT_RDWR)
-                        sock.close()
-                    except socket.error:
-                        pass
+                    if sock not in ws_requests:
+                        try:
+                            sock.shutdown(socket.SHUT_RDWR)
+                            sock.close()
+                        except socket.error:
+                            pass
 
                 for thread, _ in server.requests:
                     if thread.is_alive():
@@ -469,10 +477,16 @@ class AsyncHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 
         # keep track of open threads, so we can close them when we exit
         self._requests = []
+        self.websockets = weakref.WeakSet()
 
     @property
     def requests(self):
         return self._requests[:]
+
+    def create_websocket(self, request):
+        client = ClientSocket(request, '')
+        self.websockets.add(client)
+        return client
 
     def process_request_thread(self, request, client_address):
         thread = threading.current_thread()
@@ -543,6 +557,9 @@ class ClientSocket(object):
         self.socket = socket
         self.addr = addr
         self.buffered_data = bytearray([])
+        self.remote_close = False
+        self._closing = False
+        self._closed = False
 
     def set_timeout(self, timeout):
         self.socket.settimeout(timeout)
@@ -588,9 +605,15 @@ class ClientSocket(object):
         datalen = data[1] & 0x7F
 
         if opcode == 8:
-            code = 0b10001000
-            ack = struct.pack('!BB', code, 0)
-            self.socket.send(ack)
+            if not self._closing:
+                self.close()  # acknowledge the close request
+                self.remote_close = True;
+            self._closed = True;
+            try:
+                self.socket.shutdown(socket.SHUT_RDWR)
+                self.socket.close()
+            except socket.error:
+                pass
             raise SocketClosedError("Websocket has been closed")
 
         offset = 0
@@ -632,6 +655,9 @@ class ClientSocket(object):
             return str_data
 
     def write(self, data, binary=False, ping=False):
+        if self._closing:
+            raise SocketClosedError("Connection closing or closed.")
+
         if binary:
             code = 0b10000010
         elif ping:
@@ -658,6 +684,22 @@ class ClientSocket(object):
                 raise SocketClosedError("Cannot write to socket.")
             else:
                 raise
+
+    def close(self):
+        if not self._closing:
+            self._closing = True
+            code = 0b10001000
+            packet = struct.pack('!BB', code, 0)
+            self.socket.send(packet)
+
+    def wait_for_close(self):
+        if not self._closed:
+            try:
+                while True:
+                    self.read()
+                    time.sleep(0.01)
+            except SocketClosedError:
+                return
 
 
 if __name__ == '__main__':
