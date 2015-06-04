@@ -50,7 +50,7 @@ Nengo.Image = function(parent, sim, args) {
     self.canvas.width = self.pixels_x;
     self.canvas.height = self.pixels_y;
 
-    self.on_resize(args.width, args.height);
+    self.on_resize(this.get_screen_width(), this.get_screen_height());
 
 };
 Nengo.Image.prototype = Object.create(Nengo.Component.prototype);
