@@ -20,9 +20,9 @@ Please keep this list sorted alphabetically by first name.
 
 - Chris Eliasmith <celiasmith@uwaterloo.ca>
 - Christopher Chan <c88chan@uwaterloo.ca>
+- Eric Hunsberger <erichuns@gmail.com>
 - Jan Gosmann <jan@hyper-world.de>
 - Sugandha Sharma <sugandha974@gmail.com>
 - Terry Stewart <terry.stewart@gmail.com>
 - Trevor Bekolay <tbekolay@gmail.com>
 - Ziying Zhang <zy8zhang@uwaterloo.ca>
-- Eric Hunsberger <erichuns@gmail.com>
