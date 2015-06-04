@@ -2,6 +2,10 @@ Nengo.Hotkeys = function () {
     var self = this;
 
     document.addEventListener('keydown', function(ev) {
+        // ignore keypresses going to the editor
+        if (ev.target.className === 'ace_text-input') {
+            return;
+        }
         if (typeof ev.key != 'undefined') {
             var key = ev.key;
         } else {
