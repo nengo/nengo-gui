@@ -57,7 +57,6 @@ target/
 
 # nengo_viz specific
 *.py.cfg
-.ipynb_checkpoints
 
 # Vagrant
 .vagrant
