@@ -223,6 +223,7 @@ class Viz(object):
 
     def load_config(self):
         config = nengo_viz.config.Config()
+        self.locals['nengo_viz'] = nengo_viz
         self.locals['_viz_config'] = config
         fname = self.config_name()
         if os.path.exists(fname):
