@@ -113,7 +113,7 @@ VIZ.Modal.prototype.main_config = function() {
     $('<div class="form-group" id="config-fontsize-group">' +
             '<label for="config-fontsize" class="control-label">Font size</label>' +
             '<div class="input-group col-xs-2">' +
-              '<input type="number" min="20" max="995" step="5" maxlength="3" class="form-control" id="config-fontsize" data-error="Twenty to 995 percent (steps of 5) of the base size" required>' +
+              '<input type="number" min="20" max="999" step="1" maxlength="3" class="form-control" id="config-fontsize" data-error="Twenty to 999 percent of the base size" required>' +
               '<span class="input-group-addon">%</span>' +
             '</div>' +
             '<span class="help-block with-errors">As a percentage of the base size</span>' +
@@ -137,7 +137,7 @@ VIZ.Modal.prototype.main_config = function() {
     });
     
     $('#config-fontsize').val(options[1]);
-    $('#config-fontsize').change(function () {
+    $('#config-fontsize').bind('keyup input', function () {
         VIZ.netgraph.set_font_size(parseInt($('#config-fontsize').val()));
     });
     $('#config-fontsize').attr('data-my_validator', 'custom');
