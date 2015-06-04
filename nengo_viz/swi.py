@@ -56,6 +56,7 @@ import os
 import random
 import re
 import select
+import signal
 import socket
 try:
     import SocketServer
@@ -76,6 +77,12 @@ import webbrowser
 
 
 class SocketClosedError(IOError):
+    pass
+
+
+# Does not really indicate an error state, thus derive from BaseException
+# instead of Exception. (KeyboardInterrupt is doing the same thing.)
+class ServerShutdown(BaseException):
     pass
 
 
@@ -402,31 +409,40 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
         return server
 
     @classmethod
+    def _confirm_shutdown(cls, signum, frame):
+        signal.signal(signal.SIGINT, cls._immediate_shutdown)
+        sys.stdout.write("\nShut-down this web server (y/[n])? ")
+        sys.stdout.flush()
+        rlist, _, _ = select.select([sys.stdin], [], [], 10)
+        if rlist:
+            line = sys.stdin.readline()
+            if line[0].lower() == 'y':
+                raise ServerShutdown()
+            else:
+                print("Resuming...")
+        else:
+            print("No confirmation received. Resuming...")
+        signal.signal(signal.SIGINT, cls._confirm_shutdown)
+
+    @classmethod
+    def _immediate_shutdown(cls, signum, frame):
+        raise ServerShutdown()
+
+    @classmethod
     def begin_lifecycle(cls, server, asynch=True, interactive=True):
+        if interactive and not sys.platform.startswith('win'):
+            signal.signal(signal.SIGINT, cls._confirm_shutdown)
+        else:
+            signal.signal(signal.SIGINT, cls._immediate_shutdown)
+
         try:
             server.running = True
-            while server.running:
-                try:
-                    server.serve_forever(poll_interval=0.02)
-                    server.running = False
-                except KeyboardInterrupt:
-                    if not interactive:
-                        raise
-
-                    # Check that user wants to shut down
-                    sys.stdout.write(
-                        "\nShut-down this web server (y/[n])? ")
-                    sys.stdout.flush()
-                    rlist, _, _ = select.select([sys.stdin], [], [], 10)
-                    if rlist:
-                        line = sys.stdin.readline()
-                        if line[0].lower() == 'y':
-                            server.running = False
-                        else:
-                            print("Resuming...")
-                    else:
-                        print("No confirmation received. Resuming...")
+            server.serve_forever(poll_interval=0.02)
+        except ServerShutdown:
+            pass
         finally:
+            server.running = False
+
             if interactive:
                 print("Shutting down server...")
 
