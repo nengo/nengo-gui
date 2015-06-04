@@ -14,14 +14,14 @@ class Raster(Component):
         self.obj = obj.neurons
         self.data = collections.deque()
         self.label = viz.viz.get_label(obj)
-        self.max_neurons = self.obj.size_out
+        self.max_neurons = obj.n_neurons
         if n_neurons is None:
-            n_neurons = min(self.obj.size_out, 10)
+            n_neurons = min(self.max_neurons, 10)
         self.n_neurons = n_neurons
 
     def add_nengo_objects(self, viz):
         with viz.model:
-            self.node = nengo.Node(self.gather_data, size_in=self.obj.size_out)
+            self.node = nengo.Node(self.gather_data, size_in=self.max_neurons)
             if 'spikes' in self.neuron_type.probeable:
                 self.conn = nengo.Connection(self.obj, self.node, synapse=None)
 
@@ -30,11 +30,8 @@ class Raster(Component):
         if 'spikes' in self.neuron_type.probeable:
             viz.model.connections.remove(self.conn)
 
-    def gather_data(self, t, x=None):
-        if x is None:
-            indices = []
-        else:
-            indices = np.nonzero(x[:self.n_neurons])[0]
+    def gather_data(self, t, x):
+        indices = np.nonzero(x[:self.n_neurons])[0]
         data = struct.pack('<f%dH' % len(indices), t, *indices)
         self.data.append(data)
 
