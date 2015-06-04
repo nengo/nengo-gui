@@ -10,11 +10,11 @@
     background: #666;
 }
 
-#top_toolbar .deactivated .glyphicon {
+#top_toolbar_div .deactivated .glyphicon {
     color: #ccc;
 }
 
-#top_toolbar .deactivated .glyphicon:hover {
+#top_toolbar_div .deactivated .glyphicon:hover {
     color: #ccc;
     background: none;
 }
