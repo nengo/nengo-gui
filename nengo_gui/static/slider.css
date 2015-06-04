@@ -1,0 +1,11 @@
+.guideline{
+    background-color: #ddd;
+    z-index: -1;
+    
+    border: 1px solid #888;
+    border-radius: 4px;
+}
+
+input#value_in_field {
+    cursor: text !important;
+}

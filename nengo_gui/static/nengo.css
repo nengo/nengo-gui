@@ -1,0 +1,46 @@
+.graph {
+    background-color:rgba(255,0,0,0);
+    border: 1px solid rgba(255,0,0,0);
+}
+
+.graph:hover {
+    border: 1px solid #888888;
+}
+
+.graph text {
+    cursor: default;
+}
+
+.graph text:active {
+    cursor: move;
+}
+
+.graph .line {
+    fill: none;
+    stroke: black;
+    stroke-width: 1.5px;
+}
+
+.graph svg .axis path {
+    stroke: black;
+    stroke-width: 1px;
+    fill: none;
+}
+
+.graph text.graph_text {
+    font-size: .8em;
+    pointer-events: none;
+}
+
+.graph .axis text {
+    font-size: .8em;
+    pointer-events: none;
+}
+
+.graph .label {
+    font-size: 1em;
+    font-family: sans-serif;
+    font-weight: normal;
+    color: black;
+    pointer-events: none;
+}

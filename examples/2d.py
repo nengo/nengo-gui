@@ -8,5 +8,5 @@ with model:
     nengo.Connection(stimulus, ens)
 
 if __name__ == '__main__':
-    import nengo_viz
-    nengo_viz.Viz(__file__).start()
+    import nengo_gui
+    nengo_gui.Viz(__file__).start()

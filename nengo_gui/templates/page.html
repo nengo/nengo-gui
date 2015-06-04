@@ -1,0 +1,133 @@
+<html>
+    <head>
+        <link href="static/main.css" rel="stylesheet" type="text/css" />
+        <link href="static/nengo.css" rel="stylesheet" type="text/css" />
+        <link href="static/value.css" rel="stylesheet" type="text/css" />
+        <link href="static/menu.css" rel="stylesheet" type="text/css" />
+        <link href="static/raster.css" rel="stylesheet" type="text/css" />
+        <link href="static/pointer.css" rel="stylesheet" type="text/css" />
+        <link href="static/slider.css" rel="stylesheet" type="text/css" />
+        <link href="static/modal.css" rel="stylesheet" type="text/css" />
+        <link href="static/tooltips.css" rel="stylesheet" type="text/css" />
+        <link href="static/sim_control.css" rel="stylesheet" type="text/css" />
+        <link href="static/netgraph.css" rel="stylesheet" type="text/css" />
+        <link href="static/ace.css" rel="stylesheet" type="text/css" />
+        <link href="static//lib/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+        <link href="static/top_toolbar.css" rel="stylesheet" type="text/css" />
+        <link href="static/lib/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+        <link href="static/lib/js/jqueryFileTree/jqueryFileTree.css" rel="stylesheet" type="text/css">
+    </head>
+    <!-- body needs an ID to fix cursor in Firefox -->
+    <body id="body" onload="onload();">
+        <div id="top_toolbar_div">
+            <ul id='toolbar_object' class="nav nav-pills">
+                <li id='Open_file_button' role="presentation">
+                    <a title='Open file' class='glyphicon glyphicon-folder-open'> </a>
+                </li>
+                <li id='Reset_layout_button' role="presentation">
+                    <a title='Reset model layout' class='glyphicon glyphicon-refresh'> </a>
+                </li>
+                <li id='Undo_last_button' role="presentation">
+                    <a title='Undo last' class='glyphicon glyphicon-share-alt'> </a>
+                </li>
+                <li id='Redo_last_button' role="presentation">
+                    <a title='Redo last' class='glyphicon glyphicon-share-alt'> </a>
+                </li>
+                <li id='Minimap_button' role="presentation">
+                    <a title='Minimap' class='glyphicon glyphicon-credit-card'> </a>
+                </li>
+                <li id='Config_button' role="presentation">
+                    <a title='Config panel' class='glyphicon glyphicon-cog'> </a>
+                </li>
+                <li id='Help_button' role="presentation">
+                    <a title='List of hotkeys' class='glyphicon glyphicon-question-sign'> </a>
+                <li id='Toggle_ace' role="presentation">
+                    <a title='Open code editor' class='glyphicon glyphicon-list-alt'> </a>
+                </li>
+                <li id='Font_decrease' role="presentation">
+                    <a title='Decrease font size' class='glyphicon glyphicon-zoom-out'> </a>
+                </li>
+                <li id='Font_increase' role="presentation">
+                    <a title='Increase font size' class='glyphicon glyphicon-zoom-in'> </a>
+                </li>
+                <li id='Save_file' class='disabled' role="presentation">
+                    <a title='Save file' class='glyphicon glyphicon-floppy-save'> </a>
+                </li>
+                <li id='filename' role="presentation"> </li>
+            </ul>
+        </div>
+        <div id="vmiddle">
+          <div id="main"></div>
+          <div id="filebrowser"></div>
+        </div>
+        <div id="control">
+            <div class="time_slider">
+                <div class="shown_time"></div>
+            </div>
+            <button id='pause_button' class="btn btn-default play-pause-button">
+                <span id='pause_button_icon' class="glyphicon glyphicon-play">
+                </span>
+            </button>
+            <div id='time_table' >
+                <table class='table metrics-container'>
+                    <tbody>
+                        <tr id="rate_tr"><td></td><td></td></tr>
+                        <tr id="ticks_tr"><td></td><td></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal fade">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">
+                        &times;
+                    </span>
+                </button>
+                <h4 class="modal-title"></h4>
+              </div>
+              <div class="modal-body"></div>
+              <div class="modal-footer"></div>
+            </div>
+          </div>
+        </div>
+        <script>
+            function onload() {
+                viewport = new Nengo.Viewport();
+                main = document.getElementById("main");
+                control = document.getElementById("control");
+                %(components)s
+            }
+        </script>
+        <script src="static/lib/js/ace-src-min/ace.js" type="text/javascript" charset="utf-8"></script>
+        <script src="static/lib/js/interact-1.2.4.js"></script>
+        <script src="static/lib/js/d3.v3.min.js" charset="utf-8"></script>
+        <script src="static/lib/js/jquery-2.1.3.min.js"></script>
+        <script src="static/lib/js/jquery-ui-1.9.2.min.js"></script>
+        <script src="static/lib/js/jqueryFileTree/jqueryFileTree.js" type="text/javascript"></script>
+        <script src="static/lib/js/bootstrap.min.js"></script>
+        <script src="static/lib/js/validator.js"></script>
+        <script src="static/nengo.js"></script>
+        <script src="static/2d_axes.js"></script>
+        <script src="static/time_axes.js"></script>
+        <script src="static/value.js"></script>
+        <script src="static/xyvalue.js"></script>
+        <script src="static/raster.js"></script>
+        <script src="static/slider.js"></script>
+        <script src="static/slidercontrol.js"></script>
+        <script src="static/sim_control.js"></script>
+        <script src="static/netgraph.js"></script>
+        <script src="static/pointer.js"></script>
+        <script src="static/netgraph_item.js"></script>
+        <script src="static/netgraph_conn.js"></script>
+        <script src="static/top_toolbar.js"></script>
+        <script src="static/modal.js"></script>
+        <script src="static/tooltips.js"></script>
+        <script src="static/menu.js"></script>
+        <script src="static/viewport.js"></script>
+        <script src="static/hotkeys.js"></script>
+        <script src="static/ace.js"></script>
+    </body>
+</html>
