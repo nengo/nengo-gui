@@ -16,9 +16,6 @@ VIZ.Toolbar = function(filename) {
     /** Create event listener to hide file opener when the mouse leaves */
     $('#filebrowser').mouseleave(function(){$(this).hide(200)});
 
-    /** keep a reference to the toolbar element */
-    this.toolbar = $('#top_toolbar')[0];
-
     $('#Open_file_button')[0].addEventListener('click', function () {
         if (!$(this).hasClass('deactivated')) {
             self.file_browser();
