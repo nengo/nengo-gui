@@ -18,6 +18,7 @@ to the file like so:
 
 Please keep this list sorted alphabetically by first name.
 
+- Brent Komer <brent.komer@gmail.com>
 - Chris Eliasmith <celiasmith@uwaterloo.ca>
 - Christopher Chan <c88chan@uwaterloo.ca>
 - Eric Hunsberger <erichuns@gmail.com>
