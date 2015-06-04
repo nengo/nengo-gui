@@ -86,9 +86,8 @@ class SimControl(Component):
             client.write('reload')
             self.reload = False
         if self.send_config_options == True:
-            from ..disposable_js import configmodal
-            javascript = configmodal()
-            client.write('config' + javascript)
+            client.write('config' +
+                'VIZ.Toolbar.prototype.config_modal_show();')
             self.send_config_options = False
 
     def get_status(self):

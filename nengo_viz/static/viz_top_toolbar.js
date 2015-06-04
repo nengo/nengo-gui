@@ -38,7 +38,7 @@ VIZ.Toolbar = function(filename) {
         VIZ.netgraph.notify({ undo: "0" });
     });
     $('#Config_button')[0].addEventListener('click', function () {
-        self.start_modal();
+        self.config_modal();
     });
     $('#Help_button')[0].addEventListener('click', function () {
         VIZ.hotkeys.callMenu();
@@ -85,8 +85,46 @@ VIZ.Toolbar.prototype.reset_model_layout = function () {
 }
 
 /** Function called by event handler in order to launch modal.
- *  First check to make sure modal isn't open already, then send
- *  call to server to generate modal javascript from config. */
-VIZ.Toolbar.prototype.start_modal = function () {
-    sim.ws.send('config')
+ *  call to server to call config_modal_show with config data. */
+VIZ.Toolbar.prototype.config_modal = function () {
+    sim.ws.send('config');  //Doing it this way in case we need to save options to a file later
+}
+
+VIZ.Toolbar.prototype.config_modal_show = function() {
+    var self = this;
+
+    var options = [VIZ.netgraph.get_zoom_fonts(),
+        VIZ.netgraph.get_font_size()];
+
+    VIZ.modal.title('Configure Options');
+    VIZ.modal.main_config(options);
+    VIZ.modal.footer('ok_cancel', function(e) {
+        var zoom = $('#zoom-fonts').prop('checked');
+        var font_size = $('#config-fontsize').val();
+        var modal = $('#myModalForm').data('bs.validator');
+
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
+        VIZ.netgraph.set_zoom_fonts(zoom);
+        VIZ.netgraph.set_font_size(parseInt(font_size));
+        $('#OK').attr('data-dismiss', 'modal');
+    },
+        function () {  //cancel_function
+            VIZ.netgraph.set_zoom_fonts(options[0]);
+            VIZ.netgraph.set_font_size(options[1]);
+            $('#cancel-button').attr('data-dismiss', 'modal');
+    });
+
+    var $form = $('#myModalForm').validator({
+        custom: {
+            my_validator: function($item) {
+                var num = $item.val();
+                return (num.length<=3 && num>10);
+            }
+        },
+    });
+
+    VIZ.modal.show();
 };

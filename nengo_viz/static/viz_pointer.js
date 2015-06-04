@@ -90,7 +90,7 @@ VIZ.Pointer.prototype.set_show_pairs = function(value) {
 VIZ.Pointer.prototype.set_value = function() {
     var self = this;
     VIZ.modal.title('Enter a Semantic Pointer value...');
-    VIZ.modal.single_input_body('Pointer', 'New value:');
+    VIZ.modal.single_input_body('Pointer', 'New value');
     VIZ.modal.footer('ok_cancel', function(e) {
         var value = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');

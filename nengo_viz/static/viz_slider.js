@@ -209,7 +209,7 @@ VIZ.Slider.prototype.user_value = function () {
         }
     }
     VIZ.modal.title('Set slider value(s)...');
-    VIZ.modal.single_input_body(prompt_string, 'New value(s):');
+    VIZ.modal.single_input_body(prompt_string, 'New value(s)');
     VIZ.modal.footer('ok_cancel', function(e) {
         var new_value = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
@@ -265,7 +265,7 @@ VIZ.Slider.prototype.set_range = function() {
     var range = this.sliders[0].scale.domain();
     var self = this;
     VIZ.modal.title('Set slider range...');
-    VIZ.modal.single_input_body([range[1], range[0]], 'New range:');
+    VIZ.modal.single_input_body([range[1], range[0]], 'New range');
     VIZ.modal.footer('ok_cancel', function(e) {
         var new_range = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');

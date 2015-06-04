@@ -136,7 +136,7 @@ VIZ.XYValue.prototype.set_range = function() {
     var range = this.axes2d.scale_y.domain();
     var self = this;
     VIZ.modal.title('Set graph range...');
-    VIZ.modal.single_input_body(range, 'New range:');
+    VIZ.modal.single_input_body(range, 'New range');
     VIZ.modal.footer('ok_cancel', function(e) {
         var new_range = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
@@ -187,7 +187,7 @@ VIZ.XYValue.prototype.update_range = function(min, max) {
 VIZ.XYValue.prototype.set_indices = function() {
     var self = this;
     VIZ.modal.title('Set X and Y indices...');
-    VIZ.modal.single_input_body([this.index_x,this.index_y], 'New indices:');
+    VIZ.modal.single_input_body([this.index_x,this.index_y], 'New indices');
     VIZ.modal.footer('ok_cancel', function(e) {
         var new_indices = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
