@@ -28,6 +28,24 @@ g.net rect{
     stroke-width: 2px;
 }
 
+.minimap {
+    border-radius: 10px/60px;
+    height: 100%;
+    opacity: 0.85;
+    position: 'relative';
+    width: 100%;
+}
+
+.minimap line {
+    stroke: black;
+    stroke-width: 1px;
+}
+
+rect.view{
+    fill: #d9edf7;
+    stroke: #ccc;
+}
+
 .recur {
     stroke: black;
     stroke-width: 2px;

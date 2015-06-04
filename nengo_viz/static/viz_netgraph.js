@@ -15,6 +15,15 @@ VIZ.NetGraph = function(parent, args) {
 
     this.svg_objects = {};     // dict of all VIZ.NetGraphItems, by uid
     this.svg_conns = {};       // dict of all VIZ.NetGraphConnections, by uid
+    this.minimap_objects = {};
+    this.minimap_conns = {};
+
+    this.mm_min_x = 0;
+    this.mm_max_x = 0;
+    this.mm_min_y = 0;
+    this.mm_max_y = 0;
+
+    this.mm_scale = .1;
 
     this.in_zoom_delay = false;
 
@@ -31,8 +40,8 @@ VIZ.NetGraph = function(parent, args) {
     this.svg.classList.add('netgraph');    
     this.svg.style.width = '100%';
     this.svg.id = 'netgraph';
-    this.svg.style.height = 'calc(100% - 80px)';
-    this.svg.style.position = 'fixed';    
+    this.svg.style.height = '100%';
+    this.svg.style.position = 'absolute';
         
     interact(this.svg).styleCursor(false);
            
@@ -52,7 +61,7 @@ VIZ.NetGraph = function(parent, args) {
     this.svg.appendChild(this.g_conns);
     this.g_items = this.createSVGElement('g');
     this.svg.appendChild(this.g_items);
-    
+
     /** connect to server */
     this.ws = VIZ.create_websocket(args.uid);
     this.ws.onmessage = function(event) {self.on_message(event);}
@@ -88,14 +97,18 @@ VIZ.NetGraph = function(parent, args) {
                 self.offsetY += event.dy / self.get_scaled_height();
                 for (var key in self.svg_objects) {
                     self.svg_objects[key].redraw_position();
+                    self.minimap_objects[key].redraw_position();
                 }    
                 for (var key in self.svg_conns) {
                     self.svg_conns[key].redraw();
+                    self.minimap_conns[key].redraw();
                 }    
                 
                 viewport.x = self.offsetX;
                 viewport.y = self.offsetY;
                 viewport.redraw_all();
+
+                self.scaleMiniMapViewBox();
                 
             },
             onend: function(event) {
@@ -154,6 +167,8 @@ VIZ.NetGraph = function(parent, args) {
             viewport.y = self.offsetY;
             viewport.redraw_all();
 
+            self.scaleMiniMapViewBox();
+
             self.update_font_size();
             self.redraw();
 
@@ -194,6 +209,8 @@ VIZ.NetGraph = function(parent, args) {
                                self.generate_menu());
         }
     }); 
+
+    this.create_minimap();
 };
 
 VIZ.NetGraph.prototype.generate_menu = function() {
@@ -224,13 +241,28 @@ VIZ.NetGraph.prototype.on_message = function(event) {
     } else if (data.type === 'expand') {
         var item = this.svg_objects[data.uid];
         item.expand(true,true)
+
+        var item_mini = this.minimap_objects[data.uid];
+        item_mini.expand(true,true)
+
     } else if (data.type === 'collapse') {
         var item = this.svg_objects[data.uid];
         item.collapse(true,true)
+
+        var item_mini = this.minimap_objects[data.uid];
+        item_mini.collapse(true,true)
+
     } else if (data.type === 'pos_size') {
         var item = this.svg_objects[data.uid];
         item.set_position(data.pos[0], data.pos[1]);
         item.set_size(data.size[0], data.size[1]);
+
+        var item = this.minimap_objects[data.uid];
+        item.set_position(data.pos[0], data.pos[1]);
+        item.set_size(data.size[0], data.size[1]);
+
+        this.scaleMiniMap();
+
     } else if (data.type === 'config') {
         // Anything about the config of a component has changed
         var uid = data.uid;
@@ -245,17 +277,34 @@ VIZ.NetGraph.prototype.on_message = function(event) {
     } else if (data.type === 'rename') {
         var item = this.svg_objects[data.uid];
         item.set_label(data.name);    
+
+        var item_mini = this.minimap_objects[data.uid];
+        item_mini.set_label(data.name);    
+
     } else if (data.type === 'remove') {
         var item = this.svg_objects[data.uid];
         if (item === undefined) {
             item = this.svg_conns[data.uid];
         }
         item.remove();    
+
+        var item_mini = this.minimap_objects[data.uid];
+        if (item_mini === undefined) {
+            item_mini = this.minimap_conns[data.uid];
+        }
+        item_mini.remove();    
+
     } else if (data.type === 'reconnect') {
         var conn = this.svg_conns[data.uid];
         conn.set_pres(data.pres);
         conn.set_posts(data.posts);
         conn.redraw();
+
+        var conn_mini = this.minimap_conns[data.uid];
+        conn_mini.set_pres(data.pres);
+        conn_mini.set_posts(data.posts);
+        conn_mini.redraw();
+
     } else if (data.type === 'delete_graph') {
         var uid = data.uid;
         for (var i = 0; i < VIZ.Component.components.length; i++) {
@@ -330,9 +379,15 @@ VIZ.NetGraph.prototype.redraw = function() {
     for (var key in this.svg_objects) {
         this.svg_objects[key].redraw_position();
         this.svg_objects[key].redraw_size();
+
+        this.minimap_objects[key].pos = this.svg_objects[key].pos
+        this.minimap_objects[key].size = this.svg_objects[key].size
+        this.minimap_objects[key].redraw_position();
+        this.minimap_objects[key].redraw_size();
     }    
     for (var key in this.svg_conns) {
         this.svg_conns[key].redraw();
+        this.minimap_conns[key].redraw();
     }    
 }
 
@@ -347,16 +402,26 @@ VIZ.NetGraph.prototype.createSVGElement = function(tag) {
  *  if an existing NetGraphConnection is looking for this item, it will be
  *  notified */
 VIZ.NetGraph.prototype.create_object = function(info) {
-    var item = new VIZ.NetGraphItem(this, info);
+    var item_mini = new VIZ.NetGraphItem(this, info, true);
+    this.minimap_objects[info.uid] = item_mini;    
+
+    var item = new VIZ.NetGraphItem(this, info, false, item_mini);
     this.svg_objects[info.uid] = item;    
+
     this.detect_collapsed_conns(item.uid);
+    this.detect_collapsed_conns(item_mini.uid);
+
+    this.scaleMiniMap();
 };
 
 
 /** create a new NetGraphConnection */
 VIZ.NetGraph.prototype.create_connection = function(info) {
-    var conn = new VIZ.NetGraphConnection(this, info);
+    var conn = new VIZ.NetGraphConnection(this, info, false);
     this.svg_conns[info.uid] = conn;    
+
+    var conn_mini = new VIZ.NetGraphConnection(this, info, true);
+    this.minimap_conns[info.uid] = conn_mini;    
 };
 
 
@@ -391,6 +456,13 @@ VIZ.NetGraph.prototype.toggle_network = function(uid) {
         item.collapse(true);
     } else {
         item.expand();
+    }
+
+    var item_mini = this.minimap_objects[uid];
+    if (item_mini.expanded) {
+        item_mini.collapse(true);
+    } else {
+        item_mini.expand();
     }
 }
 
@@ -431,4 +503,120 @@ VIZ.NetGraph.prototype.detect_collapsed_conns = function(uid) {
             }
         }
     }
+}
+
+/** create a minimap */
+VIZ.NetGraph.prototype.create_minimap = function () {
+    var self = this;
+
+    this.minimap_div = document.createElement('div');
+    this.minimap_div.className = 'minimap';
+    this.parent.appendChild(this.minimap_div);
+
+    this.minimap = this.createSVGElement('svg');
+    this.minimap.classList.add('minimap');    
+    this.minimap.id = 'minimap';
+    this.minimap_div.appendChild(this.minimap);
+
+    // box to show current view
+    this.view = this.createSVGElement('rect');
+    this.view.classList.add('view');
+    this.minimap.appendChild(this.view);
+
+    this.g_networks_mini = this.createSVGElement('g'); 
+    this.g_conns_mini = this.createSVGElement('g');
+    this.g_items_mini = this.createSVGElement('g');
+    // order these are appended is important for layering
+    this.minimap.appendChild(this.g_networks_mini);
+    this.minimap.appendChild(this.g_conns_mini);
+    this.minimap.appendChild(this.g_items_mini);
+
+    // default display minimap
+    this.mm_display = true;
+    this.toggleMiniMap();
+}
+
+VIZ.NetGraph.prototype.toggleMiniMap = function () {
+    if (this.mm_display == true) {
+        $('.minimap')[0].style.visibility = 'hidden';
+        this.g_conns_mini.style.opacity = 0;
+        this.mm_display = false;
+    } else {
+        $('.minimap')[0].style.visibility = 'visible';
+        this.g_conns_mini.style.opacity = 1;
+        this.mm_display = true ;
+    }
+}
+
+/** Calculate the minimap position offsets and scaling **/
+VIZ.NetGraph.prototype.scaleMiniMap = function () {
+
+    keys = Object.keys(this.svg_objects);
+    if (keys.length === 0) {
+        return;
+    } 
+
+    // TODO: Could also store the items at the four min max values 
+    // and only compare against those, or check against all items
+    // in the lists when they move. Might be important for larger
+    // networks.
+    var first_item = true;
+    for (var key in this.svg_objects) {
+        item = this.svg_objects[key];
+        // ignore anything inside a subnetwork
+        if (item.depth > 1) {
+            continue;
+        }
+
+        var minmax_xy = item.getMinMaxXY();
+        if (first_item == true) {
+            this.mm_min_x = minmax_xy[0];
+            this.mm_max_x = minmax_xy[1];
+            this.mm_min_y = minmax_xy[2];
+            this.mm_max_y = minmax_xy[3];
+            first_item = false;
+            continue;
+        }
+
+        if (this.mm_min_x > minmax_xy[0]) {
+            this.mm_min_x = minmax_xy[0];
+        }
+        if (this.mm_max_x < minmax_xy[1]) {
+            this.mm_max_x = minmax_xy[1];
+        }
+        if (this.mm_min_y > minmax_xy[2]) {
+            this.mm_min_y = minmax_xy[2];
+        }
+        if (this.mm_max_y < minmax_xy[3]) {
+            this.mm_max_y = minmax_xy[3];
+        }
+    }
+
+    this.mm_scale =  1 / Math.max(this.mm_max_x - this.mm_min_x, this.mm_max_y - this.mm_min_y);
+
+    // give a bit of a border
+    this.mm_min_x -= this.mm_scale * .05;
+    this.mm_max_x += this.mm_scale * .05;
+    this.mm_min_y -= this.mm_scale * .05;
+    this.mm_max_y += this.mm_scale * .05;
+    // TODO: there is a better way to do this than recalculate
+    this.mm_scale =  1 / Math.max(this.mm_max_x - this.mm_min_x, this.mm_max_y - this.mm_min_y);
+
+    this.redraw();
+    this.scaleMiniMapViewBox();
+}
+
+/** Calculate which part of the map is being displayed on the 
+ * main viewport and scale the viewbox to reflect that. */
+VIZ.NetGraph.prototype.scaleMiniMapViewBox = function () {
+    var w = $(this.minimap).width() * this.mm_scale;
+    var h = $(this.minimap).height() * this.mm_scale;
+
+    var view_offsetX = -(this.mm_min_x + this.offsetX) * w;
+    var view_offsetY = -(this.mm_min_y + this.offsetY) * h;
+
+    this.view.setAttributeNS(null, 'x', view_offsetX);
+    this.view.setAttributeNS(null, 'y', view_offsetY);
+    this.view.setAttribute('width', w / this.scale);
+    this.view.setAttribute('height', h / this.scale);
 }

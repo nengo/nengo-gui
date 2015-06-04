@@ -127,3 +127,7 @@ div.modal {
 .input-group.col-xs-2 {
     left:20px;
 }
+
+.modal-dialog.modal-sm td {
+    padding: 4px;
+}

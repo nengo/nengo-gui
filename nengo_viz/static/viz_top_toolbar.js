@@ -39,6 +39,9 @@ VIZ.Toolbar = function(filename) {
     $('#Redo_last_button')[0].addEventListener('click', function () {
         VIZ.netgraph.notify({ undo: "0" });
     });
+    $('#Minimap_button')[0].addEventListener('click', function () {
+        VIZ.netgraph.toggleMiniMap();
+    });
     $('#Config_button')[0].addEventListener('click', function () {
         self.config_modal();
     });

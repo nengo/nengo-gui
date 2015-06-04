@@ -43,13 +43,18 @@ VIZ.Hotkeys = function () {
             self.callMenu();
             ev.preventDefault();
         }
+        // bring up minimap with ctrl-m
+        if (ctrl && key == 'm') {
+            VIZ.netgraph.toggleMiniMap();
+            ev.preventDefault();
+        }
     });
 }
 
 VIZ.Hotkeys.prototype.callMenu = function () {
-        VIZ.modal.title("Hotkeys list");
-        VIZ.modal.help_body();
-        VIZ.modal.show();
+    VIZ.modal.title("Hotkeys list");
+    VIZ.modal.help_body();
+    VIZ.modal.show();
 }
 
 VIZ.hotkeys = new VIZ.Hotkeys();

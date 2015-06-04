@@ -9,7 +9,7 @@
  * @param {array of strings} info.pre - uid to connect from and its parents
  * @param {array of strings} info.post - uid to connect to and its parents
  */
-VIZ.NetGraphConnection = function(ng, info) {
+VIZ.NetGraphConnection = function(ng, info, minimap) {
     this.ng = ng;
     this.uid = info.uid;
 
@@ -19,6 +19,15 @@ VIZ.NetGraphConnection = function(ng, info) {
     /** the actual NetGraphItem currently connected to/from */
     this.pre = null;
     this.post = null;    
+
+    this.minimap = minimap;
+    if (minimap == false) {
+        this.g_conns = ng.g_conns;
+        this.objects = ng.svg_objects;
+    } else {
+        this.g_conns = ng.g_conns_mini;
+        this.objects = ng.minimap_objects;
+    }
     
     /** the uids for the pre and post items in the connection
      *  The lists start with the ideal target item, followed by the parent
@@ -39,7 +48,7 @@ VIZ.NetGraphConnection = function(ng, info) {
     if (info.parent === null) {
         this.parent = null;
     } else {
-        this.parent = ng.svg_objects[info.parent];
+        this.parent = this.objects[info.parent];
         this.parent.child_connections.push(this);
     }
     
@@ -53,24 +62,32 @@ VIZ.NetGraphConnection = function(ng, info) {
                         10.051,10.801,3.262,24.125,3.262 \
                     S48.25,10.051,48.25,18.425c0,6.453-6.412,11.964-15.45,14.153");
         this.recurrent_ellipse.setAttribute('class','recur');
-        this.recurrent_ellipse.setAttribute('transform','translate(-18, -17.5)');
         this.g.appendChild(this.recurrent_ellipse);
 
         this.marker = ng.createSVGElement('path');
-        this.marker.setAttribute('d', "M 8 0 L 0 4 L 8 8 z");
         this.g.appendChild(this.marker);
-        
+
+        if (this.minimap == false) {
+            this.marker.setAttribute('d', "M 6.5 0 L 0 5.0 L 7.5 8.0 z");
+        } else {
+            this.marker.setAttribute('d', "M 4 0 L 0 2 L 4 4 z");
+        }
+
     } else {
         this.line = ng.createSVGElement('line');
         this.g.appendChild(this.line);    
         this.marker = ng.createSVGElement('path');
-        this.marker.setAttribute('d', "M 10 0 L -5 -5 L -5 5 z");
+        if (this.minimap == false) {
+            this.marker.setAttribute('d', "M 10 0 L -5 -5 L -5 5 z");
+        } else {
+            this.marker.setAttribute('d', "M 3 0 L -2.5 -2.5 L -2.5 2.5 z");
+        }
         this.g.appendChild(this.marker);
     }
 
     this.redraw();
 
-    ng.g_conns.appendChild(this.g);
+    this.g_conns.appendChild(this.g);
 }
 
 
@@ -113,7 +130,7 @@ VIZ.NetGraphConnection.prototype.set_post = function(post) {
 /** determine the best available item to connect from */
 VIZ.NetGraphConnection.prototype.find_pre = function() {
     for (var i in this.pres) {
-        var pre = this.ng.svg_objects[this.pres[i]];
+        var pre = this.objects[this.pres[i]];
         if (pre !== undefined) {
             return pre;
         } else {
@@ -128,7 +145,7 @@ VIZ.NetGraphConnection.prototype.find_pre = function() {
 /** determine the best available item to connect to */
 VIZ.NetGraphConnection.prototype.find_post = function() {
     for (var i in this.posts) {
-        var post = this.ng.svg_objects[this.posts[i]];
+        var post = this.objects[this.posts[i]];
         if (post !== undefined) {
             return post;
         } else {
@@ -176,7 +193,7 @@ VIZ.NetGraphConnection.prototype.remove = function() {
     }
 
     
-    this.ng.g_conns.removeChild(this.g);
+    this.g_conns.removeChild(this.g);
     this.removed = true;
 
     delete this.ng.svg_conns[this.uid];    
@@ -198,9 +215,9 @@ VIZ.NetGraphConnection.prototype.redraw = function() {
         this.marker.setAttribute('visibility', 'visible');
     }
     var pre_pos = this.pre.get_screen_location();
-    
+
     if (this.recurrent) {
-        var item = this.ng.svg_objects[this.pres[0]];
+        var item = this.objects[this.pres[0]];
         if (item === undefined) {
             this.marker.setAttribute('visibility', 'hidden');
             this.recurrent_ellipse.setAttribute('visibility', 'hidden');
@@ -213,8 +230,13 @@ VIZ.NetGraphConnection.prototype.redraw = function() {
             var scale = item.shape.getAttribute('transform');
             var scale_value = parseFloat(scale.split(/[()]+/)[1]);
 
-            this.recurrent_ellipse.setAttribute('style','stroke-width:' + 
-                        2/scale_value+';');              
+            if (this.minimap == false) {
+                this.recurrent_ellipse.setAttribute('style','stroke-width:' + 
+                            2/scale_value+';');              
+            } else {
+                this.recurrent_ellipse.setAttribute('style','stroke-width:' + 
+                            1/scale_value+';');              
+            }
                           
             var ex = pre_pos[0] - scale_value*17.5;
             var ey = pre_pos[1] - height - scale_value*36;
@@ -222,8 +244,12 @@ VIZ.NetGraphConnection.prototype.redraw = function() {
             this.recurrent_ellipse.setAttribute('transform',
                           'translate(' + ex + ',' + ey + ')' + scale);
                           
-            var mx = pre_pos[0];
-            var my = pre_pos[1] - height - scale_value*32 - 5;
+            var mx = pre_pos[0]-1;
+            if (this.minimap == false) {
+                var my = pre_pos[1] - height - scale_value*32.15 - 5;
+            } else {
+                var my = pre_pos[1] - height - scale_value*32 - 2;
+            }
             this.marker.setAttribute('transform', 
                           'translate(' + mx + ',' + my + ')');
         }
