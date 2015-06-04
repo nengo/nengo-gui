@@ -47,6 +47,7 @@ VIZ.Modal.prototype.footer = function(type, ok_function){
 
 VIZ.Modal.prototype.clear_body = function() {
     this.$body.empty();
+    this.$div.find('.modal-dialog').removeClass('modal-sm');
     this.$div.off('shown.bs.modal');
 }
 
@@ -60,6 +61,19 @@ VIZ.Modal.prototype.text_body = function(text, type) {
     $p.append('<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>');
     $p.append(document.createTextNode(text));
 }
+
+VIZ.Modal.prototype.help_body = function() {
+    this.clear_body();
+
+    this.$div.find('.modal-dialog').addClass('modal-sm');
+    var $body = $('<table width=100%>');
+    $body.append('<tr> <td>Play / pause</td> <td align="right">Spacebar</td></tr>');
+    $body.append('<tr> <td>Undo</td> <td align="right">Ctrl-z</td></tr>');
+    $body.append('<tr> <td>Redo</td> <td align="right">Ctrl-Shift-z || Ctrl-y</td></tr>');
+    $body.append('</table>');
+    $body.appendTo(this.$body);
+}
+
 
 /**
  * Sets up the tabs for Info modals.

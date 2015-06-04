@@ -40,6 +40,9 @@ VIZ.Toolbar = function(filename) {
     $('#Config_button')[0].addEventListener('click', function () {
         self.start_modal();
     });
+    $('#Help_button')[0].addEventListener('click', function () {
+        VIZ.hotkeys.callMenu();
+    });
    
     $('#filename')[0].innerHTML = filename;
 
