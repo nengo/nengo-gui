@@ -1,0 +1,51 @@
+html {
+    height: 100%;
+}
+
+body {
+    margin: 0px;
+    height: 100%;
+    width: 100%;
+    cursor: inherit;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+}
+
+
+#main {
+    background: white;
+    width: 100%;
+    height: calc(100% - 80px);
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#vmiddle {
+    position: relative;
+    flex: 1 1 auto;
+    -webkit-flex: 1 1 auto;
+}
+
+div.minimap {
+    background: white;
+    border: 2px solid #787878;
+    height: 15%;
+    width: 15%;
+    left: 84.5%;
+    top: 82.5%;
+    position: absolute;
+    z-index: 99999999;
+}
+
+.graph {
+    background: #eeeeee;
+}
+
+.line {
+    fill: none;
+    stroke: black;
+    stroke-width: 1.5px;
+}
