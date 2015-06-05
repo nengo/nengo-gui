@@ -550,78 +550,83 @@ Nengo.NetGraph.prototype.toggleMiniMap = function () {
         $('.minimap')[0].style.visibility = 'visible';
         this.g_conns_mini.style.opacity = 1;
         this.mm_display = true ;
+        this.scaleMiniMap();
     }
 }
 
 /** Calculate the minimap position offsets and scaling **/
 Nengo.NetGraph.prototype.scaleMiniMap = function () {
 
-    keys = Object.keys(this.svg_objects);
-    if (keys.length === 0) {
-        return;
+    if (this.mm_display == true) {
+        keys = Object.keys(this.svg_objects);
+        if (keys.length === 0) {
+            return;
+        }
+
+        // TODO: Could also store the items at the four min max values
+        // and only compare against those, or check against all items
+        // in the lists when they move. Might be important for larger
+        // networks.
+        var first_item = true;
+        for (var key in this.svg_objects) {
+            item = this.svg_objects[key];
+            // ignore anything inside a subnetwork
+            if (item.depth > 1) {
+                continue;
+            }
+
+            var minmax_xy = item.getMinMaxXY();
+            if (first_item == true) {
+                this.mm_min_x = minmax_xy[0];
+                this.mm_max_x = minmax_xy[1];
+                this.mm_min_y = minmax_xy[2];
+                this.mm_max_y = minmax_xy[3];
+                first_item = false;
+                continue;
+            }
+
+            if (this.mm_min_x > minmax_xy[0]) {
+                this.mm_min_x = minmax_xy[0];
+            }
+            if (this.mm_max_x < minmax_xy[1]) {
+                this.mm_max_x = minmax_xy[1];
+            }
+            if (this.mm_min_y > minmax_xy[2]) {
+                this.mm_min_y = minmax_xy[2];
+            }
+            if (this.mm_max_y < minmax_xy[3]) {
+                this.mm_max_y = minmax_xy[3];
+            }
+        }
+
+        this.mm_scale =  1 / Math.max(this.mm_max_x - this.mm_min_x, this.mm_max_y - this.mm_min_y);
+
+        // give a bit of a border
+        this.mm_min_x -= this.mm_scale * .05;
+        this.mm_max_x += this.mm_scale * .05;
+        this.mm_min_y -= this.mm_scale * .05;
+        this.mm_max_y += this.mm_scale * .05;
+        // TODO: there is a better way to do this than recalculate
+        this.mm_scale =  1 / Math.max(this.mm_max_x - this.mm_min_x, this.mm_max_y - this.mm_min_y);
+
+        this.redraw();
+        this.scaleMiniMapViewBox();
     }
-
-    // TODO: Could also store the items at the four min max values
-    // and only compare against those, or check against all items
-    // in the lists when they move. Might be important for larger
-    // networks.
-    var first_item = true;
-    for (var key in this.svg_objects) {
-        item = this.svg_objects[key];
-        // ignore anything inside a subnetwork
-        if (item.depth > 1) {
-            continue;
-        }
-
-        var minmax_xy = item.getMinMaxXY();
-        if (first_item == true) {
-            this.mm_min_x = minmax_xy[0];
-            this.mm_max_x = minmax_xy[1];
-            this.mm_min_y = minmax_xy[2];
-            this.mm_max_y = minmax_xy[3];
-            first_item = false;
-            continue;
-        }
-
-        if (this.mm_min_x > minmax_xy[0]) {
-            this.mm_min_x = minmax_xy[0];
-        }
-        if (this.mm_max_x < minmax_xy[1]) {
-            this.mm_max_x = minmax_xy[1];
-        }
-        if (this.mm_min_y > minmax_xy[2]) {
-            this.mm_min_y = minmax_xy[2];
-        }
-        if (this.mm_max_y < minmax_xy[3]) {
-            this.mm_max_y = minmax_xy[3];
-        }
-    }
-
-    this.mm_scale =  1 / Math.max(this.mm_max_x - this.mm_min_x, this.mm_max_y - this.mm_min_y);
-
-    // give a bit of a border
-    this.mm_min_x -= this.mm_scale * .05;
-    this.mm_max_x += this.mm_scale * .05;
-    this.mm_min_y -= this.mm_scale * .05;
-    this.mm_max_y += this.mm_scale * .05;
-    // TODO: there is a better way to do this than recalculate
-    this.mm_scale =  1 / Math.max(this.mm_max_x - this.mm_min_x, this.mm_max_y - this.mm_min_y);
-
-    this.redraw();
-    this.scaleMiniMapViewBox();
 }
 
 /** Calculate which part of the map is being displayed on the
  * main viewport and scale the viewbox to reflect that. */
 Nengo.NetGraph.prototype.scaleMiniMapViewBox = function () {
-    var w = $(this.minimap).width() * this.mm_scale;
-    var h = $(this.minimap).height() * this.mm_scale;
+    if (this.mm_display == true) {
+        var w = $(this.minimap).width() * this.mm_scale;
+        var h = $(this.minimap).height() * this.mm_scale;
 
-    var view_offsetX = -(this.mm_min_x + this.offsetX) * w;
-    var view_offsetY = -(this.mm_min_y + this.offsetY) * h;
+        var view_offsetX = -(this.mm_min_x + this.offsetX) * w;
+        var view_offsetY = -(this.mm_min_y + this.offsetY) * h;
 
-    this.view.setAttributeNS(null, 'x', view_offsetX);
-    this.view.setAttributeNS(null, 'y', view_offsetY);
-    this.view.setAttribute('width', w / this.scale);
-    this.view.setAttribute('height', h / this.scale);
+        this.view.setAttributeNS(null, 'x', view_offsetX);
+        this.view.setAttributeNS(null, 'y', view_offsetY);
+        this.view.setAttribute('width', w / this.scale);
+        this.view.setAttribute('height', h / this.scale);
+    }
 }
