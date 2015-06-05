@@ -43,10 +43,11 @@ def determine_line_number(filename='<string>'):
     pay attention to the line numbers in the main evaluated script (which
     is evaluated using exec(), so it doesn't have a normal filename).
     '''
-    tb = traceback.extract_tb(sys.exc_traceback)
-    for fn, line, function, code in reversed(tb):
-        if fn == filename:
-            return line
+    if hasattr(sys, 'exc_traceback'):
+        tb = traceback.extract_tb(sys.exc_traceback)
+        for fn, line, function, code in reversed(tb):
+            if fn == filename:
+                return line
 
     # if we can't find it that way, parse the text of the stack trace
     #  note that this is required for indentation errors and other syntax
@@ -55,7 +56,10 @@ def determine_line_number(filename='<string>'):
     pattern = 'File "%s", line ' % filename
     index = trace.find(pattern)
     if index >=0:
-        line = int(trace[index + len(pattern):].split('\n', 1)[0])
+        text = trace[index + len(pattern):].split('\n', 1)[0]
+        if ',' in text:
+            text = text.split(',', 1)[0]
+        line = int(text)
         return line
     return None
 
