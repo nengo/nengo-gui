@@ -123,6 +123,9 @@ Nengo.NetGraph = function(parent, args) {
      *  Note that offsetX,Y are also changed to zoom into a particular
      *  point in the space */
     interact(document.getElementById('main'))
+        .on('click', function(event) {
+            $('.ace_text-input').blur();
+        })
         .on('wheel', function(event) {
             event.preventDefault();
 

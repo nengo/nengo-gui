@@ -2,6 +2,9 @@ Nengo.Hotkeys = function () {
     var self = this;
 
     document.addEventListener('keydown', function(ev) {
+
+        var on_editor = (ev.target.className === 'ace_text-input');
+
         if (typeof ev.key != 'undefined') {
             var key = ev.key;
         } else {
@@ -37,14 +40,14 @@ Nengo.Hotkeys = function () {
             ev.preventDefault();
         }
         // run model with spacebar
-        if (key == ' ') {
+        if (key == ' ' && !on_editor) {
             if (!ev.repeat) {
                 sim.on_pause_click();
             }
             ev.preventDefault();
         }
         // bring up help menu with ?
-        if (key == '?') {
+        if (key == '?' && !on_editor) {
             self.callMenu();
             ev.preventDefault();
         }
