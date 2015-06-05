@@ -30,6 +30,8 @@ Nengo.Menu.prototype.show = function (x, y, items) {
     // TODO: move this to the constructor
     this.menu_div = document.createElement('div');
     this.menu_div.style.position = 'fixed';
+    this.menu_div.style.left = x;
+    this.menu_div.style.top = y;
     this.menu_div.style.zIndex = Nengo.next_zindex();
 
     this.menu = document.createElement('ul');
@@ -40,8 +42,6 @@ Nengo.Menu.prototype.show = function (x, y, items) {
 
     this.menu_div.appendChild(this.menu);
     this.div.appendChild(this.menu_div);
-
-    Nengo.set_transform(this.menu_div, x - 20, y - 60 - $('.minimap').height());
 
     this.actions = {}
 
