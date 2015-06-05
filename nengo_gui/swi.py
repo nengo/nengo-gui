@@ -432,8 +432,6 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
     def begin_lifecycle(cls, server, asynch=True, interactive=True):
         if interactive and not sys.platform.startswith('win'):
             signal.signal(signal.SIGINT, cls._confirm_shutdown)
-        else:
-            signal.signal(signal.SIGINT, cls._immediate_shutdown)
 
         try:
             server.running = True
