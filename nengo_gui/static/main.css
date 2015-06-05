@@ -17,7 +17,7 @@ body {
 #main {
     background: white;
     width: 100%;
-    height: calc(100% - 80px);
+    height: 100%;
     position: absolute;
     top: 0;
     left: 0;
