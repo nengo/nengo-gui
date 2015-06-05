@@ -30,8 +30,8 @@ Nengo.Menu.prototype.show = function (x, y, items) {
     // TODO: move this to the constructor
     this.menu_div = document.createElement('div');
     this.menu_div.style.position = 'fixed';
-    this.menu_div.style.left = x;
-    this.menu_div.style.top = y;
+    this.menu_div.style.left = x - 20; // offset menu so that it appears
+    this.menu_div.style.top = y - 20;  //  with the cursor on the first item
     this.menu_div.style.zIndex = Nengo.next_zindex();
 
     this.menu = document.createElement('ul');
