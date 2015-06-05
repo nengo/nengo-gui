@@ -58,6 +58,7 @@ Nengo.Hotkeys = function () {
 
 Nengo.Hotkeys.prototype.callMenu = function () {
     Nengo.modal.title("Hotkeys list");
+    Nengo.modal.footer('close');
     Nengo.modal.help_body();
     Nengo.modal.show();
 }
