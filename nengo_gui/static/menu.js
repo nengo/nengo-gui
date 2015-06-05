@@ -41,7 +41,7 @@ Nengo.Menu.prototype.show = function (x, y, items) {
     this.menu_div.appendChild(this.menu);
     this.div.appendChild(this.menu_div);
 
-    Nengo.set_transform(this.menu_div, x - 20, y - 60 - $('.minimap').height());
+    Nengo.set_transform(this.menu_div, x - 20, y - 60);
 
     this.actions = {}
 
