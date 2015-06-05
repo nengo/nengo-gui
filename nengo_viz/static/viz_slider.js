@@ -122,7 +122,7 @@ VIZ.Slider.prototype.on_resize = function(width, height) {
         height = this.minHeight;
     };
 
-    this.calc_axes_geometry();
+    this.calc_axes_geometry(this.width, this.height); 
 
     this.group.style.height = height - this.ax_top - 2 * this.border_size;
     this.group.style.marginTop = this.ax_top;

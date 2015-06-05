@@ -57,10 +57,10 @@ VIZ.create_websocket = function(uid) {
  *
  * @param {dict} args - A set of constructor arguments, including:
  * @param {DOMElement} args.parent - the element to add this component to
- * @param {float} args.x - the left side of the component (in pixels)
- * @param {float} args.y - the top of the component (in pixels)
- * @param {float} args.width - the width of the component (in pixels)
- * @param {float} args.height - the height of the component (in pixels) 
+ * @param {float} args.x - the left side of the component (relative to viewport)
+ * @param {float} args.y - the top of the component (relative to viewport)
+ * @param {float} args.width - the width of the component (relative to viewport)
+ * @param {float} args.height - the height of the component (relative to viewport) 
  * @param {boolean} args.label_visible - whether the label should be shown
  * @param {int} args.id - the id of the server-side component to connect to
  */
@@ -327,7 +327,6 @@ VIZ.Component.prototype.update_layout = function (config) {
         this.hide_label();
     }
 }
-
 
 VIZ.Component.prototype.redraw_size = function () {
     this.width = this.viewport.w * this.w * this.viewport.scale * 2;

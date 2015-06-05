@@ -428,3 +428,10 @@ VIZ.NetGraph.prototype.detect_collapsed_conns = function(uid) {
         }
     }
 }
+VIZ.NetGraph.prototype.get_aspect_resize = function() {
+    return this.aspect_resize;
+}
+
+VIZ.NetGraph.prototype.get_aspect_resize = function(value) {
+    this.aspect_resize = value;
+}

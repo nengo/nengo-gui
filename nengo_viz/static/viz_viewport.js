@@ -27,7 +27,12 @@ VIZ.Viewport.prototype.on_resize = function(event) {
     //this.redraw_all();
     for (var i in VIZ.Component.components) {
         var c = VIZ.Component.components[i];
-        c.on_resize(c.w * this.scale * ow * 2, c.h * this.scale * oh * 2);
+        if (VIZ.NetGraph.get_aspect_resize()) {
+            c.w = c.w * ow/this.w;
+            c.h = c.h * oh/this.h;
+        }
+        c.on_resize(c.w * this.scale * this.w * 2, 
+            c.h * this.scale * this.h * 2);
         c.redraw_size();
         c.redraw_pos();
     }
