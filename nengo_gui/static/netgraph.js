@@ -15,6 +15,7 @@ Nengo.NetGraph = function(parent, args) {
     this.offsetY = 0;
     this.zoom_fonts = false;    // scale fonts when zooming
     this.font_size = 100;       // font size as a percent of base
+    this.aspect_resize = true;  //preserve aspect ratios on window resize
 
     this.svg_objects = {};     // dict of all Nengo.NetGraphItems, by uid
     this.svg_conns = {};       // dict of all Nengo.NetGraphConnections, by uid
@@ -440,6 +441,20 @@ Nengo.NetGraph.prototype.on_resize = function(event) {
     var width = $(this.svg).width();
     var height = $(this.svg).height();
 
+    if (this.aspect_resize) {
+        for (var key in this.svg_objects) {
+            var item = this.svg_objects[key];
+            if (item.depth == 1) {
+                var new_width = item.get_width()*
+                    this.old_width/width / this.scale;
+                var new_height = item.get_height()*
+                    this.old_height/height / this.scale;
+                item.set_size(new_width/(2*width), 
+                    new_height/(2*height));   
+            }
+        }
+    }
+
     this.old_width = width;
     this.old_height = height;
 };
@@ -632,4 +647,12 @@ Nengo.NetGraph.prototype.scaleMiniMapViewBox = function () {
         this.view.setAttribute('width', w / this.scale);
         this.view.setAttribute('height', h / this.scale);
     }
+}
+
+Nengo.NetGraph.prototype.get_aspect_resize = function() {
+    return this.aspect_resize;
+}
+
+Nengo.NetGraph.prototype.set_aspect_resize = function(value) {
+    this.aspect_resize = value;
 }
