@@ -1,3 +1,4 @@
+import importlib
 import os
 import time
 import threading
@@ -33,6 +34,7 @@ class VizSim(object):
         self.current_error = None
         self.undo_stack = []
         self.redo_stack = []
+        self.backend = 'nengo'
         self.new_code = None
                                 #  should be rebuilt?
 
@@ -73,7 +75,8 @@ class VizSim(object):
             for c in self.components:
                 c.add_nengo_objects(self.viz)
             # build the simulation
-            self.sim = nengo.Simulator(self.model)
+            backend = importlib.import_module(self.backend)
+            self.sim = backend.Simulator(self.model)
             # remove the temporary components added for visualization
             for c in self.components:
                 c.remove_nengo_objects(self.viz)

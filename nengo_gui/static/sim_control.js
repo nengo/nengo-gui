@@ -57,6 +57,8 @@ Nengo.SimControl = function(div, args) {
     this.rate_tr = $('#rate_tr')[0];
     this.ticks_tr = $('#ticks_tr')[0];
 
+    this.simulator_options = '';
+
     this.update();
 };
 
@@ -73,8 +75,10 @@ Nengo.SimControl.prototype.on_message = function(event) {
             console.log(event.data);
             eval(event.data.substring(6, event.data.length));
         }
+        else if (event.data.substring(0, 5) === 'sims:') {
+            this.simulator_options = event.data.substring(5, event.data.length);
+        }
     }
-
     else {
         var data = new Float32Array(event.data);
         this.time = data[0];
@@ -84,6 +88,10 @@ Nengo.SimControl.prototype.on_message = function(event) {
     }
 };
 
+
+Nengo.SimControl.prototype.set_backend = function(backend) {
+    this.ws.send('backend:' + backend);
+};
 
 Nengo.SimControl.prototype.set_status = function(status) {
     var icon;
