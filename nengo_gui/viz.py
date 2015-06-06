@@ -39,7 +39,7 @@ class VizSim(object):
         self.current_error = None
         self.undo_stack = []
         self.redo_stack = []
-        self.backend = 'nengo'
+        self.backend = viz.default_backend
         self.new_code = None
                                 #  should be rebuilt?
 
@@ -179,7 +179,8 @@ class Viz(object):
 
         self.viz_sims = []
         self.cfg = cfg
-        self.interactive = interactive;
+        self.interactive = interactive
+        self.default_backend = 'nengo'
 
         self.lock = threading.Lock()
 
