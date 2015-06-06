@@ -91,13 +91,12 @@ class VizSim(object):
             backend = importlib.import_module(self.backend)
             old_sim = VizSim.singleton_sims.get(self.backend, None)
             if old_sim is not None:
-                if hasattr(old_sim[1], 'close'):
-                    old_sim[1].close()
-                if old_sim[0] is not self:
-                    old_sim[0].finished = True
+                if old_sim is not self:
+                    old_sim.sim = None
+                    old_sim.finished = True
             self.sim = backend.Simulator(self.model)
             if self.backend in VizSim.singleton_sims:
-                VizSim.singleton_sims[self.backend] = self, self.sim
+                VizSim.singleton_sims[self.backend] = self
 
             # remove the temporary components added for visualization
             for c in self.components:
@@ -108,28 +107,25 @@ class VizSim(object):
         self.building = False
 
     def runner(self):
-        try:
-            # run the simulation
-            while not self.finished:
-                if self.sim is None:
+        # run the simulation
+        while not self.finished:
+            if self.sim is None:
+                time.sleep(0.01)
+            else:
+                try:
+                    if hasattr(self.sim, 'max_steps'):
+                        self.sim.run_steps(self.sim.max_steps)
+                    else:
+                        self.sim.step()
+                except AttributeError:
                     time.sleep(0.01)
-                else:
-                    try:
-                        if hasattr(self.sim, 'max_steps'):
-                            self.sim.run_steps(self.sim.max_steps)
-                        else:
-                            self.sim.step()
-                    except AttributeError:
-                        time.sleep(0.01)
-                    except socket.error:  # if another thread closes the sim
-                        pass
+                except socket.error:  # if another thread closes the sim
+                    pass
 
 
-                if self.rebuild:
-                    self.rebuild = False
-                    self.build()
-        finally:
-            self.sim = None # makes sure the sim is closed if it has to be
+            if self.rebuild:
+                self.rebuild = False
+                self.build()
 
 
     def finish(self):

@@ -146,6 +146,9 @@ class Server(swi.SimpleWebInterface):
         finally:
             component.finish()
 
+            if isinstance(component, nengo_gui.components.SimControl):
+                viz_sim.sim = None
+
             if client.remote_close:
                 # wait a moment before checking if the server should be stopped
                 time.sleep(2)
