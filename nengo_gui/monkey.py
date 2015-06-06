@@ -6,7 +6,9 @@ import sys
 
 
 # list of Simulators to check for
-known_modules = ['nengo', 'nengo_ocl', 'nengo_brainstorm', 'nengo_distilled']
+known_modules = ['nengo', 'nengo_ocl', 'nengo_distilled',
+                 'nengo_brainstorm', 'nengo_spinnaker']
+found_modules = []
 
 
 class StartedSimulatorException(Exception):
@@ -63,12 +65,14 @@ def determine_line_number(filename='<string>'):
 @contextlib.contextmanager
 def patch():
     flag.executing = True
+    del found_modules[:]
     simulators = {}
     for name in known_modules:
         try:
             mod = importlib.import_module(name)
         except:
             continue
+        found_modules.append(name)
         simulators[mod] = mod.Simulator
         mod.Simulator = make_dummy(mod.Simulator)
     yield

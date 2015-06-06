@@ -124,6 +124,16 @@ div.modal {
     text-indent:10px;
 }
 
+#myModalForm .select {
+    padding-top:0px;
+    text-indent:10px;
+}
+
+#myModalForm .select select {
+    width: calc(100% - 40px);
+    margin-left: 20px;
+}
+
 .input-group.col-xs-2 {
     left:20px;
 }

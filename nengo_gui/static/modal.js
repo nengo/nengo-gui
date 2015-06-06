@@ -153,6 +153,16 @@ Nengo.Modal.prototype.main_config = function(options) {
           '</label>' +
           '<div class="help-block with-errors"></div>' +
         '</div>' +
+    '</div>' +
+    '<div class="form-group">' +
+        '<div class="select">' +
+            '<label for="config-backend" class="control-label">' +
+                'Select backend' +
+            '</label>' +
+            '<select class="form-control" id="config-backend">' +
+                sim.simulator_options +
+            '</select>' +
+        '</div>' +
     '</div>').appendTo($form);
 
     this.$div.on('shown.bs.modal', function () {
@@ -169,6 +179,11 @@ Nengo.Modal.prototype.main_config = function(options) {
     });
 
     $('#config-fontsize').attr('data-my_validator', 'custom');
+
+    $('#config-backend').change(function () {
+        console.log($('#config-backend').val());
+        sim.set_backend($('#config-backend').val());
+    });
 
     //Allow the enter key to submit
     $("#config-fontsize").keypress(function(event) {
