@@ -34,7 +34,7 @@ class VizSim(object):
         self.uids = {}
         self.finished = False   # are we done simulating?
         self.rebuild = False    # should we rebuild the model?
-        self.sim = None
+        self._sim = None
         self.changed = False    # has something changed the model, so it
         self.current_error = None
         self.undo_stack = []
@@ -52,6 +52,16 @@ class VizSim(object):
         t = threading.Thread(target=self.runner)
         t.daemon = True
         t.start()
+
+    @property
+    def sim(self):
+        return self._sim
+
+    @sim.setter
+    def sim(self, value):
+        if hasattr(self._sim, 'close'):
+            self._sim.close()
+        self._sim = value
 
     def get_net_graph(self):
         for c in self.components:
@@ -98,25 +108,29 @@ class VizSim(object):
         self.building = False
 
     def runner(self):
-        # run the simulation
-        while not self.finished:
-            if self.sim is None:
-                time.sleep(0.01)
-            else:
-                try:
-                    if hasattr(self.sim, 'max_steps'):
-                        self.sim.run_steps(self.sim.max_steps)
-                    else:
-                        self.sim.step()
-                except AttributeError:
+        try:
+            # run the simulation
+            while not self.finished:
+                if self.sim is None:
                     time.sleep(0.01)
-                except socket.error:  # if another thread closes the sim
-                    pass
+                else:
+                    try:
+                        if hasattr(self.sim, 'max_steps'):
+                            self.sim.run_steps(self.sim.max_steps)
+                        else:
+                            self.sim.step()
+                    except AttributeError:
+                        time.sleep(0.01)
+                    except socket.error:  # if another thread closes the sim
+                        pass
 
 
-            if self.rebuild:
-                self.rebuild = False
-                self.build()
+                if self.rebuild:
+                    self.rebuild = False
+                    self.build()
+        finally:
+            self.sim = None # makes sure the sim is closed if it has to be
+
 
     def finish(self):
         self.finished = True
