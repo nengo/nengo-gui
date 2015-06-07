@@ -226,6 +226,13 @@ class Viz(object):
 
             self.uid_prefix_counter = {}
 
+    def rename(self, filename):
+        filename = os.path.relpath(filename)
+        if filename != self.filename:
+            with open(filename, 'w') as f:
+                f.write(self.code)
+            self.filename= filename
+
     def find_templates(self):
         for k, v in self.locals.items():
             if isinstance(v, nengo_gui.components.component.Template):

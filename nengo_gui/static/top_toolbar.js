@@ -46,7 +46,14 @@ Nengo.Toolbar = function(filename) {
         Nengo.hotkeys.callMenu();
     });
 
-    $('#filename')[0].innerHTML = filename;
+    $('#filename').val(filename);
+    $('#filename').change(function() {
+        Nengo.netgraph.notify({
+            act: 'rename',
+            filename: $('#filename').val()
+        });
+    });
+        
 
     this.toolbar = $('#toolbar_object')[0];
 
