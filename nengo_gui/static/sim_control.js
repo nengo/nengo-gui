@@ -66,9 +66,6 @@ Nengo.SimControl.prototype.on_message = function(event) {
         if (event.data.substring(0, 7) === 'status:') {
             this.set_status(event.data.substring(7));
         }
-        else if (event.data.substring(0, 6) === 'reload') {
-            location.reload();
-        }
         else if (event.data.substring(0, 6) === 'config') {
             console.log(event.data);
             eval(event.data.substring(6, event.data.length));

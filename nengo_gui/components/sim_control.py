@@ -27,7 +27,6 @@ class SimControl(Component):
         self.time = 0.0
         self.last_status = None
         self.next_ping_time = None
-        self.reload = False
         self.send_config_options = False
 
     def add_nengo_objects(self, viz):
@@ -83,9 +82,6 @@ class SimControl(Component):
         if status != self.last_status:
             client.write('status:%s' % status)
             self.last_status = status
-        if self.reload == True:
-            client.write('reload')
-            self.reload = False
         if self.send_config_options == True:
             client.write('config' +
                 'Nengo.Toolbar.prototype.config_modal_show();')
@@ -115,20 +111,6 @@ class SimControl(Component):
             if self.viz.sim is None:
                 self.viz.rebuild = True
             self.paused = False
-        elif msg[:4] == 'open':
-            try:
-                self.viz.viz.load(msg[4:])
-                self.reload = True
-            except:
-                traceback.print_exc()
-        elif msg == 'reset':
-            if os.path.isfile(self.viz.viz.config_name()) :
-                os.remove(self.viz.viz.config_name())
-            self.viz.viz.config = self.viz.viz.load_config()
-            self.viz.viz.load(
-                self.viz.viz.filename, self.viz.viz.model,
-                self.viz.viz.orig_locals)
-            self.reload = True
 
 class SimControlTemplate(Template):
     cls = SimControl

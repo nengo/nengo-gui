@@ -69,10 +69,17 @@ class Server(swi.SimpleWebInterface):
             <input type=submit value="Log In">
             </form>""" % message
 
-    def swi(self):
+    def swi(self, filename=None, reset=None):
         """Handles http://host:port/ by giving the main page"""
         if self.user is None:
             return self.create_login_form()
+
+        if reset is not None:
+            self.server.viz.load(self.server.viz.filename,
+                self.server.viz.model, self.server.viz.orig_locals,
+                reset=True)
+        elif filename is not None:
+            self.server.viz.load(filename, force=True)
 
         # create a new simulator
         viz_sim = self.server.viz.create_sim()
