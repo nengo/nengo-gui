@@ -15,36 +15,46 @@ Requirements
 Installation
 ============
 
-To install the visualizers, you need to download and install the code in this
-repository.  For most operating systems, here are the commands needed:
+The simplest way to install is with the standard Python installation system:
+
+.. code:: shell
+
+   pip install nengo_gui
+
+If you would like access the the development version of nengo_gui, you can
+download it from guthub:
 
 .. code:: shell
 
    git clone https://github.com/nengo/nengo_gui
    cd nengo_gui
    python setup.py develop --user
-   cd ..
 
 
 Running nengo_gui
 =================
 
-There are two ways to run nengo_gui.  First, you can use it from within the
-existing `Nengo GUI <https://github.com/nengo/nengo_gui>`_.  Do this by
-running nengo_gui and clicking on the graph icon in the top-right (the one
-without the 'J' on it).
+There are two ways to run nengo_gui.  First, you can use it from the command
+line by running the installed script:
+
+.. code:: shell
+
+   nengo_gui
+
+If you specify a file to load, nengo_gui will do so:
+
+.. code:: shell
+
+   nengo_gui myfile.py
 
 Alternatively, you can start nengo_gui manually from within your code.  To
 do so, add this to the bottom of your file that defines your Nengo model.
 
 .. code:: python
 
-   if __name__ == '__main__':
-       import nengo_gui
-       nengo_gui.Viz(__file__).start()
+   import nengo_gui
+   nengo_gui.Viz(__file__).start()
 
-Note that if you take this approach, you must name your model "model" and
-you should not be creating a nengo.Simulator object yourself.
 
 Basic usage
 ===========
