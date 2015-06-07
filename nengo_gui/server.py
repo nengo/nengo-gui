@@ -74,7 +74,7 @@ class Server(swi.SimpleWebInterface):
         if self.user is None:
             return self.create_login_form()
 
-        if reset is not None:
+        if reset == 'True':
             self.server.viz.load(self.server.viz.filename,
                 self.server.viz.model, self.server.viz.orig_locals,
                 reset=True)
