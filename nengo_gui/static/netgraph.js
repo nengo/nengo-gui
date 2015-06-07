@@ -15,7 +15,7 @@ Nengo.NetGraph = function(parent, args) {
     this.offsetY = 0;
     this.zoom_fonts = false;    // scale fonts when zooming
     this.font_size = 100;       // font size as a percent of base
-    this.aspect_resize = true;  //preserve aspect ratios on window resize
+    this.aspect_resize = false;  //preserve aspect ratios on window resize
 
     this.svg_objects = {};     // dict of all Nengo.NetGraphItems, by uid
     this.svg_conns = {};       // dict of all Nengo.NetGraphConnections, by uid

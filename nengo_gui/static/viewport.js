@@ -24,7 +24,7 @@ Nengo.Viewport.prototype.on_resize = function(event) {
     
     this.w = $("#main").width();
     this.h = $("#main").height();
-    //this.redraw_all();
+
     for (var i in Nengo.Component.components) {
         var c = Nengo.Component.components[i];
         if (Nengo.netgraph.get_aspect_resize()) {

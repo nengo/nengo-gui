@@ -175,14 +175,14 @@ Nengo.Modal.prototype.main_config = function(options) {
     this.$div.on('shown.bs.modal', function () {
         $('#config-fontsize').focus();
     });
-    $('#zoom-fonts').prop('checked', options[0]);
+    $('#zoom-fonts').prop('checked', options["zoom"]);
     $('#zoom-fonts').change(function () {
         Nengo.netgraph.set_zoom_fonts($('#zoom-fonts').prop('checked'));
     });
 
-    $('#fixed-resize').prop('checked', options[2]);
+    $('#fixed-resize').prop('checked', options["aspect_resize"]);
 
-    $('#config-fontsize').val(options[1]);
+    $('#config-fontsize').val(options["font_size"]);
     $('#config-fontsize').bind('keyup input', function () {
         Nengo.netgraph.set_font_size(parseInt($('#config-fontsize').val()));
     });

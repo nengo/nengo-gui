@@ -100,9 +100,10 @@ Nengo.Toolbar.prototype.config_modal = function () {
 Nengo.Toolbar.prototype.config_modal_show = function() {
     var self = this;
 
-    var options = [Nengo.netgraph.get_zoom_fonts(),
-        Nengo.netgraph.get_font_size(),
-        Nengo.netgraph.get_aspect_resize()];
+    var options = {zoom: Nengo.netgraph.get_zoom_fonts(),
+        font_size: Nengo.netgraph.get_font_size(),
+        aspect_resize: Nengo.netgraph.get_aspect_resize()
+        };
 
     Nengo.modal.title('Configure Options');
     Nengo.modal.main_config(options);
@@ -123,8 +124,8 @@ Nengo.Toolbar.prototype.config_modal_show = function() {
         $('#OK').attr('data-dismiss', 'modal');
     },
         function () {  //cancel_function
-            Nengo.netgraph.set_zoom_fonts(options[0]);
-            Nengo.netgraph.set_font_size(options[1]);
+            Nengo.netgraph.set_zoom_fonts(options["zoom"]);
+            Nengo.netgraph.set_font_size(options["font_size"]);
             $('#cancel-button').attr('data-dismiss', 'modal');
     });
 
