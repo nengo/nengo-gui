@@ -9,6 +9,7 @@ import os.path
 import json
 
 from nengo_gui.components.component import Component, Template
+import nengo_gui.monkey
 
 class SimControl(Component):
     def __init__(self, viz, config, uid, dt=0.001):
@@ -87,6 +88,7 @@ class SimControl(Component):
             client.write('reload')
             self.reload = False
         if self.send_config_options == True:
+            client.write('sims:' + self.backend_options_html())
             client.write('config' +
                 'Nengo.Toolbar.prototype.config_modal_show();')
             self.send_config_options = False
@@ -129,6 +131,20 @@ class SimControl(Component):
                 self.viz.viz.filename, self.viz.viz.model,
                 self.viz.viz.orig_locals)
             self.reload = True
+        elif msg[:8] == 'backend:':
+            self.viz.backend = msg[8:]
+            self.viz.changed = True
+
+    def backend_options_html(self):
+        items = []
+        for module in nengo_gui.monkey.found_modules:
+            if module == self.viz.backend:
+                selected = ' selected'
+            else:
+                selected = ''
+            item = '<option %s>%s</option>' % (selected, module)
+            items.append(item)
+        return ''.join(items)
 
 class SimControlTemplate(Template):
     cls = SimControl
