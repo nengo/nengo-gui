@@ -1,7 +1,9 @@
+import importlib
 import os
 import time
 import threading
 import json
+import socket
 
 import nengo
 
@@ -19,6 +21,10 @@ class VizException(Exception):
 
 class VizSim(object):
     """A single Simulator attached to an html visualization."""
+
+    # list of backends that can only have one Simulator at a time
+    singleton_sims = dict(nengo_spinnaker = None)
+
     def __init__(self, viz):
         self.viz = viz          # the parent Viz organizer
         self.config = viz.config
@@ -28,11 +34,12 @@ class VizSim(object):
         self.uids = {}
         self.finished = False   # are we done simulating?
         self.rebuild = False    # should we rebuild the model?
-        self.sim = None
+        self._sim = None
         self.changed = False    # has something changed the model, so it
         self.current_error = None
         self.undo_stack = []
         self.redo_stack = []
+        self.backend = viz.default_backend
         self.new_code = None
                                 #  should be rebuilt?
 
@@ -45,6 +52,16 @@ class VizSim(object):
         t = threading.Thread(target=self.runner)
         t.daemon = True
         t.start()
+
+    @property
+    def sim(self):
+        return self._sim
+
+    @sim.setter
+    def sim(self, value):
+        if hasattr(self._sim, 'close'):
+            self._sim.close()
+        self._sim = value
 
     def get_net_graph(self):
         for c in self.components:
@@ -66,18 +83,26 @@ class VizSim(object):
     def build(self):
         self.building = True
 
-        self.sim = None
-
         # use the lock to make sure only one Simulator is building at a time
         with self.viz.lock:
             for c in self.components:
                 c.add_nengo_objects(self.viz)
             # build the simulation
-            self.sim = nengo.Simulator(self.model)
+            backend = importlib.import_module(self.backend)
+            old_sim = VizSim.singleton_sims.get(self.backend, None)
+            if old_sim is not None:
+                if old_sim is not self:
+                    old_sim.sim = None
+                    old_sim.finished = True
+            self.sim = backend.Simulator(self.model)
+            if self.backend in VizSim.singleton_sims:
+                VizSim.singleton_sims[self.backend] = self
+
             # remove the temporary components added for visualization
             for c in self.components:
                 c.remove_nengo_objects(self.viz)
             # TODO: add checks to make sure everything's been removed
+
 
         self.building = False
 
@@ -88,14 +113,20 @@ class VizSim(object):
                 time.sleep(0.01)
             else:
                 try:
-                    self.sim.step()
+                    if hasattr(self.sim, 'max_steps'):
+                        self.sim.run_steps(self.sim.max_steps)
+                    else:
+                        self.sim.step()
                 except AttributeError:
                     time.sleep(0.01)
+                except socket.error:  # if another thread closes the sim
+                    pass
 
 
             if self.rebuild:
                 self.rebuild = False
                 self.build()
+
 
     def finish(self):
         self.finished = True
@@ -144,7 +175,8 @@ class Viz(object):
 
         self.viz_sims = []
         self.cfg = cfg
-        self.interactive = interactive;
+        self.interactive = interactive
+        self.default_backend = 'nengo'
 
         self.lock = threading.Lock()
 
@@ -320,7 +352,7 @@ class Viz(object):
         if label is None:
             label = default_labels.get(obj, None)
             if label is None:
-                print 'ERROR finding label', obj
+                print('ERROR finding label: %s' % obj)
             else:
                 if '.' in label:
                     label = label.rsplit('.', 1)[1]
