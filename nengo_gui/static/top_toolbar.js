@@ -48,6 +48,9 @@ Nengo.Toolbar = function(filename) {
 
     $('#filename')[0].innerHTML = filename;
 
+    // update the URL so reload and bookmarks work as expected
+    history.pushState({}, filename, '/?filename=' + filename);
+
     this.toolbar = $('#toolbar_object')[0];
 
     this.menu = new Nengo.Menu(this.toolbar);
@@ -69,8 +72,8 @@ Nengo.Toolbar.prototype.file_browser = function () {
             script: '/browse'
         },
         function (file) {
-            var msg = 'open' + file
-            sim.ws.send(msg);})
+            window.location.assign('/?filename=' + file);
+        })
     }
 };
 
@@ -85,7 +88,7 @@ Nengo.Toolbar.prototype.file_name = function() {
 /** Tells the server to reset the model layout to the default,
  *  by deleting the config file and reloading the script */
 Nengo.Toolbar.prototype.reset_model_layout = function () {
-    sim.ws.send('reset');
+    window.location.assign('/?reset=True');
 }
 
 /** Function called by event handler in order to launch modal.

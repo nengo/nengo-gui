@@ -189,7 +189,8 @@ class Viz(object):
 
         self.load(filename, model, locals, force=True)
 
-    def load(self, filename, model=None, locals=None, force=False):
+    def load(self, filename, model=None, locals=None, force=False,
+             reset=False):
         with self.lock:
             try:
                 filename = os.path.relpath(filename)
@@ -250,6 +251,10 @@ class Viz(object):
             self.filename = filename
             self.name_finder = nengo_gui.NameFinder(locals, model)
             self.default_labels = self.name_finder.known_name
+
+            if reset:
+                if os.path.isfile(self.config_name()) :
+                    os.remove(self.config_name())
 
             self.config = self.load_config()
             self.config_save_needed = False
