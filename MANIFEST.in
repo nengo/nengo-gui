@@ -1,5 +1,6 @@
 include *.md
 include *.py
+include *.rst
 recursive-include examples *.ipynb
 recursive-include examples *.py
 recursive-include nengo_gui *.css

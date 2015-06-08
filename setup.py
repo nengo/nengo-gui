@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import imp
+import io
 import os
 
 try:
@@ -10,12 +11,21 @@ except ImportError:
 
 from setuptools import find_packages, setup
 
+
+def read(*filenames, **kwargs):
+    encoding = kwargs.get('encoding', 'utf-8')
+    sep = kwargs.get('sep', '\n')
+    buf = []
+    for filename in filenames:
+        with io.open(filename, encoding=encoding) as f:
+            buf.append(f.read())
+    return sep.join(buf)
+
 root = os.path.dirname(os.path.realpath(__file__))
 version_module = imp.load_source(
     'version', os.path.join(root, 'nengo_gui', 'version.py'))
 description = "Web-based GUI for building and visualizing Nengo models."
-with open(os.path.join(root, 'README.rst')) as readme:
-    long_description = readme.read()
+long_description = read('README.rst', 'CHANGES.rst')
 
 setup(
     name="nengo_gui",
