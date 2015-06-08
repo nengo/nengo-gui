@@ -19,8 +19,8 @@ Release History
    - Bugfixes
    - Documentation
 
-0.1.1 (unreleased)
-==================
+0.1.1 (June 8, 2015)
+====================
 
 - A large number of stability and user experience fixes.
   The first release was a bit buggy, but this should be pretty stable.
