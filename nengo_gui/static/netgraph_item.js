@@ -368,13 +368,13 @@ Nengo.NetGraphItem.prototype.create_graph = function (type, args) {
     info.x = pos[0] / (viewport.w * viewport.scale) - viewport.x + w;
     info.y = pos[1] / (viewport.h * viewport.scale) - viewport.y + h;
 
+    info.width = 100 / (viewport.w * viewport.scale);
+    info.height = 100 / (viewport.h * viewport.scale);
 
     if (info.type == 'Slider') {
-        info.width = w*0.5;
-    } else {
-        info.width = w*2;
+        info.width /= 2;
     }
-    info.height = h*2;
+
     info.uid = this.uid;
     if (typeof(args) != 'undefined') { info.args = args; }
     this.ng.notify(info);
