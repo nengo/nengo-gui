@@ -352,8 +352,12 @@ class Viz(object):
         with self.lock:
             self.config_save_time = now_time
             self.config_save_needed = False
-            with open(self.config_name(), 'w') as f:
-                f.write(self.config.dumps(uids=self.default_labels))
+            try:
+                with open(self.config_name(), 'w') as f:
+                    f.write(self.config.dumps(uids=self.default_labels))
+            except IOError:
+                print("Could not save %s; permission denied" %
+                      self.config_name())
 
     def modified_config(self):
         self.config_save_needed = True

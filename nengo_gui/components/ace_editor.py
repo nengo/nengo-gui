@@ -39,6 +39,8 @@ class AceEditor(Component):
                 with open(self.viz.viz.filename, 'w') as f:
                     f.write(self.current_code)
             except IOError:
+                print("Could not save %s; permission denied" %
+                      self.viz.viz.filename)
                 self.viz.new_code = self.current_code
         else:
             self.viz.new_code = self.current_code
