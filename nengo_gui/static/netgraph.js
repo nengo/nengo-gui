@@ -441,8 +441,8 @@ Nengo.NetGraph.prototype.on_resize = function(event) {
                     this.old_width/width / this.scale;
                 var new_height = item.get_height()*
                     this.old_height/height / this.scale;
-                item.set_size(new_width/(2*width), 
-                    new_height/(2*height));   
+                item.set_size(new_width/(2*width),
+                    new_height/(2*height));
             }
         }
     }
@@ -640,5 +640,3 @@ Nengo.NetGraph.prototype.scaleMiniMapViewBox = function () {
         this.view.setAttribute('height', h / this.scale);
     }
 }
-
-
