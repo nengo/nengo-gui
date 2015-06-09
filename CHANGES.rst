@@ -19,8 +19,10 @@ Release History
    - Bugfixes
    - Documentation
 
-0.1.2 (unreleased)
-==================
+0.1.2 (June 9, 2015)
+====================
+
+- Fixed a Python 3 compatibility issue with semantic pointer graphs.
 
 0.1.1 (June 8, 2015)
 ====================
