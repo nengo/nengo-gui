@@ -81,7 +81,7 @@ class Pointer(Component):
     @staticmethod
     def applicable_targets(obj):
         if isinstance(obj, Module):
-            return obj.outputs.keys()
+            return list(obj.outputs.keys())
         else:
             return []
 
