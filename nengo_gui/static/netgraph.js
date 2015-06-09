@@ -369,17 +369,9 @@ Nengo.NetGraph.prototype.set_zoom_fonts = function(value) {
     this.update_font_size();
 }
 
-Nengo.NetGraph.prototype.get_zoom_fonts = function() {
-    return this.zoom_fonts;
-}
-
 Nengo.NetGraph.prototype.set_font_size = function(value) {
     this.font_size = value;
     this.update_font_size();
-}
-
-Nengo.NetGraph.prototype.get_font_size = function() {
-    return this.font_size;
 }
 
 /** redraw all elements */
@@ -649,10 +641,4 @@ Nengo.NetGraph.prototype.scaleMiniMapViewBox = function () {
     }
 }
 
-Nengo.NetGraph.prototype.get_aspect_resize = function() {
-    return this.aspect_resize;
-}
 
-Nengo.NetGraph.prototype.set_aspect_resize = function(value) {
-    this.aspect_resize = value;
-}
