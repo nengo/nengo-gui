@@ -231,9 +231,11 @@ class Viz(object):
                             line = nengo_gui.monkey.determine_line_number()
                             print('nengo_gui.Viz() started on line %d. '
                                   'Ignoring all subsequent lines.' % line)
-                    except:
+                    except Exception as e:
                         if not force:
                             raise
+                        else:
+                            print("Error loading file: %s" % e)
                     finally:
                         if filedir is not None:
                             sys.path.remove(filedir)
