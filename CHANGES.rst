@@ -19,8 +19,11 @@ Release History
    - Bugfixes
    - Documentation
 
-0.1.3 (unreleased)
-==================
+0.1.3 (June 10, 2015)
+=====================
+
+- Fixed another Python 3 compatibility issue with autolayouts.
+- Fixed a bug that could cause a crash when reloading config files.
 
 0.1.2 (June 9, 2015)
 ====================
