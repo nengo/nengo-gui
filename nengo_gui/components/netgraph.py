@@ -40,7 +40,7 @@ class NetGraph(Component):
             t = None
 
         if t is not None:
-            if self.last_modify_time < t or self.last_modify_time is None:
+            if self.last_modify_time is None or self.last_modify_time < t:
                 self.reload()
                 self.last_modify_time = t
 
