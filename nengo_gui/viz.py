@@ -1,9 +1,10 @@
 import importlib
+import json
 import os
+import socket
+import sys
 import time
 import threading
-import json
-import socket
 
 import nengo
 
@@ -11,8 +12,8 @@ import nengo_gui
 import nengo_gui.server
 import nengo_gui.components
 import nengo_gui.config
-from nengo_gui.components.action import ConfigAction, RemoveGraph
 import nengo_gui.monkey
+from nengo_gui.components.action import ConfigAction, RemoveGraph
 
 
 class VizException(Exception):
@@ -212,6 +213,12 @@ class Viz(object):
                                 '    ')
 
                 with nengo_gui.monkey.patch():
+                    filedir = os.path.dirname(filename)
+                    if filedir not in sys.path:
+                        sys.path.insert(0, filedir)
+                    else:
+                        filedir = None
+
                     try:
                         exec(self.code, locals)
                     except nengo_gui.monkey.StartedSimulatorException:
@@ -227,6 +234,10 @@ class Viz(object):
                     except:
                         if not force:
                             raise
+                    finally:
+                        if filedir is not None:
+                            sys.path.remove(filedir)
+
             self.orig_locals = dict(locals)
 
             if model is None:
