@@ -11,10 +11,11 @@
 #  e.g. "dummy" node insertion, edge reversal for making the graph
 #  acyclic and so on, are all kept inside the layout object.
 #
-from  numpy   import array,matrix
-from .utils   import rand_ortho1,median_wh
-from  sys     import getrecursionlimit,setrecursionlimit
-from  bisect  import bisect
+from  numpy     import array,matrix
+from .utils     import rand_ortho1,median_wh
+from  sys       import getrecursionlimit,setrecursionlimit
+from  bisect    import bisect
+from  functools import cmp_to_key
 
 try:
     xrange
@@ -147,7 +148,9 @@ class Layer(list):
                 v = mvmt.pop()
                 v.bar = sug.grx[v.ctrl[self.__r][0]].bar
             # now resort layers l according to bar value:
-            self.sort(cmp=(lambda x,y: cmp(sug.grx[x].bar,sug.grx[y].bar)))
+            self.sort(key=cmp_to_key(
+                lambda x,y: ((sug.grx[x].bar > sug.grx[y].bar)
+                             - (sug.grx[x].bar < sug.grx[y].bar))))
             # assign new position in layer l:
             for i,v in enumerate(self):
                 if sug.grx[v].pos!=i: mvmt.append(v)
@@ -229,7 +232,7 @@ class Layer(list):
         for i,p in enumerate(P):
             candidates = sum(P[i+1:],[])
             for j,e in enumerate(p):
-                p[j] = len(filter((lambda nx:nx<e), candidates))
+                p[j] = len(list(filter((lambda nx:nx<e), candidates)))
             del candidates
         return P
 
@@ -260,7 +263,7 @@ class Layer(list):
             ni = [g[v].pos for v in self._neighbors(vi)]
             Xij=Xji=0
             for nj in [g[v].pos for v in self._neighbors(vj)]:
-                x = len(filter((lambda nx:nx>nj),ni))
+                x = len(list(filter((lambda nx:nx>nj),ni)))
                 Xij += x
                 Xji += len(ni)-x
             if Xji<Xij:
@@ -308,10 +311,10 @@ class  SugiyamaLayout(object):
         # For layered sugiyama algorithm, the input graph must be acyclic,
         # so we must provide a list of root nodes and a list of inverted edges.
         if roots==None:
-            roots = filter(lambda x: len(list(x.e_in()))==0, self.g.sV)
+            roots = list(filter(lambda x: len(list(x.e_in()))==0, self.g.sV))
         if inverted_edges==None:
             L = self.g.get_scs_with_feedback(roots)
-            inverted_edges = filter(lambda x:x.feedback, self.g.sE)
+            inverted_edges = list(filter(lambda x:x.feedback, self.g.sE))
         self.alt_e = inverted_edges
         # assign rank to all vertices:
         self.rank_all(roots,optimize)
@@ -375,7 +378,7 @@ class  SugiyamaLayout(object):
     # optimal ranking may be derived from network flow (simplex).
     def rank_all(self,roots,optimize=False):
         self._edge_inverter()
-        r = filter(lambda x: len(list(x.e_in()))==0 and x not in roots, self.g.sV)
+        r = list(filter(lambda x: len(list(x.e_in()))==0 and x not in roots, self.g.sV))
         self._rank_init(list(roots)+list(r))
         if optimize: self._rank_optimize()
         self._edge_inverter()
@@ -943,4 +946,3 @@ class  DigcoLayout(object):
 class  DwyerLayout(object):
     def __init__(self):
         raise NotImplementedError
-
