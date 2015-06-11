@@ -17,13 +17,17 @@ def main():
     parser.add_argument(
         '-b', '--backend', metavar='BACKEND',
         default='nengo', type=str, help='default backend to use')
+    parser.add_argument(
+        '--hide_editor', action='store_true',
+        help='supply to disable built-in editor')
     args = parser.parse_args()
 
     if args.debug:
         import logging
         logging.basicConfig(level=logging.DEBUG)
 
-    viz = nengo_gui.Viz(filename=args.filename)
+    viz = nengo_gui.Viz(filename=args.filename,
+                        interactive=not args.hide_editor)
     viz.default_backend = args.backend
     viz.start(port=args.port, password=args.password)
 
