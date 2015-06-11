@@ -76,8 +76,7 @@ class Server(swi.SimpleWebInterface):
 
         if reset == 'True':
             self.server.viz.load(self.server.viz.filename,
-                self.server.viz.model, self.server.viz.orig_locals,
-                reset=True)
+                force=True, reset=True)
         elif filename is not None:
             self.server.viz.load(filename, force=True)
 
