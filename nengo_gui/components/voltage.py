@@ -14,7 +14,7 @@ class Voltage(Component):
         self.obj = obj.neurons
         self.data = []
         self.label = viz.viz.get_label(obj)
-        self.max_neurons = self.obj.size_out
+        self.max_neurons = int(self.obj.size_out)
         self.n_neurons = min(n_neurons, self.max_neurons)
         self.struct = struct.Struct('<%df' % (1 + self.n_neurons))
 

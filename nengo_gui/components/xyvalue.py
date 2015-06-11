@@ -13,7 +13,7 @@ class XYValue(Component):
         self.obj = obj
         self.label = viz.viz.get_label(obj)
         self.data = collections.deque()
-        self.n_lines = obj.size_out
+        self.n_lines = int(obj.size_out)
         self.struct = struct.Struct('<%df' % (1 + self.n_lines))
 
     def add_nengo_objects(self, viz):
