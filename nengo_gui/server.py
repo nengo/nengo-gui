@@ -76,7 +76,7 @@ class Server(swi.SimpleWebInterface):
 
         if reset == 'True':
             self.server.viz.load(self.server.viz.filename,
-                force=True, reset=True)
+                force=True, reset=True, code=self.server.viz.code)
         elif filename is not None:
             self.server.viz.load(filename, force=True)
 

@@ -190,7 +190,7 @@ class Viz(object):
         self.load(filename, model, locals, force=True)
 
     def load(self, filename, model=None, locals=None, force=False,
-             reset=False):
+             reset=False, code=None):
         with self.lock:
             try:
                 filename = os.path.relpath(filename)
@@ -202,14 +202,17 @@ class Viz(object):
                 locals['nengo_gui'] = nengo_gui
                 locals['__file__'] = filename
 
-                try:
-                    with open(filename) as f:
-                        self.code = f.read()
-                except IOError:
-                    self.code = ('import nengo\n\n'
-                                'model = nengo.Network()\n'
-                                'with model:\n'
-                                '    ')
+                if code is not None:
+                    self.code = code
+                else:
+                    try:
+                        with open(filename) as f:
+                            self.code = f.read()
+                    except IOError:
+                        self.code = ('import nengo\n\n'
+                                    'model = nengo.Network()\n'
+                                    'with model:\n'
+                                    '    ')
 
                 with nengo_gui.monkey.patch():
                     try:
