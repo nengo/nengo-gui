@@ -1,9 +1,10 @@
-import time
-import pkgutil
+import json
+import mimetypes
 import os
 import os.path
-import mimetypes
-import json
+import pkgutil
+import time
+import traceback
 
 try:
     from urllib import unquote
@@ -141,7 +142,11 @@ class Server(swi.SimpleWebInterface):
                         self.server.viz.modified_config()
                         return
                     else:
-                        component.message(msg)
+                        try:
+                            component.message(msg)
+                        except:
+                            print('Error processing: "%s"' % msg)
+                            traceback.print_exc()
                     msg = client.read()
                 # send data to the component
                 component.update_client(client)
