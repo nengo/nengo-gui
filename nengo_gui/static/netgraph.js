@@ -428,8 +428,6 @@ Nengo.NetGraph.prototype.create_connection = function(info) {
 /** handler for resizing the full SVG */
 Nengo.NetGraph.prototype.on_resize = function(event) {
 
-    this.redraw();
-
     var width = $(this.svg).width();
     var height = $(this.svg).height();
 
@@ -441,14 +439,15 @@ Nengo.NetGraph.prototype.on_resize = function(event) {
                     this.old_width/width / this.scale;
                 var new_height = item.get_height()*
                     this.old_height/height / this.scale;
-                item.set_size(new_width/(2*width),
-                    new_height/(2*height));
-            }
+                item.size = [new_width/(2*width), 
+                    new_height/(2*height)];               }
         }
     }
 
     this.old_width = width;
     this.old_height = height;
+
+    this.redraw();    
 };
 
 
