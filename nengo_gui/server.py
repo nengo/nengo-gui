@@ -149,7 +149,10 @@ class Server(swi.SimpleWebInterface):
                             traceback.print_exc()
                     msg = client.read()
                 # send data to the component
-                component.update_client(client)
+                try:
+                    component.update_client(client)
+                except:
+                    traceback.print_exc()
                 self.server.viz.save_config(lazy=True)
                 time.sleep(0.01)
         except swi.SocketClosedError:
