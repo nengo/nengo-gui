@@ -15,6 +15,7 @@ Nengo.NetGraph = function(parent, args) {
     this.offsetY = 0;
     this.zoom_fonts = false;    // scale fonts when zooming
     this.font_size = 100;       // font size as a percent of base
+    this.aspect_resize = false;  //preserve aspect ratios on window resize
 
     this.svg_objects = {};     // dict of all Nengo.NetGraphItems, by uid
     this.svg_conns = {};       // dict of all Nengo.NetGraphConnections, by uid
@@ -368,17 +369,9 @@ Nengo.NetGraph.prototype.set_zoom_fonts = function(value) {
     this.update_font_size();
 }
 
-Nengo.NetGraph.prototype.get_zoom_fonts = function() {
-    return this.zoom_fonts;
-}
-
 Nengo.NetGraph.prototype.set_font_size = function(value) {
     this.font_size = value;
     this.update_font_size();
-}
-
-Nengo.NetGraph.prototype.get_font_size = function() {
-    return this.font_size;
 }
 
 /** redraw all elements */
@@ -435,13 +428,26 @@ Nengo.NetGraph.prototype.create_connection = function(info) {
 /** handler for resizing the full SVG */
 Nengo.NetGraph.prototype.on_resize = function(event) {
 
-    this.redraw();
-
     var width = $(this.svg).width();
     var height = $(this.svg).height();
 
+    if (this.aspect_resize) {
+        for (var key in this.svg_objects) {
+            var item = this.svg_objects[key];
+            if (item.depth == 1) {
+                var new_width = item.get_width()*
+                    this.old_width/width / this.scale;
+                var new_height = item.get_height()*
+                    this.old_height/height / this.scale;
+                item.size = [new_width/(2*width), 
+                    new_height/(2*height)];               }
+        }
+    }
+
     this.old_width = width;
     this.old_height = height;
+
+    this.redraw();    
 };
 
 

@@ -22,7 +22,7 @@ Nengo.Axes2D = function(parent, args) {
     this.scale_y.domain([args.min_value, args.max_value]);
 
     /** spacing between the graph and the outside edges (in pixels) */
-    this.calc_axes_geometry(args.width, args.height);
+    this.set_axes_geometry(args.width, args.height);
 
     /** define the x-axis */
     this.axis_x = d3.svg.axis()
@@ -43,8 +43,10 @@ Nengo.Axes2D = function(parent, args) {
         .call(this.axis_y);
 };
 
-Nengo.Axes2D.prototype.calc_axes_geometry = function(width, height) {
+Nengo.Axes2D.prototype.set_axes_geometry = function(width, height) {
     scale = parseFloat($('#main').css('font-size'));
+    this.width = width;
+    this.height = height;
 
     this.ax_left = 1.75 * scale;
     this.ax_right = width - 1.75 * scale;
@@ -65,8 +67,7 @@ Nengo.Axes2D.prototype.on_resize = function(width, height) {
     if (height < this.minHeight) {
         height = this.minHeight;
     };
-
-    this.calc_axes_geometry(width, height);
+    this.set_axes_geometry(width, height);
 
     this.scale_x.range([this.ax_left, this.ax_right]);
     this.scale_y.range([this.ax_bottom, this.ax_top]);
@@ -82,7 +83,4 @@ Nengo.Axes2D.prototype.on_resize = function(width, height) {
     this.axis_x_g.call(this.axis_x);
     this.axis_y_g.attr("transform", "translate(" + this.ax_left + ", 0)");
     this.axis_y_g.call(this.axis_y);
-
-    this.width = width;
-    this.height = height;
 };

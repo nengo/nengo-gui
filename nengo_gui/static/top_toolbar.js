@@ -100,27 +100,32 @@ Nengo.Toolbar.prototype.config_modal = function () {
 Nengo.Toolbar.prototype.config_modal_show = function() {
     var self = this;
 
-    var options = [Nengo.netgraph.get_zoom_fonts(),
-        Nengo.netgraph.get_font_size()];
+    var options = {zoom: Nengo.netgraph.zoom_fonts,
+        font_size: Nengo.netgraph.font_size,
+        aspect_resize: Nengo.netgraph.aspect_resize
+        };
 
     Nengo.modal.title('Configure Options');
     Nengo.modal.main_config(options);
     Nengo.modal.footer('ok_cancel', function(e) {
         var zoom = $('#zoom-fonts').prop('checked');
         var font_size = $('#config-fontsize').val();
-        var modal = $('#myModalForm').data('bs.validator');
+        var fixed_resize = $('#fixed-resize').prop('checked');
 
+        var modal = $('#myModalForm').data('bs.validator');
         modal.validate();
         if (modal.hasErrors() || modal.isIncomplete()) {
             return;
         }
         Nengo.netgraph.set_zoom_fonts(zoom);
         Nengo.netgraph.set_font_size(parseInt(font_size));
+        Nengo.netgraph.aspect_resize = fixed_resize;
+
         $('#OK').attr('data-dismiss', 'modal');
     },
         function () {  //cancel_function
-            Nengo.netgraph.set_zoom_fonts(options[0]);
-            Nengo.netgraph.set_font_size(options[1]);
+            Nengo.netgraph.set_zoom_fonts(options["zoom"]);
+            Nengo.netgraph.set_font_size(options["font_size"]);
             $('#cancel-button').attr('data-dismiss', 'modal');
     });
 
@@ -128,7 +133,7 @@ Nengo.Toolbar.prototype.config_modal_show = function() {
         custom: {
             my_validator: function($item) {
                 var num = $item.val();
-                return (num.length<=3 && num>10);
+                return (num.length<=3 && num>20);
             }
         },
     });

@@ -144,8 +144,8 @@ Nengo.Modal.prototype.main_config = function(options) {
         '</div>' +
         '<span class="help-block with-errors">As a percentage of' +
             ' the base size</span>' +
-    '</div>' +
-    '<div class="form-group">' +
+      '</div>' +
+      '<div class="form-group">' +
         '<div class="checkbox">' +
           '<label for="zoom-fonts" class="control-label">' +
             '<input type="checkbox" id="zoom-fonts">' +
@@ -153,31 +153,39 @@ Nengo.Modal.prototype.main_config = function(options) {
           '</label>' +
           '<div class="help-block with-errors"></div>' +
         '</div>' +
-    '</div>' +
-    '<div class="form-group">' +
-        '<div class="select">' +
-            '<label for="config-backend" class="control-label">' +
-                'Select backend' +
-            '</label>' +
-            '<select class="form-control" id="config-backend">' +
-                sim.simulator_options +
-            '</select>' +
-        '</div>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<div class="checkbox">' +
+          '<label for="fixed-resize" class="control-label">' +
+            '<input type="checkbox" id="fixed-resize">' +
+            'Fix aspect ratio of elements on canvas resize' +
+          '</label>' +
+        '<div class="help-block with-errors"></div>' +
+      '</div>' +
+      '<div class="select">' +
+          '<label for="config-backend" class="control-label">' +
+              'Select backend' +
+          '</label>' +
+          '<select class="form-control" id="config-backend">' +
+              sim.simulator_options +
+          '</select>' +
+      '</div>' +
     '</div>').appendTo($form);
 
     this.$div.on('shown.bs.modal', function () {
         $('#config-fontsize').focus();
     });
-    $('#zoom-fonts').prop('checked', options[0]);
+    $('#zoom-fonts').prop('checked', options["zoom"]);
     $('#zoom-fonts').change(function () {
         Nengo.netgraph.set_zoom_fonts($('#zoom-fonts').prop('checked'));
     });
 
-    $('#config-fontsize').val(options[1]);
+    $('#fixed-resize').prop('checked', options["aspect_resize"]);
+
+    $('#config-fontsize').val(options["font_size"]);
     $('#config-fontsize').bind('keyup input', function () {
         Nengo.netgraph.set_font_size(parseInt($('#config-fontsize').val()));
     });
-
     $('#config-fontsize').attr('data-my_validator', 'custom');
 
     $('#config-backend').change(function () {
