@@ -1,9 +1,10 @@
 import importlib
+import json
 import os
+import socket
+import sys
 import time
 import threading
-import json
-import socket
 
 import nengo
 
@@ -11,8 +12,8 @@ import nengo_gui
 import nengo_gui.server
 import nengo_gui.components
 import nengo_gui.config
-from nengo_gui.components.action import ConfigAction, RemoveGraph
 import nengo_gui.monkey
+from nengo_gui.components.action import ConfigAction, RemoveGraph
 
 
 class VizException(Exception):
@@ -212,6 +213,12 @@ class Viz(object):
                                 '    ')
 
                 with nengo_gui.monkey.patch():
+                    filedir = os.path.dirname(filename)
+                    if filedir not in sys.path:
+                        sys.path.insert(0, filedir)
+                    else:
+                        filedir = None
+
                     try:
                         exec(self.code, locals)
                     except nengo_gui.monkey.StartedSimulatorException:
@@ -224,9 +231,15 @@ class Viz(object):
                             line = nengo_gui.monkey.determine_line_number()
                             print('nengo_gui.Viz() started on line %d. '
                                   'Ignoring all subsequent lines.' % line)
-                    except:
+                    except Exception as e:
                         if not force:
                             raise
+                        else:
+                            print("Error loading file: %s" % e)
+                    finally:
+                        if filedir is not None:
+                            sys.path.remove(filedir)
+
             self.orig_locals = dict(locals)
 
             if model is None:
