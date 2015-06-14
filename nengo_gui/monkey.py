@@ -46,9 +46,9 @@ def determine_line_number(filename='<string>'):
     is evaluated using exec(), so it doesn't have a normal filename).
     '''
 
-    tb = getattr(sys, 'exc_traceback', None)
-    if tb is not None:
-        ex_tb = traceback.extract_tb(tb)
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    if exc_traceback is not None:
+        ex_tb = traceback.extract_tb(exc_traceback)
         for fn, line, function, code in reversed(ex_tb):
             if fn == filename:
                 return line
