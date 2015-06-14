@@ -434,7 +434,7 @@ class NetGraph(Component):
         if type == 'ens' or type == 'node':
             info['dimensions'] = int(obj.size_out)
         if type == 'node':
-            if callable(obj.output) and hasattr(obj.output, 'html'):
+            if callable(obj.output) and hasattr(obj.output, '_nengo_html_'):
                 info['html'] = True
 
         info['sp_targets'] = (

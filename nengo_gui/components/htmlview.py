@@ -24,7 +24,7 @@ class HTMLView(Component):
 
     def gather_data(self, t, *x):
         value = self.obj_output(t, *x)
-        data = '%g %s' % (t, self.obj_output.html)
+        data = '%g %s' % (t, self.obj_output._nengo_html_)
         self.data.append(data)
         return value
 
