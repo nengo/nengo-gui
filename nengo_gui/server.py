@@ -75,8 +75,15 @@ class Server(swi.SimpleWebInterface):
             return self.create_login_form()
 
         if reset == 'True':
-            self.server.viz.load(self.server.viz.filename,
-                force=True, reset=True, code=self.server.viz.code)
+            if hasattr(self.server.viz, 'code'):
+                # if we have the code, re-run it just to be safe
+                self.server.viz.load(self.server.viz.filename,
+                    force=True, reset=True, code=self.server.viz.code)
+            else:
+                # if we don't (i.e. for IPython integration) then just reset
+                self.server.viz.load(self.server.viz.filename,
+                        self.server.viz.model, self.server.viz.orig_locals,
+                        reset=True)
         elif filename is not None:
             self.server.viz.load(filename, force=True)
 
