@@ -403,6 +403,9 @@ Nengo.NetGraphItem.prototype.expand = function(rts, auto) {
 
     if (!this.expanded) {
         this.expanded = true;
+        if (this.ng.transparent_nets) {
+            this.shape.style["fill-opacity"] = 0.0;
+        }
         this.g_items.removeChild(this.g);
         this.g_networks.appendChild(this.g);
         if (this.minimap == false) {
@@ -448,6 +451,9 @@ Nengo.NetGraphItem.prototype.collapse = function(report_to_server, auto) {
 
     if (this.expanded) {
         this.expanded = false;
+        if (this.ng.transparent_nets) {
+            this.shape.style["fill-opacity"] = 1.0;
+        }
         this.g_networks.removeChild(this.g);
         this.g_items.appendChild(this.g);
         if (this.minimap == false) {
@@ -471,10 +477,12 @@ Nengo.NetGraphItem.prototype.collapse = function(report_to_server, auto) {
 
 /** determine the fill color based on the depth */
 Nengo.NetGraphItem.prototype.compute_fill = function() {
+    var depth = this.ng.transparent_nets ? 1 : this.depth;
+
     if (!this.passthrough) {
-        var fill = Math.round(255 * Math.pow(0.8, this.depth));
+        var fill = Math.round(255 * Math.pow(0.8, depth));
         this.shape.style.fill = 'rgb(' + fill + ',' + fill + ',' + fill + ')';
-        var stroke = Math.round(255 * Math.pow(0.8, this.depth + 2));
+        var stroke = Math.round(255 * Math.pow(0.8, depth + 2));
         this.shape.style.stroke = 'rgb(' + stroke + ',' + stroke + ',' + stroke + ')';
     }
 }
