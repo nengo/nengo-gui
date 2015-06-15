@@ -3,6 +3,10 @@ import importlib
 import threading
 import traceback
 import sys
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 
 # list of Simulators to check for
@@ -67,12 +71,20 @@ def determine_line_number(filename='<string>'):
         return line
     return None
 
+stdout = StringIO()
 
 @contextlib.contextmanager
 def patch():
+    global stdout
+
     flag.executing = True
     del found_modules[:]
     simulators = {}
+
+    # add hooks to record stdout
+
+    sys.stdout = StringIO()
+
     for name in known_modules:
         try:
             mod = importlib.import_module(name)
@@ -85,3 +97,6 @@ def patch():
     for mod, cls in simulators.items():
         mod.Simulator = cls
     flag.executing = False
+
+    stdout = sys.stdout
+    sys.stdout = sys.__stdout__
