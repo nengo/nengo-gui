@@ -211,7 +211,10 @@ class NetGraph(Component):
                               (nengo_gui.components.SimControlTemplate,
                                nengo_gui.components.NetGraphTemplate,
                                nengo_gui.components.AceEditorTemplate)):
-                self.viz.add_template(template)
+                try:
+                    self.viz.add_template(template)
+                except:
+                    print('failed to recreate plot for %s' % template)
 
         self.viz.changed = True
 
