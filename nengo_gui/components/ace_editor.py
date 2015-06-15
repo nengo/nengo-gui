@@ -14,6 +14,7 @@ class AceEditor(Component):
             self.current_code = self.viz.viz.code
             self.serve_code = True
             self.last_error = None
+            self.last_stdout = None
 
     def update_client(self, client):
         if not self.viz.viz.interactive:
@@ -22,17 +23,20 @@ class AceEditor(Component):
             i = json.dumps({'code': self.current_code})
             client.write(i)
             self.serve_code = False
+        if nengo_gui.monkey.is_executing():
+            return
         error = self.viz.current_error
-        if error != self.last_error:
+        stdout = nengo_gui.monkey.stdout.getvalue()
+        if error != self.last_error or stdout != self.last_stdout:
             if error is None:
                 short_msg = None
             else:
                 short_msg = error['trace'].rsplit('\n', 2)[-2]
-            stdout = nengo_gui.monkey.stdout.getvalue()
             client.write(json.dumps({'error': error,
                                      'short_msg':short_msg,
                                      'stdout':stdout}))
             self.last_error = error
+            self.last_stdout = stdout
 
     def javascript(self):
         args = json.dumps(dict(active=self.viz.viz.interactive))
