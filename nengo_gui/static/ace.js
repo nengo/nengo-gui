@@ -30,6 +30,13 @@ Nengo.Ace = function (uid, args) {
     this.editor.gotoLine(1);
     this.marker = null;
 
+    this.console = document.createElement('pre');
+    this.console.id = 'console';
+    document.getElementsByTagName("BODY")[0].appendChild(this.console);
+    this.console_height = 100;
+    this.console_hidden = true;
+
+
     this.save_disabled = true;
 
     //Setup the button to toggle the code editor
@@ -116,6 +123,8 @@ Nengo.Ace.prototype.on_message = function (event) {
             this.marker = null;
             this.editor.getSession().clearAnnotations();
         }
+        $(this.console).text('');
+        this.hide_console();
     } else if (msg.error !== undefined) {
         var line = msg.error.line;
         var trace = msg.error.trace;
@@ -127,6 +136,9 @@ Nengo.Ace.prototype.on_message = function (event) {
             type: 'error',
             text: trace,
         }]);
+        $(this.console).text(trace);
+        this.show_console();
+        this.console.scrollTop = this.console.scrollHeight;
     } else {
         console.log(msg);
     }
@@ -143,6 +155,21 @@ Nengo.Ace.prototype.hide_editor = function () {
     editor.style.display = 'none';
     this.hidden = true;
 }
+
+Nengo.Ace.prototype.show_console = function () {
+    var editor = document.getElementById('editor');
+    this.console.style.display = 'block';
+    this.console_hidden = false;
+    this.set_width();
+}
+
+Nengo.Ace.prototype.hide_console = function () {
+    var editor = document.getElementById('editor');
+    this.console.style.display = 'none';
+    this.console_hidden = true;
+    this.set_width();
+}
+
 
 Nengo.Ace.prototype.toggle_shown = function () {
     if (this.hidden) {
@@ -174,9 +201,15 @@ Nengo.Ace.prototype.set_width = function () {
     var bottom_margin = $(sim.div).height();
     var left_margin = $(window).width() - this.width;
 
+    var console_height = this.console_hidden ? 0 : this.console_height;
+
     code_div.style.top = top_margin;
-    code_div.style.bottom = bottom_margin;
+    code_div.style.bottom = bottom_margin + console_height;
     code_div.style.left = left_margin;
+
+    this.console.style.top = top_margin + $(code_div).height();
+    this.console.style.bottom = bottom_margin;
+    this.console.style.left = left_margin;
 
     this.update_main_width();
 }

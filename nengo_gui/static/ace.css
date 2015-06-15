@@ -5,3 +5,15 @@
     z-index: 99998;
     border-left:5px solid #606060;
 }
+
+#console {
+    position: fixed;
+    float:right;
+    right: 0;
+    z-index: 99998;
+    border-left:5px solid #606060;
+    border-top:5px solid #606060;
+    background: #ddd;
+    font-family: monospace;
+    overflow: auto;
+}
