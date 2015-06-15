@@ -64,6 +64,17 @@ Nengo.Ace = function (uid, args) {
         })
     $(window).on('resize', function() {self.set_width(); });
     this.update_main_width();
+
+    interact('#console')
+        .resizable({
+            edges: { left: true, right: false, bottom: false, top: true}
+        })
+        .on('resizemove', function (event) {
+            var x = event.deltaRect.left;
+            self.width -= x;
+            self.console_height -= event.deltaRect.top;
+            self.set_width()
+        })
 }
 
 //Send changes to the code to server every 100ms
