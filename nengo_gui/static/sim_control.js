@@ -300,6 +300,10 @@ Nengo.TimeSlider.prototype.resize = function(width, height) {
  */
 Nengo.TimeSlider.prototype.update_times = function(time) {
     var delta = time - this.last_time;   // time since last update_time()
+
+    if (delta < 0) {
+        self.sim.div.dispatchEvent(new Event('sim_reset'));
+    }
     this.last_time = time;
     this.first_shown_time = this.first_shown_time + delta;
 

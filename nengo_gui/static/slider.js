@@ -33,7 +33,11 @@ Nengo.Slider = function(parent, sim, args) {
     this.div.appendChild(this.group);
 
     /** make the sliders */
+    // the value to use when releasing from user control
     this.reset_value = args.start_value;
+    // the value to use when restarting the simulation from beginning
+    this.start_value = args.start_value;
+
     this.sliders = [];
     for (var i = 0; i < args.n_sliders; i++) {
         var slider = new Nengo.SliderControl(args.min_value, args.max_value);
@@ -62,6 +66,9 @@ Nengo.Slider = function(parent, sim, args) {
     this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
 
+    this.sim.div.addEventListener('sim_reset',
+            function(e) {self.on_sim_reset();}, false);
+
     this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
 Nengo.Slider.prototype = Object.create(Nengo.Component.prototype);
@@ -86,6 +93,14 @@ Nengo.Slider.prototype.send_value = function(slider_index, value) {
         this.notify(slider_index + ',' + value);
     }
     this.sim.time_slider.jump_to_end();
+};
+
+Nengo.Slider.prototype.on_sim_reset = function(event) {
+    // release slider position and reset it
+    for (var i = 0; i < this.sliders.length; i++) {
+        this.sliders[i].display_value(this.start_value[i]);
+        this.sliders[i].fixed = false;
+    }
 };
 
 /**
