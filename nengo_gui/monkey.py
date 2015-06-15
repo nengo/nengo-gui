@@ -3,10 +3,7 @@ import importlib
 import threading
 import traceback
 import sys
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+from nengo.utils.compat import StringIO
 
 
 # list of Simulators to check for
@@ -71,32 +68,33 @@ def determine_line_number(filename='<string>'):
         return line
     return None
 
-stdout = StringIO()
 
-@contextlib.contextmanager
-def patch():
-    global stdout
+class Patch(object):
+    def __enter__(self):
+        self.stdout = StringIO()
 
-    flag.executing = True
-    del found_modules[:]
-    simulators = {}
+        flag.executing = True
+        del found_modules[:]
+        self.simulators = {}
 
-    # add hooks to record stdout
+        # add hooks to record stdout
 
-    sys.stdout = StringIO()
+        sys.stdout = self.stdout
 
-    for name in known_modules:
-        try:
-            mod = importlib.import_module(name)
-        except:
-            continue
-        found_modules.append(name)
-        simulators[mod] = mod.Simulator
-        mod.Simulator = make_dummy(mod.Simulator)
-    yield
-    for mod, cls in simulators.items():
-        mod.Simulator = cls
-    flag.executing = False
+        for name in known_modules:
+            try:
+                mod = importlib.import_module(name)
+            except:
+                continue
+            found_modules.append(name)
+            self.simulators[mod] = mod.Simulator
+            mod.Simulator = make_dummy(mod.Simulator)
 
-    stdout = sys.stdout
-    sys.stdout = sys.__stdout__
+    def __exit__(self, exc_type, exc_value, traceback):
+        for mod, cls in self.simulators.items():
+            mod.Simulator = cls
+        flag.executing = False
+
+        sys.stdout = sys.__stdout__
+
+patch = Patch()

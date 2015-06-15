@@ -61,7 +61,7 @@ class NetGraph(Component):
                 code = f.read()
 
         try:
-            with nengo_gui.monkey.patch():
+            with nengo_gui.monkey.patch:
                 exec(code, locals)
         except:
             line = nengo_gui.monkey.determine_line_number()

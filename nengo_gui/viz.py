@@ -215,7 +215,7 @@ class Viz(object):
                                     'with model:\n'
                                     '    ')
 
-                with nengo_gui.monkey.patch():
+                with nengo_gui.monkey.patch:
                     filedir = os.path.dirname(filename)
                     if filedir not in sys.path:
                         sys.path.insert(0, filedir)
