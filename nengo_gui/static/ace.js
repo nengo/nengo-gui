@@ -30,12 +30,17 @@ Nengo.Ace = function (uid, args) {
     this.editor.gotoLine(1);
     this.marker = null;
 
-    this.console = document.createElement('pre');
+    this.console = document.createElement('div');
     this.console.id = 'console';
     document.getElementsByTagName("BODY")[0].appendChild(this.console);
     this.console_height = 100;
     this.console_hidden = true;
-
+    this.console_stdout = document.createElement('pre');
+    this.console_error = document.createElement('pre');
+    this.console_stdout.id = 'console_stdout';
+    this.console_error.id = 'console_error';
+    this.console.appendChild(this.console_stdout);
+    this.console.appendChild(this.console_error);
 
     this.save_disabled = true;
 
@@ -134,7 +139,8 @@ Nengo.Ace.prototype.on_message = function (event) {
             this.marker = null;
             this.editor.getSession().clearAnnotations();
         }
-        $(this.console).text(msg.stdout);
+        $(this.console_stdout).text(msg.stdout);
+        $(this.console_error).text('');
         if (msg.stdout === '') {
             this.hide_console();
         } else {
@@ -150,11 +156,8 @@ Nengo.Ace.prototype.on_message = function (event) {
             type: 'error',
             text: msg.short_msg,
         }]);
-        var trace = msg.error.trace;
-        if (msg.stdout !== '') {
-            trace = msg.stdout + '\n===============\n' + trace;
-        }
-        $(this.console).text(trace);
+        $(this.console_stdout).text(msg.stdout);
+        $(this.console_error).text(msg.error.trace);
         this.show_console();
         this.console.scrollTop = this.console.scrollHeight;
     } else {

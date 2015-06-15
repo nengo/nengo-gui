@@ -14,8 +14,24 @@
     border-left:5px solid #606060;
     border-top:5px solid #606060;
     border-radius: 0px;
-    background: #ddd;
     font-family: monospace;
     overflow: auto;
-
 }
+
+#console pre {
+    padding: 0px;
+    margin: 0px;
+    background: white;
+    border: 0px;
+}
+
+#console_stdout {
+    color: black;
+    border-bottom: 1px solid black;
+}
+
+#console_error {
+    color: red;
+}
+
+
