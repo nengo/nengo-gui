@@ -134,8 +134,12 @@ Nengo.Ace.prototype.on_message = function (event) {
             this.marker = null;
             this.editor.getSession().clearAnnotations();
         }
-        $(this.console).text('');
-        this.hide_console();
+        $(this.console).text(msg.stdout);
+        if (msg.stdout === '') {
+            this.hide_console();
+        } else {
+            this.show_console();
+        }
     } else if (msg.error !== undefined) {
         var line = msg.error.line;
         this.marker = this.editor.getSession()
@@ -146,7 +150,11 @@ Nengo.Ace.prototype.on_message = function (event) {
             type: 'error',
             text: msg.short_msg,
         }]);
-        $(this.console).text(msg.error.trace);
+        var trace = msg.error.trace;
+        if (msg.stdout !== '') {
+            trace = msg.stdout + '\n===============\n' + trace;
+        }
+        $(this.console).text(trace);
         this.show_console();
         this.console.scrollTop = this.console.scrollHeight;
     } else {

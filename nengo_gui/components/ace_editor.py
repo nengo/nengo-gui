@@ -1,6 +1,9 @@
-import nengo
 import json
+
+import nengo
+
 from nengo_gui.components.component import Component, Template
+import nengo_gui.monkey
 
 class AceEditor(Component):
     def __init__(self, viz, config, uid):
@@ -25,7 +28,10 @@ class AceEditor(Component):
                 short_msg = None
             else:
                 short_msg = error['trace'].rsplit('\n', 2)[-2]
-            client.write(json.dumps({'error': error, 'short_msg':short_msg}))
+            stdout = nengo_gui.monkey.stdout.getvalue()
+            client.write(json.dumps({'error': error,
+                                     'short_msg':short_msg,
+                                     'stdout':stdout}))
             self.last_error = error
 
     def javascript(self):
