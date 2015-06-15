@@ -27,11 +27,11 @@
 
 #console_stdout {
     color: black;
-    border-bottom: 1px solid black;
 }
 
 #console_error {
     color: red;
+    font-weight: bold;
 }
 
 
