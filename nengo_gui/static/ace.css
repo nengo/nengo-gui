@@ -14,7 +14,6 @@
     border-left:5px solid #606060;
     border-top:5px solid #606060;
     border-radius: 0px;
-    font-family: monospace;
     overflow: auto;
 }
 
@@ -23,6 +22,8 @@
     margin: 0px;
     background: white;
     border: 0px;
+    /* Use same font-family as Ace editor */
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
 }
 
 #console_stdout {
@@ -33,5 +34,3 @@
     color: red;
     font-weight: bold;
 }
-
-
