@@ -21,7 +21,11 @@ class AceEditor(Component):
             self.serve_code = False
         error = self.viz.current_error
         if error != self.last_error:
-            client.write(json.dumps({'error': error}))
+            if error is None:
+                short_msg = None
+            else:
+                short_msg = error['trace'].rsplit('\n', 2)[-2]
+            client.write(json.dumps({'error': error, 'short_msg':short_msg}))
             self.last_error = error
 
     def javascript(self):

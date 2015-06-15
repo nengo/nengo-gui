@@ -127,16 +127,15 @@ Nengo.Ace.prototype.on_message = function (event) {
         this.hide_console();
     } else if (msg.error !== undefined) {
         var line = msg.error.line;
-        var trace = msg.error.trace;
         this.marker = this.editor.getSession()
             .addMarker(new aceRange(line - 1, 0, line - 1, 10),
             'highlight', 'fullLine', true);
         this.editor.getSession().setAnnotations([{
             row: line - 1,
             type: 'error',
-            text: trace,
+            text: msg.short_msg,
         }]);
-        $(this.console).text(trace);
+        $(this.console).text(msg.error.trace);
         this.show_console();
         this.console.scrollTop = this.console.scrollHeight;
     } else {
