@@ -31,11 +31,8 @@ Nengo.Raster = function(parent, sim, args) {
                                     .data(this.data_store.data);
 
     this.path.enter().append('path')
-             .attr('class', 'line');
-
-    this.spikes = this.axes2d.svg.append("g")
-        .attr('class', 'spikes')
-        .style('stroke', Nengo.make_colors(1));
+             .attr('class', 'line')
+             .style('stroke', Nengo.make_colors(1));
 
     this.update();
     this.on_resize(this.get_screen_width(), this.get_screen_height());
@@ -67,33 +64,21 @@ Nengo.Raster.prototype.update = function() {
     this.axes2d.set_time_range(t1, t2);
 
     /** update the lines */
-    var self = this;
     var shown_data = this.data_store.get_shown_data();
 
-    var loc = [];
+    var path = [];
     for (var i = 0; i < shown_data[0].length; i++) {
-        var t = this.axes2d.scale_x(this.data_store.times[this.data_store.first_shown_index + i]);
+        var t = this.axes2d.scale_x(
+                    this.data_store.times[
+                        this.data_store.first_shown_index + i]);
 
         for (var j = 0; j < shown_data[0][i].length; j++) {
-            loc.push([
-                t,
-                this.axes2d.scale_y(shown_data[0][i][j]),
-                this.axes2d.scale_y(shown_data[0][i][j]+1)]);
+            var y1 = this.axes2d.scale_y(shown_data[0][i][j]);
+            var y2 = this.axes2d.scale_y(shown_data[0][i][j]+1);
+            path.push('M ' + t + ' ' + y1 + 'V' + y2);
         }
     }
-
-    var spikes = this.spikes.selectAll('line').data(loc)
-            .attr('x1', function(d) {return d[0]})
-            .attr('x2', function(d) {return d[0]})
-            .attr('y1', function(d) {return d[1]})
-            .attr('y2', function(d) {return d[2]});
-    spikes.enter()
-            .append('line')
-            .attr('x1', function(d) {return d[0]})
-            .attr('x2', function(d) {return d[0]})
-            .attr('y1', function(d) {return d[1]})
-            .attr('y2', function(d) {return d[2]});
-    spikes.exit().remove();
+    this.path.attr("d", path.join(""));
 };
 
 /**
