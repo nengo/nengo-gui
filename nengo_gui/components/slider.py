@@ -12,7 +12,7 @@ class Slider(Component):
         self.override = [None] * node.size_out
         self.value = np.zeros(node.size_out)
         self.label = viz.viz.get_label(node)
-        self.start_value = np.zeros(node.size_out)
+        self.start_value = np.zeros(node.size_out, dtype=float)
         self.struct = struct.Struct('<%df' % (1 + node.size_out))
         self.data = collections.deque()
         if not callable(self.base_output):
