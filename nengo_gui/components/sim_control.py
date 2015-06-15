@@ -113,6 +113,8 @@ class SimControl(Component):
             if self.viz.sim is None:
                 self.viz.rebuild = True
             self.paused = False
+        elif msg == 'reset':
+            self.viz.rebuild = True
         elif msg[:8] == 'backend:':
             self.viz.backend = msg[8:]
             self.viz.changed = True

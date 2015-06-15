@@ -56,6 +56,28 @@
     border-width:0px;
 }
 
+.reset-button:hover {
+    background: #666 !important;
+    color: #eee !important;
+}
+
+#reset_button {
+    border-radius:0px;
+    border-width:0px;
+}
+
+.reset-button {
+    height:60px;
+    margin: -20px 15px 0 15px;
+    position:fixed;
+    background-color: #eee !important;
+    width:60px;
+}
+
+.reset-button span {
+    font-size: 30px;
+}
+
 .play-pause-button {
     height:60px;
     margin: -20px 15px 0 15px;
