@@ -166,23 +166,27 @@ Nengo.Ace.prototype.show_editor = function () {
     var editor = document.getElementById('editor');
     editor.style.display = 'block';
     this.hidden = false;
+    if (!this.console_hidden) {
+        this.console.style.display = 'block';
+    }
 }
 
 Nengo.Ace.prototype.hide_editor = function () {
     var editor = document.getElementById('editor');
     editor.style.display = 'none';
     this.hidden = true;
+    if (!this.console_hidden) {
+        this.console.style.display = 'none';
+    }
 }
 
 Nengo.Ace.prototype.show_console = function () {
-    var editor = document.getElementById('editor');
     this.console.style.display = 'block';
     this.console_hidden = false;
     this.set_width();
 }
 
 Nengo.Ace.prototype.hide_console = function () {
-    var editor = document.getElementById('editor');
     this.console.style.display = 'none';
     this.console_hidden = true;
     this.set_width();
