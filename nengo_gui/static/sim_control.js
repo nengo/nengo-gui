@@ -34,8 +34,8 @@ Nengo.SimControl = function(div, args) {
     this.ws.onmessage = function(event) {self.on_message(event);}
 
     /** Create the TimeSlider */
-    this.time_slider = new Nengo.TimeSlider({x: 150, y: 10, sim:this,
-                                           width: this.div.clientWidth-250,
+    this.time_slider = new Nengo.TimeSlider({x: 200, y: 10, sim:this,
+                                           width: this.div.clientWidth-300,
                                            height: this.div.clientHeight-20,
                                            shown_time: args.shown_time,
                                            kept_time: args.kept_time});
@@ -52,6 +52,11 @@ Nengo.SimControl = function(div, args) {
     Nengo.set_transform(this.pause_button, this.div.clientWidth - 100, 30);
 
     this.pause_button_icon = $('#pause_button_icon')[0];
+
+    /** Get reference to the reset button */
+    this.reset_button = $('#reset_button')[0];
+    this.reset_button.onclick = function(event) {self.reset();};
+    Nengo.set_transform(this.reset_button, 110, 30);
 
     /** Create the speed and rate update sliders */
     this.rate_tr = $('#rate_tr')[0];
@@ -169,10 +174,18 @@ Nengo.SimControl.prototype.on_pause_click = function(event) {
     }
 };
 
+Nengo.SimControl.prototype.reset = function() {
+    this.time = 0.0;
+    this.rate = 0.0;
+    this.ws.send('reset');
+    self.sim.div.dispatchEvent(new Event('sim_reset'));
+};
+
 Nengo.SimControl.prototype.on_resize = function(event) {
-    this.time_slider.resize(this.div.clientWidth - 240,
+    this.time_slider.resize(this.div.clientWidth - 290,
                             this.div.clientHeight - 20);
     Nengo.set_transform(this.pause_button, this.div.clientWidth - 100, 30);
+    Nengo.set_transform(this.reset_button, 110, 30);
 }
 
 
@@ -198,6 +211,10 @@ Nengo.TimeSlider = function(args) {
     /** First time shown on graphs */
     this.first_shown_time = this.last_time - this.shown_time;
 
+    /** call reset whenever the simulation is reset */
+    this.sim.div.addEventListener('sim_reset',
+            function(e) {self.reset();}, false);
+            
     /** scale to convert time to x value (in pixels) */
     this.kept_scale = d3.scale.linear();
 
@@ -278,6 +295,24 @@ Nengo.TimeSlider.prototype.jump_to_end = function() {
     this.sim.div.dispatchEvent(new Event('adjust_time'));
 }
 
+Nengo.TimeSlider.prototype.reset = function() {
+    this.last_time = 0.0;
+    this.first_shown_time = this.last_time - this.shown_time;
+
+    /** update the limits on the time axis */
+    this.kept_scale.domain([this.last_time - this.kept_time, this.last_time]);
+
+    /** update the time axis display */
+    this.axis_g
+        .call(this.axis);   
+        
+    x = this.kept_scale(this.first_shown_time);
+    Nengo.set_transform(this.shown_div, x, 0);
+
+    /** update any components who need to know the time changed */
+    this.sim.div.dispatchEvent(new Event('adjust_time'));             
+}
+
 /**
  * Adjust size and location of parts based on overall size
  */
@@ -303,6 +338,7 @@ Nengo.TimeSlider.prototype.update_times = function(time) {
 
     if (delta < 0) {
         self.sim.div.dispatchEvent(new Event('sim_reset'));
+        return;
     }
     this.last_time = time;
     this.first_shown_time = this.first_shown_time + delta;

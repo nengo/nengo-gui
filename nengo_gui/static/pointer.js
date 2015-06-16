@@ -29,6 +29,10 @@ Nengo.Pointer = function(parent, sim, args) {
     this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
 
+    /** call reset whenever the simulation is reset */
+    this.sim.div.addEventListener('sim_reset',
+            function(e) {self.reset();}, false);
+
     this.on_resize(this.get_screen_width(), this.get_screen_height());
 
     this.fixed_value = '';
@@ -209,4 +213,9 @@ Nengo.Pointer.prototype.layout_info = function () {
 Nengo.Pointer.prototype.update_layout = function (config) {
     this.show_pairs = config.show_pairs;
     Nengo.Component.prototype.update_layout.call(this, config);
+}
+
+Nengo.Pointer.prototype.reset = function(event) {
+    this.data_store.reset();
+    this.schedule_update();
 }

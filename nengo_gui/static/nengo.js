@@ -411,6 +411,19 @@ Nengo.DataStore.prototype.push = function(row) {
 };
 
 /**
+ * Reset the data storage.  This will clear current data so there is
+ * nothing to display on a reset event.
+ */
+Nengo.DataStore.prototype.reset = function() {
+    var index = 0;
+    var dims = this.data.length;
+    this.times.splice(index, this.times.length);
+    for (var i=0; i < this.data.length; i++) {
+        this.data[i].splice(index, this.data[i].length);
+    }
+}
+
+/**
  * update the data storage.  This should be call periodically (before visual
  * updates, but not necessarily after every push()).  Removes old data outside
  * the storage limit set by the Nengo.SimControl.
