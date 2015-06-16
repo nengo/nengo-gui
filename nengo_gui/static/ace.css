@@ -22,7 +22,7 @@
 #console pre {
     padding: 0px;
     margin: 0px;
-    background: white;
+    background: none;
     border: 0px;
     /* Use same font-family as Ace editor */
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
