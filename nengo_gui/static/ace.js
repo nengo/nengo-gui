@@ -78,6 +78,9 @@ Nengo.Ace = function (uid, args) {
             var x = event.deltaRect.left;
             self.width -= x;
             self.console_height -= event.deltaRect.top;
+            if (self.console_height < 20) {
+                self.console_height = 20;
+            }
             self.set_width()
         })
 }
