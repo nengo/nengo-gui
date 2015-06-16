@@ -13,6 +13,7 @@
     z-index: 99997;
     border-left:5px solid #606060;
     border-top:5px solid #606060;
+    padding-left: 0.5em;
     border-radius: 0px;
     overflow: auto;
 }
