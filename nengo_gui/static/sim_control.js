@@ -174,10 +174,9 @@ Nengo.SimControl.prototype.on_pause_click = function(event) {
     }
 };
 
-Nengo.SimControl.prototype.reset = function(event) {
-    //this.time = 0;
-    //this.rate = 0;
-    //this.set_status('pause')
+Nengo.SimControl.prototype.reset = function() {
+    this.time = 0.0;
+    this.rate = 0.0;
     this.ws.send('reset');
     self.sim.div.dispatchEvent(new Event('sim_reset'));
 };
@@ -297,14 +296,21 @@ Nengo.TimeSlider.prototype.jump_to_end = function() {
 }
 
 Nengo.TimeSlider.prototype.reset = function() {
-    this.update_times(0);
-    this.first_shown_time = 0 - this.shown_time;
+    this.last_time = 0.0;
+    this.first_shown_time = this.last_time - this.shown_time;
 
+    /** update the limits on the time axis */
+    this.kept_scale.domain([this.last_time - this.kept_time, this.last_time]);
+
+    /** update the time axis display */
+    this.axis_g
+        .call(this.axis);   
+        
     x = this.kept_scale(this.first_shown_time);
     Nengo.set_transform(this.shown_div, x, 0);
 
     /** update any components who need to know the time changed */
-    this.sim.div.dispatchEvent(new Event('adjust_time'));
+    this.sim.div.dispatchEvent(new Event('adjust_time'));             
 }
 
 /**
@@ -332,6 +338,7 @@ Nengo.TimeSlider.prototype.update_times = function(time) {
 
     if (delta < 0) {
         self.sim.div.dispatchEvent(new Event('sim_reset'));
+        return;
     }
     this.last_time = time;
     this.first_shown_time = this.first_shown_time + delta;
