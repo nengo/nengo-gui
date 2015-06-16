@@ -175,7 +175,10 @@ Nengo.SimControl.prototype.on_pause_click = function(event) {
 };
 
 Nengo.SimControl.prototype.reset = function(event) {
-    this.ws.send('reset')
+    //this.time = 0;
+    //this.rate = 0;
+    //this.set_status('pause')
+    this.ws.send('reset');
     self.sim.div.dispatchEvent(new Event('sim_reset'));
 };
 
@@ -209,6 +212,10 @@ Nengo.TimeSlider = function(args) {
     /** First time shown on graphs */
     this.first_shown_time = this.last_time - this.shown_time;
 
+    /** call reset whenever the simulation is reset */
+    this.sim.div.addEventListener('sim_reset',
+            function(e) {self.reset();}, false);
+            
     /** scale to convert time to x value (in pixels) */
     this.kept_scale = d3.scale.linear();
 
@@ -281,6 +288,17 @@ Nengo.TimeSlider = function(args) {
 
 Nengo.TimeSlider.prototype.jump_to_end = function() {
     this.first_shown_time = this.last_time - this.shown_time;
+
+    x = this.kept_scale(this.first_shown_time);
+    Nengo.set_transform(this.shown_div, x, 0);
+
+    /** update any components who need to know the time changed */
+    this.sim.div.dispatchEvent(new Event('adjust_time'));
+}
+
+Nengo.TimeSlider.prototype.reset = function() {
+    this.update_times(0);
+    this.first_shown_time = 0 - this.shown_time;
 
     x = this.kept_scale(this.first_shown_time);
     Nengo.set_transform(this.shown_div, x, 0);
