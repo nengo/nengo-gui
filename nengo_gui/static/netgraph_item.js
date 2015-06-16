@@ -186,8 +186,9 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                         var vertical_resize = event.edges.bottom || event.edges.top;
                         var horizontal_resize = event.edges.left || event.edges.right;
 
-                        var w = pos[0] - event.clientX;
-                        var h = pos[1] - event.clientY;
+                        var screen_offset = $('#netgraph').offset();
+                        var w = pos[0] - event.clientX + screen_offset.left;
+                        var h = pos[1] - event.clientY + screen_offset.top;
                         if (event.edges.right) {
                             w *= -1;
                         }
@@ -206,7 +207,7 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
 
                         if (horizontal_resize && vertical_resize) {
                             var p = (screen_w * w + screen_h * h) / Math.sqrt(
-                                screen_w * screen_w + screen_h * screen_h);
+                                2 * screen_w * screen_w + screen_h * screen_h);
                             h = p / self.aspect;
                             w = p * self.aspect;
                         } else if (horizontal_resize) {
