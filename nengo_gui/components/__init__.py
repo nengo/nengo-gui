@@ -7,3 +7,4 @@ from .voltage import Voltage, VoltageTemplate
 from .pointer import Pointer, PointerTemplate
 from .netgraph import NetGraph, NetGraphTemplate
 from .ace_editor import AceEditor, AceEditorTemplate
+from .radio import Radio, RadioTemplate

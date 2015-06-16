@@ -342,6 +342,7 @@ Nengo.NetGraphItem.prototype.generate_menu = function () {
     }
     if (this.type == 'node') {
         items.push(['Slider', function() {self.create_graph('Slider');}])
+        items.push(['Radio', function() {self.create_graph('Radio');}])
         if (this.dimensions > 0) {
             items.push(['Value', function() {self.create_graph('Value');}])
         }
