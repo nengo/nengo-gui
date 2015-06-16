@@ -186,8 +186,9 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                         var vertical_resize = event.edges.bottom || event.edges.top;
                         var horizontal_resize = event.edges.left || event.edges.right;
 
-                        var w = pos[0] - event.clientX;
-                        var h = pos[1] - event.clientY;
+                        var screen_offset = $('#netgraph').offset();
+                        var w = pos[0] - event.clientX + screen_offset.left;
+                        var h = pos[1] - event.clientY + screen_offset.top;
                         if (event.edges.right) {
                             w *= -1;
                         }
@@ -206,7 +207,7 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
 
                         if (horizontal_resize && vertical_resize) {
                             var p = (screen_w * w + screen_h * h) / Math.sqrt(
-                                screen_w * screen_w + screen_h * screen_h);
+                                2 * screen_w * screen_w + screen_h * screen_h);
                             h = p / self.aspect;
                             w = p * self.aspect;
                         } else if (horizontal_resize) {
@@ -403,6 +404,9 @@ Nengo.NetGraphItem.prototype.expand = function(rts, auto) {
 
     if (!this.expanded) {
         this.expanded = true;
+        if (this.ng.transparent_nets) {
+            this.shape.style["fill-opacity"] = 0.0;
+        }
         this.g_items.removeChild(this.g);
         this.g_networks.appendChild(this.g);
         if (this.minimap == false) {
@@ -448,6 +452,9 @@ Nengo.NetGraphItem.prototype.collapse = function(report_to_server, auto) {
 
     if (this.expanded) {
         this.expanded = false;
+        if (this.ng.transparent_nets) {
+            this.shape.style["fill-opacity"] = 1.0;
+        }
         this.g_networks.removeChild(this.g);
         this.g_items.appendChild(this.g);
         if (this.minimap == false) {
@@ -471,10 +478,12 @@ Nengo.NetGraphItem.prototype.collapse = function(report_to_server, auto) {
 
 /** determine the fill color based on the depth */
 Nengo.NetGraphItem.prototype.compute_fill = function() {
+    var depth = this.ng.transparent_nets ? 1 : this.depth;
+
     if (!this.passthrough) {
-        var fill = Math.round(255 * Math.pow(0.8, this.depth));
+        var fill = Math.round(255 * Math.pow(0.8, depth));
         this.shape.style.fill = 'rgb(' + fill + ',' + fill + ',' + fill + ')';
-        var stroke = Math.round(255 * Math.pow(0.8, this.depth + 2));
+        var stroke = Math.round(255 * Math.pow(0.8, depth + 2));
         this.shape.style.stroke = 'rgb(' + stroke + ',' + stroke + ',' + stroke + ')';
     }
 }

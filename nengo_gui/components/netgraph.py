@@ -108,12 +108,22 @@ class NetGraph(Component):
             if new_uid != uid:
                 new_item = None
 
-            if new_item is None or not isinstance(new_item, old_item.__class__):
-                self.to_be_sent.append(dict(
-                    type='remove', uid=uid))
-                del self.uids[uid]
-                removed_uids[old_item] = uid
+            # find reasons to delete the object.  Any deleted object will
+            # be recreated, so try to keep this to a minimum
+            keep_object = True
+            if new_item is None:
+                keep_object = False
             elif not isinstance(new_item, old_item.__class__):
+                # don't allow changing classes
+                keep_object = False
+            elif isinstance(new_item, nengo.Node):
+                # check if a Node has become a passthrough Node
+                if old_item.output is None and new_item.output is not None:
+                    keep_object = False
+                elif old_item.output is not None and new_item.output is None:
+                    keep_object = False
+
+            if not keep_object:
                 self.to_be_sent.append(dict(
                     type='remove', uid=uid))
                 del self.uids[uid]
@@ -201,7 +211,10 @@ class NetGraph(Component):
                               (nengo_gui.components.SimControlTemplate,
                                nengo_gui.components.NetGraphTemplate,
                                nengo_gui.components.AceEditorTemplate)):
-                self.viz.add_template(template)
+                try:
+                    self.viz.add_template(template)
+                except:
+                    print('failed to recreate plot for %s' % template)
 
         self.viz.changed = True
 
@@ -237,15 +250,15 @@ class NetGraph(Component):
             self.send_pan_and_zoom(client)
             self.initialized_pan_and_zoom = True
 
+        while len(self.to_be_sent) > 0:
+            info = self.to_be_sent.popleft()
+            client.write(json.dumps(info))
+
         if len(self.to_be_expanded) > 0:
             self.viz.viz.lock.acquire()
             network = self.to_be_expanded.popleft()
             self.expand_network(network, client)
             self.viz.viz.lock.release()
-        else:
-            while len(self.to_be_sent) > 0:
-                info = self.to_be_sent.popleft()
-                client.write(json.dumps(info))
 
     def javascript(self):
         return 'new Nengo.NetGraph(main, {uid:"%s"});' % self.uid

@@ -21,7 +21,7 @@ Nengo.Slider = function(parent, sim, args) {
     //       fix is merged in (#160)
     this.immediate_notify = true;
 
-    this.calc_axes_geometry(this.width, this.height);
+    this.set_axes_geometry(this.width, this.height);
 
     this.minHeight = 40;
 
@@ -33,7 +33,11 @@ Nengo.Slider = function(parent, sim, args) {
     this.div.appendChild(this.group);
 
     /** make the sliders */
+    // the value to use when releasing from user control
     this.reset_value = args.start_value;
+    // the value to use when restarting the simulation from beginning
+    this.start_value = args.start_value;
+
     this.sliders = [];
     for (var i = 0; i < args.n_sliders; i++) {
         var slider = new Nengo.SliderControl(args.min_value, args.max_value);
@@ -62,16 +66,21 @@ Nengo.Slider = function(parent, sim, args) {
     this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
 
+    this.sim.div.addEventListener('sim_reset',
+            function(e) {self.on_sim_reset();}, false);
+
     this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
 Nengo.Slider.prototype = Object.create(Nengo.Component.prototype);
 Nengo.Slider.prototype.constructor = Nengo.Slider;
 
-Nengo.Slider.prototype.calc_axes_geometry = function(width, height) {
+Nengo.Slider.prototype.set_axes_geometry = function(width, height) {
+    this.width = width;
+    this.height = height;
     scale = parseFloat($('#main').css('font-size'));
     this.border_size = 1;
     this.ax_top = 1.75 * scale;
-    this.slider_height = height - this.ax_top;
+    this.slider_height = this.height - this.ax_top;
 };
 
 Nengo.Slider.prototype.send_value = function(slider_index, value) {
@@ -84,6 +93,14 @@ Nengo.Slider.prototype.send_value = function(slider_index, value) {
         this.notify(slider_index + ',' + value);
     }
     this.sim.time_slider.jump_to_end();
+};
+
+Nengo.Slider.prototype.on_sim_reset = function(event) {
+    // release slider position and reset it
+    for (var i = 0; i < this.sliders.length; i++) {
+        this.sliders[i].display_value(this.start_value[i]);
+        this.sliders[i].fixed = false;
+    }
 };
 
 /**
@@ -122,7 +139,7 @@ Nengo.Slider.prototype.on_resize = function(width, height) {
         height = this.minHeight;
     };
 
-    this.calc_axes_geometry();
+    this.set_axes_geometry(width, height);
 
     this.group.style.height = height - this.ax_top - 2 * this.border_size;
     this.group.style.marginTop = this.ax_top;
@@ -132,11 +149,9 @@ Nengo.Slider.prototype.on_resize = function(width, height) {
         this.sliders[i].on_resize();
     }
 
-    this.label.style.width = width;
-    this.width = width;
-    this.height = height;
-    this.div.style.width = width;
-    this.div.style.height= height;
+    this.label.style.width = this.width;
+    this.div.style.width = this.width;
+    this.div.style.height= this.height;
 };
 
 

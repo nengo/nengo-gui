@@ -1,9 +1,10 @@
-import time
-import pkgutil
+import json
+import mimetypes
 import os
 import os.path
-import mimetypes
-import json
+import pkgutil
+import time
+import traceback
 
 try:
     from urllib import unquote
@@ -75,9 +76,15 @@ class Server(swi.SimpleWebInterface):
             return self.create_login_form()
 
         if reset == 'True':
-            self.server.viz.load(self.server.viz.filename,
-                self.server.viz.model, self.server.viz.orig_locals,
-                reset=True)
+            if hasattr(self.server.viz, 'code'):
+                # if we have the code, re-run it just to be safe
+                self.server.viz.load(self.server.viz.filename,
+                    force=True, reset=True, code=self.server.viz.code)
+            else:
+                # if we don't (i.e. for IPython integration) then just reset
+                self.server.viz.load(self.server.viz.filename,
+                        self.server.viz.model, self.server.viz.orig_locals,
+                        reset=True)
         elif filename is not None:
             self.server.viz.load(filename, force=True)
 
@@ -107,8 +114,8 @@ class Server(swi.SimpleWebInterface):
         viz_sim = self.server.viz_sim
 
         component = viz_sim.uids[uid]
-        try:
-            while True:
+        while True:
+            try:
                 if viz_sim.finished:
                     break
                 if viz_sim.uids[uid] != component:
@@ -141,33 +148,40 @@ class Server(swi.SimpleWebInterface):
                         self.server.viz.modified_config()
                         return
                     else:
-                        component.message(msg)
+                        try:
+                            component.message(msg)
+                        except:
+                            print('Error processing: "%s"' % msg)
+                            traceback.print_exc()
                     msg = client.read()
                 # send data to the component
                 component.update_client(client)
                 self.server.viz.save_config(lazy=True)
                 time.sleep(0.01)
-        except swi.SocketClosedError:
-            # This error means the server has shut down, we should stop nicely.
-            self.server.viz.save_config(lazy=False)
-        finally:
-            component.finish()
+            except swi.SocketClosedError:
+                # This error means the server has shut down
+                self.server.viz.save_config(lazy=False)  # Stop nicely
+                break
+            except:
+                traceback.print_exc()
 
+        # After hot loop
+        component.finish()
+
+        if isinstance(component, nengo_gui.components.SimControl):
+            viz_sim.sim = None
+
+        if client.remote_close:
+            # wait a moment before checking if the server should be stopped
+            time.sleep(2)
+
+            # if there are no simulations left, stop the server
             if isinstance(component, nengo_gui.components.SimControl):
-                viz_sim.sim = None
-
-            if client.remote_close:
-                # wait a moment before checking if the server should be stopped
-                time.sleep(2)
-
-                # if there are no simulations left, stop the server
-                if isinstance(component, nengo_gui.components.SimControl):
-                    if self.server.viz.count_sims() == 0:
-                        if self.server.viz.interactive:
-                            print(
-                                "No connections remaining to the nengo_gui "
-                                "server.")
-                        self.server.shutdown()
+                if self.server.viz.count_sims() == 0:
+                    if self.server.viz.interactive:
+                        print("No connections remaining to the nengo_gui "
+                              "server.")
+                    self.server.shutdown()
 
     def log_message(self, format, *args):
         # suppress all the log messages
