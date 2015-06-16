@@ -19,8 +19,18 @@ Release History
    - Bugfixes
    - Documentation
 
-0.1.4 (unreleased)
-==================
+0.1.4 (June 16, 2015)
+=====================
+
+- Spike rasters are now much faster.
+- Added a reset button that restarts a simulation.
+- Code editor now has a border, making it easier to resize.
+- Can now search in the code editor (with Ctrl+f).
+- When an error occurs in a model, a console will display with error details.
+  Printed values also show up in this console, for easier debugging.
+- Can now import from other files in the same directory as a Nengo model.
+- Readonly files are handled safely, instead of crashing.
+- Several minor aestheic improvements and bug fixes.
 
 0.1.3 (June 10, 2015)
 =====================

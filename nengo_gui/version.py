@@ -8,7 +8,7 @@ represents a release version. Commits for which the version doesn't have
 
 name = "nengo_gui"
 version_info = (0, 1, 4)  # (major, minor, patch)
-dev = True
+dev = False
 
 version = "{v}{dev}".format(v='.'.join(str(v) for v in version_info),
                             dev='-dev' if dev else '')
