@@ -25,13 +25,14 @@
     border: 0px;
     /* Use same font-family as Ace editor */
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+    white-space: pre-wrap;
 }
 
 #console_stdout {
-    color: black;
+    color: #1c73b3;
 }
 
 #console_error {
-    color: red;
-    font-weight: bold;
+    color: #d65e00;
+    font-weight: 600;
 }
