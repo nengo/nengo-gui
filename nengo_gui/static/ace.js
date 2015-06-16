@@ -210,7 +210,6 @@ Nengo.Ace.prototype.toggle_shown = function () {
 }
 
 Nengo.Ace.prototype.set_width = function () {
-    this.editor.resize();
 
 
     var code_div = document.getElementById('editor');
@@ -238,6 +237,8 @@ Nengo.Ace.prototype.set_width = function () {
     this.console.style.top = top_margin + $(code_div).height();
     this.console.style.bottom = bottom_margin;
     this.console.style.left = left_margin;
+
+    this.editor.resize();
 
     this.update_main_width();
 }
