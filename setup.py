@@ -43,6 +43,7 @@ setup(
     url="https://github.com/nengo/nengo_gui",
     license="https://github.com/nengo/nengo_gui/blob/master/LICENSE.md",
     description=description,
+    long_description=long_description,
     install_requires=[
         "nengo",
     ],
