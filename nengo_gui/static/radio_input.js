@@ -11,11 +11,10 @@ Nengo.Radio = function (parent,sim,args) {
 	Nengo.Component.call(this, parent, args);
 	var self = this;
 	this.sim = sim ;
-	args.options = ['hallo', 'hi again']
-	this.div.style.background = 'green';
+	this.div.style.background = 'pink';
 	this.div.appendChild(document.createElement('br'));
 	for (var i = 0; i < args.options.length; i++) {
-		this.div.appendChild(this.make_button(args.options[i]));
+		this.div.appendChild(this.make_button(args.options[i], i));
 		this.div.appendChild(document.createElement('br'));
 	}
 	parent.appendChild(this.div);
@@ -24,16 +23,17 @@ Nengo.Radio = function (parent,sim,args) {
 Nengo.Radio.prototype = Object.create(Nengo.Component.prototype);
 Nengo.Radio.prototype.constructor = Nengo.Radio;
 
-Nengo.Radio.prototype.make_button = function(button_label) {
+Nengo.Radio.prototype.make_button = function(button_label, index) {
 	var self = this;
 	var button = document.createElement('input');
+	button.ind = index;
 	button.type = 'checkbox';
 	button.id = button_label;
 	var label = document.createElement('label');
 	label.for = button_label;
 	label.innerHTML = button_label;
 	label.appendChild(button);
-	button.onclick = function () {self.ws.send('sent')};
+	button.onclick = function () {self.ws.send(button.ind)};
 	return label
 };
 

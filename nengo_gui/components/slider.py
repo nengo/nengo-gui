@@ -30,7 +30,7 @@ class Slider(Component):
             self.data.append(self.struct.pack(t, *self.value))
         else:
             self.value[:] = self.base_output
-
+        print(self.override)
         for i, v in enumerate(self.override):
             if v is not None:
                 self.value[i] = v
