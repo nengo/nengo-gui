@@ -20,7 +20,7 @@ class Value(Component):
         with viz.model:
             self.node = nengo.Node(self.gather_data,
                                    size_in=self.obj.size_out)
-            self.conn = nengo.Connection(self.obj, self.node, synapse=None)
+            self.conn = nengo.Connection(self.obj, self.node, synapse=0.01)
 
     def remove_nengo_objects(self, viz):
         viz.model.connections.remove(self.conn)
@@ -36,7 +36,7 @@ class Value(Component):
 
     def javascript(self):
         info = dict(uid=self.uid, label=self.label,
-                    n_lines=self.n_lines, synapse=0.01)
+                    n_lines=self.n_lines, synapse=0)
         json = self.javascript_config(info)
         return 'new Nengo.Value(main, sim, %s);' % json
 
