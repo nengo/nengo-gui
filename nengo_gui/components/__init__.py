@@ -8,3 +8,4 @@ from .pointer import Pointer, PointerTemplate
 from .netgraph import NetGraph, NetGraphTemplate
 from .ace_editor import AceEditor, AceEditorTemplate
 from .radio import Radio, RadioTemplate
+from .table import Table, TableTemplate

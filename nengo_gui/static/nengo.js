@@ -90,7 +90,8 @@ Nengo.Component = function(parent, args) {
 
     this.label = document.createElement('div');
     this.label.classList.add('label', 'unselectable');
-    this.label.innerHTML = args.label.replace('<', '&lt;').replace('>', '&gt;');
+    this.label_text = args.label.replace('<', '&lt;').replace('>', '&gt;');
+    this.label.innerHTML = this.label_text
     this.label.style.position = 'fixed';
     this.label.style.width = args.width;
     this.label.style.height = '2em';
