@@ -408,6 +408,8 @@ class NetGraph(Component):
         client.write(json.dumps(dict(type='zoom', zoom=zoom)))
 
     def create_connection(self, client, conn, parent):
+        if isinstance(conn.post, nengo.connection.LearningRule):
+            return
         uid = self.viz.viz.get_uid(conn)
         if uid in self.uids:
             return
