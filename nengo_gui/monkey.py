@@ -3,6 +3,7 @@ import importlib
 import threading
 import traceback
 import sys
+from nengo.utils.compat import StringIO
 
 
 # list of Simulators to check for
@@ -68,20 +69,32 @@ def determine_line_number(filename='<string>'):
     return None
 
 
-@contextlib.contextmanager
-def patch():
-    flag.executing = True
-    del found_modules[:]
-    simulators = {}
-    for name in known_modules:
-        try:
-            mod = importlib.import_module(name)
-        except:
-            continue
-        found_modules.append(name)
-        simulators[mod] = mod.Simulator
-        mod.Simulator = make_dummy(mod.Simulator)
-    yield
-    for mod, cls in simulators.items():
-        mod.Simulator = cls
-    flag.executing = False
+class Patch(object):
+    def __enter__(self):
+        self.stdout = StringIO()
+
+        flag.executing = True
+        del found_modules[:]
+        self.simulators = {}
+
+        # add hooks to record stdout
+
+        sys.stdout = self.stdout
+
+        for name in known_modules:
+            try:
+                mod = importlib.import_module(name)
+            except:
+                continue
+            found_modules.append(name)
+            self.simulators[mod] = mod.Simulator
+            mod.Simulator = make_dummy(mod.Simulator)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        for mod, cls in self.simulators.items():
+            mod.Simulator = cls
+        flag.executing = False
+
+        sys.stdout = sys.__stdout__
+
+patch = Patch()

@@ -23,6 +23,10 @@ Nengo.Raster = function(parent, sim, args) {
     this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
 
+    /** call reset whenever the simulation is reset */
+    this.sim.div.addEventListener('sim_reset',
+            function(e) {self.reset();}, false);
+
     /** create the lines on the plots */
     var line = d3.svg.line()
         .x(function(d, i) {return self.axes2d.scale_x(times[i]);})
@@ -103,3 +107,8 @@ Nengo.Raster.prototype.on_resize = function(width, height) {
     this.div.style.width = width;
     this.div.style.height= height;
 };
+
+Nengo.Raster.prototype.reset = function(event) {
+    this.data_store.reset();
+    this.schedule_update();
+}

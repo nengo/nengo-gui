@@ -10,9 +10,10 @@ class Slider(Component):
         self.node = node
         self.base_output = node.output
         self.override = [None] * node.size_out
+        self.last_time = None
         self.value = np.zeros(node.size_out)
         self.label = viz.viz.get_label(node)
-        self.start_value = np.zeros(node.size_out)
+        self.start_value = np.zeros(node.size_out, dtype=float)
         self.struct = struct.Struct('<%df' % (1 + node.size_out))
         self.data = collections.deque()
         if not callable(self.base_output):
@@ -25,6 +26,9 @@ class Slider(Component):
         self.node.output = self.base_output
 
     def override_output(self, t, *args):
+        if self.last_time is None or t < self.last_time:
+            self.override = [None] * self.node.size_out
+        self.last_time = t
         if callable(self.base_output):
             self.value[:] = self.base_output(t, *args)
             self.data.append(self.struct.pack(t, *self.value))

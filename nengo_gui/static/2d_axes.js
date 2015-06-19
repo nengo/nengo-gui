@@ -84,3 +84,4 @@ Nengo.Axes2D.prototype.on_resize = function(width, height) {
     this.axis_y_g.attr("transform", "translate(" + this.ax_left + ", 0)");
     this.axis_y_g.call(this.axis_y);
 };
+

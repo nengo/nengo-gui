@@ -61,7 +61,8 @@ class NetGraph(Component):
                 code = f.read()
 
         try:
-            exec(code, locals)
+            with nengo_gui.monkey.patch:
+                exec(code, locals)
         except:
             line = nengo_gui.monkey.determine_line_number()
             current_error = dict(trace=traceback.format_exc(), line=line)

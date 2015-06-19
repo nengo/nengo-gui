@@ -98,6 +98,7 @@ Nengo.Slider.prototype.send_value = function(slider_index, value) {
 Nengo.Slider.prototype.on_sim_reset = function(event) {
     // release slider position and reset it
     for (var i = 0; i < this.sliders.length; i++) {
+        this.notify('' + i + ',reset');
         this.sliders[i].display_value(this.start_value[i]);
         this.sliders[i].fixed = false;
     }

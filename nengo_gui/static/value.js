@@ -26,6 +26,10 @@ Nengo.Value = function(parent, sim, args) {
     this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
 
+    /** call reset whenever the simulation is reset */
+    this.sim.div.addEventListener('sim_reset',
+            function(e) {self.reset();}, false);
+
     /** create the lines on the plots */
     var line = d3.svg.line()
         .x(function(d, i) {return self.axes2d.scale_x(times[i]);})
@@ -170,4 +174,9 @@ Nengo.Value.prototype.set_range = function() {
 Nengo.Value.prototype.update_range = function(min, max) {
     this.axes2d.scale_y.domain([min, max]);
     this.axes2d.axis_y_g.call(this.axes2d.axis_y);
+}
+
+Nengo.Value.prototype.reset = function(event) {
+    this.data_store.reset();
+    this.schedule_update();
 }
