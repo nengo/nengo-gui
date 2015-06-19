@@ -4,6 +4,7 @@ import collections
 import json
 import random
 import time
+import nengo
 
 from nengo_gui.components.component import Component, Template
 
@@ -13,18 +14,25 @@ class Table(Component):
         self.node = node
         self.label = viz.viz.get_label(node)
         self.value = np.zeros(node.size_out)
-        self.column_labels = ['1st column', '2nd column']
-        self.row_labels = ['1st row', '2nd row']
-        self.certainty = [19,20,50,75]
+        self.column_labels = node.column_labels
+        self.row_labels = node.row_labels
+        self.certainty = [50] * len(self.column_labels) * len(self.row_labels)
         self.inform_certainty = True
         self.target_cell = dict(row=1,column=1) #0 indexed
 
     def add_nengo_objects(self, viz):
-
-        pass
+        with viz.model:
+            self.food = nengo.Node(self.gather_data,
+                                   size_in=self.node.size_out)
+            self.conn = nengo.Connection(self.node, self.food, synapse=None)
 
     def remove_nengo_objects(self, viz):
-        pass
+        viz.model.connections.remove(self.conn)
+        viz.model.nodes.remove(self.food)
+
+    def gather_data(self, t, x):
+        print(list(x))
+        self.change_certainty(list(x))
 
     def override_output(self, t, *args):
         return self.value
@@ -37,7 +45,7 @@ class Table(Component):
     def update_client(self, client):      
         if self.inform_certainty:
             client.write(json.dumps(dict(tag='certainty', data=self.certainty)))
-            self.inform_certainty = True
+            self.inform_certainty = False
 
     def change_certainty(self, new_certainty_array):
         self.certainty = new_certainty_array
