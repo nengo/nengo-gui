@@ -101,6 +101,6 @@ Nengo.Table.prototype.array_max_index = function (array) {
 
 
 Nengo.Table.prototype.gen_color = function(certainty) {
-	var rgb_gray = Math.ceil(90 + certainty * 1.5)
+	var rgb_gray = 50 + certainty * 2
 	return 'rgb('+rgb_gray+','+rgb_gray+','+rgb_gray+')'
 }
