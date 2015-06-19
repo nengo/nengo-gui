@@ -16,9 +16,9 @@ class Table(Component):
         self.value = np.zeros(node.size_out)
         self.column_labels = node.column_labels
         self.row_labels = node.row_labels
-        self.certainty = [50] * len(self.column_labels) * len(self.row_labels)
+        self.certainty = [0] * len(self.column_labels) * len(self.row_labels)
         self.inform_certainty = True
-        self.target_cell = dict(row=1,column=1) #0 indexed
+        self.target_cell = 0 #0 indexed
 
     def add_nengo_objects(self, viz):
         with viz.model:
@@ -31,8 +31,12 @@ class Table(Component):
         viz.model.nodes.remove(self.food)
 
     def gather_data(self, t, x):
-        print(list(x))
-        self.change_certainty(list(x))
+        #print(list(x))
+        self.change_certainty(list(x[:-1]))
+        cell = int(round(x[-1]))
+        #row = cell % len(self.row_labels)
+        #col = cell / len(self.row_labels)
+        self.target_cell = cell
 
     def override_output(self, t, *args):
         return self.value
@@ -44,8 +48,9 @@ class Table(Component):
 
     def update_client(self, client):      
         if self.inform_certainty:
-            client.write(json.dumps(dict(tag='certainty', data=self.certainty)))
+            client.write(json.dumps(dict(tag='certainty', data=self.certainty, target_cell=self.target_cell)))
             self.inform_certainty = False
+
 
     def change_certainty(self, new_certainty_array):
         self.certainty = new_certainty_array

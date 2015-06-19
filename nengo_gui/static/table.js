@@ -45,7 +45,7 @@ Nengo.Table.prototype.tableCreate = function () {
             td.style.border = "1px solid black"
 
             if (this.target_cell.row + 1 == i && this.target_cell.column + 1 == j) {
-            	td.style.border = "5px solid red";
+            	td.style.border = "5px solid green";
             	td.textContent = 'Null Cell'
          		this.image = document.createElement('img');
 				this.image.src = 'http://i.imgur.com/sU6cDN3.png?1'
@@ -59,7 +59,6 @@ Nengo.Table.prototype.tableCreate = function () {
 }
 
 Nengo.Table.prototype.on_message = function(event) {
-
 	this.update_table(event);
 }
 
@@ -74,13 +73,22 @@ Nengo.Table.prototype.update_table = function (event) {
 			}
 		}
 
+		var target_cell = JSON.parse(event.data).target_cell;
+		console.log(target_cell)
 		var finger_index = this.array_max_index(certainty);
 
 		for (var i = 0; i < certainty.length; i++) {
-			cells[i].textContent = certainty[i]
+			cells[i].textContent = certainty[i].toFixed(2);
 			cells[i].style.backgroundColor = this.gen_color(certainty[i])
+			cells[i].style.border = "1px solid black";
 			if (i == finger_index) {
+	         	this.image = document.createElement('img');
+				this.image.src = 'http://i.imgur.com/sU6cDN3.png?1'
+				this.image.style.position = 'absolute';
 				cells[i].appendChild(this.image);
+			}
+			if (i == target_cell) {
+				cells[i].style.border = "5px solid green"
 			}
 
 		}
@@ -101,6 +109,6 @@ Nengo.Table.prototype.array_max_index = function (array) {
 
 
 Nengo.Table.prototype.gen_color = function(certainty) {
-	var rgb_gray = 50 + certainty * 2
+	var rgb_gray = 50 + certainty * 200
 	return 'rgb('+rgb_gray+','+rgb_gray+','+rgb_gray+')'
 }
