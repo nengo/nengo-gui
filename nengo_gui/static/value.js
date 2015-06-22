@@ -157,7 +157,7 @@ Nengo.Value.prototype.set_range = function() {
                 var nums = $item.val().split(',');
                 var valid = false;
                 if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
-                    if (nums[0] < nums[1]) {
+                    if (Number(nums[0]) < Number(nums[1])) {
                         valid = true; //Two numbers, 1st less than 2nd
                     }
                 }
