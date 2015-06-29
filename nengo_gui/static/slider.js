@@ -28,6 +28,7 @@ Nengo.Slider = function(parent, sim, args) {
     this.group = document.createElement('div');
     this.group.style.height = this.slider_height;
     this.group.style.marginTop = this.ax_top;
+    this.group.style.marginLeft = '2em';
     this.group.style.whiteSpace = 'nowrap';
     this.group.position = 'relative';
     this.div.appendChild(this.group);
@@ -62,6 +63,44 @@ Nengo.Slider = function(parent, sim, args) {
         this.sliders.push(slider);
     }
 
+    this.bound_labels = document.createElement('div');
+    this.bound_labels.style.height = this.slider_height;
+    this.bound_labels.style.width = '2em';
+    this.bound_labels.style.marginTop = this.ax_top;
+    this.bound_labels.style.position = 'absolute';
+    this.bound_labels.style.top = '0px';
+    var range = this.sliders[0].scale.domain();
+
+    this.max_label = document.createElement('p');
+    this.min_label = document.createElement('p');
+
+    this.max_label.innerHTML = range[0];
+    this.min_label.innerHTML = range[1];
+
+    this.min_label.style.left = '1em'
+    this.max_label.style.left = '1em';
+
+    this.max_label.style.position = 'absolute';
+    this.min_label.style.position = 'absolute';
+
+    this.max_label.style.zIndex = -1;
+    this.min_label.style.zIndex = -1;
+
+    this.min_label.style.bottom = '0px';
+
+    this.bound_labels.appendChild(this.max_label);
+    this.bound_labels.appendChild(this.min_label);
+
+    this.div.appendChild(this.bound_labels);
+    this.hide_bound_labels();
+
+    $(this.div).mouseenter(function(){
+        self.show_bound_labels();
+    });
+    $(this.div).mouseleave(function(){
+        self.hide_bound_labels();
+    });
+
     /** call schedule_update whenever the time is adjusted in the SimControl */
     this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
@@ -73,6 +112,17 @@ Nengo.Slider = function(parent, sim, args) {
 };
 Nengo.Slider.prototype = Object.create(Nengo.Component.prototype);
 Nengo.Slider.prototype.constructor = Nengo.Slider;
+
+Nengo.Slider.prototype.show_bound_labels = function () {
+    $(this.min_label).css('display', 'block');
+    $(this.max_label).css('display', 'block');
+}
+
+Nengo.Slider.prototype.hide_bound_labels = function () {
+    $(this.min_label).fadeOut('fast');
+    $(this.max_label).fadeOut('fast');
+}
+
 
 Nengo.Slider.prototype.set_axes_geometry = function(width, height) {
     this.width = width;
@@ -144,6 +194,8 @@ Nengo.Slider.prototype.on_resize = function(width, height) {
 
     this.group.style.height = height - this.ax_top - 2 * this.border_size;
     this.group.style.marginTop = this.ax_top;
+
+    this.bound_labels.style.height = height - (this.ax_top - 10) - this.border_size ;
 
     var N = this.sliders.length;
     for (var i in this.sliders) {
@@ -297,7 +349,10 @@ Nengo.Slider.prototype.set_range = function() {
             for (var i in self.sliders) {
                 self.sliders[i].set_range(min, max);
             }
+            console.log('here')
             self.save_layout();
+            self.min_label.innerHTML = min;
+            self.max_label.innerHTML = max;
         }
         $('#OK').attr('data-dismiss','modal');
     });
