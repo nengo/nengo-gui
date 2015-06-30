@@ -113,13 +113,11 @@ Nengo.Slider.prototype = Object.create(Nengo.Component.prototype);
 Nengo.Slider.prototype.constructor = Nengo.Slider;
 
 Nengo.Slider.prototype.show_bound_labels = function () {
-    $(this.min_label).css('display', 'block');
-    $(this.max_label).css('display', 'block');
+    $(this.bound_labels).css('display', 'block');
 }
 
 Nengo.Slider.prototype.hide_bound_labels = function () {
-    $(this.min_label).fadeOut('fast');
-    $(this.max_label).fadeOut('fast');
+    $(this.bound_labels).fadeOut('fast');
 }
 
 
