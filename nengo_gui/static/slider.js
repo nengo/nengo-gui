@@ -28,7 +28,7 @@ Nengo.Slider = function(parent, sim, args) {
     this.group = document.createElement('div');
     this.group.style.height = this.slider_height;
     this.group.style.marginTop = this.ax_top;
-    this.group.style.marginLeft = '2em';
+    //this.group.style.marginLeft = '2em';
     this.group.style.whiteSpace = 'nowrap';
     this.group.position = 'relative';
     this.div.appendChild(this.group);
