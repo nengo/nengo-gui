@@ -165,7 +165,7 @@ Nengo.XYValue.prototype.set_range = function() {
                 var nums = $item.val().split(',');
                 var valid = false;
                 if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
-                    if (nums[0]<nums[1]) {
+                    if (Number(nums[0]) < Number(nums[1])) {
                         valid = true; //Two numbers, 1st less than 2nd
                     }
                 }
@@ -215,8 +215,8 @@ Nengo.XYValue.prototype.set_indices = function() {
                 return ((parseInt(Number(nums[0])) == nums[0]) &&
                         (parseInt(Number(nums[1])) == nums[1]) &&
                         (nums.length == 2) &&
-                        (nums[1]<self.n_lines && nums[1]>=0) &&
-                        (nums[0]<self.n_lines && nums[0]>=0));
+                        (Number(nums[1])<self.n_lines && Number(nums[1])>=0) &&
+                        (Number(nums[0])<self.n_lines && Number(nums[0])>=0));
             }
         }
     });
