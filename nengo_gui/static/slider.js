@@ -28,7 +28,6 @@ Nengo.Slider = function(parent, sim, args) {
     this.group = document.createElement('div');
     this.group.style.height = this.slider_height;
     this.group.style.marginTop = this.ax_top;
-    //this.group.style.marginLeft = '2em';
     this.group.style.whiteSpace = 'nowrap';
     this.group.position = 'relative';
     this.div.appendChild(this.group);
@@ -349,7 +348,6 @@ Nengo.Slider.prototype.set_range = function() {
             for (var i in self.sliders) {
                 self.sliders[i].set_range(min, max);
             }
-            console.log('here')
             self.save_layout();
             self.min_label.innerHTML = min;
             self.max_label.innerHTML = max;
