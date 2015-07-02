@@ -20,7 +20,7 @@ class Sim(object):
 
     singleton_sims = dict(nengo_spinnaker = None)
 
-    def __init__(self, sim_server, filename, 
+    def __init__(self, sim_server, filename,
                        reset_cfg=False):
         self.sim_server = sim_server
         self.backend = sim_server.backend
@@ -102,11 +102,14 @@ class Sim(object):
                 except IOError:
                     code = ''
 
-            self.execute(code) 
+            self.execute(code)
 
-        if self.model is not None:
-            self.name_finder = nengo_gui.NameFinder(self.locals, self.model)
-            self.default_labels = self.name_finder.known_name
+        if self.model is None:
+            self.model = nengo.Network()
+            self.locals['model'] = self.model
+
+        self.name_finder = nengo_gui.NameFinder(self.locals, self.model)
+        self.default_labels = self.name_finder.known_name
 
         self.config = self.load_config()
         self.config_save_needed = False
@@ -148,11 +151,14 @@ class Sim(object):
 
         self.code = code
         self.error = None
+        self.stdout = ''
 
         #TODO: adjust monkey patch to add file dir to sys.path
 
+
+        patch = nengo_gui.monkey.Patch(self.filename)
         try:
-            with nengo_gui.monkey.patch:
+            with patch:
                 exec(code, locals)
         except nengo_gui.monkey.StartedSimulatorException:
             pass
@@ -161,6 +167,7 @@ class Sim(object):
         except:
             line = nengo_gui.monkey.determine_line_number()
             self.error = dict(trace=traceback.format_exc(), line=line)
+        self.stdout = patch.stdout.getvalue()
 
         model = locals.get('model', None)
         if not isinstance(model, nengo.Network):
@@ -278,7 +285,7 @@ class Sim(object):
         if uid is None:
             uid = repr(obj)
         return uid
-        
+
     def finish(self):
         if not self.finished:
             self.finished = True
@@ -313,7 +320,7 @@ class Sim(object):
 
 
     def config_change(self, component, new_cfg, old_cfg):
-        act = nengo_gui.components.action.ConfigAction(self, 
+        act = nengo_gui.components.action.ConfigAction(self,
                 component=component, new_cfg=new_cfg, old_cfg=old_cfg)
         self.undo_stack.append([act])
 
@@ -322,7 +329,7 @@ class Sim(object):
                 self.net_graph, component)
         self.undo_stack.append([act])
 
-        
+
     def build(self):
         # use the lock to make sure only one Simulator is building at a time
         with self.lock:
@@ -371,10 +378,10 @@ class Sim(object):
 
 
 
-        
 
 
 
 
 
-        
+
+

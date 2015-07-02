@@ -26,7 +26,7 @@ class AceEditor(Component):
         if nengo_gui.monkey.is_executing():
             return
         error = self.sim.error
-        stdout = nengo_gui.monkey.patch.stdout.getvalue()
+        stdout = self.sim.stdout
         if error != self.last_error or stdout != self.last_stdout:
             if error is None:
                 short_msg = None

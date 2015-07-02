@@ -1,5 +1,6 @@
 import contextlib
 import importlib
+import os
 import threading
 import traceback
 import sys
@@ -70,7 +71,14 @@ def determine_line_number(filename='<string>'):
 
 
 class Patch(object):
+    def __init__(self, filename):
+        self.directory = os.path.dirname(filename)
+        self.added_directory = None
     def __enter__(self):
+        if self.directory not in sys.path:
+            sys.path.insert(0, self.directory)
+            self.added_directory = self.directory
+
         self.stdout = StringIO()
 
         flag.executing = True
@@ -97,4 +105,6 @@ class Patch(object):
 
         sys.stdout = sys.__stdout__
 
-patch = Patch()
+        if self.added_directory is not None:
+            sys.path.remove(self.added_directory)
+            self.added_directory = None
