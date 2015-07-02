@@ -6,6 +6,7 @@ class Component(object):
         self.uid = uid
         self.sim = sim
         self.z_order = z_order
+        self.replace_with = None
 
     def update_client(self, client):
         pass

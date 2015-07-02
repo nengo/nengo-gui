@@ -46,44 +46,28 @@ class NetGraph(Component):
         new_code = self.sim.new_code
         self.sim.new_code = None
         if new_code is not None:
-            pass
-            #self.reload(code=new_code)
-    '''
+            self.reload(code=new_code)
+    
     def reload(self, code=None):
         with self.sim.lock:
             self._reload(code=code)
 
     def _reload(self, code=None):
-        current_error = None
-        locals = {}
+
+        old_locals = self.sim.locals
+
         if code is None:
             with open(self.sim.filename) as f:
                 code = f.read()
 
-        try:
-            with nengo_gui.monkey.patch:
-                exec(code, locals)
-        except:
-            line = nengo_gui.monkey.determine_line_number()
-            current_error = dict(trace=traceback.format_exc(), line=line)
-            traceback.print_exc()
-            self.viz.current_error = current_error
-            return
-        try:
-            model = locals['model']
-        except:
-            if current_error is None:
-                line = nengo_gui.monkey.determine_line_number()
-                current_error = dict(trace=traceback.format_exc(), line=line)
-                traceback.print_exc()
-            self.viz.current_error = current_error
-            return
-        self.viz.current_error = current_error
+        self.sim.execute(code)
 
-        locals['nengo_gui'] = nengo_gui
-        name_finder = nengo_gui.NameFinder(locals, model)
+        if self.sim.error is not None:
+            return
 
-        self.networks_to_search = [model]
+        name_finder = nengo_gui.NameFinder(self.sim.locals, self.sim.model)
+
+        self.networks_to_search = [self.sim.model]
         self.parents = {}
 
         removed_uids = {}
@@ -94,7 +78,7 @@ class NetGraph(Component):
         # so we use the uids of the pre and post objects.
         for uid, old_item in nengo.utils.compat.iteritems(dict(self.uids)):
             try:
-                new_item = eval(uid, locals)
+                new_item = eval(uid, self.sim.locals)
             except:
                 new_item = None
 
@@ -104,7 +88,7 @@ class NetGraph(Component):
             # not the normal uid for that item.  For example, the uid
             # "ensembles[0]" might still refer to something even after that
             # ensemble is removed.
-            new_uid = self.viz.viz.get_uid(new_item,
+            new_uid = self.sim.get_uid(new_item,
                         default_labels=name_finder.known_name)
             if new_uid != uid:
                 new_item = None
@@ -133,15 +117,15 @@ class NetGraph(Component):
                 if isinstance(old_item, (nengo.Node,
                                          nengo.Ensemble,
                                          nengo.Network)):
-                    old_label = self.viz.viz.get_label(old_item)
-                    new_label = self.viz.viz.get_label(
+                    old_label = self.sim.get_label(old_item)
+                    new_label = self.sim.get_label(
                         new_item, default_labels=name_finder.known_name)
 
                     if old_label != new_label:
                         self.to_be_sent.append(dict(
                             type='rename', uid=uid, name=new_label))
                     if isinstance(old_item, nengo.Network):
-                        if self.viz.viz.config[old_item].expanded:
+                        if self.sim.config[old_item].expanded:
                             self.to_be_expanded.append(new_item)
 
                 elif isinstance(old_item, nengo.Connection):
@@ -158,11 +142,11 @@ class NetGraph(Component):
                     if isinstance(new_post, nengo.ensemble.Neurons):
                         new_post = new_post.ensemble
 
-                    old_pre = self.viz.viz.get_uid(old_pre)
-                    old_post = self.viz.viz.get_uid(old_post)
-                    new_pre = self.viz.viz.get_uid(
+                    old_pre = self.sim.get_uid(old_pre)
+                    old_post = self.sim.get_uid(old_post)
+                    new_pre = self.sim.get_uid(
                         new_pre, default_labels=name_finder.known_name)
-                    new_post = self.viz.viz.get_uid(
+                    new_post = self.sim.get_uid(
                         new_post, default_labels=name_finder.known_name)
 
                     if new_pre != old_pre or new_post != old_post:
@@ -179,23 +163,20 @@ class NetGraph(Component):
 
                 self.uids[uid] = new_item
 
-        self.to_be_expanded.append(model)
+        self.to_be_expanded.append(self.sim.model)
 
-        self.viz.model = model
-        self.viz.viz.model = model
-        self.viz.viz.locals = locals
-        self.viz.viz.name_finder = name_finder
-        self.viz.viz.default_labels = name_finder.known_name
-        self.viz.viz.config = self.viz.viz.load_config()
-        self.viz.config = self.viz.viz.config
-        self.config = self.viz.viz.config
-        self.viz.viz.uid_prefix_counter = {}
-        self.layout = nengo_gui.layout.Layout(model)
-        self.viz.viz.code = code
+        t_uids = [self.sim.get_uid(c.template) for c in self.sim.components]
+
+        self.sim.name_finder = name_finder
+        self.sim.default_labels = name_finder.known_name
+        self.sim.config = self.sim.load_config()
+        self.sim.uid_prefix_counter = {}
+        self.layout = nengo_gui.layout.Layout(self.sim.model)
+        self.sim.code = code
 
 
         removed_items = list(removed_uids.keys())
-        for c in self.viz.components:
+        for c in self.sim.components:
             for item in c.template.args:
                 if item in removed_items:
                     self.to_be_sent.append(dict(type='delete_graph',
@@ -203,22 +184,35 @@ class NetGraph(Component):
                     break
 
         components = []
-        for c in self.viz.components[:3]:
-            components.append(c)
-            locals[c.uid] = c.template
-        self.viz.components = components
-        for template in self.viz.viz.find_templates():
-            if not isinstance(template,
-                              (nengo_gui.components.SimControlTemplate,
-                               nengo_gui.components.NetGraphTemplate,
-                               nengo_gui.components.AceEditorTemplate)):
-                try:
-                    self.viz.add_template(template)
-                except:
-                    print('failed to recreate plot for %s' % template)
 
-        self.viz.changed = True
-    '''
+        for k, v in list(self.sim.locals.items()):
+            if isinstance(v, nengo_gui.components.component.Template):
+                t_uid = self.sim.get_uid(v)
+                index = t_uids.index(t_uid)
+                old_component = self.sim.components[index]
+                self.sim.locals[t_uid] = v
+                self.sim.default_labels[v] = t_uid
+
+                if isinstance(v, (nengo_gui.components.SimControlTemplate,
+                                  nengo_gui.components.AceEditorTemplate,
+                                  nengo_gui.components.NetGraphTemplate)):
+                    old_component.template = v
+                    components.append(old_component)
+
+                else:
+                    try:
+                        c = self.sim.add_template(v)
+                        old_component.replace_with = c
+                    except:
+                        traceback.print_exc()
+                        print('failed to recreate plot for %s' % v)
+                    components.append(c)
+
+        components.sort(key=lambda x: x.z_order)
+
+        self.sim.components = components
+
+        self.sim.changed = True
 
     def get_parents(self, uid, default_labels=None):
         while uid not in self.parents:

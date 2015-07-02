@@ -58,7 +58,7 @@ class SimControl(Component):
 
         self.last_tick = now
 
-        while self.paused and self.viz.sim is not None:
+        while self.paused and self.sim is not None:
             time.sleep(0.01)
             self.last_tick = None
 

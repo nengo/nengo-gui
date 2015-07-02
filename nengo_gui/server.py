@@ -103,9 +103,9 @@ class Server(swi.SimpleWebInterface):
             try:
                 if sim_server.finished:
                     break
-                if sim_server.component_uids[uid] != component:
+                if component.replace_with is not None:
                     component.finish()
-                    component = sim_server.component_uids[uid]
+                    component = component.replace_with
                 # read all data coming from the component
                 msg = client.read()
                 while msg is not None:
@@ -126,7 +126,6 @@ class Server(swi.SimpleWebInterface):
                                 k, v)
                         component.sim.modified_config()
                     elif msg.startswith('remove'):
-                        print 'remove', component
                         if msg != 'remove_undo':
                             # Register graph removal to the undo stack
                             component.sim.remove_graph(component)

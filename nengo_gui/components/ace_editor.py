@@ -31,7 +31,10 @@ class AceEditor(Component):
             if error is None:
                 short_msg = None
             else:
-                short_msg = error['trace'].rsplit('\n', 2)[-2]
+                if '\n' in error['trace']:
+                    short_msg = error['trace'].rsplit('\n', 2)[-2]
+                else:
+                    short_msg = error['trace']
             client.write(json.dumps({'error': error,
                                      'short_msg':short_msg,
                                      'stdout':stdout}))

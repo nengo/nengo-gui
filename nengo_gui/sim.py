@@ -2,8 +2,10 @@ import importlib
 import json
 import logging
 import os
+import socket
 import threading
 import time
+import traceback
 
 import nengo
 
@@ -162,8 +164,9 @@ class Sim(object):
 
         model = locals.get('model', None)
         if not isinstance(model, nengo.Network):
-            line = len(code.split('\n'))
-            self.error = dict(trace='must declare a nengo.Network'
+            if self.error is None:
+                line = len(code.split('\n'))
+                self.error = dict(trace='must declare a nengo.Network '
                                     'called "model"', line=line)
             model = None
 
@@ -260,7 +263,7 @@ class Sim(object):
         if label is None:
             label = default_labels.get(obj, None)
             if label is None:
-                print('ERROR finding label: %s' % obj)
+                raise Exception('ERROR finding label: %s' % obj)
             else:
                 if not full and '.' in label:
                     label = label.rsplit('.', 1)[1]
@@ -293,12 +296,12 @@ class Sim(object):
         self.default_labels[obj] = uid
 
     def remove_uid(self, uid):
-        print 'removing', uid
         if uid in self.locals:
-            print 'removing', uid, 'from locals'
             obj = self.locals[uid]
             del self.locals[uid]
             del self.default_labels[obj]
+        else:
+            print 'WARNING: remove_uid called on unknown uid', uid
 
     def remove_component(self, component):
         del self.sim_server.component_uids[component.uid]
@@ -321,10 +324,10 @@ class Sim(object):
 
         
     def build(self):
-        self.building = True
-
         # use the lock to make sure only one Simulator is building at a time
         with self.lock:
+            self.building = True
+
             for c in self.components:
                 c.add_nengo_objects(self)
             # build the simulation
@@ -343,7 +346,8 @@ class Sim(object):
                 c.remove_nengo_objects(self)
             # TODO: add checks to make sure everything's been removed
 
-        self.building = False
+            self.building = False
+            self.rebuild = False
 
     def runner(self):
         # run the simulation
@@ -356,14 +360,11 @@ class Sim(object):
                         self.sim.run_steps(self.sim.max_steps)
                     else:
                         self.sim.step()
-                except AttributeError:
-                    time.sleep(0.01)
                 except socket.error:  # if another thread closes the sim
                     pass
 
 
             if self.rebuild:
-                self.rebuild = False
                 self.build()
 
 
