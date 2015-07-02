@@ -39,7 +39,7 @@ class Action(object):
     def obj_config(self):
         if self.uid is None:
             raise ValueError("Cannot get 'obj' without 'uid'")
-        return self.net_graph.config[self.obj]
+        return self.net_graph.sim.config[self.obj]
 
     def send(self, action, **kwargs):
         if "uid" not in kwargs:
@@ -64,7 +64,7 @@ class ConfigAction(Action):
 
     def load(self, cfg):
         for k, v in iteritems(cfg):
-            setattr(self.viz_sim.viz.config[self.component.template], k, v)
+            setattr(self.viz_sim.config[self.component.template], k, v)
         self.net_graph.modified_config()
         self.send("config", config=cfg)
 
@@ -131,7 +131,7 @@ class CreateGraph(Action):
         self.duplicate = None
 
         # Remove any existing sliders associated with the same node
-        for component in self.net_graph.viz.components:
+        for component in self.net_graph.sim.components:
             if (isinstance(component, nengo_gui.components.slider.Slider)
                     and component.node is self.obj):
                 self.duplicate = RemoveGraph(net_graph, component)
@@ -141,20 +141,20 @@ class CreateGraph(Action):
 
     def act_create_graph(self):
         if self.graph_uid is None:
-            self.net_graph.viz.viz.generate_uid(self.template, prefix='_viz_')
-            self.graph_uid = self.net_graph.viz.viz.get_uid(self.template)
+            self.net_graph.sim.generate_uid(self.template, prefix='_viz_')
+            self.graph_uid = self.net_graph.sim.get_uid(self.template)
         else:
-            self.net_graph.viz.viz.locals[self.graph_uid] = self.template
-            self.net_graph.viz.viz.default_labels[self.template] = (
+            self.net_graph.sim.locals[self.graph_uid] = self.template
+            self.net_graph.sim.default_labels[self.template] = (
                 self.graph_uid)
-        self.net_graph.config[self.template].x = self.x
-        self.net_graph.config[self.template].y = self.y
-        self.net_graph.config[self.template].width = self.width
-        self.net_graph.config[self.template].height = self.height
+        self.net_graph.sim.config[self.template].x = self.x
+        self.net_graph.sim.config[self.template].y = self.y
+        self.net_graph.sim.config[self.template].width = self.width
+        self.net_graph.sim.config[self.template].height = self.height
         self.net_graph.modified_config()
 
-        c = self.net_graph.viz.add_template(self.template)
-        self.net_graph.viz.changed = True
+        c = self.net_graph.sim.add_template(self.template)
+        self.net_graph.sim.changed = True
         self.send('js', code=c.javascript())
 
     def apply(self):
@@ -241,9 +241,9 @@ class FeedforwardLayout(Action):
         super(FeedforwardLayout, self).__init__(net_graph, uid)
 
         if self.uid is None:
-            self.network = self.net_graph.viz.model
-            self.scale = self.net_graph.config[self.network].size[0]
-            self.x, self.y = self.net_graph.config[self.network].pos
+            self.network = self.net_graph.sim.model
+            self.scale = self.net_graph.sim.config[self.network].size[0]
+            self.x, self.y = self.net_graph.sim.config[self.network].pos
         else:
             self.network = self.obj
             self.scale = 1.0
@@ -257,27 +257,27 @@ class FeedforwardLayout(Action):
 
     def act_feedforward_layout(self):
         for obj, layout in iteritems(self.pos):
-            obj_cfg = self.net_graph.config[obj]
+            obj_cfg = self.net_graph.sim.config[obj]
             obj_cfg.pos = (layout['y'] / self.scale - self.x,
                            layout['x'] / self.scale - self.y)
             obj_cfg.size = (layout['h'] / 2 / self.scale,
                             layout['w'] / 2 / self.scale)
 
-            obj_uid = self.net_graph.viz.viz.get_uid(obj)
+            obj_uid = self.net_graph.sim.get_uid(obj)
 
             self.send('pos_size',
                       uid=obj_uid, pos=obj_cfg.pos, size=obj_cfg.size)
 
-        self.net_graph.config[self.network].has_layout = True
+        self.net_graph.sim.config[self.network].has_layout = True
         self.net_graph.modified_config()
 
     def save_network(self):
         state = []
         for obj, layout in iteritems(self.pos):
             state.append({
-                'uid': self.net_graph.viz.viz.get_uid(obj),
-                'pos': self.net_graph.config[obj].pos,
-                'size': self.net_graph.config[obj].size,
+                'uid': self.net_graph.sim.get_uid(obj),
+                'pos': self.net_graph.sim.config[obj].pos,
+                'size': self.net_graph.sim.config[obj].size,
                 'obj': obj,
             })
         return state
@@ -286,8 +286,8 @@ class FeedforwardLayout(Action):
         for item in state:
             self.send('pos_size',
                       uid=item['uid'], pos=item['pos'], size=item['size'])
-            self.net_graph.config[item['obj']].pos = item['pos']
-            self.net_graph.config[item['obj']].size = item['size']
+            self.net_graph.sim.config[item['obj']].pos = item['pos']
+            self.net_graph.sim.config[item['obj']].size = item['size']
         # TODO: should config[network].has_layout be changed here?
         self.net_graph.modified_config()
 

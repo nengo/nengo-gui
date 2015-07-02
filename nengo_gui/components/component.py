@@ -1,9 +1,11 @@
 import json
 
 class Component(object):
-    def __init__(self, viz, config, uid):
+    def __init__(self, sim, config, uid, z_order=0):
         self.config = config
         self.uid = uid
+        self.sim = sim
+        self.z_order = z_order
 
     def update_client(self, client):
         pass
@@ -13,10 +15,10 @@ class Component(object):
     def finish(self):
         pass
 
-    def add_nengo_objects(self, viz):
+    def add_nengo_objects(self, sim):
         pass
 
-    def remove_nengo_objects(self, viz):
+    def remove_nengo_objects(self, sim):
         pass
 
     def javascript_config(self, cfg):
@@ -31,9 +33,9 @@ class Template(object):
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
-    def create(self, vizsim):
-        uid = vizsim.viz.get_uid(self)
-        c = self.cls(vizsim, vizsim.viz.config[self], uid,
+    def create(self, sim):
+        uid = '_uid_%d' % id(self)
+        c = self.cls(sim, sim.config[self], uid,
                      *self.args, **self.kwargs)
         c.template = self
         return c

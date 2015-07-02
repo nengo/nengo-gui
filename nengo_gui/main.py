@@ -1,6 +1,7 @@
 import argparse
 
 import nengo_gui
+import nengo_gui.sim_server
 
 def main():
     parser = argparse.ArgumentParser()
@@ -23,9 +24,12 @@ def main():
         import logging
         logging.basicConfig(level=logging.DEBUG)
 
-    viz = nengo_gui.Viz(filename=args.filename)
-    viz.default_backend = args.backend
-    viz.start(port=args.port, password=args.password)
+    #viz = nengo_gui.Viz(filename=args.filename)
+    #viz.default_backend = args.backend
+    #viz.start(port=args.port, password=args.password)
+    s = nengo_gui.sim_server.SimServer(filename=args.filename,
+                                       backend=args.backend)
+    s.start(port=args.port, password=args.password)
 
 if __name__ == '__main__':
     main()

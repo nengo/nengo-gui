@@ -16,26 +16,25 @@ from .action import create_action
 class NetGraph(Component):
     configs = {}
 
-    def __init__(self, viz, config, uid):
-        super(NetGraph, self).__init__(viz, config, uid)
-        self.viz = viz
-        self.layout = nengo_gui.layout.Layout(self.viz.model)
-        self.config = viz.config
-        self.to_be_expanded = collections.deque([self.viz.model])
+    def __init__(self, sim, config, uid):
+        super(NetGraph, self).__init__(sim, config, uid, z_order=-5)
+        self.sim = sim
+        self.layout = nengo_gui.layout.Layout(self.sim.model)
+        self.to_be_expanded = collections.deque([self.sim.model])
         self.to_be_sent = collections.deque()
         self.uids = {}
         self.parents = {}
-        self.networks_to_search = [self.viz.model]
+        self.networks_to_search = [self.sim.model]
         self.initialized_pan_and_zoom = False
         try:
-            self.last_modify_time = os.path.getmtime(self.viz.viz.filename)
+            self.last_modify_time = os.path.getmtime(self.sim.filename)
         except OSError:
             self.last_modify_time = None
         self.last_reload_check = time.time()
 
     def check_for_reload(self):
         try:
-            t = os.path.getmtime(self.viz.viz.filename)
+            t = os.path.getmtime(self.sim.filename)
         except OSError:
             t = None
 
@@ -44,20 +43,21 @@ class NetGraph(Component):
                 self.reload()
                 self.last_modify_time = t
 
-        new_code = self.viz.new_code
-        self.viz.new_code = None
+        new_code = self.sim.new_code
+        self.sim.new_code = None
         if new_code is not None:
-            self.reload(code=new_code)
-
+            pass
+            #self.reload(code=new_code)
+    '''
     def reload(self, code=None):
-        with self.viz.viz.lock:
+        with self.sim.lock:
             self._reload(code=code)
 
     def _reload(self, code=None):
         current_error = None
         locals = {}
         if code is None:
-            with open(self.viz.viz.filename) as f:
+            with open(self.sim.filename) as f:
                 code = f.read()
 
         try:
@@ -218,19 +218,20 @@ class NetGraph(Component):
                     print('failed to recreate plot for %s' % template)
 
         self.viz.changed = True
+    '''
 
     def get_parents(self, uid, default_labels=None):
         while uid not in self.parents:
             net = self.networks_to_search.pop(0)
-            net_uid = self.viz.viz.get_uid(net, default_labels=default_labels)
+            net_uid = self.sim.get_uid(net, default_labels=default_labels)
             for n in net.nodes:
-                n_uid = self.viz.viz.get_uid(n, default_labels=default_labels)
+                n_uid = self.sim.get_uid(n, default_labels=default_labels)
                 self.parents[n_uid] = net_uid
             for e in net.ensembles:
-                e_uid = self.viz.viz.get_uid(e, default_labels=default_labels)
+                e_uid = self.sim.get_uid(e, default_labels=default_labels)
                 self.parents[e_uid] = net_uid
             for n in net.networks:
-                n_uid = self.viz.viz.get_uid(n, default_labels=default_labels)
+                n_uid = self.sim.get_uid(n, default_labels=default_labels)
                 self.parents[n_uid] = net_uid
                 self.networks_to_search.append(n)
         parents = [uid]
@@ -239,7 +240,7 @@ class NetGraph(Component):
         return parents
 
     def modified_config(self):
-        self.viz.viz.modified_config()
+        self.sim.modified_config()
 
     def update_client(self, client):
         now = time.time()
@@ -256,10 +257,9 @@ class NetGraph(Component):
             client.write(json.dumps(info))
 
         if len(self.to_be_expanded) > 0:
-            self.viz.viz.lock.acquire()
-            network = self.to_be_expanded.popleft()
-            self.expand_network(network, client)
-            self.viz.viz.lock.release()
+            with self.sim.lock:
+                network = self.to_be_expanded.popleft()
+                self.expand_network(network, client)
 
     def javascript(self):
         return 'new Nengo.NetGraph(main, {uid:"%s"});' % self.uid
@@ -281,8 +281,8 @@ class NetGraph(Component):
                 getattr(self, 'act_' + action)(**info)
             else:
                 act = create_action(action, self, **info)
-                self.viz.undo_stack.append([act])
-                del self.viz.redo_stack[:]
+                self.sim.undo_stack.append([act])
+                del self.sim.redo_stack[:]
         elif undo is not None:
             if undo == '1':
                 self.undo()
@@ -292,51 +292,51 @@ class NetGraph(Component):
             print('received message', msg)
 
     def undo(self):
-        if self.viz.undo_stack:
-            action = self.viz.undo_stack.pop()
+        if self.sim.undo_stack:
+            action = self.sim.undo_stack.pop()
             re = []
             for act in action:
                 act.undo()
                 re.insert(0, act)
-            self.viz.redo_stack.append(re)
+            self.sim.redo_stack.append(re)
 
     def redo(self):
-        if self.viz.redo_stack:
-            action = self.viz.redo_stack.pop()
+        if self.sim.redo_stack:
+            action = self.sim.redo_stack.pop()
             un = []
             for act in action:
                 act.apply()
                 un.insert(0, act)
-            self.viz.undo_stack.append(un)
+            self.sim.undo_stack.append(un)
 
     def act_expand(self, uid):
         net = self.uids[uid]
         self.to_be_expanded.append(net)
-        self.config[net].expanded = True
+        self.sim.config[net].expanded = True
         self.modified_config()
 
     def act_collapse(self, uid):
         net = self.uids[uid]
-        self.config[net].expanded = False
+        self.sim.config[net].expanded = False
         self.remove_uids(net)
         self.modified_config()
 
     def remove_uids(self, net):
         for items in [net.ensembles, net.networks, net.nodes, net.connections]:
             for item in items:
-                uid = self.viz.viz.get_uid(item)
+                uid = self.sim.get_uid(item)
                 if uid in self.uids:
                     del self.uids[uid]
         for n in net.networks:
             self.remove_uids(n)
 
     def act_pan(self, x, y):
-        self.config[self.viz.model].pos = x, y
+        self.sim.config[self.sim.model].pos = x, y
         self.modified_config()
 
     def act_zoom(self, scale, x, y):
-        self.config[self.viz.model].size = scale, scale
-        self.config[self.viz.model].pos = x, y
+        self.sim.config[self.sim.model].size = scale, scale
+        self.sim.config[self.sim.model].pos = x, y
         self.modified_config()
 
     def act_create_modal(self, uid, **info):
@@ -344,17 +344,17 @@ class NetGraph(Component):
         self.to_be_sent.append(dict(type='js', code=js))
 
     def expand_network(self, network, client):
-        if not self.config[network].has_layout:
+        if not self.sim.config[network].has_layout:
             pos = self.layout.make_layout(network)
             for obj, layout in pos.items():
-                self.config[obj].pos = layout['y'], layout['x']
-                self.config[obj].size = layout['h'] / 2, layout['w'] / 2
-            self.config[network].has_layout = True
+                self.sim.config[obj].pos = layout['y'], layout['x']
+                self.sim.config[obj].size = layout['h'] / 2, layout['w'] / 2
+            self.sim.config[network].has_layout = True
 
-        if network is self.viz.model:
+        if network is self.sim.model:
             parent = None
         else:
-            parent = self.viz.viz.get_uid(network)
+            parent = self.sim.get_uid(network)
         for ens in network.ensembles:
             self.create_object(client, ens, type='ens', parent=parent)
         for node in network.nodes:
@@ -363,28 +363,28 @@ class NetGraph(Component):
             self.create_object(client, net, type='net', parent=parent)
         for conn in network.connections:
             self.create_connection(client, conn, parent=parent)
-        self.config[network].expanded = True
+        self.sim.config[network].expanded = True
 
     def create_object(self, client, obj, type, parent):
-        uid = self.viz.viz.get_uid(obj)
+        uid = self.sim.get_uid(obj)
         if uid in self.uids:
             return
 
-        pos = self.config[obj].pos
+        pos = self.sim.config[obj].pos
         if pos is None:
             import random
             pos = random.uniform(0, 1), random.uniform(0, 1)
-            self.config[obj].pos = pos
-        size = self.config[obj].size
+            self.sim.config[obj].pos = pos
+        size = self.sim.config[obj].size
         if size is None:
             size = (0.1, 0.1)
-            self.config[obj].size = size
-        label = self.viz.viz.get_label(obj)
+            self.sim.config[obj].size = size
+        label = self.sim.get_label(obj)
         self.uids[uid] = obj
         info = dict(uid=uid, label=label, pos=pos, type=type, size=size,
                     parent=parent)
         if type == 'net':
-            info['expanded'] = self.config[obj].expanded
+            info['expanded'] = self.sim.config[obj].expanded
         if type == 'node' and obj.output is None:
             info['passthrough'] = True
         if type == 'ens' or type == 'node':
@@ -396,10 +396,10 @@ class NetGraph(Component):
         client.write(json.dumps(info))
 
     def send_pan_and_zoom(self, client):
-        pan = self.config[self.viz.model].pos
+        pan = self.sim.config[self.sim.model].pos
         if pan is None:
             pan = 0, 0
-        zoom = self.config[self.viz.model].size
+        zoom = self.sim.config[self.sim.model].size
         if zoom is None:
             zoom = 1.0
         else:
@@ -408,7 +408,7 @@ class NetGraph(Component):
         client.write(json.dumps(dict(type='zoom', zoom=zoom)))
 
     def create_connection(self, client, conn, parent):
-        uid = self.viz.viz.get_uid(conn)
+        uid = self.sim.get_uid(conn)
         if uid in self.uids:
             return
         pre = conn.pre_obj
@@ -417,8 +417,8 @@ class NetGraph(Component):
         post = conn.post_obj
         if isinstance(post, nengo.ensemble.Neurons):
             post = post.ensemble
-        pre = self.viz.viz.get_uid(pre)
-        post = self.viz.viz.get_uid(post)
+        pre = self.sim.get_uid(pre)
+        post = self.sim.get_uid(post)
         self.uids[uid] = conn
         pres = self.get_parents(pre)[:-1]
         posts = self.get_parents(post)[:-1]
