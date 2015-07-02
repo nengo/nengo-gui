@@ -68,6 +68,7 @@ Nengo.Slider = function(parent, sim, args) {
     this.bound_labels.style.marginTop = this.ax_top;
     this.bound_labels.style.position = 'absolute';
     this.bound_labels.style.top = '0px';
+    this.min_label_down_shift = 10;
     var range = this.sliders[0].scale.domain();
 
     this.max_label = document.createElement('p');
@@ -117,7 +118,7 @@ Nengo.Slider.prototype.show_bound_labels = function () {
 }
 
 Nengo.Slider.prototype.hide_bound_labels = function () {
-    $(this.bound_labels).fadeOut('fast');
+    $(this.bound_labels).css('display', 'none');
 }
 
 
@@ -192,7 +193,7 @@ Nengo.Slider.prototype.on_resize = function(width, height) {
     this.group.style.height = height - this.ax_top - 2 * this.border_size;
     this.group.style.marginTop = this.ax_top;
 
-    this.bound_labels.style.height = height - (this.ax_top - 10) - this.border_size ;
+    this.bound_labels.style.height = height - (this.ax_top - this.min_label_down_shift) - this.border_size ;
 
     var N = this.sliders.length;
     for (var i in this.sliders) {
