@@ -42,6 +42,8 @@ Nengo.Ace = function (uid, args) {
     this.console.appendChild(this.console_stdout);
     this.console.appendChild(this.console_error);
 
+    this.update_frequency = 2000; //2000ms
+
     this.save_disabled = true;
 
     //Setup the button to toggle the code editor
@@ -85,7 +87,7 @@ Nengo.Ace = function (uid, args) {
         })
 }
 
-//Send changes to the code to server every 100ms
+//Send changes to the code to server every 2s
 Nengo.Ace.prototype.schedule_updates = function () {
     var self = this;
     setInterval(function () {
@@ -95,7 +97,7 @@ Nengo.Ace.prototype.schedule_updates = function () {
             self.current_code = editor_code;
             self.enable_save();
         }
-    }, 100)
+    }, self.update_frequency)
 }
 
 Nengo.Ace.prototype.set_font_size = function (font_size) {
