@@ -153,9 +153,6 @@ class Sim(object):
         self.error = None
         self.stdout = ''
 
-        #TODO: adjust monkey patch to add file dir to sys.path
-
-
         patch = nengo_gui.monkey.Patch(self.filename)
         try:
             with patch:
