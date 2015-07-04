@@ -6,7 +6,40 @@ import nengo
 import nengo_gui.sim
 import nengo_gui.server
 
+
 class SimServer(object):
+    """The master server object for running nengo_gui.
+
+    Parameters
+    ----------
+
+    filename : str, optional
+        Name of the default file to open when the gui starts.  If this is
+        None and the model is also None, the default is 'examples/default.py'
+        in the installation directory.
+    model : nengo.Network, optional
+        The nengo.Network to show.  If this is None, the model will be taken
+        from locals['model'] (if locals is not None) or from executing the
+        file given by filename
+    locals : dict, optional
+        The locals() dictionary after defining the model.  If this is not
+        None, it will be used to help find readable labels for all the
+        components of the model.  Otherwise, the resulting locals()
+        dictionary after executing the script given by filename will be used.
+    cfg : str, optional
+        The filename to use for the config file.  If this is None, the
+        default of filename + '.cfg' will be used.
+    interactive : bool, optional
+        If this is False, the nengo_gui is running inside some other system,
+        such as IPython notebook.  The server will not automatically shut
+        down, error messages will not be printed, and the code editor will
+        not be shown.
+    allow_file_change : bool, optional
+        If this is False, the "open file" button will be disabled.
+    backend : str, optional
+        The default backend to use.
+    """
+
     def __init__(self, filename=None, model=None, locals=None,
                  cfg=None, interactive=True, allow_file_change=True,
                  backend='nengo'):
@@ -15,9 +48,14 @@ class SimServer(object):
         if nengo_gui.monkey.is_executing():
             raise nengo_gui.monkey.StartedVizException()
 
+        # the list of running Sim objects
         self.sims = []
+
+        # a mapping from uids to Components for all running Sims.
+        # this is used to connect the websockets to the appropriate Component
         self.component_uids = {}
 
+        # should the SimServer shut down
         self.finished = False
 
         if filename is None and model is None:

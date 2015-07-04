@@ -13,29 +13,41 @@ import nengo_gui
 import nengo_gui.components.action
 import nengo_gui.config
 
-logger = logging.getLogger(__name__)
-
 
 class Sim(object):
-    """A single Simulator attached to an html visualization."""
+    """A single Simulator attached to an html visualization.
 
-    singleton_sims = dict(nengo_spinnaker = None)
+    Parameters
+    ----------
 
-    def __init__(self, sim_server, filename,
-                       reset_cfg=False):
+    sim_server : nengo_gui.SimServer
+        The master SimServer
+    filename : str
+        The filename to open.  If this is the same as sim_server.filename
+        then it will use the existing sim_server.model and sim_server.locals
+        (if available).  Otherwise, the file will be executed to generate
+        the model
+    reset_cfg : bool, optional
+        If True, the existing .cfg file will be erased
+    """
+
+    # Some Simulators can only have one instance running at a time
+    singleton_sims = dict(nengo_spinnaker=None)
+
+    def __init__(self, sim_server, filename, reset_cfg=False):
         self.sim_server = sim_server
         self.backend = sim_server.backend
 
-        self.code = None
-        self.model = None
-        self.locals = None
+        self.code = None     # the code for the model
+        self.model = None    # the nengo.Network
+        self.locals = None   # the locals() dictionary after executing
 
-        self.changed = False
-        self.new_code = None
-        self.paused = False
-        self.finished = False
-        self._sim = None
-        self.rebuild = False
+        self.changed = False   # has the model been changed?
+        self.new_code = None   # new code that should be re-executed
+        self.paused = False    # is the simulation paused
+        self.finished = False  # should this Sim be shut down
+        self._sim = None       # the current nengo.Simulator
+        self.rebuild = False   # should the model be rebuilt
 
         self.undo_stack = []
         self.redo_stack = []
@@ -44,11 +56,13 @@ class Sim(object):
 
         self.lock = threading.Lock()
 
+        # use the default filename if none is given
         if filename is None:
             self.filename = sim_server.filename
         else:
             self.filename = os.path.relpath(filename)
 
+        # determine the .cfg filename
         if sim_server.filename_cfg is None:
             self.filename_cfg = self.filename + '.cfg'
         else:
@@ -56,6 +70,7 @@ class Sim(object):
 
         if reset_cfg:
             self.clear_config()
+
         self.load()
 
         self.net_graph = self.get_net_graph()
@@ -75,7 +90,6 @@ class Sim(object):
             self._sim.close()
         self._sim = value
 
-
     def get_net_graph(self):
         for c in self.components:
             if isinstance(c, nengo_gui.components.NetGraph):
@@ -86,9 +100,10 @@ class Sim(object):
         if os.path.isfile(self.filename_cfg):
             os.remove(self.filename_cfg)
 
-
-    def load(self, code=None):
+    def load(self):
+        """Load the model and initialize everything"""
         if self.filename == self.sim_server.filename:
+            # if we're on the default filenaem, just load it from the SimServer
             self.model = self.sim_server.model
             if self.sim_server.locals is None:
                 self.locals = None
@@ -98,13 +113,13 @@ class Sim(object):
             self.model = None
             self.locals = None
 
+        # if we still don't have a locals dictionary, then run the script
         if self.locals is None:
-            if code is None:
-                try:
-                    with open(self.filename) as f:
-                        code = f.read()
-                except IOError:
-                    code = ''
+            try:
+                with open(self.filename) as f:
+                    code = f.read()
+            except IOError:
+                code = ''
 
             self.execute(code)
 
@@ -112,9 +127,11 @@ class Sim(object):
             self.model = nengo.Network()
             self.locals['model'] = self.model
 
+        # figure out good names for objects
         self.name_finder = nengo_gui.NameFinder(self.locals, self.model)
         self.default_labels = self.name_finder.known_name
 
+        # load the .cfg file
         self.config = self.load_config()
         self.config_save_needed = False
         self.config_save_time = None   # time of last config file save
@@ -124,7 +141,7 @@ class Sim(object):
         self.create_components()
 
     def create_components(self):
-        self.templates = []   #TODO: do I need this list?
+        """Generate the actual Components from the Templates"""
         self.components = []
         self.template_uids = {}
         for k, v in self.locals.items():
@@ -132,23 +149,26 @@ class Sim(object):
                 self.template_uids[v] = k
                 c = v.create(self)
                 self.sim_server.component_uids[c.uid] = c
-                self.templates.append(v)
                 self.components.append(c)
 
+        # this ensures NetGraph, AceEditor, and SimControl are first
         self.components.sort(key=lambda x: x.z_order)
 
     def add_template(self, template):
+        """Add a new Component to an existing Sim."""
         c = template.create(self)
         self.sim_server.component_uids[c.uid] = c
 
-        self.templates.append(template)
         self.components.append(c)
 
         return c
 
-
-
     def execute(self, code):
+        """Run the given code to generate self.model and self.locals.
+
+        The code will be stored in self.code, any output to stdout will
+        be a string as self.stdout, and any error will be in self.error.
+        """
         locals = {}
         locals['nengo_gui'] = nengo_gui
         locals['__file__'] = self.filename
@@ -162,27 +182,30 @@ class Sim(object):
             with patch:
                 exec(code, locals)
         except nengo_gui.monkey.StartedSimulatorException:
+            # no running a simulator inside a script
             pass
         except nengo_gui.monkey.StartedVizException:
+            # no running nengo_gui inside a script
             pass
         except:
             line = nengo_gui.monkey.determine_line_number()
             self.error = dict(trace=traceback.format_exc(), line=line)
         self.stdout = patch.stdout.getvalue()
 
+        # make sure we've defined a nengo.Network
         model = locals.get('model', None)
         if not isinstance(model, nengo.Network):
             if self.error is None:
                 line = len(code.split('\n'))
                 self.error = dict(trace='must declare a nengo.Network '
-                                    'called "model"', line=line)
+                                  'called "model"', line=line)
             model = None
 
         self.model = model
         self.locals = locals
 
-
     def load_config(self):
+        """Load the .cfg file"""
         config = nengo_gui.config.Config()
         self.locals['nengo_gui'] = nengo_gui
         self.locals['_viz_config'] = config
@@ -197,7 +220,7 @@ class Sim(object):
                     if self.sim_server.interactive:
                         logging.debug('error parsing config: %s' % line)
 
-        # make sure a SimControl and a NetGraph exist
+        # make sure the required Components exist
         if '_viz_sim_control' not in self.locals:
             template = nengo_gui.components.SimControlTemplate()
             self.locals['_viz_sim_control'] = template
@@ -221,6 +244,16 @@ class Sim(object):
         return config
 
     def save_config(self, lazy=False, force=False):
+        """Write the .cfg file to disk.
+
+        Parameters
+        ----------
+        lazy : bool
+            If True, then only save if it has been more than config_save_time
+            since the last save and if config_save_needed
+        force : bool
+            If True, then always save right now
+        """
         if not force and not self.config_save_needed:
             return
 
@@ -240,25 +273,18 @@ class Sim(object):
                       self.filename_cfg)
 
     def modified_config(self):
+        """Set a flag that the config file should be saved."""
         self.config_save_needed = True
 
-
     def create_javascript(self):
+        """Generate the javascript for the current model and layout."""
         if self.filename is not None:
             fn = json.dumps(self.filename)
             webpage_title_js = ';document.title = %s;' % fn
         else:
             webpage_title_js = ''
 
-        ##Ensure that sim control is first
-        temp = self.components[0]
-        counter = 0
-        for t in self.components:
-            if isinstance(t, nengo_gui.components.SimControl):
-                self.components[0] = t
-                self.components[counter] = temp
-                break
-            counter += 1
+        assert isinstance(self.components[0], nengo_gui.components.SimControl)
 
         component_js = '\n'.join([c.javascript() for c in self.components])
         component_js += webpage_title_js
@@ -268,6 +294,16 @@ class Sim(object):
         return component_js
 
     def get_label(self, obj, default_labels=None, full=False):
+        """Return a readable label for an object.
+
+        If the object has a .label set, this will be used.  Otherwise, it
+        uses default_labels, which thanks to the NameFinder will be legal
+        Python code for referring to the object given the current locals()
+        dictionary ("model.ensembles[1]" or "ens" or "model.buffer.state".
+        If it has to use default_labels, then if full is False it will only
+        use the last part of the label (after the last ".").  This avoids
+        redundancy in nested displays.
+        """
         if default_labels is None:
             default_labels = self.default_labels
         label = obj.label
@@ -283,19 +319,31 @@ class Sim(object):
         return label
 
     def get_uid(self, obj, default_labels=None):
+        """Return a unique identifier for an object.
+
+        This should be the value given by the NameFinder.
+        """
         if default_labels is None:
             default_labels = self.default_labels
         uid = default_labels.get(obj, None)
         if uid is None:
+            # TODO: do we ever need to fall back on this case?  This should
+            # only happen if something goes wrong.
             uid = repr(obj)
         return uid
 
     def finish(self):
+        """Shut down this simulator."""
         if not self.finished:
             self.finished = True
             self.sim_server.remove_sim(self)
 
     def generate_uid(self, obj, prefix):
+        """Make a new unique identifier for an object.
+
+        This is used for new Components being created (so they can have
+        a unique identifier in the .cfg file).
+        """
         index = self.uid_prefix_counter.get(prefix, 0)
         uid = '%s%d' % (prefix, index)
         while uid in self.locals:
@@ -307,6 +355,7 @@ class Sim(object):
         self.default_labels[obj] = uid
 
     def remove_uid(self, uid):
+        """Remove a generated uid (for when a component is removed)."""
         if uid in self.locals:
             obj = self.locals[uid]
             del self.locals[uid]
@@ -315,40 +364,48 @@ class Sim(object):
             print 'WARNING: remove_uid called on unknown uid', uid
 
     def remove_component(self, component):
+        """Remove a component from the layout."""
         del self.sim_server.component_uids[component.uid]
         template = component.template
         uid = self.get_uid(template)
         self.remove_uid(uid)
         self.components.remove(component)
-        self.templates.remove(template)
-
 
     def config_change(self, component, new_cfg, old_cfg):
         act = nengo_gui.components.action.ConfigAction(self,
-                component=component, new_cfg=new_cfg, old_cfg=old_cfg)
+                                                       component=component,
+                                                       new_cfg=new_cfg,
+                                                       old_cfg=old_cfg)
         self.undo_stack.append([act])
 
     def remove_graph(self, component):
-        act = nengo_gui.components.action.RemoveGraph(
-                self.net_graph, component)
+        act = nengo_gui.components.action.RemoveGraph(self.net_graph,
+                                                      component)
         self.undo_stack.append([act])
 
-
     def build(self):
+        """Build the model."""
         # use the lock to make sure only one Simulator is building at a time
+        # TODO: should there be a master lock in the SimServer?
         with self.lock:
             self.building = True
 
+            # modify the model for the various Components
             for c in self.components:
                 c.add_nengo_objects(self)
-            # build the simulation
+
+            # determine the backend to use
             backend = importlib.import_module(self.backend)
+            # if only one Simulator is allowed at a time, finish the old one
             old_sim = Sim.singleton_sims.get(self.backend, None)
             if old_sim is not None:
                 if old_sim is not self:
                     old_sim.sim = None
                     old_sim.finished = True
+
+            # build the simulation
             self.sim = backend.Simulator(self.model)
+
             if self.backend in Sim.singleton_sims:
                 Sim.singleton_sims[self.backend] = self
 
@@ -361,6 +418,7 @@ class Sim(object):
             self.rebuild = False
 
     def runner(self):
+        """Separate thread for running the simulation itself."""
         # run the simulation
         while not self.finished:
             if self.sim is None:
@@ -368,24 +426,12 @@ class Sim(object):
             else:
                 try:
                     if hasattr(self.sim, 'max_steps'):
+                        # this is only for the nengo_spinnaker simulation
                         self.sim.run_steps(self.sim.max_steps)
                     else:
                         self.sim.step()
                 except socket.error:  # if another thread closes the sim
                     pass
 
-
             if self.rebuild:
                 self.build()
-
-
-
-
-
-
-
-
-
-
-
-
