@@ -26,28 +26,32 @@ class NetGraph(Component):
         self.parents = {}
         self.networks_to_search = [self.sim.model]
         self.initialized_pan_and_zoom = False
-        try:
-            self.last_modify_time = os.path.getmtime(self.sim.filename)
-        except OSError:
+        if self.sim.filename is None:
             self.last_modify_time = None
+        else:
+            try:
+                self.last_modify_time = os.path.getmtime(self.sim.filename)
+            except OSError:
+                self.last_modify_time = None
         self.last_reload_check = time.time()
 
     def check_for_reload(self):
-        try:
-            t = os.path.getmtime(self.sim.filename)
-        except OSError:
-            t = None
+        if self.sim.filename is not None:
+            try:
+                t = os.path.getmtime(self.sim.filename)
+            except OSError:
+                t = None
 
-        if t is not None:
-            if self.last_modify_time is None or self.last_modify_time < t:
-                self.reload()
-                self.last_modify_time = t
+            if t is not None:
+                if self.last_modify_time is None or self.last_modify_time < t:
+                    self.reload()
+                    self.last_modify_time = t
 
         new_code = self.sim.new_code
         self.sim.new_code = None
         if new_code is not None:
             self.reload(code=new_code)
-    
+
     def reload(self, code=None):
         with self.sim.lock:
             self._reload(code=code)

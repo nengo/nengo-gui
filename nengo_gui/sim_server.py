@@ -45,7 +45,7 @@ class SimServer(object):
             addr = ''
         else:
             addr = 'localhost'
-        nengo_gui.server.Server.start(self, port=port, browser=browser, 
+        nengo_gui.server.Server.start(self, port=port, browser=browser,
                                       addr=addr)
 
     def prepare_server(self, viz, port=8080, browser=True):

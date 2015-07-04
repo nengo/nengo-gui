@@ -11,6 +11,7 @@ import nengo
 
 import nengo_gui
 import nengo_gui.components.action
+import nengo_gui.config
 
 logger = logging.getLogger(__name__)
 
@@ -82,14 +83,14 @@ class Sim(object):
         return None
 
     def clear_config(self):
-        if os.path.isfile(self.filename_cfg) :
+        if os.path.isfile(self.filename_cfg):
             os.remove(self.filename_cfg)
 
 
     def load(self, code=None):
         if self.filename == self.sim_server.filename:
             self.model = self.sim_server.model
-            self.locals = self.sim_server.locals
+            self.locals = self.sim_server.locals.copy()
         else:
             self.model = None
             self.locals = None
@@ -240,8 +241,11 @@ class Sim(object):
 
 
     def create_javascript(self):
-        fn = json.dumps(self.filename[:-3])
-        webpage_title_js = ';document.title = %s;' % fn
+        if self.filename is not None:
+            fn = json.dumps(self.filename)
+            webpage_title_js = ';document.title = %s;' % fn
+        else:
+            webpage_title_js = ''
 
         ##Ensure that sim control is first
         temp = self.components[0]
