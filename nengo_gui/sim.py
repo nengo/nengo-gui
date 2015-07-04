@@ -90,7 +90,10 @@ class Sim(object):
     def load(self, code=None):
         if self.filename == self.sim_server.filename:
             self.model = self.sim_server.model
-            self.locals = self.sim_server.locals.copy()
+            if self.sim_server.locals is None:
+                self.locals = None
+            else:
+                self.locals = self.sim_server.locals.copy()
         else:
             self.model = None
             self.locals = None

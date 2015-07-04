@@ -1,4 +1,5 @@
 import os
+import warnings
 
 import nengo
 
@@ -68,3 +69,9 @@ class SimServer(object):
     def count_sims(self):
         return len(self.sims)
 
+
+class Viz(SimServer):
+    def __init__(self, *args, **kwargs):
+        warnings.warn("nengo_gui.Viz is deprecated.  "
+                      "Use nengo_gui.SimServer instead.")
+        super(Viz, self).__init__(*args, **kwargs)
