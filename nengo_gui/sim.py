@@ -182,11 +182,13 @@ class Sim(object):
             with patch:
                 exec(code, locals)
         except nengo_gui.monkey.StartedSimulatorException:
-            # no running a simulator inside a script
-            pass
+            line = nengo_gui.monkey.determine_line_number()
+            patch.stdout.write('Warning: Simulators cannot be manually'
+                               ' run inside nengo_gui (line %d)\n' % line)
         except nengo_gui.monkey.StartedVizException:
-            # no running nengo_gui inside a script
-            pass
+            line = nengo_gui.monkey.determine_line_number()
+            patch.stdout.write('Warning: nengo_gui cannot be run inside'
+                               ' nengo_gui (line %d)\n' % line)
         except:
             line = nengo_gui.monkey.determine_line_number()
             self.error = dict(trace=traceback.format_exc(), line=line)
