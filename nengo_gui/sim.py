@@ -219,7 +219,7 @@ class Sim(object):
                     exec(line, self.locals)
                 except Exception:
                     if self.sim_server.interactive:
-                        logging.debug('error parsing config: %s' % line)
+                        logging.debug('error parsing config: %s', line)
 
         # make sure the required Components exist
         if '_viz_sim_control' not in self.locals:
@@ -291,7 +291,6 @@ class Sim(object):
         component_js += webpage_title_js
         if not self.sim_server.allow_file_change:
             component_js += "$('#Open_file_button').addClass('deactivated');"
-            pass
         return component_js
 
     def get_label(self, obj, default_labels=None):

@@ -1,8 +1,6 @@
 import os
 import warnings
 
-import nengo
-
 import nengo_gui.sim
 import nengo_gui.server
 
