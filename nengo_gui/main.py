@@ -3,6 +3,7 @@ import argparse
 import nengo_gui
 import nengo_gui.sim_server
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -13,8 +14,8 @@ def main():
         default=8080, type=int, help='port to run server on')
     parser.add_argument(
         'filename', nargs='?', type=str, help='initial file to load')
-    parser.add_argument('--debug', action='store_true',
-        help='turn on debug logging')
+    parser.add_argument(
+        '--debug', action='store_true', help='turn on debug logging')
     parser.add_argument(
         '-b', '--backend', metavar='BACKEND',
         default='nengo', type=str, help='default backend to use')
@@ -24,9 +25,6 @@ def main():
         import logging
         logging.basicConfig(level=logging.DEBUG)
 
-    #viz = nengo_gui.Viz(filename=args.filename)
-    #viz.default_backend = args.backend
-    #viz.start(port=args.port, password=args.password)
     s = nengo_gui.sim_server.SimServer(filename=args.filename,
                                        backend=args.backend)
     s.start(port=args.port, password=args.password)
