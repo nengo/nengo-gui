@@ -60,9 +60,9 @@ class AceEditor(Component):
             except IOError:
                 print("Could not save %s; permission denied" %
                       self.sim.filename)
-                self.sim.new_code = self.current_code
+                self.sim.net_graph.update_code(self.current_code)
         else:
-            self.sim.new_code = self.current_code
+            self.sim.net_graph.update_code(self.current_code)
 
 
 class AceEditorTemplate(Template):

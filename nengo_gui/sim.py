@@ -43,7 +43,6 @@ class Sim(object):
         self.locals = None   # the locals() dictionary after executing
 
         self.changed = False   # has the model been changed?
-        self.new_code = None   # new code that should be re-executed
         self.paused = False    # is the simulation paused
         self.finished = False  # should this Sim be shut down
         self._sim = None       # the current nengo.Simulator
@@ -302,7 +301,7 @@ class Sim(object):
         uses default_labels, which thanks to the NameFinder will be legal
         Python code for referring to the object given the current locals()
         dictionary ("model.ensembles[1]" or "ens" or "model.buffer.state".
-        If it has to use default_labels, it will only use the last part of the 
+        If it has to use default_labels, it will only use the last part of the
         label (after the last ".").  This avoids redundancy in nested displays.
         """
         if default_labels is None:

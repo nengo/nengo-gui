@@ -2,6 +2,7 @@ import time
 import os
 import traceback
 import collections
+import threading
 
 import nengo
 import json
@@ -25,6 +26,11 @@ class NetGraph(Component):
         self.layout = nengo_gui.layout.Layout(self.sim.model)
         self.to_be_expanded = collections.deque([self.sim.model])
         self.to_be_sent = collections.deque()
+
+        # this lock ensures safety between check_for_reload() and update_code()
+        self.code_lock = threading.Lock()
+        self.new_code = None
+
         self.uids = {}
         self.parents = {}
         self.networks_to_search = [self.sim.model]
@@ -50,10 +56,18 @@ class NetGraph(Component):
                     self.reload()
                     self.last_modify_time = t
 
-        new_code = self.sim.new_code
-        self.sim.new_code = None
+        with self.code_lock:
+            new_code = self.new_code
+            # the lock is in case update_code() is called between these lines
+            self.new_code = None
+
         if new_code is not None:
             self.reload(code=new_code)
+
+    def update_code(self, code):
+        """Set new version of code to display."""
+        with self.code_lock:
+            self.new_code = code
 
     def reload(self, code=None):
         with self.sim.lock:
