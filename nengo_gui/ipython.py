@@ -67,7 +67,7 @@ class IPythonViz(object):
         sim_server = nengo_gui.SimServer(
             name, cfg=cfg, model=model, locals=get_ipython().user_ns,
             interactive=False, allow_file_change=False)
-        server = sim_server.prepare_server(sim_server, port=0, browser=False)
+        server = sim_server.prepare_server(port=0, browser=False)
         server_thread = threading.Thread(
             target=sim_server.begin_lifecycle,
             kwargs={'server': server})

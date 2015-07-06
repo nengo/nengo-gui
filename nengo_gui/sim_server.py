@@ -85,7 +85,7 @@ class SimServer(object):
         nengo_gui.server.Server.start(self, port=port, browser=browser,
                                       addr=addr)
 
-    def prepare_server(self, viz, port=8080, browser=True):
+    def prepare_server(self, port=8080, browser=True):
         return nengo_gui.server.Server.prepare_server(
             self, port=port, browser=browser)
 
