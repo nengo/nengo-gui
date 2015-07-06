@@ -397,10 +397,9 @@ class Sim(object):
             backend = importlib.import_module(self.backend)
             # if only one Simulator is allowed at a time, finish the old one
             old_sim = Sim.singleton_sims.get(self.backend, None)
-            if old_sim is not None:
-                if old_sim is not self:
-                    old_sim.sim = None
-                    old_sim.finished = True
+            if old_sim is not None and old_sim is not self:
+                old_sim.sim = None
+                old_sim.finished = True
 
             # build the simulation
             self.sim = backend.Simulator(self.model)
