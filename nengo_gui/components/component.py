@@ -31,6 +31,8 @@ class Component(object):
 
 class Template(object):
     default_params = dict(x=0, y=0, width=100, height=100, label_visible=True)
+    cls = None   # subclasses are expected to set this to be the class of
+                 # the object that should be created.
 
     def __init__(self, *args, **kwargs):
         self.args = args
