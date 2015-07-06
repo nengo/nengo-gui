@@ -45,8 +45,8 @@ class SimServer(object):
                  backend='nengo'):
 
         # no starting a SimServer inside a script inside a SimServer
-        if nengo_gui.monkey.is_executing():
-            raise nengo_gui.monkey.StartedVizException()
+        if nengo_gui.exec_env.is_executing():
+            raise nengo_gui.exec_env.StartedVizException()
 
         # the list of running Sim objects
         self.sims = []

@@ -70,7 +70,7 @@ def determine_line_number(filename='<string>'):
     return None
 
 
-class Patch(object):
+class ExecutionEnvironment(object):
     def __init__(self, filename):
         self.directory = os.path.dirname(filename)
         self.added_directory = None

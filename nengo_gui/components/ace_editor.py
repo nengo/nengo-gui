@@ -3,7 +3,7 @@ import json
 import nengo
 
 from nengo_gui.components.component import Component, Template
-import nengo_gui.monkey
+import nengo_gui.exec_env
 
 class AceEditor(Component):
     def __init__(self, sim, config, uid):
@@ -29,7 +29,7 @@ class AceEditor(Component):
             i = json.dumps({'code': self.current_code})
             client.write(i)
             self.serve_code = False
-        if nengo_gui.monkey.is_executing():
+        if nengo_gui.exec_env.is_executing():
             return
         error = self.sim.error
         stdout = self.sim.stdout

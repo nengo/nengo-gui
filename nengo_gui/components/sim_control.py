@@ -9,7 +9,7 @@ import os.path
 import json
 
 from nengo_gui.components.component import Component, Template
-import nengo_gui.monkey
+import nengo_gui.exec_env
 
 class SimControl(Component):
     def __init__(self, sim, config, uid, dt=0.001):
@@ -123,7 +123,7 @@ class SimControl(Component):
 
     def backend_options_html(self):
         items = []
-        for module in nengo_gui.monkey.found_modules:
+        for module in nengo_gui.exec_env.found_modules:
             if module == self.sim.backend:
                 selected = ' selected'
             else:

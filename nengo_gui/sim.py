@@ -189,20 +189,20 @@ class Sim(object):
         self.error = None
         self.stdout = ''
 
-        patch = nengo_gui.monkey.Patch(self.filename)
+        patch = nengo_gui.exec_env.ExecutionEnvironment(self.filename)
         try:
             with patch:
                 exec(code, locals)
-        except nengo_gui.monkey.StartedSimulatorException:
-            line = nengo_gui.monkey.determine_line_number()
+        except nengo_gui.exec_env.StartedSimulatorException:
+            line = nengo_gui.exec_env.determine_line_number()
             patch.stdout.write('Warning: Simulators cannot be manually'
                                ' run inside nengo_gui (line %d)\n' % line)
-        except nengo_gui.monkey.StartedVizException:
-            line = nengo_gui.monkey.determine_line_number()
+        except nengo_gui.exec_env.StartedVizException:
+            line = nengo_gui.exec_env.determine_line_number()
             patch.stdout.write('Warning: nengo_gui cannot be run inside'
                                ' nengo_gui (line %d)\n' % line)
         except:
-            line = nengo_gui.monkey.determine_line_number()
+            line = nengo_gui.exec_env.determine_line_number()
             self.error = dict(trace=traceback.format_exc(), line=line)
         self.stdout = patch.stdout.getvalue()
 
