@@ -7,7 +7,9 @@ import nengo_gui.monkey
 
 class AceEditor(Component):
     def __init__(self, sim, config, uid):
-        super(AceEditor, self).__init__(sim, config, uid)
+        # the IPython integration requires this component to be early
+        # in the list
+        super(AceEditor, self).__init__(sim, config, uid, component_order=-8)
         self.sim = sim
         self.uid = uid
         if self.sim.sim_server.interactive:
