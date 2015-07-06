@@ -217,7 +217,7 @@ class Sim(object):
             for line in config_code:
                 try:
                     exec(line, self.locals)
-                except Exception as e:
+                except Exception:
                     if self.sim_server.interactive:
                         logging.debug('error parsing config: %s' % line)
 
