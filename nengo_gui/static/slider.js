@@ -93,14 +93,14 @@ Nengo.Slider = function(parent, sim, args) {
 
     this.div.appendChild(this.bound_labels);
     this.hide_bound_labels();
-
+/*
     $(this.div).mouseenter(function(){
         self.show_bound_labels();
     });
     $(this.div).mouseleave(function(){
         self.hide_bound_labels();
     });
-
+*/
     /** call schedule_update whenever the time is adjusted in the SimControl */
     this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
@@ -194,6 +194,7 @@ Nengo.Slider.prototype.on_resize = function(width, height) {
     this.group.style.marginTop = this.ax_top;
 
     this.bound_labels.style.height = height - (this.ax_top - this.min_label_down_shift) - this.border_size ;
+    //this.bound_labels.style.right = width / (this.n_sliders + 1) + 5
 
     var N = this.sliders.length;
     for (var i in this.sliders) {
