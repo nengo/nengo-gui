@@ -190,7 +190,12 @@ class NetGraph(Component):
 
         self.to_be_expanded.append(self.sim.model)
 
-        t_uids = [self.sim.get_uid(c.template) for c in self.sim.components]
+        # record the names of the current templates so we can map them to
+        # the new templates below.  Note that we have to do this before
+        # updating name_finder and config, as that will wipe out the old
+        # uids.
+        template_uids = [self.sim.get_uid(c.template)
+                         for c in self.sim.components]
 
         self.sim.name_finder = name_finder
         self.sim.default_labels = name_finder.known_name
@@ -198,7 +203,6 @@ class NetGraph(Component):
         self.sim.uid_prefix_counter = {}
         self.layout = nengo_gui.layout.Layout(self.sim.model)
         self.sim.code = code
-
 
         removed_items = list(removed_uids.keys())
         for c in self.sim.components:
@@ -213,7 +217,8 @@ class NetGraph(Component):
         for k, v in list(self.sim.locals.items()):
             if isinstance(v, nengo_gui.components.component.Template):
                 t_uid = self.sim.get_uid(v)
-                index = t_uids.index(t_uid)
+                # find the corresponding template in the old list
+                index = template_uids.index(t_uid)
                 old_component = self.sim.components[index]
                 self.sim.locals[t_uid] = v
                 self.sim.default_labels[v] = t_uid
