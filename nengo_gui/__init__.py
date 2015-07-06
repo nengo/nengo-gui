@@ -1,4 +1,5 @@
-from .sim_server import SimServer, Viz
+from .sim_server import SimServer
+from .viz import Viz   # deprecated
 from .version import version as __version__
 from .namefinder import NameFinder
 from .main import main
