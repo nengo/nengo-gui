@@ -13,7 +13,7 @@ class Pointer(Component):
     def __init__(self, sim, config, uid, obj, **kwargs):
         super(Pointer, self).__init__(sim, config, uid)
         self.obj = obj
-        self.label = sim.get_label(obj, full=True)
+        self.label = sim.get_label(obj)
         self.data = collections.deque()
         self.override_target = None
         self.target = kwargs.get('args', 'default')

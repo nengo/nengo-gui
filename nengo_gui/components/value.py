@@ -11,7 +11,7 @@ class Value(Component):
     def __init__(self, sim, config, uid, obj):
         super(Value, self).__init__(sim, config, uid)
         self.obj = obj
-        self.label = sim.get_label(obj, full=True)
+        self.label = sim.get_label(obj)
         self.data = collections.deque()
         self.n_lines = int(obj.size_out)
         self.struct = struct.Struct('<%df' % (1 + self.n_lines))

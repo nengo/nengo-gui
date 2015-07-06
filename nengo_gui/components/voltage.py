@@ -12,7 +12,7 @@ class Voltage(Component):
         super(Voltage, self).__init__(sim, config, uid)
         self.obj = obj.neurons
         self.data = []
-        self.label = sim.get_label(obj, full=True)
+        self.label = sim.get_label(obj)
         self.max_neurons = int(self.obj.size_out)
         self.n_neurons = min(n_neurons, self.max_neurons)
         self.struct = struct.Struct('<%df' % (1 + self.n_neurons))

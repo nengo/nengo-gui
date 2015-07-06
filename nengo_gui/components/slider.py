@@ -12,7 +12,7 @@ class Slider(Component):
         self.override = [None] * node.size_out
         self.last_time = None
         self.value = np.zeros(node.size_out)
-        self.label = sim.get_label(node, full=True)
+        self.label = sim.get_label(node)
         self.start_value = np.zeros(node.size_out, dtype=float)
         self.struct = struct.Struct('<%df' % (1 + node.size_out))
         self.data = collections.deque()

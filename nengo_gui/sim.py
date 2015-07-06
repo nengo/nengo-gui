@@ -293,16 +293,15 @@ class Sim(object):
             pass
         return component_js
 
-    def get_label(self, obj, default_labels=None, full=False):
+    def get_label(self, obj, default_labels=None):
         """Return a readable label for an object.
 
         If the object has a .label set, this will be used.  Otherwise, it
         uses default_labels, which thanks to the NameFinder will be legal
         Python code for referring to the object given the current locals()
         dictionary ("model.ensembles[1]" or "ens" or "model.buffer.state".
-        If it has to use default_labels, then if full is False it will only
-        use the last part of the label (after the last ".").  This avoids
-        redundancy in nested displays.
+        If it has to use default_labels, it will only use the last part of the 
+        label (after the last ".").  This avoids redundancy in nested displays.
         """
         if default_labels is None:
             default_labels = self.default_labels
@@ -312,7 +311,7 @@ class Sim(object):
             if label is None:
                 raise Exception('ERROR finding label: %s' % obj)
             else:
-                if not full and '.' in label:
+                if '.' in label:
                     label = label.rsplit('.', 1)[1]
         if label is None:
             label = repr(obj)

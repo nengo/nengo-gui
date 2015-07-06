@@ -13,7 +13,7 @@ class Raster(Component):
         self.neuron_type = obj.neuron_type
         self.obj = obj.neurons
         self.data = collections.deque()
-        self.label = sim.get_label(obj, full=True)
+        self.label = sim.get_label(obj)
         self.max_neurons = obj.n_neurons
         if n_neurons is None:
             n_neurons = min(self.max_neurons, 10)
