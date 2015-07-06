@@ -55,16 +55,16 @@ class Action(object):
 
 
 class ConfigAction(Action):
-    def __init__(self, viz_sim, component, new_cfg, old_cfg):
-        super(ConfigAction, self).__init__(viz_sim.net_graph, component.uid)
+    def __init__(self, sim, component, new_cfg, old_cfg):
+        super(ConfigAction, self).__init__(sim.net_graph, component.uid)
         self.component = component
-        self.viz_sim = viz_sim
+        self.sim = sim
         self.new_cfg = new_cfg
         self.old_cfg = old_cfg
 
     def load(self, cfg):
         for k, v in iteritems(cfg):
-            setattr(self.viz_sim.config[self.component.template], k, v)
+            setattr(self.sim.config[self.component.template], k, v)
         self.net_graph.modified_config()
         self.send("config", config=cfg)
 
@@ -101,19 +101,19 @@ class RemoveGraph(Action):
     def __init__(self, net_graph, component):
         super(RemoveGraph, self).__init__(net_graph, component.uid)
         self.component = component
-        self.uid_graph = None
 
     def apply(self):
         self.send('delete_graph')
 
     def undo(self):
-        viz = self.net_graph.viz
-        viz.viz.locals[self.uid] = self.component.template
-        viz.viz.default_labels[self.component.template] = self.uid
+        sim = self.net_graph.sim
+        component = sim.add_template(self.component.template)
 
-        viz.uids[self.uid_graph] = self.component
-        viz.changed = True
-        self.send('js', code=self.component.javascript())
+        sim.locals[self.uid] = component.template
+        sim.default_labels[component.template] = self.uid
+
+        sim.changed = True
+        self.send('js', code=component.javascript())
 
 
 class CreateGraph(Action):
