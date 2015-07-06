@@ -18,6 +18,10 @@ class AceEditor(Component):
             self.last_error = None
             self.last_stdout = None
 
+    def update_code(self, code):
+        self.current_code = code
+        self.serve_code = True
+
     def update_client(self, client):
         if not self.sim.sim_server.interactive:
             return

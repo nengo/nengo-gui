@@ -72,7 +72,8 @@ class Sim(object):
 
         self.load()
 
-        self.net_graph = self.get_net_graph()
+        self.net_graph = self.get_component(nengo_gui.components.NetGraph)
+        self.ace_editor = self.get_component(nengo_gui.components.AceEditor)
 
         # build and run the model in a separate thread
         t = threading.Thread(target=self.runner)
@@ -89,9 +90,9 @@ class Sim(object):
             self._sim.close()
         self._sim = value
 
-    def get_net_graph(self):
+    def get_component(self, component_class):
         for c in self.components:
-            if isinstance(c, nengo_gui.components.NetGraph):
+            if isinstance(c, component_class):
                 return c
         return None
 

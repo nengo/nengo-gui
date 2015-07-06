@@ -35,26 +35,24 @@ class NetGraph(Component):
         self.parents = {}
         self.networks_to_search = [self.sim.model]
         self.initialized_pan_and_zoom = False
-        if self.sim.filename is None:
+
+        try:
+            self.last_modify_time = os.path.getmtime(self.sim.filename)
+        except OSError:
             self.last_modify_time = None
-        else:
-            try:
-                self.last_modify_time = os.path.getmtime(self.sim.filename)
-            except OSError:
-                self.last_modify_time = None
+        except TypeError:  # happens if self.filename is None
+            self.last_modify_time = None
         self.last_reload_check = time.time()
 
     def check_for_reload(self):
         if self.sim.filename is not None:
             try:
                 t = os.path.getmtime(self.sim.filename)
-            except OSError:
-                t = None
-
-            if t is not None:
                 if self.last_modify_time is None or self.last_modify_time < t:
                     self.reload()
                     self.last_modify_time = t
+            except OSError:
+                pass
 
         with self.code_lock:
             new_code = self.new_code
@@ -80,6 +78,12 @@ class NetGraph(Component):
         if code is None:
             with open(self.sim.filename) as f:
                 code = f.read()
+            if self.sim.code == code:
+                # don't re-execute the identical code
+                return
+            else:
+                # send the new code to the client
+                self.sim.ace_editor.update_code(code)
 
         self.sim.execute(code)
 
