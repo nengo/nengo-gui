@@ -51,6 +51,16 @@ class Sim(object):
         self.undo_stack = []
         self.redo_stack = []
 
+        # placeholders for attributes that will be created by self.load()
+        self.name_finder = None    # NameFinder from nengo objects to text
+        self.default_labels = None # dict of names to use for unlabelled objs
+        self.config = None         # nengo_gui.Config for storing layout
+        self.components = None     # list of Components
+        self.uid_prefix_counter = None # used for generating uids for templates
+        self.template_uids = None  # mapping from Templates to text
+
+        self.config_save_needed = False
+        self.config_save_time = None   # time of last config file save
         self.config_save_period = 2.0  # minimum time between saves
 
         self.lock = threading.Lock()
