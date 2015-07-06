@@ -152,7 +152,7 @@ class Sim(object):
                 self.components.append(c)
 
         # this ensures NetGraph, AceEditor, and SimControl are first
-        self.components.sort(key=lambda x: x.z_order)
+        self.components.sort(key=lambda x: x.component_order)
 
     def add_template(self, template):
         """Add a new Component to an existing Sim."""

@@ -13,7 +13,9 @@ import nengo_gui.monkey
 
 class SimControl(Component):
     def __init__(self, sim, config, uid, dt=0.001):
-        super(SimControl, self).__init__(sim, config, uid, z_order=-10)
+        # this component must be the very first one defined, so
+        # its component_order is the smallest overall
+        super(SimControl, self).__init__(sim, config, uid, component_order=-10)
         self.sim = sim
         self.paused = True
         self.last_tick = None

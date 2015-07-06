@@ -17,7 +17,10 @@ class NetGraph(Component):
     configs = {}
 
     def __init__(self, sim, config, uid):
-        super(NetGraph, self).__init__(sim, config, uid, z_order=-5)
+        # this component must be before all the normal graphs (so that
+        # those other graphs are on top of the NetGraph), so its
+        # order is between that of SimControl and the default (0)
+        super(NetGraph, self).__init__(sim, config, uid, component_order=-5)
         self.sim = sim
         self.layout = nengo_gui.layout.Layout(self.sim.model)
         self.to_be_expanded = collections.deque([self.sim.model])
@@ -212,7 +215,7 @@ class NetGraph(Component):
                         print('failed to recreate plot for %s' % v)
                     components.append(c)
 
-        components.sort(key=lambda x: x.z_order)
+        components.sort(key=lambda x: x.component_order)
 
         self.sim.components = components
 

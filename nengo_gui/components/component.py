@@ -1,11 +1,12 @@
 import json
 
 class Component(object):
-    def __init__(self, sim, config, uid, z_order=0):
+    def __init__(self, sim, config, uid, component_order=0):
         self.config = config
         self.uid = uid
         self.sim = sim
-        self.z_order = z_order
+        # the order this component will be defined in the javascript
+        self.component_order = component_order
         self.replace_with = None
 
     def update_client(self, client):

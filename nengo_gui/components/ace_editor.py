@@ -7,7 +7,7 @@ import nengo_gui.monkey
 
 class AceEditor(Component):
     def __init__(self, sim, config, uid):
-        super(AceEditor, self).__init__(sim, config, uid, z_order=-8)
+        super(AceEditor, self).__init__(sim, config, uid)
         self.sim = sim
         self.uid = uid
         if self.sim.sim_server.interactive:
