@@ -308,11 +308,15 @@ class Sim(object):
         label = obj.label
         if label is None:
             label = default_labels.get(obj, None)
-            if label is None:
-                raise Exception('ERROR finding label: %s' % obj)
-            else:
-                if '.' in label:
-                    label = label.rsplit('.', 1)[1]
+            # We should never ask for the label for something that can't be
+            # found in the default_labels.  If this does happen, something
+            # has gone wrong.  Note that this was often a symptom of the
+            # dreaded 'pop' bug that causes hassles during the summer school.
+            # Hopefully the reorganization of the code into Sim and SimServer
+            # (from Viz and VizSim) has dealt with this problem.
+            assert label is not None
+            if '.' in label:
+                label = label.rsplit('.', 1)[1]
         if label is None:
             label = repr(obj)
         return label
