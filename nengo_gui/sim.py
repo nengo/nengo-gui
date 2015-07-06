@@ -402,11 +402,20 @@ class Sim(object):
                     old_sim.sim = None
                     old_sim.finished = True
 
+            patch = nengo_gui.monkey.Patch(self.filename, allow_sim=True)
             # build the simulation
-            self.sim = backend.Simulator(self.model)
+            try:
+                with patch:
+                    self.sim = backend.Simulator(self.model)
+            except:
+                line = nengo_gui.monkey.determine_line_number()
+                self.error = dict(trace=traceback.format_exc(), line=line)
 
-            if self.backend in Sim.singleton_sims:
-                Sim.singleton_sims[self.backend] = self
+            self.stdout += patch.stdout.getvalue()
+
+            if self.sim is not None:
+                if self.backend in Sim.singleton_sims:
+                    Sim.singleton_sims[self.backend] = self
 
             # remove the temporary components added for visualization
             for c in self.components:

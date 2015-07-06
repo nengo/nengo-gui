@@ -96,20 +96,30 @@ Nengo.SimControl.prototype.set_backend = function(backend) {
 };
 
 Nengo.SimControl.prototype.set_status = function(status) {
+    console.log('status: ' + status);
     var icon;
     status = status.trim();
     if (status === 'building') {
         icon = 'glyphicon-cog';
         this.start_rotating_cog();
+        this.paused = false;
     } else if (status === 'paused') {
         icon = 'glyphicon-play';
         this.stop_rotating_cog();
         this.paused = true;
-    } else if (status == 'running') {
+    } else if (status === 'running') {
         icon = 'glyphicon-pause';
         this.stop_rotating_cog();
+        this.paused = false;
+    } else if (status === 'build_error') {
+        icon = 'glyphicon-remove';
+        this.stop_rotating_cog();
+        this.paused = false;
     } else {
-        console.log(['unknown status', status]);
+        icon = 'glyphicon-cog';
+        this.stop_rotating_cog();
+        console.log('unknown status: ' + status);
+        this.paused = false;
     }
     this.pause_button_icon.className = "glyphicon " + icon;
 }
