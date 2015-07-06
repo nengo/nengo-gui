@@ -94,7 +94,10 @@ class SimControl(Component):
         if self.paused:
             return 'paused'
         elif self.page.sim is None:
-            return 'building'
+            if self.page.error is None:
+                return 'building'
+            else:
+                return 'build_error'
         else:
             return 'running'
 
