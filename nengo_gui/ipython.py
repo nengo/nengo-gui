@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import atexit
 import socket
 import threading
@@ -121,7 +123,7 @@ class IPythonViz(object):
                 </div>
             '''.format(url=self.url, id=uuid.uuid4(), height=self.height)))
         else:
-            print "Server is not alive."
+            print("Server is not alive.")
 
 
 atexit.register(IPythonViz.shutdown_all, timeout=5)

@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import importlib
 import json
 import logging
@@ -375,7 +377,7 @@ class Sim(object):
             del self.locals[uid]
             del self.default_labels[obj]
         else:
-            print 'WARNING: remove_uid called on unknown uid', uid
+            print('WARNING: remove_uid called on unknown uid: %s' % uid)
 
     def remove_component(self, component):
         """Remove a component from the layout."""

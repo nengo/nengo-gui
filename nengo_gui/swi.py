@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 """
 Simple Web Interface
 Author: Terry Stewart terry.stewart@gmail.com http://terrystewart.ca
