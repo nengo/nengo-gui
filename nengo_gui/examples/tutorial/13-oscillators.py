@@ -30,7 +30,7 @@ with model:
     synapse = 0.1
     def oscillator(x):
         r = 1
-        s = 2
+        s = 6
         return [synapse * -x[1] * s + x[0] * (r - x[0]**2 - x[1]**2) + x[0],
                 synapse *  x[0] * s + x[1] * (r - x[0]**2 - x[1]**2) + x[1]]
     
