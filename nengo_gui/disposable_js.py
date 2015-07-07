@@ -58,13 +58,13 @@ def ensemble_infomodal(ng, uid, conn_in_uids, conn_out_uids):
         'max_rates', 'eval_points', 'n_eval_points', 'neuron_type',
         'noise', 'seed') if getattr(ens, attr) is not None]
 
-    if ng.viz.sim is None:
+    if ng.sim.sim is None:
         plots = ("Simulation not yet running. "
                  "Start a simulation to see plots.")
     else:
         plots = []
         rc = PlotInfo("Response curves", plot="multiline")
-        rc.x, rc.y = response_curves(ens, ng.viz.sim)
+        rc.x, rc.y = response_curves(ens, ng.sim.sim)
         rc.y = rc.y.T
         if ens.n_neurons > 200:
             rc.warnings.append("Only showing the first 200 neurons.")
@@ -74,7 +74,7 @@ def ensemble_infomodal(ng, uid, conn_in_uids, conn_out_uids):
         tc = PlotInfo("Tuning curves")
         if ens.dimensions == 1:
             tc.plot = "multiline"
-            tc.x, tc.y = tuning_curves(ens, ng.viz.sim)
+            tc.x, tc.y = tuning_curves(ens, ng.sim.sim)
             tc.y = tc.y.T
             if ens.n_neurons > 200:
                 tc.warnings.append("Only showing the first 200 neurons.")
@@ -86,7 +86,7 @@ def ensemble_infomodal(ng, uid, conn_in_uids, conn_out_uids):
 
     conninfo = conn_infomodal(ng, uid, conn_in_uids, conn_out_uids)
 
-    js = ['Nengo.modal.title("Details for \'%s\'");' % ng.viz.viz.get_label(ens)]
+    js = ['Nengo.modal.title("Details for \'%s\'");' % ng.sim.get_label(ens)]
     js.append('Nengo.modal.footer("close");')
     js.append('Nengo.modal.ensemble_body("%s", %s, %s, %s);' % (
         uid, json.dumps(params), json.dumps(plots), json.dumps(conninfo)))
@@ -121,7 +121,7 @@ def node_infomodal(ng, uid, conn_in_uids, conn_out_uids):
     conninfo = conn_infomodal(ng, uid, conn_in_uids, conn_out_uids)
 
     js = [add_modal_title_js("Details for \'%s\'" % (
-        ng.viz.viz.get_label(node)))]
+        ng.sim.get_label(node)))]
     js.append(add_modal_footer_js('close'))
     js.append('Nengo.modal.node_body("%s", %s, %s, %s);' % (
         uid, json.dumps(params), json.dumps(plots), json.dumps(conninfo)))
@@ -196,7 +196,7 @@ def net_infomodal(ng, uid, conn_in_uids, conn_out_uids):
     conninfo = conn_infomodal(ng, uid, conn_in_uids, conn_out_uids)
 
     js = [add_modal_title_js("Details for \'%s\'") % (
-        ng.viz.viz.get_label(net))]
+        ng.sim.get_label(net))]
     js.append(add_modal_footer_js('close'))
     js.append('Nengo.modal.net_body("%s", %s, %s);' % (
         uid, json.dumps(stats), json.dumps(conninfo)))
