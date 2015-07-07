@@ -66,6 +66,8 @@ def ensemble_infomodal(ng, uid, conn_in_uids, conn_out_uids):
         rc = PlotInfo("Response curves", plot="multiline")
         rc.x, rc.y = response_curves(ens, ng.sim.sim)
         rc.y = rc.y.T
+        if len(rc.y.shape) == 1:
+            rc.y.shape = 1, rc.y.shape[0]
         if ens.n_neurons > 200:
             rc.warnings.append("Only showing the first 200 neurons.")
             rc.y = rc.y[:200]
