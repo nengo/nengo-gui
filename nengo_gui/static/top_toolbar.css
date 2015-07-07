@@ -46,6 +46,9 @@
     margin-top: 0.5em;
     margin-right: 1em;
     cursor: default !important;
+    border: none;
+    background: none;
+    text-align: right;
 }
 
 #Help_button{

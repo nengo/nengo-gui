@@ -46,7 +46,14 @@ Nengo.Toolbar = function(filename) {
         Nengo.hotkeys.callMenu();
     });
 
-    $('#filename')[0].innerHTML = filename;
+    $('#filename').val(filename);
+    $('#filename').change(function() {
+        Nengo.netgraph.notify({
+            act: 'rename',
+            filename: $('#filename').val()
+        });
+    });
+        
 
     // update the URL so reload and bookmarks work as expected
     history.pushState({}, filename, '/?filename=' + filename);

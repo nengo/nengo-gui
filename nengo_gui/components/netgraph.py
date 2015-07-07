@@ -276,6 +276,8 @@ class NetGraph(Component):
             del info['act']
             if action in ('auto_expand', 'auto_collapse'):
                 getattr(self, 'act_' + action[5:])(**info)
+            elif action == 'rename':
+                self.viz.viz.rename(info['filename'])
             elif action in ('pan', 'zoom', 'create_modal'):
                 # These should not use the undo stack
                 getattr(self, 'act_' + action)(**info)
