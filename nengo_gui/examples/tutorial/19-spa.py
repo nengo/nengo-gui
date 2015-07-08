@@ -39,7 +39,7 @@
 import nengo
 import nengo.spa as spa
 
-D = 32
+D = 32  # the dimensionality of the vectors
 
 model = spa.SPA()
 with model:
