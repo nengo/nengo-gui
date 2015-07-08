@@ -239,15 +239,21 @@ Nengo.Component.save_components = function() {
 
 Nengo.Component.prototype.draw_border = function () {
     $(this.div).css("border", "1px solid #888888");
-    this.show_bound_labels();
+    console.log(this instanceof Nengo.Slider)
+    if (this instanceof Nengo.Slider){
+        this.show_bound_labels();
+    }
 }
 
+//Removes the border from the component as well as hides range labels
 Nengo.Component.prototype.remove_border = function () {
     $(this.div).css("border", "1px solid rgba(255,0,0,0)");
-    this.hide_bound_labels();
+    if (this instanceof Nengo.Slider){
+        this.hide_bound_labels();
+    }
 }
 
-//called when resize-start, drag-start
+//Called when resize-start, drag-start
 Nengo.Component.prototype.start_activate = function () {
     this.active = true;
     this.draw_border();
