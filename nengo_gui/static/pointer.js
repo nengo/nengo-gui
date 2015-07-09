@@ -11,6 +11,7 @@ Nengo.Pointer = function(parent, sim, args) {
     var self = this;
 
     this.sim = sim;
+    this.pointer_status = false;
 
     this.pdiv = document.createElement('div');
     this.pdiv.style.width = args.width;
@@ -107,20 +108,20 @@ Nengo.Pointer.prototype.set_value = function() {
             value = '';
         }
         self.fixed_value = value;
-        self.ws.send(value);
         $('#OK').attr('data-dismiss', 'modal');
     });
     var $form = $('#myModalForm').validator({
         custom: {
             my_validator: function($item) {
                 var ptr = $item.val();
-                return (ptr.charAt(0).match(/[a-z]/i) || ptr=='');
+                self.ws.send(ptr);
+                return self.pointer_status;
             }
         }
     });
 
-    $('#singleInput').attr('data-error', 'Semantic pointers must ' +
-                           'start with a letter.');
+    $('#singleInput').attr('data-error', 'Invalid semantic ' + 
+                                    'pointer expression.');
 
     Nengo.modal.show();
 }
@@ -130,6 +131,15 @@ Nengo.Pointer.prototype.set_value = function() {
  */
 Nengo.Pointer.prototype.on_message = function(event) {
     data = event.data.split(" ");
+    
+    if (data[0].substring(0,11) == "bad_pointer") {
+        this.pointer_status = false;
+        return;
+    } else if (data[0].substring(0,12) == "good_pointer") {
+        this.pointer_status = true;
+        return;
+    }
+    
     var time = parseFloat(data[0]);
 
     var items = data[1].split(";");

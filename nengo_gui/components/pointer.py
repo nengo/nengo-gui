@@ -58,7 +58,6 @@ class Pointer(Component):
                 v = np.dot(self.vocab_out.transform_to(self.vocab_in), v)
             return v
 
-
     def update_client(self, client):
         while len(self.data) > 0:
             data = self.data.popleft()
@@ -75,7 +74,9 @@ class Pointer(Component):
         else:
             try:
                 self.override_target = self.vocab_out.parse(msg)
+                self.data.append("good_pointer")
             except:
+                self.data.append("bad_pointer")
                 self.override_target = None
 
     @staticmethod
