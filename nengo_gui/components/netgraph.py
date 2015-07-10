@@ -139,52 +139,8 @@ class NetGraph(Component):
                 del self.uids[uid]
                 removed_uids[old_item] = uid
             else:
-                if isinstance(old_item, (nengo.Node,
-                                         nengo.Ensemble,
-                                         nengo.Network)):
-                    old_label = self.sim.get_label(old_item)
-                    new_label = self.sim.get_label(
-                        new_item, default_labels=name_finder.known_name)
-
-                    if old_label != new_label:
-                        self.to_be_sent.append(dict(
-                            type='rename', uid=uid, name=new_label))
-                    if isinstance(old_item, nengo.Network):
-                        if self.sim.config[old_item].expanded:
-                            self.to_be_expanded.append(new_item)
-
-                elif isinstance(old_item, nengo.Connection):
-                    old_pre = old_item.pre_obj
-                    old_post = old_item.post_obj
-                    new_pre = new_item.pre_obj
-                    new_post = new_item.post_obj
-                    if isinstance(old_pre, nengo.ensemble.Neurons):
-                        old_pre = old_pre.ensemble
-                    if isinstance(old_post, nengo.ensemble.Neurons):
-                        old_post = old_post.ensemble
-                    if isinstance(new_pre, nengo.ensemble.Neurons):
-                        new_pre = new_pre.ensemble
-                    if isinstance(new_post, nengo.ensemble.Neurons):
-                        new_post = new_post.ensemble
-
-                    old_pre = self.sim.get_uid(old_pre)
-                    old_post = self.sim.get_uid(old_post)
-                    new_pre = self.sim.get_uid(
-                        new_pre, default_labels=name_finder.known_name)
-                    new_post = self.sim.get_uid(
-                        new_post, default_labels=name_finder.known_name)
-
-                    if new_pre != old_pre or new_post != old_post:
-                        # if the connection has changed, tell javascript
-                        pres = self.get_parents(
-                            new_pre,
-                            default_labels=name_finder.known_name)[:-1]
-                        posts = self.get_parents(
-                            new_post,
-                            default_labels=name_finder.known_name)[:-1]
-                        self.to_be_sent.append(dict(
-                            type='reconnect', uid=uid,
-                            pres=pres, posts=posts))
+                # fix aspects of the item that may have changed
+                self._reload_update_item(uid, old_item, new_item, name_finder)
 
                 self.uids[uid] = new_item
 
@@ -243,6 +199,55 @@ class NetGraph(Component):
         self.sim.components = components
 
         self.sim.changed = True
+
+    def _reload_update_item(self, uid, old_item, new_item, new_name_finder):
+        """Tell the client about changes to the item due to reload."""
+        if isinstance(old_item, (nengo.Node,
+                                 nengo.Ensemble,
+                                 nengo.Network)):
+            old_label = self.sim.get_label(old_item)
+            new_label = self.sim.get_label(
+                new_item, default_labels=new_name_finder.known_name)
+
+            if old_label != new_label:
+                self.to_be_sent.append(dict(
+                    type='rename', uid=uid, name=new_label))
+            if isinstance(old_item, nengo.Network):
+                if self.sim.config[old_item].expanded:
+                    self.to_be_expanded.append(new_item)
+
+        elif isinstance(old_item, nengo.Connection):
+            old_pre = old_item.pre_obj
+            old_post = old_item.post_obj
+            new_pre = new_item.pre_obj
+            new_post = new_item.post_obj
+            if isinstance(old_pre, nengo.ensemble.Neurons):
+                old_pre = old_pre.ensemble
+            if isinstance(old_post, nengo.ensemble.Neurons):
+                old_post = old_post.ensemble
+            if isinstance(new_pre, nengo.ensemble.Neurons):
+                new_pre = new_pre.ensemble
+            if isinstance(new_post, nengo.ensemble.Neurons):
+                new_post = new_post.ensemble
+
+            old_pre = self.sim.get_uid(old_pre)
+            old_post = self.sim.get_uid(old_post)
+            new_pre = self.sim.get_uid(
+                new_pre, default_labels=new_name_finder.known_name)
+            new_post = self.sim.get_uid(
+                new_post, default_labels=new_name_finder.known_name)
+
+            if new_pre != old_pre or new_post != old_post:
+                # if the connection has changed, tell javascript
+                pres = self.get_parents(
+                    new_pre,
+                    default_labels=new_name_finder.known_name)[:-1]
+                posts = self.get_parents(
+                    new_post,
+                    default_labels=new_name_finder.known_name)[:-1]
+                self.to_be_sent.append(dict(
+                    type='reconnect', uid=uid,
+                    pres=pres, posts=posts))
 
     def get_parents(self, uid, default_labels=None):
         while uid not in self.parents:
