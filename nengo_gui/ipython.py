@@ -57,19 +57,19 @@ class IPythonViz(object):
             warnings.warn(ConfigReuseWarning(
                 "Reusing config. Only the most recent visualization will "
                 "update the config."))
-            for sim in server.sim_server.sims:
-                sim.save_config(force=True)
-                sim.filename_cfg = get_ipython().mktempfile()
-                cls.servers[sim.filename_cfg] = server
-                cls.threads[sim.filename_cfg] = server_thread
+            for page in server.gui.pages:
+                page.save_config(force=True)
+                page.filename_cfg = get_ipython().mktempfile()
+                cls.servers[page.filename_cfg] = server
+                cls.threads[page.filename_cfg] = server_thread
 
         name = model.label
-        sim_server = nengo_gui.SimServer(
+        gui = nengo_gui.GUI(
             name, cfg=cfg, model=model, locals=get_ipython().user_ns,
             interactive=False, allow_file_change=False)
-        server = sim_server.prepare_server(port=0, browser=False)
+        server = gui.prepare_server(port=0, browser=False)
         server_thread = threading.Thread(
-            target=sim_server.begin_lifecycle,
+            target=gui.begin_lifecycle,
             kwargs={'server': server})
         server_thread.start()
         cls.servers[cfg] = server

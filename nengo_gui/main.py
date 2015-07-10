@@ -1,7 +1,7 @@
 import argparse
 
 import nengo_gui
-import nengo_gui.sim_server
+import nengo_gui.gui
 
 
 def main():
@@ -25,7 +25,7 @@ def main():
         import logging
         logging.basicConfig(level=logging.DEBUG)
 
-    s = nengo_gui.sim_server.SimServer(filename=args.filename,
+    s = nengo_gui.gui.GUI(filename=args.filename,
                                        backend=args.backend)
     s.start(port=args.port, password=args.password)
 

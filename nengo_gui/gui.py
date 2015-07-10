@@ -1,11 +1,11 @@
 import os
 import warnings
 
-import nengo_gui.sim
+import nengo_gui.page
 import nengo_gui.server
 
 
-class SimServer(object):
+class GUI(object):
     """The master server object for running nengo_gui.
 
     Parameters
@@ -42,18 +42,18 @@ class SimServer(object):
                  cfg=None, interactive=True, allow_file_change=True,
                  backend='nengo'):
 
-        # no starting a SimServer inside a script inside a SimServer
+        # no starting a GUI inside a script inside a GUI
         if nengo_gui.exec_env.is_executing():
-            raise nengo_gui.exec_env.StartedVizException()
+            raise nengo_gui.exec_env.StartedGUIException()
 
-        # the list of running Sim objects
-        self.sims = []
+        # the list of running Pages
+        self.pages = []
 
-        # a mapping from uids to Components for all running Sims.
+        # a mapping from uids to Components for all running Pages.
         # this is used to connect the websockets to the appropriate Component
         self.component_uids = {}
 
-        # should the SimServer shut down
+        # should the GUI shut down
         self.finished = False
 
         if filename is None and model is None:
@@ -93,14 +93,14 @@ class SimServer(object):
         nengo_gui.server.Server.begin_lifecycle(
             server, interactive=self.interactive)
 
-    def create_sim(self, filename, reset_cfg=False):
-        """Create a new Simulator with this configuration"""
-        sim = nengo_gui.sim.Sim(self, filename=filename, reset_cfg=reset_cfg)
-        self.sims.append(sim)
-        return sim
+    def create_page(self, filename, reset_cfg=False):
+        """Create a new Page with this configuration"""
+        page = nengo_gui.page.Page(self, filename=filename, reset_cfg=reset_cfg)
+        self.pages.append(page)
+        return page
 
-    def remove_sim(self, sim):
-        self.sims.remove(sim)
+    def remove_page(self, page):
+        self.pages.remove(page)
 
-    def count_sims(self):
-        return len(self.sims)
+    def count_pages(self):
+        return len(self.pages)

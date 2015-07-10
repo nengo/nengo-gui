@@ -395,13 +395,13 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
         cls.begin_lifecycle(server, asynch)
 
     @classmethod
-    def prepare_server(cls, sim_server, 
+    def prepare_server(cls, gui,
                        port=80, asynch=True, addr='', browser=False):
         if asynch:
             server = AsyncHTTPServer((addr, port), cls)
         else:
             server = BaseHTTPServer.HTTPServer((addr, port), cls)
-        server.sim_server = sim_server
+        server.gui = gui
         port = server.server_port
         if browser:
             cls.browser(port=port)

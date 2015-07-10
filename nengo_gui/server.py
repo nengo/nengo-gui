@@ -77,7 +77,7 @@ class Server(swi.SimpleWebInterface):
 
         reset_cfg = reset == 'True'
 
-        sim = self.server.sim_server.create_sim(filename, reset_cfg=reset_cfg)
+        page = self.server.gui.create_page(filename, reset_cfg=reset_cfg)
 
         # read the template for the main page
         html = pkgutil.get_data('nengo_gui', 'templates/page.html')
@@ -85,7 +85,7 @@ class Server(swi.SimpleWebInterface):
             html = html.decode("utf-8")
 
         # fill in the javascript needed and return the complete page
-        components = sim.create_javascript()
+        components = page.create_javascript()
         return html % dict(components=components)
 
     def swi_shutdown(self, *path):
@@ -96,12 +96,12 @@ class Server(swi.SimpleWebInterface):
         """Handles ws://host:port/viz_component with a websocket"""
         # figure out what component is being connected to
 
-        sim_server = self.server.sim_server
+        gui = self.server.gui
 
-        component = sim_server.component_uids[uid]
+        component = gui.component_uids[uid]
         while True:
             try:
-                if sim_server.finished:
+                if gui.finished:
                     break
                 if component.replace_with is not None:
                     component.finish()
@@ -114,23 +114,23 @@ class Server(swi.SimpleWebInterface):
                         old_cfg = {}
                         for k in component.template.config_params.keys():
                             v = getattr(
-                                component.sim.config[component.template], k)
+                                component.page.config[component.template], k)
                             old_cfg[k] = v
                         if not(cfg == old_cfg):
                             # Register config change to the undo stack
-                            component.sim.config_change(
+                            component.page.config_change(
                                 component, cfg, old_cfg)
                         for k, v in cfg.items():
                             setattr(
-                                component.sim.config[component.template],
+                                component.page.config[component.template],
                                 k, v)
-                        component.sim.modified_config()
+                        component.page.modified_config()
                     elif msg.startswith('remove'):
                         if msg != 'remove_undo':
                             # Register graph removal to the undo stack
-                            component.sim.remove_graph(component)
-                        component.sim.remove_component(component)
-                        component.sim.modified_config()
+                            component.page.remove_graph(component)
+                        component.page.remove_component(component)
+                        component.page.modified_config()
                         return
                     else:
                         try:
@@ -141,11 +141,11 @@ class Server(swi.SimpleWebInterface):
                     msg = client.read()
                 # send data to the component
                 component.update_client(client)
-                component.sim.save_config(lazy=True)
+                component.page.save_config(lazy=True)
                 time.sleep(0.01)
             except swi.SocketClosedError:
                 # This error means the server has shut down
-                component.sim.save_config(lazy=False)  # Stop nicely
+                component.page.save_config(lazy=False)  # Stop nicely
                 break
             except:
                 traceback.print_exc()
@@ -154,16 +154,16 @@ class Server(swi.SimpleWebInterface):
         component.finish()
 
         if isinstance(component, nengo_gui.components.SimControl):
-            component.sim.sim = None
+            component.page.sim = None
 
         if client.remote_close:
             # wait a moment before checking if the server should be stopped
             time.sleep(2)
 
-            # if there are no simulations left, stop the server
+            # if there are no Pages left, stop the server
             if isinstance(component, nengo_gui.components.SimControl):
-                if sim_server.count_sims() == 0:
-                    if sim_server.interactive:
+                if gui.count_pages() == 0:
+                    if gui.interactive:
                         print("No connections remaining to the nengo_gui "
                               "server.")
                     self.server.shutdown()

@@ -5,24 +5,24 @@ import collections
 from nengo_gui.components.component import Component, Template
 
 class Slider(Component):
-    def __init__(self, sim, config, uid, node):
-        super(Slider, self).__init__(sim, config, uid)
+    def __init__(self, page, config, uid, node):
+        super(Slider, self).__init__(page, config, uid)
         self.node = node
         self.base_output = node.output
         self.override = [None] * node.size_out
         self.last_time = None
         self.value = np.zeros(node.size_out)
-        self.label = sim.get_label(node)
+        self.label = page.get_label(node)
         self.start_value = np.zeros(node.size_out, dtype=float)
         self.struct = struct.Struct('<%df' % (1 + node.size_out))
         self.data = collections.deque()
         if not callable(self.base_output):
             self.start_value[:] = self.base_output
 
-    def add_nengo_objects(self, sim):
+    def add_nengo_objects(self, page):
         self.node.output = self.override_output
 
-    def remove_nengo_objects(self, sim):
+    def remove_nengo_objects(self, page):
         self.node.output = self.base_output
 
     def override_output(self, t, *args):

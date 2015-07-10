@@ -14,17 +14,17 @@ import nengo_gui.components.action
 import nengo_gui.config
 
 
-class Sim(object):
-    """A single Simulator attached to an html visualization.
+class Page(object):
+    """A handler for a singe page of the nengo_gui.
 
     Parameters
     ----------
 
-    sim_server : nengo_gui.SimServer
-        The master SimServer
+    gui : nengo_gui.GUI
+        The main GUI
     filename : str
-        The filename to open.  If this is the same as sim_server.filename
-        then it will use the existing sim_server.model and sim_server.locals
+        The filename to open.  If this is the same as gui.filename
+        then it will use the existing gui.model and gui.locals
         (if available).  Otherwise, the file will be executed to generate
         the model
     reset_cfg : bool, optional
@@ -34,9 +34,9 @@ class Sim(object):
     # Some Simulators can only have one instance running at a time
     singleton_sims = dict(nengo_spinnaker=None)
 
-    def __init__(self, sim_server, filename, reset_cfg=False):
-        self.sim_server = sim_server
-        self.backend = sim_server.backend
+    def __init__(self, gui, filename, reset_cfg=False):
+        self.gui = gui
+        self.backend = gui.backend
 
         self.code = None     # the code for the model
         self.model = None    # the nengo.Network
@@ -44,7 +44,7 @@ class Sim(object):
 
         self.changed = False   # has the model been changed?
         self.paused = False    # is the simulation paused
-        self.finished = False  # should this Sim be shut down
+        self.finished = False  # should this Page be shut down
         self._sim = None       # the current nengo.Simulator
         self.rebuild = False   # should the model be rebuilt
 
@@ -67,15 +67,15 @@ class Sim(object):
 
         # use the default filename if none is given
         if filename is None:
-            self.filename = sim_server.filename
+            self.filename = gui.filename
         else:
             self.filename = os.path.relpath(filename)
 
         # determine the .cfg filename
-        if sim_server.filename_cfg is None:
+        if gui.filename_cfg is None:
             self.filename_cfg = self.filename + '.cfg'
         else:
-            self.filename_cfg = sim_server.filename_cfg
+            self.filename_cfg = gui.filename_cfg
 
         if reset_cfg:
             self.clear_config()
@@ -112,13 +112,13 @@ class Sim(object):
 
     def load(self):
         """Load the model and initialize everything"""
-        if self.filename == self.sim_server.filename:
-            # if we're on the default filenaem, just load it from the SimServer
-            self.model = self.sim_server.model
-            if self.sim_server.locals is None:
+        if self.filename == self.gui.filename:
+            # if we're on the default filenaem, just load it from the GUI
+            self.model = self.gui.model
+            if self.gui.locals is None:
                 self.locals = None
             else:
-                self.locals = self.sim_server.locals.copy()
+                self.locals = self.gui.locals.copy()
         else:
             self.model = None
             self.locals = None
@@ -158,16 +158,16 @@ class Sim(object):
             if isinstance(v, nengo_gui.components.component.Template):
                 self.template_uids[v] = k
                 c = v.create(self)
-                self.sim_server.component_uids[c.uid] = c
+                self.gui.component_uids[c.uid] = c
                 self.components.append(c)
 
         # this ensures NetGraph, AceEditor, and SimControl are first
         self.components.sort(key=lambda x: x.component_order)
 
     def add_template(self, template):
-        """Add a new Component to an existing Sim."""
+        """Add a new Component to an existing Page."""
         c = template.create(self)
-        self.sim_server.component_uids[c.uid] = c
+        self.gui.component_uids[c.uid] = c
 
         self.components.append(c)
 
@@ -229,7 +229,7 @@ class Sim(object):
                 try:
                     exec(line, self.locals)
                 except Exception:
-                    if self.sim_server.interactive:
+                    if self.gui.interactive:
                         logging.debug('error parsing config: %s', line)
 
         # make sure the required Components exist
@@ -300,7 +300,7 @@ class Sim(object):
 
         component_js = '\n'.join([c.javascript() for c in self.components])
         component_js += webpage_title_js
-        if not self.sim_server.allow_file_change:
+        if not self.gui.allow_file_change:
             component_js += "$('#Open_file_button').addClass('deactivated');"
         return component_js
 
@@ -323,7 +323,7 @@ class Sim(object):
             # found in the default_labels.  If this does happen, something
             # has gone wrong.  Note that this was often a symptom of the
             # dreaded 'pop' bug that causes hassles during the summer school.
-            # Hopefully the reorganization of the code into Sim and SimServer
+            # Hopefully the reorganization of the code into Page and GUI
             # (from Viz and VizSim) has dealt with this problem.
             assert label is not None
             if '.' in label:
@@ -347,10 +347,10 @@ class Sim(object):
         return uid
 
     def finish(self):
-        """Shut down this simulator."""
+        """Shut down this page."""
         if not self.finished:
             self.finished = True
-            self.sim_server.remove_sim(self)
+            self.gui.remove_page(self)
 
     def generate_uid(self, obj, prefix):
         """Make a new unique identifier for an object.
@@ -379,7 +379,7 @@ class Sim(object):
 
     def remove_component(self, component):
         """Remove a component from the layout."""
-        del self.sim_server.component_uids[component.uid]
+        del self.gui.component_uids[component.uid]
         template = component.template
         uid = self.get_uid(template)
         self.remove_uid(uid)
@@ -400,7 +400,7 @@ class Sim(object):
     def build(self):
         """Build the model."""
         # use the lock to make sure only one Simulator is building at a time
-        # TODO: should there be a master lock in the SimServer?
+        # TODO: should there be a master lock in the GUI?
         with self.lock:
             self.building = True
 
@@ -411,7 +411,7 @@ class Sim(object):
             # determine the backend to use
             backend = importlib.import_module(self.backend)
             # if only one Simulator is allowed at a time, finish the old one
-            old_sim = Sim.singleton_sims.get(self.backend, None)
+            old_sim = Page.singleton_sims.get(self.backend, None)
             if old_sim is not None and old_sim is not self:
                 old_sim.sim = None
                 old_sim.finished = True
@@ -419,8 +419,8 @@ class Sim(object):
             # build the simulation
             self.sim = backend.Simulator(self.model)
 
-            if self.backend in Sim.singleton_sims:
-                Sim.singleton_sims[self.backend] = self
+            if self.backend in Page.singleton_sims:
+                Page.singleton_sims[self.backend] = self
 
             # remove the temporary components added for visualization
             for c in self.components:

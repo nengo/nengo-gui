@@ -1,4 +1,4 @@
-from .sim_server import SimServer
+from .gui import GUI
 from .viz import Viz   # deprecated
 from .version import version as __version__
 from .namefinder import NameFinder

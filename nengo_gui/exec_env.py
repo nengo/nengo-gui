@@ -17,7 +17,7 @@ class StartedSimulatorException(Exception):
     pass
 
 
-class StartedVizException(Exception):
+class StartedGUIException(Exception):
     pass
 
 
