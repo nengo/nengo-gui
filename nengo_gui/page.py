@@ -195,7 +195,7 @@ class Page(object):
             line = nengo_gui.exec_env.determine_line_number()
             patch.stdout.write('Warning: Simulators cannot be manually'
                                ' run inside nengo_gui (line %d)\n' % line)
-        except nengo_gui.exec_env.StartedVizException:
+        except nengo_gui.exec_env.StartedGUIException:
             line = nengo_gui.exec_env.determine_line_number()
             patch.stdout.write('Warning: nengo_gui cannot be run inside'
                                ' nengo_gui (line %d)\n' % line)
