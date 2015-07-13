@@ -93,8 +93,8 @@ Nengo.SimControl.prototype.on_message = function(event) {
 
 Nengo.SimControl.prototype.disconnected = function() {
     $('#main').css('background-color', 'red')
-    Nengo.modal.title("Server Communication Error");
-    Nengo.modal.text_body("Please ensure that the GUI server is running then refresh page", "danger");
+    Nengo.modal.title("Nengo has stopped running");
+    Nengo.modal.text_body("To continue working with your model, re-run nengo_gui and click Refresh.", "danger");
     Nengo.modal.footer('refresh');
     Nengo.modal.show();
 }
