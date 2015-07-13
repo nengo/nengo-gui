@@ -58,13 +58,12 @@ Nengo.Ace = function (uid, args) {
 
     self.set_width();
 
-    interact('#rightpane')
+    interact('#editor')
         .resizable({
             edges: { left: true, right: false, bottom: false, top: false}
         })
         .on('resizemove', function (event) {
-            var x = event.deltaRect.left;
-            self.width -= x;
+            self.width -= event.deltaRect.left;
             self.set_width()
         })
     $(window).on('resize', function() {self.set_width(); });
@@ -72,13 +71,14 @@ Nengo.Ace = function (uid, args) {
 
     interact('#console')
         .resizable({
-            edges: { left: false, right: false, bottom: false, top: true}
+            edges: { left: true, right: false, bottom: false, top: true}
         })
         .on('resizemove', function (event) {
             self.console_height -= event.deltaRect.top;
             if (self.console_height < 20) {
                 self.console_height = 20;
             }
+            self.width -= event.deltaRect.left;
             self.set_width();
         })
 }

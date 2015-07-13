@@ -1,7 +1,6 @@
 #rightpane {
     -webkit-flex: 0 0 auto;
     flex: 0 0 auto;
-    border-left:5px solid #606060;
 
     display: -webkit-flex;
     display: flex;
@@ -10,12 +9,14 @@
 }
 
 #editor {
+    border-left:5px solid #606060;
     height: 100%;
     flex: 1 1 auto;
 }
 
 #console {
     border-top:5px solid #606060;
+    border-left:5px solid #606060;
     padding: 0.5em;
     border-radius: 0px;
     overflow: auto;
