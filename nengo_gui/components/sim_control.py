@@ -9,12 +9,13 @@ import os.path
 import json
 
 from nengo_gui.components.component import Component, Template
-import nengo_gui.monkey
+import nengo_gui.exec_env
 
 class SimControl(Component):
-    def __init__(self, viz, config, uid, dt=0.001):
-        super(SimControl, self).__init__(viz, config, uid)
-        self.viz = viz
+    def __init__(self, page, config, uid, dt=0.001):
+        # this component must be the very first one defined, so
+        # its component_order is the smallest overall
+        super(SimControl, self).__init__(page, config, uid, component_order=-10)
         self.paused = True
         self.last_tick = None
         self.rate = 0.0
@@ -30,15 +31,15 @@ class SimControl(Component):
         self.next_ping_time = None
         self.send_config_options = False
 
-    def add_nengo_objects(self, viz):
-        with viz.model:
+    def add_nengo_objects(self, page):
+        with page.model:
             self.node = nengo.Node(self.control, size_out=0)
 
-    def remove_nengo_objects(self, viz):
-        viz.model.nodes.remove(self.node)
+    def remove_nengo_objects(self, page):
+        page.model.nodes.remove(self.node)
 
     def finish(self):
-        self.viz.finish()
+        self.page.finish()
 
     def control(self, t):
         self.time = t
@@ -58,7 +59,7 @@ class SimControl(Component):
 
         self.last_tick = now
 
-        while self.paused and self.viz.sim is not None:
+        while self.paused and self.page.sim is not None:
             time.sleep(0.01)
             self.last_tick = None
 
@@ -73,10 +74,10 @@ class SimControl(Component):
             client.write('', ping=True)
             self.next_ping_time = now + 2.0
 
-        if self.viz.changed:
+        if self.page.changed:
             self.paused = True
-            self.viz.sim = None
-            self.viz.changed = False
+            self.page.sim = None
+            self.page.changed = False
         if not self.paused:
             client.write(struct.pack('<ff', self.time, self.rate), binary=True)
         status = self.get_status()
@@ -92,14 +93,14 @@ class SimControl(Component):
     def get_status(self):
         if self.paused:
             return 'paused'
-        elif self.viz.sim is None:
+        elif self.page.sim is None:
             return 'building'
         else:
             return 'running'
 
     def javascript(self):
         info = dict(uid=self.uid)
-        fn = json.dumps(self.viz.viz.filename)
+        fn = json.dumps(self.page.filename)
         js = self.javascript_config(info)
         return ('sim = new Nengo.SimControl(control, %s);\n'
                 'toolbar = new Nengo.Toolbar(%s); ' % (js, fn))
@@ -110,19 +111,19 @@ class SimControl(Component):
         elif msg == 'config':
             self.send_config_options = True
         elif msg == 'continue':
-            if self.viz.sim is None:
-                self.viz.rebuild = True
+            if self.page.sim is None:
+                self.page.rebuild = True
             self.paused = False
         elif msg == 'reset':
-            self.viz.sim = None
+            self.page.sim = None
         elif msg[:8] == 'backend:':
-            self.viz.backend = msg[8:]
-            self.viz.changed = True
+            self.page.backend = msg[8:]
+            self.page.changed = True
 
     def backend_options_html(self):
         items = []
-        for module in nengo_gui.monkey.found_modules:
-            if module == self.viz.backend:
+        for module in nengo_gui.exec_env.found_modules:
+            if module == self.page.backend:
                 selected = ' selected'
             else:
                 selected = ''

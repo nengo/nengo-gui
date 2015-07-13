@@ -10,10 +10,10 @@ from nengo_gui.components.component import Component, Template
 
 
 class Pointer(Component):
-    def __init__(self, viz, config, uid, obj, **kwargs):
-        super(Pointer, self).__init__(viz, config, uid)
+    def __init__(self, page, config, uid, obj, **kwargs):
+        super(Pointer, self).__init__(page, config, uid)
         self.obj = obj
-        self.label = viz.viz.get_label(obj)
+        self.label = page.get_label(obj)
         self.data = collections.deque()
         self.override_target = None
         self.target = kwargs.get('args', 'default')
@@ -21,8 +21,8 @@ class Pointer(Component):
         self.vocab_in = obj.inputs[self.target][1]
         self.vocab_out.include_pairs = config.show_pairs
 
-    def add_nengo_objects(self, viz):
-        with viz.model:
+    def add_nengo_objects(self, page):
+        with page.model:
             output = self.obj.outputs[self.target][0]
             input = self.obj.inputs[self.target][0]
             self.node = nengo.Node(self.gather_data,
@@ -31,10 +31,10 @@ class Pointer(Component):
             self.conn1 = nengo.Connection(output, self.node, synapse=0.01)
             self.conn2 = nengo.Connection(self.node, input, synapse=0.01)
 
-    def remove_nengo_objects(self, viz):
-        viz.model.connections.remove(self.conn1)
-        viz.model.connections.remove(self.conn2)
-        viz.model.nodes.remove(self.node)
+    def remove_nengo_objects(self, page):
+        page.model.connections.remove(self.conn1)
+        page.model.connections.remove(self.conn2)
+        page.model.nodes.remove(self.node)
 
     def gather_data(self, t, x):
         vocab = self.vocab_out

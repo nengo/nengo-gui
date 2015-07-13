@@ -8,29 +8,28 @@ from nengo_gui.components.component import Component, Template
 
 
 class Voltage(Component):
-    def __init__(self, viz, config, uid, obj, n_neurons=5):
-        super(Voltage, self).__init__(viz, config, uid)
-        self.viz = viz
+    def __init__(self, page, config, uid, obj, n_neurons=5):
+        super(Voltage, self).__init__(page, config, uid)
         self.obj = obj.neurons
         self.data = []
-        self.label = viz.viz.get_label(obj)
+        self.label = page.get_label(obj)
         self.max_neurons = int(self.obj.size_out)
         self.n_neurons = min(n_neurons, self.max_neurons)
         self.struct = struct.Struct('<%df' % (1 + self.n_neurons))
 
-    def add_nengo_objects(self, viz):
-        with viz.model:
+    def add_nengo_objects(self, page):
+        with page.model:
             self.probe = nengo.Probe(self.obj[:self.n_neurons], 'voltage')
 
-    def remove_nengo_objects(self, viz):
-        viz.model.probes.remove(self.probe)
+    def remove_nengo_objects(self, page):
+        page.model.probes.remove(self.probe)
 
     def format_data(self, t, x):
         data = self.struct.pack(t, *x[:self.n_neurons])
         self.data.append(data)
 
     def update_client(self, client):
-        sim = self.viz.sim
+        sim = self.page.sim
         if sim is None:
             return
 
