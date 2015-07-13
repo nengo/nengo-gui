@@ -455,6 +455,10 @@ class Page(object):
                         self.sim.step()
                 except socket.error:  # if another thread closes the sim
                     pass
+                except:
+                    line = nengo_gui.exec_env.determine_line_number()
+                    self.error = dict(trace=traceback.format_exc(), line=line)
+                    self.sim = None
 
             if self.rebuild:
                 self.build()
