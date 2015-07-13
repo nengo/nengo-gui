@@ -22,7 +22,7 @@
 # this: "dot(vision, DOG)".  This means that the utility of the action
 # is the dot product of whatever vector is in the vision Buffer and
 # the ideal vector for DOG.  This will be a value near 1 if you see a
-# dog, and will be near zero otherwise.  The close what you see is to 
+# dog, and will be near zero otherwise.  The closer what you see is to 
 # a dog, the higher the utility.  The effect of the action is simply
 # to set the speech Buffer to the vector for BARK ("speech=BARK").
 #
@@ -35,7 +35,9 @@
 #
 # The input graph above the Basal Ganglia shows the utilities of the
 # four actions.  The output graph above the thalamus shows which
-# of the four actions are selected.
+# of the four actions are selected.  The thalamus controls the routing of
+# information between brain areas, so here it is used to implement the
+# effects of the actions defined in the Basal Ganglia.
 
 import nengo
 import nengo.spa as spa
