@@ -416,13 +416,14 @@ class Page(object):
                 old_sim.sim = None
                 old_sim.finished = True
 
-            patch = nengo_gui.monkey.Patch(self.filename, allow_sim=True)
+            patch = nengo_gui.exec_env.ExecutionEnvironment(self.filename, 
+                                                            allow_sim=True)
             # build the simulation
             try:
                 with patch:
                     self.sim = backend.Simulator(self.model)
             except:
-                line = nengo_gui.monkey.determine_line_number()
+                line = nengo_gui.exec_env.determine_line_number()
                 self.error = dict(trace=traceback.format_exc(), line=line)
 
             self.stdout += patch.stdout.getvalue()
