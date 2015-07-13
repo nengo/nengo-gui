@@ -34,8 +34,6 @@ Nengo.SimControl = function(div, args) {
     this.ws.onmessage = function(event) {self.on_message(event);}
     this.ws.onclose = function(event) {self.disconnected()}
 
-
-
     /** Create the TimeSlider */
     this.time_slider = new Nengo.TimeSlider({x: 200, y: 10, sim:this,
                                            width: this.div.clientWidth-300,
@@ -94,7 +92,6 @@ Nengo.SimControl.prototype.on_message = function(event) {
 };
 
 Nengo.SimControl.prototype.disconnected = function() {
-    console.log('here')
     $('#main').css('background-color', 'red')
     Nengo.modal.title("Server Communication Error");
     Nengo.modal.text_body("Please ensure that the GUI server is running then refresh page", "danger");
