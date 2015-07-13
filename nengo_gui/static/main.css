@@ -16,7 +16,6 @@ body {
 
 #main {
     background: white;
-    height: 100%;
     -webkit-flex: 0 0 auto;
     flex: 1 1 auto;
     position: relative;
