@@ -169,6 +169,14 @@ Nengo.Value.prototype.set_range = function() {
     $('#singleInput').attr('data-error', 'Input should be in the ' +
                            'form "<min>,<max>".');
     Nengo.modal.show();
+    $('#OK').on('click', function () {
+        var w = $(self.div).width();
+        var h = $(self.div).height();
+        self.on_resize(w, h);
+        self.redraw_size();
+        self.redraw_pos();
+        console.log('got here')
+    })
 }
 
 Nengo.Value.prototype.update_range = function(min, max) {
