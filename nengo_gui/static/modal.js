@@ -52,6 +52,10 @@ Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function){
         $('#confirm_reset_button').on('click', function() {
             toolbar.reset_model_layout();
         });
+    } else if (type === 'refresh') {
+        this.$footer.append('<button type="button" ' +
+            'id="refresh_button" class="btn btn-primary">Refresh</button>');
+        $('#refresh_button').on('click', function() {location.reload()})
     } else {
         console.warn('Modal footer type ' + type + ' not recognized.')
     }
