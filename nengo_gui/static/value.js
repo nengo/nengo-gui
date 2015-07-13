@@ -173,9 +173,6 @@ Nengo.Value.prototype.set_range = function() {
         var w = $(self.div).width();
         var h = $(self.div).height();
         self.on_resize(w, h);
-        self.redraw_size();
-        self.redraw_pos();
-        console.log('got here')
     })
 }
 
