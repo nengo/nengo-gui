@@ -30,7 +30,7 @@ class SimControl(Component):
         self.last_status = None
         self.next_ping_time = None
         self.send_config_options = False
-        self.resetted = False
+        self.reset_inform = False
 
     def add_nengo_objects(self, page):
         with page.model:
@@ -79,8 +79,9 @@ class SimControl(Component):
             self.paused = True
             self.page.sim = None
             self.page.changed = False
-        if not self.paused:
+        if not self.paused or self.reset_inform:
             client.write(struct.pack('<ff', self.time, self.rate), binary=True)
+            self.reset_inform = False
         status = self.get_status()
         if status != self.last_status:
             client.write('status:%s' % status)
@@ -95,10 +96,7 @@ class SimControl(Component):
         if self.paused:
             return 'paused'
         elif self.page.sim is None:
-            if self.resetted:
-                return 'paused'
-            else:
-                return 'building'
+            return 'building'
         else:
             return 'running'
 
@@ -116,11 +114,13 @@ class SimControl(Component):
             self.send_config_options = True
         elif msg == 'continue':
             if self.page.sim is None:
-                self.resetted = False
                 self.page.rebuild = True
             self.paused = False
         elif msg == 'reset':
-            self.resetted = True
+            self.paused = True
+            self.time = 0
+            self.rate = 0
+            self.reset_inform = True
             self.page.sim = None
         elif msg[:8] == 'backend:':
             self.page.backend = msg[8:]
