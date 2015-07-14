@@ -1,7 +1,10 @@
 Nengo.Hotkeys = function () {
     var self = this;
 
+    this.active = true;
+    
     document.addEventListener('keydown', function(ev) {
+    if (self.active) {
 
         var on_editor = (ev.target.className === 'ace_text-input');
 
@@ -56,6 +59,7 @@ Nengo.Hotkeys = function () {
             Nengo.netgraph.toggleMiniMap();
             ev.preventDefault();
         }
+    }
     });
 }
 
@@ -64,6 +68,15 @@ Nengo.Hotkeys.prototype.callMenu = function () {
     Nengo.modal.footer('close');
     Nengo.modal.help_body();
     Nengo.modal.show();
+}
+
+Nengo.Hotkeys.prototype.toggle_hotkeys = function() {
+    if (this.active) {
+        this.active = false;
+    }
+    else {
+        this.active = true;
+    }
 }
 
 Nengo.hotkeys = new Nengo.Hotkeys();

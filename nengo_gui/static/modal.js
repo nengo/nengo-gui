@@ -11,10 +11,12 @@ Nengo.Modal = function($div) {
         if (self.sim_was_running) {
             sim.play();
         }
+        Nengo.hotkeys.toggle_hotkeys();
     })
 }
 
 Nengo.Modal.prototype.show = function() {
+    Nengo.hotkeys.toggle_hotkeys();
     this.sim_was_running = !sim.paused;
     this.$div.modal('show');
     sim.pause()
