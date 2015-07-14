@@ -162,8 +162,8 @@ Nengo.SimControl.prototype.pause = function() {
 Nengo.SimControl.prototype.play = function() {
     if (this.paused) {
         this.ws.send('continue');
+        this.paused = false;
     }
-    this.paused = false;
 }
 
 Nengo.SimControl.prototype.on_pause_click = function(event) {
