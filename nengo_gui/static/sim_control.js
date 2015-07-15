@@ -175,7 +175,7 @@ Nengo.SimControl.prototype.on_pause_click = function(event) {
 };
 
 Nengo.SimControl.prototype.reset = function() {
-    this.play();
+    this.paused = true;
     this.ws.send('reset');
 };
 
