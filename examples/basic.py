@@ -11,7 +11,6 @@ with model:
     nengo.Connection(stimulus_B, ens[1])
     nengo.Connection(ens, result, function=lambda x: x[0] * x[1],
                      synapse=0.01)
-    nengo.Node(np.sin)
 
 if __name__ == '__main__':
     import nengo_gui
