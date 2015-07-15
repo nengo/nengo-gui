@@ -22,8 +22,8 @@ class Config(nengo.Config):
 
         for clsname, cls in inspect.getmembers(nengo_gui.components):
             if inspect.isclass(cls):
-                if issubclass(cls, nengo_gui.components.component.Template):
-                    if cls != nengo_gui.components.component.Template:
+                if issubclass(cls, nengo_gui.components.component.Component):
+                    if cls != nengo_gui.components.component.Component:
                         self.configures(cls)
                         for k, v in cls.config_params.items():
                             self[cls].set_param(k, nengo.params.Parameter(v))
@@ -43,7 +43,7 @@ class Config(nengo.Config):
                                  % (uid, self[obj].expanded))
                     lines.append('_viz_config[%s].has_layout=%s'
                                  % (uid, self[obj].has_layout))
-            elif isinstance(obj, nengo_gui.components.component.Template):
+            elif isinstance(obj, nengo_gui.components.component.Component):
                 lines.append('%s = %s' % (uid, obj.code_python(uids)))
                 for k in obj.config_params.keys():
                     v = getattr(self[obj], k)

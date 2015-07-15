@@ -8,28 +8,33 @@ import os
 import os.path
 import json
 
-from nengo_gui.components.component import Component, Template
+from nengo_gui.components.component import Component
 import nengo_gui.exec_env
 
 class SimControl(Component):
-    def __init__(self, page, config, uid, dt=0.001):
+    config_params = dict(shown_time=0.5, kept_time=4.0)
+    def __init__(self, dt=0.001):
         # this component must be the very first one defined, so
         # its component_order is the smallest overall
-        super(SimControl, self).__init__(page, config, uid, component_order=-10)
+        super(SimControl, self).__init__(component_order=-10)
         self.paused = True
         self.last_tick = None
         self.rate = 0.0
         self.model_dt = dt
         self.rate_tau = 1.0
         self.last_send_rate = None
-        self.shown_time = config.shown_time
-        self.kept_time = config.kept_time
         self.sim_ticks = 0
         self.skipped = 1
         self.time = 0.0
         self.last_status = None
         self.next_ping_time = None
         self.send_config_options = False
+
+    def initialize(self, page, config, uid):
+        super(SimControl, self).initialize(page, config, uid)
+        self.shown_time = config.shown_time
+        self.kept_time = config.kept_time
+
 
     def add_nengo_objects(self, page):
         with page.model:
@@ -99,7 +104,7 @@ class SimControl(Component):
             return 'running'
 
     def javascript(self):
-        info = dict(uid=self.uid)
+        info = dict(uid=id(self))
         fn = json.dumps(self.page.filename)
         js = self.javascript_config(info)
         return ('sim = new Nengo.SimControl(control, %s);\n'
@@ -131,7 +136,4 @@ class SimControl(Component):
             items.append(item)
         return ''.join(items)
 
-
-class SimControlTemplate(Template):
-    cls = SimControl
-    config_params = dict(shown_time=0.5, kept_time=4.0)
+SimControlTemplate = SimControl

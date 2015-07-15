@@ -6,12 +6,13 @@ import nengo.spa
 from nengo.spa.module import Module
 import numpy as np
 
-from nengo_gui.components.component import Component, Template
+from nengo_gui.components.component import Component
 
 
 class Pointer(Component):
-    def __init__(self, page, config, uid, obj, **kwargs):
-        super(Pointer, self).__init__(page, config, uid)
+    config_params = dict(show_pairs=False, **Component.default_params)
+    def __init__(self, obj, **kwargs):
+        super(Pointer, self).__init__()
         self.obj = obj
         self.label = page.get_label(obj)
         self.data = collections.deque()
@@ -65,9 +66,12 @@ class Pointer(Component):
             client.write(data, binary=False)
 
     def javascript(self):
-        info = dict(uid=self.uid, label=self.label)
+        info = dict(uid=id(self), label=self.label)
         json = self.javascript_config(info)
         return 'new Nengo.Pointer(main, sim, %s);' % json
+
+    def code_python_args(self, uids):
+        return [uids[self.obj], 'target=%s' % self.target]
 
     def message(self, msg):
         if len(msg) == 0:
@@ -85,7 +89,4 @@ class Pointer(Component):
         else:
             return []
 
-
-class PointerTemplate(Template):
-    cls = Pointer
-    config_params = dict(show_pairs=False, **Template.default_params)
+PointerTemplate = Pointer

@@ -98,7 +98,7 @@ class Server(swi.SimpleWebInterface):
 
         gui = self.server.gui
 
-        component = gui.component_uids[uid]
+        component = gui.component_uids[int(uid)]
         while True:
             try:
                 if gui.finished:
@@ -112,9 +112,9 @@ class Server(swi.SimpleWebInterface):
                     if msg.startswith('config:'):
                         cfg = json.loads(msg[7:])
                         old_cfg = {}
-                        for k in component.template.config_params.keys():
+                        for k in component.config_params.keys():
                             v = getattr(
-                                component.page.config[component.template], k)
+                                component.page.config[component], k)
                             old_cfg[k] = v
                         if not(cfg == old_cfg):
                             # Register config change to the undo stack
@@ -122,7 +122,7 @@ class Server(swi.SimpleWebInterface):
                                 component, cfg, old_cfg)
                         for k, v in cfg.items():
                             setattr(
-                                component.page.config[component.template],
+                                component.page.config[component],
                                 k, v)
                         component.page.modified_config()
                     elif msg.startswith('remove'):

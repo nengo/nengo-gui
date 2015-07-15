@@ -4,17 +4,23 @@ import collections
 import nengo
 import numpy as np
 
-from nengo_gui.components.component import Component, Template
+from nengo_gui.components.component import Component
 
 
 class Value(Component):
-    def __init__(self, page, config, uid, obj):
-        super(Value, self).__init__(page, config, uid)
+    config_params = dict(max_value=1,
+                         min_value=-1, 
+                         **Component.default_params)
+    def __init__(self, obj):
+        super(Value, self).__init__()
         self.obj = obj
-        self.label = page.get_label(obj)
         self.data = collections.deque()
         self.n_lines = int(obj.size_out)
         self.struct = struct.Struct('<%df' % (1 + self.n_lines))
+
+    def initialize(self, page, config, uid):
+        super(Value, self).initialize(page, config, uid)
+        self.label = page.get_label(self.obj)
 
     def add_nengo_objects(self, page):
         with page.model:
@@ -35,11 +41,12 @@ class Value(Component):
             client.write(item, binary=True)
 
     def javascript(self):
-        info = dict(uid=self.uid, label=self.label,
+        info = dict(uid=id(self), label=self.label,
                     n_lines=self.n_lines, synapse=0)
         json = self.javascript_config(info)
         return 'new Nengo.Value(main, sim, %s);' % json
 
-class ValueTemplate(Template):
-    cls = Value
-    config_params = dict(max_value=1, min_value=-1, **Template.default_params)
+    def code_python_args(self, uids):
+        return [uids[self.obj]]
+
+ValueTemplate = Value

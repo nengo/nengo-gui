@@ -2,17 +2,20 @@ import json
 
 import nengo
 
-from nengo_gui.components.component import Component, Template
+from nengo_gui.components.component import Component
 import nengo_gui.exec_env
 
 class AceEditor(Component):
-    def __init__(self, page, config, uid):
+    config_params = {}
+    def __init__(self):
         # the IPython integration requires this component to be early
         # in the list
-        super(AceEditor, self).__init__(page, config, uid, component_order=-8)
-        self.uid = uid
-        if self.page.gui.interactive:
-            self.current_code = self.page.code
+        super(AceEditor, self).__init__(component_order=-8)
+
+    def initialize(self, page, config, uid):
+        super(AceEditor, self).initialize(page, config, uid)
+        if page.gui.interactive:
+            self.current_code = page.code
             self.serve_code = True
             self.last_error = None
             self.last_stdout = None
@@ -48,7 +51,7 @@ class AceEditor(Component):
 
     def javascript(self):
         args = json.dumps(dict(active=self.page.gui.interactive))
-        return 'ace_editor = new Nengo.Ace("%s", %s)' % (self.uid, args)
+        return 'ace_editor = new Nengo.Ace("%s", %s)' % (id(self), args)
 
     def message(self, msg):
         if not self.page.gui.interactive:
@@ -67,7 +70,4 @@ class AceEditor(Component):
         else:
             self.page.net_graph.update_code(self.current_code)
 
-
-class AceEditorTemplate(Template):
-    cls = AceEditor
-    config_params = {}
+AceEditorTemplate = AceEditor

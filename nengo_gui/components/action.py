@@ -64,7 +64,7 @@ class ConfigAction(Action):
 
     def load(self, cfg):
         for k, v in iteritems(cfg):
-            setattr(self.page.config[self.component.template], k, v)
+            setattr(self.page.config[self.component], k, v)
         self.net_graph.modified_config()
         self.send("config", config=cfg)
 
@@ -107,10 +107,10 @@ class RemoveGraph(Action):
 
     def undo(self):
         page = self.net_graph.page
-        component = page.add_template(self.component.template)
+        component = page.add_component(self.component)
 
-        page.locals[self.uid] = component.template
-        page.default_labels[component.template] = self.uid
+        page.locals[self.uid] = component
+        page.default_labels[component] = self.uid
 
         page.changed = True
         self.send('js', code=component.javascript())
@@ -123,8 +123,8 @@ class CreateGraph(Action):
         self.type = type
         self.x, self.y = x, y
         self.width, self.height = width, height
-        cls = getattr(nengo_gui.components, self.type + 'Template')
-        self.template = cls(self.obj, **kwargs)
+        cls = getattr(nengo_gui.components, self.type)
+        self.component = cls(self.obj, **kwargs)
 
         # If only one instance of the component is allowed, and another had to be
         # destroyed to create this one, keep track of it here so it can be undone
@@ -141,19 +141,19 @@ class CreateGraph(Action):
 
     def act_create_graph(self):
         if self.graph_uid is None:
-            self.net_graph.page.generate_uid(self.template, prefix='_viz_')
-            self.graph_uid = self.net_graph.page.get_uid(self.template)
+            self.net_graph.page.generate_uid(self.component, prefix='_viz_')
+            self.graph_uid = self.net_graph.page.get_uid(self.component)
         else:
-            self.net_graph.page.locals[self.graph_uid] = self.template
-            self.net_graph.page.default_labels[self.template] = (
+            self.net_graph.page.locals[self.graph_uid] = self.component
+            self.net_graph.page.default_labels[self.component] = (
                 self.graph_uid)
-        self.net_graph.page.config[self.template].x = self.x
-        self.net_graph.page.config[self.template].y = self.y
-        self.net_graph.page.config[self.template].width = self.width
-        self.net_graph.page.config[self.template].height = self.height
+        self.net_graph.page.config[self.component].x = self.x
+        self.net_graph.page.config[self.component].y = self.y
+        self.net_graph.page.config[self.component].width = self.width
+        self.net_graph.page.config[self.component].height = self.height
         self.net_graph.modified_config()
 
-        c = self.net_graph.page.add_template(self.template)
+        c = self.net_graph.page.add_component(self.component)
         self.net_graph.page.changed = True
         self.send('js', code=c.javascript())
 

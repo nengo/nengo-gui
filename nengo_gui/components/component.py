@@ -1,13 +1,17 @@
 import json
 
 class Component(object):
-    def __init__(self, page, config, uid, component_order=0):
-        self.config = config
-        self.uid = uid
-        self.page = page
+    default_params = dict(x=0, y=0, width=100, height=100, label_visible=True)
+
+    def __init__(self, component_order=0):
         # the order this component will be defined in the javascript
         self.component_order = component_order
         self.replace_with = None
+
+    def initialize(self, page, config, uid):
+        self.config = config
+        self.page = page
+        self.uid = uid
 
     def update_client(self, client):
         pass
@@ -28,22 +32,10 @@ class Component(object):
             cfg[attr] = getattr(self.config, attr)
         return json.dumps(cfg)
 
+    def code_python_args(self, uids):
+        return []
 
-class Template(object):
-    default_params = dict(x=0, y=0, width=100, height=100, label_visible=True)
-    cls = None   # subclasses are expected to set this to be the class of
-                 # the object that should be created.
-
-    def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
-    def create(self, page):
-        uid = '_uid_%d' % id(self)
-        c = self.cls(page, page.config[self], uid,
-                     *self.args, **self.kwargs)
-        c.template = self
-        return c
     def code_python(self, uids):
-        args = [uids[x] for x in self.args]
+        args = self.code_python_args(uids)
         name = self.__class__.__name__
         return 'nengo_gui.components.%s(%s)' % (name, ','.join(args))

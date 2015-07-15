@@ -7,7 +7,7 @@ import threading
 import nengo
 import json
 
-from nengo_gui.components.component import Component, Template
+from nengo_gui.components.component import Component
 from nengo_gui.disposable_js import infomodal
 import nengo_gui.layout
 
@@ -15,16 +15,14 @@ from .action import create_action
 
 
 class NetGraph(Component):
+    config_params = {}
     configs = {}
 
-    def __init__(self, page, config, uid):
+    def __init__(self):
         # this component must be before all the normal graphs (so that
         # those other graphs are on top of the NetGraph), so its
         # order is between that of SimControl and the default (0)
-        super(NetGraph, self).__init__(page, config, uid, component_order=-5)
-        self.layout = nengo_gui.layout.Layout(self.page.model)
-        self.to_be_expanded = collections.deque([self.page.model])
-        self.to_be_sent = collections.deque()
+        super(NetGraph, self).__init__(component_order=-5)
 
         # this lock ensures safety between check_for_reload() and update_code()
         self.code_lock = threading.Lock()
@@ -32,8 +30,15 @@ class NetGraph(Component):
 
         self.uids = {}
         self.parents = {}
-        self.networks_to_search = [self.page.model]
         self.initialized_pan_and_zoom = False
+
+    def initialize(self, page, config, uid):
+        super(NetGraph, self).initialize(page, config, uid)
+        self.layout = nengo_gui.layout.Layout(self.page.model)
+        self.to_be_expanded = collections.deque([self.page.model])
+        self.to_be_sent = collections.deque()
+
+        self.networks_to_search = [self.page.model]
 
         try:
             self.last_modify_time = os.path.getmtime(self.page.filename)
@@ -290,7 +295,7 @@ class NetGraph(Component):
                 self.expand_network(network, client)
 
     def javascript(self):
-        return 'new Nengo.NetGraph(main, {uid:"%s"});' % self.uid
+        return 'new Nengo.NetGraph(main, {uid:"%s"});' % id(self)
 
     def message(self, msg):
         try:
@@ -453,7 +458,4 @@ class NetGraph(Component):
         info = dict(uid=uid, pre=pres, post=posts, type='conn', parent=parent)
         client.write(json.dumps(info))
 
-
-class NetGraphTemplate(Template):
-    cls = NetGraph
-    config_params = dict()
+NetGraphTemplate = NetGraph
