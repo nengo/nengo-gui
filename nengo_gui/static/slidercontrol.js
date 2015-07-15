@@ -4,7 +4,7 @@ Nengo.SliderControl = function(min, max) {
     this.min = min;
     this.max = max;
 
-    this.value = 0.
+    this.value = 0
     this.type_mode = false;
 
     this.border_width = 1
@@ -25,7 +25,7 @@ Nengo.SliderControl = function(min, max) {
     this.guideline.style.height = '100%';
     this.guideline.style.margin = 'auto';
     $(this.guideline).on('click', function(event) {
-        self.set_value(self.value)
+        self.set_value(self.value);
     })
     this.container.appendChild(this.guideline);
 
@@ -111,9 +111,7 @@ Nengo.SliderControl.prototype.display_value = function(value) {
 Nengo.SliderControl.prototype.set_value = function(value) {
     var old_value = this.value;
     this.display_value(value);
-    if (old_value != this.value) {
-        this.dispatch('change', {'target': this, 'value': this.value});
-    }
+    this.dispatch('change', {'target': this, 'value': this.value});
 };
 
 Nengo.SliderControl.prototype.activate_type_mode = function() {
