@@ -23,7 +23,7 @@ Nengo.Axes2D = function(parent, args) {
 
     /** spacing between the graph and the outside edges (in pixels) */
     this.set_axes_geometry(args.width, args.height);
-
+    console.log()
     /** define the x-axis */
     this.axis_x = d3.svg.axis()
         .scale(this.scale_x)
@@ -37,7 +37,7 @@ Nengo.Axes2D = function(parent, args) {
     this.axis_y = d3.svg.axis()
         .scale(this.scale_y)
         .orient("left")
-        .ticks(2)
+        .ticks(0)
     this.axis_y_g = this.svg.append("g")
         .attr("class", "axis axis_y unselectable")
         .call(this.axis_y);
