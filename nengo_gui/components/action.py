@@ -67,7 +67,6 @@ class ConfigAction(Action):
             setattr(self.page.config[self.component], k, v)
         self.net_graph.modified_config()
         self.send("config", config=cfg)
-        print 'config', self.component.uid, cfg
 
     def apply(self):
         self.load(self.new_cfg)
@@ -164,7 +163,7 @@ class CreateGraph(Action):
         self.act_create_graph()
 
     def undo(self):
-        self.send('delete_graph', uid=self.graph_uid)
+        self.send('delete_graph', uid=id(self.component))
         if self.duplicate is not None:
             self.duplicate.undo()
 
