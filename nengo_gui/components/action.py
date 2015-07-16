@@ -131,11 +131,12 @@ class CreateGraph(Action):
         self.duplicate = None
 
         # Remove any existing sliders associated with the same node
-        for component in self.net_graph.page.components:
-            if (isinstance(component, nengo_gui.components.slider.Slider)
-                    and component.node is self.obj):
-                self.duplicate = RemoveGraph(net_graph, component)
-                self.send('delete_graph', uid=id(component))
+        if type == 'Slider':
+            for component in self.net_graph.page.components:
+                if (isinstance(component, nengo_gui.components.slider.Slider)
+                        and component.node is self.obj):
+                    self.duplicate = RemoveGraph(net_graph, component)
+                    self.send('delete_graph', uid=id(component))
 
         self.act_create_graph()
 
