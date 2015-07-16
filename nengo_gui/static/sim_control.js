@@ -162,8 +162,8 @@ Nengo.SimControl.prototype.pause = function() {
 Nengo.SimControl.prototype.play = function() {
     if (this.paused) {
         this.ws.send('continue');
+        this.paused = false;
     }
-    this.paused = false;
 }
 
 Nengo.SimControl.prototype.on_pause_click = function(event) {
@@ -175,10 +175,8 @@ Nengo.SimControl.prototype.on_pause_click = function(event) {
 };
 
 Nengo.SimControl.prototype.reset = function() {
-    this.time = 0.0;
-    this.rate = 0.0;
+    this.paused = true;
     this.ws.send('reset');
-    self.sim.div.dispatchEvent(new Event('sim_reset'));
 };
 
 Nengo.SimControl.prototype.on_resize = function(event) {
