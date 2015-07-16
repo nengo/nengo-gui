@@ -14,10 +14,13 @@ class Voltage(Component):
         super(Voltage, self).__init__()
         self.obj = obj.neurons
         self.data = []
-        self.label = page.get_label(obj)
         self.max_neurons = int(self.obj.size_out)
         self.n_neurons = min(n_neurons, self.max_neurons)
         self.struct = struct.Struct('<%df' % (1 + self.n_neurons))
+
+    def initialize(self, page, config, uid):
+        super(Voltage, self).initialize(page, config, uid)
+        self.label = page.get_label(self.obj.ensemble)
 
     def add_nengo_objects(self, page):
         with page.model:

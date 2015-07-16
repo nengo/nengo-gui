@@ -14,12 +14,15 @@ class Pointer(Component):
     def __init__(self, obj, **kwargs):
         super(Pointer, self).__init__()
         self.obj = obj
-        self.label = page.get_label(obj)
         self.data = collections.deque()
         self.override_target = None
         self.target = kwargs.get('args', 'default')
         self.vocab_out = obj.outputs[self.target][1]
         self.vocab_in = obj.inputs[self.target][1]
+
+    def initialize(self, page, config, uid):
+        super(Pointer, self).initialize(page, config, uid)
+        self.label = page.get_label(self.obj)
         self.vocab_out.include_pairs = config.show_pairs
 
     def add_nengo_objects(self, page):

@@ -14,11 +14,14 @@ class Raster(Component):
         self.neuron_type = obj.neuron_type
         self.obj = obj.neurons
         self.data = collections.deque()
-        self.label = page.get_label(obj)
         self.max_neurons = obj.n_neurons
         if n_neurons is None:
             n_neurons = min(self.max_neurons, 10)
         self.n_neurons = n_neurons
+
+    def initialize(self, page, config, uid):
+        super(Raster, self).initialize(page, config, uid)
+        self.label = page.get_label(self.obj.ensemble)
 
     def add_nengo_objects(self, page):
         with page.model:
@@ -48,6 +51,6 @@ class Raster(Component):
         return 'new Nengo.Raster(main, sim, %s);' % json
 
     def code_python_args(self, uids):
-        return [uids[self.obj]]
+        return [uids[self.obj.ensemble]]
 
 RasterTemplate = Raster

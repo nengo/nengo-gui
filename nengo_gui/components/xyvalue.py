@@ -13,10 +13,13 @@ class XYValue(Component):
     def __init__(self, obj):
         super(XYValue, self).__init__()
         self.obj = obj
-        self.label = page.get_label(obj)
         self.data = collections.deque()
         self.n_lines = int(obj.size_out)
         self.struct = struct.Struct('<%df' % (1 + self.n_lines))
+
+    def initialize(self, page, config, uid):
+        super(XYValue, self).initialize(page, config, uid)
+        self.label = page.get_label(self.obj)
 
     def add_nengo_objects(self, page):
         with page.model:
