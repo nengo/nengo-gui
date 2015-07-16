@@ -243,13 +243,16 @@ Nengo.Component.prototype.generate_menu = function() {
     return items;
 };
 
-Nengo.Component.prototype.remove = function(undo_flag) {
+Nengo.Component.prototype.remove = function(undo_flag, report_back) {
     undo_flag = typeof undo_flag !== 'undefined' ? undo_flag : false;
+    report_back = typeof report_back !== 'undefined' ? report_back : true;
 
-    if (undo_flag === true) {
-        this.ws.send('remove_undo');
-    } else {
-        this.ws.send('remove');
+    if (report_back) {
+        if (undo_flag === true) {
+            this.ws.send('remove_undo');
+        } else {
+            this.ws.send('remove');
+        }
     }
     this.parent.removeChild(this.div);
     var index = Nengo.Component.components.indexOf(this);

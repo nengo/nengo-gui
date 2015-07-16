@@ -335,7 +335,7 @@ Nengo.NetGraph.prototype.on_message = function(event) {
         var uid = data.uid;
         for (var i = 0; i < Nengo.Component.components.length; i++) {
             if (Nengo.Component.components[i].uid === uid) {
-                Nengo.Component.components[i].remove(true);
+                Nengo.Component.components[i].remove(true, data.report_back);
                 break;
             }
         }

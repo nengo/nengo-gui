@@ -107,13 +107,13 @@ class RemoveGraph(Action):
 
     def undo(self):
         page = self.net_graph.page
-        component = page.add_component(self.component)
+        page.add_component(self.component)
 
-        page.locals[self.uid] = component
-        page.default_labels[component] = self.uid
+        page.locals[self.uid] = self.component
+        page.default_labels[self.component] = self.uid
 
         page.changed = True
-        self.send('js', code=component.javascript())
+        self.send('js', code=self.component.javascript())
 
 
 class CreateGraph(Action):
@@ -153,9 +153,9 @@ class CreateGraph(Action):
         self.net_graph.page.config[self.component].height = self.height
         self.net_graph.modified_config()
 
-        c = self.net_graph.page.add_component(self.component)
+        self.net_graph.page.add_component(self.component)
         self.net_graph.page.changed = True
-        self.send('js', code=c.javascript())
+        self.send('js', code=self.component.javascript())
 
     def apply(self):
         if self.duplicate is not None:

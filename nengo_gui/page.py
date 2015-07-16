@@ -166,12 +166,10 @@ class Page(object):
 
     def add_component(self, component):
         """Add a new Component to an existing Page."""
-        #TODO: do we need to return anything here? make a uid?
         self.gui.component_uids[id(component)] = component
         uid = self.get_uid(component)
         component.initialize(self, self.config[component], uid=uid)
         self.components.append(component)
-        return component
 
     def execute(self, code):
         """Run the given code to generate self.model and self.locals.
