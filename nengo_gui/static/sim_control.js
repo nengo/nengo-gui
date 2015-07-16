@@ -32,6 +32,7 @@ Nengo.SimControl = function(div, args) {
     this.ws = Nengo.create_websocket(args.uid);
 
     this.ws.onmessage = function(event) {self.on_message(event);}
+    this.ws.onclose = function(event) {self.disconnected()}
 
     /** Create the TimeSlider */
     this.time_slider = new Nengo.TimeSlider({x: 200, y: 10, sim:this,
@@ -90,6 +91,13 @@ Nengo.SimControl.prototype.on_message = function(event) {
     }
 };
 
+Nengo.SimControl.prototype.disconnected = function() {
+    $('#main').css('background-color', 'red')
+    Nengo.modal.title("Nengo has stopped running");
+    Nengo.modal.text_body("To continue working with your model, re-run nengo_gui and click Refresh.", "danger");
+    Nengo.modal.footer('refresh');
+    Nengo.modal.show();
+}
 
 Nengo.SimControl.prototype.set_backend = function(backend) {
     this.ws.send('backend:' + backend);
