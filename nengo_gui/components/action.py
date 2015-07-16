@@ -56,7 +56,7 @@ class Action(object):
 
 class ConfigAction(Action):
     def __init__(self, page, component, new_cfg, old_cfg):
-        super(ConfigAction, self).__init__(page.net_graph, component.uid)
+        super(ConfigAction, self).__init__(page.net_graph, id(component))
         self.component = component
         self.page = page
         self.new_cfg = new_cfg
@@ -67,6 +67,7 @@ class ConfigAction(Action):
             setattr(self.page.config[self.component], k, v)
         self.net_graph.modified_config()
         self.send("config", config=cfg)
+        print 'config', self.component.uid, cfg
 
     def apply(self):
         self.load(self.new_cfg)
@@ -99,7 +100,7 @@ class ExpandCollapse(Action):
 
 class RemoveGraph(Action):
     def __init__(self, net_graph, component):
-        super(RemoveGraph, self).__init__(net_graph, component.uid)
+        super(RemoveGraph, self).__init__(net_graph, id(component))
         self.component = component
 
     def apply(self):
@@ -135,7 +136,7 @@ class CreateGraph(Action):
             if (isinstance(component, nengo_gui.components.slider.Slider)
                     and component.node is self.obj):
                 self.duplicate = RemoveGraph(net_graph, component)
-                self.send('delete_graph', uid=component.uid)
+                self.send('delete_graph', uid=id(component))
 
         self.act_create_graph()
 
