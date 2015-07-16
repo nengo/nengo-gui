@@ -109,8 +109,8 @@ class RemoveGraph(Action):
         page = self.net_graph.page
         page.add_component(self.component)
 
-        page.locals[self.uid] = self.component
-        page.default_labels[self.component] = self.uid
+        page.locals[self.component.uid] = self.component
+        page.default_labels[self.component] = self.component.uid
 
         page.changed = True
         self.send('js', code=self.component.javascript())
