@@ -468,5 +468,3 @@ class NetGraph(Component):
         posts = self.get_parents(post)[:-1]
         info = dict(uid=uid, pre=pres, post=posts, type='conn', parent=parent)
         client.write(json.dumps(info))
-
-NetGraphTemplate = NetGraph

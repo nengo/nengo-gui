@@ -156,7 +156,7 @@ class Page(object):
         self.components = []
         self.component_uids = {}
         for k, v in self.locals.items():
-            if isinstance(v, nengo_gui.components.component.Component):
+            if isinstance(v, nengo_gui.components.Component):
                 self.component_uids[v] = k
                 self.gui.component_uids[id(v)] = v
                 self.components.append(v)
@@ -248,7 +248,7 @@ class Page(object):
                 config[self.model].size = (1.0, 1.0)
 
         for k, v in self.locals.items():
-            if isinstance(v, nengo_gui.components.component.Component):
+            if isinstance(v, nengo_gui.components.Component):
                 self.default_labels[v] = k
                 v.initialize(page=self, config=config[v], uid=k)
 

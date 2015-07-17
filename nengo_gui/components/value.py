@@ -10,7 +10,7 @@ from nengo_gui.components.component import Component
 class Value(Component):
     config_params = dict(max_value=1,
                          min_value=-1, 
-                         **Component.default_params)
+                         **Component.config_params)
     def __init__(self, obj):
         super(Value, self).__init__()
         self.obj = obj
@@ -48,5 +48,3 @@ class Value(Component):
 
     def code_python_args(self, uids):
         return [uids[self.obj]]
-
-ValueTemplate = Value

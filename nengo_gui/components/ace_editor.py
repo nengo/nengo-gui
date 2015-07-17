@@ -69,5 +69,3 @@ class AceEditor(Component):
                 self.page.net_graph.update_code(self.current_code)
         else:
             self.page.net_graph.update_code(self.current_code)
-
-AceEditorTemplate = AceEditor

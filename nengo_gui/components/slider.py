@@ -5,7 +5,7 @@ import collections
 from nengo_gui.components.component import Component
 
 class Slider(Component):
-    config_params = dict(max_value=1, min_value=-1, **Component.default_params)
+    config_params = dict(max_value=1, min_value=-1, **Component.config_params)
     def __init__(self, node):
         super(Slider, self).__init__()
         self.node = node
@@ -68,5 +68,3 @@ class Slider(Component):
 
     def code_python_args(self, uids):
         return [uids[self.node]]
-
-SliderTemplate = Slider

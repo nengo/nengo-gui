@@ -135,5 +135,3 @@ class SimControl(Component):
             item = '<option %s>%s</option>' % (selected, module)
             items.append(item)
         return ''.join(items)
-
-SimControlTemplate = SimControl

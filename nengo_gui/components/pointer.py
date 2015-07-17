@@ -10,7 +10,7 @@ from nengo_gui.components.component import Component
 
 
 class Pointer(Component):
-    config_params = dict(show_pairs=False, **Component.default_params)
+    config_params = dict(show_pairs=False, **Component.config_params)
     def __init__(self, obj, **kwargs):
         super(Pointer, self).__init__()
         self.obj = obj
@@ -91,5 +91,3 @@ class Pointer(Component):
             return list(obj.outputs.keys())
         else:
             return []
-
-PointerTemplate = Pointer
