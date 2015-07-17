@@ -24,7 +24,7 @@ Nengo.SliderControl = function(min, max) {
     this.guideline.style.width = '0.5em';
     this.guideline.style.height = '100%';
     this.guideline.style.margin = 'auto';
-    $(this.guideline).on('click', function(event) {
+    $(this.guideline).on('mousedown', function(event) {
         self.set_value(self.value);
     })
     this.container.appendChild(this.guideline);
