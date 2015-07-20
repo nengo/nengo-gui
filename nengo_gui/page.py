@@ -168,7 +168,7 @@ class Page(object):
         """Add a new Component to an existing Page."""
         self.gui.component_uids[id(component)] = component
         uid = self.get_uid(component)
-        component.initialize(self, self.config[component], uid=uid)
+        component.attach(self, self.config[component], uid=uid)
         self.components.append(component)
 
     def execute(self, code):
@@ -250,7 +250,7 @@ class Page(object):
         for k, v in self.locals.items():
             if isinstance(v, nengo_gui.components.Component):
                 self.default_labels[v] = k
-                v.initialize(page=self, config=config[v], uid=k)
+                v.attach(page=self, config=config[v], uid=k)
 
         return config
 

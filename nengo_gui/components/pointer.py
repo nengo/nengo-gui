@@ -20,8 +20,8 @@ class Pointer(Component):
         self.vocab_out = obj.outputs[self.target][1]
         self.vocab_in = obj.inputs[self.target][1]
 
-    def initialize(self, page, config, uid):
-        super(Pointer, self).initialize(page, config, uid)
+    def attach(self, page, config, uid):
+        super(Pointer, self).attach(page, config, uid)
         self.label = page.get_label(self.obj)
         self.vocab_out.include_pairs = config.show_pairs
 

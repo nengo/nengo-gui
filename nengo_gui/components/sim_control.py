@@ -30,8 +30,8 @@ class SimControl(Component):
         self.next_ping_time = None
         self.send_config_options = False
 
-    def initialize(self, page, config, uid):
-        super(SimControl, self).initialize(page, config, uid)
+    def attach(self, page, config, uid):
+        super(SimControl, self).attach(page, config, uid)
         self.shown_time = config.shown_time
         self.kept_time = config.kept_time
 

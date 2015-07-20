@@ -12,8 +12,8 @@ class AceEditor(Component):
         # in the list
         super(AceEditor, self).__init__(component_order=-8)
 
-    def initialize(self, page, config, uid):
-        super(AceEditor, self).initialize(page, config, uid)
+    def attach(self, page, config, uid):
+        super(AceEditor, self).attach(page, config, uid)
         if page.gui.interactive:
             self.current_code = page.code
             self.serve_code = True

@@ -19,8 +19,8 @@ class Raster(Component):
             n_neurons = min(self.max_neurons, 10)
         self.n_neurons = n_neurons
 
-    def initialize(self, page, config, uid):
-        super(Raster, self).initialize(page, config, uid)
+    def attach(self, page, config, uid):
+        super(Raster, self).attach(page, config, uid)
         self.label = page.get_label(self.obj.ensemble)
 
     def add_nengo_objects(self, page):

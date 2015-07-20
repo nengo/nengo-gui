@@ -17,8 +17,8 @@ class XYValue(Component):
         self.n_lines = int(obj.size_out)
         self.struct = struct.Struct('<%df' % (1 + self.n_lines))
 
-    def initialize(self, page, config, uid):
-        super(XYValue, self).initialize(page, config, uid)
+    def attach(self, page, config, uid):
+        super(XYValue, self).attach(page, config, uid)
         self.label = page.get_label(self.obj)
 
     def add_nengo_objects(self, page):

@@ -31,8 +31,8 @@ class Value(Component):
         # being the vector values, one per dimension.
         self.struct = struct.Struct('<%df' % (1 + self.n_lines))
 
-    def initialize(self, page, config, uid):
-        super(Value, self).initialize(page, config, uid)
+    def attach(self, page, config, uid):
+        super(Value, self).attach(page, config, uid)
         # use the label of the object being plotted as our label
         self.label = page.get_label(self.obj)
 

@@ -32,8 +32,8 @@ class NetGraph(Component):
         self.parents = {}
         self.initialized_pan_and_zoom = False
 
-    def initialize(self, page, config, uid):
-        super(NetGraph, self).initialize(page, config, uid)
+    def attach(self, page, config, uid):
+        super(NetGraph, self).attach(page, config, uid)
         self.layout = nengo_gui.layout.Layout(self.page.model)
         self.to_be_expanded = collections.deque([self.page.model])
         self.to_be_sent = collections.deque()

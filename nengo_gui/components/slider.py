@@ -21,8 +21,8 @@ class Slider(Component):
         if not callable(self.base_output):
             self.start_value[:] = self.base_output
 
-    def initialize(self, page, config, uid):
-        super(Slider, self).initialize(page, config, uid)
+    def attach(self, page, config, uid):
+        super(Slider, self).attach(page, config, uid)
         self.label = page.get_label(self.node)
 
     def add_nengo_objects(self, page):

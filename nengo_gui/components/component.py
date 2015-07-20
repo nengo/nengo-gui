@@ -30,7 +30,7 @@ class Component(object):
         # to swap out the old Component with the new one.
         self.replace_with = None
 
-    def initialize(self, page, config, uid):
+    def attach(self, page, config, uid):
         """Connect the Component to a Page."""
         self.config = config  # the nengo.Config[component] for this component
         self.page = page      # the Page this component is in
