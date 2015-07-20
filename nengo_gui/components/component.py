@@ -18,7 +18,7 @@ class Component(object):
 
     # The parameters that will be stored in the .cfg file for this Component
     # Subclasses should override this as needed.
-    config_params = dict(x=0, y=0, width=100, height=100, label_visible=True)
+    config_defaults = dict(x=0, y=0, width=100, height=100, label_visible=True)
 
     def __init__(self, component_order=0):
         # when generating Javascript for all the Components in a Page, they

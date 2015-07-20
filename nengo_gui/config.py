@@ -25,7 +25,7 @@ class Config(nengo.Config):
                 if issubclass(cls, nengo_gui.components.component.Component):
                     if cls != nengo_gui.components.component.Component:
                         self.configures(cls)
-                        for k, v in cls.config_params.items():
+                        for k, v in cls.config_defaults.items():
                             self[cls].set_param(k, nengo.params.Parameter(v))
 
     def dumps(self, uids):
@@ -45,7 +45,7 @@ class Config(nengo.Config):
                                  % (uid, self[obj].has_layout))
             elif isinstance(obj, nengo_gui.components.component.Component):
                 lines.append('%s = %s' % (uid, obj.code_python(uids)))
-                for k in obj.config_params.keys():
+                for k in obj.config_defaults.keys():
                     v = getattr(self[obj], k)
                     if isinstance(v, bool):
                         val = '%s' % v

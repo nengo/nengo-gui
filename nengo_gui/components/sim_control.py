@@ -12,7 +12,7 @@ from nengo_gui.components.component import Component
 import nengo_gui.exec_env
 
 class SimControl(Component):
-    config_params = dict(shown_time=0.5, kept_time=4.0)
+    config_defaults = dict(shown_time=0.5, kept_time=4.0)
     def __init__(self, dt=0.001):
         # this component must be the very first one defined, so
         # its component_order is the smallest overall

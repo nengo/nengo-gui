@@ -8,7 +8,7 @@ from nengo_gui.components.component import Component
 
 
 class Raster(Component):
-    config_params = dict(**Component.config_params)
+    config_defaults = dict(**Component.config_defaults)
     def __init__(self, obj, n_neurons=None):
         super(Raster, self).__init__()
         self.neuron_type = obj.neuron_type

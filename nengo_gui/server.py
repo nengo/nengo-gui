@@ -112,7 +112,7 @@ class Server(swi.SimpleWebInterface):
                     if msg.startswith('config:'):
                         cfg = json.loads(msg[7:])
                         old_cfg = {}
-                        for k in component.config_params.keys():
+                        for k in component.config_defaults.keys():
                             v = getattr(
                                 component.page.config[component], k)
                             old_cfg[k] = v

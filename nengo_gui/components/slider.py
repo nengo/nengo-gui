@@ -5,7 +5,9 @@ import collections
 from nengo_gui.components.component import Component
 
 class Slider(Component):
-    config_params = dict(max_value=1, min_value=-1, **Component.config_params)
+    config_defaults = dict(max_value=1, min_value=-1, 
+                           **Component.config_defaults)
+
     def __init__(self, node):
         super(Slider, self).__init__()
         self.node = node

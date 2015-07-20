@@ -6,7 +6,7 @@ from nengo_gui.components.component import Component
 import nengo_gui.exec_env
 
 class AceEditor(Component):
-    config_params = {}
+    config_defaults = {}
     def __init__(self):
         # the IPython integration requires this component to be early
         # in the list

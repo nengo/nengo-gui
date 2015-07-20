@@ -15,7 +15,7 @@ from .action import create_action
 
 
 class NetGraph(Component):
-    config_params = {}
+    config_defaults = {}
     configs = {}
 
     def __init__(self):
