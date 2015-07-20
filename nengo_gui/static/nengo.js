@@ -243,11 +243,11 @@ Nengo.Component.prototype.generate_menu = function() {
     return items;
 };
 
-Nengo.Component.prototype.remove = function(undo_flag, report_back) {
+Nengo.Component.prototype.remove = function(undo_flag, notify_server) {
     undo_flag = typeof undo_flag !== 'undefined' ? undo_flag : false;
-    report_back = typeof report_back !== 'undefined' ? report_back : true;
+    notify_server = typeof notify_server !== 'undefined' ? notify_server : true;
 
-    if (report_back) {
+    if (notify_server) {
         if (undo_flag === true) {
             this.ws.send('remove_undo');
         } else {

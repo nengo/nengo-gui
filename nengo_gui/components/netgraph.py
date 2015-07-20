@@ -166,7 +166,7 @@ class NetGraph(Component):
                 if item in removed_items:
                     self.to_be_sent.append(dict(type='delete_graph',
                                                 uid=id(c),
-                                                report_back=False))
+                                                notify_server=False))
                     orphan_components.append(c)
                     break
 
