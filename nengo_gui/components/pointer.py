@@ -74,7 +74,7 @@ class Pointer(Component):
         return 'new Nengo.Pointer(main, sim, %s);' % json
 
     def code_python_args(self, uids):
-        return [uids[self.obj], 'target=%s' % repr(self.target)]
+        return [uids[self.obj], 'target=%r' % self.target]
 
     def message(self, msg):
         if len(msg) == 0:
