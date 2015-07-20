@@ -69,13 +69,16 @@ Nengo.Hotkeys.prototype.callMenu = function () {
     Nengo.modal.help_body();
     Nengo.modal.show();
 }
-
-Nengo.Hotkeys.prototype.toggle_hotkeys = function() {
-    if (this.active) {
-        this.active = false;
+ 
+//Set active is provided with a boolean argument, which will either
+//turn the hotkeys on or off
+Nengo.Hotkeys.prototype.set_active = function(bool) {
+    console.assert(typeof(bool) == 'boolean')
+    if (bool == true) {
+        this.active = true;
     }
     else {
-        this.active = true;
+        this.active = false;
     }
 }
 

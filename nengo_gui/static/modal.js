@@ -7,16 +7,17 @@ Nengo.Modal = function($div) {
 
     this.sim_was_running = false;
 
+    //This listener is triggered when the modal is closed
     this.$div.on('hidden.bs.modal', function () {
         if (self.sim_was_running) {
             sim.play();
         }
-        Nengo.hotkeys.toggle_hotkeys();
+        Nengo.hotkeys.set_active(true);
     })
 }
 
 Nengo.Modal.prototype.show = function() {
-    Nengo.hotkeys.toggle_hotkeys();
+    Nengo.hotkeys.set_active(false);
     this.sim_was_running = !sim.paused;
     this.$div.modal('show');
     sim.pause()
