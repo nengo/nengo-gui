@@ -92,7 +92,7 @@ Nengo.SimControl.prototype.on_message = function(event) {
 };
 
 Nengo.SimControl.prototype.disconnected = function() {
-    $('#main').css('background-color', 'red')
+    $('#main').css('background-color', '#a94442')
     Nengo.modal.title("Nengo has stopped running");
     Nengo.modal.text_body("To continue working with your model, re-run nengo_gui and click Refresh.", "danger");
     Nengo.modal.footer('refresh');
