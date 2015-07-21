@@ -7,7 +7,7 @@ import threading
 import nengo
 import json
 
-from nengo_gui.components.component import Component, Template
+from nengo_gui.components.component import Component
 from nengo_gui.disposable_js import infomodal
 import nengo_gui.layout
 
@@ -15,16 +15,14 @@ from .action import create_action
 
 
 class NetGraph(Component):
+    config_defaults = {}
     configs = {}
 
-    def __init__(self, page, config, uid):
+    def __init__(self):
         # this component must be before all the normal graphs (so that
         # those other graphs are on top of the NetGraph), so its
         # order is between that of SimControl and the default (0)
-        super(NetGraph, self).__init__(page, config, uid, component_order=-5)
-        self.layout = nengo_gui.layout.Layout(self.page.model)
-        self.to_be_expanded = collections.deque([self.page.model])
-        self.to_be_sent = collections.deque()
+        super(NetGraph, self).__init__(component_order=-5)
 
         # this lock ensures safety between check_for_reload() and update_code()
         self.code_lock = threading.Lock()
@@ -32,8 +30,15 @@ class NetGraph(Component):
 
         self.uids = {}
         self.parents = {}
-        self.networks_to_search = [self.page.model]
         self.initialized_pan_and_zoom = False
+
+    def attach(self, page, config, uid):
+        super(NetGraph, self).attach(page, config, uid)
+        self.layout = nengo_gui.layout.Layout(self.page.model)
+        self.to_be_expanded = collections.deque([self.page.model])
+        self.to_be_sent = collections.deque()
+
+        self.networks_to_search = [self.page.model]
 
         try:
             self.last_modify_time = os.path.getmtime(self.page.filename)
@@ -73,6 +78,7 @@ class NetGraph(Component):
     def _reload(self, code=None):
 
         old_locals = self.page.locals
+        old_default_labels = self.page.default_labels
 
         if code is None:
             with open(self.page.filename) as f:
@@ -145,13 +151,6 @@ class NetGraph(Component):
 
         self.to_be_expanded.append(self.page.model)
 
-        # record the names of the current templates so we can map them to
-        # the new templates below.  Note that we have to do this before
-        # updating name_finder and config, as that will wipe out the old
-        # uids.
-        template_uids = [self.page.get_uid(c.template)
-                         for c in self.page.components]
-
         self.page.name_finder = name_finder
         self.page.default_labels = name_finder.known_name
         self.page.config = self.page.load_config()
@@ -159,39 +158,56 @@ class NetGraph(Component):
         self.layout = nengo_gui.layout.Layout(self.page.model)
         self.page.code = code
 
-        removed_items = list(removed_uids.keys())
+        orphan_components = []
+
+        removed_items = list(removed_uids.values())
         for c in self.page.components:
-            for item in c.template.args:
+            for item in c.code_python_args(old_default_labels):
                 if item in removed_items:
                     self.to_be_sent.append(dict(type='delete_graph',
-                                                uid=c.uid))
+                                                uid=id(c),
+                                                notify_server=False))
+                    orphan_components.append(c)
                     break
 
         components = []
+        # the old names for the old components
+        component_uids = [c.uid for c in self.page.components]
 
         for k, v in list(self.page.locals.items()):
-            if isinstance(v, nengo_gui.components.component.Template):
-                t_uid = self.page.get_uid(v)
-                # find the corresponding template in the old list
-                index = template_uids.index(t_uid)
-                old_component = self.page.components[index]
-                self.page.locals[t_uid] = v
-                self.page.default_labels[v] = t_uid
+            if isinstance(v, nengo_gui.components.component.Component):
 
+                # the object has been removed, so the Component should
+                #  be removed as well
+                if v in orphan_components:
+                    continue
+
+                # this is a Component that was previously removed,
+                #  but is still in the config file, so let's recover it
+                if k not in component_uids:
+                    self.page.add_component(v)
+                    self.to_be_sent.append(dict(type='js', 
+                                                code=v.javascript()))
+                    components.append(v)
+                    continue
+                
+                # otherwise, find the corresponding old Component
+                index = component_uids.index(k)
+                old_component = self.page.components[index]
                 if isinstance(v, (nengo_gui.components.SimControlTemplate,
                                   nengo_gui.components.AceEditorTemplate,
                                   nengo_gui.components.NetGraphTemplate)):
-                    old_component.template = v
+                    # just keep these ones
                     components.append(old_component)
-
                 else:
+                    # replace these components with the newly generated ones
                     try:
-                        c = self.page.add_template(v)
-                        old_component.replace_with = c
+                        self.page.add_component(v)
+                        old_component.replace_with = v
                     except:
                         traceback.print_exc()
                         print('failed to recreate plot for %s' % v)
-                    components.append(c)
+                    components.append(v)
 
         components.sort(key=lambda x: x.component_order)
 
@@ -290,7 +306,7 @@ class NetGraph(Component):
                 self.expand_network(network, client)
 
     def javascript(self):
-        return 'new Nengo.NetGraph(main, {uid:"%s"});' % self.uid
+        return 'new Nengo.NetGraph(main, {uid:"%s"});' % id(self)
 
     def message(self, msg):
         try:
@@ -452,8 +468,3 @@ class NetGraph(Component):
         posts = self.get_parents(post)[:-1]
         info = dict(uid=uid, pre=pres, post=posts, type='conn', parent=parent)
         client.write(json.dumps(info))
-
-
-class NetGraphTemplate(Template):
-    cls = NetGraph
-    config_params = dict()

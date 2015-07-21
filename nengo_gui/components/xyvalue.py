@@ -4,17 +4,22 @@ import collections
 import nengo
 import numpy as np
 
-from nengo_gui.components.component import Component, Template
+from nengo_gui.components.component import Component
 
 
 class XYValue(Component):
-    def __init__(self, page, config, uid, obj):
-        super(XYValue, self).__init__(page, config, uid)
+    config_defaults = dict(max_value=1, min_value=-1, index_x=0, index_y=1,
+                           **Component.config_defaults)
+    def __init__(self, obj):
+        super(XYValue, self).__init__()
         self.obj = obj
-        self.label = page.get_label(obj)
         self.data = collections.deque()
         self.n_lines = int(obj.size_out)
         self.struct = struct.Struct('<%df' % (1 + self.n_lines))
+
+    def attach(self, page, config, uid):
+        super(XYValue, self).attach(page, config, uid)
+        self.label = page.get_label(self.obj)
 
     def add_nengo_objects(self, page):
         with page.model:
@@ -35,11 +40,9 @@ class XYValue(Component):
             client.write(data, binary=True)
 
     def javascript(self):
-        info = dict(uid=self.uid, n_lines=self.n_lines, label=self.label)
+        info = dict(uid=id(self), n_lines=self.n_lines, label=self.label)
         json = self.javascript_config(info)
         return 'new Nengo.XYValue(main, sim, %s);' % json
 
-class XYValueTemplate(Template):
-    cls = XYValue
-    config_params = dict(max_value=1, min_value=-1, index_x=0, index_y=1,
-                         **Template.default_params)
+    def code_python_args(self, uids):
+        return [uids[self.obj]]

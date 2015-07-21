@@ -6,19 +6,23 @@ import nengo.spa
 from nengo.spa.module import Module
 import numpy as np
 
-from nengo_gui.components.component import Component, Template
+from nengo_gui.components.component import Component
 
 
 class Pointer(Component):
-    def __init__(self, page, config, uid, obj, **kwargs):
-        super(Pointer, self).__init__(page, config, uid)
+    config_defaults = dict(show_pairs=False, **Component.config_defaults)
+    def __init__(self, obj, **kwargs):
+        super(Pointer, self).__init__()
         self.obj = obj
-        self.label = page.get_label(obj)
         self.data = collections.deque()
         self.override_target = None
         self.target = kwargs.get('args', 'default')
         self.vocab_out = obj.outputs[self.target][1]
         self.vocab_in = obj.inputs[self.target][1]
+
+    def attach(self, page, config, uid):
+        super(Pointer, self).attach(page, config, uid)
+        self.label = page.get_label(self.obj)
         self.vocab_out.include_pairs = config.show_pairs
 
     def add_nengo_objects(self, page):
@@ -65,9 +69,12 @@ class Pointer(Component):
             client.write(data, binary=False)
 
     def javascript(self):
-        info = dict(uid=self.uid, label=self.label)
+        info = dict(uid=id(self), label=self.label)
         json = self.javascript_config(info)
         return 'new Nengo.Pointer(main, sim, %s);' % json
+
+    def code_python_args(self, uids):
+        return [uids[self.obj], 'target=%r' % self.target]
 
     def message(self, msg):
         if len(msg) == 0:
@@ -84,8 +91,3 @@ class Pointer(Component):
             return list(obj.outputs.keys())
         else:
             return []
-
-
-class PointerTemplate(Template):
-    cls = Pointer
-    config_params = dict(show_pairs=False, **Template.default_params)
