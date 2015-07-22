@@ -187,22 +187,22 @@ class Page(object):
         self.error = None
         self.stdout = ''
 
-        patch = nengo_gui.exec_env.ExecutionEnvironment(self.filename)
+        exec_env = nengo_gui.exec_env.ExecutionEnvironment(self.filename)
         try:
-            with patch:
+            with exec_env:
                 exec(code, locals)
         except nengo_gui.exec_env.StartedSimulatorException:
             line = nengo_gui.exec_env.determine_line_number()
-            patch.stdout.write('Warning: Simulators cannot be manually'
-                               ' run inside nengo_gui (line %d)\n' % line)
+            exec_env.stdout.write('Warning: Simulators cannot be manually'
+                                  ' run inside nengo_gui (line %d)\n' % line)
         except nengo_gui.exec_env.StartedGUIException:
             line = nengo_gui.exec_env.determine_line_number()
-            patch.stdout.write('Warning: nengo_gui cannot be run inside'
-                               ' nengo_gui (line %d)\n' % line)
+            exec_env.stdout.write('Warning: nengo_gui cannot be run inside'
+                                  ' nengo_gui (line %d)\n' % line)
         except:
             line = nengo_gui.exec_env.determine_line_number()
             self.error = dict(trace=traceback.format_exc(), line=line)
-        self.stdout = patch.stdout.getvalue()
+        self.stdout = exec_env.stdout.getvalue()
 
         # make sure we've defined a nengo.Network
         model = locals.get('model', None)
@@ -416,17 +416,17 @@ class Page(object):
                 old_sim.sim = None
                 old_sim.finished = True
 
-            patch = nengo_gui.exec_env.ExecutionEnvironment(self.filename, 
-                                                            allow_sim=True)
+            exec_env = nengo_gui.exec_env.ExecutionEnvironment(self.filename,
+                                                               allow_sim=True)
             # build the simulation
             try:
-                with patch:
+                with exec_env:
                     self.sim = backend.Simulator(self.model)
             except:
                 line = nengo_gui.exec_env.determine_line_number()
                 self.error = dict(trace=traceback.format_exc(), line=line)
 
-            self.stdout += patch.stdout.getvalue()
+            self.stdout += exec_env.stdout.getvalue()
 
             if self.sim is not None:
                 if self.backend in Page.singleton_sims:
