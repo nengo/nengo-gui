@@ -56,8 +56,8 @@ class Page(object):
         self.default_labels = None # dict of names to use for unlabelled objs
         self.config = None         # nengo_gui.Config for storing layout
         self.components = None     # list of Components
-        self.uid_prefix_counter = None # used for generating uids for templates
-        self.template_uids = None  # mapping from Templates to text
+        self.uid_prefix_counter = None # used for generating uids for components
+        self.component_uids = None  # mapping from Components to text
 
         self.config_save_needed = False
         self.config_save_time = None   # time of last config file save
@@ -152,26 +152,24 @@ class Page(object):
 
     def create_components(self):
         """Generate the actual Components from the Templates"""
+        #TODO: change the name of this
         self.components = []
-        self.template_uids = {}
+        self.component_uids = {}
         for k, v in self.locals.items():
-            if isinstance(v, nengo_gui.components.component.Template):
-                self.template_uids[v] = k
-                c = v.create(self)
-                self.gui.component_uids[c.uid] = c
-                self.components.append(c)
+            if isinstance(v, nengo_gui.components.Component):
+                self.component_uids[v] = k
+                self.gui.component_uids[id(v)] = v
+                self.components.append(v)
 
         # this ensures NetGraph, AceEditor, and SimControl are first
         self.components.sort(key=lambda x: x.component_order)
 
-    def add_template(self, template):
+    def add_component(self, component):
         """Add a new Component to an existing Page."""
-        c = template.create(self)
-        self.gui.component_uids[c.uid] = c
-
-        self.components.append(c)
-
-        return c
+        self.gui.component_uids[id(component)] = component
+        uid = self.get_uid(component)
+        component.attach(self, self.config[component], uid=uid)
+        self.components.append(component)
 
     def execute(self, code):
         """Run the given code to generate self.model and self.locals.
@@ -234,14 +232,14 @@ class Page(object):
 
         # make sure the required Components exist
         if '_viz_sim_control' not in self.locals:
-            template = nengo_gui.components.SimControlTemplate()
-            self.locals['_viz_sim_control'] = template
+            c = nengo_gui.components.SimControl()
+            self.locals['_viz_sim_control'] = c
         if '_viz_net_graph' not in self.locals:
-            template = nengo_gui.components.NetGraphTemplate()
-            self.locals['_viz_net_graph'] = template
+            c = nengo_gui.components.NetGraph()
+            self.locals['_viz_net_graph'] = c
         if '_viz_ace_editor' not in self.locals:
-            template = nengo_gui.components.AceEditorTemplate()
-            self.locals['_viz_ace_editor'] = template
+            c = nengo_gui.components.AceEditor()
+            self.locals['_viz_ace_editor'] = c
 
         if self.model is not None:
             if config[self.model].pos is None:
@@ -250,8 +248,9 @@ class Page(object):
                 config[self.model].size = (1.0, 1.0)
 
         for k, v in self.locals.items():
-            if isinstance(v, nengo_gui.components.component.Template):
+            if isinstance(v, nengo_gui.components.Component):
                 self.default_labels[v] = k
+                v.attach(page=self, config=config[v], uid=k)
 
         return config
 
@@ -379,10 +378,8 @@ class Page(object):
 
     def remove_component(self, component):
         """Remove a component from the layout."""
-        del self.gui.component_uids[component.uid]
-        template = component.template
-        uid = self.get_uid(template)
-        self.remove_uid(uid)
+        del self.gui.component_uids[id(component)]
+        self.remove_uid(component.uid)
         self.components.remove(component)
 
     def config_change(self, component, new_cfg, old_cfg):

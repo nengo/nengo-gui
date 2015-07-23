@@ -1,10 +1,10 @@
 Nengo Viz contributors
 ======================
 
-This is a list of people who have contributed to Nengo Viz.
+This is a list of people who have contributed to Nengo GUI.
 Note that this is not the list of copyright holders;
 Applied Brain Research Inc. holds the copyright to
-all Nengo Viz code, except for code that is used under
+all Nengo GUI code, except for code that is used under
 various licenses, as described in the LICENSE.md file.
 
 By adding your name to this file, you are agreeing

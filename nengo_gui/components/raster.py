@@ -4,20 +4,24 @@ import collections
 import nengo
 import numpy as np
 
-from nengo_gui.components.component import Component, Template
+from nengo_gui.components.component import Component
 
 
 class Raster(Component):
-    def __init__(self, page, config, uid, obj, n_neurons=None):
-        super(Raster, self).__init__(page, config, uid)
+    config_defaults = dict(**Component.config_defaults)
+    def __init__(self, obj, n_neurons=None):
+        super(Raster, self).__init__()
         self.neuron_type = obj.neuron_type
         self.obj = obj.neurons
         self.data = collections.deque()
-        self.label = page.get_label(obj)
         self.max_neurons = obj.n_neurons
         if n_neurons is None:
             n_neurons = min(self.max_neurons, 10)
         self.n_neurons = n_neurons
+
+    def attach(self, page, config, uid):
+        super(Raster, self).attach(page, config, uid)
+        self.label = page.get_label(self.obj.ensemble)
 
     def add_nengo_objects(self, page):
         with page.model:
@@ -41,12 +45,10 @@ class Raster(Component):
             client.write(data, binary=True)
 
     def javascript(self):
-        info = dict(uid=self.uid, n_neurons=self.n_neurons, label=self.label,
+        info = dict(uid=id(self), n_neurons=self.n_neurons, label=self.label,
                     max_neurons=self.max_neurons)
         json = self.javascript_config(info)
         return 'new Nengo.Raster(main, sim, %s);' % json
 
-
-class RasterTemplate(Template):
-    cls = Raster
-    config_params = dict(**Template.default_params)
+    def code_python_args(self, uids):
+        return [uids[self.obj.ensemble]]

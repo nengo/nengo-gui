@@ -56,7 +56,7 @@ class Action(object):
 
 class ConfigAction(Action):
     def __init__(self, page, component, new_cfg, old_cfg):
-        super(ConfigAction, self).__init__(page.net_graph, component.uid)
+        super(ConfigAction, self).__init__(page.net_graph, id(component))
         self.component = component
         self.page = page
         self.new_cfg = new_cfg
@@ -64,7 +64,7 @@ class ConfigAction(Action):
 
     def load(self, cfg):
         for k, v in iteritems(cfg):
-            setattr(self.page.config[self.component.template], k, v)
+            setattr(self.page.config[self.component], k, v)
         self.net_graph.modified_config()
         self.send("config", config=cfg)
 
@@ -99,7 +99,7 @@ class ExpandCollapse(Action):
 
 class RemoveGraph(Action):
     def __init__(self, net_graph, component):
-        super(RemoveGraph, self).__init__(net_graph, component.uid)
+        super(RemoveGraph, self).__init__(net_graph, id(component))
         self.component = component
 
     def apply(self):
@@ -107,13 +107,13 @@ class RemoveGraph(Action):
 
     def undo(self):
         page = self.net_graph.page
-        component = page.add_template(self.component.template)
+        page.add_component(self.component)
 
-        page.locals[self.uid] = component.template
-        page.default_labels[component.template] = self.uid
+        page.locals[self.component.uid] = self.component
+        page.default_labels[self.component] = self.component.uid
 
         page.changed = True
-        self.send('js', code=component.javascript())
+        self.send('js', code=self.component.javascript())
 
 
 class CreateGraph(Action):
@@ -123,39 +123,40 @@ class CreateGraph(Action):
         self.type = type
         self.x, self.y = x, y
         self.width, self.height = width, height
-        cls = getattr(nengo_gui.components, self.type + 'Template')
-        self.template = cls(self.obj, **kwargs)
+        cls = getattr(nengo_gui.components, self.type)
+        self.component = cls(self.obj, **kwargs)
 
         # If only one instance of the component is allowed, and another had to be
         # destroyed to create this one, keep track of it here so it can be undone
         self.duplicate = None
 
         # Remove any existing sliders associated with the same node
-        for component in self.net_graph.page.components:
-            if (isinstance(component, nengo_gui.components.slider.Slider)
-                    and component.node is self.obj):
-                self.duplicate = RemoveGraph(net_graph, component)
-                self.send('delete_graph', uid=component.uid)
+        if type == 'Slider':
+            for component in self.net_graph.page.components:
+                if (isinstance(component, nengo_gui.components.slider.Slider)
+                        and component.node is self.obj):
+                    self.duplicate = RemoveGraph(net_graph, component)
+                    self.send('delete_graph', uid=id(component))
 
         self.act_create_graph()
 
     def act_create_graph(self):
         if self.graph_uid is None:
-            self.net_graph.page.generate_uid(self.template, prefix='_viz_')
-            self.graph_uid = self.net_graph.page.get_uid(self.template)
+            self.net_graph.page.generate_uid(self.component, prefix='_viz_')
+            self.graph_uid = self.net_graph.page.get_uid(self.component)
         else:
-            self.net_graph.page.locals[self.graph_uid] = self.template
-            self.net_graph.page.default_labels[self.template] = (
+            self.net_graph.page.locals[self.graph_uid] = self.component
+            self.net_graph.page.default_labels[self.component] = (
                 self.graph_uid)
-        self.net_graph.page.config[self.template].x = self.x
-        self.net_graph.page.config[self.template].y = self.y
-        self.net_graph.page.config[self.template].width = self.width
-        self.net_graph.page.config[self.template].height = self.height
+        self.net_graph.page.config[self.component].x = self.x
+        self.net_graph.page.config[self.component].y = self.y
+        self.net_graph.page.config[self.component].width = self.width
+        self.net_graph.page.config[self.component].height = self.height
         self.net_graph.modified_config()
 
-        c = self.net_graph.page.add_template(self.template)
+        self.net_graph.page.add_component(self.component)
         self.net_graph.page.changed = True
-        self.send('js', code=c.javascript())
+        self.send('js', code=self.component.javascript())
 
     def apply(self):
         if self.duplicate is not None:
@@ -163,7 +164,7 @@ class CreateGraph(Action):
         self.act_create_graph()
 
     def undo(self):
-        self.send('delete_graph', uid=self.graph_uid)
+        self.send('delete_graph', uid=id(self.component))
         if self.duplicate is not None:
             self.duplicate.undo()
 
