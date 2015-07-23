@@ -150,9 +150,6 @@ Nengo.Value.prototype.set_range = function() {
             var max = parseFloat(new_range[1]);
             self.update_range(min, max);
             self.save_layout();
-            console.log(Math.max(min.toString().length, max.toString().length))
-            self.axes2d.y_label_length = Math.max(min.toString().length, max.toString().length)
-            self.axes2d.set_axes_geometry();
             self.axes2d.axis_y.tickValues([min,max])
         }
         $('#OK').attr('data-dismiss', 'modal');
