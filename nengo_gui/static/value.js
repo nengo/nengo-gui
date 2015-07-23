@@ -44,6 +44,8 @@ Nengo.Value = function(parent, sim, args) {
 
     this.update();
     this.on_resize(this.get_screen_width(), this.get_screen_height());
+
+    this.axes2d.axis_y.tickValues([this.axes2d.scale_y.domain()[0], this.axes2d.scale_y.domain()[1]])
 };
 Nengo.Value.prototype = Object.create(Nengo.Component.prototype);
 Nengo.Value.prototype.constructor = Nengo.Value;
@@ -148,6 +150,10 @@ Nengo.Value.prototype.set_range = function() {
             var max = parseFloat(new_range[1]);
             self.update_range(min, max);
             self.save_layout();
+            console.log(Math.max(min.toString().length, max.toString().length))
+            self.axes2d.y_label_length = Math.max(min.toString().length, max.toString().length)
+            self.axes2d.set_axes_geometry();
+            self.axes2d.axis_y.tickValues([min,max])
         }
         $('#OK').attr('data-dismiss', 'modal');
     });
@@ -174,6 +180,7 @@ Nengo.Value.prototype.set_range = function() {
         var h = $(self.div).height();
         self.on_resize(w, h);
     })
+
 }
 
 Nengo.Value.prototype.update_range = function(min, max) {
