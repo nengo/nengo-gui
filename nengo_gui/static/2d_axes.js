@@ -33,8 +33,6 @@ Nengo.Axes2D = function(parent, args) {
         .attr("class", "axis axis_x unselectable")
         .call(this.axis_x);
 
-
-
     /** define the y-axis */
     this.axis_y = d3.svg.axis()
         .scale(this.scale_y)
