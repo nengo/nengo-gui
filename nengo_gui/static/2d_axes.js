@@ -33,17 +33,17 @@ Nengo.Axes2D = function(parent, args) {
         .attr("class", "axis axis_x unselectable")
         .call(this.axis_x);
 
+
+
     /** define the y-axis */
     this.axis_y = d3.svg.axis()
         .scale(this.scale_y)
         .orient("left")
-        .ticks(2)
-        .tickValues([-1,0,1])
+        .tickValues([args.min_value, args.max_value]);
 
     this.axis_y_g = this.svg.append("g")
         .attr("class", "axis axis_y unselectable")
         .call(this.axis_y);
-
 };
 
 Nengo.Axes2D.prototype.set_axes_geometry = function(width, height) {
