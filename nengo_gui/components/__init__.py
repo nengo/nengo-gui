@@ -8,6 +8,7 @@ from .voltage import Voltage
 from .pointer import Pointer
 from .netgraph import NetGraph
 from .ace_editor import AceEditor
+from .spa_similarity import SpaSimilarity
 
 # Old versions of the .cfg files used Templates which had slightly different
 # names than the Components currently use.  This code allows us to

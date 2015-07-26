@@ -1,5 +1,5 @@
 /**
- * Line graph showing decoded values over time
+ * Line graph showing semantic pointer decoded values over time
  * @constructor
  *
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
@@ -9,7 +9,11 @@
  * @param {Nengo.SimControl} args.sim - the simulation controller
  */
 
-Nengo.Value = function(parent, sim, args) {
+// this initialisation is basically the same as Value.js, but 
+// I can't inherit it because it isn't part of the prototype
+// is that worth changing?
+
+Nengo.SpaSimilarity = function(parent, sim, args) {
     Nengo.Component.call(this, parent, args);
     var self = this;
     this.n_lines = args.n_lines || 1;
@@ -45,7 +49,7 @@ Nengo.Value = function(parent, sim, args) {
     this.update();
     this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
-Nengo.Value.prototype = Object.create(Nengo.Component.prototype);
+Nengo.Value.prototype = Object.create(Nengo.Value.prototype);
 Nengo.Value.prototype.constructor = Nengo.Value;
 
 /**

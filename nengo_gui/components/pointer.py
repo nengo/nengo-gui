@@ -52,6 +52,7 @@ class Pointer(Component):
             matches += matches2
         text = ';'.join(['%0.2f%s' % (sim, key) for (sim, key) in matches])
 
+        # why is this a string, but everywhere else it's a struct
         msg = '%g %s' % (t, text)
         self.data.append(msg)
         if self.override_target is None:
