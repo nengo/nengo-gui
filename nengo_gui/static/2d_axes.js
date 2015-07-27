@@ -11,6 +11,8 @@
 Nengo.Axes2D = function(parent, args) {
     var self = this;
 
+    this.max_y_width = 100;
+
     /** draw the plot as an SVG */
     this.svg = d3.select(parent).append('svg')
         .attr('width', '100%')
@@ -48,8 +50,7 @@ Nengo.Axes2D.prototype.set_axes_geometry = function(width, height) {
     scale = parseFloat($('#main').css('font-size'));
     this.width = width;
     this.height = height;
-
-    this.ax_left = 1.75 * scale;
+    this.ax_left = this.max_y_width;
     this.ax_right = width - 1.75 * scale;
     this.ax_bottom = height - 1.75 * scale;
     this.ax_top = 1.75 * scale;
@@ -86,3 +87,21 @@ Nengo.Axes2D.prototype.on_resize = function(width, height) {
     this.axis_y_g.call(this.axis_y);
 };
 
+Nengo.Axes2D.prototype.fit_ticks = function(parent){
+    var self = this;
+    setTimeout(function(){
+        var ticks = $(parent.div).find('.tick');
+        var max_w = 0;
+        for (var i = 0; i < ticks.length; i++) {
+            var w = ticks[i].getBoundingClientRect().width
+            console.log(w)
+            if (w > max_w) {
+                max_w = w;
+            }
+        }
+        self.max_y_width = max_w;
+        self.set_axes_geometry();
+        self.on_resize(parent.width, parent.height);
+    }, 1)
+}
+    

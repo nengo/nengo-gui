@@ -45,6 +45,7 @@ Nengo.Value = function(parent, sim, args) {
     this.update();
     this.on_resize(this.get_screen_width(), this.get_screen_height());
     this.axes2d.axis_y.tickValues([args.min_value, args.max_value]);
+    this.axes2d.fit_ticks(this);
 };
 
 Nengo.Value.prototype = Object.create(Nengo.Component.prototype);
@@ -151,6 +152,8 @@ Nengo.Value.prototype.set_range = function() {
             self.update_range(min, max);
             self.save_layout();
             self.axes2d.axis_y.tickValues([min, max])
+            self.axes2d.fit_ticks(self);
+  
         }
         $('#OK').attr('data-dismiss', 'modal');
     });
