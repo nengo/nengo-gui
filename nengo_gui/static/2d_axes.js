@@ -93,8 +93,7 @@ Nengo.Axes2D.prototype.fit_ticks = function(parent){
         var ticks = $(parent.div).find('.tick');
         var max_w = 0;
         for (var i = 0; i < ticks.length; i++) {
-            var w = ticks[i].getBoundingClientRect().width
-            console.log(w)
+            var w = ticks[i].getBoundingClientRect().width;
             if (w > max_w) {
                 max_w = w;
             }
