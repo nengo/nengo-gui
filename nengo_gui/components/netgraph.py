@@ -317,10 +317,14 @@ class NetGraph(Component):
             new_post = new_item.post_obj
             if isinstance(old_pre, nengo.ensemble.Neurons):
                 old_pre = old_pre.ensemble
+            if isinstance(old_post, nengo.connection.LearningRule):
+                old_post = old_post.connection.post_obj
             if isinstance(old_post, nengo.ensemble.Neurons):
                 old_post = old_post.ensemble
             if isinstance(new_pre, nengo.ensemble.Neurons):
                 new_pre = new_pre.ensemble
+            if isinstance(new_post, nengo.connection.LearningRule):
+                new_post = new_post.connection.post_obj
             if isinstance(new_post, nengo.ensemble.Neurons):
                 new_post = new_post.ensemble
 
@@ -558,6 +562,8 @@ class NetGraph(Component):
         if isinstance(pre, nengo.ensemble.Neurons):
             pre = pre.ensemble
         post = conn.post_obj
+        if isinstance(post, nengo.connection.LearningRule):
+            post = post.connection.post
         if isinstance(post, nengo.ensemble.Neurons):
             post = post.ensemble
         pre = self.page.get_uid(pre)
