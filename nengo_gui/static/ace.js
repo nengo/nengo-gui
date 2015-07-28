@@ -168,7 +168,7 @@ Nengo.Ace.prototype.on_message = function (event) {
 
 Nengo.Ace.prototype.show_editor = function () {
     var editor = document.getElementById('rightpane');
-    editor.style.display = 'block';
+    editor.style.display = 'flex';
     this.hidden = false;
     if (!this.console_hidden) {
         this.console.style.display = 'block';
