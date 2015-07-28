@@ -20,7 +20,7 @@ Nengo.Image = function(parent, sim, args) {
     self.n_pixels = self.pixels_x * self.pixels_y;
 
     /** for storing the accumulated data */
-    self.data_store = new Nengo.DataStore(self.n_pixels, self.sim, 0.01);
+    self.data_store = new Nengo.DataStore(self.n_pixels, self.sim, 0);
 
     /** draw the plot as an SVG */
     self.svg = d3.select(self.div).append('svg')
@@ -61,7 +61,7 @@ Nengo.Image.prototype.constructor = Nengo.Image;
  */
 Nengo.Image.prototype.on_message = function(event) {
     var self = this;
-    var data = new Float32Array(event.data);
+    var data = new Uint8Array(event.data);
     self.data_store.push(data);
     self.schedule_update();
 }
