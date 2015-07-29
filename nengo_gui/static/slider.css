@@ -9,11 +9,3 @@
 input#value_in_field {
     cursor: text !important;
 }
-
-.max_slider_label{
-	-webkit-transform:rotate(-90deg);
-}
-
-.min_slider_label{
-	-webkit-transform:rotate(-90deg);
-}
