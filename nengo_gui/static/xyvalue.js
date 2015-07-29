@@ -17,7 +17,7 @@ Nengo.XYValue = function(parent, sim, args) {
     this.sim = sim;
 
     /** for storing the accumulated data */
-    this.data_store = new Nengo.DataStore(this.n_lines, this.sim, 0.01);
+    this.data_store = new Nengo.DataStore(this.n_lines, this.sim, 0);
 
     this.axes2d = new Nengo.Axes2D(this.div, args);
     this.axes2d.axis_y.tickValues([args.min_value, args.max_value]);

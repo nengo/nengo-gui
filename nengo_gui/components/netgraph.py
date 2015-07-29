@@ -2,11 +2,12 @@ import time
 import os
 import traceback
 import collections
+import threading
 
 import nengo
 import json
 
-from nengo_gui.components.component import Component, Template
+from nengo_gui.components.component import Component
 from nengo_gui.disposable_js import infomodal
 import nengo_gui.layout
 
@@ -14,76 +15,89 @@ from .action import create_action
 
 
 class NetGraph(Component):
+    config_defaults = {}
     configs = {}
 
-    def __init__(self, viz, config, uid):
-        super(NetGraph, self).__init__(viz, config, uid)
-        self.viz = viz
-        self.layout = nengo_gui.layout.Layout(self.viz.model)
-        self.config = viz.config
-        self.to_be_expanded = collections.deque([self.viz.model])
-        self.to_be_sent = collections.deque()
+    def __init__(self):
+        # this component must be before all the normal graphs (so that
+        # those other graphs are on top of the NetGraph), so its
+        # order is between that of SimControl and the default (0)
+        super(NetGraph, self).__init__(component_order=-5)
+
+        # this lock ensures safety between check_for_reload() and update_code()
+        self.code_lock = threading.Lock()
+        self.new_code = None
+
         self.uids = {}
         self.parents = {}
-        self.networks_to_search = [self.viz.model]
         self.initialized_pan_and_zoom = False
+
+    def attach(self, page, config, uid):
+        super(NetGraph, self).attach(page, config, uid)
+        self.layout = nengo_gui.layout.Layout(self.page.model)
+        self.to_be_expanded = collections.deque([self.page.model])
+        self.to_be_sent = collections.deque()
+
+        self.networks_to_search = [self.page.model]
+
         try:
-            self.last_modify_time = os.path.getmtime(self.viz.viz.filename)
+            self.last_modify_time = os.path.getmtime(self.page.filename)
         except OSError:
+            self.last_modify_time = None
+        except TypeError:  # happens if self.filename is None
             self.last_modify_time = None
         self.last_reload_check = time.time()
 
     def check_for_reload(self):
-        try:
-            t = os.path.getmtime(self.viz.viz.filename)
-        except OSError:
-            t = None
+        if self.page.filename is not None:
+            try:
+                t = os.path.getmtime(self.page.filename)
+                if self.last_modify_time is None or self.last_modify_time < t:
+                    self.reload()
+                    self.last_modify_time = t
+            except OSError:
+                pass
 
-        if t is not None:
-            if self.last_modify_time is None or self.last_modify_time < t:
-                self.reload()
-                self.last_modify_time = t
+        with self.code_lock:
+            new_code = self.new_code
+            # the lock is in case update_code() is called between these lines
+            self.new_code = None
 
-        new_code = self.viz.new_code
-        self.viz.new_code = None
         if new_code is not None:
             self.reload(code=new_code)
 
+    def update_code(self, code):
+        """Set new version of code to display."""
+        with self.code_lock:
+            self.new_code = code
+
     def reload(self, code=None):
-        with self.viz.viz.lock:
+        with self.page.lock:
             self._reload(code=code)
 
     def _reload(self, code=None):
-        current_error = None
-        locals = {}
+
+        old_locals = self.page.locals
+        old_default_labels = self.page.default_labels
+
         if code is None:
-            with open(self.viz.viz.filename) as f:
+            with open(self.page.filename) as f:
                 code = f.read()
+            if self.page.code == code:
+                # don't re-execute the identical code
+                return
+            else:
+                # send the new code to the client
+                self.page.ace_editor.update_code(code)
 
-        try:
-            with nengo_gui.monkey.patch:
-                exec(code, locals)
-        except:
-            line = nengo_gui.monkey.determine_line_number()
-            current_error = dict(trace=traceback.format_exc(), line=line)
-            traceback.print_exc()
-            self.viz.current_error = current_error
+        self.page.execute(code)
+
+        if self.page.error is not None:
             return
-        try:
-            model = locals['model']
-        except:
-            if current_error is None:
-                line = nengo_gui.monkey.determine_line_number()
-                current_error = dict(trace=traceback.format_exc(), line=line)
-                traceback.print_exc()
-            self.viz.current_error = current_error
-            return
-        self.viz.current_error = current_error
 
-        locals['nengo_gui'] = nengo_gui
-        name_finder = nengo_gui.NameFinder(locals, model)
+        name_finder = nengo_gui.NameFinder(self.page.locals, self.page.model)
 
-        self.networks_to_search = [model]
+        self.networks_to_search = [self.page.model]
         self.parents = {}
 
         removed_uids = {}
@@ -94,7 +108,7 @@ class NetGraph(Component):
         # so we use the uids of the pre and post objects.
         for uid, old_item in nengo.utils.compat.iteritems(dict(self.uids)):
             try:
-                new_item = eval(uid, locals)
+                new_item = eval(uid, self.page.locals)
             except:
                 new_item = None
 
@@ -104,7 +118,7 @@ class NetGraph(Component):
             # not the normal uid for that item.  For example, the uid
             # "ensembles[0]" might still refer to something even after that
             # ensemble is removed.
-            new_uid = self.viz.viz.get_uid(new_item,
+            new_uid = self.page.get_uid(new_item,
                         default_labels=name_finder.known_name)
             if new_uid != uid:
                 new_item = None
@@ -130,107 +144,138 @@ class NetGraph(Component):
                 del self.uids[uid]
                 removed_uids[old_item] = uid
             else:
-                if isinstance(old_item, (nengo.Node,
-                                         nengo.Ensemble,
-                                         nengo.Network)):
-                    old_label = self.viz.viz.get_label(old_item)
-                    new_label = self.viz.viz.get_label(
-                        new_item, default_labels=name_finder.known_name)
-
-                    if old_label != new_label:
-                        self.to_be_sent.append(dict(
-                            type='rename', uid=uid, name=new_label))
-                    if isinstance(old_item, nengo.Network):
-                        if self.viz.viz.config[old_item].expanded:
-                            self.to_be_expanded.append(new_item)
-
-                elif isinstance(old_item, nengo.Connection):
-                    old_pre = old_item.pre_obj
-                    old_post = old_item.post_obj
-                    new_pre = new_item.pre_obj
-                    new_post = new_item.post_obj
-                    if isinstance(old_pre, nengo.ensemble.Neurons):
-                        old_pre = old_pre.ensemble
-                    if isinstance(old_post, nengo.ensemble.Neurons):
-                        old_post = old_post.ensemble
-                    if isinstance(new_pre, nengo.ensemble.Neurons):
-                        new_pre = new_pre.ensemble
-                    if isinstance(new_post, nengo.ensemble.Neurons):
-                        new_post = new_post.ensemble
-
-                    old_pre = self.viz.viz.get_uid(old_pre)
-                    old_post = self.viz.viz.get_uid(old_post)
-                    new_pre = self.viz.viz.get_uid(
-                        new_pre, default_labels=name_finder.known_name)
-                    new_post = self.viz.viz.get_uid(
-                        new_post, default_labels=name_finder.known_name)
-
-                    if new_pre != old_pre or new_post != old_post:
-                        # if the connection has changed, tell javascript
-                        pres = self.get_parents(
-                            new_pre,
-                            default_labels=name_finder.known_name)[:-1]
-                        posts = self.get_parents(
-                            new_post,
-                            default_labels=name_finder.known_name)[:-1]
-                        self.to_be_sent.append(dict(
-                            type='reconnect', uid=uid,
-                            pres=pres, posts=posts))
+                # fix aspects of the item that may have changed
+                self._reload_update_item(uid, old_item, new_item, name_finder)
 
                 self.uids[uid] = new_item
 
-        self.to_be_expanded.append(model)
+        self.to_be_expanded.append(self.page.model)
 
-        self.viz.model = model
-        self.viz.viz.model = model
-        self.viz.viz.locals = locals
-        self.viz.viz.name_finder = name_finder
-        self.viz.viz.default_labels = name_finder.known_name
-        self.viz.viz.config = self.viz.viz.load_config()
-        self.viz.config = self.viz.viz.config
-        self.config = self.viz.viz.config
-        self.viz.viz.uid_prefix_counter = {}
-        self.layout = nengo_gui.layout.Layout(model)
-        self.viz.viz.code = code
+        self.page.name_finder = name_finder
+        self.page.default_labels = name_finder.known_name
+        self.page.config = self.page.load_config()
+        self.page.uid_prefix_counter = {}
+        self.layout = nengo_gui.layout.Layout(self.page.model)
+        self.page.code = code
 
+        orphan_components = []
 
-        removed_items = list(removed_uids.keys())
-        for c in self.viz.components:
-            for item in c.template.args:
+        removed_items = list(removed_uids.values())
+        for c in self.page.components:
+            for item in c.code_python_args(old_default_labels):
                 if item in removed_items:
                     self.to_be_sent.append(dict(type='delete_graph',
-                                                uid=c.uid))
+                                                uid=id(c),
+                                                notify_server=False))
+                    orphan_components.append(c)
                     break
 
         components = []
-        for c in self.viz.components[:3]:
-            components.append(c)
-            locals[c.uid] = c.template
-        self.viz.components = components
-        for template in self.viz.viz.find_templates():
-            if not isinstance(template,
-                              (nengo_gui.components.SimControlTemplate,
-                               nengo_gui.components.NetGraphTemplate,
-                               nengo_gui.components.AceEditorTemplate)):
-                try:
-                    self.viz.add_template(template)
-                except:
-                    print('failed to recreate plot for %s' % template)
+        # the old names for the old components
+        component_uids = [c.uid for c in self.page.components]
 
-        self.viz.changed = True
+        for k, v in list(self.page.locals.items()):
+            if isinstance(v, nengo_gui.components.component.Component):
+
+                # the object has been removed, so the Component should
+                #  be removed as well
+                if v in orphan_components:
+                    continue
+
+                # this is a Component that was previously removed,
+                #  but is still in the config file, so let's recover it
+                if k not in component_uids:
+                    self.page.add_component(v)
+                    self.to_be_sent.append(dict(type='js', 
+                                                code=v.javascript()))
+                    components.append(v)
+                    continue
+                
+                # otherwise, find the corresponding old Component
+                index = component_uids.index(k)
+                old_component = self.page.components[index]
+                if isinstance(v, (nengo_gui.components.SimControlTemplate,
+                                  nengo_gui.components.AceEditorTemplate,
+                                  nengo_gui.components.NetGraphTemplate)):
+                    # just keep these ones
+                    components.append(old_component)
+                else:
+                    # replace these components with the newly generated ones
+                    try:
+                        self.page.add_component(v)
+                        old_component.replace_with = v
+                    except:
+                        traceback.print_exc()
+                        print('failed to recreate plot for %s' % v)
+                    components.append(v)
+
+        components.sort(key=lambda x: x.component_order)
+
+        self.page.components = components
+
+        self.page.changed = True
+
+    def _reload_update_item(self, uid, old_item, new_item, new_name_finder):
+        """Tell the client about changes to the item due to reload."""
+        if isinstance(old_item, (nengo.Node,
+                                 nengo.Ensemble,
+                                 nengo.Network)):
+            old_label = self.page.get_label(old_item)
+            new_label = self.page.get_label(
+                new_item, default_labels=new_name_finder.known_name)
+
+            if old_label != new_label:
+                self.to_be_sent.append(dict(
+                    type='rename', uid=uid, name=new_label))
+            if isinstance(old_item, nengo.Network):
+                if self.page.config[old_item].expanded:
+                    self.to_be_expanded.append(new_item)
+
+        elif isinstance(old_item, nengo.Connection):
+            old_pre = old_item.pre_obj
+            old_post = old_item.post_obj
+            new_pre = new_item.pre_obj
+            new_post = new_item.post_obj
+            if isinstance(old_pre, nengo.ensemble.Neurons):
+                old_pre = old_pre.ensemble
+            if isinstance(old_post, nengo.ensemble.Neurons):
+                old_post = old_post.ensemble
+            if isinstance(new_pre, nengo.ensemble.Neurons):
+                new_pre = new_pre.ensemble
+            if isinstance(new_post, nengo.ensemble.Neurons):
+                new_post = new_post.ensemble
+
+            old_pre = self.page.get_uid(old_pre)
+            old_post = self.page.get_uid(old_post)
+            new_pre = self.page.get_uid(
+                new_pre, default_labels=new_name_finder.known_name)
+            new_post = self.page.get_uid(
+                new_post, default_labels=new_name_finder.known_name)
+
+            if new_pre != old_pre or new_post != old_post:
+                # if the connection has changed, tell javascript
+                pres = self.get_parents(
+                    new_pre,
+                    default_labels=new_name_finder.known_name)[:-1]
+                posts = self.get_parents(
+                    new_post,
+                    default_labels=new_name_finder.known_name)[:-1]
+                self.to_be_sent.append(dict(
+                    type='reconnect', uid=uid,
+                    pres=pres, posts=posts))
 
     def get_parents(self, uid, default_labels=None):
         while uid not in self.parents:
             net = self.networks_to_search.pop(0)
-            net_uid = self.viz.viz.get_uid(net, default_labels=default_labels)
+            net_uid = self.page.get_uid(net, default_labels=default_labels)
             for n in net.nodes:
-                n_uid = self.viz.viz.get_uid(n, default_labels=default_labels)
+                n_uid = self.page.get_uid(n, default_labels=default_labels)
                 self.parents[n_uid] = net_uid
             for e in net.ensembles:
-                e_uid = self.viz.viz.get_uid(e, default_labels=default_labels)
+                e_uid = self.page.get_uid(e, default_labels=default_labels)
                 self.parents[e_uid] = net_uid
             for n in net.networks:
-                n_uid = self.viz.viz.get_uid(n, default_labels=default_labels)
+                n_uid = self.page.get_uid(n, default_labels=default_labels)
                 self.parents[n_uid] = net_uid
                 self.networks_to_search.append(n)
         parents = [uid]
@@ -239,7 +284,7 @@ class NetGraph(Component):
         return parents
 
     def modified_config(self):
-        self.viz.viz.modified_config()
+        self.page.modified_config()
 
     def update_client(self, client):
         now = time.time()
@@ -256,13 +301,12 @@ class NetGraph(Component):
             client.write(json.dumps(info))
 
         if len(self.to_be_expanded) > 0:
-            self.viz.viz.lock.acquire()
-            network = self.to_be_expanded.popleft()
-            self.expand_network(network, client)
-            self.viz.viz.lock.release()
+            with self.page.lock:
+                network = self.to_be_expanded.popleft()
+                self.expand_network(network, client)
 
     def javascript(self):
-        return 'new Nengo.NetGraph(main, {uid:"%s"});' % self.uid
+        return 'new Nengo.NetGraph(main, {uid:"%s"});' % id(self)
 
     def message(self, msg):
         try:
@@ -281,8 +325,8 @@ class NetGraph(Component):
                 getattr(self, 'act_' + action)(**info)
             else:
                 act = create_action(action, self, **info)
-                self.viz.undo_stack.append([act])
-                del self.viz.redo_stack[:]
+                self.page.undo_stack.append([act])
+                del self.page.redo_stack[:]
         elif undo is not None:
             if undo == '1':
                 self.undo()
@@ -292,51 +336,51 @@ class NetGraph(Component):
             print('received message', msg)
 
     def undo(self):
-        if self.viz.undo_stack:
-            action = self.viz.undo_stack.pop()
+        if self.page.undo_stack:
+            action = self.page.undo_stack.pop()
             re = []
             for act in action:
                 act.undo()
                 re.insert(0, act)
-            self.viz.redo_stack.append(re)
+            self.page.redo_stack.append(re)
 
     def redo(self):
-        if self.viz.redo_stack:
-            action = self.viz.redo_stack.pop()
+        if self.page.redo_stack:
+            action = self.page.redo_stack.pop()
             un = []
             for act in action:
                 act.apply()
                 un.insert(0, act)
-            self.viz.undo_stack.append(un)
+            self.page.undo_stack.append(un)
 
     def act_expand(self, uid):
         net = self.uids[uid]
         self.to_be_expanded.append(net)
-        self.config[net].expanded = True
+        self.page.config[net].expanded = True
         self.modified_config()
 
     def act_collapse(self, uid):
         net = self.uids[uid]
-        self.config[net].expanded = False
+        self.page.config[net].expanded = False
         self.remove_uids(net)
         self.modified_config()
 
     def remove_uids(self, net):
         for items in [net.ensembles, net.networks, net.nodes, net.connections]:
             for item in items:
-                uid = self.viz.viz.get_uid(item)
+                uid = self.page.get_uid(item)
                 if uid in self.uids:
                     del self.uids[uid]
         for n in net.networks:
             self.remove_uids(n)
 
     def act_pan(self, x, y):
-        self.config[self.viz.model].pos = x, y
+        self.page.config[self.page.model].pos = x, y
         self.modified_config()
 
     def act_zoom(self, scale, x, y):
-        self.config[self.viz.model].size = scale, scale
-        self.config[self.viz.model].pos = x, y
+        self.page.config[self.page.model].size = scale, scale
+        self.page.config[self.page.model].pos = x, y
         self.modified_config()
 
     def act_create_modal(self, uid, **info):
@@ -344,17 +388,17 @@ class NetGraph(Component):
         self.to_be_sent.append(dict(type='js', code=js))
 
     def expand_network(self, network, client):
-        if not self.config[network].has_layout:
+        if not self.page.config[network].has_layout:
             pos = self.layout.make_layout(network)
             for obj, layout in pos.items():
-                self.config[obj].pos = layout['y'], layout['x']
-                self.config[obj].size = layout['h'] / 2, layout['w'] / 2
-            self.config[network].has_layout = True
+                self.page.config[obj].pos = layout['y'], layout['x']
+                self.page.config[obj].size = layout['h'] / 2, layout['w'] / 2
+            self.page.config[network].has_layout = True
 
-        if network is self.viz.model:
+        if network is self.page.model:
             parent = None
         else:
-            parent = self.viz.viz.get_uid(network)
+            parent = self.page.get_uid(network)
         for ens in network.ensembles:
             self.create_object(client, ens, type='ens', parent=parent)
         for node in network.nodes:
@@ -363,28 +407,28 @@ class NetGraph(Component):
             self.create_object(client, net, type='net', parent=parent)
         for conn in network.connections:
             self.create_connection(client, conn, parent=parent)
-        self.config[network].expanded = True
+        self.page.config[network].expanded = True
 
     def create_object(self, client, obj, type, parent):
-        uid = self.viz.viz.get_uid(obj)
+        uid = self.page.get_uid(obj)
         if uid in self.uids:
             return
 
-        pos = self.config[obj].pos
+        pos = self.page.config[obj].pos
         if pos is None:
             import random
             pos = random.uniform(0, 1), random.uniform(0, 1)
-            self.config[obj].pos = pos
-        size = self.config[obj].size
+            self.page.config[obj].pos = pos
+        size = self.page.config[obj].size
         if size is None:
             size = (0.1, 0.1)
-            self.config[obj].size = size
-        label = self.viz.viz.get_label(obj)
+            self.page.config[obj].size = size
+        label = self.page.get_label(obj)
         self.uids[uid] = obj
         info = dict(uid=uid, label=label, pos=pos, type=type, size=size,
                     parent=parent)
         if type == 'net':
-            info['expanded'] = self.config[obj].expanded
+            info['expanded'] = self.page.config[obj].expanded
         if type == 'node' and obj.output is None:
             info['passthrough'] = True
         if type == 'ens' or type == 'node':
@@ -396,10 +440,10 @@ class NetGraph(Component):
         client.write(json.dumps(info))
 
     def send_pan_and_zoom(self, client):
-        pan = self.config[self.viz.model].pos
+        pan = self.page.config[self.page.model].pos
         if pan is None:
             pan = 0, 0
-        zoom = self.config[self.viz.model].size
+        zoom = self.page.config[self.page.model].size
         if zoom is None:
             zoom = 1.0
         else:
@@ -408,7 +452,7 @@ class NetGraph(Component):
         client.write(json.dumps(dict(type='zoom', zoom=zoom)))
 
     def create_connection(self, client, conn, parent):
-        uid = self.viz.viz.get_uid(conn)
+        uid = self.page.get_uid(conn)
         if uid in self.uids:
             return
         pre = conn.pre_obj
@@ -417,15 +461,10 @@ class NetGraph(Component):
         post = conn.post_obj
         if isinstance(post, nengo.ensemble.Neurons):
             post = post.ensemble
-        pre = self.viz.viz.get_uid(pre)
-        post = self.viz.viz.get_uid(post)
+        pre = self.page.get_uid(pre)
+        post = self.page.get_uid(post)
         self.uids[uid] = conn
         pres = self.get_parents(pre)[:-1]
         posts = self.get_parents(post)[:-1]
         info = dict(uid=uid, pre=pres, post=posts, type='conn', parent=parent)
         client.write(json.dumps(info))
-
-
-class NetGraphTemplate(Template):
-    cls = NetGraph
-    config_params = dict()

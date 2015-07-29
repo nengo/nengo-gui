@@ -323,8 +323,9 @@ Nengo.Slider.prototype.user_value = function () {
 Nengo.Slider.prototype.user_reset_value = function() {
     for (var i = 0; i < this.sliders.length; i++){
         this.notify('' + i + ',reset');
+        
+        this.sliders[i].set_value(this.reset_value[i]);
         this.sliders[i].fixed = false;
-        this.sliders[i].display_value(this.reset_value[i]);
     }
 }
 

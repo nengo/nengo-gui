@@ -7,14 +7,17 @@ Nengo.Modal = function($div) {
 
     this.sim_was_running = false;
 
+    //This listener is triggered when the modal is closed
     this.$div.on('hidden.bs.modal', function () {
         if (self.sim_was_running) {
             sim.play();
         }
+        Nengo.hotkeys.set_active(true);
     })
 }
 
 Nengo.Modal.prototype.show = function() {
+    Nengo.hotkeys.set_active(false);
     this.sim_was_running = !sim.paused;
     this.$div.modal('show');
     sim.pause()
@@ -52,6 +55,10 @@ Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function){
         $('#confirm_reset_button').on('click', function() {
             toolbar.reset_model_layout();
         });
+    } else if (type === 'refresh') {
+        this.$footer.append('<button type="button" ' +
+            'id="refresh_button" class="btn btn-primary">Refresh</button>');
+        $('#refresh_button').on('click', function() {location.reload()})
     } else {
         console.warn('Modal footer type ' + type + ' not recognized.')
     }

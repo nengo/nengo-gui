@@ -53,7 +53,7 @@ do so, add this to the bottom of your file that defines your Nengo model.
 .. code:: python
 
    import nengo_gui
-   nengo_gui.Viz(__file__).start()
+   nengo_gui.GUI(__file__).start()
 
 
 Basic usage

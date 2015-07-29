@@ -22,10 +22,10 @@ class Config(nengo.Config):
 
         for clsname, cls in inspect.getmembers(nengo_gui.components):
             if inspect.isclass(cls):
-                if issubclass(cls, nengo_gui.components.component.Template):
-                    if cls != nengo_gui.components.component.Template:
+                if issubclass(cls, nengo_gui.components.component.Component):
+                    if cls != nengo_gui.components.component.Component:
                         self.configures(cls)
-                        for k, v in cls.config_params.items():
+                        for k, v in cls.config_defaults.items():
                             self[cls].set_param(k, nengo.params.Parameter(v))
 
     def dumps(self, uids):
@@ -43,10 +43,14 @@ class Config(nengo.Config):
                                  % (uid, self[obj].expanded))
                     lines.append('_viz_config[%s].has_layout=%s'
                                  % (uid, self[obj].has_layout))
-            elif isinstance(obj, nengo_gui.components.component.Template):
+            elif isinstance(obj, nengo_gui.components.component.Component):
                 lines.append('%s = %s' % (uid, obj.code_python(uids)))
-                for k in obj.config_params.keys():
+                for k in obj.config_defaults.keys():
                     v = getattr(self[obj], k)
-                    lines.append('_viz_config[%s].%s = %g' % (uid, k, v))
+                    if isinstance(v, bool):
+                        val = '%s' % v
+                    else:
+                        val = '%g' % v
+                    lines.append('_viz_config[%s].%s = %s' % (uid, k, val))
 
         return '\n'.join(lines)

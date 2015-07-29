@@ -57,18 +57,19 @@ class IPythonViz(object):
             warnings.warn(ConfigReuseWarning(
                 "Reusing config. Only the most recent visualization will "
                 "update the config."))
-            server.viz.save_config(force=True)
-            server.viz.cfg = get_ipython().mktempfile()
-            cls.servers[server.viz.cfg] = server
-            cls.threads[server.viz.cfg] = server_thread
+            for page in server.gui.pages:
+                page.save_config(force=True)
+                page.filename_cfg = get_ipython().mktempfile()
+                cls.servers[page.filename_cfg] = server
+                cls.threads[page.filename_cfg] = server_thread
 
-        name = model.label if model.label is not None else ''
-        viz = nengo_gui.Viz(
+        name = model.label
+        gui = nengo_gui.GUI(
             name, cfg=cfg, model=model, locals=get_ipython().user_ns,
             interactive=False, allow_file_change=False)
-        server = viz.prepare_server(viz, port=0, browser=False)
+        server = gui.prepare_server(port=0, browser=False)
         server_thread = threading.Thread(
-            target=viz.begin_lifecycle,
+            target=gui.begin_lifecycle,
             kwargs={'server': server})
         server_thread.start()
         cls.servers[cfg] = server
@@ -120,7 +121,7 @@ class IPythonViz(object):
                 </div>
             '''.format(url=self.url, id=uuid.uuid4(), height=self.height)))
         else:
-            print "Server is not alive."
+            print("Server is not alive.")
 
 
 atexit.register(IPythonViz.shutdown_all, timeout=5)

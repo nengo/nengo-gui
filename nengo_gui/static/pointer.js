@@ -1,5 +1,5 @@
 /**
- * Decoded pointer display
+ * Decoded semantic pointer display
  * @constructor
  *
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
