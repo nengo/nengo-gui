@@ -70,13 +70,21 @@ class Pointer(Component):
 
     def message(self, msg):
         if len(msg) == 0:
+            print 'zero msg'
             self.override_target = None
+        elif msg[0:10] == 'check_0nly':
+            if len(msg) == 10:
+                self.data.append("good_pointer")
+            else:                
+                try:
+                    self.vocab_out.parse(msg[10:])
+                    self.data.append("good_pointer")
+                except:
+                    self.data.append("bad_pointer")            
         else:
             try:
                 self.override_target = self.vocab_out.parse(msg)
-                self.data.append("good_pointer")
             except:
-                self.data.append("bad_pointer")
                 self.override_target = None
 
     @staticmethod

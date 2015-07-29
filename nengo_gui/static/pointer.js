@@ -92,6 +92,16 @@ Nengo.Pointer.prototype.set_show_pairs = function(value) {
     }
 };
 
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
+      break;
+    }
+  }
+}
+
+
 Nengo.Pointer.prototype.set_value = function() {
     var self = this;
     Nengo.modal.title('Enter a Semantic Pointer value...');
@@ -108,20 +118,30 @@ Nengo.Pointer.prototype.set_value = function() {
             value = '';
         }
         self.fixed_value = value;
+        if (value == "") {
+            sleep(10);      
+        }
+        self.ws.send(value);
         $('#OK').attr('data-dismiss', 'modal');
     });
     var $form = $('#myModalForm').validator({
         custom: {
             my_validator: function($item) {
                 var ptr = $item.val();
-                self.ws.send(ptr);
+                if (ptr === null) {
+                    ptr = '';
+                }
+                self.ws.send('check_0nly' + ptr);
                 return self.pointer_status;
             }
         }
     });
 
     $('#singleInput').attr('data-error', 'Invalid semantic ' + 
-                                    'pointer expression.');
+        'pointer expression. Semantic pointers themselves must start with ' + 
+        'a capital letter. Expressions can include mathematical operators ' +
+        'such as +, * (circular convolution), and ~ (pseudo-inverse). ' +
+        'E.g., (A+~(B*C)*2)*0.5 would be a valid semantic pointer expression.');
 
     Nengo.modal.show();
 }
