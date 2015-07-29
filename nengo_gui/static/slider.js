@@ -74,11 +74,27 @@ Nengo.Slider = function(parent, sim, args) {
     this.max_label = document.createElement('p');
     this.min_label = document.createElement('p');
 
+    this.max_label.classList.add('max_slider_label')
+    this.min_label.classList.add('min_slider_label')
+
     this.max_label.innerHTML = range[0];
     this.min_label.innerHTML = range[1];
 
-    this.min_label.style.left = '1em'
-    this.max_label.style.left = '1em';
+/*
+    this.scale_y = d3.scale.linear();
+    this.scale_y.domain([range[0], range[1]]);
+
+    this.axis_y = d3.svg.axis()
+        .scale(this.scale_y)
+        .orient("left")
+        .tickValues([args.min_value, args.max_value]);
+
+    this.axis_y_g = this.svg.append("g")
+        .attr("class", "axis axis_y unselectable")
+        .call(this.axis_y);
+*/
+    this.min_label.style.left = '0em'
+    this.max_label.style.left = '0em';
 
     this.max_label.style.position = 'absolute';
     this.min_label.style.position = 'absolute';
@@ -420,3 +436,4 @@ Nengo.Slider.prototype.update_value_text = function (slider_index, new_shown_val
     var target = this.sliders[slider_index].value_display;
     target.innerHTML = new_shown_value.toFixed(2);
 };
+
