@@ -62,6 +62,23 @@ Nengo.Slider = function(parent, sim, args) {
         this.sliders.push(slider);
     }
 
+
+    this.svg = d3.select(this.div).append('svg')
+        .attr('width', '1em')
+        .attr('height', '100%');
+    var range = this.sliders[0].scale.domain();
+    this.scale_y = d3.scale.linear();
+    this.scale_y.domain([range[0], range[1]]);
+
+    this.axis_y = d3.svg.axis()
+        .scale(this.scale_y)
+        .orient("left")
+        .tickValues([0, 1]);
+
+    this.axis_y_g = this.svg.append("g")
+        .attr("class", "axis axis_y unselectable")
+        .call(this.axis_y);
+/*
     this.bound_labels = document.createElement('div');
     this.bound_labels.style.height = this.slider_height;
     this.bound_labels.style.width = '2em';
@@ -80,19 +97,6 @@ Nengo.Slider = function(parent, sim, args) {
     this.max_label.innerHTML = range[0];
     this.min_label.innerHTML = range[1];
 
-/*
-    this.scale_y = d3.scale.linear();
-    this.scale_y.domain([range[0], range[1]]);
-
-    this.axis_y = d3.svg.axis()
-        .scale(this.scale_y)
-        .orient("left")
-        .tickValues([args.min_value, args.max_value]);
-
-    this.axis_y_g = this.svg.append("g")
-        .attr("class", "axis axis_y unselectable")
-        .call(this.axis_y);
-*/
     this.min_label.style.left = '0em'
     this.max_label.style.left = '0em';
 
@@ -109,6 +113,8 @@ Nengo.Slider = function(parent, sim, args) {
 
     this.div.appendChild(this.bound_labels);
     this.hide_bound_labels();
+*/
+
 /*
     $(this.div).mouseenter(function(){
         self.show_bound_labels();
@@ -209,7 +215,7 @@ Nengo.Slider.prototype.on_resize = function(width, height) {
     this.group.style.height = height - this.ax_top - 2 * this.border_size;
     this.group.style.marginTop = this.ax_top;
 
-    this.bound_labels.style.height = height - (this.ax_top - this.min_label_down_shift) - this.border_size ;
+    //this.bound_labels.style.height = height - (this.ax_top - this.min_label_down_shift) - this.border_size ;
     //this.bound_labels.style.right = width / (this.n_sliders + 1) + 5
 
     var N = this.sliders.length;
