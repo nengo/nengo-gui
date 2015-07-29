@@ -4,33 +4,37 @@ import nengo
 import numpy as np
 import struct
 
-from nengo_gui.components.component import Component, Template
+from nengo_gui.components.component import Component
 
 
 class Voltage(Component):
-    def __init__(self, viz, config, uid, obj, n_neurons=5):
-        super(Voltage, self).__init__(viz, config, uid)
-        self.viz = viz
+    config_defaults = dict(
+        max_value=5.0, min_value=0.0, **Component.config_defaults)
+    def __init__(self, obj, n_neurons=5):
+        super(Voltage, self).__init__()
         self.obj = obj.neurons
         self.data = []
-        self.label = viz.viz.get_label(obj)
         self.max_neurons = int(self.obj.size_out)
         self.n_neurons = min(n_neurons, self.max_neurons)
         self.struct = struct.Struct('<%df' % (1 + self.n_neurons))
 
-    def add_nengo_objects(self, viz):
-        with viz.model:
+    def attach(self, page, config, uid):
+        super(Voltage, self).attach(page, config, uid)
+        self.label = page.get_label(self.obj.ensemble)
+
+    def add_nengo_objects(self, page):
+        with page.model:
             self.probe = nengo.Probe(self.obj[:self.n_neurons], 'voltage')
 
-    def remove_nengo_objects(self, viz):
-        viz.model.probes.remove(self.probe)
+    def remove_nengo_objects(self, page):
+        page.model.probes.remove(self.probe)
 
     def format_data(self, t, x):
         data = self.struct.pack(t, *x[:self.n_neurons])
         self.data.append(data)
 
     def update_client(self, client):
-        sim = self.viz.sim
+        sim = self.page.sim
         if sim is None:
             return
 
@@ -46,13 +50,10 @@ class Voltage(Component):
             client.write(packet, binary=True)
 
     def javascript(self):
-        info = dict(uid=self.uid, label=self.label,
+        info = dict(uid=id(self), label=self.label,
                     n_lines=self.n_neurons, synapse=0)
         json = self.javascript_config(info)
         return 'new Nengo.Value(main, sim, %s);' % json
 
-
-class VoltageTemplate(Template):
-    cls = Voltage
-    config_params = dict(
-        max_value=5.0, min_value=0.0, **Template.default_params)
+    def code_python_args(self, uids):
+        return [uids[self.obj.ensemble]]

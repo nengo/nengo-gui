@@ -83,7 +83,7 @@ Nengo.Component = function(parent, args) {
     this.redraw_size();
     this.redraw_pos();
 
-    this.div.style.position = 'fixed';
+    this.div.style.position = 'absolute';
     this.div.classList.add('graph');
     parent.appendChild(this.div);
     this.parent = parent;
@@ -243,13 +243,16 @@ Nengo.Component.prototype.generate_menu = function() {
     return items;
 };
 
-Nengo.Component.prototype.remove = function(undo_flag) {
+Nengo.Component.prototype.remove = function(undo_flag, notify_server) {
     undo_flag = typeof undo_flag !== 'undefined' ? undo_flag : false;
+    notify_server = typeof notify_server !== 'undefined' ? notify_server : true;
 
-    if (undo_flag === true) {
-        this.ws.send('remove_undo');
-    } else {
-        this.ws.send('remove');
+    if (notify_server) {
+        if (undo_flag === true) {
+            this.ws.send('remove_undo');
+        } else {
+            this.ws.send('remove');
+        }
     }
     this.parent.removeChild(this.div);
     var index = Nengo.Component.components.indexOf(this);

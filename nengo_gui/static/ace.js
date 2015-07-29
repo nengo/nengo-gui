@@ -24,7 +24,7 @@ Nengo.Ace = function (uid, args) {
     this.current_code = '';
     var code_div = document.createElement('div')
     code_div.id = 'editor'
-    document.getElementsByTagName("BODY")[0].appendChild(code_div);
+    $('#rightpane').append(code_div);
     this.editor = ace.edit('editor')
     this.editor.getSession().setMode("ace/mode/python");
     this.editor.gotoLine(1);
@@ -32,7 +32,7 @@ Nengo.Ace = function (uid, args) {
 
     this.console = document.createElement('div');
     this.console.id = 'console';
-    document.getElementsByTagName("BODY")[0].appendChild(this.console);
+    $('#rightpane').append(this.console);
     this.console_height = 100;
     this.console_hidden = true;
     this.console_stdout = document.createElement('pre');
@@ -63,8 +63,7 @@ Nengo.Ace = function (uid, args) {
             edges: { left: true, right: false, bottom: false, top: false}
         })
         .on('resizemove', function (event) {
-            var x = event.deltaRect.left;
-            self.width -= x;
+            self.width -= event.deltaRect.left;
             self.set_width()
         })
     $(window).on('resize', function() {self.set_width(); });
@@ -75,13 +74,12 @@ Nengo.Ace = function (uid, args) {
             edges: { left: true, right: false, bottom: false, top: true}
         })
         .on('resizemove', function (event) {
-            var x = event.deltaRect.left;
-            self.width -= x;
             self.console_height -= event.deltaRect.top;
             if (self.console_height < 20) {
                 self.console_height = 20;
             }
-            self.set_width()
+            self.width -= event.deltaRect.left;
+            self.set_width();
         })
 }
 
@@ -169,8 +167,8 @@ Nengo.Ace.prototype.on_message = function (event) {
 }
 
 Nengo.Ace.prototype.show_editor = function () {
-    var editor = document.getElementById('editor');
-    editor.style.display = 'block';
+    var editor = document.getElementById('rightpane');
+    editor.style.display = 'flex';
     this.hidden = false;
     if (!this.console_hidden) {
         this.console.style.display = 'block';
@@ -178,7 +176,7 @@ Nengo.Ace.prototype.show_editor = function () {
 }
 
 Nengo.Ace.prototype.hide_editor = function () {
-    var editor = document.getElementById('editor');
+    var editor = document.getElementById('rightpane');
     editor.style.display = 'none';
     this.hidden = true;
     if (!this.console_hidden) {
@@ -210,10 +208,6 @@ Nengo.Ace.prototype.toggle_shown = function () {
 }
 
 Nengo.Ace.prototype.set_width = function () {
-
-
-    var code_div = document.getElementById('editor');
-
     if (this.width < this.min_width) {
         this.width = this.min_width;
     }
@@ -223,20 +217,10 @@ Nengo.Ace.prototype.set_width = function () {
     if (this.width > this.max_width){
         this.width = this.max_width;
     }
-    //Set the positioning of the code_div
-    var top_margin = $(toolbar.toolbar).height();
-    var bottom_margin = $(sim.div).height();
-    var left_margin = $(window).width() - this.width;
 
-    var console_height = this.console_hidden ? 0 : this.console_height;
 
-    code_div.style.top = top_margin;
-    code_div.style.bottom = bottom_margin + console_height;
-    code_div.style.left = left_margin;
-
-    this.console.style.top = top_margin + $(code_div).height();
-    this.console.style.bottom = bottom_margin;
-    this.console.style.left = left_margin;
+    $('#rightpane').width(this.width);
+    $('#console').height(this.console_height);
 
     this.editor.resize();
 
@@ -244,13 +228,7 @@ Nengo.Ace.prototype.set_width = function () {
 }
 
 Nengo.Ace.prototype.update_main_width = function () {
-    var width = this.hidden ? 0 : this.width;
-    var left_margin = $(window).width() - width;
-
-    $('#main').width(left_margin);
-
     if (Nengo.netgraph !== undefined){
-        Nengo.netgraph.svg.style.width = left_margin;
         Nengo.netgraph.on_resize();
     }
     viewport.on_resize();

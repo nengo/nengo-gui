@@ -32,6 +32,7 @@ Nengo.SimControl = function(div, args) {
     this.ws = Nengo.create_websocket(args.uid);
 
     this.ws.onmessage = function(event) {self.on_message(event);}
+    this.ws.onclose = function(event) {self.disconnected()}
 
     /** Create the TimeSlider */
     this.time_slider = new Nengo.TimeSlider({x: 200, y: 10, sim:this,
@@ -74,7 +75,6 @@ Nengo.SimControl.prototype.on_message = function(event) {
             this.set_status(event.data.substring(7));
         }
         else if (event.data.substring(0, 6) === 'config') {
-            console.log(event.data);
             eval(event.data.substring(6, event.data.length));
         }
         else if (event.data.substring(0, 5) === 'sims:') {
@@ -90,6 +90,13 @@ Nengo.SimControl.prototype.on_message = function(event) {
     }
 };
 
+Nengo.SimControl.prototype.disconnected = function() {
+    $('#main').css('background-color', '#a94442')
+    Nengo.modal.title("Nengo has stopped running");
+    Nengo.modal.text_body("To continue working with your model, re-run nengo_gui and click Refresh.", "danger");
+    Nengo.modal.footer('refresh');
+    Nengo.modal.show();
+}
 
 Nengo.SimControl.prototype.set_backend = function(backend) {
     this.ws.send('backend:' + backend);
@@ -101,15 +108,24 @@ Nengo.SimControl.prototype.set_status = function(status) {
     if (status === 'building') {
         icon = 'glyphicon-cog';
         this.start_rotating_cog();
+        this.paused = false;
     } else if (status === 'paused') {
         icon = 'glyphicon-play';
         this.stop_rotating_cog();
         this.paused = true;
-    } else if (status == 'running') {
+    } else if (status === 'running') {
         icon = 'glyphicon-pause';
         this.stop_rotating_cog();
+        this.paused = false;
+    } else if (status === 'build_error') {
+        icon = 'glyphicon-remove';
+        this.stop_rotating_cog();
+        this.paused = false;
     } else {
-        console.log(['unknown status', status]);
+        icon = 'glyphicon-cog';
+        this.stop_rotating_cog();
+        console.log('unknown status: ' + status);
+        this.paused = false;
     }
     this.pause_button_icon.className = "glyphicon " + icon;
 }
@@ -162,8 +178,8 @@ Nengo.SimControl.prototype.pause = function() {
 Nengo.SimControl.prototype.play = function() {
     if (this.paused) {
         this.ws.send('continue');
+        this.paused = false;
     }
-    this.paused = false;
 }
 
 Nengo.SimControl.prototype.on_pause_click = function(event) {
@@ -175,10 +191,8 @@ Nengo.SimControl.prototype.on_pause_click = function(event) {
 };
 
 Nengo.SimControl.prototype.reset = function() {
-    this.time = 0.0;
-    this.rate = 0.0;
+    this.paused = true;
     this.ws.send('reset');
-    self.sim.div.dispatchEvent(new Event('sim_reset'));
 };
 
 Nengo.SimControl.prototype.on_resize = function(event) {

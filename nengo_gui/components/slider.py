@@ -2,27 +2,33 @@ import numpy as np
 import struct
 import collections
 
-from nengo_gui.components.component import Component, Template
+from nengo_gui.components.component import Component
 
 class Slider(Component):
-    def __init__(self, viz, config, uid, node):
-        super(Slider, self).__init__(viz, config, uid)
+    config_defaults = dict(max_value=1, min_value=-1, 
+                           **Component.config_defaults)
+
+    def __init__(self, node):
+        super(Slider, self).__init__()
         self.node = node
         self.base_output = node.output
         self.override = [None] * node.size_out
         self.last_time = None
         self.value = np.zeros(node.size_out)
-        self.label = viz.viz.get_label(node)
         self.start_value = np.zeros(node.size_out, dtype=float)
         self.struct = struct.Struct('<%df' % (1 + node.size_out))
         self.data = collections.deque()
         if not callable(self.base_output):
             self.start_value[:] = self.base_output
 
-    def add_nengo_objects(self, viz):
+    def attach(self, page, config, uid):
+        super(Slider, self).attach(page, config, uid)
+        self.label = page.get_label(self.node)
+
+    def add_nengo_objects(self, page):
         self.node.output = self.override_output
 
-    def remove_nengo_objects(self, viz):
+    def remove_nengo_objects(self, page):
         self.node.output = self.base_output
 
     def override_output(self, t, *args):
@@ -41,7 +47,7 @@ class Slider(Component):
         return self.value
 
     def javascript(self):
-        info = dict(uid=self.uid, n_sliders=len(self.override),
+        info = dict(uid=id(self), n_sliders=len(self.override),
                     label=self.label,
                     start_value=[float(x) for x in self.start_value])
         json = self.javascript_config(info)
@@ -62,6 +68,5 @@ class Slider(Component):
             value = float(value)
             self.override[index] = value
 
-class SliderTemplate(Template):
-    cls = Slider
-    config_params = dict(max_value=1, min_value=-1, **Template.default_params)
+    def code_python_args(self, uids):
+        return [uids[self.node]]

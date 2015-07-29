@@ -39,7 +39,7 @@ class Action(object):
     def obj_config(self):
         if self.uid is None:
             raise ValueError("Cannot get 'obj' without 'uid'")
-        return self.net_graph.config[self.obj]
+        return self.net_graph.page.config[self.obj]
 
     def send(self, action, **kwargs):
         if "uid" not in kwargs:
@@ -55,16 +55,16 @@ class Action(object):
 
 
 class ConfigAction(Action):
-    def __init__(self, viz_sim, component, new_cfg, old_cfg):
-        super(ConfigAction, self).__init__(viz_sim.net_graph, component.uid)
+    def __init__(self, page, component, new_cfg, old_cfg):
+        super(ConfigAction, self).__init__(page.net_graph, id(component))
         self.component = component
-        self.viz_sim = viz_sim
+        self.page = page
         self.new_cfg = new_cfg
         self.old_cfg = old_cfg
 
     def load(self, cfg):
         for k, v in iteritems(cfg):
-            setattr(self.viz_sim.viz.config[self.component.template], k, v)
+            setattr(self.page.config[self.component], k, v)
         self.net_graph.modified_config()
         self.send("config", config=cfg)
 
@@ -99,20 +99,20 @@ class ExpandCollapse(Action):
 
 class RemoveGraph(Action):
     def __init__(self, net_graph, component):
-        super(RemoveGraph, self).__init__(net_graph, component.uid)
+        super(RemoveGraph, self).__init__(net_graph, id(component))
         self.component = component
-        self.uid_graph = None
 
     def apply(self):
         self.send('delete_graph')
 
     def undo(self):
-        viz = self.net_graph.viz
-        viz.viz.locals[self.uid] = self.component.template
-        viz.viz.default_labels[self.component.template] = self.uid
+        page = self.net_graph.page
+        page.add_component(self.component)
 
-        viz.uids[self.uid_graph] = self.component
-        viz.changed = True
+        page.locals[self.component.uid] = self.component
+        page.default_labels[self.component] = self.component.uid
+
+        page.changed = True
         self.send('js', code=self.component.javascript())
 
 
@@ -123,39 +123,40 @@ class CreateGraph(Action):
         self.type = type
         self.x, self.y = x, y
         self.width, self.height = width, height
-        cls = getattr(nengo_gui.components, self.type + 'Template')
-        self.template = cls(self.obj, **kwargs)
+        cls = getattr(nengo_gui.components, self.type)
+        self.component = cls(self.obj, **kwargs)
 
         # If only one instance of the component is allowed, and another had to be
         # destroyed to create this one, keep track of it here so it can be undone
         self.duplicate = None
 
         # Remove any existing sliders associated with the same node
-        for component in self.net_graph.viz.components:
-            if (isinstance(component, nengo_gui.components.slider.Slider)
-                    and component.node is self.obj):
-                self.duplicate = RemoveGraph(net_graph, component)
-                self.send('delete_graph', uid=component.uid)
+        if type == 'Slider':
+            for component in self.net_graph.page.components:
+                if (isinstance(component, nengo_gui.components.slider.Slider)
+                        and component.node is self.obj):
+                    self.duplicate = RemoveGraph(net_graph, component)
+                    self.send('delete_graph', uid=id(component))
 
         self.act_create_graph()
 
     def act_create_graph(self):
         if self.graph_uid is None:
-            self.net_graph.viz.viz.generate_uid(self.template, prefix='_viz_')
-            self.graph_uid = self.net_graph.viz.viz.get_uid(self.template)
+            self.net_graph.page.generate_uid(self.component, prefix='_viz_')
+            self.graph_uid = self.net_graph.page.get_uid(self.component)
         else:
-            self.net_graph.viz.viz.locals[self.graph_uid] = self.template
-            self.net_graph.viz.viz.default_labels[self.template] = (
+            self.net_graph.page.locals[self.graph_uid] = self.component
+            self.net_graph.page.default_labels[self.component] = (
                 self.graph_uid)
-        self.net_graph.config[self.template].x = self.x
-        self.net_graph.config[self.template].y = self.y
-        self.net_graph.config[self.template].width = self.width
-        self.net_graph.config[self.template].height = self.height
+        self.net_graph.page.config[self.component].x = self.x
+        self.net_graph.page.config[self.component].y = self.y
+        self.net_graph.page.config[self.component].width = self.width
+        self.net_graph.page.config[self.component].height = self.height
         self.net_graph.modified_config()
 
-        c = self.net_graph.viz.add_template(self.template)
-        self.net_graph.viz.changed = True
-        self.send('js', code=c.javascript())
+        self.net_graph.page.add_component(self.component)
+        self.net_graph.page.changed = True
+        self.send('js', code=self.component.javascript())
 
     def apply(self):
         if self.duplicate is not None:
@@ -163,7 +164,7 @@ class CreateGraph(Action):
         self.act_create_graph()
 
     def undo(self):
-        self.send('delete_graph', uid=self.graph_uid)
+        self.send('delete_graph', uid=id(self.component))
         if self.duplicate is not None:
             self.duplicate.undo()
 
@@ -241,9 +242,9 @@ class FeedforwardLayout(Action):
         super(FeedforwardLayout, self).__init__(net_graph, uid)
 
         if self.uid is None:
-            self.network = self.net_graph.viz.model
-            self.scale = self.net_graph.config[self.network].size[0]
-            self.x, self.y = self.net_graph.config[self.network].pos
+            self.network = self.net_graph.page.model
+            self.scale = self.net_graph.page.config[self.network].size[0]
+            self.x, self.y = self.net_graph.page.config[self.network].pos
         else:
             self.network = self.obj
             self.scale = 1.0
@@ -257,27 +258,27 @@ class FeedforwardLayout(Action):
 
     def act_feedforward_layout(self):
         for obj, layout in iteritems(self.pos):
-            obj_cfg = self.net_graph.config[obj]
+            obj_cfg = self.net_graph.page.config[obj]
             obj_cfg.pos = (layout['y'] / self.scale - self.x,
                            layout['x'] / self.scale - self.y)
             obj_cfg.size = (layout['h'] / 2 / self.scale,
                             layout['w'] / 2 / self.scale)
 
-            obj_uid = self.net_graph.viz.viz.get_uid(obj)
+            obj_uid = self.net_graph.page.get_uid(obj)
 
             self.send('pos_size',
                       uid=obj_uid, pos=obj_cfg.pos, size=obj_cfg.size)
 
-        self.net_graph.config[self.network].has_layout = True
+        self.net_graph.page.config[self.network].has_layout = True
         self.net_graph.modified_config()
 
     def save_network(self):
         state = []
         for obj, layout in iteritems(self.pos):
             state.append({
-                'uid': self.net_graph.viz.viz.get_uid(obj),
-                'pos': self.net_graph.config[obj].pos,
-                'size': self.net_graph.config[obj].size,
+                'uid': self.net_graph.page.get_uid(obj),
+                'pos': self.net_graph.page.config[obj].pos,
+                'size': self.net_graph.page.config[obj].size,
                 'obj': obj,
             })
         return state
@@ -286,8 +287,8 @@ class FeedforwardLayout(Action):
         for item in state:
             self.send('pos_size',
                       uid=item['uid'], pos=item['pos'], size=item['size'])
-            self.net_graph.config[item['obj']].pos = item['pos']
-            self.net_graph.config[item['obj']].size = item['size']
+            self.net_graph.page.config[item['obj']].pos = item['pos']
+            self.net_graph.page.config[item['obj']].size = item['size']
         # TODO: should config[network].has_layout be changed here?
         self.net_graph.modified_config()
 

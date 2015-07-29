@@ -75,24 +75,9 @@ class Server(swi.SimpleWebInterface):
         if self.user is None:
             return self.create_login_form()
 
-        if reset == 'True':
-            if hasattr(self.server.viz, 'code'):
-                # if we have the code, re-run it just to be safe
-                self.server.viz.load(self.server.viz.filename,
-                    force=True, reset=True, code=self.server.viz.code)
-            else:
-                # if we don't (i.e. for IPython integration) then just reset
-                self.server.viz.load(self.server.viz.filename,
-                        self.server.viz.model, self.server.viz.orig_locals,
-                        reset=True)
-        elif filename is not None:
-            self.server.viz.load(filename, force=True)
+        reset_cfg = reset == 'True'
 
-        # create a new simulator
-        viz_sim = self.server.viz.create_sim()
-
-        #TODO: handle multiple viz_sims at the same time
-        self.server.viz_sim = viz_sim
+        page = self.server.gui.create_page(filename, reset_cfg=reset_cfg)
 
         # read the template for the main page
         html = pkgutil.get_data('nengo_gui', 'templates/page.html')
@@ -100,7 +85,7 @@ class Server(swi.SimpleWebInterface):
             html = html.decode("utf-8")
 
         # fill in the javascript needed and return the complete page
-        components = viz_sim.create_javascript()
+        components = page.create_javascript()
         return html % dict(components=components)
 
     def swi_shutdown(self, *path):
@@ -111,41 +96,41 @@ class Server(swi.SimpleWebInterface):
         """Handles ws://host:port/viz_component with a websocket"""
         # figure out what component is being connected to
 
-        viz_sim = self.server.viz_sim
+        gui = self.server.gui
 
-        component = viz_sim.uids[uid]
+        component = gui.component_uids[int(uid)]
         while True:
             try:
-                if viz_sim.finished:
+                if gui.finished:
                     break
-                if viz_sim.uids[uid] != component:
+                if component.replace_with is not None:
                     component.finish()
-                    component = viz_sim.uids[uid]
+                    component = component.replace_with
                 # read all data coming from the component
                 msg = client.read()
                 while msg is not None:
                     if msg.startswith('config:'):
                         cfg = json.loads(msg[7:])
                         old_cfg = {}
-                        for k in component.template.config_params.keys():
+                        for k in component.config_defaults.keys():
                             v = getattr(
-                                self.server.viz.config[component.template], k)
+                                component.page.config[component], k)
                             old_cfg[k] = v
                         if not(cfg == old_cfg):
                             # Register config change to the undo stack
-                            self.server.viz_sim.config_change(
+                            component.page.config_change(
                                 component, cfg, old_cfg)
                         for k, v in cfg.items():
                             setattr(
-                                self.server.viz.config[component.template],
+                                component.page.config[component],
                                 k, v)
-                        self.server.viz.modified_config()
+                        component.page.modified_config()
                     elif msg.startswith('remove'):
                         if msg != 'remove_undo':
                             # Register graph removal to the undo stack
-                            self.server.viz_sim.remove_graph(component)
-                        self.server.viz.remove_uid(uid)
-                        self.server.viz.modified_config()
+                            component.page.remove_graph(component)
+                        component.page.remove_component(component)
+                        component.page.modified_config()
                         return
                     else:
                         try:
@@ -156,11 +141,11 @@ class Server(swi.SimpleWebInterface):
                     msg = client.read()
                 # send data to the component
                 component.update_client(client)
-                self.server.viz.save_config(lazy=True)
+                component.page.save_config(lazy=True)
                 time.sleep(0.01)
             except swi.SocketClosedError:
                 # This error means the server has shut down
-                self.server.viz.save_config(lazy=False)  # Stop nicely
+                component.page.save_config(lazy=False)  # Stop nicely
                 break
             except:
                 traceback.print_exc()
@@ -169,16 +154,16 @@ class Server(swi.SimpleWebInterface):
         component.finish()
 
         if isinstance(component, nengo_gui.components.SimControl):
-            viz_sim.sim = None
+            component.page.sim = None
 
         if client.remote_close:
             # wait a moment before checking if the server should be stopped
             time.sleep(2)
 
-            # if there are no simulations left, stop the server
+            # if there are no Pages left, stop the server
             if isinstance(component, nengo_gui.components.SimControl):
-                if self.server.viz.count_sims() == 0:
-                    if self.server.viz.interactive:
+                if gui.count_pages() == 0:
+                    if gui.interactive:
                         print("No connections remaining to the nengo_gui "
                               "server.")
                     self.server.shutdown()
