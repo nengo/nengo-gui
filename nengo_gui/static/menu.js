@@ -27,7 +27,7 @@ Nengo.Menu.prototype.show = function (x, y, items) {
         return;
     }
 
-    this.menu_margin = 15;
+    this.menu_margin = 12;
 
     // TODO: move this to the constructor
     this.menu_div = document.createElement('div');
@@ -118,7 +118,7 @@ Nengo.Menu.prototype.check_overflow = function (x, y) {
         this.menu_div.style.top = y - h - this.menu_margin;
     }
 
-    if(x + w + this.menu_margin > main_w) {
-        this.menu_div.style.left = x - w;
+    if(x + w  > main_w) {
+        this.menu_div.style.left = main_w - w;
     }
 }
