@@ -149,9 +149,10 @@ Nengo.NetGraph = function(parent, args) {
             event.preventDefault();
 
             self.menu.hide_any();
+            var tool_h = $(toolbar.toolbar).height();
+            var x = (event.clientX) / $(self.svg).width()
+            var y = (event.clientY - tool_h) / $(self.svg).height();
 
-            var x = (event.layerX / $(self.svg).width())
-            var y = (event.layerY / $(self.svg).height());
 
             switch (event.deltaMode) {
                 case 1:  // DOM_DELTA_LINE
