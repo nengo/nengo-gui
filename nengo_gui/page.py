@@ -41,6 +41,8 @@ class Page(object):
         self.code = None     # the code for the model
         self.model = None    # the nengo.Network
         self.locals = None   # the locals() dictionary after executing
+        self.error = None    # any error message generated
+        self.stdout = ''     # text sent to stdout during execution
 
         self.changed = False   # has the model been changed?
         self.paused = False    # is the simulation paused
