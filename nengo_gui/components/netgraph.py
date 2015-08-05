@@ -131,12 +131,8 @@ class NetGraph(Component):
             elif not isinstance(new_item, old_item.__class__):
                 # don't allow changing classes
                 keep_object = False
-            elif isinstance(new_item, nengo.Node):
-                # check if a Node has become a passthrough Node
-                if old_item.output is None and new_item.output is not None:
-                    keep_object = False
-                elif old_item.output is not None and new_item.output is None:
-                    keep_object = False
+            elif self.get_extra_info(new_item) != self.get_extra_info(old_item):
+                keep_object = False
 
             if not keep_object:
                 self.to_be_sent.append(dict(
@@ -430,18 +426,29 @@ class NetGraph(Component):
                     parent=parent)
         if type == 'net':
             info['expanded'] = self.page.config[obj].expanded
-        if type == 'node' and obj.output is None:
-            info['passthrough'] = True
-        if type == 'ens' or type == 'node':
-            info['dimensions'] = int(obj.size_out)
-        if type == 'node':
-            if callable(obj.output) and hasattr(obj.output, '_nengo_html_'):
-                info['html'] = True
-
-        info['sp_targets'] = (
-            nengo_gui.components.pointer.Pointer.applicable_targets(obj))
+        info.update(self.get_extra_info(obj))
 
         client.write(json.dumps(info))
+
+    def get_extra_info(self, obj):
+        '''Determine helper information for each nengo object.
+
+        This is used by the client side to configure the display.  It is also
+        used by the reload() code to determine if a NetGraph object should
+        be recreated.
+        '''
+        info = {}
+        if isinstance(obj, nengo.Node):
+            if obj.output is None:
+                info['passthrough'] = True
+            if callable(obj.output) and hasattr(obj.output, '_nengo_html_'):
+                info['html'] = True
+            info['dimensions'] = int(obj.size_out)
+        elif isinstance(obj, nengo.Ensemble):
+            info['dimensions'] = int(obj.size_out)
+        info['sp_targets'] = (
+            nengo_gui.components.pointer.Pointer.applicable_targets(obj))
+        return info
 
     def send_pan_and_zoom(self, client):
         pan = self.page.config[self.page.model].pos
