@@ -143,7 +143,11 @@ class NetGraph(Component):
                 rebuilt_objects.append(uid)
             else:
                 # fix aspects of the item that may have changed
-                self._reload_update_item(uid, old_item, new_item, name_finder)
+                if self._reload_update_item(uid, old_item, new_item, 
+                                            name_finder):
+                    # something has changed about this object, so rebuild
+                    # and components that use it
+                    rebuilt_objects.append(uid)
 
                 self.uids[uid] = new_item
 
@@ -228,6 +232,7 @@ class NetGraph(Component):
 
     def _reload_update_item(self, uid, old_item, new_item, new_name_finder):
         """Tell the client about changes to the item due to reload."""
+        changed = False
         if isinstance(old_item, (nengo.Node,
                                  nengo.Ensemble,
                                  nengo.Network)):
@@ -238,9 +243,11 @@ class NetGraph(Component):
             if old_label != new_label:
                 self.to_be_sent.append(dict(
                     type='rename', uid=uid, name=new_label))
+                changed = True
             if isinstance(old_item, nengo.Network):
                 if self.page.config[old_item].expanded:
                     self.to_be_expanded.append(new_item)
+                    changed = True
 
         elif isinstance(old_item, nengo.Connection):
             old_pre = old_item.pre_obj
@@ -274,6 +281,8 @@ class NetGraph(Component):
                 self.to_be_sent.append(dict(
                     type='reconnect', uid=uid,
                     pres=pres, posts=posts))
+                changed = True
+        return changed
 
     def get_parents(self, uid, default_labels=None):
         while uid not in self.parents:
