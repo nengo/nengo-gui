@@ -101,6 +101,7 @@ class NetGraph(Component):
         self.parents = {}
 
         removed_uids = {}
+        rebuilt_objects = []
 
         # for each item in the old model, find the matching new item
         # for Nodes, Ensembles, and Networks, this means to find the item
@@ -139,6 +140,7 @@ class NetGraph(Component):
                     type='remove', uid=uid))
                 del self.uids[uid]
                 removed_uids[old_item] = uid
+                rebuilt_objects.append(uid)
             else:
                 # fix aspects of the item that may have changed
                 self._reload_update_item(uid, old_item, new_item, name_finder)
@@ -155,16 +157,28 @@ class NetGraph(Component):
         self.page.code = code
 
         orphan_components = []
+        rebuild_components = []
 
         removed_items = list(removed_uids.values())
-        for c in self.page.components:
+        for c in self.page.components[:]:
             for item in c.code_python_args(old_default_labels):
-                if item in removed_items:
+                if item in rebuilt_objects:
                     self.to_be_sent.append(dict(type='delete_graph',
-                                                uid=id(c),
+                                                uid=c.original_id,
                                                 notify_server=False))
-                    orphan_components.append(c)
+                    rebuild_components.append(c.uid)
+                    self.page.components.remove(c)
                     break
+            else:
+                for item in c.code_python_args(old_default_labels):
+                    if item in removed_items:
+                        self.to_be_sent.append(dict(type='delete_graph',
+                                                    uid=c.original_id,
+                                                    notify_server=False))
+                        orphan_components.append(c)
+                        break
+
+
 
         components = []
         # the old names for the old components
@@ -172,14 +186,14 @@ class NetGraph(Component):
 
         for k, v in list(self.page.locals.items()):
             if isinstance(v, nengo_gui.components.component.Component):
-
                 # the object has been removed, so the Component should
                 #  be removed as well
                 if v in orphan_components:
                     continue
 
                 # this is a Component that was previously removed,
-                #  but is still in the config file, so let's recover it
+                #  but is still in the config file, or it has to be
+                #  rebuilt, so let's recover it
                 if k not in component_uids:
                     self.page.add_component(v)
                     self.to_be_sent.append(dict(type='js', 
