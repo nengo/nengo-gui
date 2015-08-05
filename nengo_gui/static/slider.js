@@ -23,7 +23,7 @@ Nengo.Slider = function(parent, sim, args) {
 
     this.set_axes_geometry(this.width, this.height);
 
-    this.minHeight = 40;
+    this.minHeight = 0;
 
     this.group = document.createElement('div');
     this.group.style.height = this.slider_height;
@@ -37,6 +37,43 @@ Nengo.Slider = function(parent, sim, args) {
     this.reset_value = args.start_value;
     // the value to use when restarting the simulation from beginning
     this.start_value = args.start_value;
+
+    
+
+
+    this.nexus = document.createElement('div');
+    this.nexus.style.display = 'inline-block';
+    this.nexus.style.position = 'relative';
+    this.nexus.style.height = '100%';
+    this.nexus.style.padding = '0.75em 0';
+    /*
+    this.apple = document.createElement('div');
+    this.apple.classList.add('guideline');
+    this.apple.style.width = '0.1em';
+    this.apple.style.height = '100%';
+    this.apple.style.margin = 'auto';
+    this.apple.style.marginLeft = '20';
+    */
+
+    this.widthScale = d3.scale.linear()
+                    .domain([1,0])
+                    .range([0,180]);
+
+    this.Xaxis = d3.svg.axis()
+            .scale(this.widthScale)
+            .orient('left')
+            .ticks(1);
+
+    this.canvas = d3.select(this.nexus).append("svg")
+        .attr("width", 50)
+        .attr("height", 200)
+
+    this.canvas.append("g")
+        .attr("transform", "translate(25,10)")
+        .call(this.Xaxis);
+
+    this.group.appendChild(this.nexus);
+
 
     this.sliders = [];
     for (var i = 0; i < args.n_sliders; i++) {
@@ -62,67 +99,6 @@ Nengo.Slider = function(parent, sim, args) {
         this.sliders.push(slider);
     }
 
-
-    this.svg = d3.select(this.div).append('svg')
-        .attr('width', '1em')
-        .attr('height', '100%');
-    var range = this.sliders[0].scale.domain();
-    this.scale_y = d3.scale.linear();
-    this.scale_y.domain([range[0], range[1]]);
-
-    this.axis_y = d3.svg.axis()
-        .scale(this.scale_y)
-        .orient("left")
-        .tickValues([0, 1]);
-
-    this.axis_y_g = this.svg.append("g")
-        .attr("class", "axis axis_y unselectable")
-        .call(this.axis_y);
-/*
-    this.bound_labels = document.createElement('div');
-    this.bound_labels.style.height = this.slider_height;
-    this.bound_labels.style.width = '2em';
-    this.bound_labels.style.marginTop = this.ax_top;
-    this.bound_labels.style.position = 'absolute';
-    this.bound_labels.style.top = '0px';
-    this.min_label_down_shift = 10;
-    var range = this.sliders[0].scale.domain();
-
-    this.max_label = document.createElement('p');
-    this.min_label = document.createElement('p');
-
-    this.max_label.classList.add('max_slider_label')
-    this.min_label.classList.add('min_slider_label')
-
-    this.max_label.innerHTML = range[0];
-    this.min_label.innerHTML = range[1];
-
-    this.min_label.style.left = '0em'
-    this.max_label.style.left = '0em';
-
-    this.max_label.style.position = 'absolute';
-    this.min_label.style.position = 'absolute';
-
-    this.max_label.style.zIndex = -1;
-    this.min_label.style.zIndex = -1;
-
-    this.min_label.style.bottom = '0px';
-
-    this.bound_labels.appendChild(this.max_label);
-    this.bound_labels.appendChild(this.min_label);
-
-    this.div.appendChild(this.bound_labels);
-    this.hide_bound_labels();
-*/
-
-/*
-    $(this.div).mouseenter(function(){
-        self.show_bound_labels();
-    });
-    $(this.div).mouseleave(function(){
-        self.hide_bound_labels();
-    });
-*/
     /** call schedule_update whenever the time is adjusted in the SimControl */
     this.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
@@ -209,6 +185,10 @@ Nengo.Slider.prototype.on_resize = function(width, height) {
     if (height < this.minHeight) {
         height = this.minHeight;
     };
+
+    this.canvas.attr('height', height)
+    this.widthScale.range([0,height - 100])
+    this.canvas.call(this.Xaxis)
 
     this.set_axes_geometry(width, height);
 
