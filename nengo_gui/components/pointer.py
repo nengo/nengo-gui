@@ -1,5 +1,6 @@
-import struct
 import collections
+import copy
+import struct
 
 import nengo
 import nengo.spa
@@ -76,8 +77,9 @@ class Pointer(Component):
             if len(msg) == 10:
                 self.data.append("good_pointer")
             else:                
+                vocab = copy.deepcopy(self.vocab_out)
                 try:
-                    self.vocab_out.parse(msg[10:])
+                    vocab.parse(msg[10:])
                     self.data.append("good_pointer")
                 except:
                     self.data.append("bad_pointer")            
