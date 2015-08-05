@@ -2,16 +2,14 @@ import nengo
 import numpy as np
 import struct
 
-from nengo_gui.components.component import Component, Template
-
+from nengo_gui.components.component import Component
 
 class SpikeGrid(Component):
-    def __init__(self, viz, config, uid, obj, n_neurons=None):
-        super(SpikeGrid, self).__init__(viz, config, uid)
-        self.obj = obj.neurons
+    def __init__(self, obj, n_neurons=None):
+        super(SpikeGrid, self).__init__()
+        self.obj = obj
         self.data = []
-        self.label = viz.viz.get_label(obj)
-        self.max_neurons = self.obj.size_out
+        self.max_neurons = self.obj.neurons.size_out
         if n_neurons is None:
             n_neurons = self.max_neurons
         self.n_neurons = n_neurons
@@ -21,14 +19,20 @@ class SpikeGrid(Component):
         self.struct = struct.Struct('<%dB' % (1 + self.n_pixels))
         self.max_value = 1.0
 
-    def add_nengo_objects(self, viz):
-        with viz.model:
-            self.node = nengo.Node(self.gather_data, size_in=self.obj.size_out)
-            self.conn = nengo.Connection(self.obj, self.node, synapse=0.01)
+    def attach(self, page, config, uid):
+        super(SpikeGrid, self).attach(page, config, uid)
+        self.label = page.get_label(self.obj)
 
-    def remove_nengo_objects(self, viz):
-        viz.model.connections.remove(self.conn)
-        viz.model.nodes.remove(self.node)
+    def add_nengo_objects(self, page):
+        with page.model:
+            self.node = nengo.Node(self.gather_data, 
+                                   size_in=self.obj.neurons.size_out)
+            self.conn = nengo.Connection(self.obj.neurons, 
+                                         self.node, synapse=0.01)
+
+    def remove_nengo_objects(self, page):
+        page.model.connections.remove(self.conn)
+        page.model.nodes.remove(self.node)
 
     def gather_data(self, t, x):
         self.max_value = max(self.max_value, np.max(x))
@@ -52,12 +56,10 @@ class SpikeGrid(Component):
                 pass
 
     def javascript(self):
-        info = dict(uid=self.uid, label=self.label,
+        info = dict(uid=id(self), label=self.label,
                     pixels_x=self.pixels_x, pixels_y=self.pixels_y)
         json = self.javascript_config(info)
         return 'new Nengo.Image(main, sim, %s);' % json
 
-
-class SpikeGridTemplate(Template):
-    cls = SpikeGrid
-    config_params = dict(**Template.default_params)
+    def code_python_args(self, uids):
+        return [uids[self.obj], 'n_neurons=%d' % self.n_neurons]
