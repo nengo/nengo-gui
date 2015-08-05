@@ -59,6 +59,9 @@ class Value(Component):
         # while there is data that should be sent to the client
         while len(self.data) > 0:
             item = self.data.popleft()
+            while len(self.data) > 0:
+                item = item + self.data.popleft()
+
             # send the data to the client
             client.write(item, binary=True)
 
