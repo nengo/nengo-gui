@@ -24,6 +24,7 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
     this.fixed_height = null;
     this.dimensions = info.dimensions;
     this.minimap = minimap;
+    this.html_node = info.html;
     if (minimap == false) {
         this.g_networks = ng.g_networks;
         this.g_items = ng.g_items;
@@ -349,6 +350,9 @@ Nengo.NetGraphItem.prototype.generate_menu = function () {
         }
         if (this.dimensions > 1) {
             items.push(['XY-value', function() {self.create_graph('XYValue');}])
+        }
+        if (this.html_node) {
+            items.push(['HTML', function() {self.create_graph('HTMLView');}])
         }
     }
     if (this.sp_targets.length > 0) {
