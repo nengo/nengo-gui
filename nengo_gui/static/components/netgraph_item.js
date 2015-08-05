@@ -342,7 +342,7 @@ Nengo.NetGraphItem.prototype.generate_menu = function () {
         }
         items.push(['Spikes', function() {self.create_graph('Raster');}]);
         items.push(['Voltages', function() {self.create_graph('Voltage');}]);
-        items.push(['Spikes (grid)', function() {self.create_graph('SpikeGrid');}]);
+        items.push(['Firing pattern', function() {self.create_graph('SpikeGrid');}]);
     }
     if (this.type == 'node') {
         items.push(['Slider', function() {self.create_graph('Slider');}]);
