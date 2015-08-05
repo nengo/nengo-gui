@@ -204,6 +204,7 @@ class NetGraph(Component):
                     try:
                         self.page.add_component(v)
                         old_component.replace_with = v
+                        v.original_id = old_component.original_id
                     except:
                         traceback.print_exc()
                         print('failed to recreate plot for %s' % v)

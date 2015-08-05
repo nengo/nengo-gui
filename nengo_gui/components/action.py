@@ -136,7 +136,7 @@ class CreateGraph(Action):
                 if (isinstance(component, nengo_gui.components.slider.Slider)
                         and component.node is self.obj):
                     self.duplicate = RemoveGraph(net_graph, component)
-                    self.send('delete_graph', uid=id(component))
+                    self.send('delete_graph', uid=component.original_id)
 
         self.act_create_graph()
 
@@ -164,7 +164,7 @@ class CreateGraph(Action):
         self.act_create_graph()
 
     def undo(self):
-        self.send('delete_graph', uid=id(self.component))
+        self.send('delete_graph', uid=self.component.original_id)
         if self.duplicate is not None:
             self.duplicate.undo()
 
