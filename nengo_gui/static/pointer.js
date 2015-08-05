@@ -92,16 +92,6 @@ Nengo.Pointer.prototype.set_show_pairs = function(value) {
     }
 };
 
-function sleep(milliseconds) {
-  var start = new Date().getTime();
-  for (var i = 0; i < 1e7; i++) {
-    if ((new Date().getTime() - start) > milliseconds){
-      break;
-    }
-  }
-}
-
-
 Nengo.Pointer.prototype.set_value = function() {
     var self = this;
     Nengo.modal.title('Enter a Semantic Pointer value...');
@@ -114,13 +104,10 @@ Nengo.Pointer.prototype.set_value = function() {
         if (modal.hasErrors() || modal.isIncomplete()) {
             return;
         }
-        if (value === null) {
-            value = '';
-        }
+        if ((value === null) || (value === '')) {
+            value = ':empty:';
+        } 
         self.fixed_value = value;
-        if (value == "") {
-            sleep(10);      
-        }
         self.ws.send(value);
         $('#OK').attr('data-dismiss', 'modal');
     });
@@ -131,7 +118,7 @@ Nengo.Pointer.prototype.set_value = function() {
                 if (ptr === null) {
                     ptr = '';
                 }
-                self.ws.send('check_0nly' + ptr);
+                self.ws.send(':check only:' + ptr);
                 return self.pointer_status;
             }
         }
