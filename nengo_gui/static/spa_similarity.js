@@ -14,41 +14,9 @@
 // is that worth changing?
 
 Nengo.SpaSimilarity = function(parent, sim, args) {
-    Nengo.Component.call(this, parent, args);
-    var self = this;
-    this.n_lines = args.n_lines || 1;
-    this.sim = sim;
-    this.display_time = args.display_time;
-
-    /** for storing the accumulated data */
-    var synapse = (args.synapse !== null) ? args.synapse : 0.01;
-    this.data_store = new Nengo.DataStore(this.n_lines, this.sim, synapse);
-
-    this.axes2d = new Nengo.TimeAxes(this.div, args);
-
-    /** call schedule_update whenever the time is adjusted in the SimControl */
-    this.sim.div.addEventListener('adjust_time',
-            function(e) {self.schedule_update();}, false);
-
-    /** call reset whenever the simulation is reset */
-    this.sim.div.addEventListener('sim_reset',
-            function(e) {self.reset();}, false);
-
-    /** create the lines on the plots */
-    var line = d3.svg.line()
-        .x(function(d, i) {return self.axes2d.scale_x(times[i]);})
-        .y(function(d) {return self.axes2d.scale_y(d);})
-    this.path = this.axes2d.svg.append("g").selectAll('path')
-                                    .data(this.data_store.data);
-
-    var colors = Nengo.make_colors(this.n_lines);
-    this.path.enter().append('path')
-             .attr('class', 'line')
-             .style('stroke', function(d, i) {return colors[i];});
-
-    this.update();
-    this.on_resize(this.get_screen_width(), this.get_screen_height());
+    Nengo.Value.call(parent, sim, args);
 };
+
 Nengo.Value.prototype = Object.create(Nengo.Value.prototype);
 Nengo.Value.prototype.constructor = Nengo.Value;
 
