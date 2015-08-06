@@ -4,6 +4,8 @@
  *
  * @param {float} args.width - the width of the axes (in pixels)
  * @param {float} args.height - the height of the axes (in pixels)
+ * @param {bool} args.center_x_axis - should the x-axis be in the middle
+ * @param {bool} args.center_y_axis - should the y-axis be in the middle
  * @param {float} args.min_value - minimum value on y-axis
  * @param {float} args.max_value - maximum value on y-axis
  */
@@ -22,6 +24,9 @@ Nengo.Axes2D = function(parent, args) {
     this.scale_x = d3.scale.linear();
     this.scale_y = d3.scale.linear();
     this.scale_y.domain([args.min_value, args.max_value]);
+
+    this.center_x_axis = args.center_x_axis;
+    this.center_y_axis = args.center_y_axis;
 
     /** spacing between the graph and the outside edges (in pixels) */
     this.set_axes_geometry(args.width, args.height);
@@ -81,9 +86,15 @@ Nengo.Axes2D.prototype.on_resize = function(width, height) {
     this.axis_y
         .tickPadding(this.tick_padding)
         .outerTickSize(this.tick_size, this.tick_size);
-    this.axis_x_g.attr("transform", "translate(0," + this.ax_bottom + ")");
+
+    var x_offset = this.center_x_axis ? (this.ax_bottom + this.ax_top) / 2
+                                      : this.ax_bottom;
+    var y_offset = this.center_y_axis ? (this.ax_left + this.ax_right) / 2
+                                      : this.ax_left;
+
+    this.axis_x_g.attr("transform", "translate(0," + x_offset + ")");
     this.axis_x_g.call(this.axis_x);
-    this.axis_y_g.attr("transform", "translate(" + this.ax_left + ", 0)");
+    this.axis_y_g.attr("transform", "translate(" + y_offset + ", 0)");
     this.axis_y_g.call(this.axis_y);
 };
 
@@ -103,4 +114,3 @@ Nengo.Axes2D.prototype.fit_ticks = function(parent){
         self.on_resize(parent.width, parent.height);
     }, 1)
 }
-    
