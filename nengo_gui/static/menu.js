@@ -105,16 +105,15 @@ Nengo.Menu.prototype.hide_any = function () {
 }
 
 Nengo.Menu.prototype.check_overflow = function (x, y) {
-    var menu_margin = 0;
     var corrected_y = y - $(toolbar.toolbar).height();
-    var h = $(this.menu).height();
-    var w = $(this.menu).width();
-    
+    var h = $(this.menu).outerHeight();
+    var w = $(this.menu).outerWidth();
+
     var main_h = $('#main').height()
     var main_w = $('#main').width()
 
-    if (corrected_y + h  + menu_margin > main_h) {
-        this.menu_div.style.top = y - h - menu_margin;
+    if (corrected_y + h > main_h) {
+        this.menu_div.style.top = y - h;
     }
 
     if(x + w  > main_w) {
