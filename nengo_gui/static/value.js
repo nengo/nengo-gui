@@ -53,12 +53,8 @@ Nengo.Value.prototype.constructor = Nengo.Value;
  * Taken from pointer.js
  */
 Nengo.Value.prototype.on_message = function(event) {
-    data = event.data.split(" ");
-    var time = parseFloat(data[0]);
-
-    var items = data[1].split(";");
-
-    this.data_store.push([time, items]);
+    var data = new Float32Array(event.data);
+    this.data_store.push(data);
     this.schedule_update();
 };
 
