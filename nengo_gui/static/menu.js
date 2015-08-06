@@ -1,5 +1,7 @@
 /**
  * Create a menu that will appear inside the given div
+ *
+ * Each element that has a menu makes a call to Nengo.Menu constructor
  */
 Nengo.Menu = function(div) {
     this.visible = false;   // whether it's currently visible
@@ -19,6 +21,7 @@ Nengo.Menu.visible_menus = {};
 /**
  * Show this menu at the given (x,y) location
  * Automatically hides any menu that's in the same div
+ * Called by a listener from netgraph.js
  */
 Nengo.Menu.prototype.show = function (x, y, items) {
     Nengo.Menu.hide_menu_in(this.div);

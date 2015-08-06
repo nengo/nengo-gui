@@ -1,9 +1,13 @@
 /**
- * A slider to adjust Node values
+ * A slider object with 1+ handles to adjust Node values
  * @constructor
  *
  * @params {dict} args - a set of constructor arguments (see Nengo.Component)
  * @params {int} args.n_sliders - the number of sliders to show
+ *
+ * Slider constructor is called by python server when a user requests a slider 
+ * or when the config file is making sliders. Server request is handled in 
+ * netgraph.js {.on_message} function.
  */
 Nengo.Slider = function(parent, sim, args) {
     Nengo.Component.call(this, parent, args);
@@ -40,6 +44,7 @@ Nengo.Slider = function(parent, sim, args) {
 
     this.sliders = [];
     for (var i = 0; i < args.n_sliders; i++) {
+        // Creating a SliderControl object for every slider handle required
         var slider = new Nengo.SliderControl(args.min_value, args.max_value);
         slider.container.style.width = (100 / args.n_sliders) + '%';
         slider.display_value(args.start_value[i]);
@@ -337,33 +342,3 @@ Nengo.Slider.prototype.update_layout = function (config) {
     }
     Nengo.Component.prototype.update_layout.call(this, config);
 }
-
-//takes input and outputs the
-//boundary value if input is above/below max/min
-//Otherwise outputs the input
-//max_min: Num -> Num
-Nengo.Slider.prototype.max_min = function(value) {
-    console.assert(typeof value == 'number');
-
-    //Get the max and min slider bounds
-    var slider_range = this.scale.domain();
-    min = slider_range[1];
-    max = slider_range[0];
-
-    if (value < min) {
-        return min;
-    }
-    else if (value > max) {
-        return max;
-    }
-    else {
-        return value;
-    }
-};
-
-//slider_index: Nat, new_shown_value: Num
-//Rounds to 2 decimal places
-Nengo.Slider.prototype.update_value_text = function (slider_index, new_shown_value) {
-    var target = this.sliders[slider_index].value_display;
-    target.innerHTML = new_shown_value.toFixed(2);
-};

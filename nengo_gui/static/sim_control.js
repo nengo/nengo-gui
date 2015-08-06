@@ -1,10 +1,14 @@
 /**
+ *
  * Control panel for a simulation
  * @constructor
  *
  * @param {DOMElement} div - the element for the control
  * @param {dict} args - A set of constructor arguments, including:
  * @param {int} args.id - the id of the server-side SimControl to connect to
+ *
+ * SimControl constructor is inserted into HTML file from python and
+ * is called when the page is first loaded
  */
 Nengo.SimControl = function(div, args) {
     if (args.uid[0] === '<') {

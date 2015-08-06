@@ -4,6 +4,10 @@
  *
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
  * @param {Nengo.SimControl} args.sim - the simulation controller
+ *
+ * Pointer constructor is called by python server when a user requests a plot 
+ * or when the config file is making graphs. Server request is handled in 
+ * netgraph.js {.on_message} function.
  */
 
 Nengo.Pointer = function(parent, sim, args) {
