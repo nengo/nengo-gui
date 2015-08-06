@@ -15,6 +15,8 @@ class Pointer(Component):
         super(Pointer, self).__init__()
         self.obj = obj
         self.data = collections.deque()
+        # toggles whether to use semantic pointer value
+        # as set by the user in the GUI
         self.override_target = None
         self.target = kwargs.get('args', 'default')
         self.vocab_out = obj.outputs[self.target][1]
@@ -52,7 +54,7 @@ class Pointer(Component):
             matches += matches2
         text = ';'.join(['%0.2f%s' % (sim, key) for (sim, key) in matches])
 
-        # why is this a string, but everywhere else it's a struct
+        # msg sent as a string due to variable size of pointer names
         msg = '%g %s' % (t, text)
         self.data.append(msg)
         if self.override_target is None:
@@ -77,6 +79,7 @@ class Pointer(Component):
     def code_python_args(self, uids):
         return [uids[self.obj], 'target=%r' % self.target]
 
+    # Override the value if set
     def message(self, msg):
         if len(msg) == 0:
             self.override_target = None

@@ -14,25 +14,24 @@
 // is that worth changing?
 
 Nengo.SpaSimilarity = function(parent, sim, args) {
+    // probably have to fix the args here
     Nengo.Value.call(parent, sim, args);
+
+    // create the legend
 };
 
-Nengo.Value.prototype = Object.create(Nengo.Value.prototype);
-Nengo.Value.prototype.constructor = Nengo.Value;
+Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
+Nengo.SpaSimilarity.prototype.constructor = Nengo.SpaSimilarity;
 
 /**
  * Receive new line data from the server
  */
-Nengo.Value.prototype.on_message = function(event) {
-    var data = new Float32Array(event.data);
-    this.data_store.push(data);
-    this.schedule_update();
-};
+Nengo.SpaSimilarity.prototype.on_message = Nengo.Pointer.on_message;
 
 /**
  * Redraw the lines and axis due to changed data
  */
-Nengo.Value.prototype.update = function() {
+Nengo.SpaSimilarity.prototype.update = function() {
     /** let the data store clear out old values */
     this.data_store.update();
 
@@ -44,6 +43,7 @@ Nengo.Value.prototype.update = function() {
 
     /** update the lines */
     var self = this;
+    // Hmmm... The format of this is probably bad
     var shown_data = this.data_store.get_shown_data();
     var line = d3.svg.line()
         .x(function(d, i) {
@@ -55,53 +55,40 @@ Nengo.Value.prototype.update = function() {
              .attr('d', line);
 };
 
-/**
- * Adjust the graph layout due to changed size
- */
-Nengo.Value.prototype.on_resize = function(width, height) {
-    if (width < this.minWidth) {
-        width = this.minWidth;
-    }
-    if (height < this.minHeight) {
-        height = this.minHeight;
-    };
-
-    this.axes2d.on_resize(width, height);
-
-    this.update();
-
-    this.label.style.width = width;
-
-    this.width = width;
-    this.height = height;
-    this.div.style.width = width;
-    this.div.style.height= height;
-};
-
-Nengo.Value.prototype.generate_menu = function() {
+// This is kind of useless. Should we just kill it? Same with set_range and update_range
+// I guess we'll need this menu to show pairs or not?
+Nengo.SpaSimilarity.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['Set range...', function() {self.set_range();}]);
+
+    if (this.show_pairs) {
+        items.push(['Hide pairs', function() {self.set_show_pairs(false);}]);
+    } else {
+        items.push(['Show pairs', function() {self.set_show_pairs(true);}]);
+    }
+
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
     return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
 };
 
-
-Nengo.Value.prototype.layout_info = function () {
+// Change the legend in addition to the usual stuff
+Nengo.SpaSimilarity.prototype.layout_info = function () {
     var info = Nengo.Component.prototype.layout_info.call(this);
     info.min_value = this.axes2d.scale_y.domain()[0];
     info.max_value = this.axes2d.scale_y.domain()[1];
     return info;
 }
 
-Nengo.Value.prototype.update_layout = function(config) {
+Nengo.SpaSimilarity.prototype.update_layout = function(config) {
     this.update_range(config.min_value, config.max_value);
     Nengo.Component.prototype.update_layout.call(this, config);
 }
 
-Nengo.Value.prototype.set_range = function() {
+// what do I want to with this range... I feel like this shouldn't even be an option...
+Nengo.SpaSimilarity.prototype.set_range = function() {
     var range = this.axes2d.scale_y.domain();
     var self = this;
     Nengo.modal.title('Set graph range...');
@@ -148,12 +135,7 @@ Nengo.Value.prototype.set_range = function() {
     })
 }
 
-Nengo.Value.prototype.update_range = function(min, max) {
+Nengo.SpaSimilarity.prototype.update_range = function(min, max) {
     this.axes2d.scale_y.domain([min, max]);
     this.axes2d.axis_y_g.call(this.axes2d.axis_y);
-}
-
-Nengo.Value.prototype.reset = function(event) {
-    this.data_store.reset();
-    this.schedule_update();
 }
