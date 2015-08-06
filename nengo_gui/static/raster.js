@@ -40,6 +40,8 @@ Nengo.Raster = function(parent, sim, args) {
 
     this.update();
     this.on_resize(this.get_screen_width(), this.get_screen_height());
+    this.axes2d.axis_y.tickValues([0, args.n_neurons]);
+    this.axes2d.fit_ticks(this);
 };
 Nengo.Raster.prototype = Object.create(Nengo.Component.prototype);
 Nengo.Raster.prototype.constructor = Nengo.Raster;

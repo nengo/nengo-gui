@@ -71,11 +71,15 @@ def determine_line_number(filename='<string>'):
 
 
 class ExecutionEnvironment(object):
-    def __init__(self, filename):
-        self.directory = os.path.dirname(filename)
+    def __init__(self, filename, allow_sim=False):
+        if filename is None:
+            self.directory = None
+        else:
+            self.directory = os.path.dirname(filename)
         self.added_directory = None
+        self.allow_sim = allow_sim
     def __enter__(self):
-        if self.directory not in sys.path:
+        if self.directory is not None and self.directory not in sys.path:
             sys.path.insert(0, self.directory)
             self.added_directory = self.directory
 
@@ -89,14 +93,15 @@ class ExecutionEnvironment(object):
 
         sys.stdout = self.stdout
 
-        for name in known_modules:
-            try:
-                mod = importlib.import_module(name)
-            except:
-                continue
-            found_modules.append(name)
-            self.simulators[mod] = mod.Simulator
-            mod.Simulator = make_dummy(mod.Simulator)
+        if not self.allow_sim:
+            for name in known_modules:
+                try:
+                    mod = importlib.import_module(name)
+                except:
+                    continue
+                found_modules.append(name)
+                self.simulators[mod] = mod.Simulator
+                mod.Simulator = make_dummy(mod.Simulator)
 
     def __exit__(self, exc_type, exc_value, traceback):
         for mod, cls in self.simulators.items():
@@ -105,6 +110,7 @@ class ExecutionEnvironment(object):
 
         sys.stdout = sys.__stdout__
 
-        if self.added_directory is not None:
-            sys.path.remove(self.added_directory)
-            self.added_directory = None
+        if not self.allow_sim:
+            if self.added_directory is not None:
+                sys.path.remove(self.added_directory)
+                self.added_directory = None

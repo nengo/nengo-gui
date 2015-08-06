@@ -48,6 +48,7 @@ Nengo.XYValue = function(parent, sim, args) {
              .style('stroke', Nengo.make_colors(1));
 
     this.on_resize(this.get_screen_width(), this.get_screen_height());
+    this.axes2d.fit_ticks(this);
 };
 Nengo.XYValue.prototype = Object.create(Nengo.Component.prototype);
 Nengo.XYValue.prototype.constructor = Nengo.Value;

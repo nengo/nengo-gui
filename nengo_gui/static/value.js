@@ -44,7 +44,10 @@ Nengo.Value = function(parent, sim, args) {
 
     this.update();
     this.on_resize(this.get_screen_width(), this.get_screen_height());
+    this.axes2d.axis_y.tickValues([args.min_value, args.max_value]);
+    this.axes2d.fit_ticks(this);
 };
+
 Nengo.Value.prototype = Object.create(Nengo.Component.prototype);
 Nengo.Value.prototype.constructor = Nengo.Value;
 
@@ -138,7 +141,6 @@ Nengo.Value.prototype.set_range = function() {
     Nengo.modal.footer('ok_cancel', function(e) {
         var new_range = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
-
         modal.validate();
         if (modal.hasErrors() || modal.isIncomplete()) {
             return;
@@ -149,6 +151,8 @@ Nengo.Value.prototype.set_range = function() {
             var max = parseFloat(new_range[1]);
             self.update_range(min, max);
             self.save_layout();
+            self.axes2d.axis_y.tickValues([min, max])
+            self.axes2d.fit_ticks(self);
         }
         $('#OK').attr('data-dismiss', 'modal');
     });

@@ -433,6 +433,9 @@ class NetGraph(Component):
             info['passthrough'] = True
         if type == 'ens' or type == 'node':
             info['dimensions'] = int(obj.size_out)
+        if type == 'node':
+            if callable(obj.output) and hasattr(obj.output, '_nengo_html_'):
+                info['html'] = True
 
         info['sp_targets'] = (
             nengo_gui.components.pointer.Pointer.applicable_targets(obj))

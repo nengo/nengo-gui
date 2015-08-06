@@ -75,7 +75,6 @@ Nengo.SimControl.prototype.on_message = function(event) {
             this.set_status(event.data.substring(7));
         }
         else if (event.data.substring(0, 6) === 'config') {
-            console.log(event.data);
             eval(event.data.substring(6, event.data.length));
         }
         else if (event.data.substring(0, 5) === 'sims:') {
@@ -109,15 +108,24 @@ Nengo.SimControl.prototype.set_status = function(status) {
     if (status === 'building') {
         icon = 'glyphicon-cog';
         this.start_rotating_cog();
+        this.paused = false;
     } else if (status === 'paused') {
         icon = 'glyphicon-play';
         this.stop_rotating_cog();
         this.paused = true;
-    } else if (status == 'running') {
+    } else if (status === 'running') {
         icon = 'glyphicon-pause';
         this.stop_rotating_cog();
+        this.paused = false;
+    } else if (status === 'build_error') {
+        icon = 'glyphicon-remove';
+        this.stop_rotating_cog();
+        this.paused = false;
     } else {
-        console.log(['unknown status', status]);
+        icon = 'glyphicon-cog';
+        this.stop_rotating_cog();
+        console.log('unknown status: ' + status);
+        this.paused = false;
     }
     this.pause_button_icon.className = "glyphicon " + icon;
 }
