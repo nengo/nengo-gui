@@ -30,6 +30,11 @@ class Component(object):
         # to swap out the old Component with the new one.
         self.replace_with = None
 
+        # If we have been swapped out, keep track of the id of the original
+        # component, since that's the identifier needed to refer to it on
+        # the client side
+        self.original_id = id(self)
+
     def attach(self, page, config, uid):
         """Connect the Component to a Page."""
         self.config = config  # the nengo.Config[component] for this component
