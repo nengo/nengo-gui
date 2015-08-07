@@ -646,11 +646,20 @@ Nengo.NetGraph.prototype.scaleMiniMap = function () {
  * main viewport and scale the viewbox to reflect that. */
 Nengo.NetGraph.prototype.scaleMiniMapViewBox = function () {
     if (this.mm_display == true) {
-        var w = $(this.minimap).width() * this.mm_scale;
-        var h = $(this.minimap).height() * this.mm_scale;
+        var mm_w = $(this.minimap).width();
+        var mm_h = $(this.minimap).height();
 
-        var view_offsetX = -(this.mm_min_x + this.offsetX) * w;
-        var view_offsetY = -(this.mm_min_y + this.offsetY) * h;
+        var w = mm_w * this.mm_scale;
+        var h = mm_h * this.mm_scale;
+
+        var disp_w = (this.mm_max_x - this.mm_min_x) * w;
+        var disp_h = (this.mm_max_y - this.mm_min_y) * h;
+
+        var offsetX = -this.mm_min_x * w + (mm_w - disp_w) / 2.;
+        var offsetY = -this.mm_min_y * h + (mm_h - disp_h) / 2.;
+
+        var view_offsetX = -(this.mm_min_x + this.offsetX) * w + (mm_w - disp_w) / 2.;
+        var view_offsetY = -(this.mm_min_y + this.offsetY) * h + (mm_h - disp_h) / 2.;
 
         this.view.setAttributeNS(null, 'x', view_offsetX);
         this.view.setAttributeNS(null, 'y', view_offsetY);

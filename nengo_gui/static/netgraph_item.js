@@ -797,11 +797,17 @@ Nengo.NetGraphItem.prototype.get_screen_location = function() {
         var offsetX = this.ng.offsetX * w;
         var offsetY = this.ng.offsetY * h;
     } else {
-        var w = $(this.ng.minimap).width() * this.ng.mm_scale;
-        var h = $(this.ng.minimap).height() * this.ng.mm_scale;
+        var mm_w = $(this.ng.minimap).width();
+        var mm_h = $(this.ng.minimap).height();
 
-        var offsetX = -this.ng.mm_min_x * w;
-        var offsetY = -this.ng.mm_min_y * h;
+        var w = mm_w * this.ng.mm_scale;
+        var h = mm_h * this.ng.mm_scale;
+
+        var disp_w = (this.ng.mm_max_x - this.ng.mm_min_x) * w;
+        var disp_h = (this.ng.mm_max_y - this.ng.mm_min_y) * h;
+
+        var offsetX = -this.ng.mm_min_x * w + (mm_w - disp_w) / 2.;
+        var offsetY = -this.ng.mm_min_y * h + (mm_h - disp_h) / 2.;
     };
 
     var dx = 0;
