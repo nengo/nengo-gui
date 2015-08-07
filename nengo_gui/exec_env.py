@@ -10,7 +10,20 @@ from nengo.utils.compat import StringIO
 # list of Simulators to check for
 known_modules = ['nengo', 'nengo_ocl', 'nengo_distilled',
                  'nengo_brainstorm', 'nengo_spinnaker']
-found_modules = []
+
+
+def discover_backends():
+    found_modules = {}
+    for name in known_modules:
+        try:
+            mod = importlib.import_module(name)
+        except Exception as e:
+            # TODO only ignore ImportErrors "No module named ...", display
+            # other errors to the user as they might help debugging broken
+            # backend installations
+            continue
+        found_modules[name] = mod
+    return found_modules
 
 
 class StartedSimulatorException(Exception):
@@ -86,7 +99,6 @@ class ExecutionEnvironment(object):
         self.stdout = StringIO()
 
         flag.executing = True
-        del found_modules[:]
         self.simulators = {}
 
         # add hooks to record stdout
@@ -94,12 +106,8 @@ class ExecutionEnvironment(object):
         sys.stdout = self.stdout
 
         if not self.allow_sim:
-            for name in known_modules:
-                try:
-                    mod = importlib.import_module(name)
-                except:
-                    continue
-                found_modules.append(name)
+            discover_backends()
+            for mod in discover_backends().values():
                 self.simulators[mod] = mod.Simulator
                 mod.Simulator = make_dummy(mod.Simulator)
 

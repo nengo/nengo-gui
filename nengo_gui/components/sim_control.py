@@ -136,7 +136,7 @@ class SimControl(Component):
 
     def backend_options_html(self):
         items = []
-        for module in nengo_gui.exec_env.found_modules:
+        for module in nengo_gui.exec_env.discover_backends():
             if module == self.page.backend:
                 selected = ' selected'
             else:
