@@ -101,6 +101,7 @@ class NetGraph(Component):
         self.parents = {}
 
         removed_uids = {}
+        rebuilt_objects = []
 
         # for each item in the old model, find the matching new item
         # for Nodes, Ensembles, and Networks, this means to find the item
@@ -131,21 +132,22 @@ class NetGraph(Component):
             elif not isinstance(new_item, old_item.__class__):
                 # don't allow changing classes
                 keep_object = False
-            elif isinstance(new_item, nengo.Node):
-                # check if a Node has become a passthrough Node
-                if old_item.output is None and new_item.output is not None:
-                    keep_object = False
-                elif old_item.output is not None and new_item.output is None:
-                    keep_object = False
+            elif self.get_extra_info(new_item) != self.get_extra_info(old_item):
+                keep_object = False
 
             if not keep_object:
                 self.to_be_sent.append(dict(
                     type='remove', uid=uid))
                 del self.uids[uid]
                 removed_uids[old_item] = uid
+                rebuilt_objects.append(uid)
             else:
                 # fix aspects of the item that may have changed
-                self._reload_update_item(uid, old_item, new_item, name_finder)
+                if self._reload_update_item(uid, old_item, new_item, 
+                                            name_finder):
+                    # something has changed about this object, so rebuild
+                    # and components that use it
+                    rebuilt_objects.append(uid)
 
                 self.uids[uid] = new_item
 
@@ -159,16 +161,28 @@ class NetGraph(Component):
         self.page.code = code
 
         orphan_components = []
+        rebuild_components = []
 
         removed_items = list(removed_uids.values())
-        for c in self.page.components:
+        for c in self.page.components[:]:
             for item in c.code_python_args(old_default_labels):
-                if item in removed_items:
+                if item in rebuilt_objects:
                     self.to_be_sent.append(dict(type='delete_graph',
-                                                uid=id(c),
+                                                uid=c.original_id,
                                                 notify_server=False))
-                    orphan_components.append(c)
+                    rebuild_components.append(c.uid)
+                    self.page.components.remove(c)
                     break
+            else:
+                for item in c.code_python_args(old_default_labels):
+                    if item in removed_items:
+                        self.to_be_sent.append(dict(type='delete_graph',
+                                                    uid=c.original_id,
+                                                    notify_server=False))
+                        orphan_components.append(c)
+                        break
+
+
 
         components = []
         # the old names for the old components
@@ -176,14 +190,14 @@ class NetGraph(Component):
 
         for k, v in list(self.page.locals.items()):
             if isinstance(v, nengo_gui.components.component.Component):
-
                 # the object has been removed, so the Component should
                 #  be removed as well
                 if v in orphan_components:
                     continue
 
                 # this is a Component that was previously removed,
-                #  but is still in the config file, so let's recover it
+                #  but is still in the config file, or it has to be
+                #  rebuilt, so let's recover it
                 if k not in component_uids:
                     self.page.add_component(v)
                     self.to_be_sent.append(dict(type='js', 
@@ -204,6 +218,7 @@ class NetGraph(Component):
                     try:
                         self.page.add_component(v)
                         old_component.replace_with = v
+                        v.original_id = old_component.original_id
                     except:
                         traceback.print_exc()
                         print('failed to recreate plot for %s' % v)
@@ -217,6 +232,7 @@ class NetGraph(Component):
 
     def _reload_update_item(self, uid, old_item, new_item, new_name_finder):
         """Tell the client about changes to the item due to reload."""
+        changed = False
         if isinstance(old_item, (nengo.Node,
                                  nengo.Ensemble,
                                  nengo.Network)):
@@ -227,9 +243,11 @@ class NetGraph(Component):
             if old_label != new_label:
                 self.to_be_sent.append(dict(
                     type='rename', uid=uid, name=new_label))
+                changed = True
             if isinstance(old_item, nengo.Network):
                 if self.page.config[old_item].expanded:
                     self.to_be_expanded.append(new_item)
+                    changed = True
 
         elif isinstance(old_item, nengo.Connection):
             old_pre = old_item.pre_obj
@@ -263,6 +281,8 @@ class NetGraph(Component):
                 self.to_be_sent.append(dict(
                     type='reconnect', uid=uid,
                     pres=pres, posts=posts))
+                changed = True
+        return changed
 
     def get_parents(self, uid, default_labels=None):
         while uid not in self.parents:
@@ -429,18 +449,29 @@ class NetGraph(Component):
                     parent=parent)
         if type == 'net':
             info['expanded'] = self.page.config[obj].expanded
-        if type == 'node' and obj.output is None:
-            info['passthrough'] = True
-        if type == 'ens' or type == 'node':
-            info['dimensions'] = int(obj.size_out)
-        if type == 'node':
-            if callable(obj.output) and hasattr(obj.output, '_nengo_html_'):
-                info['html'] = True
-
-        info['sp_targets'] = (
-            nengo_gui.components.pointer.Pointer.applicable_targets(obj))
+        info.update(self.get_extra_info(obj))
 
         client.write(json.dumps(info))
+
+    def get_extra_info(self, obj):
+        '''Determine helper information for each nengo object.
+
+        This is used by the client side to configure the display.  It is also
+        used by the reload() code to determine if a NetGraph object should
+        be recreated.
+        '''
+        info = {}
+        if isinstance(obj, nengo.Node):
+            if obj.output is None:
+                info['passthrough'] = True
+            if callable(obj.output) and hasattr(obj.output, '_nengo_html_'):
+                info['html'] = True
+            info['dimensions'] = int(obj.size_out)
+        elif isinstance(obj, nengo.Ensemble):
+            info['dimensions'] = int(obj.size_out)
+        info['sp_targets'] = (
+            nengo_gui.components.pointer.Pointer.applicable_targets(obj))
+        return info
 
     def send_pan_and_zoom(self, client):
         pan = self.page.config[self.page.model].pos
