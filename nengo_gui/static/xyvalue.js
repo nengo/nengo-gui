@@ -19,6 +19,8 @@ Nengo.XYValue = function(parent, sim, args) {
     /** for storing the accumulated data */
     this.data_store = new Nengo.DataStore(this.n_lines, this.sim, 0);
 
+    args.center_x_axis = true;
+    args.center_y_axis = true;
     this.axes2d = new Nengo.Axes2D(this.div, args);
     this.axes2d.axis_y.tickValues([args.min_value, args.max_value]);
     this.axes2d.axis_x.tickValues([args.min_value, args.max_value]);
@@ -47,8 +49,8 @@ Nengo.XYValue = function(parent, sim, args) {
              .attr('class', 'line')
              .style('stroke', Nengo.make_colors(1));
 
-    this.on_resize(this.get_screen_width(), this.get_screen_height());
     this.axes2d.fit_ticks(this);
+    this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
 Nengo.XYValue.prototype = Object.create(Nengo.Component.prototype);
 Nengo.XYValue.prototype.constructor = Nengo.Value;
@@ -88,19 +90,6 @@ Nengo.XYValue.prototype.update = function() {
 Nengo.XYValue.prototype.on_resize = function(width, height) {
     this.axes2d.on_resize(width, height);
 
-    //this.scale_x.range([this.margin_left, width - this.margin_right]);
-    //this.scale_y.range([height - this.margin_bottom, this.margin_top]);
-
-    var plot_width = this.axes2d.ax_right - this.axes2d.ax_left;
-    var plot_height = this.axes2d.ax_bottom - this.axes2d.ax_top;
-
-    //Adjust positions of x axis on resize
-    this.axes2d.axis_x_g
-        .attr("transform",
-              "translate(0," + (this.axes2d.ax_top + plot_height / 2) + ")");
-    this.axes2d.axis_y_g
-        .attr("transform",
-              "translate(" + (this.axes2d.ax_left + plot_width / 2) + ",0)");
     this.update();
 
     this.label.style.width = width;
