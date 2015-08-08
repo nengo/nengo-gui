@@ -16,7 +16,7 @@ class SpikeGrid(Component):
         self.pixels_x = np.ceil(np.sqrt(self.n_neurons))
         self.pixels_y = np.ceil(float(self.n_neurons) / self.pixels_x)
         self.n_pixels = self.pixels_x * self.pixels_y
-        self.struct = struct.Struct('<%dB' % (1 + self.n_pixels))
+        self.struct = struct.Struct('<f%dB' % (self.n_pixels))
         self.max_value = 1.0
 
     def attach(self, page, config, uid):
@@ -43,7 +43,8 @@ class SpikeGrid(Component):
         if len(x) > self.n_neurons:
             x = x[:self.n_neurons]
         y = np.zeros(self.n_pixels, dtype=np.uint8)
-        y[:x.size] = x * 255 / self.max_value
+        if self.max_value > 0:
+            y[:x.size] = x * 255 / self.max_value
         data = self.struct.pack(t, *y)
         self.data.append(data)
 
