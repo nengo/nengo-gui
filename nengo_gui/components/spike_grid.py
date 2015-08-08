@@ -25,9 +25,9 @@ class SpikeGrid(Component):
 
     def add_nengo_objects(self, page):
         with page.model:
-            self.node = nengo.Node(self.gather_data, 
+            self.node = nengo.Node(self.gather_data,
                                    size_in=self.obj.neurons.size_out)
-            self.conn = nengo.Connection(self.obj.neurons, 
+            self.conn = nengo.Connection(self.obj.neurons,
                                          self.node, synapse=0.01)
 
     def remove_nengo_objects(self, page):
@@ -40,6 +40,8 @@ class SpikeGrid(Component):
         # TODO: pass only spiking neurons, using subclass of Nengo.Image?
         #   Considerations include how to filter if we're only passing spike
         #   times, i.e. need to write a new DataStore.
+        if len(x) > self.n_neurons:
+            x = x[:self.n_neurons]
         y = np.zeros(self.n_pixels, dtype=np.uint8)
         y[:x.size] = x * 255 / self.max_value
         data = self.struct.pack(t, *y)
