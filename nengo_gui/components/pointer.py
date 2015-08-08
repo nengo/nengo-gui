@@ -52,6 +52,10 @@ class Pointer(Component):
             pair_matches = [(simi, vocab.key_pairs[i]) for i, simi in enumerate(pair_similarity)
                         if simi > 0.01]
             matches += pair_matches
+
+        return self.format_data(matches)
+
+    def format_data(self, matches):
         text = ';'.join(['%0.2f%s' % (sim, key) for (sim, key) in matches])
 
         # msg sent as a string due to variable size of pointer names

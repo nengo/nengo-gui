@@ -17,17 +17,12 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
     // probably have to fix the args here
     Nengo.Value.call(this, parent, sim, args);
 
-    // create the legend
+    // create the legend from label args
 };
 
 Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
 Nengo.SpaSimilarity.prototype.constructor = Nengo.SpaSimilarity;
 
-/**
- * Receive new line data from the server
- */
-// this is apparently not how you do inheritance...
-Nengo.SpaSimilarity.prototype.on_message = Nengo.Pointer.prototype.on_message;
 
 /**
  * Redraw the lines and axis due to changed data
@@ -45,7 +40,6 @@ Nengo.SpaSimilarity.prototype.update = function() {
 
     /** update the lines */
     var self = this;
-    // Hmmm... The format of this is probably bad
     var shown_data = this.data_store.get_shown_data();
     var line = d3.svg.line()
         .x(function(d, i) {
