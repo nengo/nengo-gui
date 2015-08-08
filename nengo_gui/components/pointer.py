@@ -44,14 +44,14 @@ class Pointer(Component):
 
     def gather_data(self, t, x):
         vocab = self.vocab_out
-        m = np.dot(vocab.vectors, x)
-        matches = [(mm, vocab.keys[i]) for i, mm in enumerate(m) if mm > 0.01]
+        key_similarity = np.dot(vocab.vectors, x)
+        matches = [(simi, vocab.keys[i]) for i, simi in enumerate(key_similarity) if simi > 0.01]
         if self.config.show_pairs:
             self.vocab_out.include_pairs = True
-            m2 = np.dot(vocab.vector_pairs, x)
-            matches2 = [(mm, vocab.key_pairs[i]) for i, mm in enumerate(m2)
-                        if mm > 0.01]
-            matches += matches2
+            pair_similarity = np.dot(vocab.vector_pairs, x)
+            pair_matches = [(simi, vocab.key_pairs[i]) for i, simi in enumerate(pair_similarity)
+                        if simi > 0.01]
+            matches += pair_matches
         text = ';'.join(['%0.2f%s' % (sim, key) for (sim, key) in matches])
 
         # msg sent as a string due to variable size of pointer names

@@ -15,7 +15,7 @@
 
 Nengo.SpaSimilarity = function(parent, sim, args) {
     // probably have to fix the args here
-    Nengo.Value.call(parent, sim, args);
+    Nengo.Value.call(this, parent, sim, args);
 
     // create the legend
 };
@@ -26,13 +26,15 @@ Nengo.SpaSimilarity.prototype.constructor = Nengo.SpaSimilarity;
 /**
  * Receive new line data from the server
  */
-Nengo.SpaSimilarity.prototype.on_message = Nengo.Pointer.on_message;
+// this is apparently not how you do inheritance...
+Nengo.SpaSimilarity.prototype.on_message = Nengo.Pointer.prototype.on_message;
 
 /**
  * Redraw the lines and axis due to changed data
  */
 Nengo.SpaSimilarity.prototype.update = function() {
     /** let the data store clear out old values */
+    // where the hell is this datastore defined anyways?
     this.data_store.update();
 
     /** determine visible range from the Nengo.SimControl */
