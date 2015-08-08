@@ -64,4 +64,7 @@ class SpikeGrid(Component):
         return 'new Nengo.Image(main, sim, %s);' % json
 
     def code_python_args(self, uids):
-        return [uids[self.obj], 'n_neurons=%d' % self.n_neurons]
+        args = [uids[self.obj]]
+        if self.n_neurons != self.max_neurons:
+            args.append('n_neurons=%d' % self.n_neurons)
+        return args
