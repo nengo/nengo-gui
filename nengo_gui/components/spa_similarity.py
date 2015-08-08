@@ -18,9 +18,8 @@ class SpaSimilarity(Pointer):
         except KeyError:
             target_key = kwargs['args']
 
-        self.n_lines = len(obj.outputs[target_key][1].keys)
-
-        self.struct = struct.Struct('<%df' % (1 + self.n_lines))
+        self.labels = obj.outputs[target_key][1].keys
+        self.struct = struct.Struct('<%df' % (1 + len(self.labels)))
 
     def format_data(self, matches):
         self.data.append(self.struct.pack(matches.keys))
@@ -34,8 +33,8 @@ class SpaSimilarity(Pointer):
 
     def javascript(self):
         """Almost identical to value.py"""
-        info = dict(uid=id(self), label=self.label,
-                    n_keys=self.n_lines, synapse=0, min_value=-1.5, max_value=1.5, labels=self.labels)
+        info = dict(uid=id(self), label=self.labels,
+                    n_keys=len(self.labels), synapse=0, min_value=-1.5, max_value=1.5, labels=self.labels)
         json = self.javascript_config(info)
         return 'new Nengo.SpaSimilarity(main, sim, %s);' % json
 
