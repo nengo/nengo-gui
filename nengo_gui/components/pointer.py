@@ -27,6 +27,7 @@ class Pointer(Component):
         self.label = page.get_label(self.obj)
         self.vocab_out.include_pairs = config.show_pairs
 
+    # wtf is happening here
     def add_nengo_objects(self, page):
         with page.model:
             output = self.obj.outputs[self.target][0]
@@ -53,9 +54,6 @@ class Pointer(Component):
                         if simi > 0.01]
             matches += pair_matches
 
-        return self.format_data(matches)
-
-    def format_data(self, matches):
         text = ';'.join(['%0.2f%s' % (sim, key) for (sim, key) in matches])
 
         # msg sent as a string due to variable size of pointer names

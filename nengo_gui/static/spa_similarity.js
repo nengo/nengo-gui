@@ -40,6 +40,7 @@ Nengo.SpaSimilarity.prototype.update = function() {
 
     /** update the lines */
     var self = this;
+    // Is it the data being sent in the wrong way or 
     var shown_data = this.data_store.get_shown_data();
     var line = d3.svg.line()
         .x(function(d, i) {

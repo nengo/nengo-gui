@@ -57,6 +57,7 @@ Nengo.Value.prototype.constructor = Nengo.Value;
  */
 Nengo.Value.prototype.on_message = function(event) {
     var data = new Float32Array(event.data);
+    // Is time being encoded properly into this? Is that why I'm getting negative time values? Because my dimensions are off?
     this.data_store.push(data);
     this.schedule_update();
 };

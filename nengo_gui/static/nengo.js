@@ -365,6 +365,8 @@ Nengo.Component.prototype.get_screen_height = function () {
 Nengo.DataStore = function(dims, sim, synapse) {
     this.synapse = synapse; /** TODO: get from Nengo.SimControl */
     this.sim = sim;
+    // where is this used anyways? why is it necessary?
+    // is it normal to get negative times?
     this.times = []
     this.data = [];
     for (var i=0; i < dims; i++) {
@@ -461,6 +463,7 @@ Nengo.DataStore.prototype.get_shown_data = function() {
 
     /* find the corresponding index values */
     var index = 0;
+    // Wouldn't a binary search be better?
     while (this.times[index] < t1) {
         index += 1;
     }
