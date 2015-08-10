@@ -17,7 +17,51 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
     // probably have to fix the args here
     Nengo.Value.call(this, parent, sim, args);
 
+    var self = this;
+
     // create the legend from label args
+    if(args.pointer_labels !== null){
+        this.legend = document.createElement('div');
+        // maybe make this selectable later for long stuff?
+        this.legend.classList.add('legend', 'unselectable');
+        this.div.appendChild(this.legend);
+
+        // okay, so this is where the D3.js magic comes in?
+        // how to I attach to this properly
+        // will this.svg help?
+        // can I just select this.legend?
+        var legend_svg = d3.select(this.legend)
+                           .append("svg")
+                           .attr("width", 100)
+                           .attr("height", 100)
+                           .attr("transform", 'translate(-20,50)')
+
+        //the position of these rectangles is being set very baddly
+        legend_svg.selectAll('rect')
+                  .data(args.pointer_labels)
+                  .enter()
+                  .append("rect")
+                  .attr("x", 
+                    self.x + self.w - 65
+                    )
+                  .attr("y", function(d, i){ return i *  20;})
+                  .attr("width", 10)
+                  .attr("height", 10)
+                  .style("fill", function(d, i) { 
+                        return self.colors[i];
+                   });
+        
+        legend_svg.selectAll('text')
+                  .data(args.pointer_labels)
+                  .enter()
+                  .append("text")
+                  .attr("x", self.x + self.w - 52)
+                  .attr("y", function(d, i){ return i *  20 + 9;})
+                  .text(function(d, i) {
+                        return args.pointer_labels[i];
+                   });
+
+    }
 };
 
 Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);

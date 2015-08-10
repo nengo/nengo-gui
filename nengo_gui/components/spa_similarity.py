@@ -42,12 +42,8 @@ class SpaSimilarity(Pointer):
             # send the data to the client
             client.write(item, binary=True)
 
-    # What synapse values should I be using here?
     def javascript(self):
         """Almost identical to value.py"""
-        # If I've messed up the number of lines, maybe it's because
-        # I don't know how vocab keys are used?
-        print("Number of lines %s" %len(self.labels))
         info = dict(uid=id(self), label=self.label,
                     n_lines=len(self.labels), synapse=0, min_value=-1.5, max_value=1.5, pointer_labels=self.labels)
         json = self.javascript_config(info)
@@ -58,10 +54,10 @@ class SpaSimilarity(Pointer):
             output = self.obj.outputs[self.target][0]
             self.node = nengo.Node(self.gather_data,
                                    size_in=self.vocab_out.dimensions)
-            self.conn = nengo.Connection(output, self.node, synapse=0)
+            self.conn = nengo.Connection(output, self.node, synapse=0.01)
 
     def remove_nengo_objects(self, page):
-        # undo the changes made by add_nengo_objects
+        """Undo the changes made by add_nengo_objects."""
         page.model.connections.remove(self.conn)
         page.model.nodes.remove(self.node)
 

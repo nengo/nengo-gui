@@ -37,10 +37,10 @@ Nengo.Value = function(parent, sim, args) {
     this.path = this.axes2d.svg.append("g").selectAll('path')
                                     .data(this.data_store.data);
 
-    var colors = Nengo.make_colors(this.n_lines);
+    this.colors = Nengo.make_colors(this.n_lines);
     this.path.enter().append('path')
              .attr('class', 'line')
-             .style('stroke', function(d, i) {return colors[i];});
+             .style('stroke', function(d, i) {return self.colors[i];});
 
     this.update();
     this.on_resize(this.get_screen_width(), this.get_screen_height());
