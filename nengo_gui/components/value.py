@@ -1,5 +1,4 @@
 import struct
-import collections
 
 import nengo
 import numpy as np
@@ -21,7 +20,7 @@ class Value(Component):
         self.obj = obj
 
         # the pending data to be sent to the client
-        self.data = collections.deque()
+        self.data = []
 
         # the number of data values to send
         self.n_lines = int(obj.size_out)
@@ -56,10 +55,14 @@ class Value(Component):
         self.data.append(self.struct.pack(t, *x))
 
     def update_client(self, client):
-        # while there is data that should be sent to the client
-        while len(self.data) > 0:
-            item = self.data.popleft()
-            # send the data to the client
+        length = len(self.data)
+        if length > 0:
+            # we do this slicing because self.gather_data is concurrently
+            # appending things to self.data.  This means that self.data may
+            # increase in length during this call, so we do the slicing
+            # and deletion to maintain thread safety
+            item = bytes().join(self.data[:length])
+            del self.data[:length]
             client.write(item, binary=True)
 
     def javascript(self):

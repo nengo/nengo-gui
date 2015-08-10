@@ -53,12 +53,18 @@ Nengo.Value.prototype.constructor = Nengo.Value;
 
 /**
  * Receive new line data from the server
- * Taken from pointer.js
  */
 Nengo.Value.prototype.on_message = function(event) {
     var data = new Float32Array(event.data);
-    // Is time being encoded properly into this? Is that why I'm getting negative time values? Because my dimensions are off?
-    this.data_store.push(data);
+    data = Array.prototype.slice.call(data);
+    var size = this.n_lines + 1;
+    while (data.length >= size) {
+        this.data_store.push(data.slice(0, size));
+        data = data.slice(size);
+    }
+    if (data.length > 0) {
+        console.log('extra data: ' + data.length);
+    }
     this.schedule_update();
 };
 
