@@ -1,5 +1,6 @@
-import struct
 import collections
+import copy
+import struct
 
 import nengo
 import nengo.spa
@@ -76,15 +77,15 @@ class Pointer(Component):
         return [uids[self.obj], 'target=%r' % self.target]
 
     def message(self, msg):
-        if len(msg) == 0:
-            print 'zero msg'
+        if msg == ':empty:':
             self.override_target = None
-        elif msg[0:10] == 'check_0nly':
-            if len(msg) == 10:
+        elif msg[0:12] == ':check only:':
+            if len(msg) == 12:
                 self.data.append("good_pointer")
             else:                
+                vocab = copy.deepcopy(self.vocab_out)
                 try:
-                    self.vocab_out.parse(msg[10:])
+                    vocab.parse(msg[12:])
                     self.data.append("good_pointer")
                 except:
                     self.data.append("bad_pointer")            
