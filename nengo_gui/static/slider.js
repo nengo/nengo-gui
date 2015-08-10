@@ -38,26 +38,16 @@ Nengo.Slider = function(parent, sim, args) {
     // the value to use when restarting the simulation from beginning
     this.start_value = args.start_value;
 
-    
-
 
     this.nexus = document.createElement('div');
     this.nexus.style.display = 'inline-block';
-    this.nexus.style.position = 'relative';
+    this.nexus.style.position = 'absolute';
     this.nexus.style.height = '100%';
-    this.nexus.style.padding = '0.75em 0';
-    /*
-    this.apple = document.createElement('div');
-    this.apple.classList.add('guideline');
-    this.apple.style.width = '0.1em';
-    this.apple.style.height = '100%';
-    this.apple.style.margin = 'auto';
-    this.apple.style.marginLeft = '20';
-    */
+
 
     this.widthScale = d3.scale.linear()
                     .domain([1,0])
-                    .range([0,180]);
+                    .range([0,3000]);
 
     this.Xaxis = d3.svg.axis()
             .scale(this.widthScale)
@@ -69,10 +59,15 @@ Nengo.Slider = function(parent, sim, args) {
         .attr("height", 200)
 
     this.canvas.append("g")
+        .attr('class', 'axis')
         .attr("transform", "translate(25,10)")
+        //.style({'font-size': '0.8em'})
         .call(this.Xaxis);
+        
 
     this.group.appendChild(this.nexus);
+
+    this.nexus.style.display = 'none';
 
 
     this.sliders = [];
@@ -187,7 +182,7 @@ Nengo.Slider.prototype.on_resize = function(width, height) {
     };
 
     this.canvas.attr('height', height)
-    this.widthScale.range([0,height - 100])
+    this.widthScale.range([0,height - 50])
     this.canvas.call(this.Xaxis)
 
     this.set_axes_geometry(width, height);

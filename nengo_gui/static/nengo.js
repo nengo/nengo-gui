@@ -242,6 +242,7 @@ Nengo.Component.prototype.draw_border = function () {
     console.log(this instanceof Nengo.Slider)
     if (this instanceof Nengo.Slider){
         this.show_bound_labels();
+        this.nexus.style.display = 'block';
     }
 }
 
@@ -250,6 +251,7 @@ Nengo.Component.prototype.remove_border = function () {
     $(this.div).css("border", "1px solid rgba(255,0,0,0)");
     if (this instanceof Nengo.Slider){
         this.hide_bound_labels();
+        this.nexus.style.display = 'none';
     }
 }
 
