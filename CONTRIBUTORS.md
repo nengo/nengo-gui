@@ -24,6 +24,7 @@ Please keep this list sorted alphabetically by first name.
 - Christopher Chan <c88chan@uwaterloo.ca>
 - Eric Hunsberger <erichuns@gmail.com>
 - Jan Gosmann <jan@hyper-world.de>
+- Petrut Bogdan <petrutantoniu8@gmail.com>
 - Sean Aubin <seanaubin@gmail.com>
 - Sugandha Sharma <sugandha974@gmail.com>
 - Terry Stewart <terry.stewart@gmail.com>
@@ -31,4 +32,3 @@ Please keep this list sorted alphabetically by first name.
 - Trevor Bekolay <tbekolay@gmail.com>
 - Xuan Choo <fxchoo@gmail.com>
 - Ziying Zhang <zy8zhang@uwaterloo.ca>
-- Petrut Bogdan <petrutantoniu8@gmail.com>
