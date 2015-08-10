@@ -106,7 +106,6 @@ class ExecutionEnvironment(object):
         sys.stdout = self.stdout
 
         if not self.allow_sim:
-            discover_backends()
             for mod in discover_backends().values():
                 self.simulators[mod] = mod.Simulator
                 mod.Simulator = make_dummy(mod.Simulator)
