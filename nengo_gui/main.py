@@ -19,6 +19,9 @@ def main():
     parser.add_argument(
         '-b', '--backend', metavar='BACKEND',
         default='nengo', type=str, help='default backend to use')
+    parser.add_argument('--browser', dest='browser', action='store_true')
+    parser.add_argument('--no-browser', dest='browser', action='store_false')
+    parser.set_defaults(browser=True)
     args = parser.parse_args()
 
     if args.debug:
@@ -27,7 +30,8 @@ def main():
 
     s = nengo_gui.gui.GUI(filename=args.filename,
                                        backend=args.backend)
-    s.start(port=args.port, password=args.password)
+
+    s.start(port=args.port, password=args.password, browser=args.browser)
 
 if __name__ == '__main__':
     main()
