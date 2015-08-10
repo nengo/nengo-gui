@@ -72,11 +72,14 @@ def determine_line_number(filename='<string>'):
 
 class ExecutionEnvironment(object):
     def __init__(self, filename, allow_sim=False):
-        self.directory = os.path.dirname(filename)
+        if filename is None:
+            self.directory = None
+        else:
+            self.directory = os.path.dirname(filename)
         self.added_directory = None
         self.allow_sim = allow_sim
     def __enter__(self):
-        if self.directory not in sys.path:
+        if self.directory is not None and self.directory not in sys.path:
             sys.path.insert(0, self.directory)
             self.added_directory = self.directory
 
