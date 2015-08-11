@@ -44,27 +44,26 @@ Nengo.Slider = function(parent, sim, args) {
     this.nexus.style.position = 'absolute';
     this.nexus.style.height = '100%';
 
-
+    console.log(args.max_value, args.min_value)
     this.widthScale = d3.scale.linear()
-                    .domain([1,0])
+                    .domain([1, -1])
                     .range([0,3000]);
 
     this.Xaxis = d3.svg.axis()
             .scale(this.widthScale)
             .orient('left')
-            .ticks(1);
+            .tickValues([args.max_value, args.min_value]);
+
 
     this.canvas = d3.select(this.nexus).append("svg")
         .attr("width", 50)
-        .attr("height", 200)
+        .attr("height", 200);
 
     this.canvas.append("g")
         .attr('class', 'axis')
         .attr("transform", "translate(25,10)")
-        //.style({'font-size': '0.8em'})
         .call(this.Xaxis);
         
-
     this.group.appendChild(this.nexus);
 
     this.nexus.style.display = 'none';
@@ -189,9 +188,6 @@ Nengo.Slider.prototype.on_resize = function(width, height) {
 
     this.group.style.height = height - this.ax_top - 2 * this.border_size;
     this.group.style.marginTop = this.ax_top;
-
-    //this.bound_labels.style.height = height - (this.ax_top - this.min_label_down_shift) - this.border_size ;
-    //this.bound_labels.style.right = width / (this.n_sliders + 1) + 5
 
     var N = this.sliders.length;
     for (var i in this.sliders) {
@@ -346,9 +342,13 @@ Nengo.Slider.prototype.set_range = function() {
             for (var i in self.sliders) {
                 self.sliders[i].set_range(min, max);
             }
+            self.Xaxis.tickValues([min, max]);
+            self.widthScale.domain([max, min]);
+            self.canvas.call(self.Xaxis);
+            
+            console.log(self.Xaxis);
+            self.on_resize($(self.div).width(), $(self.div).height());
             self.save_layout();
-            self.min_label.innerHTML = min;
-            self.max_label.innerHTML = max;
         }
         $('#OK').attr('data-dismiss','modal');
     });

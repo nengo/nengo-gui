@@ -86,7 +86,7 @@ Nengo.Component = function(parent, args) {
     this.active = false;
     this.mouse_on = false;
 
-    this.div.style.position = 'fixed';
+    this.div.style.position = 'absolute';
     this.div.classList.add('graph');
     parent.appendChild(this.div);
     this.parent = parent;
