@@ -58,10 +58,13 @@ Nengo.Value.prototype.on_message = function(event) {
     var data = new Float32Array(event.data);
     data = Array.prototype.slice.call(data);
     var size = this.n_lines + 1;
+    /** since multiple data packets can be sent with a single event,
+    make sure to process all the packets */
     while (data.length >= size) {
         this.data_store.push(data.slice(0, size));
         data = data.slice(size);
     }
+    // is this just debug code?
     if (data.length > 0) {
         console.log('extra data: ' + data.length);
     }

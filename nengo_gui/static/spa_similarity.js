@@ -61,6 +61,19 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
 Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
 Nengo.SpaSimilarity.prototype.constructor = Nengo.SpaSimilarity;
 
+Nengo.SpaSimilarity.prototype.on_message = function(event) {
+    var data = JSON.parse(event.data);
+    var size = data.shift();
+    while (data.length >= size) {
+        this.data_store.push(data.slice(0, size));
+        data = data.slice(size);
+        size = data.shift();
+    }
+    if (data.length > 0) {
+        console.log('extra data: ' + data.length);
+    }
+    this.schedule_update();
+}
 
 /**
  * Redraw the lines and axis due to changed data
