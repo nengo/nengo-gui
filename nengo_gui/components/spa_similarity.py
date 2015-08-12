@@ -1,10 +1,9 @@
 from pointer import Pointer
 
-import struct
 import numpy as np
 import nengo
 
-import ipdb
+import struct
 
 class SpaSimilarity(Pointer):
 
@@ -18,10 +17,9 @@ class SpaSimilarity(Pointer):
             target_key = kwargs['args']
 
         self.labels = obj.outputs[target_key][1].keys
-        # I'm not clear on why the +1 is required...
         self.struct = struct.Struct('<%df' % (1 + len(self.labels)))
 
-    # Taken from pointer.py, should I add an if-statement
+    # Taken from pointer.py, should I add an if-statement?
     # or a threshold property so I don't have to copy the whole system?
     # I'm probably going to use the labels later for dynamic legend stuff
     def gather_data(self, t, x):
