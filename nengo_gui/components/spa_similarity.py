@@ -1,4 +1,4 @@
-from pointer import Pointer
+from .pointer import Pointer
 
 import numpy as np
 import nengo
