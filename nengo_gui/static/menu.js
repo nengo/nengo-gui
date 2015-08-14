@@ -68,6 +68,7 @@ Nengo.Menu.prototype.show = function (x, y, items) {
         this.menu.appendChild(b);
     }
     this.visible = true;
+    this.check_overflow(x, y);
     Nengo.Menu.visible_menus[this.div] = this;
 };
 
@@ -100,5 +101,22 @@ Nengo.Menu.prototype.visible_any = function () {
 Nengo.Menu.prototype.hide_any = function () {
     for(var k in Nengo.Menu.visible_menus) {
         Nengo.Menu.hide_menu_in(k);
+    }
+}
+
+Nengo.Menu.prototype.check_overflow = function (x, y) {
+    var corrected_y = y - $(toolbar.toolbar).height();
+    var h = $(this.menu).outerHeight();
+    var w = $(this.menu).outerWidth();
+
+    var main_h = $('#main').height()
+    var main_w = $('#main').width()
+
+    if (corrected_y + h > main_h) {
+        this.menu_div.style.top = y - h;
+    }
+
+    if(x + w  > main_w) {
+        this.menu_div.style.left = main_w - w;
     }
 }
