@@ -158,6 +158,7 @@ Nengo.Value.prototype.set_range = function() {
             var max = parseFloat(new_range[1]);
             self.update_range(min, max);
             self.save_layout();
+            console.log(self.axes2d.axis_y)
             self.axes2d.axis_y.tickValues([min, max])
             self.axes2d.fit_ticks(self);
         }
