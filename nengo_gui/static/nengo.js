@@ -83,7 +83,10 @@ Nengo.Component = function(parent, args) {
     this.redraw_size();
     this.redraw_pos();
 
-    this.div.style.position = 'absolute';
+    this.active = false;
+    this.mouse_on = false;
+
+    this.div.style.position = 'fixed';
     this.div.classList.add('graph');
     parent.appendChild(this.div);
     this.parent = parent;
@@ -117,6 +120,7 @@ Nengo.Component = function(parent, args) {
             inertia: true,
             onstart: function () {
                 self.menu.hide_any();
+                self.start_activate();
             },
             onmove: function (event) {
                 var target = event.target;
@@ -129,6 +133,7 @@ Nengo.Component = function(parent, args) {
             },
             onend: function (event) {
                 self.save_layout();
+                self.end_activate();
             }
         })
 
@@ -139,6 +144,7 @@ Nengo.Component = function(parent, args) {
             })
         .on('resizestart', function (event) {
             self.menu.hide_any();
+            self.start_activate();
         })
         .on('resizemove', function(event) {
             var target = event.target;
@@ -161,6 +167,7 @@ Nengo.Component = function(parent, args) {
         })
         .on('resizeend', function(event) {
             self.save_layout();
+            self.end_activate();
         });
 
     /** Open a WebSocket to the server */
@@ -204,6 +211,22 @@ Nengo.Component = function(parent, args) {
         }
     });
 
+    $(this.div).mouseenter(function() {
+        self.draw_border();
+        self.mouse_on = true;
+    });
+
+    $(this.div).mouseleave(function(){
+        self.mouse_on = false;
+        console.log(self.active + 'activee')
+        if (self.active) {
+            return
+        }
+        else {
+            self.remove_border();
+        }
+    });
+
     Nengo.Component.components.push(this);
 };
 
@@ -213,6 +236,38 @@ Nengo.Component.save_components = function() {
         Nengo.Component.components[index].save_layout();
     }
 };
+
+Nengo.Component.prototype.draw_border = function () {
+    $(this.div).css("border", "1px solid #888888");
+    console.log(this instanceof Nengo.Slider)
+    if (this instanceof Nengo.Slider){
+        this.show_bound_labels();
+    }
+}
+
+//Removes the border from the component as well as hides range labels
+Nengo.Component.prototype.remove_border = function () {
+    $(this.div).css("border", "1px solid rgba(255,0,0,0)");
+    if (this instanceof Nengo.Slider){
+        this.hide_bound_labels();
+    }
+}
+
+//Called when resize-start, drag-start
+Nengo.Component.prototype.start_activate = function () {
+    this.active = true;
+    this.draw_border();
+}
+
+//Called by event listeners of resize-end and drag-end
+Nengo.Component.prototype.end_activate = function () {
+    this.active = false;
+    if (this.mouse_on) {
+        console.log('failed deactivation')
+        return;
+    }
+    this.remove_border()
+}
 
 /**
  * Method to be called when Component is resized
