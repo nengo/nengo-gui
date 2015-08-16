@@ -14,7 +14,6 @@
 // is that worth changing?
 
 Nengo.SpaSimilarity = function(parent, sim, args) {
-    // probably have to fix the args here
     Nengo.Value.call(this, parent, sim, args);
 
     var self = this;
@@ -31,8 +30,6 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
                            .attr("width", 100)
                            .attr("height", 20*args.pointer_labels.length)
 
-        //the position of these rectangles is being set very badly
-        // that's why the legend is invisible
         legend_svg.selectAll('rect')
                   .data(args.pointer_labels)
                   .enter()
@@ -62,16 +59,7 @@ Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
 Nengo.SpaSimilarity.prototype.constructor = Nengo.SpaSimilarity;
 
 Nengo.SpaSimilarity.prototype.on_message = function(event) {
-    var data = JSON.parse(event.data);
-    var size = data.shift();
-    while (data.length >= size) {
-        this.data_store.push(data.slice(0, size));
-        data = data.slice(size);
-        size = data.shift();
-    }
-    if (data.length > 0) {
-        console.log('extra data: ' + data.length);
-    }
+    this.data_store.push(JSON.parse(event.data));
     this.schedule_update();
 }
 
@@ -90,7 +78,13 @@ Nengo.SpaSimilarity.prototype.update = function() {
 
     /** update the lines */
     var self = this;
+    // this is getting the right data, but the format is ridiculous
+    // this might be the problem
+    // can D3.js even handle spontaneously created lines?
     var shown_data = this.data_store.get_shown_data();
+    // this is going to break. maybe add zeros?
+    // can I tell it how many lines?
+    // can I add and remove lines
     var line = d3.svg.line()
         .x(function(d, i) {
             return self.axes2d.scale_x(

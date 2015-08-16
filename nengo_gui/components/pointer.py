@@ -28,7 +28,6 @@ class Pointer(Component):
         self.label = page.get_label(self.obj)
         self.vocab_out.include_pairs = config.show_pairs
 
-    # wtf is happening here
     def add_nengo_objects(self, page):
         with page.model:
             output = self.obj.outputs[self.target][0]

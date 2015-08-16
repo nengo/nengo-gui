@@ -356,6 +356,7 @@ Nengo.Component.prototype.get_screen_height = function () {
 
 /**
  * Storage of a set of data points and associated times.
+ * The data points have a constant number of dimensions.
  * @constructor
  *
  * @param {int} dims - number of data points per time
@@ -365,9 +366,7 @@ Nengo.Component.prototype.get_screen_height = function () {
 Nengo.DataStore = function(dims, sim, synapse) {
     this.synapse = synapse; /** TODO: get from Nengo.SimControl */
     this.sim = sim;
-    // where is this used anyways? why is it necessary?
-    // is it normal to get negative times?
-    this.times = []
+    this.times = [];
     this.data = [];
     for (var i=0; i < dims; i++) {
         this.data.push([]);
@@ -414,6 +413,7 @@ Nengo.DataStore.prototype.push = function(row) {
     /** store the time as well */
     this.times.push(row[0]);
 };
+
 
 /**
  * Reset the data storage.  This will clear current data so there is
@@ -506,6 +506,166 @@ Nengo.DataStore.prototype.get_last_data = function() {
     return shown;
 }
 
+
+Nengo.VariableDataStore = function(dims, sim, synapse){
+    Nengo.DataStore.call(this, dims, sim, synapse);
+    this.dims = dims;
+}
+
+Nengo.VariableDataStore.prototype = Object.create(Nengo.DataStore.prototype);
+Nengo.VariableDataStore.prototype.constructor = Nengo.VariableDataStore;
+
+Object.defineProperty(Nengo.VariableDataStore.prototype "dims", {
+    set: function dims(dims){
+        // throw a bunch of errors if bad things happen
+        // assuming you can only grow dims and not shrink them
+        if(this.dims > dims){
+            for (var i=0; i < dims - this.dims; i++) {
+                this.data.push([]);
+            }
+        } else if(this.dims < dims) {
+            console.log("OH HELL NO");
+        }
+        this.dims = dims;
+    }
+}
+
+Nengo.VariableDataStore.prototype.get_offset = function(){
+    var offset = [];
+    offset.push(0)
+    for (var i=1; i < this.dims; i++) {
+        offset.push(this.data[0].length - this.data[i].length);
+    }
+    return offset
+}
+
+
+/**
+ * Add a set of data.
+ * @param {array} row - dims+1 data points, with time as the first one
+ */
+Nengo.VariableDataStore.prototype.push = function(row) {
+    /** get the offsets */
+    var offset = this.get_offset();
+
+    /** if you get data out of order, wipe out the later data */
+    if (row[0] < this.times[this.times.length - 1]) {
+        var index = 0;
+        while (this.times[index] < row[0]) {
+            index += 1;
+        }
+
+        this.times.splice(index, this.times.length);
+        for (var i=0; i < this.dims; i++) {
+            if(index - offset[i] > 0){
+                this.data[i].splice(index - offset[i], this.data[i].length);
+            }
+        }
+    }
+
+
+    /** compute lowpass filter (value = value*decay + new_value*(1-decay) */
+    var decay = 0.0;
+    if ((this.times.length != 0) && (this.synapse > 0)) {
+        var dt = row[0] - this.times[this.times.length - 1];
+        decay = Math.exp(-dt / this.synapse);
+    }
+
+
+    /** put filtered values into data array */
+    for (var i = 0; i < this.dims; i++) {
+        if (decay == 0.0) {
+            this.data[i].push(row[i + 1]);
+        } else {
+            this.data[i].push(row[i + 1] * (1-decay) +
+                              this.data[i][this.data[i].length - 1] * decay);
+        }
+    }
+    /** store the time as well */
+    this.times.push(row[0]);
+};
+
+/**
+ * update the data storage.  This should be call periodically (before visual
+ * updates, but not necessarily after every push()).  Removes old data outside
+ * the storage limit set by the Nengo.SimControl.
+ */
+Nengo.VariableDataStore.prototype.update = function() {
+    /** figure out how many extra values we have (values whose time stamp is
+     * outside the range to keep)
+     */
+    var offset = this.get_offset();
+    var extra = 0;
+    var limit = this.sim.time_slider.last_time -
+                this.sim.time_slider.kept_time;
+    while (this.times[extra] < limit) {
+        extra += 1;
+    }
+
+    /** remove the extra data */
+    if (extra > 0) {
+        this.times = this.times.slice(extra);
+        for (var i = 0; i < this.data.length; i++) {
+            if(extra - offset[i] > 0){
+                this.data[i] = this.data[i].slice(extra - offset[i]);
+            }
+        }
+    }
+}
+
+/**
+ * Return just the data that is to be shown
+ */
+Nengo.VariableDataStore.prototype.get_shown_data = function() {
+     var offset = this.get_offset();
+    /* determine time range */
+    var t1 = this.sim.time_slider.first_shown_time;
+    var t2 = t1 + this.sim.time_slider.shown_time;
+
+    /* find the corresponding index values */
+    var index = 0;
+    // Wouldn't a binary search be better?
+    while (this.times[index] < t1) {
+        index += 1;
+    }
+    var last_index = index;
+    while (this.times[last_index] < t2 && last_index < this.times.length) {
+        last_index += 1;
+    }
+    this.first_shown_index = index;
+
+    /** return the visible slice of the data */
+    var shown = [];
+    for (var i = 0; i < this.dims; i++) {
+        if(index - offset[i] > 0){
+            shown.push(this.data[i].slice(index - offset[i], last_index));
+        }
+    }
+    return shown;
+}
+
+Nengo.VariableDataStore.prototype.get_last_data = function() {
+    var offset = this.get_offset();
+    /* determine time range */
+    var t1 = this.sim.time_slider.first_shown_time;
+    var t2 = t1 + this.sim.time_slider.shown_time;
+
+    /* find the corresponding index values */
+    var last_index = 0;
+    while (this.times[last_index] < t2 && last_index < this.times.length - 1) {
+        last_index += 1;
+    }
+
+    /** return the visible slice of the data */
+    // fix this
+    var shown = [];
+    for (var i = 0; i < this.dims; i++) {
+        if(last_index - offset[i] > 0){
+            shown.push(this.data[i][last_index]);
+        }
+    }
+    return shown;
+}
 
 /**
  * Generate a color sequence of a given length.

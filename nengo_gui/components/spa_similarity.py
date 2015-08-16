@@ -34,7 +34,8 @@ class SpaSimilarity(Pointer):
             # this probably isn't going to work... but I can't figure out how else to add it?
             key_similarity += ['{:.2f}'.format(x) for x in pair_similarity]
 
-        self.data.append( "[%i,%g,%s]" %( len(simi_list) + 1, t, ",".join(simi_list) )  )
+        ipdb.set_trace()
+        self.data.append( "[%g,%s]" %(t, ",".join(simi_list) )  )
 
     def update_client(self, client):
         # while there is data that should be sent to the client
@@ -63,5 +64,5 @@ class SpaSimilarity(Pointer):
         page.model.nodes.remove(self.node)
 
     def message(self, msg):
-        """This should never be called."""
+        """This should never be called. To be used later for settings pairs?"""
         raise AttributeError("You can't set the value of a plot!")
