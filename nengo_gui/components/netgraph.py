@@ -9,9 +9,8 @@ import json
 
 from nengo_gui.components.component import Component
 from nengo_gui.disposable_js import infomodal
+import nengo_gui.user_action
 import nengo_gui.layout
-
-from .action import create_action
 
 
 class NetGraph(Component):
@@ -344,7 +343,7 @@ class NetGraph(Component):
                 # These should not use the undo stack
                 getattr(self, 'act_' + action)(**info)
             else:
-                act = create_action(action, self, **info)
+                act = nengo_gui.user_action.create_action(action, self, **info)
                 self.page.undo_stack.append([act])
                 del self.page.redo_stack[:]
         elif undo is not None:

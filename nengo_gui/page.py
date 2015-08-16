@@ -10,7 +10,7 @@ import traceback
 import nengo
 
 import nengo_gui
-import nengo_gui.components.action
+import nengo_gui.user_action
 import nengo_gui.config
 
 
@@ -385,14 +385,14 @@ class Page(object):
         self.components.remove(component)
 
     def config_change(self, component, new_cfg, old_cfg):
-        act = nengo_gui.components.action.ConfigAction(self,
+        act = nengo_gui.user_action.ConfigAction(self,
                                                        component=component,
                                                        new_cfg=new_cfg,
                                                        old_cfg=old_cfg)
         self.undo_stack.append([act])
 
     def remove_graph(self, component):
-        act = nengo_gui.components.action.RemoveGraph(self.net_graph,
+        act = nengo_gui.user_action.RemoveGraph(self.net_graph,
                                                       component)
         self.undo_stack.append([act])
 
