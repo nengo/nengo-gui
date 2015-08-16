@@ -16,6 +16,8 @@
 Nengo.SpaSimilarity = function(parent, sim, args) {
     Nengo.Value.call(this, parent, sim, args);
 
+    this.data_store = Nengo.VariableDataStore(this.n_lines, this.sim, args.synapse);
+
     var self = this;
 
     // create the legend from label args
@@ -59,7 +61,14 @@ Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
 Nengo.SpaSimilarity.prototype.constructor = Nengo.SpaSimilarity;
 
 Nengo.SpaSimilarity.prototype.on_message = function(event) {
-    this.data_store.push(JSON.parse(event.data));
+    var push_data = JSON.parse(event.data);
+
+    if(push_data.length !== this.n_lines){
+      this.data_store.dims = push_data.length;
+      this.n_lines = push_data.length;
+    }
+
+    this.data_store.push(push_data);
     this.schedule_update();
 }
 
