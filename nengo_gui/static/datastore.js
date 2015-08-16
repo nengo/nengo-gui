@@ -1,13 +1,3 @@
-
-/**
- * Storage of a set of data points and associated times.
- * The data points have a constant number of dimensions.
- * @constructor
- *
- * @param {int} dims - number of data points per time
- * @param {Nengo.SimControl} sim - the simulation controller
- * @param {float} synapse - the filter to apply to the data
- */
 Nengo.DataStore = function(dims, sim, synapse) {
     this.synapse = synapse; /** TODO: get from Nengo.SimControl */
     this.sim = sim;
@@ -66,7 +56,7 @@ Nengo.DataStore.prototype.push = function(row) {
  */
 Nengo.DataStore.prototype.reset = function() {
     var index = 0;
-    var dims = this.data.length;
+    console.log(this.data.length);
     this.times.splice(index, this.times.length);
     for (var i=0; i < this.data.length; i++) {
         this.data[i].splice(index, this.data[i].length);
@@ -78,11 +68,15 @@ Nengo.DataStore.prototype.reset = function() {
  * updates, but not necessarily after every push()).  Removes old data outside
  * the storage limit set by the Nengo.SimControl.
  */
+ // what the hell is this called by? 
 Nengo.DataStore.prototype.update = function() {
     /** figure out how many extra values we have (values whose time stamp is
      * outside the range to keep)
      */
     var extra = 0;
+    // how much has the most recent time exceeded how much is allowed to be kept
+    // wtf?
+    // if kept_time is constant... wait, there's no way it's constant
     var limit = this.sim.time_slider.last_time -
                 this.sim.time_slider.kept_time;
     while (this.times[extra] < limit) {
@@ -131,7 +125,6 @@ Nengo.DataStore.prototype.is_at_end = function() {
     return (ts.last_time < ts.first_shown_time + ts.shown_time + 0.000000001);
 }
 
-
 Nengo.DataStore.prototype.get_last_data = function() {
     /* determine time range */
     var t1 = this.sim.time_slider.first_shown_time;
@@ -154,33 +147,46 @@ Nengo.DataStore.prototype.get_last_data = function() {
 
 Nengo.VariableDataStore = function(dims, sim, synapse){
     Nengo.DataStore.call(this, dims, sim, synapse);
-    this.dims = dims;
+    this._dims = dims;
+    this._old_dims = dims;
+
+    Object.defineProperty(this, "dims", {
+        set: function(dim_val){
+            // throw a bunch of errors if bad things happen
+            // assuming you can only grow dims and not shrink them
+            if(this._dims < dim_val){
+                for (var i=0; i < dim_val - this._dims; i++) {
+                    this.data.push([]);
+                }
+            } else if(this._dims > dim_val) {
+                console.log("OH HELL NO");
+            }
+            this._old_dims = this._dims;
+            this._dims = dim_val;
+        }
+    });
+
 }
 
 Nengo.VariableDataStore.prototype = Object.create(Nengo.DataStore.prototype);
 Nengo.VariableDataStore.prototype.constructor = Nengo.VariableDataStore;
 
-Object.defineProperty(Nengo.VariableDataStore.prototype "dims", {
-    set: function dims(dims){
-        // throw a bunch of errors if bad things happen
-        // assuming you can only grow dims and not shrink them
-        if(this.dims > dims){
-            for (var i=0; i < dims - this.dims; i++) {
-                this.data.push([]);
-            }
-        } else if(this.dims < dims) {
-            console.log("OH HELL NO");
-        }
-        this.dims = dims;
-    }
-}
-
 Nengo.VariableDataStore.prototype.get_offset = function(){
     var offset = [];
-    offset.push(0)
-    for (var i=1; i < this.dims; i++) {
-        offset.push(this.data[0].length - this.data[i].length);
+    offset.push(0);
+
+    for (var i=1; i < this._old_dims; i++) {
+        offset.push(0);
     }
+
+    for (var i = this._old_dims; i < this._dims; i++){
+        if(this.data[i] === undefined){
+            offset.push(this.data[0].length);
+        } else {
+            offset.push(this.data[0].length - this.data[i].length);
+        }
+    }
+
     return offset
 }
 
@@ -201,8 +207,8 @@ Nengo.VariableDataStore.prototype.push = function(row) {
         }
 
         this.times.splice(index, this.times.length);
-        for (var i=0; i < this.dims; i++) {
-            if(index - offset[i] > 0){
+        for (var i=0; i < this._dims; i++) {
+            if(index - offset[i] >= 0){
                 this.data[i].splice(index - offset[i], this.data[i].length);
             }
         }
@@ -218,8 +224,8 @@ Nengo.VariableDataStore.prototype.push = function(row) {
 
 
     /** put filtered values into data array */
-    for (var i = 0; i < this.dims; i++) {
-        if (decay == 0.0) {
+    for (var i = 0; i < this._dims; i++) {
+        if (decay == 0.0 || this.data[i].length === 0) {
             this.data[i].push(row[i + 1]);
         } else {
             this.data[i].push(row[i + 1] * (1-decay) +
@@ -228,6 +234,8 @@ Nengo.VariableDataStore.prototype.push = function(row) {
     }
     /** store the time as well */
     this.times.push(row[0]);
+    //console.log(this.times);
+    //console.log(this.data);
 };
 
 /**
@@ -281,7 +289,7 @@ Nengo.VariableDataStore.prototype.get_shown_data = function() {
 
     /** return the visible slice of the data */
     var shown = [];
-    for (var i = 0; i < this.dims; i++) {
+    for (var i = 0; i < this._dims; i++) {
         if(index - offset[i] > 0){
             shown.push(this.data[i].slice(index - offset[i], last_index));
         }
@@ -302,9 +310,8 @@ Nengo.VariableDataStore.prototype.get_last_data = function() {
     }
 
     /** return the visible slice of the data */
-    // fix this
     var shown = [];
-    for (var i = 0; i < this.dims; i++) {
+    for (var i = 0; i < this._dims; i++) {
         if(last_index - offset[i] > 0){
             shown.push(this.data[i][last_index]);
         }
