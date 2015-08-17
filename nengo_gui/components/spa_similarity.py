@@ -5,8 +5,7 @@ import numpy as np
 import nengo
 
 import struct
-
-import ipdb
+import copy
 
 class SpaSimilarity(Pointer):
 
@@ -24,10 +23,13 @@ class SpaSimilarity(Pointer):
         except KeyError:
             target_key = kwargs['args']
 
-        self.labels = obj.outputs[target_key][1].keys
+        self.old_vocab_length = len(self.vocab_out.keys)
+        self.labels = self.vocab_out.keys
         self.struct = struct.Struct('<%df' % (1 + len(self.labels)))
 
     def gather_data(self, t, x):
+        if(self.old_vocab_length != len(self.vocab_out.keys)):
+            self.data.append("[update_legend, %s]" %(self.vocab_out.keys[0],))
         vocab = self.vocab_out
         key_similarity = np.dot(vocab.vectors, x)
         simi_list = ['{:.2f}'.format(x) for x in key_similarity]
@@ -37,7 +39,7 @@ class SpaSimilarity(Pointer):
             # this probably isn't going to work... but I can't figure out how else to add it?
             key_similarity += ['{:.2f}'.format(x) for x in pair_similarity]
 
-        self.data.append( "[%g,%s]" %(t, ",".join(simi_list) )  )
+        self.data.append( "[data_msg, [%g,%s]]" %(t, ",".join(simi_list) )  )
 
     def update_client(self, client):
         # while there is data that should be sent to the client

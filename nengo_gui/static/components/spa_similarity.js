@@ -19,21 +19,20 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
     // I doubt this matters... Maybe I should make it loop?
     this.colors = Nengo.make_colors(this.n_lines*2);
 
-    //the data is formatted correctly, but it ain't being drawn
 
     // create the legend from label args
     if(args.pointer_labels !== null){
+        this.pointer_labels = args.pointer_labels;
         this.legend = document.createElement('div');
         this.legend.classList.add('legend', 'unselectable');
         this.div.appendChild(this.legend);
 
-        // should the width be preset to something more useful?
-        var legend_svg = d3.select(this.legend)
+        this.legend_svg = d3.select(this.legend)
                            .append("svg")
                            .attr("width", 100)
                            .attr("height", 20*args.pointer_labels.length)
 
-        legend_svg.selectAll('rect')
+        this.legend_svg.selectAll('rect')
                   .data(args.pointer_labels)
                   .enter()
                   .append("rect")
@@ -45,7 +44,7 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
                         return self.colors[i];
                    });
         
-        legend_svg.selectAll('text')
+        this.legend_svg.selectAll('text')
                   .data(args.pointer_labels)
                   .enter()
                   .append("text")
@@ -61,18 +60,51 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
 Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
 Nengo.SpaSimilarity.prototype.constructor = Nengo.SpaSimilarity;
 
-Nengo.SpaSimilarity.prototype.on_message = function(event) {
-    var push_data = JSON.parse(event.data);
+Nengo.SpaSimilarity.prototype.data_msg = function(push_data){
     var data_dims = push_data.length - 1;
 
     if(data_dims !== this.n_lines){
       this.data_store.dims = data_dims;
       this.n_lines = data_dims;
-      // update the legend somehow...
     }
 
     this.data_store.push(push_data);
     this.schedule_update();
+}
+
+Nengo.SpaSimilarity.prototype.update_legend = function(new_label){
+    // Should figure out how to mix recs and text into one
+
+    this.pointer_labels.push(new_label[0]);
+    // Data join
+    var recs = this.legend_svg.selectAll("rect").data(this.pointer_labels);
+    var texts = this.legend_svg.selectAll("text").data(this.pointer_labels);
+    // nothing to update?
+    // enter to append remaining lines
+    recs.enter()
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", function(d, i){ return i *  20;})
+        .attr("width", 10)
+        .attr("height", 10)
+        .style("fill", function(d, i) { 
+              return self.colors[i];
+        });
+
+    texts.enter()
+          .append("text")
+          .attr("x", 15)
+          .attr("y", function(d, i){ return i *  20 + 9;})
+          .text(function(d, i) {
+                return args.pointer_labels[i];
+           });
+}
+
+
+Nengo.SpaSimilarity.prototype.on_message = function(event) {
+    var data = JSON.parse(event.data);
+    var func_name = data.shift();
+    this[func_name](data);
 }
 
 /**
@@ -120,6 +152,13 @@ Nengo.SpaSimilarity.prototype.generate_menu = function() {
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
     return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
+};
+
+Nengo.SpaSimilarity.prototype.set_show_pairs = function(value) {
+    if (this.show_pairs !== value) {
+        this.show_pairs = value;
+        this.save_layout();
+    }
 };
 
 // TODO: should I remove the ability to set range?
