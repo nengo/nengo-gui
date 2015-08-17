@@ -68,6 +68,12 @@ Nengo.SpaSimilarity.prototype.on_message = function(event) {
     if(data_dims !== this.n_lines){
       this.data_store.dims = data_dims;
       this.n_lines = data_dims;
+      /*
+      var self = this;
+      this.path.append('path')
+             .attr('class', 'line')
+             .style('stroke', function(d, i) {return self.colors[i];});
+      */
     }
 
     this.data_store.push(push_data);
@@ -90,8 +96,15 @@ Nengo.SpaSimilarity.prototype.update = function() {
     /** update the lines */
     var self = this;
     var shown_data = this.data_store.get_shown_data();
-    // colours and class previously defined in initialisation
-    this.path.data(shown_data)
+    // Data join
+    this.path = this.axes2d.svg.selectAll(".line").data(shown_data);
+    // update
+    this.path.attr('d', self.line);
+    // enter to append remaining lines
+    this.path.enter()
+             .append('path')
+             .attr('class', 'line')
+             .style('stroke', function(d, i) {return self.colors[i];})
              .attr('d', self.line);
 };
 

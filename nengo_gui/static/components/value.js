@@ -39,6 +39,7 @@ Nengo.Value = function(parent, sim, args) {
         .y(function(d) {return self.axes2d.scale_y(d);})
     this.path = this.axes2d.svg.append("g").selectAll('path')
                                     .data(this.data_store.data);
+
     this.colors = Nengo.make_colors(this.n_lines);
     this.path.enter()
              .append('path')
