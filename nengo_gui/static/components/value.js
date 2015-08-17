@@ -31,11 +31,12 @@ Nengo.Value = function(parent, sim, args) {
             function(e) {self.reset();}, false);
 
     /** create the lines on the plots */
-    /*
-    var line = d3.svg.line()
-        .x(function(d, i) {return self.axes2d.scale_x(times[i]);})
+    this.line = d3.svg.line()
+        .x(function(d, i) {
+            return self.axes2d.scale_x(
+                self.data_store.times[i + self.data_store.first_shown_index]);
+            })
         .y(function(d) {return self.axes2d.scale_y(d);})
-    */
     // does this set the dimensions as well? actually where the hell does 
     // the animation take place anyways?
     this.path = this.axes2d.svg.append("g").selectAll('path')
@@ -91,14 +92,9 @@ Nengo.Value.prototype.update = function() {
     /** update the lines */
     var self = this;
     var shown_data = this.data_store.get_shown_data();
-    var line = d3.svg.line()
-        .x(function(d, i) {
-            return self.axes2d.scale_x(
-                self.data_store.times[i + self.data_store.first_shown_index]);
-            })
-        .y(function(d) {return self.axes2d.scale_y(d);})
+    // why is the d attribute set here?
     this.path.data(shown_data)
-             .attr('d', line);
+             .attr('d', self.line);
 };
 
 /**
