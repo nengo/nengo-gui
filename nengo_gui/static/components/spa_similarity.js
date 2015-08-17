@@ -20,8 +20,6 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
     this.colors = Nengo.make_colors(this.n_lines*2);
 
     //the data is formatted correctly, but it ain't being drawn
-    //because it's all undefined
-    // this.data_store._dims isn't showing the right value
 
     // create the legend from label args
     if(args.pointer_labels !== null){
@@ -65,10 +63,11 @@ Nengo.SpaSimilarity.prototype.constructor = Nengo.SpaSimilarity;
 
 Nengo.SpaSimilarity.prototype.on_message = function(event) {
     var push_data = JSON.parse(event.data);
+    var data_dims = push_data.length - 1;
 
-    if(push_data.length !== this.n_lines){
-      this.data_store.dims = push_data.length;
-      this.n_lines = push_data.length;
+    if(data_dims !== this.n_lines){
+      this.data_store.dims = data_dims;
+      this.n_lines = data_dims;
     }
 
     this.data_store.push(push_data);

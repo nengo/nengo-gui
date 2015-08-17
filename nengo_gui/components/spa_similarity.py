@@ -51,8 +51,9 @@ class SpaSimilarity(Pointer):
 
     def javascript(self):
         """Almost identical to value.py"""
-        info = dict(uid=id(self), label=self.label,
-                    n_lines=len(self.labels), synapse=0, min_value=-1.5, max_value=1.5, pointer_labels=self.labels)
+        info = dict(uid=id(self), label=self.label, n_lines=len(self.labels),
+                    synapse=0, min_value=-1.5, max_value=1.5,
+                    pointer_labels=self.labels)
         json = self.javascript_config(info)
         return 'new Nengo.SpaSimilarity(main, sim, %s);' % json
 
