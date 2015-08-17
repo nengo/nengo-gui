@@ -45,6 +45,7 @@ Nengo.Value = function(parent, sim, args) {
     this.colors = Nengo.make_colors(this.n_lines);
     this.path.enter().append('path')
              .attr('class', 'line')
+             .attr('d', self.line)
              .style('stroke', function(d, i) {return self.colors[i];});
 
     this.update();
@@ -92,9 +93,7 @@ Nengo.Value.prototype.update = function() {
     /** update the lines */
     var self = this;
     var shown_data = this.data_store.get_shown_data();
-    // why is the d attribute set here?
-    this.path.data(shown_data)
-             .attr('d', self.line);
+    this.path.data(shown_data);
 };
 
 /**
