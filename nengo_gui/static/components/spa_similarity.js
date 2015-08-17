@@ -9,16 +9,17 @@
  * @param {Nengo.SimControl} args.sim - the simulation controller
  */
 
-// this initialisation is basically the same as Value.js, but 
-// I can't inherit it because it isn't part of the prototype
-// is that worth changing?
-
 Nengo.SpaSimilarity = function(parent, sim, args) {
     Nengo.Value.call(this, parent, sim, args);
 
-    this.data_store = Nengo.VariableDataStore(this.n_lines, this.sim, args.synapse);
+    this.data_store = new Nengo.VariableDataStore(this.n_lines, this.sim, args.synapse);
 
     var self = this;
+
+    // I doubt this matters... Maybe I should make it loop?
+    this.colors = Nengo.make_colors(this.n_lines*2);
+
+    //the data is formatted correctly, but it ain't being drawn
 
     // create the legend from label args
     if(args.pointer_labels !== null){
@@ -87,19 +88,17 @@ Nengo.SpaSimilarity.prototype.update = function() {
 
     /** update the lines */
     var self = this;
-    // this is getting the right data, but the format is ridiculous
-    // this might be the problem
-    // can D3.js even handle spontaneously created lines?
     var shown_data = this.data_store.get_shown_data();
-    // this is going to break. maybe add zeros?
-    // can I tell it how many lines?
-    // can I add and remove lines
+    // hypothetically, this should be making more lines
+    // why is this declared in the initialisation as well?
     var line = d3.svg.line()
         .x(function(d, i) {
             return self.axes2d.scale_x(
                 self.data_store.times[i + self.data_store.first_shown_index]);
             })
         .y(function(d) {return self.axes2d.scale_y(d);})
+
+    // colours and class previously defined in initialisation
     this.path.data(shown_data)
              .attr('d', line);
 };

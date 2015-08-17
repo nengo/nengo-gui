@@ -31,9 +31,11 @@ Nengo.Value = function(parent, sim, args) {
             function(e) {self.reset();}, false);
 
     /** create the lines on the plots */
+    /*
     var line = d3.svg.line()
         .x(function(d, i) {return self.axes2d.scale_x(times[i]);})
         .y(function(d) {return self.axes2d.scale_y(d);})
+    */
     // does this set the dimensions as well? actually where the hell does 
     // the animation take place anyways?
     this.path = this.axes2d.svg.append("g").selectAll('path')

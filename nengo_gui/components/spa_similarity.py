@@ -1,4 +1,5 @@
 from .pointer import Pointer
+from nengo_gui.components.component import Component
 
 import numpy as np
 import nengo
@@ -8,6 +9,11 @@ import struct
 import ipdb
 
 class SpaSimilarity(Pointer):
+
+    config_defaults = dict(max_value=1,
+                           min_value=-1,
+                           show_pairs=False,
+                           **Component.config_defaults)
 
     def __init__(self, obj, **kwargs):
         super(SpaSimilarity, self).__init__(obj, **kwargs)
@@ -34,7 +40,6 @@ class SpaSimilarity(Pointer):
             # this probably isn't going to work... but I can't figure out how else to add it?
             key_similarity += ['{:.2f}'.format(x) for x in pair_similarity]
 
-        ipdb.set_trace()
         self.data.append( "[%g,%s]" %(t, ",".join(simi_list) )  )
 
     def update_client(self, client):
