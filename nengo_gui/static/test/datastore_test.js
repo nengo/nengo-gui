@@ -64,7 +64,7 @@ describe("DataStore", function() {
         assert.deepEqual(data_store.data, [[3.1, 4.1], [3.2, 4.2]]);
     });
 
-    it("gives the last data", function() {
+    it("gives the shown data", function() {
         data_store.push([0.5, 2.1, 2.2]);
         data_store.push([1.0, 3.1, 3.2]);
         data_store.push([1.5, 4.1, 4.2]);
@@ -74,14 +74,13 @@ describe("DataStore", function() {
         assert.deepEqual(data_store.get_shown_data(), [[3.1, 4.1], [3.2, 4.2]]);
     });
 
-    it("gives the shown data", function() {
+    it("gives the last data", function() {
         data_store.push([0.5, 2.1, 2.2]);
         data_store.push([1.0, 3.1, 3.2]);
         data_store.push([1.5, 4.1, 4.2]);
         data_store.push([2.5, 5.1, 5.2]);
         data_store.sim.time_slider.first_shown_time = 1.0;
         data_store.sim.time_slider.shown_time = 1.0;
-        // what the hell is this for?
         assert.deepEqual(data_store.get_last_data(), [5.1, 5.2]);
     });
 
@@ -102,7 +101,11 @@ describe("VariableDataStore", function() {
     it("accepts jagged data", function() {
         data_store.push([0.0, 1.1, 1.2])
         data_store.dims = 3;
+        assert.equal(data_store.dims, 3)
+        assert.equal(data_store._old_dims, 2)
         data_store.push([0.1, 2.1, 2.2, 2.3]);
+        assert.equal(data_store.dims, 3)
+        assert.equal(data_store._old_dims, 2)
         assert.deepEqual(data_store.data, [[1.1, 2.1], [1.2, 2.2], [2.3]]);
     });
 
@@ -144,15 +147,35 @@ describe("VariableDataStore", function() {
         data_store.push([1.5, 4.1, 4.2, 4.3]);
         data_store.sim.time_slider.last_time = 3;
         data_store.update();
+        assert.equal(data_store.dims, 3)
+        assert.equal(data_store._old_dims, 2)
         assert.deepEqual(data_store.data, [[3.1, 4.1], [3.2, 4.2], [4.3]]);
     });
 
-    it("gives the last data", function() {
-        assert(1==1);
+    it("gives the shown data", function() {
+        data_store.push([0.5, 2.1, 2.2]);
+        data_store.push([1.0, 3.1, 3.2]);
+        data_store.dims = 3;
+        data_store.push([1.5, 4.1, 4.2, 4.3]);
+        data_store.push([2.5, 5.1, 5.2, 5.3]);
+        data_store.sim.time_slider.first_shown_time = 1.0;
+        data_store.sim.time_slider.shown_time = 1.0;
+        assert.equal(data_store.dims, 3)
+        assert.equal(data_store._old_dims, 2)
+        assert.deepEqual(data_store.get_shown_data(), [[3.1, 4.1], [3.2, 4.2], [4.3]]);
     });
 
-    it("gives the shown data", function() {
-        assert(1==1);
+    it("gives the last data", function() {
+        data_store.push([0.5, 2.1, 2.2]);
+        data_store.push([1.0, 3.1, 3.2]);
+        data_store.dims = 3;
+        data_store.push([1.5, 4.1, 4.2, 4.3]);
+        data_store.push([2.5, 5.1, 5.2, 5.3]);
+        data_store.sim.time_slider.first_shown_time = 1.0;
+        data_store.sim.time_slider.shown_time = 1.0;
+        assert.equal(data_store.dims, 3)
+        assert.equal(data_store._old_dims, 2)
+        assert.deepEqual(data_store.get_last_data(), [5.1, 5.2, 5.3]);
     });
 
 });

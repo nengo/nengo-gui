@@ -37,13 +37,11 @@ Nengo.Value = function(parent, sim, args) {
                 self.data_store.times[i + self.data_store.first_shown_index]);
             })
         .y(function(d) {return self.axes2d.scale_y(d);})
-    // does this set the dimensions as well? actually where the hell does 
-    // the animation take place anyways?
     this.path = this.axes2d.svg.append("g").selectAll('path')
                                     .data(this.data_store.data);
-
     this.colors = Nengo.make_colors(this.n_lines);
-    this.path.enter().append('path')
+    this.path.enter()
+             .append('path')
              .attr('class', 'line')
              .style('stroke', function(d, i) {return self.colors[i];});
 

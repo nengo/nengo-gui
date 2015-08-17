@@ -56,7 +56,6 @@ Nengo.DataStore.prototype.push = function(row) {
  */
 Nengo.DataStore.prototype.reset = function() {
     var index = 0;
-    console.log(this.data.length);
     this.times.splice(index, this.times.length);
     for (var i=0; i < this.data.length; i++) {
         this.data[i].splice(index, this.data[i].length);
@@ -151,6 +150,9 @@ Nengo.VariableDataStore = function(dims, sim, synapse){
     this._old_dims = dims;
 
     Object.defineProperty(this, "dims", {
+        get: function(){
+            return this._dims;
+        },
         set: function(dim_val){
             // throw a bunch of errors if bad things happen
             // assuming you can only grow dims and not shrink them
@@ -259,7 +261,7 @@ Nengo.VariableDataStore.prototype.update = function() {
     if (extra > 0) {
         this.times = this.times.slice(extra);
         for (var i = 0; i < this.data.length; i++) {
-            if(extra - offset[i] > 0){
+            if(extra - offset[i] >= 0){
                 this.data[i] = this.data[i].slice(extra - offset[i]);
             }
         }
@@ -290,8 +292,10 @@ Nengo.VariableDataStore.prototype.get_shown_data = function() {
     /** return the visible slice of the data */
     var shown = [];
     for (var i = 0; i < this._dims; i++) {
-        if(index - offset[i] > 0){
-            shown.push(this.data[i].slice(index - offset[i], last_index));
+        if(index - offset[i] < 0){
+            shown.push(this.data[i].slice(0, last_index - offset[i]));
+        } else {
+            shown.push(this.data[i].slice(index - offset[i], last_index - offset[i]));
         }
     }
     return shown;
@@ -312,8 +316,8 @@ Nengo.VariableDataStore.prototype.get_last_data = function() {
     /** return the visible slice of the data */
     var shown = [];
     for (var i = 0; i < this._dims; i++) {
-        if(last_index - offset[i] > 0){
-            shown.push(this.data[i][last_index]);
+        if(last_index - offset[i] >= 0){
+            shown.push(this.data[i][last_index - offset[i]]);
         }
     }
     return shown;
