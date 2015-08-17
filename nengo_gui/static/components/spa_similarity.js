@@ -68,12 +68,7 @@ Nengo.SpaSimilarity.prototype.on_message = function(event) {
     if(data_dims !== this.n_lines){
       this.data_store.dims = data_dims;
       this.n_lines = data_dims;
-      /*
-      var self = this;
-      this.path.append('path')
-             .attr('class', 'line')
-             .style('stroke', function(d, i) {return self.colors[i];});
-      */
+      // update the legend somehow...
     }
 
     this.data_store.push(push_data);

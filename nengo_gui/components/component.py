@@ -51,6 +51,7 @@ class Component(object):
             client.write(data, binary=True)
         """
         pass
+
     def message(self, msg):
         """Receive data from the client.
 
