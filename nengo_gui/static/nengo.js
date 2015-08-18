@@ -57,7 +57,7 @@ Nengo.create_websocket = function(uid) {
  */
 Nengo.make_colors = function(N) {
     //Color blind palette with blue, green, red, magenta, yellow, cyan
-    var palette=["#1c73b3","#039f74","#d65e00","#cd79a7","#f0e542","#56b4ea"];
+    var palette = ["#1c73b3","#039f74","#d65e00","#cd79a7","#f0e542","#56b4ea"];
     var c = [];
 
     for (var i = 0; i < N; i++) {

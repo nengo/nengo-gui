@@ -31,7 +31,7 @@ class SpaSimilarity(Pointer):
 
     def gather_data(self, t, x):
         if(self.old_vocab_length != len(self.vocab_out.keys)):
-            self.data.append('["update_legend", "%s"]' %(self.vocab_out.keys[0],))
+            self.data.append('["update_legend", "%s"]' %(self.vocab_out.keys[-1],))
             self.old_vocab_length = len(self.vocab_out.keys)
 
         vocab = self.vocab_out

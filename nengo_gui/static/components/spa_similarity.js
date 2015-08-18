@@ -77,10 +77,14 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_label){
 
     var self = this;
     this.pointer_labels.push(new_label[0]);
+
+    // expand the svg
+    this.legend_svg.attr("height", 20*this.pointer_labels.length)
+
     // Data join
     var recs = this.legend_svg.selectAll("rect").data(this.pointer_labels);
     var texts = this.legend_svg.selectAll("text").data(this.pointer_labels);
-    // nothing to update?
+    // nothing to update
     // enter to append remaining lines
     recs.enter()
         .append("rect")
@@ -99,6 +103,7 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_label){
           .text(function(d, i) {
                 return self.pointer_labels[i];
            });
+
 };
 
 
