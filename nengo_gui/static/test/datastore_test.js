@@ -170,8 +170,6 @@ describe("VariableDataStore", function() {
         data_store.sim.time_slider.first_shown_time = 1.0;
         data_store.sim.time_slider.shown_time = 1.0;
         assert.deepEqual(data_store.get_shown_data(), [[3.1, 4.1], [3.2, 4.2], [4.3], []]);
-        data_store.push([1.75, 6.1, 6.2, 6.3, 6.4]);
-        assert.deepEqual(data_store.get_shown_data(), [[3.1, 4.1, 6.1], [3.2, 4.2, 6.2], [4.3, 6.3], [6.4]]);
     });
 
     it("gives the shown data with more dimensions", function() {
