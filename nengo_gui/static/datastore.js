@@ -177,11 +177,7 @@ Nengo.VariableDataStore.prototype.get_offset = function(){
     var offset = [];
     offset.push(0);
 
-    for (var i=1; i < this._old_dims; i++) {
-        offset.push(0);
-    }
-
-    for (var i = this._old_dims; i < this._dims; i++){
+    for (var i = 1; i < this._dims; i++){
         if(this.data[i] === undefined){
             offset.push(this.data[0].length);
         } else {
@@ -236,8 +232,6 @@ Nengo.VariableDataStore.prototype.push = function(row) {
     }
     /** store the time as well */
     this.times.push(row[0]);
-    //console.log(this.times);
-    //console.log(this.data);
 };
 
 /**
