@@ -30,7 +30,7 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
         this.legend_svg = d3.select(this.legend)
                            .append("svg")
                            .attr("width", 100)
-                           .attr("height", 20*args.pointer_labels.length)
+                           .attr("height", 20*args.pointer_labels.length);
 
         this.legend_svg.selectAll('rect')
                   .data(args.pointer_labels)
@@ -70,11 +70,12 @@ Nengo.SpaSimilarity.prototype.data_msg = function(push_data){
 
     this.data_store.push(push_data);
     this.schedule_update();
-}
+};
 
 Nengo.SpaSimilarity.prototype.update_legend = function(new_label){
     // Should figure out how to mix recs and text into one
 
+    var self = this;
     this.pointer_labels.push(new_label[0]);
     // Data join
     var recs = this.legend_svg.selectAll("rect").data(this.pointer_labels);
@@ -96,16 +97,16 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_label){
           .attr("x", 15)
           .attr("y", function(d, i){ return i *  20 + 9;})
           .text(function(d, i) {
-                return args.pointer_labels[i];
+                return self.pointer_labels[i];
            });
-}
+};
 
 
 Nengo.SpaSimilarity.prototype.on_message = function(event) {
     var data = JSON.parse(event.data);
     var func_name = data.shift();
     this[func_name](data);
-}
+};
 
 /**
  * Redraw the lines and axis due to changed data

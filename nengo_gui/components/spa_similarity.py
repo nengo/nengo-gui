@@ -7,6 +7,8 @@ import nengo
 import struct
 import copy
 
+import ipdb
+
 class SpaSimilarity(Pointer):
 
     config_defaults = dict(max_value=1,
@@ -29,7 +31,9 @@ class SpaSimilarity(Pointer):
 
     def gather_data(self, t, x):
         if(self.old_vocab_length != len(self.vocab_out.keys)):
-            self.data.append("[update_legend, %s]" %(self.vocab_out.keys[0],))
+            self.data.append('["update_legend", "%s"]' %(self.vocab_out.keys[0],))
+            self.old_vocab_length = len(self.vocab_out.keys)
+
         vocab = self.vocab_out
         key_similarity = np.dot(vocab.vectors, x)
         simi_list = ['{:.2f}'.format(x) for x in key_similarity]
@@ -39,7 +43,7 @@ class SpaSimilarity(Pointer):
             # this probably isn't going to work... but I can't figure out how else to add it?
             key_similarity += ['{:.2f}'.format(x) for x in pair_similarity]
 
-        self.data.append( "[data_msg, [%g,%s]]" %(t, ",".join(simi_list) )  )
+        self.data.append( '["data_msg", %g, %s]' %(t, ",".join(simi_list) )  )
 
     def update_client(self, client):
         # while there is data that should be sent to the client
