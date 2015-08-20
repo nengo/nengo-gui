@@ -19,7 +19,6 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
     // I doubt this matters... Maybe I should make it loop?
     this.colors = Nengo.make_colors(this.n_lines*2);
 
-
     // create the legend from label args
     if(args.pointer_labels !== null){
         this.pointer_labels = args.pointer_labels;
@@ -61,6 +60,8 @@ Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
 Nengo.SpaSimilarity.prototype.constructor = Nengo.SpaSimilarity;
 
 Nengo.SpaSimilarity.prototype.data_msg = function(push_data){
+
+    this.create_subtitle(push_data)
     var data_dims = push_data.length - 1;
 
     if(data_dims !== this.n_lines){
@@ -74,7 +75,6 @@ Nengo.SpaSimilarity.prototype.data_msg = function(push_data){
 
 Nengo.SpaSimilarity.prototype.update_legend = function(new_label){
     // Should figure out how to mix recs and text into one
-
     var self = this;
     this.pointer_labels.push(new_label[0]);
 
@@ -110,8 +110,34 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_label){
 Nengo.SpaSimilarity.prototype.on_message = function(event) {
     var data = JSON.parse(event.data);
     var func_name = data.shift();
-    this[func_name](data);
+    this[func_name](data);  
 };
+
+Nengo.SpaSimilarity.prototype.create_subtitle = function(data) {
+    
+    var length = data.length;
+    var sub_data = data.slice(1,length)
+    var max_data = Math.max.apply(Math, sub_data)
+    
+    //show all having the max similarity??
+    /*var index
+    while( ( index = data.indexOf( max_data ) ) != -1 ){
+        results.push( index + results.length )
+        data.splice( ind, 1 )
+    }
+
+    return results;*/
+    
+    var ind = data.indexOf(max_data)-1
+    var subtitle_text = this.pointer_labels[ind] + "(" + max_data + ")";
+    console.log(subtitle_text);
+    
+    //display as a subtitle on the plot
+    /*title = this.label;
+    str = title.textContent + "\n" + subtitle_text;
+    title.textContent = str*/
+
+}
 
 /**
  * Redraw the lines and axis due to changed data
