@@ -20,7 +20,6 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
     // I doubt this matters... Maybe I should make it loop?
     this.colors = Nengo.make_colors(this.n_lines*2);
 
-
     // create the legend from label args
     if(args.pointer_labels !== null){
         this.pointer_labels = args.pointer_labels;
@@ -52,6 +51,8 @@ Nengo.SpaSimilarity.prototype.show_pairs_toggle = function(new_labels){
 }
 
 Nengo.SpaSimilarity.prototype.data_msg = function(push_data){
+
+    this.create_subtitle(push_data)
     var data_dims = push_data.length - 1;
 
     if(data_dims !== this.n_lines){
@@ -65,7 +66,6 @@ Nengo.SpaSimilarity.prototype.data_msg = function(push_data){
 
 Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
     // Should figure out how to mix recs and text into one
-
     // WHY YOU NO WORK NOW
     var self = this;
     this.pointer_labels = this.pointer_labels.concat(new_labels);
@@ -104,6 +104,61 @@ Nengo.SpaSimilarity.prototype.on_message = function(event) {
     var func_name = data.shift();
     this[func_name](data);
 };
+
+/**
+ * Create a dynamic subtitle to display the max
+ * similarity value and its corresponding label(s)
+ */
+Nengo.SpaSimilarity.prototype.create_subtitle = function(data) {
+    
+    //extract the max similarity value
+    var length = data.length;
+    var sub_data = data.slice(1,length);
+    var max_data = Math.max.apply(Math, sub_data);
+    
+    //find all the labels having max similarity value
+    var index;
+    var results = [];
+    var data_copy = data.slice()
+    while( ( index = data_copy.indexOf( max_data ) ) != -1 ){
+        results.push( index + results.length );
+        data_copy.splice( index, 1 );
+    }
+    
+    //construct the subtitle with the labels and max value
+    var ind;
+    var subtitle = "";
+    //if (this.pointer_labels.length>0) {
+    for (var i=0; i<results.length; i++) {
+        ind = results[i]-1
+        if (i>0)
+            subtitle = subtitle + ", " + this.pointer_labels[ind];
+        else
+            subtitle = this.pointer_labels[ind];
+    }
+
+    //ignore if the string starts with undefined
+    //this will happen only in the beginning
+    if (subtitle.substring(0,9) === 'undefined')
+        subtitle = "";
+    else
+        subtitle =  subtitle + "(" + max_data + ")";
+    
+    //add the subtitle to the div
+    title = this.label;
+    var para = document.createElement("p");
+    var node = document.createTextNode(subtitle);
+    para.appendChild(node);
+    var element = title;
+    
+    //remove all the child nodes(paras) from the title element
+    while(element.children.length>0) {
+        element.removeChild(element.children[0]);
+    }
+    
+    //add the current subtitle to the title element
+    element.appendChild(para);
+}
 
 /**
  * Redraw the lines and axis due to changed data
