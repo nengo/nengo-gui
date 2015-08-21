@@ -68,10 +68,6 @@ Nengo.Value.prototype.on_message = function(event) {
         this.data_store.push(data.slice(0, size));
         data = data.slice(size);
     }
-    // is this just debug code?
-    if (data.length > 0) {
-        console.log('extra data: ' + data.length);
-    }
     this.schedule_update();
 };
 
@@ -125,7 +121,6 @@ Nengo.Value.prototype.generate_menu = function() {
     items.push(['Set range...', function() {self.set_range();}]);
 
     // add the parent's menu items to this
-    // TODO: is this really the best way to call the parent's generate_menu()?
     return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
 };
 

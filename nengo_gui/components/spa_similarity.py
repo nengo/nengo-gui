@@ -18,32 +18,57 @@ class SpaSimilarity(Pointer):
 
     def __init__(self, obj, **kwargs):
         super(SpaSimilarity, self).__init__(obj, **kwargs)
-        # I'll eventually have to learn how to switch from showing pairs
-        # Probably by rebuilding the whole graph
         try:
             target_key = kwargs['target']
         except KeyError:
             target_key = kwargs['args']
 
         self.old_vocab_length = len(self.vocab_out.keys)
+        self.old_pairs_length = 0
         self.labels = self.vocab_out.keys
-        self.struct = struct.Struct('<%df' % (1 + len(self.labels)))
+        self.previous_pairs = False
 
     def gather_data(self, t, x):
-        if(self.old_vocab_length != len(self.vocab_out.keys)):
-            self.data.append('["update_legend", "%s"]' %(self.vocab_out.keys[-1],))
-            self.old_vocab_length = len(self.vocab_out.keys)
-
         vocab = self.vocab_out
-        key_similarity = np.dot(vocab.vectors, x)
-        simi_list = ['{:.2f}'.format(x) for x in key_similarity]
-        if self.config.show_pairs:
-            self.vocab_out.include_pairs = True
-            pair_similarity = np.dot(vocab.vector_pairs, x)
-            # this probably isn't going to work... but I can't figure out how else to add it?
-            key_similarity += ['{:.2f}'.format(x) for x in pair_similarity]
 
+        # if there's been a change in the show_pairs
+        if self.config.show_pairs != self.previous_pairs:
+            #send the new labels
+            if self.config.show_pairs:
+                vocab.include_pairs = True
+                self.data.append(
+                    '["show_pairs_toggle", "%s"]' %(
+                        '","'.join(vocab.keys + vocab.key_pairs)))
+                # if we're starting to show pairs, track pair length
+                self.old_pairs_length = len(vocab.key_pairs)
+            else:
+                self.data.append(
+                    '["show_pairs_toggle", "%s", "%s"]' %(
+                        '","'.join(vocab.keys)))
+
+        if(self.old_vocab_length != len(vocab.keys)):
+            # pass all the missing keys
+            legend_update = []
+            legend_update.append(vocab.keys[-1])
+            self.old_vocab_length = len(vocab.keys)
+            # and all the missing pairs if we're showing pairs
+            if self.config.show_pairs:
+                legend_update += vocab.key_pairs[self.old_pairs_length:]
+                self.old_pairs_length = len(vocab.key_pairs)
+
+            self.data.append('["update_legend", "%s"]' %('","'.join(legend_update)))
+
+        # get the similarity and send it
+        key_similarity = np.dot(vocab.vectors, x)
+        simi_list = ['{:.2f}'.format(simi) for simi in key_similarity]
+        if self.config.show_pairs:
+            # why is this resulted fucked?
+            pair_similarity = np.dot(vocab.vector_pairs, x)
+            simi_list += ['{:.2f}'.format(simi) for simi in pair_similarity]
+
+        print("ALMOST DONE")
         self.data.append( '["data_msg", %g, %s]' %(t, ",".join(simi_list) )  )
+        self.previous_pairs = self.config.show_pairs
 
     def update_client(self, client):
         # while there is data that should be sent to the client
