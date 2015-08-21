@@ -115,28 +115,37 @@ Nengo.SpaSimilarity.prototype.on_message = function(event) {
 
 Nengo.SpaSimilarity.prototype.create_subtitle = function(data) {
     
+    //extract the max similarity value
     var length = data.length;
     var sub_data = data.slice(1,length)
     var max_data = Math.max.apply(Math, sub_data)
     
-    //show all having the max similarity??
+    //find all the show all having the max similarity??
     /*var index
     while( ( index = data.indexOf( max_data ) ) != -1 ){
         results.push( index + results.length )
         data.splice( ind, 1 )
     }
-
     return results;*/
     
+    //create the subtitle
     var ind = data.indexOf(max_data)-1
-    var subtitle_text = this.pointer_labels[ind] + "(" + max_data + ")";
-    console.log(subtitle_text);
+    var subtitle = this.pointer_labels[ind] + "(" + max_data + ")";
     
-    //display as a subtitle on the plot
-    /*title = this.label;
-    str = title.textContent + "\n" + subtitle_text;
-    title.textContent = str*/
-
+    //add the subtitle to the div
+    title = this.label;
+    var para = document.createElement("p");
+    var node = document.createTextNode(subtitle);
+    para.appendChild(node);
+    var element = title
+    
+    //remove all the child nodes(paras) from the title element
+    while(element.children.length>0) {
+        element.removeChild(element.children[0]);
+    }
+    
+    //add the current subtitle to the title element
+    element.appendChild(para);
 }
 
 /**
