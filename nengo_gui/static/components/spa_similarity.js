@@ -13,6 +13,7 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
     Nengo.Value.call(this, parent, sim, args);
 
     this.data_store = new Nengo.VariableDataStore(this.n_lines, this.sim, args.synapse);
+    this.show_pairs = false;
 
     var self = this;
 
@@ -25,39 +26,29 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
         this.legend = document.createElement('div');
         this.legend.classList.add('legend', 'unselectable');
         this.div.appendChild(this.legend);
-
-        this.legend_svg = d3.select(this.legend)
-                           .append("svg")
-                           .attr("width", 100)
-                           .attr("height", 20*args.pointer_labels.length);
-
-        this.legend_svg.selectAll('rect')
-                  .data(args.pointer_labels)
-                  .enter()
-                  .append("rect")
-                  .attr("x", 0)
-                  .attr("y", function(d, i){ return i *  20;})
-                  .attr("width", 10)
-                  .attr("height", 10)
-                  .style("fill", function(d, i) { 
-                        return self.colors[i];
-                   });
-        
-        this.legend_svg.selectAll('text')
-                  .data(args.pointer_labels)
-                  .enter()
-                  .append("text")
-                  .attr("x", 15)
-                  .attr("y", function(d, i){ return i *  20 + 9;})
-                  .text(function(d, i) {
-                        return args.pointer_labels[i];
-                   });
+        this.legend_svg = Nengo.draw_legend(this.legend, args.pointer_labels, this.colors);
 
     }
 };
 
 Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
 Nengo.SpaSimilarity.prototype.constructor = Nengo.SpaSimilarity;
+
+Nengo.SpaSimilarity.prototype.show_pairs_toggle = function(new_labels){
+    // clear the database and make a new one
+    self.data_store = new Nengo.VariableDataStore()
+    // redraw all the lines accordingly? Maybe I don't need to?
+
+    // delete the legend's children
+    while(this.legend.lastChild){
+        this.legend.removeChild(this.legend.lastChild);
+    }
+
+    // redraw all the legends
+    this.pointer_labels = new_labels;
+    this.legend_svg = Nengo.draw_legend(this.legend, new_labels, this.colors);
+
+}
 
 Nengo.SpaSimilarity.prototype.data_msg = function(push_data){
 
@@ -73,13 +64,14 @@ Nengo.SpaSimilarity.prototype.data_msg = function(push_data){
     this.schedule_update();
 };
 
-Nengo.SpaSimilarity.prototype.update_legend = function(new_label){
+Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
     // Should figure out how to mix recs and text into one
+    // WHY YOU NO WORK NOW
     var self = this;
-    this.pointer_labels.push(new_label[0]);
+    this.pointer_labels = this.pointer_labels.concat(new_labels);
 
     // expand the svg
-    this.legend_svg.attr("height", 20*this.pointer_labels.length)
+    this.legend_svg.attr("height", 20*this.pointer_labels.length);
 
     // Data join
     var recs = this.legend_svg.selectAll("rect").data(this.pointer_labels);
@@ -196,24 +188,28 @@ Nengo.SpaSimilarity.prototype.update = function() {
              .attr('class', 'line')
              .style('stroke', function(d, i) {return self.colors[i];})
              .attr('d', self.line);
+    // remove any lines that aren't needed anymore
+    this.path.exit().remove();
 };
 
-// TODO: add pairs functionality
 Nengo.SpaSimilarity.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['Set range...', function() {self.set_range();}]);
 
-    /*
     if (this.show_pairs) {
         items.push(['Hide pairs', function() {self.set_show_pairs(false);}]);
     } else {
         items.push(['Show pairs', function() {self.set_show_pairs(true);}]);
     }
-    */
+
+    if(self.sort_legend){
+        items.push(["Show all legend labels", function() {self.sort_legend = false}]);
+    } else {
+        items.push(['Sort and Limit Legend', function() {self.sort_legend = true}]);
+    }
 
     // add the parent's menu items to this
-    // TODO: is this really the best way to call the parent's generate_menu()?
     return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
 };
 
@@ -223,6 +219,20 @@ Nengo.SpaSimilarity.prototype.set_show_pairs = function(value) {
         this.save_layout();
     }
 };
+
+Nengo.SpaSimilarity.prototype.layout_info = function () {
+    var info = Nengo.Component.prototype.layout_info.call(this);
+    info.show_pairs = this.show_pairs;
+    info.min_value = this.axes2d.scale_y.domain()[0];
+    info.max_value = this.axes2d.scale_y.domain()[1];
+    return info;
+}
+
+Nengo.SpaSimilarity.prototype.update_layout = function (config) {
+    this.update_range(config.min_value, config.max_value);
+    this.show_pairs = config.show_pairs;
+    Nengo.Component.prototype.update_layout.call(this, config);
+}
 
 // TODO: should I remove the ability to set range?
 // Or limit it to something intuitive
