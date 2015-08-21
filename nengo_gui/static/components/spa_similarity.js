@@ -153,11 +153,11 @@ Nengo.SpaSimilarity.prototype.create_subtitle = function(data) {
         subtitle =  subtitle + "(" + max_data + ")";
     
     //add the subtitle to the div
-    title = this.label;
     var para = document.createElement("p");
     var node = document.createTextNode(subtitle);
     para.appendChild(node);
-    var element = title;
+    var element = this.label;
+    console.log(element)
     
     //remove all the child nodes(paras) from the title element
     while(element.children.length>0) {
@@ -166,7 +166,9 @@ Nengo.SpaSimilarity.prototype.create_subtitle = function(data) {
     
     //add the current subtitle to the title element
     element.appendChild(para);
-}
+    element.style.top = "-15px"
+
+};
 
 /**
  * Redraw the lines and axis due to changed data
