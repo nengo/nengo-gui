@@ -46,7 +46,8 @@ Nengo.SpaSimilarity.prototype.show_pairs_toggle = function(new_labels){
     }
 
     // redraw all the legends
-    Nengo.draw_legend(this.legend, new_labels, this.colors);
+    this.pointer_labels = new_labels;
+    this.legend_svg = Nengo.draw_legend(this.legend, new_labels, this.colors);
 
 }
 
@@ -65,11 +66,12 @@ Nengo.SpaSimilarity.prototype.data_msg = function(push_data){
 Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
     // Should figure out how to mix recs and text into one
 
+    // WHY YOU NO WORK NOW
     var self = this;
     this.pointer_labels = this.pointer_labels.concat(new_labels);
 
     // expand the svg
-    this.legend_svg.attr("height", 20*this.pointer_labels.length)
+    this.legend_svg.attr("height", 20*this.pointer_labels.length);
 
     // Data join
     var recs = this.legend_svg.selectAll("rect").data(this.pointer_labels);
@@ -142,6 +144,12 @@ Nengo.SpaSimilarity.prototype.generate_menu = function() {
         items.push(['Hide pairs', function() {self.set_show_pairs(false);}]);
     } else {
         items.push(['Show pairs', function() {self.set_show_pairs(true);}]);
+    }
+
+    if(self.sort_legend){
+        items.push(["Show all legend labels", function() {self.sort_legend = false}]);
+    } else {
+        items.push(['Sort and Limit Legend', function() {self.sort_legend = true}]);
     }
 
     // add the parent's menu items to this

@@ -32,6 +32,8 @@ class SpaSimilarity(Pointer):
         vocab = self.vocab_out
 
         # if there's been a change in the show_pairs
+        # Don't know how I feel about the timing of this
+        # maybe trigger on_message?
         if self.config.show_pairs != self.previous_pairs:
             #send the new labels
             if self.config.show_pairs:
@@ -42,8 +44,10 @@ class SpaSimilarity(Pointer):
                 # if we're starting to show pairs, track pair length
                 self.old_pairs_length = len(vocab.key_pairs)
             else:
+                # Hmmm... an OH HELL NO was triggered...
+                vocab.include_pairs = False
                 self.data.append(
-                    '["show_pairs_toggle", "%s", "%s"]' %(
+                    '["show_pairs_toggle", "%s"]' %(
                         '","'.join(vocab.keys)))
 
         if(self.old_vocab_length != len(vocab.keys)):
@@ -62,11 +66,9 @@ class SpaSimilarity(Pointer):
         key_similarity = np.dot(vocab.vectors, x)
         simi_list = ['{:.2f}'.format(simi) for simi in key_similarity]
         if self.config.show_pairs:
-            # why is this resulted fucked?
             pair_similarity = np.dot(vocab.vector_pairs, x)
             simi_list += ['{:.2f}'.format(simi) for simi in pair_similarity]
 
-        print("ALMOST DONE")
         self.data.append( '["data_msg", %g, %s]' %(t, ",".join(simi_list) )  )
         self.previous_pairs = self.config.show_pairs
 
