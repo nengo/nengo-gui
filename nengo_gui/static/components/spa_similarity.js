@@ -110,34 +110,54 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_label){
 Nengo.SpaSimilarity.prototype.on_message = function(event) {
     var data = JSON.parse(event.data);
     var func_name = data.shift();
-    this[func_name](data);  
+    this[func_name](data);
 };
 
+/**
+ * Create a dynamic subtitle to display the max
+ * similarity value and its corresponding label(s)
+ */
 Nengo.SpaSimilarity.prototype.create_subtitle = function(data) {
     
     //extract the max similarity value
     var length = data.length;
-    var sub_data = data.slice(1,length)
-    var max_data = Math.max.apply(Math, sub_data)
+    var sub_data = data.slice(1,length);
+    var max_data = Math.max.apply(Math, sub_data);
     
-    //find all the show all having the max similarity??
-    /*var index
-    while( ( index = data.indexOf( max_data ) ) != -1 ){
-        results.push( index + results.length )
-        data.splice( ind, 1 )
+    //find all the labels having max similarity value
+    var index;
+    var results = [];
+    var data_copy = data.slice()
+    while( ( index = data_copy.indexOf( max_data ) ) != -1 ){
+        results.push( index + results.length );
+        data_copy.splice( index, 1 );
     }
-    return results;*/
     
-    //create the subtitle
-    var ind = data.indexOf(max_data)-1
-    var subtitle = this.pointer_labels[ind] + "(" + max_data + ")";
+    //construct the subtitle with the labels and max value
+    var ind;
+    var subtitle = "";
+    //if (this.pointer_labels.length>0) {
+    for (var i=0; i<results.length; i++) {
+        ind = results[i]-1
+        if (i>0)
+            subtitle = subtitle + ", " + this.pointer_labels[ind];
+        else
+            subtitle = this.pointer_labels[ind];
+    }
+
+    //ignore if the string starts with undefined
+    //this will happen only in the beginning
+    if (subtitle.substring(0,9) === 'undefined')
+        subtitle = "";
+    else
+        subtitle =  subtitle + "(" + max_data + ")";
     
     //add the subtitle to the div
     title = this.label;
     var para = document.createElement("p");
     var node = document.createTextNode(subtitle);
     para.appendChild(node);
-    var element = title
+    var element = title;
     
     //remove all the child nodes(paras) from the title element
     while(element.children.length>0) {
