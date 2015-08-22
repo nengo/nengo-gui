@@ -4,8 +4,8 @@
 # oscillators.  This gives an Ensemble of neurons that can produce patterns
 # of behaviour all on its own without any external input.  For example, here
 # is a standard cycle in two dimensions:
-#    dx0/dt = -x1 * s + x0 * (r - x0**2 - y0**2)
-#    dx1/dt =  x0 * s + x1 * (r - x0**2 - y0**2)
+#    dx0/dt = -x1 * s + x0 * (r - x0**2 - x1**2)
+#    dx1/dt =  x0 * s + x1 * (r - x0**2 - x1**2)
 # where r is the radius of the circle and s is the speed (in radians per second).
 
 # As discussed in the previous tutorial, we can convert this into a Nengo
