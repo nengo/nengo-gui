@@ -65,7 +65,9 @@ def ensemble_infomodal(ng, uid, conn_in_uids, conn_out_uids):
         plots = []
         rc = PlotInfo("Response curves", plot="multiline")
         rc.x, rc.y = response_curves(ens, ng.page.sim)
+        rc.x_label = "Input current"
         rc.y = rc.y.T
+        rc.y_label = "Firing rate (Hz)"
         if len(rc.y.shape) == 1:
             rc.y.shape = 1, rc.y.shape[0]
         if ens.n_neurons > 200:
@@ -77,7 +79,9 @@ def ensemble_infomodal(ng, uid, conn_in_uids, conn_out_uids):
         if ens.dimensions == 1:
             tc.plot = "multiline"
             tc.x, tc.y = tuning_curves(ens, ng.page.sim)
+            tc.x_label = "x"
             tc.y = tc.y.T
+            tc.y_label = "Firing rate (Hz)"
             if ens.n_neurons > 200:
                 tc.warnings.append("Only showing the first 200 neurons.")
                 tc.y = tc.y[:200]
