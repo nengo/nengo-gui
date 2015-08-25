@@ -14,6 +14,8 @@ except ImportError:
 import nengo_gui.swi as swi
 import nengo_gui
 
+import ipdb
+
 
 class Server(swi.SimpleWebInterface):
     """Web server interface to nengo_gui"""
@@ -76,6 +78,7 @@ class Server(swi.SimpleWebInterface):
             return self.create_login_form()
 
         reset_cfg = reset == 'True'
+        ipdb.set_trace()
 
         page = self.server.gui.create_page(filename, reset_cfg=reset_cfg)
 

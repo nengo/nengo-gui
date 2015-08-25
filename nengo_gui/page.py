@@ -13,6 +13,7 @@ import nengo_gui
 import nengo_gui.user_action
 import nengo_gui.config
 
+import ipdb
 
 class Page(object):
     """A handler for a singe page of the nengo_gui.
@@ -80,6 +81,7 @@ class Page(object):
             self.filename_cfg = gui.filename_cfg
 
         if reset_cfg:
+            ipdb.set_trace()
             self.clear_config()
 
         self.load()
