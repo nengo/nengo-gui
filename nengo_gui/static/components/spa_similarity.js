@@ -15,6 +15,12 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
     this.data_store = new Nengo.VariableDataStore(this.n_lines, this.sim, args.synapse);
     this.show_pairs = false;
 
+    // variable related to legend sorting stuff
+    this.sort_trigger = 10;
+    this.sort_count = 0;
+    this.displayed_labels = 3;
+    this.sort_legend = true;
+
     var self = this;
 
     // I doubt this matters... Maybe I should make it loop?
@@ -64,9 +70,10 @@ Nengo.SpaSimilarity.prototype.data_msg = function(push_data){
     this.schedule_update();
 };
 
+// this is going to be a problem once they're sorted ??????
 Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
     // Should figure out how to mix recs and text into one
-    // WHY YOU NO WORK NOW
+
     var self = this;
     this.pointer_labels = this.pointer_labels.concat(new_labels);
 
@@ -98,7 +105,12 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
 
 };
 
-
+/* there a three types of messages that can be recieved:
+    - a legend needs to be updated
+    - the data has been updated
+    - show_pairs has been toggled
+    this calls the method associated to handling the type of message
+*/
 Nengo.SpaSimilarity.prototype.on_message = function(event) {
     var data = JSON.parse(event.data);
     var func_name = data.shift();
@@ -189,6 +201,50 @@ Nengo.SpaSimilarity.prototype.update = function() {
              .attr('d', self.line);
     // remove any lines that aren't needed anymore
     this.path.exit().remove();
+
+    if(this.sort_legend){
+        // increment the counter (this should probably be a customisable number?)
+        // this is also a really shitty name
+        this.sort_count++;
+
+        if(this.sort_count === 10){
+            // sort the labels and only display the top x
+
+            // maybe should average?
+            var latest_simi = [];
+            for(var i = 0; i < shown_data.length; i++){
+                latest_simi.push(shown_data[i][shown_data[i].length - 1]);
+            }
+
+            sort_indices = [];
+            Nengo.sort_with_indices(latest_simi, sort_indices);
+
+            var sort_limit = 0;
+
+            if(this.displayed_labels >= this.pointer_labels.length){
+                sort_limit = this.pointer_labels.length;
+            } else {
+                sort_limit = this.displayed_labels;
+            }
+
+            var sorted_labels = [];
+            var sorted_colors = [];
+            for(var i = 0; i < sort_limit; i++){
+                sorted_labels.push(  this.pointer_labels[ sort_indices[i] ]  );
+                sorted_colors.push(  this.colors[ sort_indices[i] ]  );
+            }
+
+            // delete the legend's children
+            while(this.legend.lastChild){
+                this.legend.removeChild(this.legend.lastChild);
+            }
+
+            // redraw all the legends
+            this.legend_svg = Nengo.draw_legend(this.legend, sorted_labels, sorted_colors);
+
+            this.sort_count = 0
+        }
+    }
 };
 
 Nengo.SpaSimilarity.prototype.generate_menu = function() {

@@ -111,5 +111,19 @@ Nengo.draw_legend = function(parent, labels, colors){
                     return labels[i];
                });
     return legend_svg;
+}
 
+/* sort ascending, should abstract to pass in function */
+Nengo.sort_with_indices = function(to_sort, sort_indices){
+    for (var i = 0; i < to_sort.length; i++) {
+        to_sort[i] = [to_sort[i], i];
+    }
+    to_sort.sort(function(left, right) {
+        return left[0] > right[0] ? -1 : 1;
+    });
+    for (var j = 0; j < to_sort.length; j++) {
+        sort_indices.push(to_sort[j][1]);
+        to_sort[j] = to_sort[j][0];
+    }
+    return sort_indices;
 }
