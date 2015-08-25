@@ -35,6 +35,8 @@ class PlotInfo(object):
         self.warnings = []
         self.x = None
         self.y = None
+        self.x_label = None
+        self.y_label = None
 
     def to_dict(self):
         x, y = self.x, self.y
@@ -48,6 +50,8 @@ class PlotInfo(object):
             'warnings': self.warnings,
             'x': x,
             'y': y,
+            'x_label': self.x_label if self.x_label != None else "",
+            'y_label': self.y_label if self.y_label != None else "",
         }
 
 def ensemble_infomodal(ng, uid, conn_in_uids, conn_out_uids):
