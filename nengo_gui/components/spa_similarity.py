@@ -7,8 +7,6 @@ import nengo
 import struct
 import copy
 
-import ipdb
-
 class SpaSimilarity(Pointer):
 
     config_defaults = dict(max_value=1,

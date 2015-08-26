@@ -107,7 +107,7 @@ Nengo.draw_legend = function(parent, labels, colors){
               .append("text")
               .attr("x", 15)
               .attr("y", function(d, i){ return i *  20 + 9;})
-              .text(function(d, i) {
+              .html(function(d, i) {
                     return labels[i];
                });
     return legend_svg;

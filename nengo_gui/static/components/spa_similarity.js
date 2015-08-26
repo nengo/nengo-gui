@@ -87,7 +87,7 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
           .append("text")
           .attr("x", 15)
           .attr("y", function(d, i){ return i *  20 + 9;})
-          .text(function(d, i) {
+          .html(function(d, i) {
                 return self.pointer_labels[i];
            });
 
@@ -147,10 +147,10 @@ Nengo.SpaSimilarity.prototype.update = function() {
 
         texts.attr("x", 15)
               .attr("y", function(d, i){ return i *  20 + 9;})
-              .text(function(d, i) {
-                    var sign = " ";
+              .html(function(d, i) {
+                    var sign = "&nbsp;&nbsp;&nbsp;";
                     if(latest_simi[i] < 0){
-                        sign = "-";
+                        sign = "&nbsp;&minus;";
                     }
                     return self.pointer_labels[i] + " " + sign + Math.abs(latest_simi[i]).toFixed(2);
                });
