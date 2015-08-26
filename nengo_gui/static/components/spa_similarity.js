@@ -17,15 +17,15 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
 
     var self = this;
 
-    // I doubt this matters... Maybe I should make it loop?
-    this.colors = Nengo.make_colors(this.n_lines*2);
+    this.colors = Nengo.make_colors(6);
+    this.color_func = function(d, i){return self.colors[i%6]};
 
     // create the legend from label args
     this.pointer_labels = args.pointer_labels;
     this.legend = document.createElement('div');
     this.legend.classList.add('legend', 'unselectable');
     this.div.appendChild(this.legend);
-    this.legend_svg = Nengo.draw_legend(this.legend, args.pointer_labels, this.colors);
+    this.legend_svg = Nengo.draw_legend(this.legend, args.pointer_labels, this.color_func);
 };
 
 Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
@@ -42,7 +42,7 @@ Nengo.SpaSimilarity.prototype.show_pairs_toggle = function(new_labels){
 
     // redraw all the legends
     this.pointer_labels = new_labels;
-    this.legend_svg = Nengo.draw_legend(this.legend, new_labels, this.colors);
+    this.legend_svg = Nengo.draw_legend(this.legend, new_labels, this.color_func);
 
 }
 
@@ -79,9 +79,7 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
         .attr("y", function(d, i){ return i *  20;})
         .attr("width", 10)
         .attr("height", 10)
-        .style("fill", function(d, i) { 
-              return self.colors[i];
-        });
+        .style("fill", this.color_func);
 
     texts.enter()
           .append("text")
@@ -129,7 +127,7 @@ Nengo.SpaSimilarity.prototype.update = function() {
     this.path.enter()
              .append('path')
              .attr('class', 'line')
-             .style('stroke', function(d, i) {return self.colors[i];})
+             .style('stroke', this.color_func)
              .attr('d', self.line);
     // remove any lines that aren't needed anymore
     this.path.exit().remove();

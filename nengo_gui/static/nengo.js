@@ -83,7 +83,7 @@ Nengo.next_zindex = function() {
 
 /* draw a legend */
 // the css should probably be dealt with in here somehow
-Nengo.draw_legend = function(parent, labels, colors){
+Nengo.draw_legend = function(parent, labels, color_func){
     legend_svg = d3.select(parent)
                        .append("svg")
                        .attr("width", 150)
@@ -97,9 +97,7 @@ Nengo.draw_legend = function(parent, labels, colors){
               .attr("y", function(d, i){ return i *  20;})
               .attr("width", 10)
               .attr("height", 10)
-              .style("fill", function(d, i) { 
-                    return colors[i];
-               });
+              .style("fill", color_func);
     
     legend_svg.selectAll('text')
               .data(labels)
