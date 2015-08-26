@@ -57,7 +57,7 @@ Nengo.create_websocket = function(uid) {
  */
 Nengo.make_colors = function(N) {
     //Color blind palette with blue, green, red, magenta, yellow, cyan
-    var palette=["#1c73b3","#039f74","#d65e00","#cd79a7","#f0e542","#56b4ea"];
+    var palette = ["#1c73b3","#039f74","#d65e00","#cd79a7","#f0e542","#56b4ea"];
     var c = [];
 
     for (var i = 0; i < N; i++) {
@@ -79,4 +79,36 @@ Nengo.is_num = function(value){
 Nengo.next_zindex = function() {
     Nengo.max_zindex++;
     return Nengo.max_zindex;
+}
+
+/* draw a legend */
+// the css should probably be dealt with in here somehow
+Nengo.draw_legend = function(parent, labels, colors){
+    legend_svg = d3.select(parent)
+                       .append("svg")
+                       .attr("width", 100)
+                       .attr("height", 20*labels.length);
+
+    legend_svg.selectAll('rect')
+              .data(labels)
+              .enter()
+              .append("rect")
+              .attr("x", 0)
+              .attr("y", function(d, i){ return i *  20;})
+              .attr("width", 10)
+              .attr("height", 10)
+              .style("fill", function(d, i) { 
+                    return colors[i];
+               });
+    
+    legend_svg.selectAll('text')
+              .data(labels)
+              .enter()
+              .append("text")
+              .attr("x", 15)
+              .attr("y", function(d, i){ return i *  20 + 9;})
+              .text(function(d, i) {
+                    return labels[i];
+               });
+    return legend_svg;
 }

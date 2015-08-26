@@ -1,0 +1,96 @@
+#top_toolbar_div .glyphicon {
+    color: #333;
+    cursor: default;
+    top: 0;
+    border-radius: 0;
+}
+
+#top_toolbar_div .glyphicon:hover {
+    color: #eee;
+    background: #666;
+}
+
+#top_toolbar_div .deactivated .glyphicon {
+    color: #ccc;
+}
+
+#top_toolbar_div .deactivated .glyphicon:hover {
+    color: #ccc;
+    background: none;
+}
+
+#top_toolbar_div {
+    position: relative;
+    flex: 0 0 auto;
+    -webkit-flex: 0 0 auto;
+    width: 100%;
+    z-index: 99999;
+}
+
+#Undo_last_button {
+        -moz-transform: scaleX(-1);
+        -o-transform: scaleX(-1);
+        -webkit-transform: scaleX(-1);
+        transform: scaleX(-1);
+        filter: FlipH;
+        -ms-filter: "FlipH";
+}
+
+#top_toolbar_div .nav {
+    background: #eee;
+    box-shadow: 0px 2px 4px 0px #999;
+}
+
+#filename{
+    float: right;
+    margin-top: 0.5em;
+    margin-right: 1em;
+    cursor: default !important;
+}
+
+#Help_button{
+    float: right;
+}
+
+#filebrowser {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 300px;
+    border: solid 1px #ccc;
+    border-bottom-right-radius: 4px;
+    box-shadow: 2px 2px 4px 0px #999;
+    padding: 0.2em;
+    background-color: #eee;
+    z-index: 99999;
+    overflow: auto;
+    cursor: pointer !important;
+}
+
+#filebrowser a:hover {
+    color: #eee;
+    background: #666;
+}
+
+#Toggle_ace, #Save_file, #Font_increase, #Font_decrease{
+    float: right; 
+}
+
+#top_toolbar_div li.disabled a.glyphicon {
+    color: #ccc;
+    background: #eee;
+}
+
+#filebrowser li.examples_dir {
+    background-color: #ccc;
+}
+
+#global_config_menu {
+    background: purple;
+    height: 20em;
+    width: 20em;
+    z-index: 99999;
+    margin-top: 3em;
+    position: absolute;
+}

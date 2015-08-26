@@ -1,0 +1,44 @@
+#rightpane {
+    -webkit-flex: 0 0 auto;
+    flex: 0 0 auto;
+
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+}
+
+#editor {
+    border-left:5px solid #606060;
+    flex: 1 1 auto;
+}
+
+#console {
+    border-top:5px solid #606060;
+    border-left:5px solid #606060;
+    padding: 0.5em;
+    border-radius: 0px;
+    overflow: auto;
+    background: white;
+    -webkit-flex: 0 0 auto;
+    flex: 0 0 auto;
+}
+
+#console pre {
+    padding: 0px;
+    margin: 0px;
+    background: none;
+    border: 0px;
+    /* Use same font-family as Ace editor */
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+    white-space: pre-wrap;
+}
+
+#console_stdout {
+    color: #1c73b3;
+}
+
+#console_error {
+    color: #d65e00;
+    font-weight: 600;
+}

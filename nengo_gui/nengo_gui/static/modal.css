@@ -1,0 +1,143 @@
+.modal-body .tab-pane {
+    margin: 20px;
+}
+
+.modal-body input {
+    cursor: text !important;
+}
+
+.modal-body .tab-pane .dt-connections {
+    margin-top: 20px;
+}
+
+.modal-body .axis path,
+.modal-body .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.modal-body .form-group {
+    text-indent: 20px;
+}
+
+.modal-body .with-errors {
+    font-size: .8em;
+}
+
+div.modal-backdrop {
+    z-index: 100000000;
+}
+
+.alert .glyphicon {
+    padding-right: 5px;
+}
+
+.modal-body .tab-pane .list-group-item {
+    padding: 5px 10px;
+}
+
+.modal-body .tab-pane .list-group-item.shaded {
+    color: #aaaaaa;
+}
+
+.modal-body .tab-pane > h3 {
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+.modal-body .tab-pane th {
+    font-size: 1em;
+    font-weight: bold;
+    border: 0px;
+    background-color: #dddddd;
+}
+
+.modal-body .tab-pane td {
+    font-size: 0.9em;
+    border: 0px;
+}
+
+.modal-body table .conn-objs {
+    width: 30%;
+}
+
+.modal-body table .conn-funcs {
+    width: 50%;
+}
+
+.modal-body table .conn-fan {
+    width: 20%;
+}
+
+.modal-body table ul > li > .glyphicon,
+.modal-body table ul > li > .glyphicon {
+    padding-right: 8px;
+}
+
+.modal-body th .glyphicon {
+    padding-left: 8px;
+}
+
+.modal-body .tooltip-inner {
+    white-space: pre-wrap;
+    text-align: left;
+    max-width: 350px;
+}
+
+.modal-body .popover {
+    max-width: 350px;
+}
+
+.modal-body .popover-title,
+.modal-body .popover-content {
+    white-space: pre-wrap;
+    text-align: left;
+    font-size: 0.9em;
+    padding: 5px 10px;
+}
+
+.modal-body .popover-title {
+    line-height: 1.2;
+}
+
+div.modal {
+    z-index: 100000001;
+    cursor: default !important;
+}
+
+#config-fontsize.form-control {
+    padding: 6px 6px;
+    height: 35px;
+}
+
+.input-group .input-group-addon {
+    text-indent:0px;
+}
+
+#myModalForm .form-group {
+    margin-bottom:0px;
+}
+
+#myModalForm .checkbox {
+    padding-top:0px;
+    text-indent:10px;
+}
+
+#myModalForm .select {
+    padding-top:0px;
+    text-indent:10px;
+}
+
+#myModalForm .select select {
+    width: calc(100% - 40px);
+    margin-left: 20px;
+}
+
+.input-group.col-xs-2 {
+    left:20px;
+}
+
+.modal-dialog.modal-sm td {
+    padding: 4px;
+}

@@ -1,0 +1,114 @@
+/* TODO: Is large z-index the method we want to use for keeping simcontrol on top */
+/* or do we want to dynamically raise it when other elements have theirs increased  */
+.sim_control {
+    background-color: #eee;
+    box-shadow: 0px -2px 4px 0px #999;
+    height: 80px;
+    position: relative;
+    overflow: hidden;
+    flex: 0 0 auto;
+    -webkit-flex: 0 0 auto;
+    width: 100%;
+    z-index:99999999;
+}
+
+.time_slider{
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.time_slider .shown_time {
+    background: #d9edf7;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    padding-left: 1px;
+    padding-right: 1px;
+    position:absolute;
+}
+
+.time_slider .shown_time div {
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    padding-left: 1px;
+    padding-right: 1px;
+    height: 100%;
+}
+
+.time_slider {
+    position:fixed;
+}
+
+.time_slider svg .axis path {
+    stroke: #333;
+    stroke-width: 1px;
+    fill: none;
+}
+
+.time_slider svg .axis .tick {
+    font-size: 12px;
+    font-family: sans-serif;
+}
+
+#pause_button {
+    border-radius:0px;
+    border-width:0px;
+}
+
+.reset-button:hover {
+    background: #666 !important;
+    color: #eee !important;
+}
+
+#reset_button {
+    border-radius:0px;
+    border-width:0px;
+}
+
+.reset-button {
+    height:60px;
+    margin: -20px 15px 0 15px;
+    position:fixed;
+    background-color: #eee !important;
+    width:60px;
+}
+
+.reset-button span {
+    font-size: 30px;
+}
+
+.play-pause-button {
+    height:60px;
+    margin: -20px 15px 0 15px;
+    position:fixed;
+    width:60px;
+    background-color: #eee !important;
+}
+
+.play-pause-button:hover {
+    background: #666 !important;
+    color: #eee !important;
+}
+
+.play-pause-button span {
+    font-size: 30px;
+}
+
+#time_table {
+    display: inline-block;
+    margin-top: 10px;
+    margin-left: 10px;
+    width: 130px;
+    overflow: hidden;
+    cursor: default;
+}
+
+.metrics-container {
+    width: auto !important;
+}
+
+.metrics-container td, .metrics-container th {
+    padding: 0.2em !important;
+    border: none !important;
+}

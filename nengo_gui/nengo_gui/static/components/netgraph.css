@@ -1,0 +1,64 @@
+.netgraph {
+}
+
+.ensemble{
+    stroke-width:1;
+    }
+
+g.node rect{
+    stroke-width:1;
+    }
+
+g.net rect{
+    stroke-width:1;
+    }
+
+.netgraph g text {
+    text-anchor: middle;
+    dominant-baseline: text-before-edge;
+    cursor: default !important;
+    }
+
+.netgraph g text:active {
+    cursor: move;
+}
+
+.netgraph line {
+    stroke: black;
+    stroke-width: 2px;
+}
+
+.minimap {
+    border-radius: 10px/60px;
+    height: 100%;
+    opacity: 0.85;
+    position: 'relative';
+    width: 100%;
+}
+
+.minimap line {
+    stroke: black;
+    stroke-width: 1px;
+}
+
+rect.view{
+    fill: #d9edf7;
+    stroke: #ccc;
+}
+
+.recur {
+    stroke: black;
+    stroke-width: 2px;
+    fill: none;
+}
+
+.netgraph g.passthrough ellipse {
+    stroke-width: 0px;
+    fill: black;
+}
+
+.netgraph g.passthrough text {
+    text-anchor: middle;
+    dominant-baseline: text-before-edge;
+    }
+

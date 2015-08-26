@@ -1,0 +1,54 @@
+html {
+    height: 100%;
+}
+
+body {
+    margin: 0px;
+    height: 100%;
+    width: 100%;
+    cursor: inherit;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+}
+
+
+#main {
+    background: white;
+    -webkit-flex: 0 0 auto;
+    flex: 1 1 auto;
+    position: relative;
+    overflow: hidden;
+}
+
+#vmiddle {
+    position: relative;
+    -webkit-flex: 1 1 auto;
+    flex: 1 1 auto;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+}
+
+div.minimap {
+    background: white;
+    border: 2px solid #787878;
+    height: 15%;
+    width: 15%;
+    left: 84.5%;
+    top: 82.5%;
+    position: absolute;
+    z-index: 99999999;
+}
+
+.graph {
+    background: #eeeeee;
+}
+
+.line {
+    fill: none;
+    stroke: black;
+    stroke-width: 1.5px;
+}
