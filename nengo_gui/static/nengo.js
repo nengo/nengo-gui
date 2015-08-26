@@ -86,7 +86,7 @@ Nengo.next_zindex = function() {
 Nengo.draw_legend = function(parent, labels, colors){
     legend_svg = d3.select(parent)
                        .append("svg")
-                       .attr("width", 100)
+                       .attr("width", 150)
                        .attr("height", 20*labels.length);
 
     legend_svg.selectAll('rect')

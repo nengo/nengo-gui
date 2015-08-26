@@ -21,14 +21,11 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
     this.colors = Nengo.make_colors(this.n_lines*2);
 
     // create the legend from label args
-    if(args.pointer_labels !== null){
-        this.pointer_labels = args.pointer_labels;
-        this.legend = document.createElement('div');
-        this.legend.classList.add('legend', 'unselectable');
-        this.div.appendChild(this.legend);
-        this.legend_svg = Nengo.draw_legend(this.legend, args.pointer_labels, this.colors);
-
-    }
+    this.pointer_labels = args.pointer_labels;
+    this.legend = document.createElement('div');
+    this.legend.classList.add('legend', 'unselectable');
+    this.div.appendChild(this.legend);
+    this.legend_svg = Nengo.draw_legend(this.legend, args.pointer_labels, this.colors);
 };
 
 Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
@@ -138,20 +135,26 @@ Nengo.SpaSimilarity.prototype.update = function() {
     this.path.exit().remove();
 
     /* update the legend text */
-    // get the most recent similarity
-     var latest_simi = [];
-    for(var i = 0; i < shown_data.length; i++){
-        latest_simi.push(shown_data[i][shown_data[i].length - 1]);
+    if(this.legend_svg && shown_data[0].length !== 0){
+        // get the most recent similarity
+         var latest_simi = [];
+        for(var i = 0; i < shown_data.length; i++){
+            latest_simi.push(shown_data[i][shown_data[i].length - 1]);
+        }
+
+        // update the text in the legend
+        var texts = this.legend_svg.selectAll("text").data(this.pointer_labels);
+
+        texts.attr("x", 15)
+              .attr("y", function(d, i){ return i *  20 + 9;})
+              .text(function(d, i) {
+                    var sign = " ";
+                    if(latest_simi[i] < 0){
+                        sign = "-";
+                    }
+                    return self.pointer_labels[i] + " " + sign + Math.abs(latest_simi[i]).toFixed(2);
+               });
     }
-
-    // update the text in the legend
-    var texts = this.legend_svg.selectAll("text").data(this.pointer_labels);
-
-    texts.attr("x", 15)
-          .attr("y", function(d, i){ return i *  20 + 9;})
-          .text(function(d, i) {
-                return self.pointer_labels[i]+" "+latest_simi[i];
-           });
 
 };
 
