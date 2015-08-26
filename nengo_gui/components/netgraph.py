@@ -8,7 +8,7 @@ import nengo
 import json
 
 from nengo_gui.components.component import Component
-from nengo_gui.disposable_js import infomodal
+from nengo_gui.modal_js import infomodal
 import nengo_gui.user_action
 import nengo_gui.layout
 
