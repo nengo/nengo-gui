@@ -7,6 +7,10 @@
  * @param {float} args.miny - minimum value on y-axis
  * @param {float} args.maxy - maximum value on y-axis
  * @param {Nengo.SimControl} args.sim - the simulation controller
+ *
+ * XYValue constructor is called by python server when a user requests a plot 
+ * or when the config file is making graphs. Server request is handled in 
+ * netgraph.js {.on_message} function.
  */
 
 Nengo.XYValue = function(parent, sim, args) {
