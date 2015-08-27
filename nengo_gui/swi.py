@@ -390,9 +390,9 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
                     format % args))
 
     @classmethod
-    def start(cls, viz, port=80, asynch=True, addr='', browser=False):
+    def start(cls, viz, port=80, asynch=True, addr='', browser=False, interactive=True):
         server = cls.prepare_server(viz, port, asynch, addr, browser)
-        cls.begin_lifecycle(server, asynch)
+        cls.begin_lifecycle(server, asynch, interactive=interactive)
 
     @classmethod
     def prepare_server(cls, gui,
