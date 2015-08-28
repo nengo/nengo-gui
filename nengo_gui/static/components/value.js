@@ -36,16 +36,20 @@ Nengo.Value = function(parent, sim, args) {
             function(e) {self.reset();}, false);
 
     /** create the lines on the plots */
-    var line = d3.svg.line()
-        .x(function(d, i) {return self.axes2d.scale_x(times[i]);})
+    this.line = d3.svg.line()
+        .x(function(d, i) {
+            return self.axes2d.scale_x(
+                self.data_store.times[i + self.data_store.first_shown_index]);
+            })
         .y(function(d) {return self.axes2d.scale_y(d);})
     this.path = this.axes2d.svg.append("g").selectAll('path')
                                     .data(this.data_store.data);
 
-    var colors = Nengo.make_colors(this.n_lines);
-    this.path.enter().append('path')
+    this.colors = Nengo.make_colors(this.n_lines);
+    this.path.enter()
+             .append('path')
              .attr('class', 'line')
-             .style('stroke', function(d, i) {return colors[i];});
+             .style('stroke', function(d, i) {return self.colors[i];});
 
     this.update();
     this.on_resize(this.get_screen_width(), this.get_screen_height());
@@ -63,12 +67,11 @@ Nengo.Value.prototype.on_message = function(event) {
     var data = new Float32Array(event.data);
     data = Array.prototype.slice.call(data);
     var size = this.n_lines + 1;
+    /** since multiple data packets can be sent with a single event,
+    make sure to process all the packets */
     while (data.length >= size) {
         this.data_store.push(data.slice(0, size));
         data = data.slice(size);
-    }
-    if (data.length > 0) {
-        console.log('extra data: ' + data.length);
     }
     this.schedule_update();
 };
@@ -89,14 +92,9 @@ Nengo.Value.prototype.update = function() {
     /** update the lines */
     var self = this;
     var shown_data = this.data_store.get_shown_data();
-    var line = d3.svg.line()
-        .x(function(d, i) {
-            return self.axes2d.scale_x(
-                self.data_store.times[i + self.data_store.first_shown_index]);
-            })
-        .y(function(d) {return self.axes2d.scale_y(d);})
+
     this.path.data(shown_data)
-             .attr('d', line);
+             .attr('d', self.line);
 };
 
 /**
@@ -128,7 +126,6 @@ Nengo.Value.prototype.generate_menu = function() {
     items.push(['Set range...', function() {self.set_range();}]);
 
     // add the parent's menu items to this
-    // TODO: is this really the best way to call the parent's generate_menu()?
     return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
 };
 

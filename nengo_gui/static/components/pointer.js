@@ -182,6 +182,7 @@ Nengo.Pointer.prototype.update = function() {
 
     var items = [];
 
+    /** display the text in proportion to similarity */
     for (var i=0; i < data.length; i++) {
         var size = parseFloat(data[i].substring(0,4));
         var span = document.createElement('span');
