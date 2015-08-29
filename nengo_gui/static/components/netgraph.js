@@ -5,6 +5,9 @@
  * @param {dict} args - A set of constructor arguments, including:
  * @param {int} args.id - the id of the server-side NetGraph to connect to
  * @param {DOMElement} args.parent - the element to add this component to
+ *
+ * NetGraph constructor is written into HTML file from the python
+ * server and is run on page load.
  */
 Nengo.NetGraph = function(parent, args) {
     if (args.uid[0] === '<') {

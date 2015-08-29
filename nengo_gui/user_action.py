@@ -1,5 +1,6 @@
 from nengo.utils.compat import iteritems
 
+# ah, that's probably the problem
 import nengo_gui.components
 
 

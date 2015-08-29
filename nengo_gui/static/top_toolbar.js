@@ -3,6 +3,9 @@
  * @constructor
  *
  * @param {string} filename - The name of the file opened
+ *
+ * Toolbar constructor is written into HTML file by python and called
+ * upon page load
  */
 Nengo.Toolbar = function(filename) {
     console.assert(typeof filename== 'string')

@@ -1,7 +1,15 @@
-var aceRange = ace.require('ace/range').Range;
-
+/**
+ * Code Editor
+ * @constructor
+ *
+ * @param {string} uid - A unique identifier
+ * @param {dict} args - A set of constructor arguments (see Nengo.Component)
+ * Ace function is written into HTML by server and called when the 
+ * page is loaded.
+ */
 
 Nengo.Ace = function (uid, args) {
+    var aceRange = ace.require('ace/range').Range;
     if (uid[0] === '<') {
         console.log("invalid uid for Ace: " + uid);
     }

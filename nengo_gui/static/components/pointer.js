@@ -4,6 +4,10 @@
  *
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
  * @param {Nengo.SimControl} args.sim - the simulation controller
+ *
+ * Pointer constructor is called by python server when a user requests a plot 
+ * or when the config file is making graphs. Server request is handled in 
+ * netgraph.js {.on_message} function.
  */
 
 Nengo.Pointer = function(parent, sim, args) {
@@ -11,6 +15,7 @@ Nengo.Pointer = function(parent, sim, args) {
     var self = this;
 
     this.sim = sim;
+    this.pointer_status = false;
 
     this.pdiv = document.createElement('div');
     this.pdiv.style.width = args.width;
@@ -103,9 +108,9 @@ Nengo.Pointer.prototype.set_value = function() {
         if (modal.hasErrors() || modal.isIncomplete()) {
             return;
         }
-        if (value === null) {
-            value = '';
-        }
+        if ((value === null) || (value === '')) {
+            value = ':empty:';
+        } 
         self.fixed_value = value;
         self.ws.send(value);
         $('#OK').attr('data-dismiss', 'modal');
@@ -114,13 +119,20 @@ Nengo.Pointer.prototype.set_value = function() {
         custom: {
             my_validator: function($item) {
                 var ptr = $item.val();
-                return (ptr.charAt(0).match(/[a-z]/i) || ptr=='');
+                if (ptr === null) {
+                    ptr = '';
+                }
+                self.ws.send(':check only:' + ptr);
+                return self.pointer_status;
             }
         }
     });
 
-    $('#singleInput').attr('data-error', 'Semantic pointers must ' +
-                           'start with a letter.');
+    $('#singleInput').attr('data-error', 'Invalid semantic ' + 
+        'pointer expression. Semantic pointers themselves must start with ' + 
+        'a capital letter. Expressions can include mathematical operators ' +
+        'such as +, * (circular convolution), and ~ (pseudo-inverse). ' +
+        'E.g., (A+~(B*C)*2)*0.5 would be a valid semantic pointer expression.');
 
     Nengo.modal.show();
 }
@@ -130,6 +142,15 @@ Nengo.Pointer.prototype.set_value = function() {
  */
 Nengo.Pointer.prototype.on_message = function(event) {
     data = event.data.split(" ");
+    
+    if (data[0].substring(0,11) == "bad_pointer") {
+        this.pointer_status = false;
+        return;
+    } else if (data[0].substring(0,12) == "good_pointer") {
+        this.pointer_status = true;
+        return;
+    }
+    
     var time = parseFloat(data[0]);
 
     var items = data[1].split(";");
