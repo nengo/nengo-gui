@@ -194,6 +194,7 @@ Nengo.SimControl.prototype.on_pause_click = function(event) {
     }
 };
 
+/* informs the backend simulator of the time being reset */
 Nengo.SimControl.prototype.reset = function() {
     this.paused = true;
     this.ws.send('reset');

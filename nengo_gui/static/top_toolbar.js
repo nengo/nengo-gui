@@ -91,7 +91,7 @@ Nengo.Toolbar.prototype.file_name = function() {
 /** Tells the server to reset the model layout to the default,
  *  by deleting the config file and reloading the script */
 Nengo.Toolbar.prototype.reset_model_layout = function () {
-    window.location.assign('/?reset=True');
+    window.location.assign('/?reset=True&filename=' + $("#filename")[0].innerHTML);
 }
 
 /** Function called by event handler in order to launch modal.
