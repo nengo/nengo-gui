@@ -49,10 +49,12 @@ class SpikeGrid(Component):
         self.data.append(data)
 
     def update_client(self, client):
-        while len(self.data) > 0:
-            data = self.data.pop(0)
+        length = len(self.data)
+        if length > 0:
+            item = bytes().join(self.data[:length])
+            del self.data[:length]
             try:
-                client.write(data, binary=True)
+                client.write(item, binary=True)
             except:
                 # if there is a communication problem, just drop the frame
                 # (this usually happens when there is too much data to send)

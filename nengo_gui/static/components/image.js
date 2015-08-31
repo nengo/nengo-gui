@@ -60,11 +60,15 @@ Nengo.Image.prototype.constructor = Nengo.Image;
  * Receive new line data from the server
  */
 Nengo.Image.prototype.on_message = function(event) {
-    var data = new Uint8Array(event.data.slice(3));
-    var time_data = new Float32Array(event.data.slice(0,4));
-    data = Array.prototype.slice.call(data);
-    data[0] = time_data[0];
-    this.data_store.push(data);
+    var data = new Uint8Array(event.data);
+    var msg_size = this.n_pixels + 4;
+
+    for (var i = 0; i < data.length; i += msg_size) {
+        var time_data = new Float32Array(event.data.slice(i, i + 4));
+        data = Array.prototype.slice.call(data, i + 3, i + msg_size);
+        data[0] = time_data[0];
+        this.data_store.push(data);
+    }
     this.schedule_update();
 }
 
