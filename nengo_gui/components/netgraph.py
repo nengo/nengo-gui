@@ -468,6 +468,7 @@ class NetGraph(Component):
             info['dimensions'] = int(obj.size_out)
         elif isinstance(obj, nengo.Ensemble):
             info['dimensions'] = int(obj.size_out)
+            info['n_neurons'] = int(obj.n_neurons)
         info['sp_targets'] = (
             nengo_gui.components.pointer.Pointer.applicable_targets(obj))
         return info
