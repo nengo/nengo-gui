@@ -36,10 +36,6 @@ class SpikeGrid(Component):
 
     def gather_data(self, t, x):
         self.max_value = max(self.max_value, np.max(x))
-
-        # TODO: pass only spiking neurons, using subclass of Nengo.Image?
-        #   Considerations include how to filter if we're only passing spike
-        #   times, i.e. need to write a new DataStore.
         if len(x) > self.n_neurons:
             x = x[:self.n_neurons]
         y = np.zeros(self.n_pixels, dtype=np.uint8)
@@ -56,7 +52,7 @@ class SpikeGrid(Component):
             try:
                 client.write(item, binary=True)
             except:
-                # if there is a communication problem, just drop the frame
+                # if there is a communication problem, just drop the frames
                 # (this usually happens when there is too much data to send)
                 pass
 
