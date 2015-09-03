@@ -4,7 +4,7 @@
  *
  * @param {string} uid - A unique identifier
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
- * Ace function is written into HTML by server and called when the 
+ * Ace constructor is written into HTML by server and called when the 
  * page is loaded.
  */
 
@@ -59,6 +59,8 @@ Nengo.Ace = function (uid, args) {
     $('#Font_increase').on('click', function(){self.font_increase();});
     $('#Font_decrease').on('click', function(){self.font_decrease();});
 
+    this.first_diff_check = new Date();
+    self.diff_code = true;
     this.schedule_updates();
 
     this.set_font_size(12);
@@ -91,17 +93,28 @@ Nengo.Ace = function (uid, args) {
         })
 }
 
-//Send changes to the code to server every 100ms
+//Send changes to the code has changed and
+// if there haven't been any changes to the code in the last 1.5s
 Nengo.Ace.prototype.schedule_updates = function () {
     var self = this;
     setInterval(function () {
         var editor_code = self.editor.getValue();
         if (editor_code != self.current_code) {
-            self.ws.send(JSON.stringify({code:editor_code, save:false}));
-            self.current_code = editor_code;
-            self.enable_save();
+
+            if(self.diff_code === false){
+                self.diff_code = true;
+                self.first_diff_check = new Date();
+            }
+
+            console.log(new Date() - self.first_diff_check);
+            if(new Date() - self.first_diff_check > 1500){
+                self.ws.send(JSON.stringify({code:editor_code, save:false}));
+                self.current_code = editor_code;
+                self.enable_save();
+                self.diff_code = false;
+            }
         }
-    }, 100)
+    }, 500)
 }
 
 Nengo.Ace.prototype.set_font_size = function (font_size) {
