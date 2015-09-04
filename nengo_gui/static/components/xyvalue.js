@@ -32,6 +32,7 @@ Nengo.XYValue = function(parent, sim, args) {
     /** scales for mapping x and y values to pixels */
     this.axes2d.scale_x.domain([args.min_value, args.max_value]);
 
+    // the two indices of the multi-dimensional data to display
     this.index_x = args.index_x;
     this.index_y = args.index_y;
 
@@ -52,6 +53,15 @@ Nengo.XYValue = function(parent, sim, args) {
     this.path.enter().append('path')
              .attr('class', 'line')
              .style('stroke', Nengo.make_colors(1));
+
+    /** create a circle to track the most recent data */
+    // the circle needs to resize with zooming
+    // the initialisation is silly too and gives NaN
+    this.recent_circle = this.axes2d.svg.append("circle")
+                                        .attr("r", this.get_circle_radius())
+                                        .attr('cx', self.axes2d.scale_x(0))
+                                        .attr('cy', self.axes2d.scale_y(0))
+                                        .style("fill", Nengo.make_colors(2)[1]);
 
     this.axes2d.fit_ticks(this);
     this.on_resize(this.get_screen_width(), this.get_screen_height());
@@ -76,16 +86,30 @@ Nengo.XYValue.prototype.update = function() {
     this.data_store.update();
 
     /** update the lines */
-    var self = this;
-    var shown_data = this.data_store.get_shown_data();
-    var line = d3.svg.line()
-        .x(function(d, i) {
-            return self.axes2d.scale_x(
-                shown_data[self.index_x][i]);
-            })
-        .y(function(d) {return self.axes2d.scale_y(d);})
-    this.path.data([shown_data[this.index_y]])
-             .attr('d', line);
+    if(this.data_store.data.length !== 1){
+        var self = this;
+        var shown_data = this.data_store.get_shown_data();
+        var line = d3.svg.line()
+            .x(function(d, i) {
+                return self.axes2d.scale_x(
+                    shown_data[self.index_x][i]);
+                })
+            .y(function(d) {return self.axes2d.scale_y(d);})
+        this.path.data([shown_data[this.index_y]])
+                 .attr('d', line);
+
+        /** update the circle */
+        var last_index = shown_data[self.index_x].length - 1;
+        this.recent_circle.attr('cx', self.axes2d.scale_x(shown_data[self.index_x][last_index]))
+                            .attr('cy', self.axes2d.scale_y(shown_data[self.index_y][last_index]));
+        if(this.invalid_dims === true){
+            // remove the label
+        }
+    } else {
+        this.invalid_dims = true;
+        // add the label
+    }
+
 };
 
 /**
@@ -101,7 +125,12 @@ Nengo.XYValue.prototype.on_resize = function(width, height) {
     this.height = height;
     this.div.style.width = width;
     this.div.style.height = height;
+    this.recent_circle.attr("r", this.get_circle_radius());
 };
+
+Nengo.XYValue.prototype.get_circle_radius = function() {
+    return Math.min(this.width, this.height) / 30;
+}
 
 Nengo.XYValue.prototype.generate_menu = function() {
     var self = this;
