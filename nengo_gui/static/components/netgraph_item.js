@@ -357,9 +357,9 @@ Nengo.NetGraphItem.prototype.generate_menu = function () {
     }
     if (this.sp_targets.length > 0) {
         // Naming things is hard
-        items.push(['Semantic pointer similarity text',
+        items.push(['Semantic pointer cloud',
                     function() {self.create_graph('Pointer', self.sp_targets[0]);}])
-        items.push(['Semantic pointer similarity graph',
+        items.push(['Semantic pointer plot',
             function() {self.create_graph('SpaSimilarity', self.sp_targets[0]);}])
     }
     items.push(['Details ...', function() {self.create_modal();}])

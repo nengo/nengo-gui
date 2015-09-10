@@ -4,21 +4,19 @@
  *
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
  * @param {int} args.n_lines - number of decoded values
- * @param {float} args.min_value - minimum value on y-axis
- * @param {float} args.max_value - maximum value on y-axis
  * @param {Nengo.SimControl} args.sim - the simulation controller
  */
 
 Nengo.SpaSimilarity = function(parent, sim, args) {
     Nengo.Value.call(this, parent, sim, args);
 
-    this.data_store = new Nengo.VariableDataStore(this.n_lines, this.sim, args.synapse);
+    this.data_store = new Nengo.GrowableDataStore(this.n_lines, this.sim, args.synapse);
     this.show_pairs = false;
 
     var self = this;
 
     this.colors = Nengo.make_colors(6);
-    this.color_func = function(d, i){return self.colors[i%6]};
+    this.color_func = function(d, i) {return self.colors[i % 6]};
 
     // create the legend from label args
     this.pointer_labels = args.pointer_labels;
@@ -33,7 +31,7 @@ Nengo.SpaSimilarity.prototype.constructor = Nengo.SpaSimilarity;
 
 Nengo.SpaSimilarity.prototype.show_pairs_toggle = function(new_labels){
     // clear the database and make a new one
-    self.data_store = new Nengo.VariableDataStore()
+    self.data_store.reset();
 
     // delete the legend's children
     while(this.legend.lastChild){
@@ -50,6 +48,7 @@ Nengo.SpaSimilarity.prototype.data_msg = function(push_data){
 
     var data_dims = push_data.length - 1;
 
+    // Move this check inside datastore?
     if(data_dims !== this.n_lines){
       this.data_store.dims = data_dims;
       this.n_lines = data_dims;
@@ -66,12 +65,11 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
     this.pointer_labels = this.pointer_labels.concat(new_labels);
 
     // expand the svg
-    this.legend_svg.attr("height", 20*this.pointer_labels.length);
+    this.legend_svg.attr("height", 20 * this.pointer_labels.length);
 
     // Data join
     var recs = this.legend_svg.selectAll("rect").data(this.pointer_labels);
     var texts = this.legend_svg.selectAll("text").data(this.pointer_labels);
-    // nothing to update
     // enter to append remaining lines
     recs.enter()
         .append("rect")
@@ -91,7 +89,7 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
 
 };
 
-/* there a three types of messages that can be recieved:
+/* there a three types of messages that can be received:
     - a legend needs to be updated
     - the data has been updated
     - show_pairs has been toggled
@@ -135,7 +133,7 @@ Nengo.SpaSimilarity.prototype.update = function() {
     /* update the legend text */
     if(this.legend_svg && shown_data[0].length !== 0){
         // get the most recent similarity
-         var latest_simi = [];
+        var latest_simi = [];
         for(var i = 0; i < shown_data.length; i++){
             latest_simi.push(shown_data[i][shown_data[i].length - 1]);
         }

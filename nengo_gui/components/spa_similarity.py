@@ -1,11 +1,8 @@
-from .pointer import Pointer
-from nengo_gui.components.component import Component
-
 import numpy as np
 import nengo
 
-import struct
-import copy
+from nengo_gui.components.pointer import Pointer
+from nengo_gui.components.component import Component
 
 class SpaSimilarity(Pointer):
 
@@ -16,15 +13,15 @@ class SpaSimilarity(Pointer):
 
     def __init__(self, obj, **kwargs):
         super(SpaSimilarity, self).__init__(obj, **kwargs)
-        try:
-            target_key = kwargs['target']
-        except KeyError:
-            target_key = kwargs['args']
 
         self.old_vocab_length = len(self.vocab_out.keys)
         self.old_pairs_length = 0
         self.labels = self.vocab_out.keys
         self.previous_pairs = False
+
+        # Nengo objects for data collection
+        self.node = None
+        self.conn = None
 
     def gather_data(self, t, x):
         vocab = self.vocab_out
@@ -33,7 +30,7 @@ class SpaSimilarity(Pointer):
         # Don't know how I feel about the timing of this
         # maybe trigger on_message?
         if self.config.show_pairs != self.previous_pairs:
-            #send the new labels
+            # Ssend the new labels
             if self.config.show_pairs:
                 vocab.include_pairs = True
                 self.data.append(
@@ -48,7 +45,7 @@ class SpaSimilarity(Pointer):
                     '["show_pairs_toggle", "%s"]' %(
                         '","'.join(vocab.keys)))
 
-        if(self.old_vocab_length != len(vocab.keys)):
+        if self.old_vocab_length != len(vocab.keys):
             # pass all the missing keys
             legend_update = []
             legend_update.append(vocab.keys[-1])
@@ -58,7 +55,8 @@ class SpaSimilarity(Pointer):
                 legend_update += vocab.key_pairs[self.old_pairs_length:]
                 self.old_pairs_length = len(vocab.key_pairs)
 
-            self.data.append('["update_legend", "%s"]' %('","'.join(legend_update)))
+            self.data.append('["update_legend", "%s"]'
+                            %('","'.join(legend_update)))
 
         # get the similarity and send it
         key_similarity = np.dot(vocab.vectors, x)
@@ -70,15 +68,8 @@ class SpaSimilarity(Pointer):
         self.data.append( '["data_msg", %g, %s]' %(t, ",".join(simi_list) )  )
         self.previous_pairs = self.config.show_pairs
 
-    def update_client(self, client):
-        # while there is data that should be sent to the client
-        while len(self.data) > 0:
-            item = self.data.popleft()
-            # send the data to the client
-            client.write(item, binary=False)
-
     def javascript(self):
-        """Almost identical to value.py"""
+        """Generate the javascript that will create the client-side object"""
         info = dict(uid=id(self), label=self.label, n_lines=len(self.labels),
                     synapse=0, min_value=-1.5, max_value=1.5,
                     pointer_labels=self.labels)

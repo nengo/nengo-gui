@@ -15,7 +15,6 @@ var sim = {
             }
 }
 
-// I should initialise the data_store before each test or does it do that already?
 describe("DataStore", function() {
     var data_store = new Nengo.DataStore(2, sim, 0);
 
@@ -25,12 +24,14 @@ describe("DataStore", function() {
 
     it("accepts data", function() {
         data_store.push([0.0, 1.1, 1.2]);
+        // remeber that 0.0 is the time-stamp
         assert.deepEqual(data_store.data, [[1.1], [1.2]]);
     });
 
     it("orders data", function() {
         data_store.push([1.0, 3.1, 3.2]);
         data_store.push([0.5, 2.1, 2.2]);
+        // newer data received out of order should be discarded
         assert.deepEqual(data_store.data, [[2.1], [2.2]]);
     });
 
@@ -60,6 +61,8 @@ describe("DataStore", function() {
         data_store.push([1.0, 3.1, 3.2]);
         data_store.push([1.5, 4.1, 4.2]);
         data_store.sim.time_slider.last_time = 3;
+        // given that the most recent time received is 3s and the data_store
+        // keep 2s of data, the oldest entry should be discarded
         data_store.update();
         assert.deepEqual(data_store.data, [[3.1, 4.1], [3.2, 4.2]]);
     });
@@ -86,11 +89,11 @@ describe("DataStore", function() {
 
 });
 
-describe("VariableDataStore", function() {
-    var data_store = new Nengo.VariableDataStore(2, sim, 0);
+describe("GrowableDataStore", function() {
+    var data_store = new Nengo.GrowableDataStore(2, sim, 0);
 
     beforeEach(function() {
-        data_store = new Nengo.VariableDataStore(2, sim, 0);
+        data_store = new Nengo.GrowableDataStore(2, sim, 0);
     });
 
     it("accepts data", function() {
@@ -102,10 +105,8 @@ describe("VariableDataStore", function() {
         data_store.push([0.0, 1.1, 1.2])
         data_store.dims = 3;
         assert.equal(data_store.dims, 3)
-        assert.equal(data_store._old_dims, 2)
         data_store.push([0.1, 2.1, 2.2, 2.3]);
         assert.equal(data_store.dims, 3)
-        assert.equal(data_store._old_dims, 2)
         assert.deepEqual(data_store.data, [[1.1, 2.1], [1.2, 2.2], [2.3]]);
     });
 
@@ -149,7 +150,6 @@ describe("VariableDataStore", function() {
         data_store.sim.time_slider.last_time = 3;
         data_store.update();
         assert.equal(data_store.dims, 3)
-        assert.equal(data_store._old_dims, 2)
         assert.deepEqual(data_store.data, [[3.1, 4.1], [3.2, 4.2], [4.3]]);
         data_store.dims = 4;
         data_store.push([1.5, 5.1, 5.2, 5.3, 5.4]);
@@ -159,7 +159,6 @@ describe("VariableDataStore", function() {
             [[3.1, 4.1, 5.1], [3.2, 4.2, 5.2], [4.3, 5.3], [5.4]]);
     });
 
-    // OH FUCK
     it("gives the shown data", function() {
         data_store.push([0.5, 2.1, 2.2]);
         data_store.push([1.0, 3.1, 3.2]);
@@ -194,7 +193,6 @@ describe("VariableDataStore", function() {
         data_store.sim.time_slider.first_shown_time = 1.0;
         data_store.sim.time_slider.shown_time = 1.0;
         assert.equal(data_store.dims, 3)
-        assert.equal(data_store._old_dims, 2)
         assert.deepEqual(data_store.get_last_data(), [5.1, 5.2, 5.3]);
     });
 

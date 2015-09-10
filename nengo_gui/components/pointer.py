@@ -16,8 +16,8 @@ class Pointer(Component):
         super(Pointer, self).__init__()
         self.obj = obj
         self.data = collections.deque()
-        # toggles whether to use semantic pointer value
-        # as set by the user in the GUI
+        # the semantic pointer value as set by the user in the GUI
+        # a value of 'None' means do not override
         self.override_target = None
         self.target = kwargs.get('args', 'default')
         self.vocab_out = obj.outputs[self.target][1]
@@ -45,16 +45,17 @@ class Pointer(Component):
 
     def gather_data(self, t, x):
         vocab = self.vocab_out
-        key_similarity = np.dot(vocab.vectors, x)
-        matches = [(simi, vocab.keys[i]) for i, simi in enumerate(key_similarity) if simi > 0.01]
+        key_similarities = np.dot(vocab.vectors, x)
+        over_threshold = key_similarities > 0.01
+        matches = zip(key_similarities[over_threshold], vocab.keys[over_threshold])
         if self.config.show_pairs:
             self.vocab_out.include_pairs = True
-            pair_similarity = np.dot(vocab.vector_pairs, x)
-            pair_matches = [(simi, vocab.key_pairs[i]) for i, simi in enumerate(pair_similarity)
-                        if simi > 0.01]
+            pair_similarities = np.dot(vocab.vector_pairs, x)
+            over_threshold = pair_similarities > 0.01
+            pair_matches = zip(pair_similarities[over_threshold], vocab.keys[over_threshold])
             matches += pair_matches
 
-        text = ';'.join(['%0.2f%s' % (sim, key) for (sim, key) in matches])
+        text = ';'.join(['%0.2f%s' % (sim, key) for sim, key in matches])
 
         # msg sent as a string due to variable size of pointer names
         msg = '%g %s' % (t, text)
@@ -93,7 +94,7 @@ class Pointer(Component):
                     vocab.parse(msg[12:])
                     self.data.append("good_pointer")
                 except:
-                    self.data.append("bad_pointer")            
+                    self.data.append("bad_pointer")
         else:
             try:
                 self.override_target = self.vocab_out.parse(msg)

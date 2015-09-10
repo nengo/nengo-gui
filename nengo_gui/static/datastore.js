@@ -1,3 +1,13 @@
+/**
+ * Storage of a set of data points and associated times with a fixed
+ * number of dimensions.
+ * @constructor
+ *
+ * @param {int} dims - number of data points per time
+ * @param {Nengo.SimControl} sim - the simulation controller
+ * @param {float} synapse - the filter to apply to the data
+ */
+
 Nengo.DataStore = function(dims, sim, synapse) {
     this.synapse = synapse; /** TODO: get from Nengo.SimControl */
     this.sim = sim;
@@ -118,7 +128,7 @@ Nengo.DataStore.prototype.get_shown_data = function() {
 
 Nengo.DataStore.prototype.is_at_end = function() {
     var ts = this.sim.time_slider;
-    return (ts.last_time < ts.first_shown_time + ts.shown_time + 0.000000001);
+    return (ts.last_time < ts.first_shown_time + ts.shown_time + 1e-9);
 }
 
 Nengo.DataStore.prototype.get_last_data = function() {
@@ -140,11 +150,19 @@ Nengo.DataStore.prototype.get_last_data = function() {
     return shown;
 }
 
+/**
+ * Storage of a set of data points and associated times with an increasable
+ * number of dimensions.
+ * @constructor
+ *
+ * @param {int} dims - number of data points per time
+ * @param {Nengo.SimControl} sim - the simulation controller
+ * @param {float} synapse - the filter to apply to the data
+ */
 
-Nengo.VariableDataStore = function(dims, sim, synapse){
+Nengo.GrowableDataStore = function(dims, sim, synapse){
     Nengo.DataStore.call(this, dims, sim, synapse);
     this._dims = dims;
-    this._old_dims = dims;
 
     Object.defineProperty(this, "dims", {
         get: function(){
@@ -158,19 +176,18 @@ Nengo.VariableDataStore = function(dims, sim, synapse){
                     this.data.push([]);
                 }
             } else if(this._dims > dim_val) {
-                console.log("OH HELL NO");
+                throw "can't decrease size of datastore";
             }
-            this._old_dims = this._dims;
             this._dims = dim_val;
         }
     });
 
 }
 
-Nengo.VariableDataStore.prototype = Object.create(Nengo.DataStore.prototype);
-Nengo.VariableDataStore.prototype.constructor = Nengo.VariableDataStore;
+Nengo.GrowableDataStore.prototype = Object.create(Nengo.DataStore.prototype);
+Nengo.GrowableDataStore.prototype.constructor = Nengo.GrowableDataStore;
 
-Nengo.VariableDataStore.prototype.get_offset = function(){
+Nengo.GrowableDataStore.prototype.get_offset = function(){
     var offset = [];
     offset.push(0);
 
@@ -190,7 +207,7 @@ Nengo.VariableDataStore.prototype.get_offset = function(){
  * Add a set of data.
  * @param {array} row - dims+1 data points, with time as the first one
  */
-Nengo.VariableDataStore.prototype.push = function(row) {
+Nengo.GrowableDataStore.prototype.push = function(row) {
     /** get the offsets */
     var offset = this.get_offset();
 
@@ -236,7 +253,7 @@ Nengo.VariableDataStore.prototype.push = function(row) {
  * updates, but not necessarily after every push()).  Removes old data outside
  * the storage limit set by the Nengo.SimControl.
  */
-Nengo.VariableDataStore.prototype.update = function() {
+Nengo.GrowableDataStore.prototype.update = function() {
     /** figure out how many extra values we have (values whose time stamp is
      * outside the range to keep)
      */
@@ -262,8 +279,8 @@ Nengo.VariableDataStore.prototype.update = function() {
 /**
  * Return just the data that is to be shown
  */
-Nengo.VariableDataStore.prototype.get_shown_data = function() {
-     var offset = this.get_offset();
+Nengo.GrowableDataStore.prototype.get_shown_data = function() {
+    var offset = this.get_offset();
     /* determine time range */
     var t1 = this.sim.time_slider.first_shown_time;
     var t2 = t1 + this.sim.time_slider.shown_time;
@@ -292,7 +309,7 @@ Nengo.VariableDataStore.prototype.get_shown_data = function() {
     return shown;
 }
 
-Nengo.VariableDataStore.prototype.get_last_data = function() {
+Nengo.GrowableDataStore.prototype.get_last_data = function() {
     var offset = this.get_offset();
     /* determine time range */
     var t1 = this.sim.time_slider.first_shown_time;
