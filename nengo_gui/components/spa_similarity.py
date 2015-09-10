@@ -4,6 +4,7 @@ import nengo
 from nengo_gui.components.pointer import Pointer
 from nengo_gui.components.component import Component
 
+
 class SpaSimilarity(Pointer):
 
     config_defaults = dict(max_value=1,
@@ -41,9 +42,8 @@ class SpaSimilarity(Pointer):
             else:
                 # Hmmm... an OH HELL NO was triggered...
                 vocab.include_pairs = False
-                self.data.append(
-                    '["show_pairs_toggle", "%s"]' %(
-                        '","'.join(vocab.keys)))
+                self.data.append('["show_pairs_toggle", "%s"]'
+                                 %('","'.join(vocab.keys)))
 
         if self.old_vocab_length != len(vocab.keys):
             # pass all the missing keys
@@ -56,7 +56,7 @@ class SpaSimilarity(Pointer):
                 self.old_pairs_length = len(vocab.key_pairs)
 
             self.data.append('["update_legend", "%s"]'
-                            %('","'.join(legend_update)))
+                             %('","'.join(legend_update)))
 
         # get the similarity and send it
         key_similarity = np.dot(vocab.vectors, x)
@@ -65,7 +65,8 @@ class SpaSimilarity(Pointer):
             pair_similarity = np.dot(vocab.vector_pairs, x)
             simi_list += ['{:.2f}'.format(simi) for simi in pair_similarity]
 
-        self.data.append( '["data_msg", %g, %s]' %(t, ",".join(simi_list) )  )
+        self.data.append(  '["data_msg", %g, %s]'
+                         %( t, ",".join(simi_list) )  )
         self.previous_pairs = self.config.show_pairs
 
     def javascript(self):
