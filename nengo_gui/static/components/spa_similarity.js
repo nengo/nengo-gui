@@ -67,7 +67,7 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
     var self = this;
     this.pointer_labels = this.pointer_labels.concat(new_labels);
 
-    // expand the svg
+    // expand the svg, where "20" is around the size of the font
     this.legend_svg.attr("height", 20 * this.pointer_labels.length);
 
     // Data join

@@ -1,6 +1,5 @@
 import collections
 import copy
-import struct
 
 import nengo
 import nengo.spa
@@ -8,18 +7,15 @@ from nengo.spa.module import Module
 import numpy as np
 
 from nengo_gui.components.component import Component
+from nengo_gui.components.spa_plot import SpaPlot
 
-class Pointer(Component):
+class Pointer(SpaPlot):
     config_defaults = dict(show_pairs=False, **Component.config_defaults)
     def __init__(self, obj, **kwargs):
-        super(Pointer, self).__init__()
-        self.obj = obj
-        self.data = collections.deque()
+        super(Pointer, self).__init__(obj, **kwargs)
         # the semantic pointer value as set by the user in the GUI
         # a value of 'None' means do not override
         self.override_target = None
-        self.target = kwargs.get('args', 'default')
-        self.vocab_out = obj.outputs[self.target][1]
         self.vocab_in = obj.inputs[self.target][1]
 
     def attach(self, page, config, uid):
@@ -82,7 +78,6 @@ class Pointer(Component):
     def code_python_args(self, uids):
         return [uids[self.obj], 'target=%r' % self.target]
 
-    # Override the value if set
     def message(self, msg):
         if msg == ':empty:':
             self.override_target = None
@@ -97,6 +92,7 @@ class Pointer(Component):
                 except:
                     self.data.append("bad_pointer")
         else:
+            # The message value is the new value for the output of the pointer
             try:
                 self.override_target = self.vocab_out.parse(msg)
             except:

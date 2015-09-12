@@ -84,6 +84,7 @@ Nengo.next_zindex = function() {
 /* draw a legend */
 // the css should probably be dealt with in here somehow
 Nengo.draw_legend = function(parent, labels, color_func){
+    // "20" is around the size of the font
     legend_svg = d3.select(parent)
                        .append("svg")
                        .attr("width", 150)

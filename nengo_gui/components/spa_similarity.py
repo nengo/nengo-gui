@@ -1,11 +1,11 @@
 import numpy as np
 import nengo
 
-from nengo_gui.components.pointer import Pointer
 from nengo_gui.components.component import Component
+from nengo_gui.components.spa_plot import SpaPlot
 
 
-class SpaSimilarity(Pointer):
+class SpaSimilarity(SpaPlot):
 
     config_defaults = dict(max_value=1,
                            min_value=-1,
@@ -23,6 +23,18 @@ class SpaSimilarity(Pointer):
         # Nengo objects for data collection
         self.node = None
         self.conn = None
+
+    def add_nengo_objects(self, page):
+        with page.model:
+            output = self.obj.outputs[self.target][0]
+            self.node = nengo.Node(self.gather_data,
+                                   size_in=self.vocab_out.dimensions)
+            self.conn = nengo.Connection(output, self.node, synapse=0.01)
+
+    def remove_nengo_objects(self, page):
+        """Undo the changes made by add_nengo_objects."""
+        page.model.connections.remove(self.conn)
+        page.model.nodes.remove(self.node)
 
     def gather_data(self, t, x):
         vocab = self.vocab_out
@@ -57,18 +69,6 @@ class SpaSimilarity(Pointer):
                     pointer_labels=self.labels)
         json = self.javascript_config(info)
         return 'new Nengo.SpaSimilarity(main, sim, %s);' % json
-
-    def add_nengo_objects(self, page):
-        with page.model:
-            output = self.obj.outputs[self.target][0]
-            self.node = nengo.Node(self.gather_data,
-                                   size_in=self.vocab_out.dimensions)
-            self.conn = nengo.Connection(output, self.node, synapse=0.01)
-
-    def remove_nengo_objects(self, page):
-        """Undo the changes made by add_nengo_objects."""
-        page.model.connections.remove(self.conn)
-        page.model.nodes.remove(self.node)
 
     def message(self, msg):
         """Message receive function for show_pairs toggling"""
