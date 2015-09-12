@@ -27,28 +27,10 @@ class SpaSimilarity(Pointer):
     def gather_data(self, t, x):
         vocab = self.vocab_out
 
-        # if there's been a change in the show_pairs
-        # Don't know how I feel about the timing of this
-        # maybe trigger on_message?
-        if self.config.show_pairs != self.previous_pairs:
-            # Ssend the new labels
-            if self.config.show_pairs:
-                vocab.include_pairs = True
-                self.data.append(
-                    '["show_pairs_toggle", "%s"]' %(
-                        '","'.join(vocab.keys + vocab.key_pairs)))
-                # if we're starting to show pairs, track pair length
-                self.old_pairs_length = len(vocab.key_pairs)
-            else:
-                # Hmmm... an OH HELL NO was triggered...
-                vocab.include_pairs = False
-                self.data.append('["show_pairs_toggle", "%s"]'
-                                 %('","'.join(vocab.keys)))
-
         if self.old_vocab_length != len(vocab.keys):
             # pass all the missing keys
             legend_update = []
-            legend_update.append(vocab.keys[-1])
+            legend_update += (vocab.keys[self.old_vocab_length:])
             self.old_vocab_length = len(vocab.keys)
             # and all the missing pairs if we're showing pairs
             if self.config.show_pairs:
@@ -67,7 +49,6 @@ class SpaSimilarity(Pointer):
 
         self.data.append(  '["data_msg", %g, %s]'
                          %( t, ",".join(simi_list) )  )
-        self.previous_pairs = self.config.show_pairs
 
     def javascript(self):
         """Generate the javascript that will create the client-side object"""
@@ -90,5 +71,17 @@ class SpaSimilarity(Pointer):
         page.model.nodes.remove(self.node)
 
     def message(self, msg):
-        """This should never be called. To be used later for settings pairs?"""
-        raise AttributeError("You can't set the value of a plot!")
+        """Message receive function for show_pairs toggling"""
+        vocab = self.vocab_out
+        # Send the new labels
+        if self.config.show_pairs:
+            vocab.include_pairs = True
+            self.data.append(
+                '["show_pairs_toggle", "%s"]' %(
+                    '","'.join(vocab.keys + vocab.key_pairs)))
+            # if we're starting to show pairs, track pair length
+            self.old_pairs_length = len(vocab.key_pairs)
+        else:
+            vocab.include_pairs = False
+            self.data.append('["show_pairs_toggle", "%s"]'
+                             %('","'.join(vocab.keys)))

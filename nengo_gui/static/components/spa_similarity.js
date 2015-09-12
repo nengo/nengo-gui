@@ -10,7 +10,8 @@
 Nengo.SpaSimilarity = function(parent, sim, args) {
     Nengo.Value.call(this, parent, sim, args);
 
-    this.data_store = new Nengo.GrowableDataStore(this.n_lines, this.sim, args.synapse);
+    this.synapse = args.synapse;
+    this.data_store = new Nengo.GrowableDataStore(this.n_lines, this.sim, this.synapse);
     this.show_pairs = false;
 
     var self = this;
@@ -30,8 +31,10 @@ Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
 Nengo.SpaSimilarity.prototype.constructor = Nengo.SpaSimilarity;
 
 Nengo.SpaSimilarity.prototype.show_pairs_toggle = function(new_labels){
-    // clear the database and make a new one
-    self.data_store.reset();
+    console.log("toggling");
+
+    // clear the database and create a new one since the dimensions have changed
+    this.data_store = new Nengo.GrowableDataStore(new_labels.length, this.sim, this.synapse);
 
     // delete the legend's children
     while(this.legend.lastChild){
@@ -42,13 +45,15 @@ Nengo.SpaSimilarity.prototype.show_pairs_toggle = function(new_labels){
     this.pointer_labels = new_labels;
     this.legend_svg = Nengo.draw_legend(this.legend, new_labels, this.color_func);
 
+    this.update();
+
 }
 
 Nengo.SpaSimilarity.prototype.data_msg = function(push_data){
 
     var data_dims = push_data.length - 1;
 
-    // Move this check inside datastore?
+    // TODO: Move this check inside datastore?
     if(data_dims !== this.n_lines){
       this.data_store.dims = data_dims;
       this.n_lines = data_dims;
@@ -179,6 +184,7 @@ Nengo.SpaSimilarity.prototype.set_show_pairs = function(value) {
     if (this.show_pairs !== value) {
         this.show_pairs = value;
         this.save_layout();
+        this.ws.send(value);
     }
 };
 

@@ -9,7 +9,6 @@ import numpy as np
 
 from nengo_gui.components.component import Component
 
-
 class Pointer(Component):
     config_defaults = dict(show_pairs=False, **Component.config_defaults)
     def __init__(self, obj, **kwargs):
@@ -47,12 +46,14 @@ class Pointer(Component):
         vocab = self.vocab_out
         key_similarities = np.dot(vocab.vectors, x)
         over_threshold = key_similarities > 0.01
-        matches = zip(key_similarities[over_threshold], vocab.keys[over_threshold])
+        matches = zip(key_similarities[over_threshold], 
+                      np.array(vocab.keys)[over_threshold])
         if self.config.show_pairs:
             self.vocab_out.include_pairs = True
             pair_similarities = np.dot(vocab.vector_pairs, x)
             over_threshold = pair_similarities > 0.01
-            pair_matches = zip(pair_similarities[over_threshold], vocab.keys[over_threshold])
+            pair_matches = zip(pair_similarities[over_threshold], 
+                               np.array(vocab.keys)[over_threshold])
             matches += pair_matches
 
         text = ';'.join(['%0.2f%s' % (sim, key) for sim, key in matches])
