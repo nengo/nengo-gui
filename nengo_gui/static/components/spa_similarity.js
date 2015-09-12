@@ -31,7 +31,6 @@ Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
 Nengo.SpaSimilarity.prototype.constructor = Nengo.SpaSimilarity;
 
 Nengo.SpaSimilarity.prototype.show_pairs_toggle = function(new_labels){
-    console.log("toggling");
 
     // clear the database and create a new one since the dimensions have changed
     this.data_store = new Nengo.GrowableDataStore(new_labels.length, this.sim, this.synapse);
@@ -64,7 +63,6 @@ Nengo.SpaSimilarity.prototype.data_msg = function(push_data){
 };
 
 Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
-    // Should figure out how to mix recs and text into one
 
     var self = this;
     this.pointer_labels = this.pointer_labels.concat(new_labels);
@@ -170,12 +168,6 @@ Nengo.SpaSimilarity.prototype.generate_menu = function() {
         items.push(['Show pairs', function() {self.set_show_pairs(true);}]);
     }
 
-    if(self.sort_legend){
-        items.push(["Show all legend labels", function() {self.sort_legend = false}]);
-    } else {
-        items.push(['Sort and Limit Legend', function() {self.sort_legend = true}]);
-    }
-
     // add the parent's menu items to this
     return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
 };
@@ -196,7 +188,7 @@ Nengo.SpaSimilarity.prototype.layout_info = function () {
     return info;
 }
 
-Nengo.SpaSimilarity.prototype.update_layout = function (config) {
+Nengo.SpaSimilarity.prototype.update_layout = function(config) {
     this.update_range(config.min_value, config.max_value);
     this.show_pairs = config.show_pairs;
     Nengo.Component.prototype.update_layout.call(this, config);
