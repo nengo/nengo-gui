@@ -323,12 +323,8 @@ Nengo.GrowableDataStore.prototype.get_shown_data = function() {
             shown.push(this.data[i].slice(index, last_index));
 
         }
-
-
-        if(shown[0].length !== shown[shown.length - 1].length && shown[shown.length - 1].length !== 0){
-            console.log("wat");
-        }
     }
+
     return shown;
 }
 
