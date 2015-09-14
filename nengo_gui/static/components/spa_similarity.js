@@ -19,6 +19,8 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
     this.colors = Nengo.make_colors(6);
     this.color_func = function(d, i) {return self.colors[i % 6]};
 
+    this.line.defined(function(d) { return !isNaN(d)});
+
     // create the legend from label args
     this.pointer_labels = args.pointer_labels;
     this.legend = document.createElement('div');
@@ -29,6 +31,7 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
 
 Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
 Nengo.SpaSimilarity.prototype.constructor = Nengo.SpaSimilarity;
+
 
 Nengo.SpaSimilarity.prototype.show_pairs_toggle = function(new_labels){
 

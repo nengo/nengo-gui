@@ -108,7 +108,6 @@ Nengo.DataStore.prototype.get_shown_data = function() {
 
     /* find the corresponding index values */
     var index = 0;
-    // Wouldn't a binary search be better?
     while (this.times[index] < t1) {
         index += 1;
     }
@@ -287,10 +286,10 @@ Nengo.GrowableDataStore.prototype.get_shown_data = function() {
 
     /* find the corresponding index values */
     var index = 0;
-    // Wouldn't a binary search be better?
     while (this.times[index] < t1) {
         index += 1;
     }
+    // logically, you should start the search for the 
     var last_index = index;
     while (this.times[last_index] < t2 && last_index < this.times.length) {
         last_index += 1;
@@ -299,11 +298,35 @@ Nengo.GrowableDataStore.prototype.get_shown_data = function() {
 
     /** return the visible slice of the data */
     var shown = [];
+    var nan_number = 0;
+    var slice_start = 0;
     for (var i = 0; i < this._dims; i++) {
-        if(index - offset[i] < 0){
-            shown.push(this.data[i].slice(0, last_index - offset[i]));
+
+        if(last_index > offset[i] && offset[i] !== 0){
+
+            if(index < offset[i]){
+                nan_number = offset[i] - index;
+                slice_start = 0;
+            } else {
+                nan_number = 0;
+                slice_start = index - offset[i];
+            }
+
+            shown.push(
+                Array.apply(null, Array(nan_number)).map(function(){return "NaN"}).concat(
+                    this.data[i].slice(slice_start, last_index - offset[i])
+                )
+            );
+
         } else {
-            shown.push(this.data[i].slice(index - offset[i], last_index - offset[i]));
+
+            shown.push(this.data[i].slice(index, last_index));
+
+        }
+
+
+        if(shown[0].length !== shown[shown.length - 1].length && shown[shown.length - 1].length !== 0){
+            console.log("wat");
         }
     }
     return shown;

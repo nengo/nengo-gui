@@ -168,7 +168,7 @@ describe("GrowableDataStore", function() {
         data_store.push([2.5, 5.1, 5.2, 5.3, 5.4]);
         data_store.sim.time_slider.first_shown_time = 1.0;
         data_store.sim.time_slider.shown_time = 1.0;
-        assert.deepEqual(data_store.get_shown_data(), [[3.1, 4.1], [3.2, 4.2], [4.3], []]);
+        assert.deepEqual(data_store.get_shown_data(), [[3.1, 4.1], [3.2, 4.2], ["NaN", 4.3], []]);
     });
 
     it("gives the shown data with more dimensions", function() {
@@ -181,7 +181,7 @@ describe("GrowableDataStore", function() {
         data_store.push([2.5, 6.1, 6.2, 6.3, 6.4]);
         data_store.sim.time_slider.first_shown_time = 1.0;
         data_store.sim.time_slider.shown_time = 1.0;
-        assert.deepEqual(data_store.get_shown_data(), [[3.1, 4.1, 5.1], [3.2, 4.2, 5.2], [4.3, 5.3], [5.4]]);
+        assert.deepEqual(data_store.get_shown_data(), [[3.1, 4.1, 5.1], [3.2, 4.2, 5.2], ["NaN", 4.3, 5.3], ["NaN", "NaN", 5.4]]);
     });
 
     it("gives the last data", function() {

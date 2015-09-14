@@ -55,9 +55,15 @@ class SpaSimilarity(SpaPlot):
         # get the similarity and send it
         key_similarity = np.dot(vocab.vectors, x)
         simi_list = ['{:.2f}'.format(simi) for simi in key_similarity]
+
         if self.config.show_pairs:
-            pair_similarity = np.dot(vocab.vector_pairs, x)
-            simi_list += ['{:.2f}'.format(simi) for simi in pair_similarity]
+
+            # briefly there can be no pairs, so catch the error
+            try:
+                pair_similarity = np.dot(vocab.vector_pairs, x)
+                simi_list += ['{:.2f}'.format(simi) for simi in pair_similarity]
+            except TypeError:
+                pass
 
         self.data.append(  '["data_msg", %g, %s]'
                          %( t, ",".join(simi_list) )  )
