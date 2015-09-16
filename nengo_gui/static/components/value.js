@@ -42,6 +42,69 @@ Nengo.Value = function(parent, sim, args) {
     this.path = this.axes2d.svg.append("g").selectAll('path')
                                     .data(this.data_store.data);
 
+    var crosshair_g = this.axes2d.svg.append('g')
+        .attr('class', 'crosshair');
+
+    crosshair_g.append('line')
+	    .attr('id', 'crosshairX')
+            .attr('stroke', 'black')
+	    .attr('stroke-width', '1px');
+
+    crosshair_g.append('line')
+	    .attr('id', 'crosshairY')
+            .attr('stroke', 'black')
+	    .attr('stroke-width', '1px');
+    
+    console.log('wheee');
+    //this.crosshair_g.append('rect')
+    //this.axes2d.svg.append('rect')
+    //crosshair_g.append('rect')
+    ax2d = this.axes2d
+    this.axes2d.svg
+	    //.attr('class', 'crosshair_overlay')
+	    //.attr('width', 200) //TODO make this match the svg object
+	    //.attr('height', 200)
+	    //.attr('fill', 'none')
+	    //.on('click', function() {
+		//    console.log('wheee');
+	    //})
+	    .on('mouseover', function() {
+		    crosshair_g.style('display', null);
+	    })
+            .on('mouseout', function() {
+		    crosshair_g.style('display', 'none');
+	    })
+	    .on('mousemove', function() {
+		    var mouse = d3.mouse(this);
+		    var x = mouse[0];
+		    var y = mouse[1];
+
+		    crosshair_g.select('#crosshairX')
+		      .attr('x1', mouse[0])
+		      .attr('y1', ax2d.scale_y(args.min_value))
+		      .attr('x2', mouse[0])
+		      .attr('y2', ax2d.scale_y(args.max_value));
+		    
+	            crosshair_g.select('#crosshairY')
+		      .attr('x1', ax2d.scale_x(args.min_value))
+		      .attr('y1', mouse[1])
+		      .attr('x2', ax2d.scale_x(args.max_value))
+		      .attr('y2', mouse[1]);
+                    /*
+		    crosshair_g.select('#crosshairX')
+		      .attr('x1', mouse[0])
+		      .attr('y1', this.axes2d.scale_y(this.axes2d.scale_y.domain[1])) //TODO TEMP
+		      .attr('x2', mouse[0])
+		      .attr('y2', this.axes2d.scale_y(this.axes2d.scale_y.domain[0])); //TODO TEMP
+		    crosshair_g.select('#crosshairY')
+		      .attr('x1', this.axes2d.scale_x.domain[0])
+		      .attr('y1', mouse[1]) //TODO TEMP
+		      .attr('x2', this.axes2d.scale_x.domain[1])
+		      .attr('y2', mouse[1]); //TODO TEMP*/
+	    });
+
+
+
     var colors = Nengo.make_colors(this.n_lines);
     this.path.enter().append('path')
              .attr('class', 'line')
