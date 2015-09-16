@@ -55,32 +55,27 @@ Nengo.Value = function(parent, sim, args) {
     var crosshair_g = this.axes2d.svg.append('g')
         .attr('class', 'crosshair');
 
+    // TODO: put the crosshair properties in CSS
     crosshair_g.append('line')
 	    .attr('id', 'crosshairX')
             .attr('stroke', 'black')
-	    .attr('stroke-width', '1px');
+	    .attr('stroke-width', '0.5px');
 
     crosshair_g.append('line')
 	    .attr('id', 'crosshairY')
             .attr('stroke', 'black')
-	    .attr('stroke-width', '1px');
-    //this.crosshair_g.append('rect')
-    //this.axes2d.svg.append('rect')
-    //crosshair_g.append('rect')
+	    .attr('stroke-width', '0.5px');
 
-    // Copies because 'this' can't be used inside the functions
-    var axes2d = this.axes2d;
-    // TODO: make the crosshairs only visible on the plot area itself, not the whole svg
-    var w = self.viewport.w * self.viewport.scale;
-    var h = self.viewport.h * self.viewport.scale;
+    // TODO: have the fonts and colour set appropriately
+    crosshair_g.append('text')
+	    .attr('id', 'crosshairXtext')
+	    .style('text-anchor', 'middle');
+    
+    crosshair_g.append('text')
+	    .attr('id', 'crosshairYtext')
+	    .style('text-anchor', 'end');
+
     this.axes2d.svg
-	    //.attr('class', 'crosshair_overlay')
-	    //.attr('width', 200) //TODO make this match the svg object
-	    //.attr('height', 200)
-	    //.attr('fill', 'none')
-	    //.on('click', function() {
-		//    console.log('wheee');
-	    //})
 	    .on('mouseover', function() {
 		    crosshair_g.style('display', null);
 	    })
@@ -92,39 +87,39 @@ Nengo.Value = function(parent, sim, args) {
 		    var x = mouse[0];
 		    var y = mouse[1];
 
-		    crosshair_g.select('#crosshairX')
-		      .attr('x1', mouse[0])
-		      .attr('y1', 0)
-		      .attr('x2', mouse[0])
-		      .attr('y2', h);
-		    
-	            crosshair_g.select('#crosshairY')
-		      .attr('x1', 0)
-		      .attr('y1', mouse[1])
-		      .attr('x2', w)
-		      .attr('y2', mouse[1]);
-                    /*
-		    crosshair_g.select('#crosshairX')
-		      .attr('x1', mouse[0])
-		      .attr('y1', axes2d.scale_y(args.min_value))
-		      .attr('x2', mouse[0])
-		      .attr('y2', axes2d.scale_y(args.max_value));
-		    
-	            crosshair_g.select('#crosshairY')
-		      .attr('x1', axes2d.scale_x(args.min_value))
-		      .attr('y1', mouse[1])
-		      .attr('x2', axes2d.scale_x(args.max_value))
-		      .attr('y2', mouse[1]);
-		    crosshair_g.select('#crosshairX')
-		      .attr('x1', mouse[0])
-		      .attr('y1', this.axes2d.scale_y(this.axes2d.scale_y.domain[1])) //TODO TEMP
-		      .attr('x2', mouse[0])
-		      .attr('y2', this.axes2d.scale_y(this.axes2d.scale_y.domain[0])); //TODO TEMP
-		    crosshair_g.select('#crosshairY')
-		      .attr('x1', this.axes2d.scale_x.domain[0])
-		      .attr('y1', mouse[1]) //TODO TEMP
-		      .attr('x2', this.axes2d.scale_x.domain[1])
-		      .attr('y2', mouse[1]); //TODO TEMP*/
+		    // TODO: I don't like having ifs here, make a smaller rectangle for mouseovers
+		    if (x > self.axes2d.ax_left && x < self.axes2d.ax_right && y > self.axes2d.ax_top && y < self.axes2d.ax_bottom) {
+			    crosshair_g.style('display', null);
+
+			    crosshair_g.select('#crosshairX')
+			      .attr('x1', x)
+			      .attr('y1', self.axes2d.ax_top)
+			      .attr('x2', x)
+			      .attr('y2', self.axes2d.ax_bottom);
+			    
+			    crosshair_g.select('#crosshairY')
+			      .attr('x1', self.axes2d.ax_left)
+			      .attr('y1', y)
+			      .attr('x2', self.axes2d.ax_right)
+			      .attr('y2', y);
+			    
+			    crosshair_g.select('#crosshairXtext')
+			      .attr('x', x-2)
+			      .attr('y', self.axes2d.ax_bottom+15) //TODO: don't use magic numbers
+			      .text(function () {
+				      return Math.round(x*100)/100;
+			      });
+			    
+			    crosshair_g.select('#crosshairYtext')
+			      .attr('x', self.axes2d.ax_right)
+			      .attr('y', y-2)
+			      .text(function () {
+				      return Math.round(y*100)/100;
+			      });
+		    }
+		    else {
+			    crosshair_g.style('display', 'none');
+		    }
 	    });
 
 
