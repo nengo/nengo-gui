@@ -64,12 +64,15 @@ Nengo.Value = function(parent, sim, args) {
 	    .attr('id', 'crosshairY')
             .attr('stroke', 'black')
 	    .attr('stroke-width', '1px');
-    
-    console.log('wheee');
     //this.crosshair_g.append('rect')
     //this.axes2d.svg.append('rect')
     //crosshair_g.append('rect')
-    ax2d = this.axes2d
+
+    // Copies because 'this' can't be used inside the functions
+    var axes2d = this.axes2d;
+    // TODO: make the crosshairs only visible on the plot area itself, not the whole svg
+    var w = self.viewport.w * self.viewport.scale;
+    var h = self.viewport.h * self.viewport.scale;
     this.axes2d.svg
 	    //.attr('class', 'crosshair_overlay')
 	    //.attr('width', 200) //TODO make this match the svg object
@@ -91,16 +94,27 @@ Nengo.Value = function(parent, sim, args) {
 
 		    crosshair_g.select('#crosshairX')
 		      .attr('x1', mouse[0])
-		      .attr('y1', ax2d.scale_y(args.min_value))
+		      .attr('y1', 0)
 		      .attr('x2', mouse[0])
-		      .attr('y2', ax2d.scale_y(args.max_value));
+		      .attr('y2', h);
 		    
 	            crosshair_g.select('#crosshairY')
-		      .attr('x1', ax2d.scale_x(args.min_value))
+		      .attr('x1', 0)
 		      .attr('y1', mouse[1])
-		      .attr('x2', ax2d.scale_x(args.max_value))
+		      .attr('x2', w)
 		      .attr('y2', mouse[1]);
                     /*
+		    crosshair_g.select('#crosshairX')
+		      .attr('x1', mouse[0])
+		      .attr('y1', axes2d.scale_y(args.min_value))
+		      .attr('x2', mouse[0])
+		      .attr('y2', axes2d.scale_y(args.max_value));
+		    
+	            crosshair_g.select('#crosshairY')
+		      .attr('x1', axes2d.scale_x(args.min_value))
+		      .attr('y1', mouse[1])
+		      .attr('x2', axes2d.scale_x(args.max_value))
+		      .attr('y2', mouse[1]);
 		    crosshair_g.select('#crosshairX')
 		      .attr('x1', mouse[0])
 		      .attr('y1', this.axes2d.scale_y(this.axes2d.scale_y.domain[1])) //TODO TEMP
