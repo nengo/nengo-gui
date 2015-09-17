@@ -42,75 +42,69 @@ Nengo.Value = function(parent, sim, args) {
     this.path = this.axes2d.svg.append("g").selectAll('path')
                                     .data(this.data_store.data);
 
-    var crosshair_g = this.axes2d.svg.append('g')
+    // Flag for whether or not the mouse is hovering over the svg
+    this.hover = false;
+
+    // Keep track of mouse position TODO: fix this to be not required
+    this.crosshair_mouse = [0,0];
+    // Update event for when the simulator is running
+    //this.update_dispatch = d3.dispatch('update');
+
+    this.crosshair_g = this.axes2d.svg.append('g')
         .attr('class', 'crosshair');
 
     // TODO: put the crosshair properties in CSS
-    crosshair_g.append('line')
+    this.crosshair_g.append('line')
 	    .attr('id', 'crosshairX')
             .attr('stroke', 'black')
 	    .attr('stroke-width', '0.5px');
 
-    crosshair_g.append('line')
+    this.crosshair_g.append('line')
 	    .attr('id', 'crosshairY')
             .attr('stroke', 'black')
 	    .attr('stroke-width', '0.5px');
 
     // TODO: have the fonts and colour set appropriately
-    crosshair_g.append('text')
+    this.crosshair_g.append('text')
 	    .attr('id', 'crosshairXtext')
-	    .style('text-anchor', 'middle');
+	    .style('text-anchor', 'middle')
+	    .attr('class', 'graph_text');
     
-    crosshair_g.append('text')
+    this.crosshair_g.append('text')
 	    .attr('id', 'crosshairYtext')
-	    .style('text-anchor', 'end');
+	    .style('text-anchor', 'end')
+	    .attr('class', 'graph_text');
 
     this.axes2d.svg
 	    .on('mouseover', function() {
-		    crosshair_g.style('display', null);
+                self.crosshair_g.style('display', null);
+		self.hover = true;
+		
+		// Hacky stuff because d3 is weird TODO: make this nicer
+		var mouse = d3.mouse(this);
+		self.cross_hair_mouse = [mouse[0], mouse[1]]
 	    })
             .on('mouseout', function() {
-		    crosshair_g.style('display', 'none');
+                self.crosshair_g.style('display', 'none');
+		self.hover = false;
+		
+		// Hacky stuff because d3 is weird TODO: make this nicer
+		var mouse = d3.mouse(this);
+		self.cross_hair_mouse = [mouse[0], mouse[1]]
 	    })
+	    //.on('update', function() {
+            //    self.update_crosshair(d3.mouse(this));
+	    //})
 	    .on('mousemove', function() {
-		    var mouse = d3.mouse(this);
-		    var x = mouse[0];
-		    var y = mouse[1];
-
-		    // TODO: I don't like having ifs here, make a smaller rectangle for mouseovers
-		    if (x > self.axes2d.ax_left && x < self.axes2d.ax_right && y > self.axes2d.ax_top && y < self.axes2d.ax_bottom) {
-			    crosshair_g.style('display', null);
-
-			    crosshair_g.select('#crosshairX')
-			      .attr('x1', x)
-			      .attr('y1', self.axes2d.ax_top)
-			      .attr('x2', x)
-			      .attr('y2', self.axes2d.ax_bottom);
-			    
-			    crosshair_g.select('#crosshairY')
-			      .attr('x1', self.axes2d.ax_left)
-			      .attr('y1', y)
-			      .attr('x2', self.axes2d.ax_right)
-			      .attr('y2', y);
-			    
-			    crosshair_g.select('#crosshairXtext')
-			      .attr('x', x-2)
-			      .attr('y', self.axes2d.ax_bottom+15) //TODO: don't use magic numbers
-			      .text(function () {
-				      return Math.round(x*100)/100;
-			      });
-			    
-			    crosshair_g.select('#crosshairYtext')
-			      .attr('x', self.axes2d.ax_right)
-			      .attr('y', y-2)
-			      .text(function () {
-				      return Math.round(y*100)/100;
-			      });
-		    }
-		    else {
-			    crosshair_g.style('display', 'none');
-		    }
+		// Hacky stuff because d3 is weird TODO: make this nicer
+		var mouse = d3.mouse(this);
+		self.cross_hair_mouse = [mouse[0], mouse[1]]
+                self.update_crosshair(mouse);
 	    });
+	    /*.on('mousewheel', function(event) {
+		console.log("whoop whoop whoop");
+                //self.update_crosshair(this);
+	    });*/
 
 
 
@@ -127,6 +121,47 @@ Nengo.Value = function(parent, sim, args) {
 
 Nengo.Value.prototype = Object.create(Nengo.Component.prototype);
 Nengo.Value.prototype.constructor = Nengo.Value;
+
+Nengo.Value.prototype.update_crosshair = function(mouse) {
+    var self = this;
+    //var mouse = d3.mouse(this);
+    var x = mouse[0];
+    var y = mouse[1];
+
+    // TODO: I don't like having ifs here, make a smaller rectangle for mouseovers
+    if (x > this.axes2d.ax_left && x < this.axes2d.ax_right && y > this.axes2d.ax_top && y < this.axes2d.ax_bottom) {
+	    this.crosshair_g.style('display', null);
+
+	    this.crosshair_g.select('#crosshairX')
+	      .attr('x1', x)
+	      .attr('y1', this.axes2d.ax_top)
+	      .attr('x2', x)
+	      .attr('y2', this.axes2d.ax_bottom);
+	    
+	    this.crosshair_g.select('#crosshairY')
+	      .attr('x1', this.axes2d.ax_left)
+	      .attr('y1', y)
+	      .attr('x2', this.axes2d.ax_right)
+	      .attr('y2', y);
+	    
+	    this.crosshair_g.select('#crosshairXtext')
+	      .attr('x', x-2)
+	      .attr('y', this.axes2d.ax_bottom+17) //TODO: don't use magic numbers
+	      .text(function () {
+		      return Math.round(self.axes2d.scale_x.invert(x)*100)/100;
+	      });
+	    
+	    this.crosshair_g.select('#crosshairYtext')
+	      .attr('x', this.axes2d.ax_right)
+	      .attr('y', y-2)
+	      .text(function () {
+		      return Math.round(self.axes2d.scale_y.invert(y)*100)/100;
+	      });
+    }
+    else {
+        this.crosshair_g.style('display', 'none');
+    }
+}
 
 /**
  * Receive new line data from the server
@@ -169,6 +204,20 @@ Nengo.Value.prototype.update = function() {
         .y(function(d) {return self.axes2d.scale_y(d);})
     this.path.data(shown_data)
              .attr('d', line);
+
+    //** Update the crosshair text if the mouse is on top */
+    if (this.hover) {
+	//console.log(self.axes2d.svg[0][0]);
+	//console.log(self.axes2d.svg[0].outerHTML);
+	//console.log(this);
+        //this.update_crosshair(self.axes2d.svg[0].outerHTML);
+        //this.update_crosshair(self.axes2d.svg[0][0]);
+        //this.update_crosshair(d3.mouse(self.axes2d));
+	//this.update_dispatch.update();
+	//self.axes2d.svg.on('mousemove')();
+	this.update_crosshair(this.cross_hair_mouse); // TODO: fix this to be less hacky
+        //this.update_crosshair(d3.mouse(self.crosshair_svg));
+    }
 };
 
 /**
