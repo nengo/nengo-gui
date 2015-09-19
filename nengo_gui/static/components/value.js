@@ -59,6 +59,23 @@ Nengo.Value = function(parent, sim, args) {
     this.crosshair_mouse = [0,0];
     // Update event for when the simulator is running
     //this.update_dispatch = d3.dispatch('update');
+    this.crosshair_func = function () {
+	//var temp = this;
+	console.log();
+	var temp = d3.mouse(this);
+	var mouse = [temp[0], temp[1]];
+	/*
+	var mouse = d3.mouse(this);
+	console.log([mouse[0], mouse[1]]);
+	self.cross_hair_mouse = [mouse[0], mouse[1]]
+	self.update_crosshair(mouse);*/
+	setTimeout(function () {
+	    //var mouse = d3.mouse(temp);
+	    console.log([mouse[0], mouse[1]]);
+	    self.cross_hair_mouse = [mouse[0], mouse[1]]
+	    self.update_crosshair(mouse);
+	}, 100);
+    };
 
     this.crosshair_g = this.axes2d.svg.append('g')
         .attr('class', 'crosshair');
@@ -110,10 +127,27 @@ Nengo.Value = function(parent, sim, args) {
 		var mouse = d3.mouse(this);
 		self.cross_hair_mouse = [mouse[0], mouse[1]]
                 self.update_crosshair(mouse);
+	    })
+	    .on('SVGResize', function() {
+		// Hacky stuff because d3 is weird TODO: make this nicer
+		console.log('whoop whoop whoop');
+		var mouse = d3.mouse(this);
+		self.cross_hair_mouse = [mouse[0], mouse[1]]
+                self.update_crosshair(mouse);
 	    });
-	    /*.on('mousewheel', function(event) {
-		console.log("whoop whoop whoop");
-                //self.update_crosshair(this);
+	    //.on('mousewheel', function () {self.update_crosshair_temp(self)});
+	    //.on('mousewheel', function () {self.update_crosshair([1,1])});
+	    //.on('mousewheel', update_crosshair_test(self));
+	    //.on('mousewheel', self.update_crosshair_test(self));
+	    //////.on('mousewheel', self.crosshair_func);
+	    /*.on('mousewheel', function() {
+		var svg_self = this;
+		setTimeout(function () {
+		  var mouse = d3.mouse(svg_self);
+		  self.cross_hair_mouse = [mouse[0], mouse[1]]
+                  self.update_crosshair(mouse);
+		  console.log('whoop whoop whoop');
+		}, 0);
 	    });*/
 
 
@@ -125,6 +159,15 @@ Nengo.Value = function(parent, sim, args) {
 
 Nengo.Value.prototype = Object.create(Nengo.Component.prototype);
 Nengo.Value.prototype.constructor = Nengo.Value;
+
+//update_crosshair_test = function(self) {
+//function update_crosshair_test(self) {
+Nengo.Value.prototype.update_crosshair_temp = function(bla) {
+    console.log(bla);
+    var mouse = d3.mouse(bla);
+    //console.log(mouse);
+    //self.update_crosshair(mouse);
+};
 
 Nengo.Value.prototype.update_crosshair = function(mouse) {
     var self = this;
@@ -165,7 +208,7 @@ Nengo.Value.prototype.update_crosshair = function(mouse) {
     else {
         this.crosshair_g.style('display', 'none');
     }
-}
+};
 
 /**
  * Receive new line data from the server
