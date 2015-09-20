@@ -22,9 +22,9 @@ Nengo.Ace = function (uid, args) {
     this.ws.onmessage = function(event) {self.on_message(event);}
 
     this.current_code = '';
-    var code_div = document.createElement('div')
-    code_div.id = 'editor'
-    $('#rightpane').append(code_div);
+    this.code_div = document.createElement('div')
+    this.code_div.id = 'editor'
+    $('#rightpane').append(this.code_div);
     this.editor = ace.edit('editor')
     this.editor.getSession().setMode("ace/mode/python");
     this.editor.gotoLine(1);

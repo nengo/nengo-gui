@@ -247,6 +247,12 @@ Nengo.GrowableDataStore.prototype.push = function(row) {
     this.times.push(row[0]);
 };
 
+/* reset dimensions before resetting the datastore */
+Nengo.GrowableDataStore.prototype.reset = function() {
+    console.log("resetting growable");
+    this._dims = 1;
+    Nengo.DataStore.call(this, this._dims, this.sim, this.synapse);
+}
 /**
  * update the data storage.  This should be call periodically (before visual
  * updates, but not necessarily after every push()).  Removes old data outside

@@ -40,17 +40,7 @@ class SpaSimilarity(SpaPlot):
         vocab = self.vocab_out
 
         if self.old_vocab_length != len(vocab.keys):
-            # pass all the missing keys
-            legend_update = []
-            legend_update += (vocab.keys[self.old_vocab_length:])
-            self.old_vocab_length = len(vocab.keys)
-            # and all the missing pairs if we're showing pairs
-            if self.config.show_pairs:
-                legend_update += vocab.key_pairs[self.old_pairs_length:]
-                self.old_pairs_length = len(vocab.key_pairs)
-
-            self.data.append('["update_legend", "%s"]'
-                             %('","'.join(legend_update)))
+            self.update_legend(vocab)
 
         # get the similarity and send it
         key_similarity = np.dot(vocab.vectors, x)
@@ -68,6 +58,20 @@ class SpaSimilarity(SpaPlot):
         self.data.append(  '["data_msg", %g, %s]'
                          %( t, ",".join(simi_list) )  )
 
+    def update_legend(self, vocab):
+        # pass all the missing keys
+        legend_update = []
+        legend_update += (vocab.keys[self.old_vocab_length:])
+        self.old_vocab_length = len(vocab.keys)
+        # and all the missing pairs if we're showing pairs
+        if self.config.show_pairs:
+            legend_update += vocab.key_pairs[self.old_pairs_length:]
+            self.old_pairs_length = len(vocab.key_pairs)
+
+        self.data.append('["update_legend", "%s"]'
+                         %('","'.join(legend_update)))
+
+
     def javascript(self):
         """Generate the javascript that will create the client-side object"""
         info = dict(uid=id(self), label=self.label, n_lines=len(self.labels),
@@ -77,17 +81,17 @@ class SpaSimilarity(SpaPlot):
         return 'new Nengo.SpaSimilarity(main, sim, %s);' % json
 
     def message(self, msg):
-        """Message receive function for show_pairs toggling"""
+        """Message receive function for show_pairs toggling and reset"""
         vocab = self.vocab_out
         # Send the new labels
         if self.config.show_pairs:
             vocab.include_pairs = True
             self.data.append(
-                '["show_pairs_toggle", "%s"]' %(
+                '["reset_legend_and_data", "%s"]' %(
                     '","'.join(vocab.keys + vocab.key_pairs)))
             # if we're starting to show pairs, track pair length
             self.old_pairs_length = len(vocab.key_pairs)
         else:
             vocab.include_pairs = False
-            self.data.append('["show_pairs_toggle", "%s"]'
+            self.data.append('["reset_legend_and_data", "%s"]'
                              %('","'.join(vocab.keys)))

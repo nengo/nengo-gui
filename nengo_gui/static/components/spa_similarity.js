@@ -33,8 +33,7 @@ Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
 Nengo.SpaSimilarity.prototype.constructor = Nengo.SpaSimilarity;
 
 
-Nengo.SpaSimilarity.prototype.show_pairs_toggle = function(new_labels){
-
+Nengo.SpaSimilarity.prototype.reset_legend_and_data = function(new_labels){
     // clear the database and create a new one since the dimensions have changed
     this.data_store = new Nengo.GrowableDataStore(new_labels.length, this.sim, this.synapse);
 
@@ -56,7 +55,7 @@ Nengo.SpaSimilarity.prototype.data_msg = function(push_data){
     var data_dims = push_data.length - 1;
 
     // TODO: Move this check inside datastore?
-    if(data_dims !== this.n_lines){
+    if(data_dims > this.data_store.dims){
       this.data_store.dims = data_dims;
       this.n_lines = data_dims;
     }
@@ -195,6 +194,11 @@ Nengo.SpaSimilarity.prototype.update_layout = function(config) {
     this.update_range(config.min_value, config.max_value);
     this.show_pairs = config.show_pairs;
     Nengo.Component.prototype.update_layout.call(this, config);
+}
+
+Nengo.SpaSimilarity.prototype.reset = function () {
+    // ask for a legend update
+    this.ws.send("reset_legend");
 }
 
 // TODO: should I remove the ability to set range?
