@@ -18,11 +18,6 @@ class Pointer(SpaPlot):
         self.override_target = None
         self.vocab_in = obj.inputs[self.target][1]
 
-    def attach(self, page, config, uid):
-        super(Pointer, self).attach(page, config, uid)
-        self.label = page.get_label(self.obj)
-        self.vocab_out.include_pairs = config.show_pairs
-
     def add_nengo_objects(self, page):
         with page.model:
             output = self.obj.outputs[self.target][0]
