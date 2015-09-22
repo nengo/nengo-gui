@@ -1,4 +1,6 @@
 /** namespace for all Nengo visualization */
+/** root functions contain miscelaneous utility functions */
+
 var Nengo = {};
 
 Nengo.user_settings = [];
@@ -24,18 +26,6 @@ Nengo.clip = function(x, low, high) {
 Nengo.set_transform = function(element, x, y) {
     element.style.webkitTransform =
         element.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
-}
-
-
-Nengo.get_transform = function(element) {
-    if ($(element).css('transform') === undefined) {
-       var target = '-webkit-transform';
-    } else {
-       var target = 'transform';
-    }
-    //Ugly method of finding the current transform of the element
-    var holde = $(element).css(target).match(/(-?[0-9\.]+)/g);
-    return {x:Number(holde[4]), y:Number(holde[5])};
 }
 
 /**

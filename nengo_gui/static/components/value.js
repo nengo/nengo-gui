@@ -1,4 +1,5 @@
 /**
+ *
  * Line graph showing decoded values over time
  * @constructor
  *
@@ -7,6 +8,10 @@
  * @param {float} args.min_value - minimum value on y-axis
  * @param {float} args.max_value - maximum value on y-axis
  * @param {Nengo.SimControl} args.sim - the simulation controller
+ *
+ * Value constructor is called by python server when a user requests a plot 
+ * or when the config file is making graphs. Server request is handled in 
+ * netgraph.js {.on_message} function.
  */
 
 Nengo.Value = function(parent, sim, args) {

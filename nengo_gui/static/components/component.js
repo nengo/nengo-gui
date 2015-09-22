@@ -1,5 +1,8 @@
 /**
  * Base class for interactive visualization
+ * Components (value/raster/XY plots, sliders, etc...) will inherit from
+ * this class.
+ *
  * @constructor
  *
  * @param {dict} args - A set of constructor arguments, including:
@@ -10,6 +13,10 @@
  * @param {float} args.height - the height of the component (in pixels)
  * @param {boolean} args.label_visible - whether the label should be shown
  * @param {int} args.id - the id of the server-side component to connect to
+ *
+ * Component is inherited by specific component 
+ * class prototypes (ie. Slider, Value)
+ *
  */
 Nengo.Component = function(parent, args) {
     var self = this;

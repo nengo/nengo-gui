@@ -1,3 +1,14 @@
+/**
+ * A SliderControl object which creates a single guideline + handle within 
+ * a slider object
+ * @constructor
+ *
+ * @params {int} min - The minimum value the handle can take
+ * @params {int} max - the maximum value the handle can take
+ *
+ * SliderControl is called within the Slider constructor for each
+ * handle that is needed.
+ */
 Nengo.SliderControl = function(min, max) {
     var self = this;
 

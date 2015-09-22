@@ -336,20 +336,21 @@ Nengo.NetGraphItem.prototype.generate_menu = function () {
         }
     }
     if (this.type == 'ens') {
-        items.push(['Value', function() {self.create_graph('Value');}])
+        items.push(['Value', function() {self.create_graph('Value');}]);
         if (this.dimensions > 1) {
-            items.push(['XY-value', function() {self.create_graph('XYValue');}])
+            items.push(['XY-value', function() {self.create_graph('XYValue');}]);
         }
-        items.push(['Spikes', function() {self.create_graph('Raster');}])
-        items.push(['Voltages', function() {self.create_graph('Voltage');}])
+        items.push(['Spikes', function() {self.create_graph('Raster');}]);
+        items.push(['Voltages', function() {self.create_graph('Voltage');}]);
+        items.push(['Firing pattern', function() {self.create_graph('SpikeGrid');}]);
     }
     if (this.type == 'node') {
-        items.push(['Slider', function() {self.create_graph('Slider');}])
+        items.push(['Slider', function() {self.create_graph('Slider');}]);
         if (this.dimensions > 0) {
-            items.push(['Value', function() {self.create_graph('Value');}])
+            items.push(['Value', function() {self.create_graph('Value');}]);
         }
         if (this.dimensions > 1) {
-            items.push(['XY-value', function() {self.create_graph('XYValue');}])
+            items.push(['XY-value', function() {self.create_graph('XYValue');}]);
         }
         if (this.html_node) {
             items.push(['HTML', function() {self.create_graph('HTMLView');}])
@@ -361,7 +362,7 @@ Nengo.NetGraphItem.prototype.generate_menu = function () {
         items.push(['Semantic pointer plot',
             function() {self.create_graph('SpaSimilarity', self.sp_targets[0]);}])
     }
-    items.push(['Details ...', function() {self.create_modal();}])
+    items.push(['Details ...', function() {self.create_modal();}]);
     return items;
 };
 
@@ -646,7 +647,6 @@ Nengo.NetGraphItem.prototype.redraw_child_connections = function() {
 };
 
 
-
 Nengo.NetGraphItem.prototype.redraw_connections = function() {
     /** update any connections into and out of this */
     for (var i in this.conn_in) {
@@ -779,7 +779,6 @@ Nengo.NetGraphItem.prototype.get_height = function() {
 
     return screen_h * 2;
 }
-
 
 
 /** force a redraw of the item */

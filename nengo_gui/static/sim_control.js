@@ -1,10 +1,14 @@
 /**
+ *
  * Control panel for a simulation
  * @constructor
  *
  * @param {DOMElement} div - the element for the control
  * @param {dict} args - A set of constructor arguments, including:
  * @param {int} args.id - the id of the server-side SimControl to connect to
+ *
+ * SimControl constructor is inserted into HTML file from python and
+ * is called when the page is first loaded
  */
 Nengo.SimControl = function(div, args) {
     if (args.uid[0] === '<') {
@@ -190,6 +194,7 @@ Nengo.SimControl.prototype.on_pause_click = function(event) {
     }
 };
 
+/* informs the backend simulator of the time being reset */
 Nengo.SimControl.prototype.reset = function() {
     this.paused = true;
     this.ws.send('reset');

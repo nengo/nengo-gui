@@ -1,8 +1,11 @@
 /**
  * 2d axes set with the horizontal axis being a time axis.
- * @constructor
+* @constructor
  *
  * @param {dict} args - A set of constructor arguments (see Nengo.Axes2D)
+ *
+ * Called by a specific component when it requires an axes set (with the 
+ * x-axis showing current model time).
  */
 
 Nengo.TimeAxes = function(parent, args) {
