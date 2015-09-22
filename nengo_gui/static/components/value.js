@@ -3,6 +3,7 @@
  * Line graph showing decoded values over time
  * @constructor
  *
+ * @param {DOMElement} args.parent - the element to add this component to
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
  * @param {int} args.n_lines - number of decoded values
  * @param {float} args.min_value - minimum value on y-axis

@@ -2,6 +2,7 @@
  * Line graph showing semantic pointer decoded values over time
  * @constructor
  *
+ * @param {DOMElement} args.parent - the element to add this component to
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
  * @param {int} args.n_lines - number of decoded values
  * @param {Nengo.SimControl} args.sim - the simulation controller
