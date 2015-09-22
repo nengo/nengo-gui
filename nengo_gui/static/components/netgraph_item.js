@@ -39,11 +39,11 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
     this.children = [];
     this.child_connections = [];
 
-    /** NetGraphConnections leading into and out of this item */
+    // NetGraphConnections leading into and out of this item
     this.conn_out = [];
     this.conn_in = [];
 
-    /** minimum and maximum drawn size, in pixels */
+    // minimum and maximum drawn size, in pixels
     this.minWidth = 5;
     this.minHeight = 5;
     this.aspect = null;
@@ -72,7 +72,7 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
 
     this.menu = new Nengo.Menu(this.ng.parent);
 
-    /** different types use different SVG elements for display */
+    // different types use different SVG elements for display
     if (info.type === 'node') {
         if (this.passthrough) {
             this.shape = this.ng.createSVGElement('ellipse');
@@ -115,7 +115,7 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
     interact.margin(10);
 
     if (this.minimap == false) {
-        /** dragging an item to change its position */
+        // dragging an item to change its position
         var uid = this.uid;
         var ng = ng;
         interact(g)
@@ -156,7 +156,7 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                 }});
 
         if (!this.passthrough) {
-            /** dragging the edge of item to change its size */
+            // dragging the edge of item to change its size
             var tmp = this.shape
             if(info.type === 'ens') {
                 tmp = $(this.shape.getElementsByClassName('mainCircle'))[0];
@@ -255,9 +255,9 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                     });
         }
 
-        //Determine when to pull up the menu
+        // Determine when to pull up the menu
         interact(this.g)
-            .on('hold', function(event) { //change to 'tap' for right click
+            .on('hold', function(event) { // change to 'tap' for right click
                 if (event.button == 0) {
                     if (self.menu.visible_any()) {
                         self.menu.hide_any();
@@ -268,14 +268,14 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                     event.stopPropagation();
                 }
             })
-            .on('tap', function(event) { //get rid of menus when clicking off
+            .on('tap', function(event) { // get rid of menus when clicking off
                 if (event.button == 0) {
                     if (self.menu.visible_any()) {
                         self.menu.hide_any();
                     }
                 }
             })
-            .on('doubletap', function(event) { //get rid of menus when clicking off
+            .on('doubletap', function(event) { // get rid of menus when clicking off
                 if (event.button == 0) {
                     if (self.menu.visible_any()) {
                         self.menu.hide_any();
@@ -300,7 +300,7 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
         });
 
         if (info.type === 'net') {
-            /** if a network is flagged to expand on creation, then expand it */
+            // if a network is flagged to expand on creation, then expand it
             if (info.expanded) {
                 // Report to server but do not add to the undo stack
                 this.expand(true,true);
@@ -356,7 +356,6 @@ Nengo.NetGraphItem.prototype.generate_menu = function () {
         }
     }
     if (this.sp_targets.length > 0) {
-        // Naming things is hard
         items.push(['Semantic pointer cloud',
                     function() {self.create_graph('Pointer', self.sp_targets[0]);}])
         items.push(['Semantic pointer plot',
@@ -451,7 +450,7 @@ Nengo.NetGraphItem.prototype.collapse = function(report_to_server, auto) {
     auto = typeof auto !== 'undefined' ? auto : false;
     this.g.classList.remove('expanded');
 
-    /** remove child NetGraphItems and NetGraphConnections */
+    // remove child NetGraphItems and NetGraphConnections
     while (this.child_connections.length > 0) {
         this.child_connections[0].remove();
     }
@@ -506,7 +505,7 @@ Nengo.NetGraphItem.prototype.remove = function() {
         this.collapse(false);
     }
 
-    /** remove the item from the parent's children list */
+    // remove the item from the parent's children list
     if (this.parent !== null) {
         var index = this.parent.children.indexOf(this);
         this.parent.children.splice(index, 1);
@@ -514,7 +513,7 @@ Nengo.NetGraphItem.prototype.remove = function() {
 
     delete this.ng.svg_objects[this.uid];
 
-    /** update any connections into or out of this item */
+    // update any connections into or out of this item
     var conn_in = this.conn_in.slice();
     for (var i in conn_in) {
         var conn = conn_in[i];
@@ -528,7 +527,7 @@ Nengo.NetGraphItem.prototype.remove = function() {
         conn.redraw();
     }
 
-    /** remove from the SVG */
+    // remove from the SVG
     this.g_items.removeChild(this.g);
     if (this.minimap == true && this.depth == 1) {
         this.ng.scaleMiniMap();
@@ -610,7 +609,7 @@ Nengo.NetGraphItem.prototype.constrain_position = function() {
 };
 
 
-/** set the position of the item and redraw it appropriately*/
+/** set the position of the item and redraw it appropriately */
 Nengo.NetGraphItem.prototype.set_position = function(x, y) {
 
     this.pos = [x, y];
@@ -625,13 +624,13 @@ Nengo.NetGraphItem.prototype.set_position = function(x, y) {
 Nengo.NetGraphItem.prototype.redraw_position = function() {
     var screen = this.get_screen_location();
 
-    /** update my position */
+    // update my position
     this.g.setAttribute('transform', 'translate(' + screen[0] + ', ' +
                                                     screen[1] + ')');
 };
 
 Nengo.NetGraphItem.prototype.redraw_children = function() {
-    /** update any children's positions */
+    // update any children's positions
     for (var i in this.children) {
         var item = this.children[i];
         item.redraw();
@@ -639,7 +638,7 @@ Nengo.NetGraphItem.prototype.redraw_children = function() {
 };
 
 Nengo.NetGraphItem.prototype.redraw_child_connections = function() {
-    /** update any children's positions */
+    // update any children's positions
     for (var i in this.child_connections) {
         var item = this.child_connections[i];
         item.redraw();
