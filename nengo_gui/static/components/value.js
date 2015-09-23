@@ -59,7 +59,6 @@ Nengo.Value = function(parent, sim, args) {
     
     // Keep track of mouse position TODO: fix this to be not required
     this.crosshair_mouse = [0,0];
-    // Update event for when the simulator is running
 
     this.crosshair_g = this.axes2d.svg.append('g')
         .attr('class', 'crosshair');
@@ -88,22 +87,20 @@ Nengo.Value = function(parent, sim, args) {
 
     this.axes2d.svg
 	    .on('mouseover', function() {
-                self.crosshair_g.style('display', null);
-		self.crosshair_updates = true;
-		
 		var mouse = d3.mouse(this);
+		self.crosshair_updates = true;
+                self.crosshair_g.style('display', null);
 		self.cross_hair_mouse = [mouse[0], mouse[1]]
 	    })
             .on('mouseout', function() {
-                self.crosshair_g.style('display', 'none');
-		self.crosshair_updates = false;
-		
 		var mouse = d3.mouse(this);
+		self.crosshair_updates = false;
+                self.crosshair_g.style('display', 'none');
 		self.cross_hair_mouse = [mouse[0], mouse[1]]
 	    })
 	    .on('mousemove', function() {
-		self.crosshair_updates = true;
 		var mouse = d3.mouse(this);
+		self.crosshair_updates = true;
 		self.cross_hair_mouse = [mouse[0], mouse[1]]
                 self.update_crosshair(mouse);
 	    })
@@ -167,17 +164,17 @@ Nengo.Value.prototype.update_crosshair = function(mouse) {
 	      .attr('y2', y);
 	    
 	    this.crosshair_g.select('#crosshairXtext')
-	      .attr('x', x-2)
-	      .attr('y', this.axes2d.ax_bottom+17) //TODO: don't use magic numbers
+	      .attr('x', x - 2)
+	      .attr('y', this.axes2d.ax_bottom + 17) //TODO: don't use magic numbers
 	      .text(function () {
-		      return Math.round(self.axes2d.scale_x.invert(x)*100)/100;
+		      return Math.round(self.axes2d.scale_x.invert(x) * 100) / 100;
 	      });
 	    
 	    this.crosshair_g.select('#crosshairYtext')
 	      .attr('x', this.axes2d.ax_right)
 	      .attr('y', y-2)
 	      .text(function () {
-		      return Math.round(self.axes2d.scale_y.invert(y)*100)/100;
+		      return Math.round(self.axes2d.scale_y.invert(y) * 100) / 100;
 	      });
     }
     else {
