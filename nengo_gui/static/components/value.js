@@ -42,30 +42,14 @@ Nengo.Value = function(parent, sim, args) {
     this.path = this.axes2d.svg.append("g").selectAll('path')
                                     .data(this.data_store.data);
 
-    // Flag for whether or not the mouse is hovering over the svg
-    this.hover = false;
-
+    // Flag for whether or not update code should be changing the crosshair
+    // Both zooming and the simulator time changing cause an update, but the crosshair
+    // should only update when the time is changing
+    this.crosshair_updates = false;
+    
     // Keep track of mouse position TODO: fix this to be not required
     this.crosshair_mouse = [0,0];
     // Update event for when the simulator is running
-    //this.update_dispatch = d3.dispatch('update');
-    this.crosshair_func = function () {
-	//var temp = this;
-	console.log();
-	var temp = d3.mouse(this);
-	var mouse = [temp[0], temp[1]];
-	/*
-	var mouse = d3.mouse(this);
-	console.log([mouse[0], mouse[1]]);
-	self.cross_hair_mouse = [mouse[0], mouse[1]]
-	self.update_crosshair(mouse);*/
-	setTimeout(function () {
-	    //var mouse = d3.mouse(temp);
-	    console.log([mouse[0], mouse[1]]);
-	    self.cross_hair_mouse = [mouse[0], mouse[1]]
-	    self.update_crosshair(mouse);
-	}, 100);
-    };
 
     this.crosshair_g = this.axes2d.svg.append('g')
         .attr('class', 'crosshair');
@@ -95,52 +79,29 @@ Nengo.Value = function(parent, sim, args) {
     this.axes2d.svg
 	    .on('mouseover', function() {
                 self.crosshair_g.style('display', null);
-		self.hover = true;
+		self.crosshair_updates = true;
 		
-		// Hacky stuff because d3 is weird TODO: make this nicer
 		var mouse = d3.mouse(this);
 		self.cross_hair_mouse = [mouse[0], mouse[1]]
 	    })
             .on('mouseout', function() {
                 self.crosshair_g.style('display', 'none');
-		self.hover = false;
+		self.crosshair_updates = false;
 		
-		// Hacky stuff because d3 is weird TODO: make this nicer
 		var mouse = d3.mouse(this);
 		self.cross_hair_mouse = [mouse[0], mouse[1]]
 	    })
-	    //.on('update', function() {
-            //    self.update_crosshair(d3.mouse(this));
-	    //})
 	    .on('mousemove', function() {
-		// Hacky stuff because d3 is weird TODO: make this nicer
+		self.crosshair_updates = true;
 		var mouse = d3.mouse(this);
 		self.cross_hair_mouse = [mouse[0], mouse[1]]
                 self.update_crosshair(mouse);
 	    })
-	    .on('SVGResize', function() {
-		// Hacky stuff because d3 is weird TODO: make this nicer
-		console.log('whoop whoop whoop');
-		var mouse = d3.mouse(this);
-		self.cross_hair_mouse = [mouse[0], mouse[1]]
-                self.update_crosshair(mouse);
+	    .on('mousewheel', function() {
+		// Hide the crosshair when zooming, until a better option comes along
+		self.crosshair_updates = false;
+		self.crosshair_g.style('display', 'none');
 	    });
-	    //.on('mousewheel', function () {self.update_crosshair_temp(self)});
-	    //.on('mousewheel', function () {self.update_crosshair([1,1])});
-	    //.on('mousewheel', update_crosshair_test(self));
-	    //.on('mousewheel', self.update_crosshair_test(self));
-	    //////.on('mousewheel', self.crosshair_func);
-	    /*.on('mousewheel', function() {
-		var svg_self = this;
-		setTimeout(function () {
-		  var mouse = d3.mouse(svg_self);
-		  self.cross_hair_mouse = [mouse[0], mouse[1]]
-                  self.update_crosshair(mouse);
-		  console.log('whoop whoop whoop');
-		}, 0);
-	    });*/
-
-
 
     var colors = Nengo.make_colors(this.n_lines);
     this.path.enter().append('path')
@@ -156,18 +117,8 @@ Nengo.Value = function(parent, sim, args) {
 Nengo.Value.prototype = Object.create(Nengo.Component.prototype);
 Nengo.Value.prototype.constructor = Nengo.Value;
 
-//update_crosshair_test = function(self) {
-//function update_crosshair_test(self) {
-Nengo.Value.prototype.update_crosshair_temp = function(bla) {
-    console.log(bla);
-    var mouse = d3.mouse(bla);
-    //console.log(mouse);
-    //self.update_crosshair(mouse);
-};
-
 Nengo.Value.prototype.update_crosshair = function(mouse) {
     var self = this;
-    //var mouse = d3.mouse(this);
     var x = mouse[0];
     var y = mouse[1];
 
@@ -249,17 +200,8 @@ Nengo.Value.prototype.update = function() {
              .attr('d', line);
 
     //** Update the crosshair text if the mouse is on top */
-    if (this.hover) {
-	//console.log(self.axes2d.svg[0][0]);
-	//console.log(self.axes2d.svg[0].outerHTML);
-	//console.log(this);
-        //this.update_crosshair(self.axes2d.svg[0].outerHTML);
-        //this.update_crosshair(self.axes2d.svg[0][0]);
-        //this.update_crosshair(d3.mouse(self.axes2d));
-	//this.update_dispatch.update();
-	//self.axes2d.svg.on('mousemove')();
-	this.update_crosshair(this.cross_hair_mouse); // TODO: fix this to be less hacky
-        //this.update_crosshair(d3.mouse(self.crosshair_svg));
+    if (this.crosshair_updates) {
+	this.update_crosshair(this.cross_hair_mouse);
     }
 };
 
