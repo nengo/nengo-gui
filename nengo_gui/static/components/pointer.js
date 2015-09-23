@@ -154,7 +154,6 @@ Nengo.Pointer.prototype.on_message = function(event) {
     var time = parseFloat(data[0]);
 
     var items = data[1].split(";");
-
     this.data_store.push([time, items]);
     this.schedule_update();
 }

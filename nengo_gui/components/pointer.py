@@ -59,8 +59,8 @@ class Pointer(SpaPlot):
             self.vocab_out.include_pairs = True
             pair_similarities = np.dot(vocab.vector_pairs, x)
             over_threshold = pair_similarities > 0.01
-            pair_matches = zip(pair_similarities[over_threshold], 
-                               np.array(vocab.keys)[over_threshold])
+            pair_matches = zip(pair_similarities[over_threshold],
+                               np.array(vocab.key_pairs)[over_threshold])
             matches += pair_matches
 
         text = ';'.join(['%0.2f%s' % (sim, key) for sim, key in matches])
