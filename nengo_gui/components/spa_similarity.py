@@ -55,8 +55,9 @@ class SpaSimilarity(SpaPlot):
             except TypeError:
                 pass
 
-        self.data.append(  '["data_msg", %g, %s]'
-                         %( t, ",".join(simi_list) )  )
+        if(simi_list != []):
+            self.data.append(  '["data_msg", %g, %s]'
+                             %( t, ",".join(simi_list) )  )
 
     def update_legend(self, vocab):
         # pass all the missing keys
@@ -65,8 +66,12 @@ class SpaSimilarity(SpaPlot):
         self.old_vocab_length = len(vocab.keys)
         # and all the missing pairs if we're showing pairs
         if self.config.show_pairs:
-            legend_update += vocab.key_pairs[self.old_pairs_length:]
-            self.old_pairs_length = len(vocab.key_pairs)
+        # briefly there can be no pairs, so catch the error
+            try:
+                legend_update += vocab.key_pairs[self.old_pairs_length:]
+                self.old_pairs_length = len(vocab.key_pairs)
+            except TypeError:
+                pass
 
         self.data.append('["update_legend", "%s"]'
                          %('","'.join(legend_update)))

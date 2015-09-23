@@ -42,10 +42,13 @@ Nengo.SpaSimilarity.prototype.reset_legend_and_data = function(new_labels){
     while(this.legend.lastChild){
         this.legend.removeChild(this.legend.lastChild);
     }
+    this.legend_svg = d3.select(this.legend).append("svg");
 
-    // redraw all the legends
-    this.pointer_labels = new_labels;
-    this.legend_svg = Nengo.draw_legend(this.legend, new_labels, this.color_func);
+    // redraw all the legends if they exist
+    this.pointer_labels = [];
+    if(new_labels[0] != ""){
+        this.update_legend(new_labels);
+    }
 
     this.update();
 
@@ -70,8 +73,14 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
     var self = this;
     this.pointer_labels = this.pointer_labels.concat(new_labels);
 
-    // expand the svg, where "20" is around the size of the font
+    // expand the height of the svg, where "20" is around the size of the font
     this.legend_svg.attr("height", 20 * this.pointer_labels.length);
+    // expand the width of the svg to the longest string
+    var tmp_labels = this.pointer_labels.slice();
+    var longest_label = tmp_labels.sort(
+                            function (a, b) { return b.length - a.length; }
+                        )[0];
+    this.legend_svg.attr("width", 25 * longest_label.length);
 
     // Data join
     var recs = this.legend_svg.selectAll("rect").data(this.pointer_labels);
@@ -95,7 +104,7 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
 
 };
 
-/* there a three types of messages that can be received:
+/* there are three types of messages that can be received:
     - a legend needs to be updated
     - the data has been updated
     - show_pairs has been toggled
