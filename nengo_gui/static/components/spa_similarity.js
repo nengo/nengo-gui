@@ -73,13 +73,14 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
     var self = this;
     this.pointer_labels = this.pointer_labels.concat(new_labels);
 
-    // expand the height of the svg, where "20" is around the size of the font
+    // expand the height of the svg, where "20" is around the height of the font
     this.legend_svg.attr("height", 20 * this.pointer_labels.length);
     // expand the width of the svg to the longest string
     var tmp_labels = this.pointer_labels.slice();
     var longest_label = tmp_labels.sort(
                             function (a, b) { return b.length - a.length; }
                         )[0];
+    // "25" is around the width of the font and "75" is for the similarity measure that is aounrd three characters wide
     this.legend_svg.attr("width", 25 * longest_label.length + 50);
 
     // Data join
