@@ -80,7 +80,7 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
     var longest_label = tmp_labels.sort(
                             function (a, b) { return b.length - a.length; }
                         )[0];
-    this.legend_svg.attr("width", 25 * longest_label.length);
+    this.legend_svg.attr("width", 25 * longest_label.length + 50);
 
     // Data join
     var recs = this.legend_svg.selectAll("rect").data(this.pointer_labels);
