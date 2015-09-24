@@ -74,6 +74,9 @@ Nengo.Value.prototype.on_message = function(event) {
         this.data_store.push(data.slice(0, size));
         data = data.slice(size);
     }
+    if (data.length > 0) {
+        console.log('extra data: ' + data.length);
+    }
     this.schedule_update();
 };
 
