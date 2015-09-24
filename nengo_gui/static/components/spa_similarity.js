@@ -75,17 +75,12 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
 
     // expand the height of the svg, where "20" is around the height of the font
     this.legend_svg.attr("height", 20 * this.pointer_labels.length);
-    // expand the width of the svg to the longest string
-    var tmp_labels = this.pointer_labels.slice();
-    var longest_label = tmp_labels.sort(
-                            function (a, b) { return b.length - a.length; }
-                        )[0];
-    // "25" is around the width of the font and "75" is for the similarity measure that is aounrd three characters wide
-    this.legend_svg.attr("width", 25 * longest_label.length + 50);
+
 
     // Data join
     var recs = this.legend_svg.selectAll("rect").data(this.pointer_labels);
-    var texts = this.legend_svg.selectAll("text").data(this.pointer_labels);
+    var legend_labels = this.legend_svg.selectAll(".legend-label").data(this.pointer_labels);
+    var val_texts = this.legend_svg.selectAll(".val").data(this.pointer_labels);
     // enter to append remaining lines
     recs.enter()
         .append("rect")
@@ -95,14 +90,30 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
         .attr("height", 10)
         .style("fill", this.color_func);
 
-    texts.enter()
-          .append("text")
+    legend_labels.enter().append("text")
           .attr("x", 15)
           .attr("y", function(d, i){ return i *  20 + 9;})
+          .attr("class", "legend-label")
           .html(function(d, i) {
                 return self.pointer_labels[i];
            });
 
+    // expand the width of the svg of the longest string
+    var label_list = $(".legend-label").toArray();
+    var longest_label = label_list.sort(
+                            function (a, b) { return b.getBBox().width - a.getBBox().width; }
+                        )[0];
+    // "50" is for the similarity measure that is around three characters wide
+    var svg_right_edge = longest_label.getBBox().width + 50;
+    this.legend_svg.attr("width", svg_right_edge);
+
+    val_texts.attr("x", svg_right_edge)
+            .attr("y", function(d, i){ return i *  20 + 9;});
+    val_texts.enter().append("text")
+            .attr("x", svg_right_edge)
+            .attr("y", function(d, i){ return i *  20 + 9;})
+            .attr("text-anchor","end")
+            .attr("class", "val");
 };
 
 /* there are three types of messages that can be received:
@@ -155,17 +166,15 @@ Nengo.SpaSimilarity.prototype.update = function() {
         }
 
         // update the text in the legend
-        var texts = this.legend_svg.selectAll("text").data(this.pointer_labels);
+        var texts = this.legend_svg.selectAll(".val").data(this.pointer_labels);
 
-        texts.attr("x", 15)
-              .attr("y", function(d, i){ return i *  20 + 9;})
-              .html(function(d, i) {
-                    var sign = "&nbsp;&nbsp;&nbsp;";
-                    if(latest_simi[i] < 0){
-                        sign = "&nbsp;&minus;";
-                    }
-                    return self.pointer_labels[i] + " " + sign + Math.abs(latest_simi[i]).toFixed(2);
-               });
+        texts.html(function(d, i) {
+                var sign = '';
+                if(latest_simi[i] < 0){
+                    sign = "&minus;";
+                }
+                return sign + Math.abs(latest_simi[i]).toFixed(2);
+           });
     }
 
 };
