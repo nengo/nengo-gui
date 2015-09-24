@@ -2,10 +2,10 @@
  * Line graph showing semantic pointer decoded values over time
  * @constructor
  *
- * @param {DOMElement} args.parent - the element to add this component to
+ * @param {DOMElement} parent - the element to add this component to
+ * @param {Nengo.SimControl} sim - the simulation controller
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
  * @param {int} args.n_lines - number of decoded values
- * @param {Nengo.SimControl} args.sim - the simulation controller
  */
 
 Nengo.SpaSimilarity = function(parent, sim, args) {

@@ -3,12 +3,12 @@
  * Line graph showing decoded values over time
  * @constructor
  *
- * @param {DOMElement} args.parent - the element to add this component to
+ * @param {DOMElement} parent - the element to add this component to
+ * @param {Nengo.SimControl} sim - the simulation controller
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
  * @param {int} args.n_lines - number of decoded values
  * @param {float} args.min_value - minimum value on y-axis
  * @param {float} args.max_value - maximum value on y-axis
- * @param {Nengo.SimControl} args.sim - the simulation controller
  *
  * Value constructor is called by python server when a user requests a plot 
  * or when the config file is making graphs. Server request is handled in 
