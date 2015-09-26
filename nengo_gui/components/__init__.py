@@ -8,6 +8,7 @@ from .voltage import Voltage
 from .pointer import Pointer
 from .netgraph import NetGraph
 from .ace_editor import AceEditor
+from .spa_similarity import SpaSimilarity
 from .htmlview import HTMLView
 from .spike_grid import SpikeGrid
 

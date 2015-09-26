@@ -323,13 +323,13 @@ Nengo.TimeSlider.prototype.reset = function() {
 
     /** update the time axis display */
     this.axis_g
-        .call(this.axis);   
+        .call(this.axis);
         
     x = this.kept_scale(this.first_shown_time);
     Nengo.set_transform(this.shown_div, x, 0);
 
     /** update any components who need to know the time changed */
-    this.sim.div.dispatchEvent(new Event('adjust_time'));             
+    this.sim.div.dispatchEvent(new Event('adjust_time'));
 }
 
 /**

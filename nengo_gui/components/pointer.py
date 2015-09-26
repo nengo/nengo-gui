@@ -1,6 +1,5 @@
 import collections
 import copy
-import struct
 
 import nengo
 import nengo.spa
@@ -8,23 +7,16 @@ from nengo.spa.module import Module
 import numpy as np
 
 from nengo_gui.components.component import Component
+from nengo_gui.components.spa_plot import SpaPlot
 
-
-class Pointer(Component):
+class Pointer(SpaPlot):
     config_defaults = dict(show_pairs=False, **Component.config_defaults)
     def __init__(self, obj, **kwargs):
-        super(Pointer, self).__init__()
-        self.obj = obj
-        self.data = collections.deque()
+        super(Pointer, self).__init__(obj, **kwargs)
+        # the semantic pointer value as set by the user in the GUI
+        # a value of 'None' means do not override
         self.override_target = None
-        self.target = kwargs.get('args', 'default')
-        self.vocab_out = obj.outputs[self.target][1]
         self.vocab_in = obj.inputs[self.target][1]
-
-    def attach(self, page, config, uid):
-        super(Pointer, self).attach(page, config, uid)
-        self.label = page.get_label(self.obj)
-        self.vocab_out.include_pairs = config.show_pairs
 
     def add_nengo_objects(self, page):
         with page.model:
@@ -43,16 +35,21 @@ class Pointer(Component):
 
     def gather_data(self, t, x):
         vocab = self.vocab_out
-        m = np.dot(vocab.vectors, x)
-        matches = [(mm, vocab.keys[i]) for i, mm in enumerate(m) if mm > 0.01]
+        key_similarities = np.dot(vocab.vectors, x)
+        over_threshold = key_similarities > 0.01
+        matches = zip(key_similarities[over_threshold], 
+                      np.array(vocab.keys)[over_threshold])
         if self.config.show_pairs:
             self.vocab_out.include_pairs = True
-            m2 = np.dot(vocab.vector_pairs, x)
-            matches2 = [(mm, vocab.key_pairs[i]) for i, mm in enumerate(m2)
-                        if mm > 0.01]
-            matches += matches2
-        text = ';'.join(['%0.2f%s' % (sim, key) for (sim, key) in matches])
+            pair_similarities = np.dot(vocab.vector_pairs, x)
+            over_threshold = pair_similarities > 0.01
+            pair_matches = zip(pair_similarities[over_threshold],
+                               np.array(vocab.key_pairs)[over_threshold])
+            matches += pair_matches
 
+        text = ';'.join(['%0.2f%s' % (sim, key) for sim, key in matches])
+
+        # msg sent as a string due to variable size of pointer names
         msg = '%g %s' % (t, text)
         self.data.append(msg)
         if self.override_target is None:
@@ -88,8 +85,9 @@ class Pointer(Component):
                     vocab.parse(msg[12:])
                     self.data.append("good_pointer")
                 except:
-                    self.data.append("bad_pointer")            
+                    self.data.append("bad_pointer")
         else:
+            # The message value is the new value for the output of the pointer
             try:
                 self.override_target = self.vocab_out.parse(msg)
             except:

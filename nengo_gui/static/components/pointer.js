@@ -3,7 +3,7 @@
  * @constructor
  *
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
- * @param {Nengo.SimControl} args.sim - the simulation controller
+ * @param {Nengo.SimControl} sim - the simulation controller
  *
  * Pointer constructor is called by python server when a user requests a plot 
  * or when the config file is making graphs. Server request is handled in 
@@ -154,7 +154,6 @@ Nengo.Pointer.prototype.on_message = function(event) {
     var time = parseFloat(data[0]);
 
     var items = data[1].split(";");
-
     this.data_store.push([time, items]);
     this.schedule_update();
 }
@@ -182,6 +181,7 @@ Nengo.Pointer.prototype.update = function() {
 
     var items = [];
 
+    // display the text in proportion to similarity
     for (var i=0; i < data.length; i++) {
         var size = parseFloat(data[i].substring(0,4));
         var span = document.createElement('span');
