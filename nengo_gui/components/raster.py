@@ -24,12 +24,16 @@ class Raster(Component):
         self.label = page.get_label(self.obj.ensemble)
 
     def add_nengo_objects(self, page):
+        if page.backend in ['nengo_spinnaker']:
+            return
         with page.model:
             self.node = nengo.Node(self.gather_data, size_in=self.max_neurons)
             if 'spikes' in self.neuron_type.probeable:
                 self.conn = nengo.Connection(self.obj, self.node, synapse=None)
 
     def remove_nengo_objects(self, page):
+        if page.backend in ['nengo_spinnaker']:
+            return
         page.model.nodes.remove(self.node)
         if 'spikes' in self.neuron_type.probeable:
             page.model.connections.remove(self.conn)

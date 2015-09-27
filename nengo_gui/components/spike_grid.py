@@ -24,6 +24,8 @@ class SpikeGrid(Component):
         self.label = page.get_label(self.obj)
 
     def add_nengo_objects(self, page):
+        if page.backend in ['nengo_spinnaker']:
+            return
         with page.model:
             self.node = nengo.Node(self.gather_data,
                                    size_in=self.obj.neurons.size_out)
@@ -31,6 +33,8 @@ class SpikeGrid(Component):
                                          self.node, synapse=0.01)
 
     def remove_nengo_objects(self, page):
+        if page.backend in ['nengo_spinnaker']:
+            return
         page.model.connections.remove(self.conn)
         page.model.nodes.remove(self.node)
 
