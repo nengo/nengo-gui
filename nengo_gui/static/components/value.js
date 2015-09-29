@@ -103,12 +103,12 @@ Nengo.Value = function(parent, sim, args) {
                 self.crosshair_updates = true;
                 self.cross_hair_mouse = [mouse[0], mouse[1]];
                 self.update_crosshair(mouse);
-	    })
-	    .on('mousewheel', function() {
-		// Hide the crosshair when zooming, until a better option comes along
-		self.crosshair_updates = false;
-		self.crosshair_g.style('display', 'none');
-	    });
+            })
+            .on('mousewheel', function() {
+                // Hide the crosshair when zooming, until a better option comes along
+                self.crosshair_updates = false;
+                self.crosshair_g.style('display', 'none');
+            });
 
     this.update();
     this.on_resize(this.get_screen_width(), this.get_screen_height());
