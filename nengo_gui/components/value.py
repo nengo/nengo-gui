@@ -10,8 +10,8 @@ class Value(Component):
     """The server-side system for a Value plot."""
 
     # the parameters to be stored in the .cfg file
-    config_defaults = dict(max_value=1,
-                         min_value=-1, 
+    config_defaults = dict(max_value=1, min_value=-1,
+                         show_legend=False, legend_labels=[],
                          **Component.config_defaults)
 
     def __init__(self, obj):
