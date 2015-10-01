@@ -56,6 +56,27 @@ Nengo.Value = function(parent, sim, args) {
     this.on_resize(this.get_screen_width(), this.get_screen_height());
     this.axes2d.axis_y.tickValues([args.min_value, args.max_value]);
     this.axes2d.fit_ticks(this);
+
+    this.colors = Nengo.make_colors(6);
+    this.color_func = function(d, i) {return self.colors[i % 6]};
+    this.legend = document.createElement('div');
+    this.legend.classList.add('legend');
+    this.div.appendChild(this.legend);
+
+    this.legend_labels = args.legend_labels || [];
+    if(this.legend_labels.length !== this.n_lines){
+        // fill up an array with temporary labels
+        for(i=0; i<this.n_lines; i++){
+            if(this.legend_labels[i] === undefined){
+                this.legend_labels[i] = "label_".concat(String(i));
+            }
+        }
+    }
+
+    this.show_legend = args.show_legend || false;
+    if(this.show_legend === true){
+        Nengo.draw_legend(this.legend, this.legend_labels, this.color_func);
+    }
 };
 
 Nengo.Value.prototype = Object.create(Nengo.Component.prototype);
@@ -129,13 +150,35 @@ Nengo.Value.prototype.generate_menu = function() {
     var items = [];
     items.push(['Set range...', function() {self.set_range();}]);
 
+    if (this.show_legend) {
+        items.push(['Hide legend', function() {self.set_show_legend(false);}]);
+    } else {
+        items.push(['Show legend', function() {self.set_show_legend(true);}]);
+    }
+
     // add the parent's menu items to this
     return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
 };
 
+Nengo.Value.prototype.set_show_legend = function(value){
+    if (this.show_legend !== value) {
+        this.show_legend = value;
+        this.save_layout();
+    }
+    if (this.show_legend === true){
+        Nengo.draw_legend(this.legend, this.legend_labels, this.color_func);
+    } else {
+        // delete the legend's children
+        while(this.legend.lastChild){
+            this.legend.removeChild(this.legend.lastChild);
+        }
+    }
+}
 
 Nengo.Value.prototype.layout_info = function () {
     var info = Nengo.Component.prototype.layout_info.call(this);
+    info.show_legend = this.show_legend;
+    info.legend_labels = this.legend_labels;
     info.min_value = this.axes2d.scale_y.domain()[0];
     info.max_value = this.axes2d.scale_y.domain()[1];
     return info;
