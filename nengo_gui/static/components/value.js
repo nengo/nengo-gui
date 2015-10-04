@@ -258,6 +258,9 @@ Nengo.Value.prototype.generate_menu = function() {
         items.push(['Show legend', function() {self.set_show_legend(true);}]);
     }
 
+    // TODO: give the legend it's own context menu
+    items.push(['Set legend labels', function () {self.set_legend_labels();}])
+
     // add the parent's menu items to this
     return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
 };
@@ -275,6 +278,44 @@ Nengo.Value.prototype.set_show_legend = function(value){
             this.legend.removeChild(this.legend.lastChild);
         }
     }
+}
+
+Nengo.Value.prototype.set_legend_labels = function() {
+    var self = this;
+
+    Nengo.modal.title('Enter comma seperated legend label values');
+    Nengo.modal.single_input_body('Legend label', 'New value');
+    Nengo.modal.footer('ok_cancel', function(e) {
+        var label_csv = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+        
+        // No validation to do.
+        // Blank string mean do nothing
+        // Long strings okay
+        // Excissive entries get ignored
+        // Missing entries get replaced by default value
+        // Empty entries assumed to be indication to skip modification
+        // TODO: Allow escaping of commas
+        if ((label_csv !== null) && (label_csv !== '')) {
+            labels = label_csv.split(',');
+
+            for(i=0; i<self.n_lines; i++){
+                if(labels[i] !== ""){
+                     self.legend_labels[i] = labels[i];
+                }
+            }
+
+            // redraw the legend with the updated label values
+            while(self.legend.lastChild){
+                self.legend.removeChild(self.legend.lastChild);
+            }
+            Nengo.draw_legend(self.legend, self.legend_labels, self.color_func);
+        }
+        $('#OK').attr('data-dismiss', 'modal');
+    });
+
+    // TODO: Add button so that a person can easily return to default labels
+    Nengo.modal.show();
 }
 
 Nengo.Value.prototype.layout_info = function () {
