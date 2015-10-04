@@ -5,6 +5,7 @@ import collections
 import threading
 
 import nengo
+from nengo import spa
 import json
 
 from nengo_gui.components.component import Component
@@ -469,6 +470,15 @@ class NetGraph(Component):
         elif isinstance(obj, nengo.Ensemble):
             info['dimensions'] = int(obj.size_out)
             info['n_neurons'] = int(obj.n_neurons)
+        # TODO: Add the same functionality for the BasalGanglia non-spa net
+        elif isinstance(obj, spa.BasalGanglia):
+            info['bg_inputs'] = obj.input.size_in
+            info['input_labels'] = []
+            for ac in obj.actions.actions:
+                if ac.name == None:
+                    info['input_labels'].append(ac.condition.expression.__str__())
+                else:
+                    info['input_labels'].append(ac.name)
         info['sp_targets'] = (
             nengo_gui.components.pointer.Pointer.applicable_targets(obj))
         return info

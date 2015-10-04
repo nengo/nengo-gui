@@ -14,7 +14,7 @@ class Value(Component):
                          show_legend=False, legend_labels=[],
                          **Component.config_defaults)
 
-    def __init__(self, obj):
+    def __init__(self, obj, n_lines=0):
         super(Value, self).__init__()
         # the object whose decoded value should be displayed
         self.obj = obj
@@ -23,7 +23,11 @@ class Value(Component):
         self.data = []
 
         # the number of data values to send
-        self.n_lines = int(obj.size_out)
+        self.n_lines = 0
+        if n_lines == 0:
+            self.n_lines = int(obj.size_out)
+        else:
+            self.n_lines = n_lines
 
         # the binary data format to sent in.  In this case, it is a list of
         # floats, with the first float being the time stamp and the rest
@@ -40,7 +44,7 @@ class Value(Component):
         # data we want to show while the model is running.
         with page.model:
             self.node = nengo.Node(self.gather_data,
-                                   size_in=self.obj.size_out)
+                                   size_in=self.n_lines)
             self.conn = nengo.Connection(self.obj, self.node, synapse=0.01)
 
     def remove_nengo_objects(self, page):
