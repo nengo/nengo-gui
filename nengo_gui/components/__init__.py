@@ -11,6 +11,7 @@ from .ace_editor import AceEditor
 from .spa_similarity import SpaSimilarity
 from .htmlview import HTMLView
 from .spike_grid import SpikeGrid
+from .bg_plot import BGPlot
 
 # Old versions of the .cfg files used Templates which had slightly different
 # names than the Components currently use.  This code allows us to

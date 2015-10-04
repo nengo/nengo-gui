@@ -133,7 +133,7 @@ Nengo.Value = function(parent, sim, args) {
 
     this.show_legend = args.show_legend || false;
     if(this.show_legend === true){
-        Nengo.draw_legend(this.legend, this.legend_labels, this.color_func);
+        Nengo.draw_legend(this.legend, this.legend_labels, this.color_func, this.uid);
     }
 };
 
@@ -271,7 +271,7 @@ Nengo.Value.prototype.set_show_legend = function(value){
         this.save_layout();
     }
     if (this.show_legend === true){
-        Nengo.draw_legend(this.legend, this.legend_labels, this.color_func);
+        Nengo.draw_legend(this.legend, this.legend_labels, this.color_func, this.uid);
     } else {
         // delete the legend's children
         while(this.legend.lastChild){
@@ -309,7 +309,7 @@ Nengo.Value.prototype.set_legend_labels = function() {
             while(self.legend.lastChild){
                 self.legend.removeChild(self.legend.lastChild);
             }
-            Nengo.draw_legend(self.legend, self.legend_labels, self.color_func);
+            Nengo.draw_legend(self.legend, self.legend_labels, self.color_func, this.uid);
         }
         $('#OK').attr('data-dismiss', 'modal');
     });
