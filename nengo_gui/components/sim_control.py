@@ -1,4 +1,5 @@
 import time
+import timeit
 import struct
 import traceback
 
@@ -52,7 +53,7 @@ class SimControl(Component):
         self.time = t
         self.sim_ticks += 1
 
-        now = time.clock()
+        now = timeit.default_timer()
         if self.last_tick is not None:
             dt = now - self.last_tick
             if dt == 0:
