@@ -25,6 +25,7 @@ class SpikeGrid(Component):
 
     def add_nengo_objects(self, page):
         if page.backend in ['nengo_spinnaker']:
+            self.gather_data(0.0, np.zeros(self.max_neurons))
             return
         with page.model:
             self.node = nengo.Node(self.gather_data,
