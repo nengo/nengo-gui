@@ -51,6 +51,64 @@ Nengo.Value = function(parent, sim, args) {
              .append('path')
              .attr('class', 'line')
              .style('stroke', function(d, i) {return self.colors[i];});
+    
+    // Flag for whether or not update code should be changing the crosshair
+    // Both zooming and the simulator time changing cause an update, but the crosshair
+    // should only update when the time is changing
+    this.crosshair_updates = false;
+    
+    // Keep track of mouse position TODO: fix this to be not required
+    this.crosshair_mouse = [0,0];
+
+    this.crosshair_g = this.axes2d.svg.append('g')
+        .attr('class', 'crosshair');
+
+    // TODO: put the crosshair properties in CSS
+    this.crosshair_g.append('line')
+            .attr('id', 'crosshairX')
+            .attr('stroke', 'black')
+            .attr('stroke-width', '0.5px');
+
+    this.crosshair_g.append('line')
+            .attr('id', 'crosshairY')
+            .attr('stroke', 'black')
+            .attr('stroke-width', '0.5px');
+
+    // TODO: have the fonts and colour set appropriately
+    this.crosshair_g.append('text')
+            .attr('id', 'crosshairXtext')
+            .style('text-anchor', 'middle')
+            .attr('class', 'graph_text');
+
+    this.crosshair_g.append('text')
+            .attr('id', 'crosshairYtext')
+            .style('text-anchor', 'end')
+            .attr('class', 'graph_text');
+
+    this.axes2d.svg
+            .on('mouseover', function() {
+                var mouse = d3.mouse(this);
+                self.crosshair_updates = true;
+                self.crosshair_g.style('display', null);
+                self.cross_hair_mouse = [mouse[0], mouse[1]];
+            })
+            .on('mouseout', function() {
+                var mouse = d3.mouse(this);
+                self.crosshair_updates = false;
+                self.crosshair_g.style('display', 'none');
+                self.cross_hair_mouse = [mouse[0], mouse[1]];
+            })
+            .on('mousemove', function() {
+                var mouse = d3.mouse(this);
+                self.crosshair_updates = true;
+                self.cross_hair_mouse = [mouse[0], mouse[1]];
+                self.update_crosshair(mouse);
+            })
+            .on('mousewheel', function() {
+                // Hide the crosshair when zooming, until a better option comes along
+                self.crosshair_updates = false;
+                self.crosshair_g.style('display', 'none');
+            });
 
     this.update();
     this.on_resize(this.get_screen_width(), this.get_screen_height());
@@ -60,6 +118,45 @@ Nengo.Value = function(parent, sim, args) {
 
 Nengo.Value.prototype = Object.create(Nengo.Component.prototype);
 Nengo.Value.prototype.constructor = Nengo.Value;
+
+Nengo.Value.prototype.update_crosshair = function(mouse) {
+    var self = this;
+    var x = mouse[0];
+    var y = mouse[1];
+
+    // TODO: I don't like having ifs here, make a smaller rectangle for mouseovers
+    if (x > this.axes2d.ax_left && x < this.axes2d.ax_right && y > this.axes2d.ax_top && y < this.axes2d.ax_bottom) {
+        this.crosshair_g.style('display', null);
+
+        this.crosshair_g.select('#crosshairX')
+            .attr('x1', x)
+            .attr('y1', this.axes2d.ax_top)
+            .attr('x2', x)
+            .attr('y2', this.axes2d.ax_bottom);
+
+        this.crosshair_g.select('#crosshairY')
+            .attr('x1', this.axes2d.ax_left)
+            .attr('y1', y)
+            .attr('x2', this.axes2d.ax_right)
+            .attr('y2', y);
+
+        this.crosshair_g.select('#crosshairXtext')
+            .attr('x', x - 2)
+            .attr('y', this.axes2d.ax_bottom + 17) //TODO: don't use magic numbers
+            .text(function () {
+                return Math.round(self.axes2d.scale_x.invert(x) * 100) / 100;
+            });
+
+        this.crosshair_g.select('#crosshairYtext')
+            .attr('x', this.axes2d.ax_left - 3)
+            .attr('y', y + 3)
+            .text(function () {
+                return Math.round(self.axes2d.scale_y.invert(y) * 100) / 100;
+            });
+    } else {
+        this.crosshair_g.style('display', 'none');
+    }
+};
 
 /**
  * Receive new line data from the server
@@ -99,6 +196,11 @@ Nengo.Value.prototype.update = function() {
 
     this.path.data(shown_data)
              .attr('d', self.line);
+
+    //** Update the crosshair text if the mouse is on top */
+    if (this.crosshair_updates) {
+	this.update_crosshair(this.cross_hair_mouse);
+    }
 };
 
 /**
