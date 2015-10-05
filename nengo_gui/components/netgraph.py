@@ -564,6 +564,8 @@ class NetGraph(Component):
         post = conn.post_obj
         if isinstance(post, nengo.connection.LearningRule):
             post = post.connection.post
+            if isinstance(post, nengo.base.ObjView):
+                post = post.obj
         if isinstance(post, nengo.ensemble.Neurons):
             post = post.ensemble
         pre = self.page.get_uid(pre)
