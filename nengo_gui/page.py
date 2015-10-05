@@ -48,9 +48,9 @@ class Page(object):
         self._sim = None       # the current nengo.Simulator
         self.rebuild = False   # should the model be rebuilt
 
-        self.code = None
-        self.error = None
-        self.stdout = ''
+        self.code = None       # the source code currently displayed
+        self.error = None      # any execute or build error
+        self.stdout = ''       # text printed during execute+build
 
         self.undo_stack = []
         self.redo_stack = []
