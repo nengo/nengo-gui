@@ -48,6 +48,10 @@ class Page(object):
         self._sim = None       # the current nengo.Simulator
         self.rebuild = False   # should the model be rebuilt
 
+        self.code = None
+        self.error = None
+        self.stdout = ''
+
         self.undo_stack = []
         self.redo_stack = []
 
@@ -182,8 +186,6 @@ class Page(object):
         locals['__file__'] = self.filename
 
         self.code = code
-        self.error = None
-        self.stdout = ''
 
         exec_env = nengo_gui.exec_env.ExecutionEnvironment(self.filename)
         try:
