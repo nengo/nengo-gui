@@ -5,6 +5,8 @@ import collections
 from nengo_gui.components.component import Component
 
 class Slider(Component):
+    """Input control component. Exclusively associated to Nodes"""
+
     config_defaults = dict(max_value=1, min_value=-1, 
                            **Component.config_defaults)
 

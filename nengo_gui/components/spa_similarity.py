@@ -6,6 +6,7 @@ from nengo_gui.components.spa_plot import SpaPlot
 
 
 class SpaSimilarity(SpaPlot):
+    """Line graph showing semantic pointer decoded values over time"""
 
     config_defaults = dict(max_value=1,
                            min_value=-1,

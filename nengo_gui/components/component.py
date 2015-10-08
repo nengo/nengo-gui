@@ -10,7 +10,8 @@ class Component(object):
 
     Each Component can be configured via the nengo.Config system.  Components
     can add required nengo objects into the model to allow them to gather
-    the required data from the running model.  Communication from server to 
+    required data or input overriding data (in the case of Pointer and Slider)
+    to/from the running model.  Communication from server to 
     client is done via Component.update_client(), which is called regularly
     by the Server.ws_viz_component handler.  Communication from client to
     server is via Component.message().
