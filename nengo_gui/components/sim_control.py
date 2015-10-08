@@ -74,6 +74,8 @@ class SimControl(Component):
 
         self.last_tick = now
 
+        # Sleeps to prevent the simulation from advancing
+        # while the simulation is paused
         while self.paused and self.page.sim is not None:
             time.sleep(0.01)
             self.last_tick = None
