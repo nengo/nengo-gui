@@ -13,6 +13,10 @@ from nengo_gui.components.component import Component
 import nengo_gui.exec_env
 
 class SimControl(Component):
+    """Controls simulation via control node embedded in the neural model.
+    Also instantiates and communitcates with the SimControl and the Toolbar
+    on the JavaScript side, which includes the task of back-end selection."""
+
     config_defaults = dict(shown_time=0.5, kept_time=4.0)
     def __init__(self, dt=0.001):
         # this component must be the very first one defined, so
@@ -49,6 +53,9 @@ class SimControl(Component):
         self.page.finish()
 
     def control(self, t):
+    """Node embedded in the model to control simulation progression.
+    Sleeps while the simulation is paused."""
+
         self.actual_model_dt = t - self.time
         self.time = t
         self.sim_ticks += 1
