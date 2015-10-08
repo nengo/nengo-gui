@@ -16,12 +16,16 @@ import nengo_gui.layout
 
 
 class NetGraph(Component):
+    """Handles computations and communications related to the NetGraph
+    on the JavaScript side. This includes NetGraph components and
+    manipulation"""
+
     config_defaults = {}
     configs = {}
 
     def __init__(self):
-        # this component must be before all the normal graphs (so that
-        # those other graphs are on top of the NetGraph), so its
+        # this component must be ordered before all the normal graphs (so that
+        # other graphs are on top of the NetGraph), so its
         # order is between that of SimControl and the default (0)
         super(NetGraph, self).__init__(component_order=-5)
 
