@@ -47,7 +47,6 @@ class Page(object):
         self.stdout = ''     # text sent to stdout during execution
 
         self.changed = False   # has the model been changed?
-        self.paused = False    # is the simulation paused
         self.finished = False  # should this Page be shut down
         self._sim = None       # the current nengo.Simulator
         self.rebuild = False   # should the model be rebuilt
