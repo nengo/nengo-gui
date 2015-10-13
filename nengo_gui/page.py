@@ -188,6 +188,8 @@ class Page(object):
         locals['__file__'] = self.filename
 
         self.code = code
+        self.error = None
+        self.stdout = ''
 
         exec_env = nengo_gui.exec_env.ExecutionEnvironment(self.filename)
         try:
