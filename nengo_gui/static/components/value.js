@@ -47,8 +47,8 @@ Nengo.Value = function(parent, sim, args) {
                                     .data(this.data_store.data);
 
     // create the color function
-    // TODO: save this in the config
-    this.color_func = Nengo.default_colors();
+    this.palette_index = args.palette_index || 0;
+    this.color_func = Nengo.color_choices[this.palette_index][1]["func"];
 
     this.path.enter()
              .append('path')
@@ -283,22 +283,21 @@ Nengo.Value.prototype.set_color_func = function() {
     radio_html += "</form>";
     body.append(radio_html);
 
-    // TODO: Make this thing easier to select
-    var selected_palette = 0;
+    // TODO: Make this thing easier to select for the user
     Nengo.modal.footer('ok_cancel', function(e) {
-        selected_palette = $("#palette input:radio[name='pal']:checked").val();
-        self.color_func = Nengo.color_choices[selected_palette][1]["func"];
+        self.palette_index = Number($("#palette input:radio[name='pal']:checked").val());
+        self.color_func = Nengo.color_choices[self.palette_index][1]["func"];
 
         self.path.style('stroke', function(d, i){return self.color_func(i)});
         if(self.show_legend === true){
             self.clear_legend();
             Nengo.draw_legend(self.legend, self.legend_labels, self.color_func, self.uid);
         }
-
+        self.save_layout();
         $('#OK').attr('data-dismiss', 'modal');
     });
 
-    // allow enter keypress
+    // allow "Enter" keypress
     $("#palette").keypress(function(event) {
         if (event.which == 13) {
             event.preventDefault();
@@ -358,6 +357,7 @@ Nengo.Value.prototype.set_legend_labels = function() {
                 self.legend.removeChild(self.legend.lastChild);
             }
             Nengo.draw_legend(self.legend, self.legend_labels, self.color_func, this.uid);
+            self.save_layout();
         }
         $('#OK').attr('data-dismiss', 'modal');
     });
@@ -372,6 +372,7 @@ Nengo.Value.prototype.layout_info = function () {
     info.legend_labels = this.legend_labels;
     info.min_value = this.axes2d.scale_y.domain()[0];
     info.max_value = this.axes2d.scale_y.domain()[1];
+    info.palette_index = this.palette_index;
     return info;
 }
 
