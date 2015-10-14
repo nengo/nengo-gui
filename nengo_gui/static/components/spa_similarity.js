@@ -17,9 +17,6 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
 
     var self = this;
 
-    this.colors = Nengo.make_colors(6);
-    this.color_func = function(d, i) {return self.colors[i % 6]};
-
     this.line.defined(function(d) { return !isNaN(d)});
 
     // create the legend from label args
