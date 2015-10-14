@@ -346,9 +346,11 @@ Nengo.Value.prototype.set_legend_labels = function() {
         if ((label_csv !== null) && (label_csv !== '')) {
             labels = label_csv.split(',');
 
-            for(i=0; i<self.n_lines; i++){
+            for(i=0; i<labels.length; i++){
                 if(labels[i] !== ""){
                      self.legend_labels[i] = labels[i];
+                } else {
+                    self.legend_labels[i] = "label_".concat(String(i));
                 }
             }
 
