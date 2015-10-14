@@ -46,11 +46,14 @@ Nengo.Value = function(parent, sim, args) {
     this.path = this.axes2d.svg.append("g").selectAll('path')
                                     .data(this.data_store.data);
 
-    this.colors = Nengo.make_colors(this.n_lines);
+    // create the color function
+    // TODO: save this in the config
+    this.color_func = Nengo.default_colors();
+
     this.path.enter()
              .append('path')
              .attr('class', 'line')
-             .style('stroke', function(d, i) {return self.colors[i];});
+             .style('stroke', function(d, i){return self.color_func(i)});
     
     // Flag for whether or not update code should be changing the crosshair
     // Both zooming and the simulator time changing cause an update, but the crosshair
@@ -115,8 +118,6 @@ Nengo.Value = function(parent, sim, args) {
     this.axes2d.axis_y.tickValues([args.min_value, args.max_value]);
     this.axes2d.fit_ticks(this);
 
-    this.colors = Nengo.make_colors(6);
-    this.color_func = function(d, i) {return self.colors[i % 6]};
     this.legend = document.createElement('div');
     this.legend.classList.add('legend');
     this.div.appendChild(this.legend);
@@ -265,6 +266,49 @@ Nengo.Value.prototype.generate_menu = function() {
     return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
 };
 
+Nengo.Value.prototype.set_color_func = function() {
+    var self = this;
+
+    Nengo.modal.clear_body();
+    // TODO: Let the user define their own palette
+    Nengo.modal.title('Choose a palette');
+
+    // Create a radio button form with the available palettes
+    var body = Nengo.modal.$body;
+    var radio_html = "<form  id='palette'>";
+    radio_html += "<input type='radio' name='pal' value='" + 0 + "' checked='checked'>"+Nengo.color_choices[0][0]+"</input><br>"
+    for (i = 1; i < Nengo.color_choices.length; i++) {
+        radio_html += "<input type='radio' name='pal' value='" + i + "'>"+Nengo.color_choices[i][0]+"</input><br>"
+    }
+    radio_html += "</form>";
+    body.append(radio_html);
+
+    // TODO: Make this thing easier to select
+    var selected_palette = 0;
+    Nengo.modal.footer('ok_cancel', function(e) {
+        selected_palette = $("#palette input:radio[name='pal']:checked").val();
+        self.color_func = Nengo.color_choices[selected_palette][1]["func"];
+
+        self.path.style('stroke', function(d, i){return self.color_func(i)});
+        if(self.show_legend === true){
+            self.clear_legend();
+            Nengo.draw_legend(self.legend, self.legend_labels, self.color_func, self.uid);
+        }
+
+        $('#OK').attr('data-dismiss', 'modal');
+    });
+
+    // allow enter keypress
+    $("#palette").keypress(function(event) {
+        if (event.which == 13) {
+            event.preventDefault();
+            $('#OK').click();
+        }
+    });
+
+    Nengo.modal.show();
+}
+
 Nengo.Value.prototype.set_show_legend = function(value){
     if (this.show_legend !== value) {
         this.show_legend = value;
@@ -274,9 +318,13 @@ Nengo.Value.prototype.set_show_legend = function(value){
         Nengo.draw_legend(this.legend, this.legend_labels, this.color_func, this.uid);
     } else {
         // delete the legend's children
-        while(this.legend.lastChild){
-            this.legend.removeChild(this.legend.lastChild);
-        }
+        this.clear_legend();
+    }
+}
+
+Nengo.Value.prototype.clear_legend = function() {
+    while(this.legend.lastChild){
+        this.legend.removeChild(this.legend.lastChild);
     }
 }
 

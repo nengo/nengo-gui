@@ -88,7 +88,7 @@ Nengo.draw_legend = function(parent, labels, color_func, uid){
               .attr("y", function(d, i){ return i *  20;})
               .attr("width", 10)
               .attr("height", 10)
-              .style("fill", color_func);
+              .style("fill", function(d, i) {return color_func(i)});
 
     legend_svg.selectAll('text')
               .data(labels)
