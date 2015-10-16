@@ -262,6 +262,8 @@ Nengo.Value.prototype.generate_menu = function() {
     // TODO: give the legend it's own context menu
     items.push(['Set legend labels', function () {self.set_legend_labels();}])
 
+    items.push(['Change color palette', function () {self.set_color_func();}])
+
     // add the parent's menu items to this
     return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
 };

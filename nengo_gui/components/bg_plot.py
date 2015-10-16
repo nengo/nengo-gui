@@ -4,7 +4,6 @@ import nengo
 import numpy as np
 import ipdb
 
-from nengo_gui.components.component import Component
 from nengo_gui.components.value import Value
 
 
@@ -12,9 +11,9 @@ class BGPlot(Value):
     """The server-side system for the SPA Basal Ganglia plot."""
 
     # the parameters to be stored in the .cfg file
-    config_defaults = dict(max_value=1, min_value=-1,
-                         show_legend=True, legend_labels=[],
-                         **Component.config_defaults)
+    config_defaults = Value.config_defaults
+    config_defaults["palette_index"] = 1
+    config_defaults["show_legend"] = True
 
     def __init__(self, obj, **kwargs):
         args = kwargs["args"]
