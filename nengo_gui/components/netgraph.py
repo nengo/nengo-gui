@@ -77,10 +77,16 @@ class NetGraph(Component):
             self.new_code = code
 
     def reload(self, code=None):
+        """Called when new code has been detected
+        checks that the page is not currently being used
+        and thus can be updated"""
         with self.page.lock:
             self._reload(code=code)
 
     def _reload(self, code=None):
+        """Loads and executes the code, removing old items,
+        updating changed items
+        and adding new ones"""
 
         old_locals = self.page.last_good_locals
         old_default_labels = self.page.default_labels
@@ -245,6 +251,7 @@ class NetGraph(Component):
                 # this is a Component that was previously removed,
                 #  but is still in the config file, or it has to be
                 #  rebuilt, so let's recover it
+                # This is also how new components are created
                 if k not in component_uids:
                     self.page.add_component(v)
                     self.to_be_sent.append(dict(type='js', 
@@ -275,6 +282,7 @@ class NetGraph(Component):
 
         self.page.components = components
 
+        # notifies SimControl to pause the simulation
         self.page.changed = True
 
     def _reload_update_item(self, uid, old_item, new_item, new_name_finder):
