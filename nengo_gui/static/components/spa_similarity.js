@@ -39,7 +39,7 @@ Nengo.SpaSimilarity.prototype.reset_legend_and_data = function(new_labels){
     while(this.legend.lastChild){
         this.legend.removeChild(this.legend.lastChild);
     }
-    this.legend_svg = d3.select(this.legend).append("svg").attr("id", "#id"+this.uid);
+    this.legend_svg = d3.select(this.legend).append("svg").attr("id", "id"+this.uid);
 
     // redraw all the legends if they exist
     this.legend_labels = [];
