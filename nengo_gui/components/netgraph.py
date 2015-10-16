@@ -179,6 +179,7 @@ class NetGraph(Component):
         #  Networks, but whose values are being shown in a graph)
         collapsed_items = []
 
+        # remove graphs no longer associate to NetgraphItems
         removed_items = list(removed_uids.values())
         for c in self.page.components[:]:
             for item in c.code_python_args(old_default_labels):
