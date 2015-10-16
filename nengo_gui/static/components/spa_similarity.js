@@ -20,11 +20,11 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
     this.line.defined(function(d) { return !isNaN(d)});
 
     // create the legend from label args
-    this.pointer_labels = args.pointer_labels;
+    this.legend_labels = args.pointer_labels;
     this.legend = document.createElement('div');
     this.legend.classList.add('legend', 'unselectable');
     this.div.appendChild(this.legend);
-    this.legend_svg = Nengo.draw_legend(this.legend, args.pointer_labels, this.color_func, this.uid);
+    this.legend_svg = Nengo.draw_legend(this.legend, this.legend_labels, this.color_func, this.uid);
 };
 
 Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
@@ -42,7 +42,7 @@ Nengo.SpaSimilarity.prototype.reset_legend_and_data = function(new_labels){
     this.legend_svg = d3.select(this.legend).append("svg").attr("id", "#id"+this.uid);
 
     // redraw all the legends if they exist
-    this.pointer_labels = [];
+    this.legend_labels = [];
     if(new_labels[0] != ""){
         this.update_legend(new_labels);
     }
@@ -68,16 +68,16 @@ Nengo.SpaSimilarity.prototype.data_msg = function(push_data){
 Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
 
     var self = this;
-    this.pointer_labels = this.pointer_labels.concat(new_labels);
+    this.legend_labels = this.legend_labels.concat(new_labels);
 
     // expand the height of the svg, where "20" is around the height of the font
-    this.legend_svg.attr("height", 20 * this.pointer_labels.length);
+    this.legend_svg.attr("height", 20 * this.legend_labels.length);
 
 
     // Data join
-    var recs = this.legend_svg.selectAll("rect").data(this.pointer_labels);
-    var legend_labels = this.legend_svg.selectAll(".legend-label").data(this.pointer_labels);
-    var val_texts = this.legend_svg.selectAll(".val").data(this.pointer_labels);
+    var recs = this.legend_svg.selectAll("rect").data(this.legend_labels);
+    var legend_labels = this.legend_svg.selectAll(".legend-label").data(this.legend_labels);
+    var val_texts = this.legend_svg.selectAll(".val").data(this.legend_labels);
     // enter to append remaining lines
     recs.enter()
         .append("rect")
@@ -85,14 +85,14 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
         .attr("y", function(d, i){ return i *  20;})
         .attr("width", 10)
         .attr("height", 10)
-        .style("fill", this.color_func);
+        .style("fill", function(d, i) {return self.color_func(i)});
 
     legend_labels.enter().append("text")
           .attr("x", 15)
           .attr("y", function(d, i){ return i *  20 + 9;})
           .attr("class", "legend-label")
           .html(function(d, i) {
-                return self.pointer_labels[i];
+                return self.legend_labels[i];
            });
 
     // expand the width of the svg of the longest string
@@ -149,7 +149,7 @@ Nengo.SpaSimilarity.prototype.update = function() {
     this.path.enter()
              .append('path')
              .attr('class', 'line')
-             .style('stroke', this.color_func)
+             .style('stroke', function(d, i) {return self.color_func(i)})
              .attr('d', self.line);
     // remove any lines that aren't needed anymore
     this.path.exit().remove();
@@ -163,7 +163,7 @@ Nengo.SpaSimilarity.prototype.update = function() {
         }
 
         // update the text in the legend
-        var texts = this.legend_svg.selectAll(".val").data(this.pointer_labels);
+        var texts = this.legend_svg.selectAll(".val").data(this.legend_labels);
 
         texts.html(function(d, i) {
                 var sign = '';
@@ -187,9 +187,59 @@ Nengo.SpaSimilarity.prototype.generate_menu = function() {
         items.push(['Show pairs', function() {self.set_show_pairs(true);}]);
     }
 
+    items.push(['Change color palette', function() {self.set_color_func();}])
+
     // add the parent's menu items to this
     return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
 };
+
+Nengo.SpaSimilarity.prototype.set_color_func = function() {
+    var self = this;
+
+    Nengo.modal.clear_body();
+    // TODO: Let the user define their own palette
+    Nengo.modal.title('Choose a palette');
+
+    // Create a radio button form with the available palettes
+    var body = Nengo.modal.$body;
+    var radio_html = "<form  id='palette'>";
+    radio_html += "<input type='radio' name='pal' value='" + 0 + "' checked='checked'>"+Nengo.color_choices[0][0]+"</input><br>"
+    for (i = 1; i < Nengo.color_choices.length; i++) {
+        radio_html += "<input type='radio' name='pal' value='" + i + "'>"+Nengo.color_choices[i][0]+"</input><br>"
+    }
+    radio_html += "</form>";
+    body.append(radio_html);
+
+    // TODO: Make this thing easier to select for the user
+    Nengo.modal.footer('ok_cancel', function(e) {
+        self.palette_index = Number($("#palette input:radio[name='pal']:checked").val());
+        self.color_func = Nengo.color_choices[self.palette_index][1]["func"];
+
+        self.path.style('stroke', function(d, i){return self.color_func(i)});
+        self.legend_svg.selectAll("rect").remove();
+        var recs = self.legend_svg.selectAll("rect").data(self.legend_labels);
+        recs.enter()
+            .append("rect")
+            .attr("x", 0)
+            .attr("y", function(d, i){ return i *  20;})
+            .attr("width", 10)
+            .attr("height", 10)
+            .style("fill", function(d, i) {return self.color_func(i)});
+        self.save_layout();
+        $('#OK').attr('data-dismiss', 'modal');
+    });
+
+    // allow "Enter" keypress
+    $("#palette").keypress(function(event) {
+        if (event.which == 13) {
+            event.preventDefault();
+            $('#OK').click();
+        }
+    });
+
+    Nengo.modal.show();
+}
+
 
 Nengo.SpaSimilarity.prototype.set_show_pairs = function(value) {
     if (this.show_pairs !== value) {
