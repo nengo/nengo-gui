@@ -2,7 +2,6 @@ import struct
 
 import nengo
 import numpy as np
-import ipdb
 
 from nengo_gui.components.value import Value
 
