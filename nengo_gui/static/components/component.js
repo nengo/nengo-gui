@@ -42,11 +42,9 @@ Nengo.Component = function(parent, args) {
     parent.appendChild(this.div);
     this.parent = parent;
 
-    // How is the position of this label being set?
     this.label = document.createElement('div');
     this.label.classList.add('label', 'unselectable');
     this.label.innerHTML = args.label.replace('<', '&lt;').replace('>', '&gt;');
-    // I expected this to be absolute...
     this.label.style.position = 'fixed';
     this.label.style.width = args.width;
     this.label.style.height = '2em';
