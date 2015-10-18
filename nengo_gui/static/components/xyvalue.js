@@ -65,6 +65,9 @@ Nengo.XYValue = function(parent, sim, args) {
                                         .attr('cy', self.axes2d.scale_y(0))
                                         .style("fill", Nengo.make_colors(2)[1]);
 
+    this.warning_label = this.axes2d.svg.append("g");
+    this.invalid_dims = false;
+
     this.axes2d.fit_ticks(this);
     this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
@@ -84,12 +87,13 @@ Nengo.XYValue.prototype.on_message = function(event) {
  * Redraw the lines and axis due to changed data
  */
 Nengo.XYValue.prototype.update = function() {
+    var self = this;
+
     /** let the data store clear out old values */
     this.data_store.update();
 
     /** update the lines if there is data with valid dimensions */
     if(this.data_store.data.length > 1){
-        var self = this;
         var shown_data = this.data_store.get_shown_data();
         var line = d3.svg.line()
             .x(function(d, i) {
@@ -106,12 +110,37 @@ Nengo.XYValue.prototype.update = function() {
                             .attr('cy', self.axes2d.scale_y(shown_data[self.index_y][last_index]));
         if(this.invalid_dims === true){
             // remove the label
+             while(this.warning_label.lastChild){
+                 this.warning_label.removeChild(this.warning_label.lastChild);
+             }
             this.invalid_dims = false;
         }
-    } else {
+    } else if(this.invalid_dims == false){
         this.invalid_dims = true;
+
         // add the label
-        this.axes2d.svg.append();
+        this.warning_label.append("rect")
+          .attr("x", this.axes2d.ax_left)
+          .attr("y", this.axes2d.ax_top)
+          .attr("width", this.axes2d.ax_right - this.axes2d.ax_left)
+          .attr("height", this.axes2d.ax_bottom - this.axes2d.ax_top)
+          .attr("fill", "yellow")
+          .attr("fill-opacity", 0.4);
+        // TODO: this css should be extracted
+        this.warning_label.append("text")
+          .attr("x", this.axes2d.width)
+          .attr("y", this.axes2d.height)
+          .attr("text-anchor", "middle")
+          .attr("alignment-baseline", "middle")
+          .style("fill", "red")
+          .text("INVALID");
+        this.warning_label.append("text")
+          .attr("x", this.axes2d.width)
+          .attr("y", this.axes2d.height)
+          .attr("text-anchor", "middle")
+          .attr("alignment-baseline", "middle")
+          .style("fill", "red")
+          .text("DIMENSIONS");
     }
 
 };
@@ -130,6 +159,12 @@ Nengo.XYValue.prototype.on_resize = function(width, height) {
     this.div.style.width = width;
     this.div.style.height = height;
     this.recent_circle.attr("r", this.get_circle_radius());
+
+    // TODO: Resize warning label
+    // HOW IN THE WORLD DO I GET THE SIZE OF THIS THING
+    this.warning_label.select("rect")
+      .attr("width", this.axes2d.ax_right - this.axes2d.ax_left)
+      .attr("height", this.axes2d.ax_bottom - this.axes2d.ax_top);
 };
 
 Nengo.XYValue.prototype.get_circle_radius = function() {
