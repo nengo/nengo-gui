@@ -30,6 +30,7 @@ Nengo.XYValue = function(parent, sim, args) {
     this.axes2d.axis_x.tickValues([args.min_value, args.max_value]);
 
     /** scales for mapping x and y values to pixels */
+    // Why isn't this done in the Axes2D constructor?
     this.axes2d.scale_x.domain([args.min_value, args.max_value]);
 
     // the two indices of the multi-dimensional data to display
@@ -56,13 +57,11 @@ Nengo.XYValue = function(parent, sim, args) {
 
     /** create a circle to track the most recent data */
     // TODO:
-    // the circle needs to resize with zooming
-    // the initialisation is silly too and gives NaN
     // should also listen to the play button to decide when to become visible
     this.recent_circle = this.axes2d.svg.append("circle")
                                         .attr("r", this.get_circle_radius())
-                                        .attr('cx', self.axes2d.scale_x(0))
-                                        .attr('cy', self.axes2d.scale_y(0))
+                                        .attr('cx', this.axes2d.scale_x(0))
+                                        .attr('cy', this.axes2d.scale_y(0))
                                         .style("fill", Nengo.make_colors(2)[1]);
 
     this.warning_label = this.axes2d.svg.append("g");
@@ -119,28 +118,29 @@ Nengo.XYValue.prototype.update = function() {
         this.invalid_dims = true;
 
         // add the label
+        // TODO: get rid of magic numbers... somehow
         this.warning_label.append("rect")
-          .attr("x", this.axes2d.ax_left)
-          .attr("y", this.axes2d.ax_top)
-          .attr("width", this.axes2d.ax_right - this.axes2d.ax_left)
-          .attr("height", this.axes2d.ax_bottom - this.axes2d.ax_top)
+          .attr("x", 32.5)
+          .attr("y", 30)
+          .attr("width", this.width)
+          .attr("height", this.height)
           .attr("fill", "yellow")
           .attr("fill-opacity", 0.4);
         // TODO: this css should be extracted
+        // we probably don't want the text to be relative...
+        // http://stackoverflow.com/a/19589216/1079075
         this.warning_label.append("text")
-          .attr("x", this.axes2d.width)
-          .attr("y", this.axes2d.height)
+          .attr("x", this.width/2)
+          .attr("y", this.height/2)
           .attr("text-anchor", "middle")
           .attr("alignment-baseline", "middle")
           .style("fill", "red")
-          .text("INVALID");
-        this.warning_label.append("text")
-          .attr("x", this.axes2d.width)
-          .attr("y", this.axes2d.height)
-          .attr("text-anchor", "middle")
-          .attr("alignment-baseline", "middle")
-          .style("fill", "red")
-          .text("DIMENSIONS");
+          .append("tspan")
+            .attr("dy", -12)
+            .text("INVALID")
+          .append("tspan")
+            .attr("dy", 12)
+            .text("DIMENSIONS");
     }
 
 };
@@ -163,8 +163,11 @@ Nengo.XYValue.prototype.on_resize = function(width, height) {
     // TODO: Resize warning label
     // HOW IN THE WORLD DO I GET THE SIZE OF THIS THING
     this.warning_label.select("rect")
-      .attr("width", this.axes2d.ax_right - this.axes2d.ax_left)
-      .attr("height", this.axes2d.ax_bottom - this.axes2d.ax_top);
+      .attr("width", width - 60)
+      .attr("height", height - 60);
+    this.warning_label.selectAll("text")
+      .attr("x", width/2)
+      .attr("y", this.height/2);
 };
 
 Nengo.XYValue.prototype.get_circle_radius = function() {

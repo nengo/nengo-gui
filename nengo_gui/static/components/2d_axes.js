@@ -31,7 +31,12 @@ Nengo.Axes2D = function(parent, args) {
     /** spacing between the graph and the outside edges (in pixels) */
     // TODO: For centered, make it start at zero
     this.set_axes_geometry(args.width, args.height);
-    
+
+    // WTF why don't we set the range here?
+    // And even if we do, why isn't the scale working for my circle?
+    //this.scale_x.range([this.ax_left, this.ax_right]);
+    //this.scale_y.range([this.ax_bottom, this.ax_top]);
+
     /** define the x-axis */
     this.axis_x = d3.svg.axis()
         .scale(this.scale_x)
