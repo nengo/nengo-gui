@@ -55,8 +55,10 @@ Nengo.XYValue = function(parent, sim, args) {
              .style('stroke', Nengo.make_colors(1));
 
     /** create a circle to track the most recent data */
+    // TODO:
     // the circle needs to resize with zooming
     // the initialisation is silly too and gives NaN
+    // should also listen to the play button to decide when to become visible
     this.recent_circle = this.axes2d.svg.append("circle")
                                         .attr("r", this.get_circle_radius())
                                         .attr('cx', self.axes2d.scale_x(0))
@@ -85,8 +87,8 @@ Nengo.XYValue.prototype.update = function() {
     /** let the data store clear out old values */
     this.data_store.update();
 
-    /** update the lines */
-    if(this.data_store.data.length !== 1){
+    /** update the lines if there is data with valid dimensions */
+    if(this.data_store.data.length > 1){
         var self = this;
         var shown_data = this.data_store.get_shown_data();
         var line = d3.svg.line()
@@ -104,10 +106,12 @@ Nengo.XYValue.prototype.update = function() {
                             .attr('cy', self.axes2d.scale_y(shown_data[self.index_y][last_index]));
         if(this.invalid_dims === true){
             // remove the label
+            this.invalid_dims = false;
         }
     } else {
         this.invalid_dims = true;
         // add the label
+        this.axes2d.svg.append();
     }
 
 };

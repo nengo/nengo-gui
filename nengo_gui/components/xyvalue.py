@@ -8,6 +8,7 @@ from nengo_gui.components.component import Component
 
 
 class XYValue(Component):
+    # TODO: What is index_x and index_y used for?
     config_defaults = dict(max_value=1, min_value=-1, index_x=0, index_y=1,
                            **Component.config_defaults)
     def __init__(self, obj):

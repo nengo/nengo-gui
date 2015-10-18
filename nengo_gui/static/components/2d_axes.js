@@ -29,6 +29,7 @@ Nengo.Axes2D = function(parent, args) {
     this.center_y_axis = args.center_y_axis;
 
     /** spacing between the graph and the outside edges (in pixels) */
+    // TODO: For centered, make it start at zero
     this.set_axes_geometry(args.width, args.height);
     
     /** define the x-axis */
