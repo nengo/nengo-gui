@@ -4,8 +4,8 @@
  *
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
  * @param {int} args.n_lines - number of decoded values
- * @param {float} args.miny - minimum value on y-axis
- * @param {float} args.maxy - maximum value on y-axis
+ * @param {array} args.x_range - minimum and maximum value on x-axis
+ * @param {array} args.y_range - minimum and maximum value on y-axis
  * @param {Nengo.SimControl} args.sim - the simulation controller
  *
  * XYValue constructor is called by python server when a user requests a plot 
@@ -23,15 +23,7 @@ Nengo.XYValue = function(parent, sim, args) {
     /** for storing the accumulated data */
     this.data_store = new Nengo.DataStore(this.n_lines, this.sim, 0);
 
-    args.center_x_axis = true;
-    args.center_y_axis = true;
-    this.axes2d = new Nengo.Axes2D(this.div, args);
-    this.axes2d.axis_y.tickValues([args.min_value, args.max_value]);
-    this.axes2d.axis_x.tickValues([args.min_value, args.max_value]);
-
-    /** scales for mapping x and y values to pixels */
-    // Why isn't this done in the Axes2D constructor?
-    this.axes2d.scale_x.domain([args.min_value, args.max_value]);
+    this.axes2d = new Nengo.XYAxes(this.div, args);
 
     // the two indices of the multi-dimensional data to display
     this.index_x = args.index_x;
@@ -57,7 +49,7 @@ Nengo.XYValue = function(parent, sim, args) {
 
     /** create a circle to track the most recent data */
     // TODO:
-    // should also listen to the play button to decide when to become visible
+    // WHY AREN'T THE SCALES FREAKING WORKING
     this.recent_circle = this.axes2d.svg.append("circle")
                                         .attr("r", this.get_circle_radius())
                                         .attr('cx', this.axes2d.scale_x(0))
@@ -119,6 +111,7 @@ Nengo.XYValue.prototype.update = function() {
 
         // add the label
         // TODO: get rid of magic numbers... somehow
+        // probably need to figure out translation
         this.warning_label.append("rect")
           .attr("x", 32.5)
           .attr("y", 30)
@@ -126,9 +119,7 @@ Nengo.XYValue.prototype.update = function() {
           .attr("height", this.height)
           .attr("fill", "yellow")
           .attr("fill-opacity", 0.4);
-        // TODO: this css should be extracted
-        // we probably don't want the text to be relative...
-        // http://stackoverflow.com/a/19589216/1079075
+        // TODO: fix text alignment
         this.warning_label.append("text")
           .attr("x", this.width/2)
           .attr("y", this.height/2)
@@ -160,8 +151,6 @@ Nengo.XYValue.prototype.on_resize = function(width, height) {
     this.div.style.height = height;
     this.recent_circle.attr("r", this.get_circle_radius());
 
-    // TODO: Resize warning label
-    // HOW IN THE WORLD DO I GET THE SIZE OF THIS THING
     this.warning_label.select("rect")
       .attr("width", width - 60)
       .attr("height", height - 60);
