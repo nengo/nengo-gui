@@ -18,11 +18,8 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
     this.size = info.size;
     this.type = info.type;
     this.uid = info.uid;
-<<<<<<< HEAD
     this.sp_targets = info.sp_targets;
     this.scalar_out = info.scalar_out;
-=======
->>>>>>> origin/more-colors
     this.passthrough = info.passthrough;
     this.fixed_width = null;
     this.fixed_height = null;
