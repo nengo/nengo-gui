@@ -162,9 +162,41 @@ class NetGraph(Component):
         orphan_components = []
         rebuild_components = []
 
+        # items that are shown in components, but not currently displayed
+        #  in the NetGraph (i.e. things that are inside collapsed
+        #  Networks, but whose values are being shown in a graph)
+        collapsed_items = []
+
         removed_items = list(removed_uids.values())
         for c in self.page.components[:]:
             for item in c.code_python_args(old_default_labels):
+                if item not in self.uids.keys() and item not in collapsed_items:
+                    # this Component depends on an item inside a collapsed
+                    #  Network, so we need to check if that component has
+                    #  changed or been removed
+                    try:
+                        old_obj = eval(item, old_locals)
+                    except:
+                        continue
+                    try:
+                        new_obj = eval(item, self.page.locals)
+                    except:
+                        new_obj = None
+
+                    keep_object = True
+                    if new_obj is None:
+                        removed_items.append(item)
+                    elif not isinstance(new_obj, old_obj.__class__):
+                        rebuilt_objects.append(item)
+                    elif (self.get_extra_info(new_obj) != 
+                          self.get_extra_info(old_obj)):
+                        rebuilt_objects.append(item)
+
+                    # add this to the list of collapsed items, so we
+                    # don't recheck it if there's another Component that
+                    # also depends on this
+                    collapsed_items.append(item)
+
                 if item in rebuilt_objects:
                     self.to_be_sent.append(dict(type='delete_graph',
                                                 uid=c.original_id,
