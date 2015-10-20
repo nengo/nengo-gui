@@ -5,6 +5,7 @@ import collections
 import threading
 
 import nengo
+from nengo import spa
 import json
 
 from nengo_gui.components.component import Component
@@ -469,8 +470,12 @@ class NetGraph(Component):
         elif isinstance(obj, nengo.Ensemble):
             info['dimensions'] = int(obj.size_out)
             info['n_neurons'] = int(obj.n_neurons)
+        elif isinstance(obj, spa.Compare):
+            info['scalar_out'] = True
+
         info['sp_targets'] = (
             nengo_gui.components.pointer.Pointer.applicable_targets(obj))
+
         return info
 
     def send_pan_and_zoom(self, client):
