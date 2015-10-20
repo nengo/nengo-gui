@@ -26,11 +26,6 @@ class BGPlot(Value):
 
         self.label = "bg " + self.probe_target
 
-        # the binary data format to sent in.  In this case, it is a list of
-        # floats, with the first float being the time stamp and the rest
-        # being the vector values, one per dimension.
-        self.struct = struct.Struct('<%df' % (1 + self.n_lines))
-
     def attach(self, page, config, uid):
         super(Value, self).attach(page, config, uid)
 
