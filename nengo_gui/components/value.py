@@ -72,7 +72,8 @@ class Value(Component):
     def javascript(self):
         # generate the javascript that will create the client-side object
         info = dict(uid=id(self), label=self.label,
-                    n_lines=self.n_lines, synapse=0)
+                        n_lines=self.n_lines, synapse=0)
+
         json = self.javascript_config(info)
         return 'new Nengo.Value(main, sim, %s);' % json
 
