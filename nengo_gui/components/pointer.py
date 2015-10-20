@@ -2,8 +2,7 @@ import collections
 import copy
 
 import nengo
-import nengo.spa
-from nengo.spa.module import Module
+import nengo.spa as spa
 import numpy as np
 
 from nengo_gui.components.component import Component
@@ -16,17 +15,34 @@ class Pointer(SpaPlot):
         # the semantic pointer value as set by the user in the GUI
         # a value of 'None' means do not override
         self.override_target = None
-        self.vocab_in = obj.inputs[self.target][1]
+        loop_in_whitelist = [spa.Buffer, spa.Memory, spa.State, spa.AssociativeMemory]
+
+        if type(obj) in loop_in_whitelist:
+            self.vocab_in = obj.inputs[self.target][1]
+            self.loop_in = True
+            self.default_override_val = self.vocab_in.parse('0').v
+            self.size_out = self.vocab_in.dimensions
+        else:
+            self.loop_in = False
+            self.default_override_val = self.vocab_out.parse('0').v
+            self.size_out = self.vocab_out.dimensions
+
+        self.node = None
+        self.conn1 = None
+        self.conn2 = None
 
     def add_nengo_objects(self, page):
         with page.model:
             output = self.obj.outputs[self.target][0]
-            input = self.obj.inputs[self.target][0]
             self.node = nengo.Node(self.gather_data,
                                    size_in=self.vocab_out.dimensions,
-                                   size_out=self.vocab_in.dimensions)
+                                   size_out=self.size_out)
             self.conn1 = nengo.Connection(output, self.node, synapse=0.01)
-            self.conn2 = nengo.Connection(self.node, input, synapse=0.01)
+            if self.loop_in:
+                input = self.obj.inputs[self.target][0]
+                self.conn2 = nengo.Connection(self.node, input, synapse=0.01)
+            else:
+                self.conn2 = nengo.Connection(self.node, output, synapse=0.01)
 
     def remove_nengo_objects(self, page):
         page.model.connections.remove(self.conn1)
@@ -53,11 +69,12 @@ class Pointer(SpaPlot):
         msg = '%g %s' % (t, text)
         self.data.append(msg)
         if self.override_target is None:
-            return self.vocab_in.parse('0').v
+            return self.default_override_val
         else:
             v = (self.override_target.v - x) * 3
-            if self.vocab_in is not self.vocab_out:
-                v = np.dot(self.vocab_out.transform_to(self.vocab_in), v)
+            if self.loop_in:
+                if self.vocab_in is not self.vocab_out:
+                    v = np.dot(self.vocab_out.transform_to(self.vocab_in), v)
             return v
 
     def update_client(self, client):
@@ -92,10 +109,3 @@ class Pointer(SpaPlot):
                 self.override_target = self.vocab_out.parse(msg)
             except:
                 self.override_target = None
-
-    @staticmethod
-    def applicable_targets(obj):
-        if isinstance(obj, Module):
-            return list(obj.outputs.keys())
-        else:
-            return []
