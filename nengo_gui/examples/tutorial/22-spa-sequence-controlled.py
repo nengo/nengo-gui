@@ -1,7 +1,7 @@
 # Tutorial 22: Controlled Sequence of Semantic Pointer Actions
 
 # Here, we expand on the previous sequence example and define a model
-# that instead of starting from A each time, start from whatever value
+# that instead of starting from A each time, starts from whatever value
 # is currently seen.  This shows that you can selectively route information
 # from one group of neurons to another, depending on what action is
 # selected.
@@ -14,6 +14,12 @@
 # from vision to memory than it does to just go to the next item in the
 # sequence.  This is due to the time needed for the neurons to respond,
 # and is consistent with psychological reaction time data.
+#
+# In this example we have changed the default value of the optional argument
+# feedback_synapse, which is the time constant controlling the exponential
+# decay of the postsynaptic potential. Try using longer time constants
+# (e.g. 0.05 or 0.1) and observe what changes. How is the stability of
+# a memory representation related to the synaptic time constant?
 
 import nengo
 import nengo.spa as spa
@@ -22,8 +28,8 @@ D = 32  # the dimensionality of the vectors
 
 model = spa.SPA()
 with model:
-    model.vision = spa.Buffer(D)
-    model.memory = spa.Memory(D)
+    model.vision = spa.State(D)
+    model.memory = spa.State(D, feedback=1, feedback_synapse=0.01)
 
     actions = spa.Actions(
         'dot(memory, A) --> memory=B',
@@ -32,8 +38,6 @@ with model:
         'dot(memory, D) --> memory=E',
         'dot(memory, E) --> memory=vision',
         )
-        
+
     model.bg = spa.BasalGanglia(actions)
     model.thalamus = spa.Thalamus(model.bg)
-        
-        
