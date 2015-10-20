@@ -49,9 +49,9 @@ class Value(Component):
         page.model.nodes.remove(self.node)
 
     def gather_data(self, t, x):
-        # This is the Node function for the Node created in add_nengo_objects
-        # It will be called by the running model, and will store the data
-        # that should be sent to the client
+        """This is the Node function for the Node created in add_nengo_objects
+        It will be called by the running model, and will store the data
+        that should be sent to the client"""
         self.data.append(self.struct.pack(t, *x))
 
     def update_client(self, client):

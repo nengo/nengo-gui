@@ -85,18 +85,27 @@ Nengo.Modal.prototype.text_body = function(text, type) {
 Nengo.Modal.prototype.help_body = function() {
     this.clear_body();
 
+    var ctrl = 'Ctrl';
+    var shift = 'Shift';
+
+    if (navigator.userAgent.toLowerCase().indexOf("mac") > -1) {
+        ctrl = '&#8984;';
+        shift = '&#8679;';
+    }
+
     this.$div.find('.modal-dialog').addClass('modal-sm');
     var $body = $('<table class="table-striped" width=100%>');
     $body.append('<tr><td>Play / pause</td>' +
                  '<td align="right">Spacebar</td></tr>');
     $body.append('<tr><td>Undo</td>' +
-                 '<td align="right">Ctrl-z</td></tr>');
+                 '<td align="right">' + ctrl + '-z</td></tr>');
     $body.append('<tr><td>Redo</td>'+
-                 '<td align="right">Ctrl-Shift-z, Ctrl-y</td></tr>');
-    $body.append('<tr><td>Toggle minimap</td>'+
-                 '<td align="right">Ctrl-m</td></tr>');
+                 '<td align="right">' + ctrl + '-' + shift +
+                 '-z, ' + ctrl + '-y</td></tr>');
+    $body.append('<tr><td>Toggle minimap</td>' +
+                 '<td align="right">' + ctrl + '-m</td></tr>');
     $body.append('<tr><td>Toggle editor</td>'+
-                 '<td align="right">Ctrl-e</td></tr>');
+                 '<td align="right">' + ctrl + '-e</td></tr>');
     $body.append('<tr><td>Show hotkeys</td>'+
                  '<td align="right">?</td></tr>');
     $body.append('</table>');

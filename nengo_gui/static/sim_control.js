@@ -1,10 +1,14 @@
 /**
+ *
  * Control panel for a simulation
  * @constructor
  *
  * @param {DOMElement} div - the element for the control
  * @param {dict} args - A set of constructor arguments, including:
  * @param {int} args.id - the id of the server-side SimControl to connect to
+ *
+ * SimControl constructor is inserted into HTML file from python and
+ * is called when the page is first loaded
  */
 Nengo.SimControl = function(div, args) {
     if (args.uid[0] === '<') {
@@ -190,6 +194,7 @@ Nengo.SimControl.prototype.on_pause_click = function(event) {
     }
 };
 
+/* informs the backend simulator of the time being reset */
 Nengo.SimControl.prototype.reset = function() {
     this.paused = true;
     this.ws.send('reset');
@@ -318,13 +323,13 @@ Nengo.TimeSlider.prototype.reset = function() {
 
     /** update the time axis display */
     this.axis_g
-        .call(this.axis);   
+        .call(this.axis);
         
     x = this.kept_scale(this.first_shown_time);
     Nengo.set_transform(this.shown_div, x, 0);
 
     /** update any components who need to know the time changed */
-    this.sim.div.dispatchEvent(new Event('adjust_time'));             
+    this.sim.div.dispatchEvent(new Event('adjust_time'));
 }
 
 /**

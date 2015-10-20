@@ -1,7 +1,15 @@
-var aceRange = ace.require('ace/range').Range;
-
+/**
+ * Code Editor
+ * @constructor
+ *
+ * @param {string} uid - A unique identifier
+ * @param {dict} args - A set of constructor arguments (see Nengo.Component)
+ * Ace function is written into HTML by server and called when the 
+ * page is loaded.
+ */
 
 Nengo.Ace = function (uid, args) {
+    this.AceRange = ace.require('ace/range').Range;
     if (uid[0] === '<') {
         console.log("invalid uid for Ace: " + uid);
     }
@@ -150,7 +158,7 @@ Nengo.Ace.prototype.on_message = function (event) {
     } else if (msg.error !== undefined) {
         var line = msg.error.line;
         this.marker = this.editor.getSession()
-            .addMarker(new aceRange(line - 1, 0, line - 1, 10),
+            .addMarker(new this.AceRange(line - 1, 0, line - 1, 10),
             'highlight', 'fullLine', true);
         this.editor.getSession().setAnnotations([{
             row: line - 1,

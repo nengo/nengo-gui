@@ -83,7 +83,7 @@ class GUI(object):
         else:
             addr = 'localhost'
         nengo_gui.server.Server.start(self, port=port, browser=browser,
-                                      addr=addr)
+                                      addr=addr, interactive=self.interactive)
 
     def prepare_server(self, port=8080, browser=True):
         return nengo_gui.server.Server.prepare_server(

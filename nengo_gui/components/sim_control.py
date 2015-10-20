@@ -1,4 +1,5 @@
 import time
+import timeit
 import struct
 import traceback
 
@@ -48,16 +49,17 @@ class SimControl(Component):
         self.page.finish()
 
     def control(self, t):
+        self.actual_model_dt = t - self.time
         self.time = t
         self.sim_ticks += 1
 
-        now = time.time()
+        now = timeit.default_timer()
         if self.last_tick is not None:
             dt = now - self.last_tick
             if dt == 0:
                 self.skipped += 1
             else:
-                rate = self.model_dt * self.skipped / dt
+                rate = self.actual_model_dt * self.skipped / dt
                 decay = np.exp(-dt / self.rate_tau)
                 self.rate *= decay
                 self.rate += (1 - decay) * rate
