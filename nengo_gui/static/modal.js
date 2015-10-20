@@ -230,7 +230,8 @@ Nengo.Modal.prototype.main_config = function(options) {
             event.preventDefault();
             $('#OK').click();
         }
-    });}
+    });
+}
 
 /**
  * Sets up the body for standard input forms

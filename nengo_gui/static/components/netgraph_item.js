@@ -18,8 +18,11 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
     this.size = info.size;
     this.type = info.type;
     this.uid = info.uid;
+<<<<<<< HEAD
     this.sp_targets = info.sp_targets;
     this.scalar_out = info.scalar_out;
+=======
+>>>>>>> origin/more-colors
     this.passthrough = info.passthrough;
     this.fixed_width = null;
     this.fixed_height = null;
@@ -34,6 +37,12 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
         this.g_networks = ng.g_networks_mini;
         this.g_items = ng.g_items_mini;
     }
+
+    // SPA network specific parameter
+    this.sp_targets = info.sp_targets;
+    // Basal Ganglia network specific parameters
+    this.bg_inputs = info.bg_inputs;
+    this.input_labels = info.input_labels;
 
     /** if this is a network, the children list is the set of NetGraphItems
      *  and NetGraphConnections that are inside this network */
@@ -366,6 +375,22 @@ Nengo.NetGraphItem.prototype.generate_menu = function () {
         } else {
             items.push(['Output Value', function() {self.create_graph('CompPlot');}]);
         }
+    }
+    if (this.bg_inputs) {
+        items.push(['Input Plot',
+                    function () {
+                                    self.create_graph('BGPlot',
+                                        {"n_lines":self.bg_inputs, "legend_labels":self.input_labels, "probe_target":"input"}
+                                );
+                        }
+                    ]);
+        items.push(['Output Plot',
+            function () {
+                            self.create_graph('BGPlot',
+                                {"n_lines":self.bg_inputs, "legend_labels":self.input_labels, "probe_target":"output"}
+                        );
+                }
+            ]);
     }
     items.push(['Details ...', function() {self.create_modal();}]);
     return items;
