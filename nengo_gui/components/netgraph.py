@@ -76,7 +76,7 @@ class NetGraph(Component):
 
     def _reload(self, code=None):
 
-        old_locals = self.page.locals
+        old_locals = self.page.last_good_locals
         old_default_labels = self.page.default_labels
 
         if code is None:
@@ -171,16 +171,27 @@ class NetGraph(Component):
         for c in self.page.components[:]:
             for item in c.code_python_args(old_default_labels):
                 if item not in self.uids.keys() and item not in collapsed_items:
+
+                    # item is a python string that is an argument to the
+                    # constructor for the Component.  So it could be 'a',
+                    # 'model.ensembles[3]', 'True', or even 'target=a'.
+                    # We need to evaluate this string in the context of the
+                    # locals dictionary and see what object it refers to
+                    # so we can determine whether to rebuild this component.
+                    #
+                    # The following lambda should do this, handling both
+                    # the normal argument case and the keyword argument case.
+                    safe_eval = '(lambda *a, **b: list(a) + b.values())(%s)[0]'
+
                     # this Component depends on an item inside a collapsed
                     #  Network, so we need to check if that component has
                     #  changed or been removed
+                    old_obj = eval(safe_eval % item, old_locals)
+
                     try:
-                        old_obj = eval(item, old_locals)
+                        new_obj = eval(safe_eval % item, self.page.locals)
                     except:
-                        continue
-                    try:
-                        new_obj = eval(item, self.page.locals)
-                    except:
+                        # the object this Component depends on no longer exists
                         new_obj = None
 
                     keep_object = True
