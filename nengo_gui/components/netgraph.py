@@ -5,9 +5,11 @@ import collections
 import threading
 
 import nengo
+from nengo import spa
 import json
 
 from nengo_gui.components.component import Component
+from nengo_gui.components.value import Value
 from nengo_gui.modal_js import infomodal
 import nengo_gui.user_action
 import nengo_gui.layout
@@ -511,8 +513,12 @@ class NetGraph(Component):
         elif isinstance(obj, nengo.Ensemble):
             info['dimensions'] = int(obj.size_out)
             info['n_neurons'] = int(obj.n_neurons)
+        elif Value.default_output(obj) is not None:
+            info['default_output'] = True
+
         info['sp_targets'] = (
             nengo_gui.components.pointer.Pointer.applicable_targets(obj))
+
         return info
 
     def send_pan_and_zoom(self, client):
