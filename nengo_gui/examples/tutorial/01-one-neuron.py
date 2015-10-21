@@ -19,7 +19,3 @@ with model:
     stim = nengo.Node(0)
     ens = nengo.Ensemble(n_neurons=1, dimensions=1, seed=5)
     nengo.Connection(stim, ens)
-    
-    
-    import time
-    slowdown = nengo.Node(lambda t: time.sleep(0.001)) 
