@@ -19,7 +19,7 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
     this.type = info.type;
     this.uid = info.uid;
     this.sp_targets = info.sp_targets;
-    this.scalar_out = info.scalar_out;
+    this.default_output = info.default_output;
     this.passthrough = info.passthrough;
     this.fixed_width = null;
     this.fixed_height = null;
@@ -335,6 +335,10 @@ Nengo.NetGraphItem.prototype.generate_menu = function () {
             items.push(['Expand network',
                         function() {self.expand();}]);
         }
+        if (this.default_output && this.sp_targets.length == 0) {
+            items.push(['Output Value',
+                        function() {self.create_graph('Value');}]);
+        }
     }
     if (this.type == 'ens') {
         items.push(['Value', function() {self.create_graph('Value');}]);
@@ -354,18 +358,14 @@ Nengo.NetGraphItem.prototype.generate_menu = function () {
             items.push(['XY-value', function() {self.create_graph('XYValue');}]);
         }
         if (this.html_node) {
-            items.push(['HTML', function() {self.create_graph('HTMLView');}])
+            items.push(['HTML', function() {self.create_graph('HTMLView');}]);
         }
     }
     if (this.sp_targets.length > 0) {
-        if(!this.scalar_out) {
-            items.push(['Semantic pointer cloud',
-                        function() {self.create_graph('Pointer', self.sp_targets[0]);}])
-            items.push(['Semantic pointer plot',
-                function() {self.create_graph('SpaSimilarity', self.sp_targets[0]);}])
-        } else {
-            items.push(['Output Value', function() {self.create_graph('CompPlot');}]);
-        }
+        items.push(['Semantic pointer cloud',
+                    function() {self.create_graph('Pointer', self.sp_targets[0]);}]);
+        items.push(['Semantic pointer plot',
+            function() {self.create_graph('SpaSimilarity', self.sp_targets[0]);}]);
     }
     items.push(['Details ...', function() {self.create_modal();}]);
     return items;

@@ -9,6 +9,7 @@ from nengo import spa
 import json
 
 from nengo_gui.components.component import Component
+from nengo_gui.components.value import Value
 from nengo_gui.modal_js import infomodal
 import nengo_gui.user_action
 import nengo_gui.layout
@@ -470,8 +471,8 @@ class NetGraph(Component):
         elif isinstance(obj, nengo.Ensemble):
             info['dimensions'] = int(obj.size_out)
             info['n_neurons'] = int(obj.n_neurons)
-        elif isinstance(obj, spa.Compare):
-            info['scalar_out'] = True
+        elif Value.default_output(obj):
+            info['default_output'] = True
 
         info['sp_targets'] = (
             nengo_gui.components.pointer.Pointer.applicable_targets(obj))
