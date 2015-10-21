@@ -658,9 +658,6 @@ Nengo.NetGraph.prototype.scaleMiniMapViewBox = function () {
         var disp_w = (this.mm_max_x - this.mm_min_x) * w;
         var disp_h = (this.mm_max_y - this.mm_min_y) * h;
 
-        var offsetX = -this.mm_min_x * w + (mm_w - disp_w) / 2.;
-        var offsetY = -this.mm_min_y * h + (mm_h - disp_h) / 2.;
-
         var view_offsetX = -(this.mm_min_x + this.offsetX) * w + (mm_w - disp_w) / 2.;
         var view_offsetY = -(this.mm_min_y + this.offsetY) * h + (mm_h - disp_h) / 2.;
 
