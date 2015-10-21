@@ -471,7 +471,7 @@ class NetGraph(Component):
         elif isinstance(obj, nengo.Ensemble):
             info['dimensions'] = int(obj.size_out)
             info['n_neurons'] = int(obj.n_neurons)
-        elif Value.default_output(obj):
+        elif Value.default_output(obj) is not None:
             info['default_output'] = True
 
         info['sp_targets'] = (

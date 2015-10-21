@@ -23,13 +23,12 @@ class Value(Component):
 
         # grab the output of the object
         self.output = obj
-        default_out = self.default_output(self.obj)
-        if(default_out):
+        default_out = Value.default_output(self.obj)
+        if default_out is not None:
             self.output = default_out
 
-
         # the number of data values to send
-        self.n_lines = self.output.size_out
+        self.n_lines = int(self.output.size_out)
 
         # the binary data format to sent in.  In this case, it is a list of
         # floats, with the first float being the time stamp and the rest
@@ -87,7 +86,7 @@ class Value(Component):
     @staticmethod
     def default_output(obj):
         """Find default output object for the input object if it exists"""
-        output = False
+        output = None
         if isinstance(obj, spa.module.Module):
             if 'default' in obj.outputs.keys():
                 output = obj.outputs['default'][0]

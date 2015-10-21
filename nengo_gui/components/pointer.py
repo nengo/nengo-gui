@@ -95,12 +95,9 @@ class Pointer(SpaPlot):
 
     @staticmethod
     def applicable_targets(obj):
+        targets = []
         if isinstance(obj, Module):
-            targets = []
-            output_names = obj.outputs.keys()
-            for i, output in enumerate(obj.outputs.values()):
-                if output[0].size_out > 1:
-                    targets.append(output_names[i])
-            return targets
-        else:
-            return []
+            for target_name, (obj, vocab) in obj.outputs.items():
+                if vocab is not None:
+                    targets.append(target_name)
+        return targets
