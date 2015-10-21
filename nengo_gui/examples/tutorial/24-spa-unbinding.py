@@ -9,7 +9,7 @@
 #
 # Using this approach, we can store bound information in memory and then
 # query that memory to ask questions.  For this tutorial, we use shape and
-# color as inputs exactly as in the previous tutorial.  Start by feeding in 
+# color as inputs exactly as in the previous tutorial.  Start by feeding in
 # TRIANGLE and BLUE until the memory contains BLUE*TRIANGLE.  Now feed in
 # CIRCLE and RED until the memory also contains RED*CIRCLE (this is the same
 # as in the previous tutorial).  Now take away those inputs by setting the
@@ -28,15 +28,15 @@ D = 32  # the dimensionality of the vectors
 
 model = spa.SPA()
 with model:
-    model.color = spa.Buffer(D)
-    model.shape = spa.Buffer(D)
-    model.memory = spa.Memory(D, synapse=0.2)
-    model.query = spa.Buffer(D)
-    model.answer = spa.Buffer(D)
+    model.color = spa.State(D)
+    model.shape = spa.State(D)
+    model.memory = spa.State(D, feedback=1)
+    model.query = spa.State(D)
+    model.answer = spa.State(D)
 
     actions = spa.Actions(
         'memory = color * shape',
         'answer = memory * ~query',
         )
-        
+ 
     model.cortical = spa.Cortical(actions)

@@ -41,6 +41,8 @@ class Page(object):
         self.code = None     # the code for the model
         self.model = None    # the nengo.Network
         self.locals = None   # the locals() dictionary after executing
+        self.last_good_locals = None # the locals dict for the last time
+                                     # this script was run without errors
         self.error = None    # any error message generated
         self.stdout = ''     # text sent to stdout during execution
 
@@ -49,6 +51,10 @@ class Page(object):
         self.finished = False  # should this Page be shut down
         self._sim = None       # the current nengo.Simulator
         self.rebuild = False   # should the model be rebuilt
+
+        self.code = None       # the source code currently displayed
+        self.error = None      # any execute or build error
+        self.stdout = ''       # text printed during execute+build
 
         self.undo_stack = []
         self.redo_stack = []
@@ -215,6 +221,8 @@ class Page(object):
 
         self.model = model
         self.locals = locals
+        if self.error is None:
+            self.last_good_locals = locals
 
     def load_config(self):
         """Load the .cfg file"""

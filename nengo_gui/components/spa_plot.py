@@ -5,8 +5,8 @@ from nengo.spa.module import Module
 from nengo_gui.components.component import Component
 
 class SpaPlot(Component):
-    """Parent class for pointer.py and
-    spa_similarity.py"""
+    """Parent class for pointer.Pointer and
+    spa_similarity.SpaSimilarity"""
 
     def __init__(self, obj, **kwargs):
         super(SpaPlot, self).__init__()
@@ -30,7 +30,9 @@ class SpaPlot(Component):
 
     @staticmethod
     def applicable_targets(obj):
+        targets = []
         if isinstance(obj, Module):
-            return list(obj.outputs.keys())
-        else:
-            return []
+            for target_name, (obj, vocab) in obj.outputs.items():
+                if vocab is not None:
+                    targets.append(target_name)
+        return targets
