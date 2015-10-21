@@ -41,6 +41,8 @@ class Page(object):
         self.code = None     # the code for the model
         self.model = None    # the nengo.Network
         self.locals = None   # the locals() dictionary after executing
+        self.last_good_locals = None # the locals dict for the last time
+                                     # this script was run without errors
         self.error = None    # any error message generated
         self.stdout = ''     # text sent to stdout during execution
 
@@ -219,6 +221,8 @@ class Page(object):
 
         self.model = model
         self.locals = locals
+        if self.error is None:
+            self.last_good_locals = locals
 
     def load_config(self):
         """Load the .cfg file"""

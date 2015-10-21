@@ -76,7 +76,7 @@ class NetGraph(Component):
 
     def _reload(self, code=None):
 
-        old_locals = self.page.locals
+        old_locals = self.page.last_good_locals
         old_default_labels = self.page.default_labels
 
         if code is None:
@@ -162,9 +162,51 @@ class NetGraph(Component):
         orphan_components = []
         rebuild_components = []
 
+        # items that are shown in components, but not currently displayed
+        #  in the NetGraph (i.e. things that are inside collapsed
+        #  Networks, but whose values are being shown in a graph)
+        collapsed_items = []
+
         removed_items = list(removed_uids.values())
         for c in self.page.components[:]:
             for item in c.code_python_args(old_default_labels):
+                if item not in self.uids.keys() and item not in collapsed_items:
+
+                    # item is a python string that is an argument to the
+                    # constructor for the Component.  So it could be 'a',
+                    # 'model.ensembles[3]', 'True', or even 'target=a'.
+                    # We need to evaluate this string in the context of the
+                    # locals dictionary and see what object it refers to
+                    # so we can determine whether to rebuild this component.
+                    #
+                    # The following lambda should do this, handling both
+                    # the normal argument case and the keyword argument case.
+                    safe_eval = '(lambda *a, **b: list(a) + b.values())(%s)[0]'
+
+                    # this Component depends on an item inside a collapsed
+                    #  Network, so we need to check if that component has
+                    #  changed or been removed
+                    old_obj = eval(safe_eval % item, old_locals)
+
+                    try:
+                        new_obj = eval(safe_eval % item, self.page.locals)
+                    except:
+                        # the object this Component depends on no longer exists
+                        new_obj = None
+
+                    if new_obj is None:
+                        removed_items.append(item)
+                    elif not isinstance(new_obj, old_obj.__class__):
+                        rebuilt_objects.append(item)
+                    elif (self.get_extra_info(new_obj) != 
+                          self.get_extra_info(old_obj)):
+                        rebuilt_objects.append(item)
+
+                    # add this to the list of collapsed items, so we
+                    # don't recheck it if there's another Component that
+                    # also depends on this
+                    collapsed_items.append(item)
+
                 if item in rebuilt_objects:
                     self.to_be_sent.append(dict(type='delete_graph',
                                                 uid=c.original_id,
