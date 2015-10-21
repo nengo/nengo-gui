@@ -17,15 +17,19 @@ class Pointer(SpaPlot):
         self.override_target = None
         loop_in_whitelist = [spa.Buffer, spa.Memory, spa.State, spa.AssociativeMemory]
 
-        if type(obj) in loop_in_whitelist:
+        if type(obj) in loop_in_whitelist and target == 'default':
             self.vocab_in = obj.inputs[self.target][1]
             self.loop_in = True
-            self.default_override_val = self.vocab_in.parse('0').v
             self.size_out = self.vocab_in.dimensions
+            self.default_override_val = np.zeroes(self.size_out)
         else:
             self.loop_in = False
-            self.default_override_val = self.vocab_out.parse('0').v
             self.size_out = self.vocab_out.dimensions
+            self.default_override_val = np.zeroes(self.size_out)
+
+        self.vocab_transform = None
+        if self.vocab_in is not self.vocab_out:
+            self.vocab_transform = self.vocab_out.transform_to(self.vocab_in)
 
         self.node = None
         self.conn1 = None
@@ -72,9 +76,8 @@ class Pointer(SpaPlot):
             return self.default_override_val
         else:
             v = (self.override_target.v - x) * 3
-            if self.loop_in:
-                if self.vocab_in is not self.vocab_out:
-                    v = np.dot(self.vocab_out.transform_to(self.vocab_in), v)
+            if self.loop_in and self.vocab_transform is not None:
+                v = np.dot(self.vocab_transform, v)
             return v
 
     def update_client(self, client):
