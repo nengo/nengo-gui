@@ -14,4 +14,4 @@ def test_applicable_targets():
 
         model.state = spa.State(4)
         res = Pointer.applicable_targets(model.state)
-        assert res == model.state.outputs.keys()
+        assert res == list(model.state.outputs.keys())
