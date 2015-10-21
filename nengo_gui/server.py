@@ -35,7 +35,6 @@ class Server(swi.SimpleWebInterface):
             path = os.path.join('.', d)
 
         for f in sorted(os.listdir(path)):
-            ff = os.path.relpath(os.path.join(path, f), '.')
             ff = os.path.join(path, f)
             if os.path.isdir(os.path.join(path, f)):
                 r.append('<li class="directory collapsed">'

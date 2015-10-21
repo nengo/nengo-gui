@@ -77,7 +77,12 @@ class Page(object):
         if filename is None:
             self.filename = gui.filename
         else:
-            self.filename = os.path.relpath(filename)
+            try:
+                self.filename = os.path.relpath(filename)
+            except ValueError:
+                # happens on Windows if filename is on a different
+                # drive than the current directory
+                self.filename = filename
 
         # determine the .cfg filename
         if gui.filename_cfg is None:
