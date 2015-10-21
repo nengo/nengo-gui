@@ -33,8 +33,9 @@
 # such as CAT or COW.  You can also try a combination, such as
 # RAT+0.5*COW.  The system will (almost always) select a single action
 # to perform, and that will be the action with the highest utility at that
-# moment. If there is no input, or the input contains just noise, the speech
-# State is set to zero ("speech=0").
+# moment.  If there is no input, or the input is not sufficiently similar 
+# to any of the four animals it knows, then the speech State is set to 
+# zero ("speech=0").
 #
 # The input graph above the Basal Ganglia shows the utilities of the
 # four actions.  The output graph above the thalamus shows which

@@ -14,7 +14,7 @@
 # sends them to the memory for nouns.  The noun stored in the noun memory binds
 # with the semantic pointer NOUN and the verb stored in the verb memory binds
 # with the semantic pointer VERB in the phrase state.  This binding is
-# implemented with cortical actions. Notice that the actions can looks for
+# implemented with cortical actions. Notice that the actions can look for
 # multiple different things at the same time by using the + operation.
 # Overall, this shows how we can use a single input modality (vision) and treat
 # the information in different ways as appropriate.
@@ -35,7 +35,7 @@
 import nengo
 import nengo.spa as spa
 
-D = 64  # the dimensionality of the vectors
+D = 32  # the dimensionality of the vectors
 
 model = spa.SPA()
 with model:
@@ -44,8 +44,8 @@ with model:
 
     # linguistic components
     model.phrase = spa.State(D)
-    model.verb = spa.State(D, feedback=1, feedback_synapse=0.01)
-    model.noun = spa.State(D, feedback=1, feedback_synapse=0.01)
+    model.verb = spa.State(D, feedback=1)
+    model.noun = spa.State(D, feedback=1)
 
     # motor components
     model.speech = spa.State(D)
@@ -54,9 +54,9 @@ with model:
     actions = spa.Actions(
         'dot(vision, WRITE+SAY) --> verb=vision',
         'dot(vision, YES+NO+HI+BYE+OK) --> noun=vision',
-        'dot(phrase, VERB*WRITE) - dot(vision, WRITE+SAY+YES+NO+HI+BYE+OK)'
+        'dot(phrase, VERB*WRITE) - 2*dot(vision, WRITE+SAY+YES+NO+HI+BYE+OK)'
             '--> hand=phrase*~NOUN',
-        'dot(phrase, VERB*SAY) - dot(vision, WRITE+SAY+YES+NO+HI+BYE+OK)'
+        'dot(phrase, VERB*SAY) - 2*dot(vision, WRITE+SAY+YES+NO+HI+BYE+OK)'
             '--> speech=phrase*~NOUN',
         )
 

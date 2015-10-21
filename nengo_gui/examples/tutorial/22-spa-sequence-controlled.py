@@ -14,12 +14,6 @@
 # from vision to memory than it does to just go to the next item in the
 # sequence.  This is due to the time needed for the neurons to respond,
 # and is consistent with psychological reaction time data.
-#
-# In this example we have changed the default value of the optional argument
-# feedback_synapse, which is the time constant controlling the exponential
-# decay of the postsynaptic potential. Try using longer time constants
-# (e.g. 0.05 or 0.1) and observe what changes. How is the stability of
-# a memory representation related to the synaptic time constant?
 
 import nengo
 import nengo.spa as spa
@@ -37,6 +31,7 @@ with model:
         'dot(memory, C) --> memory=D',
         'dot(memory, D) --> memory=E',
         'dot(memory, E) --> memory=vision',
+        '0.5 --> memory=vision'
         )
 
     model.bg = spa.BasalGanglia(actions)
