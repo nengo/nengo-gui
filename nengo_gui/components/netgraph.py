@@ -194,7 +194,6 @@ class NetGraph(Component):
                         # the object this Component depends on no longer exists
                         new_obj = None
 
-                    keep_object = True
                     if new_obj is None:
                         removed_items.append(item)
                     elif not isinstance(new_obj, old_obj.__class__):
