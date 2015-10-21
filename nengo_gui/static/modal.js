@@ -421,7 +421,7 @@ Nengo.Modal.prototype.multiline_plot = function(selector, x, ys, x_label, y_labe
         .call(yAxisLeft);
 
     // label the axes
-    if(x_label !== ""){
+    if(x_label !== "") {
         svg.append("text")
             .attr("class", "x label")
             .attr("text-anchor", "middle")
@@ -430,7 +430,7 @@ Nengo.Modal.prototype.multiline_plot = function(selector, x, ys, x_label, y_labe
             .text(x_label);
     }
 
-    if(y_label !== ""){
+    if(y_label !== "") {
         svg.append("text")
             .attr("class", "y label")
             .attr("text-anchor", "middle")
