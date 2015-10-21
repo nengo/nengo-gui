@@ -31,7 +31,8 @@ class NameFinder(object):
                             n = '%s.%s[%d]' % (net_name, k, i)
                             self.known_name[obj] = n
                 elif isinstance(v, classes):
-                    self.known_name[v] = '%s.%s' % (net_name, k)
+                    if v not in self.known_name:
+                        self.known_name[v] = '%s.%s' % (net_name, k)
 
 
         for type in base_lists:
