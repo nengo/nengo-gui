@@ -1,4 +1,3 @@
-import collections
 import copy
 
 import nengo
@@ -8,6 +7,7 @@ import numpy as np
 from nengo_gui.components.component import Component
 from nengo_gui.components.spa_plot import SpaPlot
 
+
 class Pointer(SpaPlot):
     config_defaults = dict(show_pairs=False, **Component.config_defaults)
     def __init__(self, obj, **kwargs):
@@ -15,21 +15,18 @@ class Pointer(SpaPlot):
         # the semantic pointer value as set by the user in the GUI
         # a value of 'None' means do not override
         self.override_target = None
-        loop_in_whitelist = [spa.Buffer, spa.Memory, spa.State, spa.AssociativeMemory]
+        loop_in_whitelist = [spa.Buffer, spa.Memory, spa.State]
 
-        if type(obj) in loop_in_whitelist and target == 'default':
+        self.vocab_in = None
+        if type(obj) in loop_in_whitelist and self.target == 'default':
             self.vocab_in = obj.inputs[self.target][1]
             self.loop_in = True
             self.size_out = self.vocab_in.dimensions
-            self.default_override_val = np.zeroes(self.size_out)
+            self.default_override_val = np.zeros(self.size_out)
         else:
             self.loop_in = False
             self.size_out = self.vocab_out.dimensions
-            self.default_override_val = np.zeroes(self.size_out)
-
-        self.vocab_transform = None
-        if self.vocab_in is not self.vocab_out:
-            self.vocab_transform = self.vocab_out.transform_to(self.vocab_in)
+            self.default_override_val = np.zeros(self.size_out)
 
         self.node = None
         self.conn1 = None
@@ -76,8 +73,6 @@ class Pointer(SpaPlot):
             return self.default_override_val
         else:
             v = (self.override_target.v - x) * 3
-            if self.loop_in and self.vocab_transform is not None:
-                v = np.dot(self.vocab_transform, v)
             return v
 
     def update_client(self, client):
