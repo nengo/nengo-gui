@@ -22,14 +22,14 @@ class NameFinder(object):
         classes = (nengo.Node, nengo.Ensemble, nengo.Network,
                    nengo.Connection)
 
-        for class_attr in dir(net):
-            if(not class_attr.startswith('_')
-                and class_attr not in base_lists + all_lists):
-                attr = getattr(net, class_attr)
+        for inst_attr in dir(net):
+            if (not inst_attr.startswith('_')
+                and inst_attr not in base_lists + all_lists):
+                attr = getattr(net, inst_attr)
                 if isinstance(attr, list):
                     for i, obj in enumerate(attr):
                         if obj not in self.known_name:
-                            n = '%s.%s[%d]' % (net_name, class_attr, i)
+                            n = '%s.%s[%d]' % (net_name, inst_attr, i)
                             self.known_name[obj] = n
                 elif isinstance(attr, classes):
                     if attr not in self.known_name:

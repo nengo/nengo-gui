@@ -14,7 +14,7 @@ import nengo_gui.exec_env
 
 class SimControl(Component):
     """Controls simulation via control node embedded in the neural model.
-    Also instantiates and communitcates with the SimControl and the Toolbar
+    Also instantiates and communicates with the SimControl and the Toolbar
     on the JavaScript side, which includes the task of back-end selection."""
 
     config_defaults = dict(shown_time=0.5, kept_time=4.0)

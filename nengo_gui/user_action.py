@@ -1,4 +1,4 @@
-"""Respond to an action on the user on the NetGraph"""
+"""Respond to an action from the user on the NetGraph"""
 
 from nengo.utils.compat import iteritems
 
