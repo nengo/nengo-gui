@@ -131,7 +131,7 @@ class NetGraph(Component):
             # "ensembles[0]" might still refer to something even after that
             # ensemble is removed.
             new_uid = self.page.get_uid(new_item,
-                        default_labels=name_finder.known_name)
+                                        default_labels=name_finder.known_name)
             if new_uid != uid:
                 new_item = None
 
@@ -154,7 +154,7 @@ class NetGraph(Component):
                 rebuilt_objects.append(uid)
             else:
                 # fix aspects of the item that may have changed
-                if self._reload_update_item(uid, old_item, new_item, 
+                if self._reload_update_item(uid, old_item, new_item,
                                             name_finder):
                     # something has changed about this object, so rebuild
                     # and components that use it
@@ -236,8 +236,6 @@ class NetGraph(Component):
                         orphan_components.append(c)
                         break
 
-
-
         components = []
         # the old names for the old components
         component_uids = [c.uid for c in self.page.components]
@@ -255,11 +253,11 @@ class NetGraph(Component):
                 # This is also how new components are created
                 if k not in component_uids:
                     self.page.add_component(v)
-                    self.to_be_sent.append(dict(type='js', 
+                    self.to_be_sent.append(dict(type='js',
                                                 code=v.javascript()))
                     components.append(v)
                     continue
-                
+
                 # otherwise, find the corresponding old Component
                 index = component_uids.index(k)
                 old_component = self.page.components[index]

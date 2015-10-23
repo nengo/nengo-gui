@@ -1,23 +1,23 @@
 import time
 import timeit
 import struct
-import traceback
 
 import numpy as np
 import nengo
-import os
-import os.path
 import json
 
 from nengo_gui.components.component import Component
 import nengo_gui.exec_env
 
+
 class SimControl(Component):
     """Controls simulation via control node embedded in the neural model.
+
     Also instantiates and communicates with the SimControl and the Toolbar
     on the JavaScript side, which includes the task of back-end selection."""
 
     config_defaults = dict(shown_time=0.5, kept_time=4.0)
+
     def __init__(self, dt=0.001):
         # this component must be the very first one defined, so
         # its component_order is the smallest overall
@@ -40,7 +40,6 @@ class SimControl(Component):
         super(SimControl, self).attach(page, config, uid)
         self.shown_time = config.shown_time
         self.kept_time = config.kept_time
-
 
     def add_nengo_objects(self, page):
         with page.model:
@@ -102,10 +101,10 @@ class SimControl(Component):
         if status != self.last_status:
             client.write('status:%s' % status)
             self.last_status = status
-        if self.send_config_options == True:
+        if self.send_config_options:
             client.write('sims:' + self.backend_options_html())
             client.write('config' +
-                'Nengo.Toolbar.prototype.config_modal_show();')
+                         'Nengo.Toolbar.prototype.config_modal_show();')
             self.send_config_options = False
 
     def get_status(self):

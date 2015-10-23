@@ -1,8 +1,4 @@
-import struct
 import collections
-
-import nengo
-import numpy as np
 
 from nengo_gui.components.component import Component
 

@@ -1,3 +1,4 @@
+# flake8: noqa
 from .component import Component
 from .slider import Slider
 from .value import Value

@@ -4,6 +4,7 @@ from nengo.spa.module import Module
 
 from nengo_gui.components.component import Component
 
+
 class SpaPlot(Component):
     """Parent class for pointer.Pointer and
     spa_similarity.SpaSimilarity"""

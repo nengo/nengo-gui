@@ -4,10 +4,11 @@ import collections
 
 from nengo_gui.components.component import Component
 
+
 class Slider(Component):
     """Input control component. Exclusively associated to Nodes"""
 
-    config_defaults = dict(max_value=1, min_value=-1, 
+    config_defaults = dict(max_value=1, min_value=-1,
                            **Component.config_defaults)
 
     def __init__(self, node):
@@ -54,7 +55,6 @@ class Slider(Component):
                     start_value=[float(x) for x in self.start_value])
         json = self.javascript_config(info)
         return 'new Nengo.Slider(main, sim, %s);' % json
-
 
     def update_client(self, client):
         while len(self.data) > 0:
