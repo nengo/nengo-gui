@@ -17,7 +17,9 @@ import nengo_gui.layout
 
 class NetGraph(Component):
     """Handles computations and communications related to the NetGraph
-    on the JavaScript side. This includes NetGraph components and
+    on the JavaScript side.
+
+    Communicates to all NetGraph components for creation, deletion and
     manipulation"""
 
     config_defaults = {}
@@ -250,7 +252,6 @@ class NetGraph(Component):
                 # this is a Component that was previously removed,
                 #  but is still in the config file, or it has to be
                 #  rebuilt, so let's recover it
-                # This is also how new components are created
                 if k not in component_uids:
                     self.page.add_component(v)
                     self.to_be_sent.append(dict(type='js',

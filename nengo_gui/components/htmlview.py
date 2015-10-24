@@ -5,6 +5,7 @@ from nengo_gui.components.component import Component
 
 class HTMLView(Component):
     """Arbitrary HTML display taking input from a Node
+
     See nengo_gui/examples/basics/html.py for example usage"""
 
     def __init__(self, obj):
