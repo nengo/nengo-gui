@@ -37,8 +37,8 @@ class Pointer(SpaPlot):
                                    size_in=self.vocab_out.dimensions,
                                    size_out=self.vocab_out.dimensions)
             self.conn1 = nengo.Connection(output, self.node, synapse=0.01)
-            if (type(self.obj) in self.loop_in_whitelist
-                and self.target == 'default'):
+            loop_in = type(self.obj) in self.loop_in_whitelist
+            if loop_in and self.target == 'default':
                 input = self.obj.inputs[self.target][0]
                 self.conn2 = nengo.Connection(self.node, input, synapse=0.01)
             else:
