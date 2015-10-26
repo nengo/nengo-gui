@@ -307,9 +307,6 @@ Nengo.NetGraph.prototype.on_message = function(event) {
         var item = this.svg_objects[data.uid];
         item.set_label(data.name);
 
-        var item_mini = this.minimap_objects[data.uid];
-        item_mini.set_label(data.name);
-
     } else if (data.type === 'remove') {
         var item = this.svg_objects[data.uid];
         if (item === undefined) {
