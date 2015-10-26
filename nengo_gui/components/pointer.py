@@ -12,16 +12,19 @@ class Pointer(SpaPlot):
     config_defaults = dict(show_pairs=False, **Component.config_defaults)
     def __init__(self, obj, **kwargs):
         super(Pointer, self).__init__(obj, **kwargs)
+
         # the semantic pointer value as set by the user in the GUI
         # a value of 'None' means do not override
         self.override_target = None
+
         # The white list indicates the networks whose user-defined
         # over-ride value can be inserted on the input
         # thus the value loops in from the output to the input.
-        # All other networks have their value inserted on the output
+        # All other networks have their value inserted on the output.
+        # Looping-in has the advantage of actually changing the
+        # neural activity of the population, rather than just changing
+        # the output.
         self.loop_in_whitelist = [spa.Buffer, spa.Memory, spa.State]
-
-        self.obj = obj
 
         self.node = None
         self.conn1 = None
@@ -34,8 +37,8 @@ class Pointer(SpaPlot):
                                    size_in=self.vocab_out.dimensions,
                                    size_out=self.vocab_out.dimensions)
             self.conn1 = nengo.Connection(output, self.node, synapse=0.01)
-            if(type(self.obj) in self.loop_in_whitelist
-               and self.target == 'default'):
+            if (type(self.obj) in self.loop_in_whitelist
+                and self.target == 'default'):
                 input = self.obj.inputs[self.target][0]
                 self.conn2 = nengo.Connection(self.node, input, synapse=0.01)
             else:
