@@ -15,18 +15,13 @@ class Pointer(SpaPlot):
         # the semantic pointer value as set by the user in the GUI
         # a value of 'None' means do not override
         self.override_target = None
-        loop_in_whitelist = [spa.Buffer, spa.Memory, spa.State]
+        # The white list indicates the networks whose user-defined
+        # over-ride value can be inserted on the input
+        # thus the value loops in from the output to the input.
+        # All other networks have their value inserted on the output
+        self.loop_in_whitelist = [spa.Buffer, spa.Memory, spa.State]
 
-        self.vocab_in = None
-        if type(obj) in loop_in_whitelist and self.target == 'default':
-            self.vocab_in = obj.inputs[self.target][1]
-            self.loop_in = True
-            self.size_out = self.vocab_in.dimensions
-            self.default_override_val = np.zeros(self.size_out)
-        else:
-            self.loop_in = False
-            self.size_out = self.vocab_out.dimensions
-            self.default_override_val = np.zeros(self.size_out)
+        self.obj = obj
 
         self.node = None
         self.conn1 = None
@@ -37,9 +32,10 @@ class Pointer(SpaPlot):
             output = self.obj.outputs[self.target][0]
             self.node = nengo.Node(self.gather_data,
                                    size_in=self.vocab_out.dimensions,
-                                   size_out=self.size_out)
+                                   size_out=self.vocab_out.dimensions)
             self.conn1 = nengo.Connection(output, self.node, synapse=0.01)
-            if self.loop_in:
+            if(type(self.obj) in self.loop_in_whitelist
+               and self.target == 'default'):
                 input = self.obj.inputs[self.target][0]
                 self.conn2 = nengo.Connection(self.node, input, synapse=0.01)
             else:
@@ -70,7 +66,7 @@ class Pointer(SpaPlot):
         msg = '%g %s' % (t, text)
         self.data.append(msg)
         if self.override_target is None:
-            return self.default_override_val
+            return np.zeros(self.vocab_out.dimensions)
         else:
             v = (self.override_target.v - x) * 3
             return v
