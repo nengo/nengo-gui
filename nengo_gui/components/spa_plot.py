@@ -1,5 +1,7 @@
 import collections
 
+from nengo.spa.module import Module
+
 from nengo_gui.components.component import Component
 
 class SpaPlot(Component):
@@ -25,3 +27,12 @@ class SpaPlot(Component):
 
     def code_python_args(self, uids):
         return [uids[self.obj], 'target=%r' % self.target]
+
+    @staticmethod
+    def applicable_targets(obj):
+        targets = []
+        if isinstance(obj, Module):
+            for target_name, (obj, vocab) in obj.outputs.items():
+                if vocab is not None:
+                    targets.append(target_name)
+        return targets

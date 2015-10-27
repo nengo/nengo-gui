@@ -517,8 +517,7 @@ class NetGraph(Component):
             info['default_output'] = True
 
         info['sp_targets'] = (
-            nengo_gui.components.pointer.Pointer.applicable_targets(obj))
-
+            nengo_gui.components.spa_plot.SpaPlot.applicable_targets(obj))
         return info
 
     def send_pan_and_zoom(self, client):

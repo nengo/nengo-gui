@@ -1,32 +1,48 @@
-import collections
 import copy
 
 import nengo
-import nengo.spa
-from nengo.spa.module import Module
+import nengo.spa as spa
 import numpy as np
 
 from nengo_gui.components.component import Component
 from nengo_gui.components.spa_plot import SpaPlot
 
+
 class Pointer(SpaPlot):
     config_defaults = dict(show_pairs=False, **Component.config_defaults)
     def __init__(self, obj, **kwargs):
         super(Pointer, self).__init__(obj, **kwargs)
+
         # the semantic pointer value as set by the user in the GUI
         # a value of 'None' means do not override
         self.override_target = None
-        self.vocab_in = obj.inputs[self.target][1]
+
+        # The white list indicates the networks whose user-defined
+        # over-ride value can be inserted on the input
+        # thus the value loops in from the output to the input.
+        # All other networks have their value inserted on the output.
+        # Looping-in has the advantage of actually changing the
+        # neural activity of the population, rather than just changing
+        # the output.
+        self.loop_in_whitelist = [spa.Buffer, spa.Memory, spa.State]
+
+        self.node = None
+        self.conn1 = None
+        self.conn2 = None
 
     def add_nengo_objects(self, page):
         with page.model:
             output = self.obj.outputs[self.target][0]
-            input = self.obj.inputs[self.target][0]
             self.node = nengo.Node(self.gather_data,
                                    size_in=self.vocab_out.dimensions,
-                                   size_out=self.vocab_in.dimensions)
+                                   size_out=self.vocab_out.dimensions)
             self.conn1 = nengo.Connection(output, self.node, synapse=0.01)
-            self.conn2 = nengo.Connection(self.node, input, synapse=0.01)
+            loop_in = type(self.obj) in self.loop_in_whitelist
+            if loop_in and self.target == 'default':
+                input = self.obj.inputs[self.target][0]
+                self.conn2 = nengo.Connection(self.node, input, synapse=0.01)
+            else:
+                self.conn2 = nengo.Connection(self.node, output, synapse=0.01)
 
     def remove_nengo_objects(self, page):
         page.model.connections.remove(self.conn1)
@@ -53,11 +69,9 @@ class Pointer(SpaPlot):
         msg = '%g %s' % (t, text)
         self.data.append(msg)
         if self.override_target is None:
-            return self.vocab_in.parse('0').v
+            return np.zeros(self.vocab_out.dimensions)
         else:
             v = (self.override_target.v - x) * 3
-            if self.vocab_in is not self.vocab_out:
-                v = np.dot(self.vocab_out.transform_to(self.vocab_in), v)
             return v
 
     def update_client(self, client):
@@ -92,12 +106,3 @@ class Pointer(SpaPlot):
                 self.override_target = self.vocab_out.parse(msg)
             except:
                 self.override_target = None
-
-    @staticmethod
-    def applicable_targets(obj):
-        targets = []
-        if isinstance(obj, Module):
-            for target_name, (obj, vocab) in obj.outputs.items():
-                if vocab is not None:
-                    targets.append(target_name)
-        return targets
