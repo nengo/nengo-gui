@@ -125,12 +125,15 @@ class NetGraph(Component):
             if new_uid != uid:
                 new_item = None
 
+            same_class = (isinstance(new_item, old_item.__class__) or
+                          isinstance(old_item, new_item.__class__))
+
             # find reasons to delete the object.  Any deleted object will
             # be recreated, so try to keep this to a minimum
             keep_object = True
             if new_item is None:
                 keep_object = False
-            elif not isinstance(new_item, old_item.__class__):
+            elif same_class:
                 # don't allow changing classes
                 keep_object = False
             elif self.get_extra_info(new_item) != self.get_extra_info(old_item):
