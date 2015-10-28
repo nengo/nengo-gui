@@ -123,9 +123,9 @@ Nengo.Value = function(parent, sim, args) {
     this.div.appendChild(this.legend);
 
     this.legend_labels = args.legend_labels || [];
-    if(this.legend_labels.length !== this.n_lines){
+    if (this.legend_labels.length !== this.n_lines) {
         // fill up an array with temporary labels
-        for(i=0; i<this.n_lines; i++){
+        for (var i=0; i<this.n_lines; i++) {
             if(this.legend_labels[i] === undefined){
                 this.legend_labels[i] = "label_".concat(String(i));
             }
@@ -133,7 +133,7 @@ Nengo.Value = function(parent, sim, args) {
     }
 
     this.show_legend = args.show_legend || false;
-    if(this.show_legend === true){
+    if (this.show_legend == true) {
         Nengo.draw_legend(this.legend, this.legend_labels, this.color_func, this.uid);
     }
 };
@@ -314,12 +314,13 @@ Nengo.Value.prototype.set_show_legend = function(value){
     if (this.show_legend !== value) {
         this.show_legend = value;
         this.save_layout();
-    }
-    if (this.show_legend === true){
-        Nengo.draw_legend(this.legend, this.legend_labels, this.color_func, this.uid);
-    } else {
-        // delete the legend's children
-        this.clear_legend();
+
+        if (this.show_legend == true) {
+            Nengo.draw_legend(this.legend, this.legend_labels, this.color_func, this.uid);
+        } else {
+            // delete the legend's children
+            this.clear_legend();
+        }
     }
 }
 
@@ -348,11 +349,11 @@ Nengo.Value.prototype.set_legend_labels = function() {
         if ((label_csv !== null) && (label_csv !== '')) {
             labels = label_csv.split(',');
 
-            for(i=0; i<labels.length; i++){
+            for (var i=0; i<labels.length; i++) {
                 if(labels[i] !== ""){
                      self.legend_labels[i] = labels[i];
                 } else {
-                    self.legend_labels[i] = "label_".concat(String(i));
+                    self.legend_labels[i] = "label_" + String(i);
                 }
             }
 
