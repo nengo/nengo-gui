@@ -159,7 +159,7 @@ class NetGraph(Component):
                 if self._reload_update_item(uid, old_item, new_item,
                                             name_finder):
                     # something has changed about this object, so rebuild
-                    # and components that use it
+                    # the components that use it
                     rebuilt_objects.append(uid)
 
                 self.uids[uid] = new_item
