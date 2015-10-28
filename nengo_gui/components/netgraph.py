@@ -125,8 +125,11 @@ class NetGraph(Component):
             if new_uid != uid:
                 new_item = None
 
-            same_class = (isinstance(new_item, old_item.__class__) or
-                          isinstance(old_item, new_item.__class__))
+            same_class = False
+            for cls in [nengo.Ensemble, nengo.Node, nengo.Network, nengo.Connection]:
+                if isinstance(new_item, cls) and isinstance(old_item, cls):
+                    same_class = True
+                    break
 
             # find reasons to delete the object.  Any deleted object will
             # be recreated, so try to keep this to a minimum
