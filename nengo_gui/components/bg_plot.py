@@ -47,6 +47,14 @@ class BGPlot(Value):
 
         if getattr(self.config, "legend_labels") == []:
             json = self.javascript_config(info, override={"legend_labels":self.def_legend_labels})
+            self.config.legend_labels = self.def_legend_labels
         else:
             json = self.javascript_config(info)
         return 'new Nengo.Value(main, sim, %s);' % json
+
+    def code_python_args(self, uids):
+        return [
+                uids[self.obj],
+                ' args=dict(n_lines=%s, legend_labels=%s, probe_target="%s")'
+                % (self.n_lines, self.config.legend_labels, self.probe_target,)
+                ]
