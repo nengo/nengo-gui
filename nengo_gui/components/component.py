@@ -88,7 +88,14 @@ class Component(object):
         This is needed so we can send that config information to the client.
         """
         for attr in self.config._clsparams.params:
-            cfg[attr] = getattr(self.config, attr)
+            if attr in cfg:
+                raise AttributeError("Value for %s in config already assigned "
+                                     "in cfg argument. Remove the assignment "
+                                     "from the cfg"
+                                     "argument and set it in the config "
+                                     "instead." % (attr))
+            else:
+                cfg[attr] = getattr(self.config, attr)
         return json.dumps(cfg)
 
     def code_python(self, uids):
