@@ -19,8 +19,8 @@ Release History
    - Bugfixes
    - Documentation
 
-0.1.5 (unreleased)
-==================
+0.1.5 (November 3, 2015)
+========================
 
 - Added a set of tutorials to the built-in examples.
 - Added cross-hairs when hovering over plots.
