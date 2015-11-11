@@ -53,7 +53,9 @@ class SimControl(Component):
 
     def control(self, t):
         """Node embedded in the model to control simulation progression.
-        Sleeps while the simulation is paused."""
+
+        Sleeps while the simulation is paused.
+        """
 
         self.actual_model_dt = t - self.time
         self.time = t

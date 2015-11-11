@@ -16,11 +16,11 @@ import nengo_gui.layout
 
 
 class NetGraph(Component):
-    """Handles computations and communications related to the NetGraph
-    on the JavaScript side.
+    """Handles computations and communications for NetGraph on the JS side.
 
     Communicates to all NetGraph components for creation, deletion and
-    manipulation"""
+    manipulation.
+    """
 
     config_defaults = {}
     configs = {}

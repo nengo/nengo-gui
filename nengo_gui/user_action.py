@@ -127,8 +127,7 @@ class RemoveGraph(Action):
 
 
 class CreateGraph(Action):
-    """Create a visualisation component associated to
-    a NetGraph item"""
+    """Create a visualisation component associated to a NetGraph item"""
 
     def __init__(self, net_graph, uid, type, x, y, width, height, **kwargs):
         super(CreateGraph, self).__init__(net_graph, uid)
@@ -183,8 +182,7 @@ class CreateGraph(Action):
 
 
 class PosSize(Action):
-    """Set both the size and the position on a NetGraph Item or a
-    visualisation component"""
+    """Set size and position on a NetGraph Item or a visualisation component"""
 
     def __init__(self, net_graph, uid, x, y, width, height):
         super(PosSize, self).__init__(net_graph, uid)
@@ -210,8 +208,7 @@ class PosSize(Action):
 
 
 class Pos(Action):
-    """Set the position on a NetGraph Item or a
-    visualisation component"""
+    """Set the position on a NetGraph Item or a visualisation component"""
 
     def __init__(self, net_graph, uid, x, y):
         super(Pos, self).__init__(net_graph, uid)
@@ -235,8 +232,7 @@ class Pos(Action):
 
 
 class Size(Action):
-    """Set the size on a NetGraph Item or a
-    visualisation component"""
+    """Set the size on a NetGraph Item or a visualisation component"""
 
     def __init__(self, net_graph, uid, width, height):
         super(Size, self).__init__(net_graph, uid)
