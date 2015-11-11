@@ -35,6 +35,10 @@ class Value(Component):
         # being the vector values, one per dimension.
         self.struct = struct.Struct('<%df' % (1 + self.n_lines))
 
+        # Nengo objects for data collection
+        self.node = None
+        self.conn = None
+
     def attach(self, page, config, uid):
         super(Value, self).attach(page, config, uid)
         # use the label of the object being plotted as our label

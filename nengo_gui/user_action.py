@@ -1,3 +1,5 @@
+"""Respond to an action from the user on the NetGraph"""
+
 from nengo.utils.compat import iteritems
 
 import nengo_gui.components
@@ -25,6 +27,8 @@ def create_action(action, net_graph, **kwargs):
 
 
 class Action(object):
+    """Base object for all user action responses"""
+
     def __init__(self, net_graph, uid):
         self.net_graph = net_graph
         self.uid = uid
@@ -55,6 +59,8 @@ class Action(object):
 
 
 class ConfigAction(Action):
+    """Update config file entry related to a visualisation component"""
+
     def __init__(self, page, component, new_cfg, old_cfg):
         super(ConfigAction, self).__init__(page.net_graph, id(component))
         self.component = component
@@ -76,6 +82,8 @@ class ConfigAction(Action):
 
 
 class ExpandCollapse(Action):
+    """Expand and collapse the Network NetGraph item"""
+
     def __init__(self, net_graph, uid, expand):
         super(ExpandCollapse, self).__init__(net_graph, uid)
         self.expand = expand
@@ -98,6 +106,8 @@ class ExpandCollapse(Action):
 
 
 class RemoveGraph(Action):
+    """Remove a visualisation component associated to a NetGraph item"""
+
     def __init__(self, net_graph, component):
         super(RemoveGraph, self).__init__(net_graph, id(component))
         self.component = component
@@ -117,6 +127,8 @@ class RemoveGraph(Action):
 
 
 class CreateGraph(Action):
+    """Create a visualisation component associated to a NetGraph item"""
+
     def __init__(self, net_graph, uid, type, x, y, width, height, **kwargs):
         super(CreateGraph, self).__init__(net_graph, uid)
         self.graph_uid = None
@@ -170,6 +182,8 @@ class CreateGraph(Action):
 
 
 class PosSize(Action):
+    """Set size and position on a NetGraph Item or a visualisation component"""
+
     def __init__(self, net_graph, uid, x, y, width, height):
         super(PosSize, self).__init__(net_graph, uid)
         self.x, self.y = self.obj_config.pos
@@ -194,6 +208,8 @@ class PosSize(Action):
 
 
 class Pos(Action):
+    """Set the position on a NetGraph Item or a visualisation component"""
+
     def __init__(self, net_graph, uid, x, y):
         super(Pos, self).__init__(net_graph, uid)
         self.x, self.y = self.obj_config.pos
@@ -216,6 +232,8 @@ class Pos(Action):
 
 
 class Size(Action):
+    """Set the size on a NetGraph Item or a visualisation component"""
+
     def __init__(self, net_graph, uid, width, height):
         super(Size, self).__init__(net_graph, uid)
         self.width, self.height = self.obj_config.size
@@ -238,6 +256,8 @@ class Size(Action):
 
 
 class FeedforwardLayout(Action):
+    """React to the auto-layout command"""
+
     def __init__(self, net_graph, uid):
         super(FeedforwardLayout, self).__init__(net_graph, uid)
 

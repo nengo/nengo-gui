@@ -9,7 +9,10 @@ from nengo_gui.components.spa_plot import SpaPlot
 
 
 class Pointer(SpaPlot):
+    """Server side component for the Semantic Pointer Cloud"""
+
     config_defaults = dict(show_pairs=False, **Component.config_defaults)
+
     def __init__(self, obj, **kwargs):
         super(Pointer, self).__init__(obj, **kwargs)
 
@@ -53,7 +56,7 @@ class Pointer(SpaPlot):
         vocab = self.vocab_out
         key_similarities = np.dot(vocab.vectors, x)
         over_threshold = key_similarities > 0.01
-        matches = zip(key_similarities[over_threshold], 
+        matches = zip(key_similarities[over_threshold],
                       np.array(vocab.keys)[over_threshold])
         if self.config.show_pairs:
             self.vocab_out.include_pairs = True
@@ -93,7 +96,7 @@ class Pointer(SpaPlot):
         elif msg[0:12] == ':check only:':
             if len(msg) == 12:
                 self.data.append("good_pointer")
-            else:                
+            else:
                 vocab = copy.deepcopy(self.vocab_out)
                 try:
                     vocab.parse(msg[12:])

@@ -1,9 +1,11 @@
 /**
- * Decoded pointer display
+ * Arbitrary HTML display taking input from a Node
+ * See nengo_gui/examples/basics/html.py for example usage
  * @constructor
  *
+ * @param {DOMElement} parent - the element to add this component to
+ * @param {Nengo.SimControl} sim - the simulation controller
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
- * @param {Nengo.SimControl} args.sim - the simulation controller
  */
 
 Nengo.HTMLView = function(parent, sim, args) {

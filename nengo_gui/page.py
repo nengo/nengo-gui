@@ -47,7 +47,6 @@ class Page(object):
         self.stdout = ''     # text sent to stdout during execution
 
         self.changed = False   # has the model been changed?
-        self.paused = False    # is the simulation paused
         self.finished = False  # should this Page be shut down
         self._sim = None       # the current nengo.Simulator
         self.rebuild = False   # should the model be rebuilt
@@ -168,11 +167,11 @@ class Page(object):
         #TODO: change the name of this
         self.components = []
         self.component_uids = {}
-        for k, v in self.locals.items():
-            if isinstance(v, nengo_gui.components.Component):
-                self.component_uids[v] = k
-                self.gui.component_uids[id(v)] = v
-                self.components.append(v)
+        for name, obj in self.locals.items():
+            if isinstance(obj, nengo_gui.components.Component):
+                self.component_uids[obj] = name
+                self.gui.component_uids[id(obj)] = obj
+                self.components.append(obj)
 
         # this ensures NetGraph, AceEditor, and SimControl are first
         self.components.sort(key=lambda x: x.component_order)
