@@ -27,7 +27,7 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
     this.legend = document.createElement('div');
     this.legend.classList.add('legend', 'unselectable');
     this.div.appendChild(this.legend);
-    this.legend_svg = Nengo.draw_legend(this.legend, args.pointer_labels, this.color_func);
+    this.legend_svg = Nengo.draw_legend(this.legend, args.pointer_labels, this.color_func, this.uid);
 };
 
 Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
@@ -42,7 +42,7 @@ Nengo.SpaSimilarity.prototype.reset_legend_and_data = function(new_labels){
     while(this.legend.lastChild){
         this.legend.removeChild(this.legend.lastChild);
     }
-    this.legend_svg = d3.select(this.legend).append("svg");
+    this.legend_svg = d3.select(this.legend).append("svg").attr("id", "id"+this.uid);
 
     // redraw all the legends if they exist
     this.legend_labels = [];
@@ -99,7 +99,7 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
            });
 
     // expand the width of the svg of the longest string
-    var label_list = $(".legend-label").toArray();
+    var label_list = $("#id"+this.uid+" .legend-label").toArray();
     var longest_label = label_list.sort(
                             function (a, b) { return b.getBBox().width - a.getBBox().width; }
                         )[0];

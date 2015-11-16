@@ -72,13 +72,17 @@ Nengo.next_zindex = function() {
 }
 
 /* draw a legend */
-// the css should probably be dealt with in here somehow
 Nengo.draw_legend = function(parent, labels, color_func){
     // "20" is around the size of the font
     legend_svg = d3.select(parent)
                        .append("svg")
                        .attr("width", 150)
-                       .attr("height", 20*labels.length);
+                       .attr("height", 20*labels.length)
+                       .attr("id", "id"+uid);
+
+    if(labels.length == 0){
+      return legend_svg;
+    }
 
     legend_svg.selectAll('rect')
               .data(labels)
@@ -86,10 +90,11 @@ Nengo.draw_legend = function(parent, labels, color_func){
               .append("rect")
               .attr("x", 0)
               .attr("y", function(d, i){ return i *  20;})
+              .attr("class", "legend-label")
               .attr("width", 10)
               .attr("height", 10)
               .style("fill", color_func);
-    
+
     legend_svg.selectAll('text')
               .data(labels)
               .enter()
@@ -99,5 +104,15 @@ Nengo.draw_legend = function(parent, labels, color_func){
               .html(function(d, i) {
                     return labels[i];
                });
+
+    // expand the width of the svg to the length of the longest string
+    var label_list = $("#id"+uid+" .legend-label").toArray();
+    var longest_label = label_list.sort(
+                            function (a, b) { return b.getBBox().width - a.getBBox().width; }
+                        )[0];
+    // "30" is for the box colours which is around two characters wide
+    var svg_right_edge = longest_label.getBBox().width + 30;
+    legend_svg.attr("width", svg_right_edge);
+
     return legend_svg;
 }
