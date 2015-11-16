@@ -33,7 +33,7 @@ class NameFinder(object):
                             self.known_name[obj] = n
                 elif isinstance(attr, classes):
                     if attr not in self.known_name:
-                        self.known_name[attr] = '%s.%s' % (net_name, class_attr)
+                        self.known_name[attr] = '%s.%s' % (net_name, attr)
 
 
         for type in base_lists:
