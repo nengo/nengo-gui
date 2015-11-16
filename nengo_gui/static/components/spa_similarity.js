@@ -23,7 +23,7 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
     this.line.defined(function(d) { return !isNaN(d)});
 
     // create the legend from label args
-    this.pointer_labels = args.pointer_labels;
+    this.legend_labels = args.pointer_labels;
     this.legend = document.createElement('div');
     this.legend.classList.add('legend', 'unselectable');
     this.div.appendChild(this.legend);
@@ -45,7 +45,7 @@ Nengo.SpaSimilarity.prototype.reset_legend_and_data = function(new_labels){
     this.legend_svg = d3.select(this.legend).append("svg");
 
     // redraw all the legends if they exist
-    this.pointer_labels = [];
+    this.legend_labels = [];
     if(new_labels[0] != ""){
         this.update_legend(new_labels);
     }
@@ -71,16 +71,16 @@ Nengo.SpaSimilarity.prototype.data_msg = function(push_data){
 Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
 
     var self = this;
-    this.pointer_labels = this.pointer_labels.concat(new_labels);
+    this.legend_labels = this.legend_labels.concat(new_labels);
 
     // expand the height of the svg, where "20" is around the height of the font
-    this.legend_svg.attr("height", 20 * this.pointer_labels.length);
+    this.legend_svg.attr("height", 20 * this.legend_labels.length);
 
 
     // Data join
-    var recs = this.legend_svg.selectAll("rect").data(this.pointer_labels);
-    var legend_labels = this.legend_svg.selectAll(".legend-label").data(this.pointer_labels);
-    var val_texts = this.legend_svg.selectAll(".val").data(this.pointer_labels);
+    var recs = this.legend_svg.selectAll("rect").data(this.legend_labels);
+    var legend_labels = this.legend_svg.selectAll(".legend-label").data(this.legend_labels);
+    var val_texts = this.legend_svg.selectAll(".val").data(this.legend_labels);
     // enter to append remaining lines
     recs.enter()
         .append("rect")
@@ -166,7 +166,7 @@ Nengo.SpaSimilarity.prototype.update = function() {
         }
 
         // update the text in the legend
-        var texts = this.legend_svg.selectAll(".val").data(this.pointer_labels);
+        var texts = this.legend_svg.selectAll(".val").data(this.legend_labels);
 
         texts.html(function(d, i) {
                 var sign = '';
