@@ -89,11 +89,10 @@ class Component(object):
         """
         for attr in self.config._clsparams.params:
             if attr in cfg:
-                raise AttributeError("Value for %s in config already assigned "
-                                     "in cfg argument. Remove the assignment "
-                                     "from the cfg"
-                                     "argument and set it in the config "
-                                     "instead." % (attr))
+                raise AttributeError("Value for %s is already set in the "
+                                     "config of this component. Do not try to "
+                                     "modify it via this function. Instead "
+                                     "modify the config directly." % (attr))
             else:
                 cfg[attr] = getattr(self.config, attr)
         return json.dumps(cfg)
