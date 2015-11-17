@@ -84,7 +84,7 @@ class Component(object):
         """
         pass
 
-    def javascript_config(self, cfg, override = {}):
+    def javascript_config(self, cfg):
         """Convert the nengo.Config information into javascript.
 
         This is needed so we can send that config information to the client.

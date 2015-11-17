@@ -11,10 +11,10 @@ class Value(Component):
 
     # the parameters to be stored in the .cfg file
     config_defaults = dict(max_value=1, min_value=-1,
-                         show_legend=False, legend_labels=[], palette_index=0,
-                         **Component.config_defaults)
+                           show_legend=False, legend_labels=[], palette_index=0,
+                           **Component.config_defaults)
 
-    def __init__(self, obj, n_lines=0):
+    def __init__(self, obj):
         super(Value, self).__init__()
         # the object whose decoded value should be displayed
         self.obj = obj
