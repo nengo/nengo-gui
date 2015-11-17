@@ -42,7 +42,7 @@ Nengo.SpaSimilarity.prototype.reset_legend_and_data = function(new_labels){
     while(this.legend.lastChild){
         this.legend.removeChild(this.legend.lastChild);
     }
-    this.legend_svg = d3.select(this.legend).append("svg").attr("id", "id"+this.uid);
+    this.legend_svg = d3.select(this.legend).append("svg").attr("id", "legend"+this.uid);
 
     // redraw all the legends if they exist
     this.legend_labels = [];
@@ -99,7 +99,7 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
            });
 
     // expand the width of the svg of the longest string
-    var label_list = $("#id"+this.uid+" .legend-label").toArray();
+    var label_list = $("#legend"+this.uid+" .legend-label").toArray();
     var longest_label = label_list.sort(
                             function (a, b) { return b.getBBox().width - a.getBBox().width; }
                         )[0];
