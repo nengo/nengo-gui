@@ -18,7 +18,7 @@ Nengo.clip = function(x, low, high) {
         x = high;
     }
     return x;
-}
+};
 
 /**
  * Helper function to set the transform of an element.
@@ -26,7 +26,7 @@ Nengo.clip = function(x, low, high) {
 Nengo.set_transform = function(element, x, y) {
     element.style.webkitTransform =
         element.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
-}
+};
 
 /**
  * Create a WebSocket connection to the given id
@@ -54,22 +54,22 @@ Nengo.make_colors = function(N) {
         c.push(palette[i % palette.length]);
     }
     return c;
-}
+};
 
 //Check if a string value represents a number
-Nengo.is_num = function(value){
-    if (!(isNaN(value)) && !(value.trim() == '') ) {
+Nengo.is_num = function(value) {
+    if (!(isNaN(value)) && !(value.trim() === '') ) {
         return true;
     }
     else{
         return false;
     }
-}
+};
 
 Nengo.next_zindex = function() {
     Nengo.max_zindex++;
     return Nengo.max_zindex;
-}
+};
 
 /* draw a legend */
 Nengo.draw_legend = function(parent, labels, color_func, uid) {
