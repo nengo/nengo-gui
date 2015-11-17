@@ -95,7 +95,7 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
           .attr("y", function(d, i){ return i *  20 + 9;})
           .attr("class", "legend-label")
           .html(function(d, i) {
-                return self.pointer_labels[i];
+                return self.legend_labels[i];
            });
 
     // expand the width of the svg of the longest string
