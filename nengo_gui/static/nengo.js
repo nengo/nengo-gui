@@ -78,7 +78,7 @@ Nengo.draw_legend = function(parent, labels, color_func, uid){
                        .append("svg")
                        .attr("width", 150)
                        .attr("height", 20*labels.length)
-                       .attr("id", "id"+uid);
+                       .attr("id", "legend"+uid);
 
     if(labels.length == 0){
       return legend_svg;
@@ -106,7 +106,7 @@ Nengo.draw_legend = function(parent, labels, color_func, uid){
                });
 
     // expand the width of the svg to the length of the longest string
-    var label_list = $("#id"+uid+" .legend-label").toArray();
+    var label_list = $("#legend"+uid+" .legend-label").toArray();
     var longest_label = label_list.sort(
                             function (a, b) { return b.getBBox().width - a.getBBox().width; }
                         )[0];
