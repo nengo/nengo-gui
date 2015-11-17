@@ -6,8 +6,8 @@ import numpy as np
 
 import nengo
 
-from static_plots import tuning_curve_plot, response_curve_plot
-from static_plots import node_output_plot
+from .static_plots import tuning_curve_plot, response_curve_plot
+from .static_plots import node_output_plot
 
 def infomodal(ng, uid, **args):
     obj = ng.uids[uid]

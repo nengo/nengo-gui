@@ -2,6 +2,8 @@
  * A slider object with 1+ handles to adjust Node values
  * @constructor
  *
+ * @param {DOMElement} parent - the element to add this component to
+ * @param {Nengo.SimControl} sim - the simulation controller
  * @params {dict} args - a set of constructor arguments (see Nengo.Component)
  * @params {int} args.n_sliders - the number of sliders to show
  *

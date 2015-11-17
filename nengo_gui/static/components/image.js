@@ -2,11 +2,12 @@
  * Shows an image or pixel grid over time
  * @constructor
  *
+ * @param {DOMElement} parent - the element to add this component to
+ * @param {Nengo.SimControl} sim - the simulation controller
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
  * @param {int} args.n_lines - number of decoded values
  * @param {float} args.miny - minimum value on y-axis
  * @param {float} args.maxy - maximum value on y-axis
- * @param {Nengo.SimControl} args.sim - the simulation controller
  */
 
 Nengo.Image = function(parent, sim, args) {

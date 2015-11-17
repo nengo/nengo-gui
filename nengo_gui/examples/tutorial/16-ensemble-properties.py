@@ -5,7 +5,7 @@
 # Ensemble.  Here are a few that may be useful.
 
 # max_rates
-#    Each neuron has a different maximum firing rate, and this parametr
+#    Each neuron has a different maximum firing rate, and this parameter
 #    specifies the random distribution controlling this.  The default is
 #    a uniform distribution between 200Hz and 400Hz.
 
@@ -28,11 +28,11 @@ import nengo
 
 model = nengo.Network()
 with model:
-    
+
     stim = nengo.Node(0)
-    
+
     a = nengo.Ensemble(n_neurons=50, dimensions=1)
-    
+
     b = nengo.Ensemble(n_neurons=50, dimensions=1,
                        max_rates=nengo.dists.Uniform(50, 100))
 
@@ -41,7 +41,7 @@ with model:
 
     d = nengo.Ensemble(n_neurons=50, dimensions=1,
                        intercepts=nengo.dists.Uniform(0.5, 1.0))
-                       
+
     nengo.Connection(stim, a)
     nengo.Connection(stim, b)
     nengo.Connection(stim, c)
