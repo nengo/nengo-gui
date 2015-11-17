@@ -100,11 +100,9 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
 
     // expand the width of the svg of the longest string
     var label_list = $("#legend"+this.uid+" .legend-label").toArray();
-    var longest_label = label_list.sort(
-                            function (a, b) { return b.getBBox().width - a.getBBox().width; }
-                        )[0];
+    var longest_label = Math.max.apply(Math, label_list.map(function(o){return o.getBBox().width;}));
     // "50" is for the similarity measure that is around three characters wide
-    var svg_right_edge = longest_label.getBBox().width + 50;
+    var svg_right_edge = longest_label + 50;
     this.legend_svg.attr("width", svg_right_edge);
 
     val_texts.attr("x", svg_right_edge)
