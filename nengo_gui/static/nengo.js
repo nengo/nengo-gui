@@ -80,7 +80,7 @@ Nengo.draw_legend = function(parent, labels, color_func, uid) {
                        .attr("height", 20*labels.length)
                        .attr("id", "legend"+uid);
 
-    if(labels.length == 0){
+    if(labels.length == 0) {
       return legend_svg;
     }
 
