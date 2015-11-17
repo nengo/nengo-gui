@@ -47,13 +47,12 @@ class Config(nengo.Config):
                 lines.append('%s = %s' % (uid, obj.code_python(uids)))
                 for k in obj.config_defaults.keys():
                     v = getattr(self[obj], k)
-                    if isinstance(v, bool):
-                        val = '%s' % v
-                    else:
-                        try:
-                            val = '%g' % v
-                        except TypeError:
-                            val = '%s' % v
+                    val = repr(v)
+                    try:
+                        recovered_v = eval(val, {})
+                    except:
+                        raise Exception("Unable to recover %s after saving "
+                                        "it to the config." % (val))
 
                     lines.append('_viz_config[%s].%s = %s' % (uid, k, val))
 
