@@ -50,9 +50,11 @@ class Config(nengo.Config):
                     val = repr(v)
                     try:
                         recovered_v = eval(val, {})
+                        assert recovered_v == v
                     except:
-                        raise Exception("Unable to recover %s after saving "
-                                        "it to the config." % (val))
+                        raise ValueError("Cannot save %s to config Only "
+                                         "values that can be successfully "
+                                         "evaluated are allowed." % (val))
 
                     lines.append('_viz_config[%s].%s = %s' % (uid, k, val))
 
