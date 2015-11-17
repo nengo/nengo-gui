@@ -47,8 +47,7 @@ class Config(nengo.Config):
                 lines.append('%s = %s' % (uid, obj.code_python(uids)))
                 for k in obj.config_defaults.keys():
                     v = getattr(self[obj], k)
-                    if(isinstance(v, bool) or isinstance(v, list)
-                        or isinstance(v, dict)):
+                    if isinstance(v, bool):
                         val = '%s' % v
                     else:
                         val = '%g' % v
