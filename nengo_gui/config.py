@@ -47,10 +47,11 @@ class Config(nengo.Config):
                 lines.append('%s = %s' % (uid, obj.code_python(uids)))
                 for k in obj.config_defaults.keys():
                     v = getattr(self[obj], k)
-                    if isinstance(v, bool):
-                        val = '%s' % v
-                    else:
+                    try:
                         val = '%g' % v
+                    except TypeError:
+                        val = '%s' % v
+
                     lines.append('_viz_config[%s].%s = %s' % (uid, k, val))
 
         return '\n'.join(lines)
