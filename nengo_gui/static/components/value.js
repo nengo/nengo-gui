@@ -46,11 +46,14 @@ Nengo.Value = function(parent, sim, args) {
     this.path = this.axes2d.svg.append("g").selectAll('path')
                                     .data(this.data_store.data);
 
-    this.colors = Nengo.make_colors(this.n_lines);
+    // create the color function
+    this.palette_index = args.palette_index || 0;
+    this.color_func = Nengo.color_choices[this.palette_index][1]["func"];
+
     this.path.enter()
              .append('path')
              .attr('class', 'line')
-             .style('stroke', function(d, i) {return self.colors[i];});
+             .style('stroke', function(d, i){return self.color_func(i)});
     
     // Flag for whether or not update code should be changing the crosshair
     // Both zooming and the simulator time changing cause an update, but the crosshair
@@ -114,6 +117,25 @@ Nengo.Value = function(parent, sim, args) {
     this.on_resize(this.get_screen_width(), this.get_screen_height());
     this.axes2d.axis_y.tickValues([args.min_value, args.max_value]);
     this.axes2d.fit_ticks(this);
+
+    this.legend = document.createElement('div');
+    this.legend.classList.add('legend');
+    this.div.appendChild(this.legend);
+
+    this.legend_labels = args.legend_labels || [];
+    if (this.legend_labels.length !== this.n_lines) {
+        // fill up an array with temporary labels
+        for (var i=0; i<this.n_lines; i++) {
+            if(this.legend_labels[i] === undefined){
+                this.legend_labels[i] = "label_".concat(String(i));
+            }
+        }
+    }
+
+    this.show_legend = args.show_legend || false;
+    if (this.show_legend == true) {
+        Nengo.draw_legend(this.legend, this.legend_labels, this.color_func, this.uid);
+    }
 };
 
 Nengo.Value.prototype = Object.create(Nengo.Component.prototype);
@@ -231,15 +253,131 @@ Nengo.Value.prototype.generate_menu = function() {
     var items = [];
     items.push(['Set range...', function() {self.set_range();}]);
 
+    if (this.show_legend) {
+        items.push(['Hide legend', function() {self.set_show_legend(false);}]);
+    } else {
+        items.push(['Show legend', function() {self.set_show_legend(true);}]);
+    }
+
+    // TODO: give the legend it's own context menu
+    items.push(['Set legend labels', function () {self.set_legend_labels();}])
+
+    items.push(['Change color palette', function () {self.set_color_func();}])
+
     // add the parent's menu items to this
     return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
 };
 
+Nengo.Value.prototype.set_color_func = function() {
+    var self = this;
+
+    Nengo.modal.clear_body();
+    // TODO: Let the user define their own palette
+    Nengo.modal.title('Choose a palette');
+
+    // Create a radio button form with the available palettes
+    var body = Nengo.modal.$body;
+    var radio_html = "<form  id='palette'>";
+    radio_html += "<input type='radio' name='pal' value='" + 0 + "' checked='checked'>"+Nengo.color_choices[0][0]+"</input><br>"
+    for (i = 1; i < Nengo.color_choices.length; i++) {
+        radio_html += "<input type='radio' name='pal' value='" + i + "'>"+Nengo.color_choices[i][0]+"</input><br>"
+    }
+    radio_html += "</form>";
+    body.append(radio_html);
+
+    // TODO: Make this thing easier to select for the user
+    Nengo.modal.footer('ok_cancel', function(e) {
+        self.palette_index = Number($("#palette input:radio[name='pal']:checked").val());
+        self.color_func = Nengo.color_choices[self.palette_index][1]["func"];
+
+        self.path.style('stroke', function(d, i){return self.color_func(i)});
+        if(self.show_legend === true){
+            self.clear_legend();
+            Nengo.draw_legend(self.legend, self.legend_labels, self.color_func, self.uid);
+        }
+        self.save_layout();
+        $('#OK').attr('data-dismiss', 'modal');
+    });
+
+    // allow "Enter" keypress
+    $("#palette").keypress(function(event) {
+        if (event.which == 13) {
+            event.preventDefault();
+            $('#OK').click();
+        }
+    });
+
+    Nengo.modal.show();
+}
+
+Nengo.Value.prototype.set_show_legend = function(value){
+    if (this.show_legend !== value) {
+        this.show_legend = value;
+        this.save_layout();
+
+        if (this.show_legend == true) {
+            Nengo.draw_legend(this.legend, this.legend_labels, this.color_func, this.uid);
+        } else {
+            // delete the legend's children
+            this.clear_legend();
+        }
+    }
+}
+
+Nengo.Value.prototype.clear_legend = function() {
+    while(this.legend.lastChild){
+        this.legend.removeChild(this.legend.lastChild);
+    }
+}
+
+Nengo.Value.prototype.set_legend_labels = function() {
+    var self = this;
+
+    Nengo.modal.title('Enter comma seperated legend label values');
+    Nengo.modal.single_input_body('Legend label', 'New value');
+    Nengo.modal.footer('ok_cancel', function(e) {
+        var label_csv = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+        
+        // No validation to do.
+        // Blank string mean do nothing
+        // Long strings okay
+        // Excissive entries get ignored
+        // Missing entries get replaced by default value
+        // Empty entries assumed to be indication to skip modification
+        // TODO: Allow escaping of commas
+        if ((label_csv !== null) && (label_csv !== '')) {
+            labels = label_csv.split(',');
+
+            for (var i=0; i<labels.length; i++) {
+                if(labels[i] !== ""){
+                     self.legend_labels[i] = labels[i];
+                } else {
+                    self.legend_labels[i] = "label_" + String(i);
+                }
+            }
+
+            // redraw the legend with the updated label values
+            while(self.legend.lastChild){
+                self.legend.removeChild(self.legend.lastChild);
+            }
+            Nengo.draw_legend(self.legend, self.legend_labels, self.color_func, this.uid);
+            self.save_layout();
+        }
+        $('#OK').attr('data-dismiss', 'modal');
+    });
+
+    // TODO: Add button so that a person can easily return to default labels
+    Nengo.modal.show();
+}
 
 Nengo.Value.prototype.layout_info = function () {
     var info = Nengo.Component.prototype.layout_info.call(this);
+    info.show_legend = this.show_legend;
+    info.legend_labels = this.legend_labels;
     info.min_value = this.axes2d.scale_y.domain()[0];
     info.max_value = this.axes2d.scale_y.domain()[1];
+    info.palette_index = this.palette_index;
     return info;
 }
 

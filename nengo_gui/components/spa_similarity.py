@@ -8,9 +8,8 @@ from nengo_gui.components.spa_plot import SpaPlot
 class SpaSimilarity(SpaPlot):
     """Line graph showing semantic pointer decoded values over time"""
 
-    config_defaults = dict(max_value=1,
-                           min_value=-1,
-                           show_pairs=False,
+    config_defaults = dict(max_value=1.5, min_value=-1.5,
+                           palette_index=1, show_pairs=False,
                            **Component.config_defaults)
 
     def __init__(self, obj, **kwargs):
@@ -80,8 +79,7 @@ class SpaSimilarity(SpaPlot):
     def javascript(self):
         """Generate the javascript that will create the client-side object"""
         info = dict(uid=id(self), label=self.label, n_lines=len(self.labels),
-                    synapse=0, min_value=-1.5, max_value=1.5,
-                    pointer_labels=self.labels)
+                    synapse=0, pointer_labels=self.labels)
         json = self.javascript_config(info)
         return 'new Nengo.SpaSimilarity(main, sim, %s);' % json
 
