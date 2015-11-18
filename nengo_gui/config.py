@@ -43,18 +43,28 @@ class Config(nengo.Config):
                                  % (uid, self[obj].expanded))
                     lines.append('_viz_config[%s].has_layout=%s'
                                  % (uid, self[obj].has_layout))
+
             elif isinstance(obj, nengo_gui.components.component.Component):
                 lines.append('%s = %s' % (uid, obj.code_python(uids)))
                 for k in obj.config_defaults.keys():
                     v = getattr(self[obj], k)
                     val = repr(v)
+
                     try:
                         recovered_v = eval(val, {})
-                        assert recovered_v == v
                     except:
-                        raise ValueError("Cannot save %s to config Only "
+                        raise ValueError("Cannot save %s to config. Only "
                                          "values that can be successfully "
                                          "evaluated are allowed." % (val))
+
+                    try:
+                        assert recovered_v == v
+                    except AssertionError:
+                        raise ValueError("Cannot save %s to config, recovery "
+                                         "recovery failed. Only "
+                                         "values that can be recovered after "
+                                         "being entered into the config file " 
+                                         "can be saved." % (val))
 
                     lines.append('_viz_config[%s].%s = %s' % (uid, k, val))
 
