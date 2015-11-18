@@ -58,7 +58,7 @@ Nengo.make_colors = function(N) {
 
 //Check if a string value represents a number
 Nengo.is_num = function(value) {
-    if (!(isNaN(value)) && !(value.trim() === '') ) {
+    if ( !(isNaN(value)) && !(value.trim() === '') ) {
         return true;
     } else {
         return false;
@@ -76,8 +76,8 @@ Nengo.draw_legend = function(parent, labels, color_func, uid) {
     legend_svg = d3.select(parent)
                        .append("svg")
                        .attr("width", 150)
-                       .attr("height", 20*labels.length)
-                       .attr("id", "legend"+uid);
+                       .attr("height", 20 * labels.length)
+                       .attr("id", "legend" + uid);
 
     if (labels.length === 0) {
       return legend_svg;
@@ -88,7 +88,7 @@ Nengo.draw_legend = function(parent, labels, color_func, uid) {
               .enter()
               .append("rect")
               .attr("x", 0)
-              .attr("y", function(d, i){ return i *  20;})
+              .attr("y", function(d, i) { return i * 20;})
               .attr("class", "legend-label")
               .attr("width", 10)
               .attr("height", 10)
@@ -99,11 +99,11 @@ Nengo.draw_legend = function(parent, labels, color_func, uid) {
               .enter()
               .append("text")
               .attr("x", 15)
-              .attr("y", function(d, i){ return i *  20 + 9;})
+              .attr("y", function(d, i) { return i * 20 + 9;})
               .attr("class", "legend-label")
               .html(function(d, i) {
-                    return labels[i];
-               });
+                  return labels[i];
+              });
 
     // expand the width of the svg to the length of the longest string
     var label_list = $("#legend"+uid+" .legend-label").toArray();
