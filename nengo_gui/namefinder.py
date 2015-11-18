@@ -39,11 +39,11 @@ class NameFinder(object):
                         self.known_name[attr] = '%s.%s' % (net_name, inst_attr)
 
 
-        for type in base_lists:
-            for i, obj in enumerate(getattr(net, type)):
+        for obj_type in base_lists:
+            for i, obj in enumerate(getattr(net, obj_type)):
                 name = self.known_name.get(obj, None)
                 if name is None:
-                    name = '%s.%s[%d]' % (net_name, type, i)
+                    name = '%s.%s[%d]' % (net_name, obj_type, i)
                     self.known_name[obj] = name
 
         for n in net.networks:

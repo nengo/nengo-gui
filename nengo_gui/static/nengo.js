@@ -60,8 +60,7 @@ Nengo.make_colors = function(N) {
 Nengo.is_num = function(value) {
     if (!(isNaN(value)) && !(value.trim() === '') ) {
         return true;
-    }
-    else{
+    } else {
         return false;
     }
 };
