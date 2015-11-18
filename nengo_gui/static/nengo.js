@@ -58,7 +58,7 @@ Nengo.make_colors = function(N) {
 
 //Check if a string value represents a number
 Nengo.is_num = function(value) {
-    if (!(isNaN(value)) && !(value.trim() === '') ) {
+    if ( !(isNaN(value)) && !(value.trim() === '') ) {
         return true;
     } else {
         return false;
@@ -72,31 +72,31 @@ Nengo.next_zindex = function() {
 
 /* draw a legend */
 // the css should probably be dealt with in here somehow
-Nengo.draw_legend = function(parent, labels, color_func){
+Nengo.draw_legend = function(parent, labels, color_func) {
     // "20" is around the size of the font
     legend_svg = d3.select(parent)
                        .append("svg")
                        .attr("width", 150)
-                       .attr("height", 20*labels.length);
+                       .attr("height", 20 * labels.length);
 
     legend_svg.selectAll('rect')
               .data(labels)
               .enter()
               .append("rect")
               .attr("x", 0)
-              .attr("y", function(d, i){ return i *  20;})
+              .attr("y", function(d, i) { return i * 20;})
               .attr("width", 10)
               .attr("height", 10)
               .style("fill", color_func);
-    
+
     legend_svg.selectAll('text')
               .data(labels)
               .enter()
               .append("text")
               .attr("x", 15)
-              .attr("y", function(d, i){ return i *  20 + 9;})
+              .attr("y", function(d, i) { return i * 20 + 9;})
               .html(function(d, i) {
-                    return labels[i];
-               });
+                  return labels[i];
+              });
     return legend_svg;
 };
