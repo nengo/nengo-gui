@@ -57,11 +57,9 @@ class Config(nengo.Config):
                                          "values that can be successfully "
                                          "evaluated are allowed." % (val))
 
-                    try:
-                        assert recovered_v == v
-                    except AssertionError:
+                    if recovered_v != v:
                         raise ValueError("Cannot save %s to config, recovery "
-                                         "recovery failed. Only "
+                                         "failed. Only "
                                          "values that can be recovered after "
                                          "being entered into the config file " 
                                          "can be saved." % (val))
