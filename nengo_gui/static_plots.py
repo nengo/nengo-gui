@@ -11,6 +11,8 @@ class PlotInfo(object):
         self.warnings = []
         self.x = None
         self.y = None
+        self.x_label = None
+        self.y_label = None
 
     def to_dict(self):
         x, y = self.x, self.y
@@ -24,12 +26,17 @@ class PlotInfo(object):
             'warnings': self.warnings,
             'x': x,
             'y': y,
+            'x_label': self.x_label if self.x_label != None else "",
+            'y_label': self.y_label if self.y_label != None else "",
         }
 
 def response_curve_plot(ens, sim):
     rc = PlotInfo("Response curves", plot="multiline")
     rc.x, rc.y = response_curves(ens, sim)
+    rc.x_label = "Input current"
     rc.y = rc.y.T
+    rc.y_label = "Firing rate (Hz)"
+
     if len(rc.y.shape) == 1:
         rc.y.shape = 1, rc.y.shape[0]
     if ens.n_neurons > 200:
@@ -39,10 +46,14 @@ def response_curve_plot(ens, sim):
 
 def tuning_curve_plot(ens, sim):
     tc = PlotInfo("Tuning curves")
+
     if ens.dimensions == 1:
         tc.plot = "multiline"
         tc.x, tc.y = tuning_curves(ens, sim)
+        tc.x_label = "x"
         tc.y = tc.y.T
+        tc.y_label = "Firing rate (Hz)"
+
         if ens.n_neurons > 200:
             tc.warnings.append("Only showing the first 200 neurons.")
             tc.y = tc.y[:200]

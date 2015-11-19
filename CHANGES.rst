@@ -19,8 +19,22 @@ Release History
    - Bugfixes
    - Documentation
 
-0.1.5 (unreleased)
+0.2.0 (unreleased)
 ==================
+
+0.1.5 (November 3, 2015)
+========================
+
+- Added a set of tutorials to the built-in examples.
+- Added cross-hairs when hovering over plots.
+- Added several new types of plots, including a firing pattern plot,
+  a similarity plot for SPA networks, and a plot for ``Compare`` networks.
+- Added the ability to implement custom HTML plots.
+  See the built-in example ``basics/html.py``.
+- Extended SPA override capabilities to all SPA networks.
+- ``nengo_gui.Viz`` has been renamed to ``nengo_gui.GUI``.
+- Major refactoring of back-end code.
+- Many bug fixes and look-and-feel improvements.
 
 0.1.4 (June 16, 2015)
 =====================

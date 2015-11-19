@@ -85,18 +85,27 @@ Nengo.Modal.prototype.text_body = function(text, type) {
 Nengo.Modal.prototype.help_body = function() {
     this.clear_body();
 
+    var ctrl = 'Ctrl';
+    var shift = 'Shift';
+
+    if (navigator.userAgent.toLowerCase().indexOf("mac") > -1) {
+        ctrl = '&#8984;';
+        shift = '&#8679;';
+    }
+
     this.$div.find('.modal-dialog').addClass('modal-sm');
     var $body = $('<table class="table-striped" width=100%>');
     $body.append('<tr><td>Play / pause</td>' +
                  '<td align="right">Spacebar</td></tr>');
     $body.append('<tr><td>Undo</td>' +
-                 '<td align="right">Ctrl-z</td></tr>');
+                 '<td align="right">' + ctrl + '-z</td></tr>');
     $body.append('<tr><td>Redo</td>'+
-                 '<td align="right">Ctrl-Shift-z, Ctrl-y</td></tr>');
-    $body.append('<tr><td>Toggle minimap</td>'+
-                 '<td align="right">Ctrl-m</td></tr>');
+                 '<td align="right">' + ctrl + '-' + shift +
+                 '-z, ' + ctrl + '-y</td></tr>');
+    $body.append('<tr><td>Toggle minimap</td>' +
+                 '<td align="right">' + ctrl + '-m</td></tr>');
     $body.append('<tr><td>Toggle editor</td>'+
-                 '<td align="right">Ctrl-e</td></tr>');
+                 '<td align="right">' + ctrl + '-e</td></tr>');
     $body.append('<tr><td>Show hotkeys</td>'+
                  '<td align="right">?</td></tr>');
     $body.append('</table>');
@@ -352,7 +361,12 @@ Nengo.Modal.prototype.render_plot = function($parent, plotinfo) {
     }
 
     if (plotinfo.plot === 'multiline') {
-        this.multiline_plot($parent.get(0), plotinfo.x, plotinfo.y);
+        this.multiline_plot(
+            $parent.get(0),
+            plotinfo.x,
+            plotinfo.y,
+            plotinfo.x_label,
+            plotinfo.y_label);
     } else if (plotinfo.plot !== 'none') {
         console.warn("Plot type " + plotinfo.plot +
                      " not understood, or not implemented yet.");
@@ -366,31 +380,35 @@ Nengo.Modal.prototype.render_plot = function($parent, plotinfo) {
  * @param {Array of Float} x - The shared x-axis
  * @param {Array of Array of Float} ys - The y data for each line
  */
-Nengo.Modal.prototype.multiline_plot = function(selector, x, ys) {
-    var m = {left: 50, top: 10, right: 0, bottom: 30};
-    var w = 500 - m.left - m.right;
-    var h = 220 - m.bottom - m.top;
+Nengo.Modal.prototype.multiline_plot = function(selector, x, ys, x_label, y_label) {
+
+    var margin = {left: 75, top: 10, right: 0, bottom: 50};
+    var w = 500 - margin.left - margin.right;
+    var h = 220 - margin.bottom - margin.top;
+    var graph_w = w + margin.left + margin.right;
+    var graph_h = h + margin.bottom + margin.top;
+    var text_offset = 15;
 
     var scale_x = d3.scale.linear()
-        .domain([x[0], x[x.length-1]])
-        .range([m.left, w - m.right]);
+        .domain([  x[0], x[x.length - 1]  ])
+        .range([margin.left, w - margin.right]);
     var scale_y = d3.scale.linear()
         .domain([d3.min(ys, function(y){ return d3.min(y); }) - 0.01,
                  d3.max(ys, function(y){ return d3.max(y); }) + 0.01])
-        .range([h+m.top, m.top]);
+        .range([h+margin.top, margin.top]);
 
     // Add an SVG element with the desired dimensions and margin.
-    var graph = d3.select(selector).append("svg")
-        .attr("width", w + m.left + m.right)
-        .attr("height", h + m.bottom + m.top);
+    var svg = d3.select(selector).append("svg");
+    var graph = svg.attr("width", graph_w).attr("height", graph_h);
 
+    // create the axes
     var xAxis = d3.svg.axis()
         .scale(scale_x)
         .orient("bottom")
         .ticks(9);
     graph.append("g")
         .attr("class", "axis axis_x unselectable")
-        .attr("transform", "translate(0," + (h+m.top)  + ")")
+        .attr("transform", "translate(0," + (h+margin.top)  + ")")
         .call(xAxis);
 
     var yAxisLeft = d3.svg.axis()
@@ -399,9 +417,31 @@ Nengo.Modal.prototype.multiline_plot = function(selector, x, ys) {
         .orient("left");
     graph.append("g")
         .attr("class", "axis axis_y unselectable")
-        .attr("transform", "translate(" + m.left + ",0)")
+        .attr("transform", "translate(" + margin.left + ",0)")
         .call(yAxisLeft);
 
+    // label the axes
+    if (x_label !== "") {
+        svg.append("text")
+            .attr("class", "x label")
+            .attr("text-anchor", "middle")
+            .attr("x", graph_w / 2)
+            .attr("y", text_offset + graph_h - margin.bottom / 2)
+            .text(x_label);
+    }
+
+    if (y_label !== "") {
+        svg.append("text")
+            .attr("class", "y label")
+            .attr("text-anchor", "middle")
+            .attr("x", -graph_h/2)
+            .attr("y", -text_offset + margin.left / 2)
+            .attr("dy", ".75em")
+            .attr("transform", "rotate(-90)")
+            .text(y_label);
+    }
+
+    // add the lines
     var colors = Nengo.make_colors(ys.length);
 
     var line = d3.svg.line()

@@ -1,12 +1,13 @@
 import json
 
-import nengo
-
 from nengo_gui.components.component import Component
 import nengo_gui.exec_env
 
+
 class AceEditor(Component):
+
     config_defaults = {}
+
     def __init__(self):
         # the IPython integration requires this component to be early
         # in the list
@@ -44,8 +45,8 @@ class AceEditor(Component):
                 else:
                     short_msg = error['trace']
             client.write(json.dumps({'error': error,
-                                     'short_msg':short_msg,
-                                     'stdout':stdout}))
+                                     'short_msg': short_msg,
+                                     'stdout': stdout}))
             self.last_error = error
             self.last_stdout = stdout
 

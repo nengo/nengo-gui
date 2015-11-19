@@ -61,7 +61,12 @@ class GUI(object):
                                     'examples',
                                     'default.py')
         if filename is not None:
-            filename = os.path.relpath(filename)
+            try:
+                filename = os.path.relpath(filename)
+            except ValueError:
+                # happens on Windows if filename is on a different
+                # drive than the current directory
+                filename = filename
 
         if model is None and locals is not None:
             model = locals.get('model', None)
