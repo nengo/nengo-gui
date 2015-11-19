@@ -72,13 +72,17 @@ Nengo.next_zindex = function() {
 }
 
 /* draw a legend */
-Nengo.draw_legend = function(parent, labels, color_func, uid){
+Nengo.draw_legend = function(parent, labels, color_func, uid) {
     // "20" is around the size of the font
     legend_svg = d3.select(parent)
                        .append("svg")
                        .attr("width", 150)
                        .attr("height", 20*labels.length)
-                       .attr("id", "id"+uid);
+                       .attr("id", "legend"+uid);
+
+    if (labels.length === 0) {
+      return legend_svg;
+    }
 
     legend_svg.selectAll('rect')
               .data(labels)
@@ -86,6 +90,7 @@ Nengo.draw_legend = function(parent, labels, color_func, uid){
               .append("rect")
               .attr("x", 0)
               .attr("y", function(d, i){ return i *  20;})
+              .attr("class", "legend-label")
               .attr("width", 10)
               .attr("height", 10)
               .style("fill", color_func);
@@ -96,19 +101,16 @@ Nengo.draw_legend = function(parent, labels, color_func, uid){
               .append("text")
               .attr("x", 15)
               .attr("y", function(d, i){ return i *  20 + 9;})
-              .attr("class", "legend-label")
               .html(function(d, i) {
                     return labels[i];
                });
 
     // expand the width of the svg to the length of the longest string
-    var label_list = $("#id"+uid+" .legend-label").toArray();
-    var longest_label = label_list.sort(
-                            function (a, b) { return b.getBBox().width - a.getBBox().width; }
-                        )[0];
-    // "30" is for the box colours which is around two characters wide
-    var svg_right_edge = longest_label.getBBox().width + 30;
+    var label_list = $("#legend"+uid+" .legend-label").toArray();
+    var longest_label = Math.max.apply(Math, label_list.map(function(o){return o.getBBox().width;}));
+    // "50" is for the similarity measure that is around three characters wide
+    var svg_right_edge = longest_label + 50;
     legend_svg.attr("width", svg_right_edge);
 
     return legend_svg;
-}
+};

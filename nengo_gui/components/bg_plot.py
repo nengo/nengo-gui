@@ -2,9 +2,7 @@ import struct
 
 import nengo
 import numpy as np
-import ipdb
 
-from nengo_gui.components.component import Component
 from nengo_gui.components.value import Value
 
 
@@ -12,9 +10,9 @@ class BGPlot(Value):
     """The server-side system for the SPA Basal Ganglia plot."""
 
     # the parameters to be stored in the .cfg file
-    config_defaults = dict(max_value=1, min_value=-1,
-                         show_legend=True, legend_labels=[],
-                         **Component.config_defaults)
+    config_defaults = Value.config_defaults
+    config_defaults["palette_index"] = 1
+    config_defaults["show_legend"] = True
 
     def __init__(self, obj, **kwargs):
         args = kwargs["args"]
@@ -27,11 +25,6 @@ class BGPlot(Value):
         self.probe_target = args["probe_target"]
 
         self.label = "bg " + self.probe_target
-
-        # the binary data format to sent in.  In this case, it is a list of
-        # floats, with the first float being the time stamp and the rest
-        # being the vector values, one per dimension.
-        self.struct = struct.Struct('<%df' % (1 + self.n_lines))
 
     def attach(self, page, config, uid):
         super(Value, self).attach(page, config, uid)
@@ -53,7 +46,14 @@ class BGPlot(Value):
                     n_lines=self.n_lines, synapse=0)
 
         if getattr(self.config, "legend_labels") == []:
-            json = self.javascript_config(info, override={"legend_labels":self.def_legend_labels})
-        else:
-            json = self.javascript_config(info)
+            self.config.legend_labels = self.def_legend_labels
+
+        json = self.javascript_config(info)
         return 'new Nengo.Value(main, sim, %s);' % json
+
+    def code_python_args(self, uids):
+        return [
+                uids[self.obj],
+                ' args=dict(n_lines=%s, legend_labels=%s, probe_target="%s")'
+                % (self.n_lines, self.config.legend_labels, self.probe_target,)
+                ]
