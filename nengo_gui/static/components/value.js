@@ -270,11 +270,11 @@ Nengo.Value.prototype.set_show_legend = function(value){
         this.show_legend = value;
         this.save_layout();
     }
-    if (this.show_legend === true){
+    if (this.show_legend === true) {
         Nengo.draw_legend(this.legend, this.legend_labels, this.color_func, this.uid);
     } else {
         // delete the legend's children
-        while(this.legend.lastChild){
+        while (this.legend.lastChild) {
             this.legend.removeChild(this.legend.lastChild);
         }
     }
@@ -285,6 +285,10 @@ Nengo.Value.prototype.set_legend_labels = function() {
 
     Nengo.modal.title('Enter comma seperated legend label values');
     Nengo.modal.single_input_body('Legend label', 'New value');
+    var body = Nengo.modal.$body;
+    body.prepend("Blank strings and excessive entries are ignored. \
+        Blank entries that are still delimited by commas will be replaced \
+        with a default value. ")
     Nengo.modal.footer('ok_cancel', function(e) {
         var label_csv = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
@@ -293,20 +297,23 @@ Nengo.Value.prototype.set_legend_labels = function() {
         // Blank string mean do nothing
         // Long strings okay
         // Excissive entries get ignored
-        // Missing entries get replaced by default value
+        // Blank entries get replaced by default value
+        // Missing entries are untouched
         // Empty entries assumed to be indication to skip modification
         // TODO: Allow escaping of commas
         if ((label_csv !== null) && (label_csv !== '')) {
             labels = label_csv.split(',');
 
-            for(i=0; i<self.n_lines; i++){
-                if(labels[i] !== ""){
-                     self.legend_labels[i] = labels[i];
+            for (i=0; i<self.n_lines; i++) {
+                if (labels[i] == "") {
+                    self.legend_labels[i] = "label_".concat(String(i));
+                } else if (labels[i] !== undefined) {
+                    self.legend_labels[i] = labels[i];
                 }
             }
 
             // redraw the legend with the updated label values
-            while(self.legend.lastChild){
+            while (self.legend.lastChild) {
                 self.legend.removeChild(self.legend.lastChild);
             }
             Nengo.draw_legend(self.legend, self.legend_labels, self.color_func, this.uid);

@@ -10,13 +10,13 @@ class BGPlot(Value):
     """The server-side system for the SPA Basal Ganglia plot."""
 
     # the parameters to be stored in the .cfg file
-    config_defaults = Value.config_defaults
-    config_defaults["palette_index"] = 1
+    config_defaults = Value.config_defaults.copy()
     config_defaults["show_legend"] = True
 
     def __init__(self, obj, **kwargs):
+        super(BGPlot, self).__init__(obj)
+
         args = kwargs["args"]
-        super(BGPlot, self).__init__(obj, args["n_lines"])
 
         # default legends to show
         self.def_legend_labels = args["legend_labels"]
@@ -36,9 +36,11 @@ class BGPlot(Value):
             self.node = nengo.Node(self.gather_data,
                                    size_in=self.n_lines)
             if self.probe_target == "input":
-                self.conn = nengo.Connection(self.obj.input, self.node, synapse=0.01)
+                self.conn = nengo.Connection(self.obj.input, self.node,
+                                             synapse=0.01)
             else:
-                self.conn = nengo.Connection(self.obj.output, self.node, synapse=0.01)
+                self.conn = nengo.Connection(self.obj.output, self.node,
+                                             synapse=0.01)
 
     def javascript(self):
         # generate the javascript that will create the client-side object

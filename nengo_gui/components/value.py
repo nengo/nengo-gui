@@ -14,7 +14,7 @@ class Value(Component):
                            show_legend=False, legend_labels=[],
                            **Component.config_defaults)
 
-    def __init__(self, obj, n_lines=0):
+    def __init__(self, obj):
         super(Value, self).__init__()
         # the object whose decoded value should be displayed
         self.obj = obj
@@ -95,6 +95,8 @@ class Value(Component):
         if isinstance(obj, spa.module.Module):
             if 'default' in obj.outputs.keys():
                 output = obj.outputs['default'][0]
+            elif isinstance(obj, spa.BasalGanglia):
+                output = obj.output
         elif isinstance(obj, nengo.network.Network):
             if hasattr(obj, 'output'):
                 output = obj.output
