@@ -1,7 +1,4 @@
-import struct
-
 import nengo
-import numpy as np
 
 from nengo_gui.components.value import Value
 
@@ -44,7 +41,7 @@ class BGPlot(Value):
 
     def javascript(self):
         # generate the javascript that will create the client-side object
-        info = dict(uid=id(self), label=self.label, 
+        info = dict(uid=id(self), label=self.label,
                     n_lines=self.n_lines, synapse=0)
 
         if getattr(self.config, "legend_labels") == []:

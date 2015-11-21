@@ -122,17 +122,17 @@ Nengo.Value = function(parent, sim, args) {
     this.div.appendChild(this.legend);
 
     this.legend_labels = args.legend_labels || [];
-    if(this.legend_labels.length !== this.n_lines){
+    if (this.legend_labels.length !== this.n_lines) {
         // fill up an array with temporary labels
-        for(i=0; i<this.n_lines; i++){
-            if(this.legend_labels[i] === undefined){
+        for (i=0; i<this.n_lines; i++) {
+            if (this.legend_labels[i] === undefined) {
                 this.legend_labels[i] = "label_".concat(String(i));
             }
         }
     }
 
     this.show_legend = args.show_legend || false;
-    if(this.show_legend === true){
+    if (this.show_legend === true) {
         Nengo.draw_legend(this.legend, this.legend_labels, this.color_func, this.uid);
     }
 };

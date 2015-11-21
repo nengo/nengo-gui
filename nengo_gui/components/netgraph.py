@@ -536,7 +536,7 @@ class NetGraph(Component):
             info['bg_inputs'] = obj.input.size_in
             info['input_labels'] = []
             for ac in obj.actions.actions:
-                if ac.name == None:
+                if ac.name is None:
                     info['input_labels'].append(ac.condition.expression.__str__())
                 else:
                     info['input_labels'].append(ac.name)
