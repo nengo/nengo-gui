@@ -22,8 +22,6 @@ class NameFinder(object):
         classes = (nengo.Node, nengo.Ensemble, nengo.Network,
                    nengo.Connection)
 
-        private = False
-        in_lists = False
         for inst_attr in dir(net):
             private = inst_attr.startswith('_')
             in_lists = inst_attr in base_lists + all_lists
