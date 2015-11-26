@@ -23,11 +23,11 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
     this.line.defined(function(d) { return !isNaN(d)});
 
     // create the legend from label args
-    this.pointer_labels = args.pointer_labels;
+    this.legend_labels = args.pointer_labels;
     this.legend = document.createElement('div');
     this.legend.classList.add('legend', 'unselectable');
     this.div.appendChild(this.legend);
-    this.legend_svg = Nengo.draw_legend(this.legend, args.pointer_labels, this.color_func);
+    this.legend_svg = Nengo.draw_legend(this.legend, args.pointer_labels, this.color_func, this.uid);
 };
 
 Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
@@ -42,10 +42,10 @@ Nengo.SpaSimilarity.prototype.reset_legend_and_data = function(new_labels){
     while(this.legend.lastChild){
         this.legend.removeChild(this.legend.lastChild);
     }
-    this.legend_svg = d3.select(this.legend).append("svg");
+    this.legend_svg = d3.select(this.legend).append("svg").attr("id", "legend"+this.uid);
 
     // redraw all the legends if they exist
-    this.pointer_labels = [];
+    this.legend_labels = [];
     if(new_labels[0] != ""){
         this.update_legend(new_labels);
     }
@@ -71,16 +71,16 @@ Nengo.SpaSimilarity.prototype.data_msg = function(push_data){
 Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
 
     var self = this;
-    this.pointer_labels = this.pointer_labels.concat(new_labels);
+    this.legend_labels = this.legend_labels.concat(new_labels);
 
     // expand the height of the svg, where "20" is around the height of the font
-    this.legend_svg.attr("height", 20 * this.pointer_labels.length);
+    this.legend_svg.attr("height", 20 * this.legend_labels.length);
 
 
     // Data join
-    var recs = this.legend_svg.selectAll("rect").data(this.pointer_labels);
-    var legend_labels = this.legend_svg.selectAll(".legend-label").data(this.pointer_labels);
-    var val_texts = this.legend_svg.selectAll(".val").data(this.pointer_labels);
+    var recs = this.legend_svg.selectAll("rect").data(this.legend_labels);
+    var legend_labels = this.legend_svg.selectAll(".legend-label").data(this.legend_labels);
+    var val_texts = this.legend_svg.selectAll(".val").data(this.legend_labels);
     // enter to append remaining lines
     recs.enter()
         .append("rect")
@@ -95,16 +95,14 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels){
           .attr("y", function(d, i){ return i *  20 + 9;})
           .attr("class", "legend-label")
           .html(function(d, i) {
-                return self.pointer_labels[i];
+                return self.legend_labels[i];
            });
 
     // expand the width of the svg of the longest string
-    var label_list = $(".legend-label").toArray();
-    var longest_label = label_list.sort(
-                            function (a, b) { return b.getBBox().width - a.getBBox().width; }
-                        )[0];
+    var label_list = $("#legend"+this.uid+" .legend-label").toArray();
+    var longest_label = Math.max.apply(Math, label_list.map(function(o){return o.getBBox().width;}));
     // "50" is for the similarity measure that is around three characters wide
-    var svg_right_edge = longest_label.getBBox().width + 50;
+    var svg_right_edge = longest_label + 50;
     this.legend_svg.attr("width", svg_right_edge);
 
     val_texts.attr("x", svg_right_edge)
@@ -166,7 +164,7 @@ Nengo.SpaSimilarity.prototype.update = function() {
         }
 
         // update the text in the legend
-        var texts = this.legend_svg.selectAll(".val").data(this.pointer_labels);
+        var texts = this.legend_svg.selectAll(".val").data(this.legend_labels);
 
         texts.html(function(d, i) {
                 var sign = '';
