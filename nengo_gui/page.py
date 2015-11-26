@@ -189,9 +189,9 @@ class Page(object):
         The code will be stored in self.code, any output to stdout will
         be a string as self.stdout, and any error will be in self.error.
         """
-        locals = {}
-        locals['nengo_gui'] = nengo_gui
-        locals['__file__'] = self.filename
+        code_locals = {}
+        code_locals['nengo_gui'] = nengo_gui
+        code_locals['__file__'] = self.filename
 
         self.code = code
         self.error = None
@@ -200,7 +200,7 @@ class Page(object):
         exec_env = nengo_gui.exec_env.ExecutionEnvironment(self.filename)
         try:
             with exec_env:
-                exec(code, locals)
+                exec(code, code_locals)
         except nengo_gui.exec_env.StartedSimulatorException:
             line = nengo_gui.exec_env.determine_line_number()
             exec_env.stdout.write('Warning: Simulators cannot be manually'
@@ -215,7 +215,7 @@ class Page(object):
         self.stdout = exec_env.stdout.getvalue()
 
         # make sure we've defined a nengo.Network
-        model = locals.get('model', None)
+        model = code_locals.get('model', None)
         if not isinstance(model, nengo.Network):
             if self.error is None:
                 line = len(code.split('\n'))
@@ -224,9 +224,9 @@ class Page(object):
             model = None
 
         self.model = model
-        self.locals = locals
+        self.locals = code_locals
         if self.error is None:
-            self.last_good_locals = locals
+            self.last_good_locals = code_locals
 
     def load_config(self):
         """Load the .cfg file"""
