@@ -100,6 +100,7 @@ Nengo.draw_legend = function(parent, labels, color_func, uid) {
               .append("text")
               .attr("x", 15)
               .attr("y", function(d, i) { return i * 20 + 9;})
+              .attr("class", "legend-label")
               .html(function(d, i) {
                   return labels[i];
               });
