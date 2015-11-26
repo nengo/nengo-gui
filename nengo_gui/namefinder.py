@@ -25,7 +25,7 @@ class NameFinder(object):
         for inst_attr in dir(net):
             private = inst_attr.startswith('_')
             in_lists = inst_attr in base_lists + all_lists
-            if (not private and not in_lists):
+            if not private and not in_lists:
                 attr = getattr(net, inst_attr)
                 if isinstance(attr, list):
                     for i, obj in enumerate(attr):
