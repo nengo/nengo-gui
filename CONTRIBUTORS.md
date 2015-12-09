@@ -19,6 +19,7 @@ to the file like so:
 Please keep this list sorted alphabetically by first name.
 
 - Aaron Voelker <arvoelke@gmail.com>
+- Andrew Mundy <andrew.mundy@manchester.ac.uk>
 - Brent Komer <brent.komer@gmail.com>
 - Chris Eliasmith <celiasmith@uwaterloo.ca>
 - Christopher Chan <c88chan@uwaterloo.ca>
