@@ -1,4 +1,5 @@
 import copy
+import itertools
 
 import nengo
 import nengo.spa as spa
@@ -64,7 +65,7 @@ class Pointer(SpaPlot):
             over_threshold = pair_similarities > 0.01
             pair_matches = zip(pair_similarities[over_threshold],
                                np.array(vocab.key_pairs)[over_threshold])
-            matches += pair_matches
+            matches = itertools.chain(matches, pair_matches)
 
         text = ';'.join(['%0.2f%s' % (sim, key) for sim, key in matches])
 
