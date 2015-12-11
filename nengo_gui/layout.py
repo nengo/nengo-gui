@@ -104,6 +104,10 @@ class Layout(object):
                 if pre is None:
                     break
             post = c.post_obj
+            if isinstance(post, nengo.connection.LearningRule):
+                post = post.connection.post
+                if isinstance(post, nengo.base.ObjView):
+                    post = post.object
             if isinstance(post, nengo.ensemble.Neurons):
                 post = post.ensemble
             while post not in vertices:
