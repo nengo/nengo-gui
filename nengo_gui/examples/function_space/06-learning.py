@@ -14,11 +14,11 @@ def gaussian(mag, mean, sd):
     return mag * np.exp(-(domain-mean)**2/(2*sd**2))
 
 # build the function space
-gaussian_space =  nengo.dists.Function(gaussian, superimpose=10,
+gaussian_space =  nengo.dists.Function(gaussian, superimpose=30,
                                        mean=nengo.dists.Uniform(-1, 1),
                                        sd=nengo.dists.Uniform(0.1, 0.7),
                                        mag=nengo.dists.Uniform(-1, 1)) 
-fs = nengo.FunctionSpace(gaussian_space, n_basis=10)
+fs = nengo.FunctionSpace(gaussian_space, n_basis=20)
 
 model = nengo.Network()
 with model:
@@ -37,7 +37,7 @@ with model:
     stimulus = nengo.Ensemble(n_neurons=500, dimensions=1)
     stim_conn = nengo.Connection(stimulus, ens, 
             function=lambda x: np.zeros(fs.n_basis),
-            learning_rule_type=nengo.PES(learning_rate=.05))
+            learning_rule_type=nengo.PES(learning_rate=.001))
     
     nengo.Connection(stim_control, stimulus)
     
@@ -85,7 +85,7 @@ with model:
         x = x[0]
         sd = 0.05
         # get a value in the range domain samples
-        return error * np.exp(-(domain-x)**2/(2*sd**2))
+        return -error * np.exp(-(domain-x)**2/(2*sd**2))
     nengo.Connection(x, padder[0])
     nengo.Connection(error, padder[1])
 
