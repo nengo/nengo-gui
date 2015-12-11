@@ -21,10 +21,10 @@ gaussian_space =  nengo.dists.Function(gaussian, superimpose=30,
 fs = nengo.FunctionSpace(gaussian_space, n_basis=20)
 
 model = nengo.Network()
+model.config[nengo.Ensemble].neuron_type = nengo.Direct()
 with model:
     
-    ens = nengo.Ensemble(n_neurons=1, dimensions=fs.n_basis, radius=5, 
-            neuron_type=nengo.Direct())
+    ens = nengo.Ensemble(n_neurons=1, dimensions=fs.n_basis, radius=5)
     # set encoders to be sampled from weights for common functions
     ens.encoders = fs.project(gaussian_space)
     # set eval points to be sampled from weights for common functions
@@ -35,7 +35,8 @@ with model:
     target_val = nengo.Node(output=[0])
 
     stim_control = nengo.Node([1])
-    stimulus = nengo.Ensemble(n_neurons=500, dimensions=1)
+    stimulus = nengo.Ensemble(n_neurons=500, dimensions=1, 
+            neuron_type=nengo.LIF())
     stim_conn = nengo.Connection(stimulus, ens, 
             function=lambda x: np.zeros(fs.n_basis),
             learning_rule_type=nengo.PES(learning_rate=.0001))
@@ -47,12 +48,10 @@ with model:
     nengo.Connection(ens, plot, synapse=0.1)
 
     value = nengo.Node(output=np.sin)
-    x = nengo.Ensemble(n_neurons=1, dimensions=1, 
-                       neuron_type=nengo.Direct())
+    x = nengo.Ensemble(n_neurons=1, dimensions=1)
     nengo.Connection(value, x)
 
-    product = nengo.networks.Product(n_neurons=1, dimensions=fs.n_basis, 
-                                     neuron_type=nengo.Direct())
+    product = nengo.networks.Product(n_neurons=1, dimensions=fs.n_basis)
     sv_size = (fs.S/fs.scale)[:fs.n_basis]
     max_basis = np.max(fs.basis*fs.scale)
     # here we are getting the activation at point x from each basis function
@@ -73,17 +72,14 @@ with model:
         nengo.Connection(ens[i], product.A[i], transform=1.0/sv_size[i])
 
 
-    total = nengo.Ensemble(1, 1, 
-                           neuron_type=nengo.Direct())
+    total = nengo.Ensemble(1, 1)
     nengo.Connection(product.output, total, transform=[sv_size*max_basis])
 
-    error = nengo.Ensemble(n_neurons=1, dimensions=1, 
-                           neuron_type=nengo.Direct())
+    error = nengo.Ensemble(n_neurons=1, dimensions=1)
     nengo.Connection(target_val, error)
     nengo.Connection(total, error, transform=-1)
 
-    padder = nengo.Ensemble(n_neurons=1, dimensions=2, 
-                            neuron_type=nengo.Direct())
+    padder = nengo.Ensemble(n_neurons=1, dimensions=2)
     # so now we have the error and we need to project it back into 
     # compressed function representation space
     # first we locate the error 
@@ -96,8 +92,7 @@ with model:
     nengo.Connection(x, padder[0])
     nengo.Connection(error, padder[1])
 
-    display_error = nengo.Ensemble(n_neurons=1, dimensions=fs.n_basis, 
-                                   neuron_type=nengo.Direct())
+    display_error = nengo.Ensemble(n_neurons=1, dimensions=fs.n_basis)
     nengo.Connection(display_error, stim_conn.learning_rule)
     nengo.Connection(padder, display_error, 
                      function=lambda x: fs.project(pad_error(x)))
