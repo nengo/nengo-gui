@@ -30,16 +30,12 @@ with model:
     # set eval points to be sampled from weights for common functions
     ens.eval_points = fs.project(gaussian_space)
 
-    # the value that we would like the represented function to
-    # be at the current stimulus value (x)
-    target_val = nengo.Node(output=[0])
-
     stim_control = nengo.Node([1])
     stimulus = nengo.Ensemble(n_neurons=500, dimensions=1,
             neuron_type=nengo.LIF())
     stim_conn = nengo.Connection(stimulus, ens,
             function=lambda x: np.zeros(fs.n_basis),
-            learning_rule_type=nengo.PES(learning_rate=.0001))
+            learning_rule_type=nengo.PES(learning_rate=.000001))
 
     nengo.Connection(stim_control, stimulus)
 
@@ -50,6 +46,12 @@ with model:
     value = nengo.Node(output=np.sin)
     x = nengo.Ensemble(n_neurons=1, dimensions=1)
     nengo.Connection(value, x)
+
+    # the value that we would like the represented function to
+    # be at the current stimulus value (x)
+    # target_val = nengo.Node(output=[0])
+    target_val = nengo.Ensemble(n_neurons=1, dimensions=1)
+    nengo.Connection(value, target_val, function=lambda x: x)
 
     product = nengo.networks.Product(n_neurons=1, dimensions=fs.n_basis)
     sv_size = (fs.S/fs.scale)[:fs.n_basis]
