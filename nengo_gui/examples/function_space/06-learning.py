@@ -7,18 +7,27 @@ nengo.FunctionSpace = nengo.utils.function_space.FunctionSpace
 
 import numpy as np
 
-domain_samples = 200
-domain = np.linspace(-1, 1, domain_samples)
+n_samples = 200
+domain = np.linspace(-1, 1, n_samples)
 
 def gaussian(mag, mean, sd):
     return mag * np.exp(-(domain-mean)**2/(2*sd**2))
 
 # build the function space
+n_basis = 50
 gaussian_space =  nengo.dists.Function(gaussian, superimpose=30,
                                        mean=nengo.dists.Uniform(-1, 1),
-                                       sd=nengo.dists.Uniform(0.1, 0.7),
+                                       sd=nengo.dists.Uniform(0.01, 0.2),
                                        mag=nengo.dists.Uniform(-1, 1))
-fs = nengo.FunctionSpace(gaussian_space, n_basis=20)
+fs = nengo.FunctionSpace(gaussian_space, n_basis=50)
+# set the basis functions to be Gaussians tiled
+# across the represented function space
+fs._basis = np.zeros((n_samples, n_basis))
+means = np.linspace(-1, 1, n_basis)
+for ii,mean in enumerate(means):
+    fs._basis[:,ii] = 1 * np.exp(-(domain-mean)**2/(2*.025**2))
+fs._scale = np.mean(np.linalg.norm(fs._basis, axis=1))**2
+fs._S = np.ones(n_basis)
 
 model = nengo.Network()
 model.config[nengo.Ensemble].neuron_type = nengo.Direct()
@@ -35,7 +44,7 @@ with model:
             neuron_type=nengo.LIF())
     stim_conn = nengo.Connection(stimulus, ens,
             function=lambda x: np.zeros(fs.n_basis),
-            learning_rule_type=nengo.PES(learning_rate=.000001))
+            learning_rule_type=nengo.PES(learning_rate=.000005))
 
     nengo.Connection(stim_control, stimulus)
 
@@ -66,8 +75,8 @@ with model:
             # get a value in the range domain samples
             # TODO: there should also be scaling for range represented by
             # the function, right?
-            index = int(x[0]*domain_samples + domain_samples)
-            if index > (domain_samples - 1): index = domain_samples - 1
+            index = int(x[0]*n_samples + n_samples)
+            if index > (n_samples - 1): index = n_samples - 1
             if index < 0: index = 0
             return fs.basis[index][i]*fs.scale/max_basis
         nengo.Connection(x, product.B[i], function=basis_fn)
@@ -77,26 +86,46 @@ with model:
     nengo.Connection(product.output, total, transform=[sv_size*max_basis])
 
     error = nengo.Ensemble(n_neurons=1, dimensions=1)
-    nengo.Connection(target_val, error)
-    nengo.Connection(total, error, transform=-1)
+    nengo.Connection(target_val, error, transform=-1)
+    nengo.Connection(total, error, transform=1)
 
     padder = nengo.Ensemble(n_neurons=1, dimensions=2)
     # so now we have the error and we need to project it back into
     # compressed function representation space
     # first we locate the error
-    def pad_error(x):
-        error = x[1]
+    def pad_error(t, x):
+        error_val = x[1]
         x = x[0]
         sd = 0.01
         # get a value in the range domain samples
-        return -error * np.exp(-(domain-x)**2/(2*sd**2))
+        error_gauss = error_val * np.exp(-(domain-x)**2/(2*sd**2))
+
+        # visualization code ----------------
+        bar_x = np.linspace(0, 100, n_samples)
+        scaled = -40
+        # just trying to get something to show up right now:
+        bar_graph = '''<svg width="100%" height="100%" viewbox="0 0 100 100">
+                       <line x1="50" y1="0" x2="50" y2="{scaled}" style="stroke:black"/>'''
+        # for ii in range(n_samples):
+        #     bar_graph += '''<line x1="{%i}" y1=0 x2={%i} y2={%i} style="stroke:black"/>'''%(bar_x[ii],
+        #                                                                                     bar_x[ii],
+        #                                                                                     error_gauss[ii])
+        bar_graph += '''</svg>'''
+
+        pad_error._nengo_html_ = bar_graph.format(**locals())
+        # end of visualization code ---------
+
+        return error_gauss
+
     nengo.Connection(x, padder[0])
     nengo.Connection(error, padder[1])
 
     display_error = nengo.Ensemble(n_neurons=1, dimensions=fs.n_basis)
+    vector_error = nengo.Node(output=pad_error, size_in=2)
     nengo.Connection(display_error, stim_conn.learning_rule)
-    nengo.Connection(padder, display_error,
-                     function=lambda x: fs.project(pad_error(x)))
+    nengo.Connection(vector_error, display_error,
+                     function=lambda x: fs.project(x))
+    nengo.Connection(padder, vector_error)
 
 sim = nengo.Simulator(model)
 sim.run(1)
