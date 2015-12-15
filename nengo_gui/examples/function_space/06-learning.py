@@ -25,7 +25,7 @@ fs = nengo.FunctionSpace(gaussian_space, n_basis=50)
 fs._basis = np.zeros((n_samples, n_basis))
 means = np.linspace(-1, 1, n_basis)
 for ii,mean in enumerate(means):
-    fs._basis[:,ii] = 1 * np.exp(-(domain-mean)**2/(2*.025**2))
+    fs._basis[:,ii] = 1 * np.exp(-(domain-mean)**2/(2*.015**2))
 fs._scale = np.mean(np.linalg.norm(fs._basis, axis=1))**2
 fs._S = np.ones(n_basis)
 
@@ -44,12 +44,12 @@ with model:
             neuron_type=nengo.LIF())
     stim_conn = nengo.Connection(stimulus, ens, 
             function=lambda x: np.zeros(fs.n_basis),
-            learning_rule_type=nengo.PES(learning_rate=.000005))
+            learning_rule_type=nengo.PES(learning_rate=.0005))
     
     nengo.Connection(stim_control, stimulus)
     
     plot = fs.make_plot_node(domain, lines=1, n_pts=100, 
-                             max_x=1, min_x=-1, max_y=1, min_y=-1)
+                             max_x=1, min_x=-1, max_y=2, min_y=-2)
     nengo.Connection(ens, plot, synapse=0.1)
 
     value = nengo.Node(output=np.sin)
@@ -63,8 +63,8 @@ with model:
     nengo.Connection(value, target_val, function=lambda x: x)
 
     product = nengo.networks.Product(n_neurons=1, dimensions=fs.n_basis)
-    sv_size = (fs.S/fs.scale)[:fs.n_basis]
-    max_basis = np.max(fs.basis*fs.scale)
+    sv_size = np.ones(fs.n_basis)#(fs.S/fs.scale)[:fs.n_basis]
+    max_basis = 1#np.max(fs.basis*fs.scale)
     # here we are getting the activation at point x from each basis function
     # and passing that in to product.B, we then get the weights for each of 
     # those basis functions and pass that in to product.A
@@ -75,7 +75,7 @@ with model:
             # get a value in the range domain samples
             # TODO: there should also be scaling for range represented by 
             # the function, right?
-            index = int(x[0]*n_samples + n_samples)
+            index = int(x[0]*n_samples/2 + n_samples/2)
             if index > (n_samples - 1): index = n_samples - 1
             if index < 0: index = 0
             return fs.basis[index][i]*fs.scale/max_basis
@@ -98,7 +98,7 @@ with model:
     def pad_error(t, x):
         error_val = x[1]
         x = x[0]
-        sd = 0.15
+        sd = 0.002
         # get a value in the range domain samples
         error_gauss = error_val * np.exp(-(domain-x)**2/(2*sd**2))
 
