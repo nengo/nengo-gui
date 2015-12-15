@@ -93,31 +93,31 @@ with model:
     # so now we have the error and we need to project it back into
     # compressed function representation space
     # first we locate the error
+    bar_x = np.linspace(0, 50, n_samples)
     def pad_error(t, x):
         error_val = x[1]
         x = x[0]
-        sd = 0.01
+        sd = 0.15
         # get a value in the range domain samples
         error_gauss = error_val * np.exp(-(domain-x)**2/(2*sd**2))
 
-        # visualization code ----------------
-        bar_x = np.linspace(0, 100, n_samples)
-        scaled = -40
-        # just trying to get something to show up right now:
-        bar_graph = '''<svg width="100%" height="100%" viewbox="0 0 100 100">
-                       <line x1="50" y1="0" x2="50" y2="{scaled}" style="stroke:black"/>'''
-        # for ii in range(n_samples):
-        #     bar_graph += '''<line x1="{%i}" y1=0 x2={%i} y2={%i} style="stroke:black"/>'''%(bar_x[ii],
-        #                                                                                     bar_x[ii],
-        #                                                                                     error_gauss[ii])
-        bar_graph += '''</svg>'''
-
-        pad_error._nengo_html_ = bar_graph.format(**locals())
+        # # visualization code ----------------
+        scale = 20
+        y_bias = 50
+        line_width = 2
+        display_error_threshold = 0.001
+        bar_graph = '''<svg width="100%" height="100%" viewbox="0 0 100 100">'''
+        for ii in range(n_samples):
+            if abs(error_gauss[ii]) > display_error_threshold:
+                val = error_gauss[ii] * scale + y_bias
+                bar_graph += '''<line x1="{0}" y1="51" x2="{0}" y2="{1}" stroke-width="{2}" style="stroke:black"/>'''.format(
+                        bar_x[ii] * line_width, val, line_width)
+        pad_error._nengo_html_ = bar_graph
         # end of visualization code ---------
 
         return error_gauss
 
-    nengo.Connection(x, padder[0])
+    nengo.Connection(value, padder[0])
     nengo.Connection(error, padder[1])
 
     display_error = nengo.Ensemble(n_neurons=1, dimensions=fs.n_basis)
