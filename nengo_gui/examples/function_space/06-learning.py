@@ -22,12 +22,12 @@ gaussian_space =  nengo.dists.Function(gaussian, superimpose=30,
 fs = nengo.FunctionSpace(gaussian_space, n_basis=50)
 # set the basis functions to be Gaussians tiled
 # across the represented function space
-fs._basis = np.zeros((n_samples, n_basis))
-means = np.linspace(-1, 1, n_basis)
-for ii,mean in enumerate(means):
-    fs._basis[:,ii] = 1 * np.exp(-(domain-mean)**2/(2*.015**2))
-fs._scale = np.mean(np.linalg.norm(fs._basis, axis=1))**2
-fs._S = np.ones(n_basis)
+# fs._basis = np.zeros((n_samples, n_basis))
+# means = np.linspace(-1, 1, n_basis)
+# for ii,mean in enumerate(means):
+#     fs._basis[:,ii] = 1 * np.exp(-(domain-mean)**2/(2*.015**2))
+# fs._scale = np.mean(np.linalg.norm(fs._basis, axis=1))**2
+# fs._S = np.ones(n_basis)
 
 model = nengo.Network()
 model.config[nengo.Ensemble].neuron_type = nengo.Direct()
@@ -97,7 +97,7 @@ with model:
     def pad_error(t, x):
         error_val = x[1]
         x = x[0]
-        sd = 0.002
+        sd = 0.004
         # get a value in the range domain samples
         error_gauss = error_val * np.exp(-(domain-x)**2/(2*sd**2))
 
