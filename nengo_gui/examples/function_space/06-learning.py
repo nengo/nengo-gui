@@ -14,12 +14,12 @@ def gaussian(mag, mean, sd):
     return mag * np.exp(-(domain-mean)**2/(2*sd**2))
 
 # build the function space
-n_basis = 50
+n_basis = 30
 gaussian_space =  nengo.dists.Function(gaussian, 
                                        mean=nengo.dists.Uniform(-1, 1),
-                                       sd=nengo.dists.Uniform(0.01, 0.2),
+                                       sd=nengo.dists.Uniform(0.01, 0.1),
                                        mag=nengo.dists.Uniform(-1, 1)) 
-fs = nengo.FunctionSpace(gaussian_space, n_basis=30)
+fs = nengo.FunctionSpace(gaussian_space, n_basis=n_basis)
 
 model = nengo.Network()
 model.config[nengo.Ensemble].neuron_type = nengo.Direct()
@@ -27,7 +27,8 @@ with model:
    
     # ensemble that store weights over basis functions 
     # for the compressed function representation
-    sing_vals = nengo.Ensemble(n_neurons=1, dimensions=fs.n_basis, radius=5)
+    sing_vals = nengo.Ensemble(n_neurons=1500, dimensions=fs.n_basis, 
+            radius=5, neuron_type=nengo.LIF())
     # set encoders to be sampled from weights for common functions
     sing_vals.encoders = fs.project(gaussian_space)
     # set eval points to be sampled from weights for common functions
@@ -37,19 +38,22 @@ with model:
     # compressed function representation weights into sing_vals
     # change stim_control for learning different functions in 
     # the same set of decoders
-    stimulus = nengo.Ensemble(n_neurons=500, dimensions=1, 
+    stimulus = nengo.Ensemble(n_neurons=1000, dimensions=1, 
             neuron_type=nengo.LIF())
     # learning connection 
     stim_conn = nengo.Connection(stimulus, sing_vals, 
             function=lambda x: np.zeros(fs.n_basis),
-            learning_rule_type=nengo.PES(learning_rate=.0005))
+            learning_rule_type=nengo.PES(learning_rate=.005))
     # handy function plotting node to see the represented function 
     plot = fs.make_plot_node(domain, lines=1, n_pts=100, 
                              max_x=1, min_x=-1, max_y=2, min_y=-2)
     nengo.Connection(sing_vals, plot, synapse=0.1)
 
     # the x value we'd like to sample from the represented function
-    x = nengo.Node(output=np.sin)
+    # x_input = nengo.Node(output=np.sin)
+    # x = nengo.Ensemble(n_neurons=200, dimensions=1,
+    #         neuron_type=nengo.LIF())
+    x = nengo.Node(output=lambda x: np.sin(x*2))
 
     # in this case, learn two different Gaussians, 
     # for different stim control values, which change 
@@ -86,11 +90,13 @@ with model:
         nengo.Connection(sing_vals[i], product.A[i], transform=1.0/sv_size[i])
 
     # the population representing f(x)
-    fx = nengo.Ensemble(n_neurons=1, dimensions=1)
+    fx = nengo.Ensemble(n_neurons=100, dimensions=1, 
+            neuron_type=nengo.LIF())
     nengo.Connection(product.output, fx, transform=[sv_size*max_basis])
 
     # calculate the error at the sampled function value
-    error_fx = nengo.Ensemble(n_neurons=1, dimensions=1)
+    error_fx = nengo.Ensemble(n_neurons=100, dimensions=1, 
+            neuron_type=nengo.LIF())
     nengo.Connection(target_fx[0], error_fx, transform=-1)
     nengo.Connection(fx, error_fx, transform=1)
 
@@ -105,14 +111,19 @@ with model:
         error_gauss = error_fx * np.exp(-(domain-x)**2/(2*sd**2))
 
         return error_gauss
-    error = nengo.Ensemble(n_neurons=1, dimensions=fs.n_basis)
-    nengo.Connection(error, stim_conn.learning_rule, 
-                    function=lambda x: fs.project(pad_error(x)))
+    error = nengo.Ensemble(n_neurons=1500, dimensions=2, )
+            # neuron_type=nengo.LIF())
+    error_filter = nengo.networks.EnsembleArray(100, fs.n_basis,
+            intercepts=nengo.dists.Uniform(.05, 1))
+    # nengo.Connection(error, stim_conn.learning_rule, 
+    #         function=lambda x: fs.project(pad_error(x)))
+    nengo.Connection(error, error_filter.input,
+            function=lambda x: fs.project(pad_error(x)))
+    nengo.Connection(error_filter.output, stim_conn.learning_rule)
     nengo.Connection(x, error[0])
     nengo.Connection(error_fx, error[1])
 
     def pad_error_vis(t, x):
-        error_gauss = pad_error(x)
         # # visualization code ----------------
         scale = 20
         y_bias = 50
@@ -120,15 +131,15 @@ with model:
         display_error_threshold = 0.001
         bar_graph = '''<svg width="100%" height="100%" viewbox="0 0 100 100">'''
         for ii in range(n_samples):
-            if abs(error_gauss[ii]) > display_error_threshold:
-                val = error_gauss[ii] * scale + y_bias 
+            if abs(x[ii]) > display_error_threshold:
+                val = x[ii] * scale + y_bias 
                 bar_graph += '''<line x1="{0}" y1="51" x2="{0}" y2="{1}" stroke-width="{2}" style="stroke:black"/>'''.format(
                         bar_x[ii] * line_width, val, line_width)
         pad_error_vis._nengo_html_ = bar_graph
         # end of visualization code ---------
-    error_vis = nengo.Node(output=pad_error_vis, size_in=2)
-    nengo.Connection(x, error_vis[0])
-    nengo.Connection(error_fx, error_vis[1])
+    error_vis = nengo.Node(output=pad_error_vis, size_in=n_samples)
+    nengo.Connection(error, error_vis, 
+            function=pad_error)
 
 
 sim = nengo.Simulator(model)
