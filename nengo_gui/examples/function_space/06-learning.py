@@ -27,27 +27,27 @@ with model:
    
     # ensemble that store weights over basis functions 
     # for the compressed function representation
-    sing_vals = nengo.Ensemble(n_neurons=1500, dimensions=fs.n_basis, 
+    weights = nengo.Ensemble(n_neurons=1500, dimensions=fs.n_basis, 
             radius=5, neuron_type=nengo.LIF())
     # set encoders to be sampled from weights for common functions
-    sing_vals.encoders = fs.project(gaussian_space)
+    weights.encoders = fs.project(gaussian_space)
     # set eval points to be sampled from weights for common functions
-    sing_vals.eval_points = fs.project(gaussian_space)
+    weights.eval_points = fs.project(gaussian_space)
 
     # input to the stimulus population, whose output projects the 
-    # compressed function representation weights into sing_vals
+    # compressed function representation weights into weights
     # change stim_control for learning different functions in 
     # the same set of decoders
     stimulus = nengo.Ensemble(n_neurons=1000, dimensions=1, 
             neuron_type=nengo.LIF())
     # learning connection 
-    stim_conn = nengo.Connection(stimulus, sing_vals, 
+    stim_conn = nengo.Connection(stimulus, weights, 
             function=lambda x: np.zeros(fs.n_basis),
-            learning_rule_type=nengo.PES(learning_rate=.005))
+            learning_rule_type=nengo.PES(learning_rate=.0005))
     # handy function plotting node to see the represented function 
     plot = fs.make_plot_node(domain, lines=1, n_pts=100, 
                              max_x=1, min_x=-1, max_y=2, min_y=-2)
-    nengo.Connection(sing_vals, plot, synapse=0.1)
+    nengo.Connection(weights, plot, synapse=0.1)
 
     # the x value we'd like to sample from the represented function
     # x_input = nengo.Node(output=np.sin)
@@ -87,7 +87,7 @@ with model:
             if index < 0: index = 0
             return fs.basis[index][i]*fs.scale/max_basis
         nengo.Connection(x, product.B[i], function=basis_fn)
-        nengo.Connection(sing_vals[i], product.A[i], transform=1.0/sv_size[i])
+        nengo.Connection(weights[i], product.A[i], transform=1.0/sv_size[i])
 
     # the population representing f(x)
     fx = nengo.Ensemble(n_neurons=100, dimensions=1, 
