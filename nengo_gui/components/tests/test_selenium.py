@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
 import time
+<<<<<<< HEAD
 import nengo_gui
 #This tests if selenium can find the Code editor and checks if it can take text from it. 
 def test_simple_selenium(driver):
@@ -36,6 +37,19 @@ with model:
     nengo.Connection(b, c.input)
 	"""
 	update_editor(driver,testString)
+=======
+
+#This tests if selenium can find the Code editor and checks if it can take text from it. 
+def test_simple_selenium(driver):
+	#adding a connectionfile to
+	testString = """import nengo
+		model = nengo.Network()
+		with model:
+		    stim = nengo.Node([0])
+		    a = nengo.Ensemble(n_neurons=50, dimensions=1)
+		    nengo.Connection(stim, a)
+    """
+>>>>>>> 22081e1... added yaml file for travis
 	element = driver.find_element_by_xpath('//*[@class="ace_content"]')
 	text = element.get_attribute('textContent')
 	assert ''.join(text.split()) == ''.join(testString.split())
@@ -52,15 +66,21 @@ def test_graph_select(driver):
 		text = nodeLabel.get_attribute('textContent')
 		assert text == graphComponents[count]
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 22081e1... added yaml file for travis
 def test_node_labels(driver):
     nodes = driver.find_elements_by_xpath('//*[@class="graph"]')
     for n in nodes:
         n_text = n.get_attribute('textContent')
         assert n_text != ''
+<<<<<<< HEAD
 
 def update_editor(driver,nengoCode):
 	nengoCode = nengoCode.replace("\n","\\n").replace("\r","\\r")
 	driver.execute_script("var editor = ace.edit('editor'); editor.setValue('"+nengoCode+"');")
 	time.sleep(1)
+=======
+>>>>>>> 22081e1... added yaml file for travis
