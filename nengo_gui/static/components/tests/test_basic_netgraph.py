@@ -4,7 +4,7 @@ from selenium.webdriver import ActionChains
 
 # test browser resizing
 
-# conbine the labels and movement into a for-loop
+# combine the labels and movement into a for-loop
 nengo_object_list = ["ens", "node", "net"]
 
 def test_pageload(driver):
@@ -16,7 +16,7 @@ def test_node_labels(driver):
     for n in nodes:
         n_text = n.get_attribute('textContent')
         assert n_text != ''
-"""
+
 
 def test_node_movement(driver):
     actions = ActionChains(driver)
@@ -29,7 +29,7 @@ def test_node_movement(driver):
         assert prev_location['x'] - node.location['x'] == 6
         assert prev_location['y'] - node.location['y'] == 5
         # should also check that the connection resized properly
-
+"""
 def test_ensemble_labels(driver):
     ensembles = driver.find_elements_by_class_name("ens")
     for ens in ensembles:
