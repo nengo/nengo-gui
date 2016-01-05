@@ -16,5 +16,6 @@ before_script:
   - "java -jar selenium-server-standalone-2.31.0.jar > /dev/null &"
   - "nengo_gui &"#starts up nengo_gui
   - sleep 3
+
 # command to run tests
 script: py.test
