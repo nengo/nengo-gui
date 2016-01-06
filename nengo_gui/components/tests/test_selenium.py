@@ -2,85 +2,59 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
 import time
-<<<<<<< HEAD
-import nengo_gui
-#This tests if selenium can find the Code editor and checks if it can take text from it. 
-def test_simple_selenium(driver):
-	#adding a connectionfile to
-	testString = """
-# Nengo Network: Ensemble Array
-#
-# An ensemble array is a group of ensembles that each represent a part of the
-# overall signal.
-#
-# Ensemble arrays are similar to normal ensembles, but expose a slightly
-# different interface. Additionally, in an ensemble array, the components of
-# the overall signal are not related. As a result, network arrays cannot be
-# used to compute nonlinear functions that mix the dimensions they represent.
+import os
+import pytest
+from nengo_gui import conftest
+from nengo_gui import testing_tools as tt
 
-import nengo
-import numpy as np
+test_files = tt.folder_location('examples/basics')
 
-model = nengo.Network()
-with model:
-    # Make an input node
-    sin = nengo.Node(lambda t: [np.cos(t), np.sin(t)])
+@pytest.mark.parametrize('test_file',test_files)
+def test_basic_functionality(driver,test_file):
+	#Test page response by clicking the reset button and applying new code to ace-editor
+	driver.maximize_window()
+	tt.reset_page(driver)
 
-    # Make ensembles to connect
-    a = nengo.networks.EnsembleArray(n_neurons=100, n_ensembles=2)
-    b = nengo.Ensemble(n_neurons=100, dimensions=2)
-    c = nengo.networks.EnsembleArray(n_neurons=100, n_ensembles=2)
+	tt.update_editor(driver,test_file)
+	ens_elements = driver.find_elements_by_xpath('//*[@class="ens"]')
+	assert len(ens_elements) > 0
 
-    # Connect the model elements, just feedforward
-    nengo.Connection(sin, a.input)
-    nengo.Connection(a.output, b)
-    nengo.Connection(b, c.input)
-	"""
-	update_editor(driver,testString)
-=======
-
-#This tests if selenium can find the Code editor and checks if it can take text from it. 
-def test_simple_selenium(driver):
-	#adding a connectionfile to
-	testString = """import nengo
-		model = nengo.Network()
-		with model:
-		    stim = nengo.Node([0])
-		    a = nengo.Ensemble(n_neurons=50, dimensions=1)
-		    nengo.Connection(stim, a)
-    """
->>>>>>> 22081e1... added yaml file for travis
-	element = driver.find_element_by_xpath('//*[@class="ace_content"]')
-	text = element.get_attribute('textContent')
-	assert ''.join(text.split()) == ''.join(testString.split())
-
-def test_graph_select(driver):
-	#adding a connectionfile to
-	graphComponents = ['a','stim']
+	#Creates graph objects by right clicking on nodes and selecting from menu
 	actions = ActionChains(driver)
+	elements = ['node','ens']
+	for elem in elements:
+		node = driver.find_element_by_xpath('//*[@class="'+elem+'"]')
+		actions = ActionChains(driver)
+		actions.move_to_element(node)
+		actions.context_click()
+		actions.perform()
+		time.sleep(0.5)
+		menu = driver.find_element_by_xpath('//*[@class="dropdown-menu"]/li[1]').click()
+		time.sleep(0.5)
+	graph_elements = driver.find_elements_by_xpath('//*[@class="graph"]')
+
+	assert len(graph_elements) > 0
+
+	#Tests GUI response by dragging the graph objects
+	x_disp = -10
+	y_disp = -10
 	nodes = driver.find_elements_by_xpath('//*[@class="graph"]')
-	nodesLabel = driver.find_elements_by_xpath('//*[@class="graph"]/*[@class="label unselectable"]')
-	for count, node in enumerate(nodes):
-		actions.drag_and_drop_by_offset(node,-10,-10).perform()
-	for count, nodeLabel in enumerate(nodesLabel):
-		text = nodeLabel.get_attribute('textContent')
-		assert text == graphComponents[count]
+	for count, graph_node in enumerate(nodes):
+		actions = ActionChains(driver)
+		init_x = graph_node.location['x']
+		init_y = graph_node.location['y']
+		actions.drag_and_drop_by_offset(graph_node,x_disp,y_disp).perform()
+		time.sleep(1)
+		final_x = graph_node.location['x']
+		final_y = graph_node.location['y']
+		
+		assert final_x != init_x
+		assert final_y != init_y
+	
+	#Runs the simulations for a few seconds
+	tt.start_stop_sim(driver)
+	time.sleep(1.5)
+	tt.start_stop_sim(driver)
+	time.sleep(0.5)
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 22081e1... added yaml file for travis
-def test_node_labels(driver):
-    nodes = driver.find_elements_by_xpath('//*[@class="graph"]')
-    for n in nodes:
-        n_text = n.get_attribute('textContent')
-        assert n_text != ''
-<<<<<<< HEAD
-
-def update_editor(driver,nengoCode):
-	nengoCode = nengoCode.replace("\n","\\n").replace("\r","\\r")
-	driver.execute_script("var editor = ace.edit('editor'); editor.setValue('"+nengoCode+"');")
-	time.sleep(1)
-=======
->>>>>>> 22081e1... added yaml file for travis
+    
