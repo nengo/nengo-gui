@@ -3,6 +3,10 @@ sudo: required
 python:
   - "2.7"
 # command to install dependencies
+addons:
+  sauce_connect:
+    username: "nengo"
+    access_key: "21faaee4-a99e-4b40-bc89-23170618ff0e"
 install: 
   - "pip install -r requirements.txt"
   - "pip install -r requirements-test.txt"
@@ -15,6 +19,5 @@ before_script:
   - "java -jar selenium-server-standalone-2.31.0.jar > /dev/null &"
   - "nengo_gui &"#starts up nengo_gui
   - sleep 3
-
 # command to run tests
 script: py.test
