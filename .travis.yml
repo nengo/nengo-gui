@@ -1,11 +1,9 @@
 language: python
 sudo: required
 python:
-  - "2.6"
   - "2.7"
 # command to install dependencies
 install: 
-  - "pip install -r requirements.txt"
   - "pip install -r requirements.txt"
   - "pip install -r requirements-test.txt"
 before_script:
