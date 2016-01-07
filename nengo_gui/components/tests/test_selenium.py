@@ -13,7 +13,6 @@ def test_simple_selenium(driver):
 		    a = nengo.Ensemble(n_neurons=50, dimensions=1)
 		    nengo.Connection(stim, a)
     """
-	actions = ActionChains(driver)
 	element = driver.find_element_by_xpath('//*[@class="ace_content"]')
 	text = element.get_attribute('textContent')
 	assert ''.join(text.split()) == ''.join(testString.split())

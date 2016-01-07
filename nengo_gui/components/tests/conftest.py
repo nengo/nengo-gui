@@ -6,6 +6,9 @@ import nengo_gui
 import pytest
 from selenium import webdriver
 import os
+import threading
+import traceback as tb
+
 # each function should get the same driver...
 @pytest.fixture(scope="module")
 def driver(request):
