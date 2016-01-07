@@ -10,12 +10,13 @@ import os
 @pytest.fixture(scope="module")
 def driver(request):
 	if request.config.getoption("--buildType") == 'online':
-		username = os.environ["nengo"]
-		access_key = os.environ["21faaee4-a99e-4b40-bc89-23170618ff0e"]
+		username = os.environ["SAUCE_USERNAME"]
+		access_key = os.environ["SAUCE_ACCESS_KEY"]
 		capabilities["tunnel-identifier"] = os.environ["TRAVIS_JOB_NUMBER"]
 		hub_url = "%s:%s@localhost:4445" % (username, access_key)
 		driver = webdriver.Remote(desired_capabilities=capabilities, command_executor="http://%s/wd/hub" % hub_url)
-	driver = webdriver.Firefox()
+	else:
+		driver = webdriver.Firefox()
 	driver.get("http://localhost:8080/")
 	return driver
 
