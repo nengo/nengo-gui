@@ -21,6 +21,7 @@ def driver(request):
 	else:
 		driver = webdriver.Firefox()
 	driver.get("http://localhost:8080/")
+	time.sleep(3)
 	return driver
 
 
