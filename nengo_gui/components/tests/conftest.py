@@ -5,7 +5,7 @@ import time
 import nengo_gui
 import pytest
 from selenium import webdriver
-
+import os
 # each function should get the same driver...
 @pytest.fixture(scope="module")
 def driver(request):
