@@ -10,7 +10,7 @@ import os
 @pytest.fixture(scope="module")
 def driver(request):
 	if request.config.getoption("--buildType") == 'online':
-		capabilities = []
+		capabilities = {}
 		username = os.environ["SAUCE_USERNAME"]
 		access_key = os.environ["SAUCE_ACCESS_KEY"]
 		capabilities["tunnel-identifier"] = os.environ["TRAVIS_JOB_NUMBER"]
