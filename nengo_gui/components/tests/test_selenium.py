@@ -19,7 +19,7 @@ def test_simple_selenium(driver):
 
 def test_graph_select(driver):
 	#adding a connectionfile to
-	graphComponents = ['stim','a']
+	graphComponents = ['a','stim']
 	actions = ActionChains(driver)
 	nodes = driver.find_elements_by_xpath('//*[@class="graph"]')
 	nodesLabel = driver.find_elements_by_xpath('//*[@class="graph"]/*[@class="label unselectable"]')
