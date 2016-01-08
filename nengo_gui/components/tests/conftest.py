@@ -23,7 +23,6 @@ def driver(request):
 		driver = webdriver.Firefox()
 	driver.get('localhost:8080/?filename='+example)
 	time.sleep(6)
-	request.addfinalizer(driver.close())
 	return driver
 
 
