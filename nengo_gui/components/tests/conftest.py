@@ -1,19 +1,15 @@
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver import ActionChains
 import time 
 import nengo_gui
 import pytest
 from selenium import webdriver
 import os
-import threading
-import traceback as tb
 import inspect
 # each function should get the same driver...
 @pytest.fixture(scope="module")
 def driver(request):
 	folder = os.path.dirname(inspect.getfile(nengo_gui))
-	example = os.path.join(folder,'examples/default.py')
+	example = os.path.join(folder,'examples/basics/addition.py')
 	try:
 		capabilities = {}
 		username = os.environ["SAUCE_USERNAME"]
@@ -27,6 +23,7 @@ def driver(request):
 		driver = webdriver.Firefox()
 	driver.get('localhost:8080/?filename='+example)
 	time.sleep(6)
+	request.addfinalizer(driver.close())
 	return driver
 
 

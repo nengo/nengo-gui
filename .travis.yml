@@ -19,7 +19,7 @@ before_script:
   - sleep 3 # give xvfb some time to start
   - "wget http://selenium.googlecode.com/files/selenium-server-standalone-2.31.0.jar"
   - "java -jar selenium-server-standalone-2.31.0.jar > /dev/null &"
-  - "nengo_gui nengo_gui/examples/default.py &"#starts up nengo_gui
+  - "nengo_gui &"#starts up nengo_gui
   - sleep 3
 # command to run tests
 script: py.test
