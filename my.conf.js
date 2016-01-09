@@ -15,7 +15,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      '/nengo_gui/tests/*.js'
+      './nengo_gui/tests/*.js'
     ],
 
 
