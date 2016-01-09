@@ -17,6 +17,7 @@ def test_simple_selenium(driver):
 	text = element.get_attribute('textContent')
 	assert ''.join(text.split()) == ''.join(testString.split())
 
+
 def test_graph_select(driver):
 	#adding a connectionfile to
 	graphComponents = ['a','stim']

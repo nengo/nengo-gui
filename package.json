@@ -1,0 +1,29 @@
+{
+  "name": "nengo_gui",
+  "version": "0.2.0",
+  "description": "Web-based GUI for building and visualizing Nengo models.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nengo/nengo_gui"
+  },
+  "author": "CNRGlab at UWaterloo",
+  "license": "https://github.com/nengo/nengo_gui/blob/master/LICENSE.md",
+  "bugs": {
+    "url": "https://github.com/nengo/nengo_gui/issues"
+  },
+  "devDependencies": {
+    "jasmine-core": "^2.4.1",
+    "karma": "^0.13.19",
+    "karma-chrome-launcher": "^0.2.2",
+    "karma-firefox-launcher": "^0.1.7",
+    "karma-jasmine": "^0.3.6"
+  }
+}

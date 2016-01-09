@@ -13,6 +13,7 @@ install:
   - "pip install -r requirements.txt"
   - "pip install -r requirements-test.txt"
 before_script:
+  - npm install
   - "python setup.py develop"
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
@@ -22,4 +23,6 @@ before_script:
   - "nengo_gui &"#starts up nengo_gui
   - sleep 3
 # command to run tests
-script: py.test
+script: 
+  -py.test
+  -node_modules/karma/bin/karma start my.conf.js --single-run
