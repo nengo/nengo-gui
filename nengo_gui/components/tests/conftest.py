@@ -6,11 +6,15 @@ from selenium import webdriver
 import os
 import inspect
 # each function should get the same driver...
+
+#driver() starts a webdriver instance and then passes it to the test files as driver. At the moment testing 
+#is done on firefox due to support but chrome will be looked into.
+
 @pytest.fixture(scope="module")
 def driver(request):
 	folder = os.path.dirname(inspect.getfile(nengo_gui))
-	example = os.path.join(folder,'examples/default.py')
-	# try:
+	example = os.path.join(folder,'examples/default.py') #grabs path name for default.py
+	# try: # Code for Sauce Labs which at the moment does not work but will possibly in the future.
 	# 	capabilities = {}
 	# 	username = os.environ["SAUCE_USERNAME"]
 	# 	access_key = os.environ["SAUCE_ACCESS_KEY"]
