@@ -26,7 +26,6 @@ def test_graph_select(driver):
 	actions = ActionChains(driver)
 	nodes = driver.find_elements_by_xpath('//*[@class="graph"]')
 	nodesLabel = driver.find_elements_by_xpath('//*[@class="graph"]/*[@class="label unselectable"]')
-	#assert len(nodes) == 2
 	for count, node in enumerate(nodes):
 		actions.drag_and_drop_by_offset(node,-10,-10).perform()
 	for count, nodeLabel in enumerate(nodesLabel):
