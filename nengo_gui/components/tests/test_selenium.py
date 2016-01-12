@@ -14,7 +14,6 @@ def test_basic_functionality(driver,test_file):
 	#Test page response by clicking the reset button and applying new code to ace-editor
 	driver.maximize_window()
 	tt.reset_page(driver)
-
 	tt.update_editor(driver,test_file)
 	ens_elements = driver.find_elements_by_xpath('//*[@class="ens"]')
 	assert len(ens_elements) > 0
