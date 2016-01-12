@@ -1,14 +1,25 @@
 language: python
+sudo: required
 python:
   - "2.7"
 # command to install dependencies
-install: "pip install -r requirements.txt"
-		 "pip install -r requirements-test.txt"
+addons:
+  sauce_connect:
+    username: "nengo"
+    access_key: 
+      secure: "VfbW4RTc8TY81pZ4j9DWreebIYzsm+L7eVSOgs+F2sFuTa4zbaiVl6ym7jr2SJSWLVALYzJO0IsSHrKOSjMoZYCWakhiOyoedcOQqwej8uBSE4cxTig4LaxNQJfKsW8NvxScyP38q6ZsnMPYsrKg1zXkD/b5ztLFuL6z20bMaYQ="
+
+install: 
+  - "pip install -r requirements.txt"
+  - "pip install -r requirements-test.txt"
 before_script:
+  - "python setup.py develop"
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3 # give xvfb some time to start
-  - rackup  # start a Web server
-  - sleep 3 # give Web server some time to bind to sockets, etc
+  - "wget http://selenium.googlecode.com/files/selenium-server-standalone-2.31.0.jar"
+  - "java -jar selenium-server-standalone-2.31.0.jar > /dev/null &"
+  - "nengo_gui &"#starts up nengo_gui
+  - sleep 3
 # command to run tests
 script: py.test
