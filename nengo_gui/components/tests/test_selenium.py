@@ -2,7 +2,6 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
 import time
-import os
 import pytest
 from nengo_gui import conftest
 from nengo_gui import testing_tools as tt
@@ -35,20 +34,20 @@ def test_basic_functionality(driver,test_file):
 	assert len(graph_elements) > 0
 
 	#Tests GUI response by dragging the graph objects
-	x_disp = -10
-	y_disp = -10
-	nodes = driver.find_elements_by_xpath('//*[@class="graph"]')
-	for count, graph_node in enumerate(nodes):
-		actions = ActionChains(driver)
-		init_x = graph_node.location['x']
-		init_y = graph_node.location['y']
-		actions.drag_and_drop_by_offset(graph_node,x_disp,y_disp).perform()
-		time.sleep(1)
-		final_x = graph_node.location['x']
-		final_y = graph_node.location['y']
+	# x_disp = -10
+	# y_disp = -10
+	# nodes = driver.find_elements_by_xpath('//*[@class="graph"]')
+	# for count, graph_node in enumerate(nodes):
+	# 	actions = ActionChains(driver)
+	# 	init_x = graph_node.location['x']
+	# 	init_y = graph_node.location['y']
+	# 	actions.drag_and_drop_by_offset(graph_node,x_disp,y_disp).perform()
+	# 	time.sleep(1)
+	# 	final_x = graph_node.location['x']
+	# 	final_y = graph_node.location['y']
 		
-		assert final_x != init_x
-		assert final_y != init_y
+	# 	assert final_x != init_x
+	# 	assert final_y != init_y
 	
 	#Runs the simulations for a few seconds
 	tt.start_stop_sim(driver)
