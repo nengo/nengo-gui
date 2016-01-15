@@ -50,9 +50,12 @@ def test_basic_functionality(driver,test_file):
 	# 	assert final_y != init_y
 	
 	#Runs the simulations for a few seconds
+
 	tt.start_stop_sim(driver)
 	time.sleep(1.5)
 	tt.start_stop_sim(driver)
 	time.sleep(0.5)
+
+	driver.save_screenshot('screenshot.png')
 
     
