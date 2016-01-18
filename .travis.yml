@@ -3,9 +3,11 @@ sudo: required
 python:
   - "2.7"
 addons:
-  sauce_connect:
+    sauce_connect:
     username: "nengo"
-    access_key: "21faaee4-a99e-4b40-bc89-23170618ff0e"
+      access_key: 
+        secure: "VfbW4RTc8TY81pZ4j9DWreebIYzsm+L7eVSOgs+F2sFuTa4zbaiVl6ym7jr2SJSWLVALYzJO0IsSHrKOSjMoZYCWakhiOyoedcOQqwej8uBSE4cxTig4LaxNQJfKsW8NvxScyP38q6ZsnMPYsrKg1zXkD/b5ztLFuL6z20bMaYQ="
+
 install: 
   - "pip install -r requirements.txt"
   - "pip install -r requirements-test.txt"
@@ -16,7 +18,9 @@ before_script:
   - sleep 3 # give xvfb some time to start
   - "wget http://selenium.googlecode.com/files/selenium-server-standalone-2.31.0.jar"
   - "java -jar selenium-server-standalone-2.31.0.jar > /dev/null &"
-  - "nengo_gui &"#starts up nengo_gui
+
   - sleep 3
 # command to run tests
-script: py.test
+script: 
+  - "nengo_gui &"#starts up nengo_gui
+  - py.test
