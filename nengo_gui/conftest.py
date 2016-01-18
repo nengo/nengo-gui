@@ -4,8 +4,6 @@ import nengo_gui
 import pytest
 import os
 import inspect
-from fluentmail import FluentMail
-from fluentmail import TLS
 # each function should get the same driver...
 
 @pytest.fixture(scope="module")
