@@ -4,7 +4,6 @@ import nengo_gui
 import pytest
 import os
 import inspect
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 # each function should get the same driver...
 
 @pytest.fixture(scope="module")
