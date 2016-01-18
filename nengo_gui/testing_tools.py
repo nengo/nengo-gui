@@ -99,9 +99,9 @@ def mouse_scroll(driver,scroll_y):
     mouse_y = (element.location['y']+element.size['height'])/2.0
     script = '''var netg = document.getElementById("netgraph");
 evt = document.createEvent("Event");
-evt.initEvent("mousewheel", true, true);
+evt.initEvent("wheel", true, true);
 evt.deltaY = %s;
 evt.clientX = %s;
 evt.clientY = %s ;
-netg.dispatchEvent(evt);console.log("execute");'''
+netg.dispatchEvent(evt);'''
     driver.execute_script(script % (scroll_y,mouse_x,mouse_y))
