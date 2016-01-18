@@ -12,22 +12,16 @@ from fluentmail import TLS
 def driver(request):
     folder = os.path.dirname(inspect.getfile(nengo_gui))
     example = os.path.join(folder,'examples/default.py')
-    driver = webdriver.Firefox()
+    try:
+        driver = webdriver.Chrome('/usr/lib/chromium/chromedriver')
+    except:
+        driver = webdriver.Firefox()
     driver.get('localhost:8080/?filename='+example)
+    driver.maximize_window()
     time.sleep(4)
     def fin():
         print ("teardown selenium-webdriver")
         driver.close()
-        mail = FluentMail('smtp.gmail.com', 587, TLS)
-        print ("result being mailed too nengo.testing@gmail.com")
-        mail.credentials('nengo.testing@gmail.com', 'waterloou')\
-            .from_address('nengo.testing@gmail.com')\
-            .to('nengo.testing@gmail.com')\
-            .subject('Testing Picture')\
-            .body(u'', 'utf-8')\
-            .as_html()\
-            .attach('/home/travis/build/nengo/nengo_gui/screenshot.png', 'utf-8')\
-            .send()
     request.addfinalizer(fin)
     return driver
 
