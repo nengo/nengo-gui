@@ -2,6 +2,10 @@ language: python
 sudo: required
 python:
   - "2.7"
+addons:
+  sauce_connect:
+    username: "nengo"
+    access_key: "21faaee4-a99e-4b40-bc89-23170618ff0e"
 install: 
   - "pip install -r requirements.txt"
   - "pip install -r requirements-test.txt"
