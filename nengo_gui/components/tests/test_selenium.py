@@ -11,12 +11,11 @@ test_files = tt.folder_location('examples/basics')
 @pytest.mark.parametrize('test_file',test_files)
 def test_basic_functionality(driver,test_file):
 	#Test page response by clicking the reset button and applying new code to ace-editor
-	driver.maximize_window()
 	tt.reset_page(driver)
 	tt.update_editor(driver,test_file)
 	ens_elements = driver.find_elements_by_xpath('//*[@class="ens"]')
 	assert len(ens_elements) > 0
-
+	tt.mouse_scroll(driver,500)
 	#Creates graph objects by right clicking on nodes and selecting from menu
 	actions = ActionChains(driver)
 	elements = ['node','ens']
@@ -55,7 +54,5 @@ def test_basic_functionality(driver,test_file):
 	time.sleep(1.5)
 	tt.start_stop_sim(driver)
 	time.sleep(0.5)
-
-	driver.save_screenshot('screenshot.png')
 
     

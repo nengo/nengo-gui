@@ -90,3 +90,18 @@ def folder_location(var_path):
 #Code:
 #files_raw = folder_location('stuff/tests')
 #Returns list of ['print "hello world"','print "goodbye world"']
+
+#mouse_scroll takes in a vertical scroll amount and scrolls appropriatley from
+#the center of netgraph after that
+def mouse_scroll(driver,scroll_y):
+    element = driver.find_element_by_id('netgraph')
+    mouse_x = (element.location['x']+element.size['width'])/2.0
+    mouse_y = (element.location['y']+element.size['height'])/2.0
+    script = '''var netg = document.getElementById("netgraph");
+evt = document.createEvent("Event");
+evt.initEvent("mousewheel", true, true);
+evt.deltaY = %s;
+evt.clientX = %s;
+evt.clientY = %s ;
+netg.dispatchEvent(evt);console.log("execute");'''
+    driver.execute_script(script % (scroll_y,mouse_x,mouse_y))
