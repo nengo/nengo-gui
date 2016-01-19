@@ -16,11 +16,24 @@ def test_basic_functionality(driver,test_file):
 	tt.update_editor(driver,test_file)
 	ens_elements = driver.find_elements_by_xpath('//*[@class="ens"]')
 	assert len(ens_elements) > 0
-	tt.mouse_scroll(driver,500)
+	tt.mouse_scroll(driver,2000)
 	time.sleep(2)
 
 	#captures pictures in stdout
 	
+	if('TRAVIS' in os.environ):
+		import pyimgur
+		driver.get_screenshot_as_file('test_result.png')
+		client_id = 'ce3e3bc9c9f0af0'
+		client_secret = 'b033592e871bd14ac89d3e7356d8d96691713170'
+		im = pyimgur.Imgur(client_id,client_secret)
+
+		current_folder = os.getcwd()
+		PATH = os.path.join(current_folder, 'test_result.png')
+		uploaded_image = im.upload_image(PATH, title="Uploaded with PyImgur")
+
+		print(uploaded_image.title)
+		print(uploaded_image.link)
 
 	#Creates graph objects by right clicking on nodes and selecting from menu
 	actions = ActionChains(driver)
@@ -55,26 +68,15 @@ def test_basic_functionality(driver,test_file):
 	# 	assert final_y != init_y
 	
 	#Runs the simulations for a few seconds
-
+	
 	tt.start_stop_sim(driver)
 	time.sleep(1.5)
 	tt.start_stop_sim(driver)
 	time.sleep(0.5)
-	if(os.environ['TRAVIS']):
-		import pyimgur
-		driver.get_screenshot_as_file('test_result.png')
-		client_id = 'ce3e3bc9c9f0af0'
-		client_secret = 'b033592e871bd14ac89d3e7356d8d96691713170'
-		im = pyimgur.Imgur(client_id,client_secret)
 
-		current_folder = os.getcwd()
-		PATH = os.path.join(current_folder, 'test_result.png')
-		uploaded_image = im.upload_image(PATH, title="Uploaded with PyImgur")
-
-		print(uploaded_image.title)
-		print(uploaded_image.link)
-
-
+	ticker = driver.find_element_by_xpath('//*[@id="ticks_tr"]/td')
+	sim_time = ticker.get_attribute('textContent')
 	
+	assert (float(sim_time) > 0)
 
     
