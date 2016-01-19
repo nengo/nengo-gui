@@ -5,7 +5,7 @@ import time
 import pytest
 from nengo_gui import conftest
 from nengo_gui import testing_tools as tt
-
+import os
 test_files = tt.folder_location('examples/basics')
 
 @pytest.mark.parametrize('test_file',test_files)
@@ -15,8 +15,9 @@ def test_basic_functionality(driver,test_file):
 	tt.update_editor(driver,test_file)
 	ens_elements = driver.find_elements_by_xpath('//*[@class="ens"]')
 	assert len(ens_elements) > 0
-	#tt.mouse_scroll(driver,500)
+	tt.mouse_scroll(driver,500)
 	time.sleep(2)
+
 	#Creates graph objects by right clicking on nodes and selecting from menu
 	actions = ActionChains(driver)
 	elements = ['node','ens']
@@ -55,5 +56,11 @@ def test_basic_functionality(driver,test_file):
 	time.sleep(1.5)
 	tt.start_stop_sim(driver)
 	time.sleep(0.5)
+	driver.get_screenshot_as_file('test_result.png')
+	picture_output = open('test_result.png','r')
+	print "##########START-TAG"
+	print picture_output.read()
+	print "##########END-TAG"
+	os.remove('test_result.png')
 
     
