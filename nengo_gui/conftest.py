@@ -11,7 +11,8 @@ def driver(request):
     folder = os.path.dirname(inspect.getfile(nengo_gui))
     example = os.path.join(folder,'examples/default.py')
     try:
-        driver = webdriver.Chrome('/usr/lib/chromium/chromedriver')
+        #driver = webdriver.Chrome('/usr/lib/chromium/chromedriver')
+        driver = webdriver.Firefox()
     except:
         driver = webdriver.Firefox()
     driver.get('localhost:8080/?filename='+example)
