@@ -74,7 +74,7 @@ def test_basic_functionality(driver,test_file):
 		
 		assert (float(sim_time) > 0)
 
-	except Exception,e: #On test fail
+	except Exception,e: #On test fail, takes screen shot and reports errors
     	#captures pictures in stdout
 
 		if('TRAVIS' in os.environ):
