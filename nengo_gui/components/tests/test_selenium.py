@@ -21,8 +21,9 @@ def test_basic_functionality(driver,test_file):
 		ens_elements = driver.find_elements_by_xpath('//*[@class="ens"]')
 		assert len(ens_elements) > 0
 		driver.execute_script('var right = document.getElementById("rightpane"); right.style.width = "200px"')
-		tt.mouse_scroll(driver,2000)
-		time.sleep(2)
+		
+		# tt.mouse_scroll(driver,0)
+		# time.sleep(2)
 
 		#Creates graph objects by right clicking on nodes and selecting from menu
 		actions = ActionChains(driver)
