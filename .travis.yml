@@ -18,4 +18,4 @@ before_script:
   - sleep 2
 # command to run tests
 script: 
-  - py.test -s
+  - py.test
