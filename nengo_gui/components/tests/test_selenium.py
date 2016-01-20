@@ -7,10 +7,11 @@ from nengo_gui import conftest
 from nengo_gui import testing_tools as tt
 import os
 import sys
+import traceback
 
 test_files = tt.folder_location('examples/basics')
 
-@pytest.mark.parametrize('test_file',test_files)
+@pytest.mark.parametrize('test_file',test_files[:])
 def test_basic_functionality(driver,test_file):
 	try: #Run tests
 		
@@ -20,7 +21,7 @@ def test_basic_functionality(driver,test_file):
 		ens_elements = driver.find_elements_by_xpath('//*[@class="ens"]')
 		assert len(ens_elements) > 0
 		driver.execute_script('var right = document.getElementById("rightpane"); right.style.width = "200px"')
-		tt.mouse_scroll(driver,15000)
+		tt.mouse_scroll(driver,2000)
 		time.sleep(2)
 
 		#Creates graph objects by right clicking on nodes and selecting from menu
@@ -32,9 +33,15 @@ def test_basic_functionality(driver,test_file):
 			actions.move_to_element(node)
 			actions.context_click()
 			actions.perform()
+			time.sleep(1)
+			actions = ActionChains(driver)
+
+			menu = driver.find_element_by_xpath('//*[@class="dropdown-menu"]/li[1]')
+			actions.move_to_element(menu)
+			actions.click()
+			actions.perform()
 			time.sleep(0.5)
-			menu = driver.find_element_by_xpath('//*[@class="dropdown-menu"]/li[1]').click()
-			time.sleep(0.5)
+
 		graph_elements = driver.find_elements_by_xpath('//*[@class="graph"]')
 
 		assert len(graph_elements) > 0
@@ -67,12 +74,12 @@ def test_basic_functionality(driver,test_file):
 		
 		assert (float(sim_time) > 0)
 
-	except AssertionError: #On test fail
+	except Exception,e: #On test fail
     	#captures pictures in stdout
 
 		if('TRAVIS' in os.environ):
 			import pyimgur
-			driver.get_screenshot_as_file('/tmp/test_result.png')
+			driver.get_screenshot_as_file('test_result.png')
 			client_id = 'ce3e3bc9c9f0af0'
 			client_secret = 'b033592e871bd14ac89d3e7356d8d96691713170'
 			im = pyimgur.Imgur(client_id,client_secret)
@@ -90,4 +97,5 @@ def test_basic_functionality(driver,test_file):
 		filename, line, func, text = tb_info[-1]
 
 		print('An error occurred on line {} in statement {}'.format(line, text))
+		print(str(e))
 		exit(1)
