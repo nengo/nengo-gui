@@ -11,10 +11,11 @@ import traceback
 
 test_files = tt.folder_location('examples/basics')
 
-@pytest.mark.parametrize('test_file',test_files[:])
+@pytest.mark.parametrize('test_file',test_files[:1])
 def test_basic_functionality(driver,test_file):
 	try: #Run tests
-		
+		if('TRAVIS' in os.environ):
+			assert 'chrome' in str(driver)
 		#Test page response by clicking the reset button and applying new code to ace-editor
 		tt.reset_page(driver)
 		tt.update_editor(driver,test_file)
@@ -87,7 +88,7 @@ def test_basic_functionality(driver,test_file):
 
 			current_folder = os.getcwd()
 			PATH = os.path.join(current_folder, 'test_result.png')
-			uploaded_image = im.upload_image(PATH, title="Uploaded with PyImgur")
+			uploaded_image = im.upload_image(PATH, title="Uploaded to Imgur")
 			print ""
 			print(uploaded_image.title)
 			print(uploaded_image.link)
