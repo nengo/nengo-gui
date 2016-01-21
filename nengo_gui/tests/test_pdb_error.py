@@ -10,6 +10,7 @@ import sys
 import traceback
 
 @pytest.mark.xfail
+@pytest.mark.skipif("True")
 def test_pdb_error(driver):
 	test_file = '''
 import nengo
