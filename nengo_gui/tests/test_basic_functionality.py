@@ -11,7 +11,7 @@ import traceback
 
 test_files = tt.folder_location('examples/basics')
 
-@pytest.mark.parametrize('test_file',test_files[:])
+@pytest.mark.parametrize('test_file',test_files[:])#
 def test_basic_functionality(driver,test_file):
 	try: #Run tests
 		#Test page response by clicking the reset button and applying new code to ace-editor
