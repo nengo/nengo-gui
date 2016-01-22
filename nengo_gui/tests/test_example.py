@@ -5,6 +5,7 @@ import time
 import pytest
 from nengo_gui import conftest
 from nengo_gui import testing_tools as tt 
+import os
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Use these import statments, they will be useful when testing
 
@@ -55,10 +56,19 @@ with model:
 
 	right_click_menu = driver.find_element_by_xpath('//*[@class="dropdown-menu"]')
 
-	assert(bool(stim) and bool(a) == True) # Tests if both elements are present.
-	assert(bool(right_click_menu) == True) # Tests if stim has been properly clicked
+	assert(bool(stim) and bool(a) == True) 
+	# Tests if both elements are present.
 
-	# And thats it! look at test_selenium.py for more use and 
+	assert(bool(right_click_menu) == True) 
+	# Tests if stim has been properly clicked
+
+	if('TRAVIS' in os.environ): ########## TRAVIS ONLY
+		tt.imgur_screenshot(driver)
+
+	# When testing on TravisCI tests cannot be visualized, this function
+	# takes a screenshot of the test, uploads it to imgur and prints
+	# the link. Again this is only useful when testing on travis.
+
+	# And thats it! look at test_basic_functionality.py for more usage and 
 	# the documentation in the pull request. Happy Testing! 
-
 
