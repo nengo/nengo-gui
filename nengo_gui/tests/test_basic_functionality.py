@@ -78,18 +78,7 @@ def test_basic_functionality(driver,test_file):
     	#captures pictures in stdout
 
 		if('TRAVIS' in os.environ):
-			import pyimgur
-			driver.get_screenshot_as_file('test_result.png')
-			client_id = 'ce3e3bc9c9f0af0'
-			client_secret = 'b033592e871bd14ac89d3e7356d8d96691713170'
-			im = pyimgur.Imgur(client_id,client_secret)
-
-			current_folder = os.getcwd()
-			PATH = os.path.join(current_folder, 'test_result.png')
-			uploaded_image = im.upload_image(PATH, title="Uploaded to Imgur")
-			print ""
-			print(uploaded_image.title)
-			print(uploaded_image.link)
+			tt.imgur_screenshot(driver)
 
 		_, _, tb = sys.exc_info()
 		traceback.print_tb(tb) # Fixed format
