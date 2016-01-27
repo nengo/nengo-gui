@@ -3,10 +3,9 @@ sudo: required
 python:
   - "2.7"
 before_install:
-  - sudo apt-get install npm
+  - "npm install -g mocha"
 install: 
   - "pip install -r requirements-test.txt"
-  - "sudo npm install -g mocha"
 before_script:
   - "python setup.py develop"
   - "export DISPLAY=:99.0"
