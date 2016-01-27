@@ -12,6 +12,7 @@ def driver(request):
         driver = webdriver.Chrome(os.path.join(folder,'chromedriver'))
     except:
         driver = webdriver.Firefox()
+        
     driver.get('localhost:8080/')
     driver.maximize_window()
     time.sleep(4)
