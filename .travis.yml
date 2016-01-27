@@ -2,8 +2,9 @@ language: python
 sudo: required
 python:
   - "2.7"
-before_script:
+install:
   - "sudo bash install.sh"
+before_script:
   - "export DISPLAY=:99.0"
   - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/cucumber_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1920x1080x16
   - sleep 3 # give xvfb some time to start
