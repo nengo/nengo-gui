@@ -1,3 +1,3 @@
-python setup.py develop
-pip install -r requirements-test.txt
-npm install -g mocha
+sudo python setup.py develop
+sudo pip install -r requirements-test.txt
+sudo npm install -g mocha
