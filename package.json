@@ -11,7 +11,9 @@
   "devDependencies": {
     "mocha": "^2.4.3"
   },
-  "scripts": {},
+  "scripts": {
+    "test":"mocha nengo_gui/static/test"
+    },
   "repository": {
     "type": "git",
     "url": "https://github.com/nengo/nengo_gui"
