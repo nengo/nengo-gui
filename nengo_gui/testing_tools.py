@@ -4,120 +4,104 @@ import nengo_gui
 import pytest
 import time
 
-# ---------------------------------------------------------
-# update_editor(driver,nengoCode) takes in a selenium webdriver instance
-# and a string of python nengo code, then inserts the code into ace editor
-# and waits for the page to update.
-def update_editor(driver,nengoCode):
-    nengoCode = nengoCode.replace("\n","\\n").replace("\r","\\r")
+def update_editor(driver, nengoCode):
+    """Inserts a string which represents code into ace editor"""
+
+    """
+    Example:
+    driver = webdriver.firefox()
+    driver.get(localhost:8080/)
+    code_string = "print hello world"
+    update_editor(driver, code_string)
+    Ace editor will update with "print hello world"
+    """
+
+    nengoCode = nengoCode.replace("\n", "\\n").replace("\r", "\\r")
     js = "var editor = ace.edit('editor');editor.setValue('"+nengoCode+"');"
     driver.execute_script(js)
     time.sleep(1)
-# Example:
-# driver = webdriver.firefox()
-# driver.get(localhost:8080/)
-# code_string = "print hello world"
-# update_editor(driver,code_string)
-# Ace editor will update with "print hello world"
 
-# ---------------------------------------------------------
-# reset_page takes in a selenium webdriver instance, then clicks 
-# the reset page button on nengo_gui
-# and waits for the page to reset.
 def reset_page(driver):
+    """Clicks the reset page button in nengo_gui
+
+    Example:
+    driver = webdriver.firefox()
+    driver.get(localhost:8080/)
+    reset_page(driver)
+    The page then resets
+    """
     reset = driver.find_element_by_xpath('//*[@id="Reset_layout_button"]')
     reset.click()
     time.sleep(0.5)
     reset_acc = driver.find_element_by_xpath('//*[@id="confirm_reset_button"]')
     reset_acc.click()
     time.sleep(0.2)
-# Example:
-# driver = webdriver.firefox()
-# driver.get(localhost:8080/)
-# reset_page(driver)
-# The page then resets
-
-# ---------------------------------------------------------
-# start_stop_sim takes in a selenium webdriver instance, then clicks 
-# the start button. If the simulation is not running it starts it
-# if its currently running it stops it.
 
 def start_stop_sim(driver):
+    """Clicks the start simulation start button"""
     play_button = driver.find_element_by_xpath('//*[@id="pause_button"]')
     play_button.click()
 
-# Example:
-# driver = webdriver.firefox()
-# driver.get(localhost:8080/)
-# start_stop_sim(driver)
-# The simulation starts running.
-
-# ---------------------------------------------------------
-# folder_location takes in a string which represents a path relative
-# from the nengo_gui/nengo_gui folder. It then returns a list of the raw
-# text from any python file in that folder
-
 def folder_location(var_path):
+    """Returns a list of the raw text from a python file in var_path
+
+     Example:
+     File Structure:
+     --nengo_gui/
+       --nengo_gui/
+              --stuff/
+                   --tests/
+                       bar.py
+                       foo.py
+
+     foo.py:
+       print "hello world"
+     bar.py:
+       print "goodbye world"
+
+     Code:
+     files_raw = folder_location('stuff/tests')
+     Returns list of ['print "hello world"','print "goodbye world"']
+    """
+
     folder = os.path.dirname(inspect.getfile(nengo_gui))
 
-    test_folder = os.path.join(folder,var_path)
+    test_folder = os.path.join(folder, var_path)
 
     test_files = os.listdir(test_folder)
     test_files = filter((lambda x: ((x.count('.') == 1) and ('.py' in x))),
         test_files)
-    test_files = map((lambda file_: os.path.join(test_folder,file_)),
+    test_files = map((lambda file_: os.path.join(test_folder, file_)),
         test_files)
-    test_files = map((lambda file_: open(file_,'r').read()),
+    test_files = map((lambda file_: open(file_, 'r').read()),
         test_files)
-    test_files = map((lambda raw_file: raw_file.replace("'",r"\'")),
+    test_files = map((lambda raw_file: raw_file.replace("'", r"\'")),
         test_files)
     return test_files
 
-# Example:
-# File Structure:
-# --nengo_gui/
-#   --nengo_gui/
-#          --stuff/
-#               --tests/
-#                   bar.py
-#                   foo.py
-#                   
-# foo.py:
-#   print "hello world"
-# bar.py:
-#   print "goodbye world"
-#
-# Code:
-# files_raw = folder_location('stuff/tests')
-# Returns list of ['print "hello world"','print "goodbye world"']
+def mouse_scroll(driver, scroll_y):
+    """scrolls by scroll_y in the netgraph div"""
 
-# ---------------------------------------------------------
-# mouse_scroll takes in a vertical scroll amount and scrolls appropriatley from
-# the center of netgraph after that
-def mouse_scroll(driver,scroll_y):
     element = driver.find_element_by_id('netgraph')
     mouse_x = (element.location['x']+element.size['width'])/2.0
     mouse_y = (element.location['y']+element.size['height'])/2.0
     script = '''var netg = document.getElementById("netgraph");
-evt = document.createEvent("Event");
-evt.initEvent("wheel", true, true);
-evt.deltaY = %s;
-evt.clientX = %s;
-evt.clientY = %s ;
-netg.dispatchEvent(evt);'''
-    driver.execute_script(script % (scroll_y,mouse_x,mouse_y))
-
-# ---------------------------------------------------------
-# imgur_screenshot(driver) saves a screenshot of the current
-# simulation and uploads it onto imgur, it then prints the 
-# link into the console
+                evt = document.createEvent("Event");
+                evt.initEvent("wheel", true, true);
+                evt.deltaY = %s;
+                evt.clientX = %s;
+                evt.clientY = %s ;
+                netg.dispatchEvent(evt);'''
+    driver.execute_script(script % (scroll_y, mouse_x, mouse_y))
 
 def imgur_screenshot(driver):
+    """Takes a screenshot, uploads it to imgur, and prints the link"""
+
     import pyimgur
     driver.get_screenshot_as_file('test_result.png')
     client_id = 'ce3e3bc9c9f0af0'
     client_secret = 'b033592e871bd14ac89d3e7356d8d96691713170'
-    im = pyimgur.Imgur(client_id,client_secret)
+    im = pyimgur.Imgur(client_id, client_secret)
 
     current_folder = os.getcwd()
     PATH = os.path.join(current_folder, 'test_result.png')
@@ -126,12 +110,3 @@ def imgur_screenshot(driver):
     print ""
     print(uploaded_image.title)
     print(uploaded_image.link)
-
-# Example:
-# driver = webdriver.firefox()
-# driver.get(localhost:8080/)
-# imgur_screenshot(driver)
-#
-# Output:
-# Uploaded to Imgur
-# http://i.imgur.com/CBNTefH.png (actual link click to check)
