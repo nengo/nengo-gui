@@ -1,5 +1,5 @@
 from selenium import webdriver
-import time 
+import time
 import pytest
 import nengo_gui
 import os
@@ -7,21 +7,21 @@ import os
 
 @pytest.fixture(scope="module")
 def driver(request):
-    try:
-        folder = os.getcwd()
-        driver = webdriver.Chrome(os.path.join(folder,'chromedriver'))
-    except:
-        driver = webdriver.Firefox()
-        
+    # try:
+    #     folder = os.getcwd()
+    #     driver = webdriver.Chrome(os.path.join(folder,'chromedriver'))
+    # except:
+    driver = webdriver.Firefox()
+
     driver.get('localhost:8080/')
     driver.maximize_window()
     time.sleep(4)
     def fin():
         driver.close()
     request.addfinalizer(fin)
-
+    try:
+        assert driver.title != "Problem loading page"
+    except AssertionError as e:
+        print 'NENGO_GUI SERVER NOT STARTED, START SERVER BEFORE RUNNING TESTS!'
+        raise
     return driver
-
-
-
-
