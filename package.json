@@ -1,0 +1,26 @@
+{
+  "name": "nengo_gui",
+  "version": "0.2.0",
+  "description": "Web-based GUI for building and visualizing Nengo models.",
+  "main": "my.conf.js",
+  "directories": {
+    "doc": "docs",
+    "example": "examples"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "^2.4.3"
+  },
+  "scripts": {
+    "test":"mocha nengo_gui/static/test"
+    },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nengo/nengo_gui"
+  },
+  "author": "CNRGlab at UWaterloo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nengo/nengo_gui/issues"
+  }
+}

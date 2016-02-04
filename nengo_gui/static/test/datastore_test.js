@@ -138,7 +138,7 @@ describe("GrowableDataStore", function() {
         data_store.dims = 3;
         data_store.push([1.5, 4.1, 4.2, 4.3]);
         data_store.reset();
-        assert.deepEqual(data_store.data, [[], [], []]);
+        assert.deepEqual(data_store.data, [[]]);
     });
 
     it("throws away old data", function() {
