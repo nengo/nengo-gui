@@ -4,11 +4,11 @@ from selenium.webdriver import ActionChains
 import time
 import pytest
 from nengo_gui import conftest
-from nengo_gui import testing_tools as tt 
+from nengo_gui import testing_tools as tt
 import os
 
 def test_data_to_csv(driver):
-	tt.reset_page(driver) 
+	tt.reset_page(driver)
 
 	tt.update_editor(driver,'''
 import nengo
@@ -27,7 +27,7 @@ with model:
 	for elem in elements:
 		for x in range(2):
 			node = driver.find_element_by_xpath('//*[@class="'+elem+'"]')
-			 
+
 			actions = ActionChains(driver)
 			actions.move_to_element(node)
 			actions.context_click()
@@ -56,6 +56,5 @@ if(data.constructor === Nengo.Value){
 	test_data = '''Graph Name,stim,a
 Times,Dimension1,Dimension1
 1,11,12'''
-	
+
 	assert result == test_data
-	
