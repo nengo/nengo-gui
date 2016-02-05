@@ -21,7 +21,7 @@ Nengo.Pointer = function(parent, sim, args) {
     this.pdiv = document.createElement('div');
     this.pdiv.style.width = args.width;
     this.pdiv.style.height = args.height;
-    Nengo.set_transform(this.pdiv, 0, 0);
+    Nengo.set_transform(this.pdiv, 0, 25);
     this.pdiv.style.position = 'fixed';
     this.pdiv.classList.add('pointer');
     this.div.appendChild(this.pdiv);
@@ -196,7 +196,7 @@ Nengo.Pointer.prototype.update = function() {
         items.push(span);
     }
 
-    var scale = this.height / total_size * 0.75;
+    var scale = this.height / total_size * 0.6;
 
     for (var i=0; i < data.length; i++) {
         var size = parseFloat(data[i].substring(0,4));
