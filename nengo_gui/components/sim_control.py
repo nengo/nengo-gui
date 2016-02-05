@@ -35,6 +35,7 @@ class SimControl(Component):
         self.next_ping_time = None
         self.send_config_options = False
         self.reset_inform = False
+        self.node = None
 
     def attach(self, page, config, uid):
         super(SimControl, self).attach(page, config, uid)

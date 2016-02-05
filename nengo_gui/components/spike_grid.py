@@ -24,6 +24,8 @@ class SpikeGrid(Component):
         self.n_pixels = self.pixels_x * self.pixels_y
         self.struct = struct.Struct('<f%dB' % (self.n_pixels))
         self.max_value = 1.0
+        self.node = None
+        self.conn = None
 
     def attach(self, page, config, uid):
         super(SpikeGrid, self).attach(page, config, uid)
