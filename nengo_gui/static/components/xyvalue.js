@@ -111,7 +111,6 @@ Nengo.XYValue.prototype.generate_menu = function() {
     items.push(['Set X, Y indices...', function() {self.set_indices();}]);
 
     // add the parent's menu items to this
-    // TODO: is this really the best way to call the parent's generate_menu()?
     return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
 };
 
