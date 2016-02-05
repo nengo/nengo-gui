@@ -50,6 +50,8 @@ Nengo.Ace = function (uid, args) {
     this.console.appendChild(this.console_error);
 
     this.save_disabled = true;
+    this.update_trigger = true; // if an update of the model from the code editor is allowed
+    this.auto_update = true; // automatically update the model based on the text
 
     //Setup the button to toggle the code editor
     $('#Toggle_ace').on('click', function(){self.toggle_shown();});
@@ -132,9 +134,16 @@ Nengo.Ace.prototype.schedule_updates = function () {
     setInterval(function () {
         var editor_code = self.editor.getValue();
         if (editor_code != self.current_code) {
-            self.ws.send(JSON.stringify({code:editor_code, save:false}));
-            self.current_code = editor_code;
-            self.enable_save();
+            if (self.update_trigger) {
+                self.update_trigger = self.auto_update;
+                self.ws.send(JSON.stringify({code:editor_code, save:false}));
+                self.current_code = editor_code;
+                self.enable_save();
+                $('#Sync_editor_button').addClass('disabled');
+            } else {
+                // Visual indication that the code is different than the model displayed
+                $('#Sync_editor_button').removeClass('disabled');
+            }
         }
     }, 100)
 }
