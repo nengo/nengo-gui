@@ -12,7 +12,7 @@ body {
     -webkit-flex-direction: column;
     flex-direction: column;
     -webkit-touch-callout: none;
-    -webkit-user-select: none;
+    -webkit-user-select: text;
     -khtml-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
