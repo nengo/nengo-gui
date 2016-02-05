@@ -21,7 +21,7 @@ class HttpWsRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if upgrade == 'websocket':
             self.upgrade_to_ws()
         else:
-            pass  # FIXME produce error
+            self.wfile.write(r'HTTP/1.1 400 Bad request\r\n')
 
     def upgrade_to_ws(self):
         response = '''HTTP/1.1 101 Switching Protocols
@@ -37,8 +37,12 @@ Sec-WebSocket-Accept: {sec}
             key = self.headers['Sec-WebSocket-Key']
             assert len(base64.b64decode(key)) == 16
             assert self.headers['Sec-WebSocket-Version'] == '13'
-        except KeyError, AssertionError:
-            pass # FIXME Bad request
+        except KeyError:
+            self.wfile.write(r'HTTP/1.1 400 Bad request\r\n')
+            return
+        except AssertionError:
+            self.wfile.write(r'HTTP/1.1 400 Bad request\r\n')
+            return
 
         sec = base64.b64encode(hashlib.sha1(
             key.encode('ascii') + WS_MAGIC).digest()).decode('ascii')
