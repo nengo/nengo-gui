@@ -147,7 +147,7 @@ Nengo.Modal.prototype.tabbed_body = function(tabinfo) {
 /**
  * Sets up the body for main configuration
  */
-Nengo.Modal.prototype.main_config = function(options) {
+Nengo.Modal.prototype.main_config = function() {
     this.clear_body();
 
     var $form = $('<form class="form-horizontal" id ' +
@@ -213,9 +213,9 @@ Nengo.Modal.prototype.main_config = function(options) {
     this.$div.on('shown.bs.modal', function () {
         $('#config-fontsize').focus();
     });
-    $('#zoom-fonts').prop('checked', options["zoom"]);
+    $('#zoom-fonts').prop('checked', Nengo.netgraph.zoom_fonts);
     $('#zoom-fonts').change(function () {
-        Nengo.netgraph.set_zoom_fonts($('#zoom-fonts').prop('checked'));
+        Nengo.netgraph.zoom_fonts = $('#zoom-fonts').prop('checked');
     });
 
     $('#aspect-resize').prop('checked', Nengo.netgraph.aspect_resize);
@@ -223,9 +223,9 @@ Nengo.Modal.prototype.main_config = function(options) {
         Nengo.netgraph.aspect_resize = $('#aspect-resize').prop('checked');
     });
 
-    $('#config-fontsize').val(options["font_size"]);
+    $('#config-fontsize').val(Nengo.netgraph.font_size);
 
-    $('#transparent-nets').prop('checked', options["transparent_nets"]);
+    $('#transparent-nets').prop('checked', Nengo.netgraph.transparent_nets);
     $('#transparent-nets').change(function () {
         Nengo.netgraph.transparent_nets = $('#transparent-nets').prop('checked');
     });
@@ -237,12 +237,11 @@ Nengo.Modal.prototype.main_config = function(options) {
     });
 
     $('#config-fontsize').bind('keyup input', function () {
-        Nengo.netgraph.set_font_size(parseInt($('#config-fontsize').val()));
+        Nengo.netgraph.font_size = parseInt($('#config-fontsize').val());
     });
     $('#config-fontsize').attr('data-my_validator', 'custom');
 
     $('#config-backend').change(function () {
-        console.log($('#config-backend').val());
         sim.set_backend($('#config-backend').val());
     });
 
