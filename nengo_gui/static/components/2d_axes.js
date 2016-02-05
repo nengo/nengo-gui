@@ -5,10 +5,8 @@
  * @param {DOMElement} parent - the element to add this component to
  * @param {float} args.width - the width of the axes (in pixels)
  * @param {float} args.height - the height of the axes (in pixels)
- * @param {bool} args.center_x_axis - should the x-axis be in the middle
- * @param {bool} args.center_y_axis - should the y-axis be in the middle
- * @param {float} args.min_value - minimum value on y-axis
- * @param {float} args.max_value - maximum value on y-axis
+ * @param {array} args.x_range - minimum and maximum value on x-axis
+ * @param {array} args.y_range - minimum and maximum value on y-axis
  */
 
 Nengo.Axes2D = function(parent, args) {
@@ -24,19 +22,23 @@ Nengo.Axes2D = function(parent, args) {
     /** scales for mapping x and y values to pixels */
     this.scale_x = d3.scale.linear();
     this.scale_y = d3.scale.linear();
-    this.scale_y.domain([args.min_value, args.max_value]);
-
-    this.center_x_axis = args.center_x_axis;
-    this.center_y_axis = args.center_y_axis;
+    if(args.x_range !== undefined){
+        this.scale_x.domain([args.x_range[0], args.x_range[1]]);
+    }
+    this.scale_y.domain([args.y_range[0], args.y_range[1]]);
 
     /** spacing between the graph and the outside edges (in pixels) */
     this.set_axes_geometry(args.width, args.height);
-    
+
     /** define the x-axis */
     this.axis_x = d3.svg.axis()
         .scale(this.scale_x)
         .orient("bottom")
-        .ticks(2);
+    if(args.x_range !== undefined){
+        this.axis_x.tickValues([args.x_range[0], args.x_range[1]]);
+    } else {
+        this.axis_x.ticks(2);
+    }
     this.axis_x_g = this.svg.append("g")
         .attr("class", "axis axis_x unselectable")
         .call(this.axis_x);
@@ -45,7 +47,7 @@ Nengo.Axes2D = function(parent, args) {
     this.axis_y = d3.svg.axis()
         .scale(this.scale_y)
         .orient("left")
-        .tickValues([args.min_value, args.max_value]);
+        .tickValues([args.y_range[0], args.y_range[1]]);
 
     this.axis_y_g = this.svg.append("g")
         .attr("class", "axis axis_y unselectable")
@@ -68,7 +70,7 @@ Nengo.Axes2D.prototype.set_axes_geometry = function(width, height) {
 /**
  * Adjust the graph layout due to changed size
  */
-Nengo.Axes2D.prototype.on_resize = function(width, height) {
+Nengo.Axes2D.prototype.on_resize = function(width, height, x_offset, y_offset) {
     if (width < this.minWidth) {
         width = this.minWidth;
     }
@@ -87,11 +89,6 @@ Nengo.Axes2D.prototype.on_resize = function(width, height) {
     this.axis_y
         .tickPadding(this.tick_padding)
         .outerTickSize(this.tick_size, this.tick_size);
-
-    var x_offset = this.center_x_axis ? (this.ax_bottom + this.ax_top) / 2
-                                      : this.ax_bottom;
-    var y_offset = this.center_y_axis ? (this.ax_left + this.ax_right) / 2
-                                      : this.ax_left;
 
     this.axis_x_g.attr("transform", "translate(0," + x_offset + ")");
     this.axis_x_g.call(this.axis_x);

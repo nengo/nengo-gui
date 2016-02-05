@@ -8,6 +8,9 @@
  * @param {int} args.n_lines - number of decoded values
  * @param {float} args.miny - minimum value on y-axis
  * @param {float} args.maxy - maximum value on y-axis
+ * @param {array} args.x_range - minimum and maximum value on x-axis
+ * @param {array} args.y_range - minimum and maximum value on y-axis
+ * @param {Nengo.SimControl} args.sim - the simulation controller
  *
  * XYValue constructor is called by python server when a user requests a plot 
  * or when the config file is making graphs. Server request is handled in 
@@ -24,15 +27,9 @@ Nengo.XYValue = function(parent, sim, args) {
     /** for storing the accumulated data */
     this.data_store = new Nengo.DataStore(this.n_lines, this.sim, 0);
 
-    args.center_x_axis = true;
-    args.center_y_axis = true;
-    this.axes2d = new Nengo.Axes2D(this.div, args);
-    this.axes2d.axis_y.tickValues([args.min_value, args.max_value]);
-    this.axes2d.axis_x.tickValues([args.min_value, args.max_value]);
+    this.axes2d = new Nengo.XYAxes(this.div, args);
 
-    /** scales for mapping x and y values to pixels */
-    this.axes2d.scale_x.domain([args.min_value, args.max_value]);
-
+    // the two indices of the multi-dimensional data to display
     this.index_x = args.index_x;
     this.index_y = args.index_y;
 
@@ -54,6 +51,18 @@ Nengo.XYValue = function(parent, sim, args) {
              .attr('class', 'line')
              .style('stroke', Nengo.make_colors(1));
 
+    /** create a circle to track the most recent data */
+    // TODO:
+    // WHY AREN'T THE SCALES FREAKING WORKING
+    this.recent_circle = this.axes2d.svg.append("circle")
+                                        .attr("r", this.get_circle_radius())
+                                        .attr('cx', this.axes2d.scale_x(0))
+                                        .attr('cy', this.axes2d.scale_y(0))
+                                        .style("fill", Nengo.make_colors(2)[1]);
+
+    this.warning_label = this.axes2d.svg.append("g");
+    this.invalid_dims = false;
+
     this.axes2d.fit_ticks(this);
     this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
@@ -73,20 +82,62 @@ Nengo.XYValue.prototype.on_message = function(event) {
  * Redraw the lines and axis due to changed data
  */
 Nengo.XYValue.prototype.update = function() {
+    var self = this;
+
     /** let the data store clear out old values */
     this.data_store.update();
 
-    /** update the lines */
-    var self = this;
-    var shown_data = this.data_store.get_shown_data();
-    var line = d3.svg.line()
-        .x(function(d, i) {
-            return self.axes2d.scale_x(
-                shown_data[self.index_x][i]);
-            })
-        .y(function(d) {return self.axes2d.scale_y(d);})
-    this.path.data([shown_data[this.index_y]])
-             .attr('d', line);
+    /** update the lines if there is data with valid dimensions */
+    if(this.data_store.data.length > 1){
+        var shown_data = this.data_store.get_shown_data();
+        var line = d3.svg.line()
+            .x(function(d, i) {
+                return self.axes2d.scale_x(
+                    shown_data[self.index_x][i]);
+                })
+            .y(function(d) {return self.axes2d.scale_y(d);})
+        this.path.data([shown_data[this.index_y]])
+                 .attr('d', line);
+
+        /** update the circle */
+        var last_index = shown_data[self.index_x].length - 1;
+        this.recent_circle.attr('cx', self.axes2d.scale_x(shown_data[self.index_x][last_index]))
+                            .attr('cy', self.axes2d.scale_y(shown_data[self.index_y][last_index]));
+        if(this.invalid_dims === true){
+            // remove the label
+             while(this.warning_label.lastChild){
+                 this.warning_label.removeChild(this.warning_label.lastChild);
+             }
+            this.invalid_dims = false;
+        }
+    } else if(this.invalid_dims == false){
+        this.invalid_dims = true;
+
+        // add the label
+        // TODO: get rid of magic numbers... somehow
+        // probably need to figure out translation
+        this.warning_label.append("rect")
+          .attr("x", 32.5)
+          .attr("y", 30)
+          .attr("width", this.width)
+          .attr("height", this.height)
+          .attr("fill", "yellow")
+          .attr("fill-opacity", 0.4);
+        // TODO: fix text alignment
+        this.warning_label.append("text")
+          .attr("x", this.width/2)
+          .attr("y", this.height/2)
+          .attr("text-anchor", "middle")
+          .attr("alignment-baseline", "middle")
+          .style("fill", "red")
+          .append("tspan")
+            .attr("dy", -12)
+            .text("INVALID")
+          .append("tspan")
+            .attr("dy", 12)
+            .text("DIMENSIONS");
+    }
+
 };
 
 /**
@@ -102,7 +153,19 @@ Nengo.XYValue.prototype.on_resize = function(width, height) {
     this.height = height;
     this.div.style.width = width;
     this.div.style.height = height;
+    this.recent_circle.attr("r", this.get_circle_radius());
+
+    this.warning_label.select("rect")
+      .attr("width", width - 60)
+      .attr("height", height - 60);
+    this.warning_label.selectAll("text")
+      .attr("x", width/2)
+      .attr("y", this.height/2);
 };
+
+Nengo.XYValue.prototype.get_circle_radius = function() {
+    return Math.min(this.width, this.height) / 30;
+}
 
 Nengo.XYValue.prototype.generate_menu = function() {
     var self = this;
