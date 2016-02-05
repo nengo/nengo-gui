@@ -45,6 +45,9 @@ Nengo.Toolbar = function(filename) {
     $('#Config_button')[0].addEventListener('click', function () {
         self.config_modal();
     });
+    $('#Sync_editor_button')[0].addEventListener('click', function () {
+        Nengo.ace.update_trigger = true;
+    });
     $('#Help_button')[0].addEventListener('click', function () {
         Nengo.hotkeys.callMenu();
     });
@@ -106,6 +109,7 @@ Nengo.Toolbar.prototype.config_modal_show = function() {
     var options = {zoom: Nengo.netgraph.zoom_fonts,
                    font_size: Nengo.netgraph.font_size,
                    aspect_resize: Nengo.netgraph.aspect_resize,
+                   sync_editor: Nengo.ace.auto_update,
                    transparent_nets: Nengo.netgraph.transparent_nets};
 
     Nengo.modal.title('Configure Options');
