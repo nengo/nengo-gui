@@ -165,15 +165,15 @@ Nengo.Modal.prototype.main_config = function(options) {
         '<div class="checkbox">' +
           '<label for="zoom-fonts" class="control-label">' +
             '<input type="checkbox" id="zoom-fonts">' +
-            'Allow fonts to zoom' +
+            'Scale text when zooming' +
           '</label>' +
           '<div class="help-block with-errors"></div>' +
         '</div>' +
       '</div>' +
       '<div class="form-group">' +
         '<div class="checkbox">' +
-          '<label for="fixed-resize" class="control-label">' +
-            '<input type="checkbox" id="fixed-resize">' +
+          '<label for="aspect-resize" class="control-label">' +
+            '<input type="checkbox" id="aspect-resize">' +
             'Fix aspect ratio of elements on canvas resize' +
           '</label>' +
           '<div class="help-block with-errors"></div>' +
@@ -205,7 +205,10 @@ Nengo.Modal.prototype.main_config = function(options) {
         Nengo.netgraph.set_zoom_fonts($('#zoom-fonts').prop('checked'));
     });
 
-    $('#fixed-resize').prop('checked', options["aspect_resize"]);
+    $('#aspect-resize').prop('checked', Nengo.netgraph.aspect_resize);
+    $('#aspect-resize').change(function () {
+        Nengo.netgraph.aspect_resize = $('#aspect-resize').prop('checked');
+    });
 
     $('#config-fontsize').val(options["font_size"]);
 
