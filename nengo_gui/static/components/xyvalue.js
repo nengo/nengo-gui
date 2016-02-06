@@ -54,10 +54,9 @@ Nengo.XYValue = function(parent, sim, args) {
                                         .attr("r", this.get_circle_radius())
                                         .attr('cx', this.axes2d.scale_x(0))
                                         .attr('cy', this.axes2d.scale_y(0))
-                                        .style("fill", Nengo.make_colors(2)[1])
+                                        .style("fill", Nengo.make_colors(1)[0])
                                         .style('fill-opacity', 0);
 
-    this.warning_label = this.axes2d.svg.append("g");
     this.invalid_dims = false;
 
     this.axes2d.fit_ticks(this);
@@ -86,7 +85,7 @@ Nengo.XYValue.prototype.update = function() {
 
     /** update the lines if there is data with valid dimensions */
     var good_idx = self.index_x < self.n_lines && self.index_y < self.n_lines
-    if (this.data_store.data.length > 1 && good_idx) {
+    if (good_idx) {
         var shown_data = this.data_store.get_shown_data();
 
         /** update the lines */
@@ -105,34 +104,24 @@ Nengo.XYValue.prototype.update = function() {
             /** update the circle if there is valid data */
             this.recent_circle.attr('cx', self.axes2d.scale_x(shown_data[self.index_x][last_index]))
                             .attr('cy', self.axes2d.scale_y(shown_data[self.index_y][last_index]))
-                            .style('fill-opacity', 1);
+                            .style('fill-opacity', 0.5);
         }
 
         /** if switching from invalids dimensions to valid dimensions, remove
         the label */
         if (this.invalid_dims === true) {
             this.div.removeChild(this.warning_text);
-            this.warning_label.remove("rect");
             this.invalid_dims = false;
         }
 
     } else if (this.invalid_dims == false) {
         this.invalid_dims = true;
 
-        // add the label
-        this.warning_label.append("rect")
-          .attr("x", 50)
-          .attr("y", 50)
-          .attr("fill", "white")
-          .attr("stroke-width", 1)
-          .attr("stroke", "rgb(0,0,0)")
-          .attr("fill-opacity", 1);
-
         // create the HTML text element
         this.warning_text = document.createElement('div');
         this.div.appendChild(this.warning_text);
+        this.warning_text.className = "warning-text";
         this.warning_text.innerHTML = "Change<br>Dimension<br>Indices";
-        this.warning_text.style = "color:#a94442; position: absolute; text-align: center; margin-left: auto; margin-right: auto; width:100%; top:37%; display:box; box-align:center; box-pack:center;"
     }
 
 };
@@ -151,13 +140,6 @@ Nengo.XYValue.prototype.on_resize = function(width, height) {
     this.div.style.width = width;
     this.div.style.height = height;
     this.recent_circle.attr("r", this.get_circle_radius());
-
-    this.warning_label.select("rect")
-      .attr("width", width - 100)
-      .attr("height", height - 100);
-    this.warning_label.selectAll("text")
-      .attr("x", width/3)
-      .attr("y", height/3);
 };
 
 Nengo.XYValue.prototype.get_circle_radius = function() {
