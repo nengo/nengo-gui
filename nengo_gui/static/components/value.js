@@ -19,7 +19,6 @@ Nengo.Value = function(parent, sim, args) {
     Nengo.Component.call(this, parent, args);
     var self = this;
     this.n_lines = args.n_lines || 1;
-    console.log(this.n_lines);
     this.sim = sim;
     this.display_time = args.display_time;
 
