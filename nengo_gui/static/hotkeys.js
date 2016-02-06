@@ -71,7 +71,6 @@ Nengo.Hotkeys = function () {
             // toggle auto-updating with TODO: pick a good shortcut
             if (ctrl && ev.shiftKey && key == '1') {
                 Nengo.ace.auto_update = !Nengo.ace.auto_update;
-                Nengo.ace.update_trigger = Nengo.ace.auto_update;
                 ev.preventDefault();
             }
             // trigger a single update with TODO: pick a good shortcut
