@@ -232,6 +232,14 @@ Nengo.Modal.prototype.main_config = function() {
           '<div class="help-block with-errors"></div>' +
         '</div>' +
       '</div>' +
+      '<div class="form-group" id="config-scriptdir-group">' +
+        '<label for="config-scriptdir" class="control-label">' +
+          'Script directory</label>' +
+        '<input type="text" id="config-scriptdir" class="form-control" ' +
+          'placeholder="Current directory"/>' +
+        '<span class="help-block with-errors">Enter a full absolute path ' +
+          'or leave blank to use the current directory.</span>' +
+      '</div>' +
       '<div class="form-group">' +
         '<label for="config-backend" class="control-label">' +
             'Select backend' +
@@ -255,8 +263,6 @@ Nengo.Modal.prototype.main_config = function() {
         Nengo.netgraph.aspect_resize = $('#aspect-resize').prop('checked');
     });
 
-    $('#config-fontsize').val(Nengo.netgraph.font_size);
-
     $('#transparent-nets').prop('checked', Nengo.netgraph.transparent_nets);
     $('#transparent-nets').change(function () {
         Nengo.netgraph.transparent_nets = $('#transparent-nets').prop('checked');
@@ -268,22 +274,35 @@ Nengo.Modal.prototype.main_config = function() {
         Nengo.ace.update_trigger = $('#sync-editor').prop('checked');
     });
 
+    $('#config-fontsize').val(Nengo.netgraph.font_size);
     $('#config-fontsize').bind('keyup input', function () {
         Nengo.netgraph.font_size = parseInt($('#config-fontsize').val());
     });
     $('#config-fontsize').attr('data-my_validator', 'custom');
+
+    var sd = Nengo.config.scriptdir;
+    if (sd === ".") { sd = ''; }
+    $('#config-scriptdir').val(sd);
+    $('#config-scriptdir').bind('keyup input', function () {
+        var sd = $('#config-scriptdir').val();
+        if (!sd) { sd = '.'; }
+        Nengo.config.scriptdir = sd;
+    });
 
     $('#config-backend').change(function () {
         sim.set_backend($('#config-backend').val());
     });
 
     //Allow the enter key to submit
-    $("#config-fontsize").keypress(function(event) {
+    submit = function(event) {
         if (event.which == 13) {
             event.preventDefault();
             $('#OK').click();
         }
-    });
+    };
+    $("#config-fontsize").keypress(submit);
+    $("#config-scriptdir").keypress(submit);
+
 }
 
 /**

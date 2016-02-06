@@ -77,8 +77,8 @@ Nengo.Toolbar.prototype.file_browser = function () {
     fb.toggle(200);
     if (fb.is(":visible")) {
         fb.fileTree({
-            root: '.',
-            script: '/browse'
+            root: Nengo.config.scriptdir,
+            script: '/browse?root=' + Nengo.config.scriptdir
         },
         function (file) {
             window.location.assign('/?filename=' + file);
@@ -114,7 +114,8 @@ Nengo.Toolbar.prototype.config_modal_show = function() {
                     font_size: Nengo.netgraph.font_size,
                     aspect_resize: Nengo.netgraph.aspect_resize,
                     sync_editor: Nengo.ace.auto_update,
-                    transparent_nets: Nengo.netgraph.transparent_nets};
+                    transparent_nets: Nengo.netgraph.transparent_nets,
+                    scriptdir: Nengo.config.scriptdir};
 
     Nengo.modal.title('Configure Options');
     Nengo.modal.main_config();
@@ -136,6 +137,7 @@ Nengo.Toolbar.prototype.config_modal_show = function() {
             Nengo.netgraph.transparent_nets = original["transparent_nets"];
             Nengo.netgraph.aspect_resize = original["aspect_resize"];
             Nengo.ace.auto_update = original["auto_update"];
+            Nengo.config.scriptdir = original["scriptdir"];
             $('#cancel-button').attr('data-dismiss', 'modal');
     });
 

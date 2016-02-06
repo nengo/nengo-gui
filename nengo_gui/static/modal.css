@@ -106,7 +106,7 @@ div.modal {
     cursor: default !important;
 }
 
-#config-fontsize.form-control {
+#config-fontsize.form-control, #config-scriptdir.form-control {
     padding: 6px 6px;
     height: 35px;
 }
