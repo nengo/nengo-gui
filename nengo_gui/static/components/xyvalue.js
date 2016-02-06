@@ -86,7 +86,7 @@ Nengo.XYValue.prototype.update = function() {
 
     /** update the lines if there is data with valid dimensions */
     var good_idx = self.index_x < self.n_lines && self.index_y < self.n_lines
-    if(this.data_store.data.length > 1 && good_idx){
+    if (this.data_store.data.length > 1 && good_idx) {
         var shown_data = this.data_store.get_shown_data();
 
         /** update the lines */
@@ -110,14 +110,13 @@ Nengo.XYValue.prototype.update = function() {
 
         /** if switching from invalids dimensions to valid dimensions, remove
         the label */
-        if(this.invalid_dims === true){
-             while(this.warning_label.lastChild){
-                 this.warning_label.removeChild(this.warning_label.lastChild);
-             }
+        if (this.invalid_dims === true) {
+            this.div.removeChild(this.warning_text);
+            this.warning_label.remove("rect");
             this.invalid_dims = false;
         }
 
-    } else if(this.invalid_dims == false){
+    } else if (this.invalid_dims == false) {
         this.invalid_dims = true;
 
         // add the label
@@ -129,7 +128,11 @@ Nengo.XYValue.prototype.update = function() {
           .attr("stroke", "rgb(0,0,0)")
           .attr("fill-opacity", 1);
 
-        // TODO: Create HTML text element
+        // create the HTML text element
+        this.warning_text = document.createElement('div');
+        this.div.appendChild(this.warning_text);
+        this.warning_text.innerHTML = "Change<br>Dimension<br>Indices";
+        this.warning_text.style = "color:#a94442; position: absolute; text-align: center; margin-left: auto; margin-right: auto; width:100%; top:37%; display:box; box-align:center; box-pack:center;"
     }
 
 };
