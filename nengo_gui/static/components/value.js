@@ -64,17 +64,15 @@ Nengo.Value = function(parent, sim, args) {
     this.div.appendChild(this.legend);
 
     this.legend_labels = args.legend_labels || [];
-    if(this.legend_labels.length !== this.n_lines){
-        // fill up an array with temporary labels
-        for(i=0; i<this.n_lines; i++){
-            if(this.legend_labels[i] === undefined){
-                this.legend_labels[i] = "label_".concat(String(i));
-            }
+    if (this.legend_labels.length !== this.n_lines) {
+        // fill up the array with temporary labels
+        for (var i=this.legend_labels.length; i<this.n_lines; i++) {
+            this.legend_labels[i] = "label_" + i;
         }
     }
 
     this.show_legend = args.show_legend || false;
-    if(this.show_legend === true){
+    if (this.show_legend === true) {
         Nengo.draw_legend(this.legend, this.legend_labels, this.color_func);
     }
 };
@@ -167,13 +165,14 @@ Nengo.Value.prototype.set_show_legend = function(value){
     if (this.show_legend !== value) {
         this.show_legend = value;
         this.save_layout();
-    }
-    if (this.show_legend === true){
-        Nengo.draw_legend(this.legend, this.legend_labels, this.color_func);
-    } else {
-        // delete the legend's children
-        while(this.legend.lastChild){
-            this.legend.removeChild(this.legend.lastChild);
+
+        if (this.show_legend === true) {
+            Nengo.draw_legend(this.legend, this.legend_labels, this.color_func);
+        } else {
+            // delete the legend's children
+            while (this.legend.lastChild) {
+                this.legend.removeChild(this.legend.lastChild);
+            }
         }
     }
 }
@@ -197,14 +196,14 @@ Nengo.Value.prototype.set_legend_labels = function() {
         if ((label_csv !== null) && (label_csv !== '')) {
             labels = label_csv.split(',');
 
-            for(i=0; i<self.n_lines; i++){
-                if(labels[i] !== ""){
+            for (var i=0; i<self.n_lines; i++) {
+                if (labels[i] !== "") {
                      self.legend_labels[i] = labels[i];
                 }
             }
 
             // redraw the legend with the updated label values
-            while(self.legend.lastChild){
+            while (self.legend.lastChild) {
                 self.legend.removeChild(self.legend.lastChild);
             }
             Nengo.draw_legend(self.legend, self.legend_labels, self.color_func);
