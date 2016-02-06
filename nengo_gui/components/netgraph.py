@@ -487,6 +487,8 @@ class NetGraph(Component):
         for ens in network.ensembles:
             self.create_object(client, ens, type='ens', parent=parent)
         for node in network.nodes:
+            if node.output is None:
+                node._passthrough = True
             self.create_object(client, node, type='node', parent=parent)
         for net in network.networks:
             self.create_object(client, net, type='net', parent=parent)
@@ -527,7 +529,7 @@ class NetGraph(Component):
         '''
         info = {}
         if isinstance(obj, nengo.Node):
-            if obj.output is None:
+            if hasattr(obj, '_passthrough'):
                 info['passthrough'] = True
             if callable(obj.output) and hasattr(obj.output, '_nengo_html_'):
                 info['html'] = True

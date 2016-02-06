@@ -4,7 +4,6 @@ import collections
 
 from nengo_gui.components.component import Component
 
-
 class Slider(Component):
     """Input control component. Exclusively associated to Nodes"""
 
@@ -14,6 +13,8 @@ class Slider(Component):
     def __init__(self, node):
         super(Slider, self).__init__()
         self.node = node
+        if hasattr(node, '_passthrough'):
+            node.output = lambda t, x: x
         self.base_output = node.output
         self.override = [None] * node.size_out
         self.last_time = None
