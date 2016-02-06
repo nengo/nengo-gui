@@ -21,10 +21,16 @@ Nengo.Config = function(parent, args) {
         });
     };
 
+    // General options accessible through Configuration Options
     define_option("transparent_nets", false);
     define_option("aspect_resize", false);
     define_option("zoom_fonts", false);
     define_option("font_size", 100);
+
+    // Ace editor options
+    define_option("hide_editor", false);
+    define_option("editor_width", 580);
+    define_option("editor_font_size", 12);
 };
 
 Nengo.Config.prototype.restore_defaults = function() {
