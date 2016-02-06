@@ -319,27 +319,33 @@ Nengo.NetGraph.prototype.on_message = function(event) {
     } else if (data.type === 'expand') {
         var item = this.svg_objects[data.uid];
         item.expand(true,true)
-
-        var item_mini = this.minimap_objects[data.uid];
-        item_mini.expand(true,true)
+        
+        if (this.mm_display) {
+            var item_mini = this.minimap_objects[data.uid];
+            item_mini.expand(true,true)
+        }
 
     } else if (data.type === 'collapse') {
         var item = this.svg_objects[data.uid];
         item.collapse(true,true)
 
-        var item_mini = this.minimap_objects[data.uid];
-        item_mini.collapse(true,true)
+        if (this.mm_display) {
+            var item_mini = this.minimap_objects[data.uid];
+            item_mini.collapse(true,true)
+        }
 
     } else if (data.type === 'pos_size') {
         var item = this.svg_objects[data.uid];
         item.set_position(data.pos[0], data.pos[1]);
         item.set_size(data.size[0], data.size[1]);
 
-        var item = this.minimap_objects[data.uid];
-        item.set_position(data.pos[0], data.pos[1]);
-        item.set_size(data.size[0], data.size[1]);
-
-        this.scaleMiniMap();
+        if (this.mm_display) {
+            var item = this.minimap_objects[data.uid];
+            item.set_position(data.pos[0], data.pos[1]);
+            item.set_size(data.size[0], data.size[1]);
+        
+            this.scaleMiniMap();
+        }
 
     } else if (data.type === 'config') {
         // Anything about the config of a component has changed
@@ -363,11 +369,13 @@ Nengo.NetGraph.prototype.on_message = function(event) {
         }
         item.remove();
 
-        var item_mini = this.minimap_objects[data.uid];
-        if (item_mini === undefined) {
-            item_mini = this.minimap_conns[data.uid];
+        if (this.mm_display) {
+            var item_mini = this.minimap_objects[data.uid];
+            if (item_mini === undefined) {
+                item_mini = this.minimap_conns[data.uid];
+            }
+            item_mini.remove();
         }
-        item_mini.remove();
 
     } else if (data.type === 'reconnect') {
         var conn = this.svg_conns[data.uid];
@@ -376,10 +384,12 @@ Nengo.NetGraph.prototype.on_message = function(event) {
         conn.set_recurrent(data.pres[0] === data.posts[0]);
         conn.redraw();
 
-        var conn_mini = this.minimap_conns[data.uid];
-        conn_mini.set_pres(data.pres);
-        conn_mini.set_posts(data.posts);
-        conn_mini.redraw();
+        if (this.mm_display) {
+            var conn_mini = this.minimap_conns[data.uid];
+            conn_mini.set_pres(data.pres);
+            conn_mini.set_posts(data.posts);
+            conn_mini.redraw();
+        }
 
     } else if (data.type === 'delete_graph') {
         var uid = data.uid;
@@ -427,14 +437,18 @@ Nengo.NetGraph.prototype.redraw = function() {
         this.svg_objects[key].redraw_position();
         this.svg_objects[key].redraw_size();
 
-        this.minimap_objects[key].pos = this.svg_objects[key].pos
-        this.minimap_objects[key].size = this.svg_objects[key].size
-        this.minimap_objects[key].redraw_position();
-        this.minimap_objects[key].redraw_size();
+        if (this.mm_display) {
+            this.minimap_objects[key].pos = this.svg_objects[key].pos
+            this.minimap_objects[key].size = this.svg_objects[key].size
+            this.minimap_objects[key].redraw_position();
+            this.minimap_objects[key].redraw_size();
+        }
     }
     for (var key in this.svg_conns) {
         this.svg_conns[key].redraw();
-        this.minimap_conns[key].redraw();
+        if (this.mm_display) {
+            this.minimap_conns[key].redraw();
+        }
     }
 }
 
@@ -519,11 +533,13 @@ Nengo.NetGraph.prototype.toggle_network = function(uid) {
         item.expand();
     }
 
-    var item_mini = this.minimap_objects[uid];
-    if (item_mini.expanded) {
-        item_mini.collapse(true);
-    } else {
-        item_mini.expand();
+    if (this.mm_display) {
+        var item_mini = this.minimap_objects[uid];
+        if (item_mini.expanded) {
+            item_mini.collapse(true);
+        } else {
+            item_mini.expand();
+        }
     }
 }
 

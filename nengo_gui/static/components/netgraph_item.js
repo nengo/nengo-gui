@@ -745,10 +745,11 @@ Nengo.NetGraphItem.prototype.redraw_size = function() {
 };
 
 Nengo.NetGraphItem.prototype.get_width = function() {
+    if (this.minimap && !this.ng.mm_display) { return 1; }
+    
     if (this.fixed_width !== null) {
         return this.fixed_width;
     }
-
 
     if (this.minimap == false) {
         var w = $(this.ng.svg).width();
@@ -766,6 +767,8 @@ Nengo.NetGraphItem.prototype.get_width = function() {
 }
 
 Nengo.NetGraphItem.prototype.get_height = function() {
+    if (this.minimap && !this.ng.mm_display) { return 1; }
+    
     if (this.fixed_height !== null) {
         return this.fixed_height;
     }
@@ -796,6 +799,8 @@ Nengo.NetGraphItem.prototype.redraw = function() {
 /** determine the pixel location of the centre of the item */
 Nengo.NetGraphItem.prototype.get_screen_location = function() {
     // FIXME this should probably use this.ng.get_scaled_width and this.ng.get_scaled_height
+    if (this.minimap && !this.ng.mm_display) { return [1, 1]; }
+    
     if (this.minimap == false) {
         var w = $(this.ng.svg).width() * this.ng.scale;
         var h = $(this.ng.svg).height() * this.ng.scale;
