@@ -31,7 +31,7 @@ Nengo.Axes2D = function(parent, args) {
     this.axis_x = d3.svg.axis()
         .scale(this.scale_x)
         .orient("bottom")
-        this.axis_x.ticks(2);
+        .ticks(2);
 
     this.axis_x_g = this.svg.append("g")
         .attr("class", "axis axis_x unselectable")
@@ -64,7 +64,7 @@ Nengo.Axes2D.prototype.set_axes_geometry = function(width, height) {
 /**
  * Adjust the graph layout due to changed size
  */
-Nengo.Axes2D.prototype.on_resize = function(width, height, x_offset, y_offset) {
+Nengo.Axes2D.prototype.on_resize = function(width, height) {
     if (width < this.minWidth) {
         width = this.minWidth;
     }

@@ -40,7 +40,7 @@ Nengo.TimeAxes.prototype.set_time_range = function(start, end) {
 };
 
 Nengo.TimeAxes.prototype.on_resize = function(width, height) {
-    Nengo.Axes2D.prototype.on_resize.call(this, width, height, this.ax_bottom, this.ax_left);
+    Nengo.Axes2D.prototype.on_resize.call(this, width, height);
 
     scale = parseFloat($('#main').css('font-size'));
     var suppression_width = 6 * scale;
