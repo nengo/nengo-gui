@@ -52,7 +52,7 @@ class AceEditor(Component):
 
     def javascript(self):
         args = json.dumps(dict(active=self.page.gui.interactive))
-        return 'ace_editor = new Nengo.Ace("%s", %s)' % (id(self), args)
+        return 'Nengo.ace = new Nengo.Ace("%s", %s)' % (id(self), args)
 
     def message(self, msg):
         if not self.page.gui.interactive:
