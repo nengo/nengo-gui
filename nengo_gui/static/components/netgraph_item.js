@@ -12,10 +12,8 @@
  */
 Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
     var self = this;
-
+    
     this.ng = ng;
-    this.pos = info.pos;
-    this.size = info.size;
     this.type = info.type;
     this.uid = info.uid;
     this.sp_targets = info.sp_targets;
@@ -34,7 +32,60 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
         this.g_networks = ng.g_networks_mini;
         this.g_items = ng.g_items_mini;
     }
-
+    
+    var width = info.size[0];
+    Object.defineProperty(this, 'width', {
+        get: function() {
+            return width;
+        },
+        set: function(val) {
+            width = val;
+            
+            if (!this.minimap) {
+                this.mini_item.width = val
+            }
+        }
+    });
+    var height = info.size[1];
+    Object.defineProperty(this, 'height', {
+        get: function() {
+            return height;
+        },
+        set: function(val) {
+            height = val;
+            
+            if (!this.minimap) {
+                this.mini_item.height = val
+            }
+        }
+    });
+    var x = info.pos[0];
+    Object.defineProperty(this, 'x', {
+        get: function() {
+            return x;
+        },
+        set: function(val) {
+            x = val;
+            
+            if (!this.minimap) {
+                this.mini_item.x = val
+            }
+        }
+    });
+    var y = info.pos[1];
+    Object.defineProperty(this, 'y', {
+        get: function() {
+            return y;
+        },
+        set: function(val) {
+            y = val;
+            
+            if (!this.minimap) {
+                this.mini_item.y = val
+            }
+        }
+    });
+    
     /** if this is a network, the children list is the set of NetGraphItems
      *  and NetGraphConnections that are inside this network */
     this.children = [];
@@ -107,15 +158,14 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
         g.appendChild(label);
     };
 
-    this.set_position(info.pos[0], info.pos[1]);
-    this.set_size(info.size[0], info.size[1]);
-
     g.appendChild(this.shape);
     g.appendChild(this.area);
 
+    this.redraw();
+    
     interact.margin(10);
 
-    if (this.minimap == false) {
+    if (!this.minimap) {
         // dragging an item to change its position
         var uid = this.uid;
         var ng = ng;
@@ -131,16 +181,13 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                     var item = ng.svg_objects[uid];
                     var parent = item.parent;
                     while (parent !== null) {
-                        w = w * parent.size[0] * 2;
-                        h = h * parent.size[1] * 2;
+                        w = w * parent.width * 2;
+                        h = h * parent.height * 2;
                         parent = parent.parent;
                     }
-                    item.set_position(item.pos[0] + event.dx / w,
-                                    item.pos[1] + event.dy / h);
-
-                    var item_mini = ng.minimap_objects[uid];
-                    item_mini.set_position(item.pos[0], item.pos[1])
-                    item_mini.set_size(item.size[0], item.size[1]);
+                    item.x += event.dx / w;
+                    item.y += event.dy / h;
+                    item.redraw()
 
                     if (self.depth === 1) {
                         self.ng.scaleMiniMap();
@@ -149,11 +196,9 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                 onend: function(event) {
                     var item = ng.svg_objects[uid];
                     item.constrain_position();
-                    ng.notify({act:"pos", uid:uid, x:item.pos[0], y:item.pos[1]});
+                    ng.notify({act:"pos", uid:uid, x:item.x, y:item.y});
 
-                    var item_mini = ng.minimap_objects[uid];
-                    item_mini.set_position(item.pos[0], item.pos[1])
-                    item_mini.set_size(item.size[0], item.size[1]);
+                    item.redraw();
                 }});
 
         if (!this.passthrough) {
@@ -177,8 +222,8 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                     var v_scale = ng.get_scaled_height();
                     var parent = item.parent;
                     while (parent !== null) {
-                        h_scale = h_scale * parent.size[0] * 2;
-                        v_scale = v_scale * parent.size[1] * 2;
+                        h_scale = h_scale * parent.width * 2;
+                        v_scale = v_scale * parent.height * 2;
                         parent = parent.parent;
                     }
 
@@ -204,8 +249,8 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                             h = 1;
                         }
 
-                        var screen_w = item.size[0] * h_scale;
-                        var screen_h = item.size[1] * v_scale;
+                        var screen_w = item.width * h_scale;
+                        var screen_h = item.height * v_scale;
 
                         if (horizontal_resize && vertical_resize) {
                             var p = (screen_w * w + screen_h * h) / Math.sqrt(
@@ -222,22 +267,22 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                         var scaled_w = w / h_scale;
                         var scaled_h = h / v_scale;
 
-                        item.set_size(scaled_w, scaled_h);
+                        item.width = scaled_w;
+                        item.height = scaled_h;
                     } else {
                         var dw = event.deltaRect.width / h_scale / 2;
                         var dh = event.deltaRect.height / v_scale / 2;
                         var offset_x = dw + event.deltaRect.left / h_scale;
                         var offset_y = dh + event.deltaRect.top / v_scale;
 
-                        item.set_size(item.size[0] + dw, item.size[1] + dh);
-                        item.set_position(item.pos[0] + offset_x,
-                                        item.pos[1] + offset_y);
+                        item.width += dw;
+                        item.height += dh;
+                        item.x += offset_x;
+                        item.y += offset_y;
                     }
 
-                    var item_mini = ng.minimap_objects[uid];
-                    item_mini.set_position(item.pos[0], item.pos[1])
-                    item_mini.set_size(item.size[0], item.size[1]);
-
+                    item.redraw();
+                    
                     if (self.depth === 1) {
                         self.ng.scaleMiniMap();
                     }
@@ -245,13 +290,10 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                 .on('resizeend', function(event) {
                     var item = ng.svg_objects[uid];
                     item.constrain_position();
+                    item.redraw();
                     ng.notify({act:"pos_size", uid:uid,
-                            x:item.pos[0], y:item.pos[1],
-                            width:item.size[0], height:item.size[1]});
-
-                    var item_mini = ng.minimap_objects[uid];
-                    item_mini.set_position(item.pos[0], item.pos[1])
-                    item_mini.set_size(item.size[0], item.size[1]);
+                            x:item.x, y:item.y,
+                            width:item.width, height:item.height});
                     });
         }
 
@@ -422,7 +464,7 @@ Nengo.NetGraphItem.prototype.expand = function(rts, auto) {
         }
         this.g_items.removeChild(this.g);
         this.g_networks.appendChild(this.g);
-        if (this.minimap == false) {
+        if (!this.minimap) {
             this.mini_item.expand(rts, auto);
         }
     } else {
@@ -442,7 +484,7 @@ Nengo.NetGraphItem.prototype.expand = function(rts, auto) {
 
 Nengo.NetGraphItem.prototype.set_label_below = function(flag) {
     if (flag && !this.label_below) {
-        var screen_h = this.get_height();
+        var screen_h = this.get_screen_height();
         this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
     } else if (!flag && this.label_below) {
         this.label.setAttribute('transform', '');
@@ -470,7 +512,7 @@ Nengo.NetGraphItem.prototype.collapse = function(report_to_server, auto) {
         }
         this.g_networks.removeChild(this.g);
         this.g_items.appendChild(this.g);
-        if (this.minimap == false) {
+        if (!this.minimap) {
             this.mini_item.collapse(report_to_server, auto);
         }
     } else {
@@ -534,7 +576,7 @@ Nengo.NetGraphItem.prototype.remove = function() {
 
     // remove from the SVG
     this.g_items.removeChild(this.g);
-    if (this.minimap == true && this.depth == 1) {
+    if (this.depth == 1) {
         this.ng.scaleMiniMap();
     }
 };
@@ -547,15 +589,8 @@ Nengo.NetGraphItem.prototype.get_displayed_size = function() {
     if (this.aspect !== null) {
         var h_scale = this.ng.get_scaled_width();
         var v_scale = this.ng.get_scaled_height();
-        var parent = this.parent;
-        while (parent !== null) {
-            h_scale = h_scale * parent.size[0] * 2;
-            v_scale = v_scale * parent.size[1] * 2;
-            parent = parent.parent;
-        }
-
-        var w = this.size[0] * h_scale;
-        var h = this.size[1] * v_scale;
+    	var w = this.get_nested_width() * h_scale;
+    	var v = this.get_nested_height() * v_scale;
 
         if (h * this.aspect < w) {
             w = h * this.aspect;
@@ -565,65 +600,23 @@ Nengo.NetGraphItem.prototype.get_displayed_size = function() {
 
         return [w / h_scale, h / v_scale];
     } else {
-        return this.size;
+        return [this.width, this.height];
     }
 };
 
 Nengo.NetGraphItem.prototype.constrain_position = function() {
     this.constrain_aspect();
 
-    var changed = false;
     if (this.parent !== null) {
-        var w = this.size[0];
-        var h = this.size[1];
-
-        if (this.size[0] > 0.5) {
-            this.size[0] = 0.5;
-            changed = true;
-        }
-
-        if (this.size[1] > 0.5) {
-            this.size[1] = 0.5;
-            changed = true;
-        }
-
-        if (this.pos[0] + this.size[0] > 1.0) {
-            this.pos[0] = 1.0 - this.size[0];
-            changed = true;
-        } else if (this.pos[0] - this.size[0] < 0.0) {
-            this.pos[0] = this.size[0];
-            changed = true;
-        }
-        if (this.pos[1] + this.size[1] > 1.0) {
-            this.pos[1] = 1.0 - this.size[1];
-            changed = true;
-        } else if (this.pos[1] - this.size[1] < 0.0) {
-            this.pos[1] = this.size[1];
-            changed = true;
-        }
+        this.width = Math.max(0.5, this.width);
+        this.height = Math.max(0.5, this.height);
+        
+        this.x = Math.min(this.x, 1.0-this.width);
+        this.x = Math.max(this.x, this.width);
+        
+        this.y = Math.min(this.y, 1.0-this.height);
+        this.y = Math.max(this.y, this.height);
     }
-
-    if (changed) {
-        this.redraw_position();
-        this.redraw_size();
-
-        this.redraw_children();
-        this.redraw_child_connections();
-        this.redraw_connections();
-    }
-};
-
-
-/** set the position of the item and redraw it appropriately */
-Nengo.NetGraphItem.prototype.set_position = function(x, y) {
-
-    this.pos = [x, y];
-
-    this.redraw_position();
-
-    this.redraw_children();
-    this.redraw_child_connections();
-    this.redraw_connections();
 };
 
 Nengo.NetGraphItem.prototype.redraw_position = function() {
@@ -665,10 +658,10 @@ Nengo.NetGraphItem.prototype.redraw_connections = function() {
 
 /** return the width of the item, taking into account parent widths */
 Nengo.NetGraphItem.prototype.get_nested_width = function() {
-    var w = this.size[0];
+    var w = this.width;
     var parent = this.parent;
     while (parent !== null) {
-        w *= parent.size[0] * 2;
+        w *= parent.width * 2;
         parent = parent.parent;
     }
     return w;
@@ -676,30 +669,18 @@ Nengo.NetGraphItem.prototype.get_nested_width = function() {
 
 /** return the height of the item, taking into account parent heights */
 Nengo.NetGraphItem.prototype.get_nested_height = function() {
-    var h = this.size[1];
+    var h = this.height;
     var parent = this.parent;
     while (parent !== null) {
-        h *= parent.size[1] * 2;
+        h *= parent.height * 2;
         parent = parent.parent;
     }
     return h;
 }
 
-
-/** set the size of the item, updating SVG as appropriate */
-Nengo.NetGraphItem.prototype.set_size = function(width, height) {
-    this.size = [width, height];
-
-    this.redraw_size();
-
-    this.redraw_children();
-    this.redraw_child_connections();
-    this.redraw_connections();
-};
-
 Nengo.NetGraphItem.prototype.redraw_size = function() {
-    var screen_w = this.get_width();
-    var screen_h = this.get_height();
+    var screen_w = this.get_screen_width();
+    var screen_h = this.get_screen_height();
 
     if (this.aspect !== null) {
         if (screen_h * this.aspect < screen_w) {
@@ -738,19 +719,19 @@ Nengo.NetGraphItem.prototype.redraw_size = function() {
         }
     }
 
-    if (this.minimap == false) {
+    if (!this.minimap) {
         this.label.setAttribute('transform', 'translate(0, ' + (screen_h / 2) + ')');
     };
 };
 
-Nengo.NetGraphItem.prototype.get_width = function() {
+Nengo.NetGraphItem.prototype.get_screen_width = function() {
     if (this.minimap && !this.ng.mm_display) { return 1; }
     
     if (this.fixed_width !== null) {
         return this.fixed_width;
     }
 
-    if (this.minimap == false) {
+    if (!this.minimap) {
         var w = this.ng.width;
         var screen_w = this.get_nested_width() * w * this.ng.scale;
     } else {
@@ -765,7 +746,7 @@ Nengo.NetGraphItem.prototype.get_width = function() {
     return screen_w * 2;
 }
 
-Nengo.NetGraphItem.prototype.get_height = function() {
+Nengo.NetGraphItem.prototype.get_screen_height = function() {
     if (this.minimap && !this.ng.mm_display) { return 1; }
     
     if (this.fixed_height !== null) {
@@ -790,8 +771,15 @@ Nengo.NetGraphItem.prototype.get_height = function() {
 
 /** force a redraw of the item */
 Nengo.NetGraphItem.prototype.redraw = function() {
-    this.set_position(this.pos[0], this.pos[1]);
-    this.set_size(this.size[0], this.size[1]);
+    this.redraw_position();
+    this.redraw_size();
+    this.redraw_children();
+    this.redraw_child_connections();
+    this.redraw_connections();
+    
+    if (!this.minimap && this.ng.mm_display) { 
+        this.mini_item.redraw() 
+    }
 }
 
 
@@ -824,11 +812,11 @@ Nengo.NetGraphItem.prototype.get_screen_location = function() {
     var dy = 0;
     var parent = this.parent;
     while (parent !== null) {
-        dx *= parent.size[0] * 2;
-        dy *= parent.size[1] * 2;
+        dx *= parent.width * 2;
+        dy *= parent.height * 2;
 
-        dx += (parent.pos[0] - parent.size[0]);
-        dy += (parent.pos[1] - parent.size[1]);
+        dx += (parent.x - parent.width);
+        dy += (parent.y - parent.height);
         parent = parent.parent;
     }
     dx *= w;
@@ -841,8 +829,8 @@ Nengo.NetGraphItem.prototype.get_screen_location = function() {
         hh *= this.parent.get_nested_height() * 2;
     }
 
-    return [this.pos[0] * ww + dx + offsetX,
-            this.pos[1] * hh + dy + offsetY];
+    return [this.x * ww + dx + offsetX,
+            this.y * hh + dy + offsetY];
 }
 
 /**Function for drawing ensemble svg*/
@@ -882,9 +870,9 @@ Nengo.NetGraphItem.prototype.setAttributes = function(el, attrs) {
 }
 
 Nengo.NetGraphItem.prototype.getMinMaxXY = function () {
-    min_x = this.pos[0] - this.size[0];
-    max_x = this.pos[0] + this.size[0];
-    min_y = this.pos[1] - this.size[1];
-    max_y = this.pos[1] + this.size[1];
+    min_x = this.x - this.width;
+    max_x = this.x + this.width;
+    min_y = this.y - this.height;
+    max_y = this.y + this.height;
     return [min_x, max_x, min_y, max_y];
 }

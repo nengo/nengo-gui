@@ -21,7 +21,7 @@ Nengo.NetGraphConnection = function(ng, info, minimap) {
     this.post = null;
 
     this.minimap = minimap;
-    if (minimap == false) {
+    if (!minimap) {
         this.g_conns = ng.g_conns;
         this.objects = ng.svg_objects;
     } else {
@@ -291,10 +291,10 @@ Nengo.NetGraphConnection.prototype.redraw = function() {
         var angle = Math.atan2(post_pos[1] - pre_pos[1], //angle between objects
                                                post_pos[0] - pre_pos[0]);
 
-        var w1 = this.pre.get_width();
-        var h1 = this.pre.get_height();
-        var w2 = this.post.get_width();
-        var h2 = this.post.get_height();
+        var w1 = this.pre.get_screen_width();
+        var h1 = this.pre.get_screen_height();
+        var w2 = this.post.get_screen_width();
+        var h2 = this.post.get_screen_height();
 
         a1 = Math.atan2(h1,w1);
         a2 = Math.atan2(h2,w2);
