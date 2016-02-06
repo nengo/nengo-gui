@@ -132,6 +132,7 @@ Nengo.Toolbar.prototype.config_modal_show = function() {
             Nengo.netgraph.font_size = original["font_size"];
             Nengo.netgraph.transparent_nets = original["transparent_nets"];
             Nengo.netgraph.aspect_resize = original["aspect_resize"];
+            Nengo.ace.auto_update = original["auto_update"];
             $('#cancel-button').attr('data-dismiss', 'modal');
     });
 
