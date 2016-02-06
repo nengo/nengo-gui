@@ -122,6 +122,7 @@ Nengo.Value = function(parent, sim, args) {
     this.div.appendChild(this.legend);
 
     this.legend_labels = args.legend_labels || [];
+    console.log(this.legend_labels);
     if (this.legend_labels.length !== this.n_lines) {
         // fill up the array with temporary labels
         for (var i=this.legend_labels.length; i<this.n_lines; i++) {
@@ -306,12 +307,13 @@ Nengo.Value.prototype.set_legend_labels = function() {
             while (self.legend.lastChild) {
                 self.legend.removeChild(self.legend.lastChild);
             }
+
             Nengo.draw_legend(self.legend, self.legend_labels, self.color_func);
+            self.save_layout();
         }
         $('#OK').attr('data-dismiss', 'modal');
     });
 
-    // TODO: Add button so that a person can easily return to default labels
     Nengo.modal.show();
 }
 
