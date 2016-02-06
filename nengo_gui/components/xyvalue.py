@@ -2,20 +2,25 @@ import struct
 import collections
 
 import nengo
-import numpy as np
 
 from nengo_gui.components.component import Component
 
 
 class XYValue(Component):
+    """Represents (at least) two dimensional values as co-ordinates on an
+    x-y plot."""
+
     config_defaults = dict(max_value=1, min_value=-1, index_x=0, index_y=1,
                            **Component.config_defaults)
+
     def __init__(self, obj):
         super(XYValue, self).__init__()
         self.obj = obj
         self.data = collections.deque()
         self.n_lines = int(obj.size_out)
         self.struct = struct.Struct('<%df' % (1 + self.n_lines))
+        self.node = None
+        self.conn = None
 
     def attach(self, page, config, uid):
         super(XYValue, self).attach(page, config, uid)

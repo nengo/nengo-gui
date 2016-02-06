@@ -31,6 +31,7 @@ class Config(nengo.Config):
     def dumps(self, uids):
         lines = []
         for obj, uid in sorted(uids.items(), key=lambda x: x[1]):
+
             if isinstance(obj, (nengo.Ensemble, nengo.Node, nengo.Network)):
                 if self[obj].pos is not None:
                     lines.append('_viz_config[%s].pos=%s' % (uid,
@@ -43,15 +44,27 @@ class Config(nengo.Config):
                                  % (uid, self[obj].expanded))
                     lines.append('_viz_config[%s].has_layout=%s'
                                  % (uid, self[obj].has_layout))
+
             elif isinstance(obj, nengo_gui.components.component.Component):
                 lines.append('%s = %s' % (uid, obj.code_python(uids)))
                 for k in obj.config_defaults.keys():
                     v = getattr(self[obj], k)
-                    if(isinstance(v, bool) or isinstance(v, list)
-                        or isinstance(v, dict)):
-                        val = '%s' % v
-                    else:
-                        val = '%g' % v
+                    val = repr(v)
+
+                    try:
+                        recovered_v = eval(val, {})
+                    except:
+                        raise ValueError("Cannot save %s to config. Only "
+                                         "values that can be successfully "
+                                         "evaluated are allowed." % (val))
+
+                    if recovered_v != v:
+                        raise ValueError("Cannot save %s to config, recovery "
+                                         "failed. Only "
+                                         "values that can be recovered after "
+                                         "being entered into the config file " 
+                                         "can be saved." % (val))
+
                     lines.append('_viz_config[%s].%s = %s' % (uid, k, val))
 
         return '\n'.join(lines)

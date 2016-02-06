@@ -41,14 +41,19 @@ class Page(object):
         self.code = None     # the code for the model
         self.model = None    # the nengo.Network
         self.locals = None   # the locals() dictionary after executing
+        self.last_good_locals = None # the locals dict for the last time
+                                     # this script was run without errors
         self.error = None    # any error message generated
         self.stdout = ''     # text sent to stdout during execution
 
         self.changed = False   # has the model been changed?
-        self.paused = False    # is the simulation paused
         self.finished = False  # should this Page be shut down
         self._sim = None       # the current nengo.Simulator
         self.rebuild = False   # should the model be rebuilt
+
+        self.code = None       # the source code currently displayed
+        self.error = None      # any execute or build error
+        self.stdout = ''       # text printed during execute+build
 
         self.undo_stack = []
         self.redo_stack = []
@@ -71,7 +76,12 @@ class Page(object):
         if filename is None:
             self.filename = gui.filename
         else:
-            self.filename = os.path.relpath(filename)
+            try:
+                self.filename = os.path.relpath(filename)
+            except ValueError:
+                # happens on Windows if filename is on a different
+                # drive than the current directory
+                self.filename = filename
 
         # determine the .cfg filename
         if gui.filename_cfg is None:
@@ -157,11 +167,11 @@ class Page(object):
         #TODO: change the name of this
         self.components = []
         self.component_uids = {}
-        for k, v in self.locals.items():
-            if isinstance(v, nengo_gui.components.Component):
-                self.component_uids[v] = k
-                self.gui.component_uids[id(v)] = v
-                self.components.append(v)
+        for name, obj in self.locals.items():
+            if isinstance(obj, nengo_gui.components.Component):
+                self.component_uids[obj] = name
+                self.gui.component_uids[id(obj)] = obj
+                self.components.append(obj)
 
         # this ensures NetGraph, AceEditor, and SimControl are first
         self.components.sort(key=lambda x: x.component_order)
@@ -179,9 +189,9 @@ class Page(object):
         The code will be stored in self.code, any output to stdout will
         be a string as self.stdout, and any error will be in self.error.
         """
-        locals = {}
-        locals['nengo_gui'] = nengo_gui
-        locals['__file__'] = self.filename
+        code_locals = {}
+        code_locals['nengo_gui'] = nengo_gui
+        code_locals['__file__'] = self.filename
 
         self.code = code
         self.error = None
@@ -190,7 +200,7 @@ class Page(object):
         exec_env = nengo_gui.exec_env.ExecutionEnvironment(self.filename)
         try:
             with exec_env:
-                exec(code, locals)
+                exec(code, code_locals)
         except nengo_gui.exec_env.StartedSimulatorException:
             line = nengo_gui.exec_env.determine_line_number()
             exec_env.stdout.write('Warning: Simulators cannot be manually'
@@ -205,7 +215,7 @@ class Page(object):
         self.stdout = exec_env.stdout.getvalue()
 
         # make sure we've defined a nengo.Network
-        model = locals.get('model', None)
+        model = code_locals.get('model', None)
         if not isinstance(model, nengo.Network):
             if self.error is None:
                 line = len(code.split('\n'))
@@ -214,7 +224,9 @@ class Page(object):
             model = None
 
         self.model = model
-        self.locals = locals
+        self.locals = code_locals
+        if self.error is None:
+            self.last_good_locals = code_locals
 
     def load_config(self):
         """Load the .cfg file"""

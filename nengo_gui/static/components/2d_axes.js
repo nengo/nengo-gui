@@ -2,6 +2,7 @@
  * Basic 2d axes set.
  * @constructor
  *
+ * @param {DOMElement} parent - the element to add this component to
  * @param {float} args.width - the width of the axes (in pixels)
  * @param {float} args.height - the height of the axes (in pixels)
  * @param {bool} args.center_x_axis - should the x-axis be in the middle

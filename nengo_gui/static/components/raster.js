@@ -2,9 +2,10 @@
  * Raster plot showing spike events over time
  * @constructor
  *
+ * @param {DOMElement} parent - the element to add this component to
+ * @param {Nengo.SimControl} sim - the simulation controller
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
  * @param {int} args.n_neurons - number of neurons
- * @param {Nengo.SimControl} args.sim - the simulation controller
  *
  * Raster constructor is called by python server when a user requests a plot 
  * or when the config file is making graphs. Server request is handled in 

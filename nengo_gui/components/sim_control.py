@@ -1,18 +1,23 @@
 import time
+import timeit
 import struct
-import traceback
 
 import numpy as np
 import nengo
-import os
-import os.path
 import json
 
 from nengo_gui.components.component import Component
 import nengo_gui.exec_env
 
+
 class SimControl(Component):
+    """Controls simulation via control node embedded in the neural model.
+
+    Also instantiates and communicates with the SimControl and the Toolbar
+    on the JavaScript side, which includes the task of back-end selection."""
+
     config_defaults = dict(shown_time=0.5, kept_time=4.0)
+
     def __init__(self, dt=0.001):
         # this component must be the very first one defined, so
         # its component_order is the smallest overall
@@ -30,12 +35,12 @@ class SimControl(Component):
         self.next_ping_time = None
         self.send_config_options = False
         self.reset_inform = False
+        self.node = None
 
     def attach(self, page, config, uid):
         super(SimControl, self).attach(page, config, uid)
         self.shown_time = config.shown_time
         self.kept_time = config.kept_time
-
 
     def add_nengo_objects(self, page):
         with page.model:
@@ -48,16 +53,22 @@ class SimControl(Component):
         self.page.finish()
 
     def control(self, t):
+        """Node embedded in the model to control simulation progression.
+
+        Sleeps while the simulation is paused.
+        """
+
+        self.actual_model_dt = t - self.time
         self.time = t
         self.sim_ticks += 1
 
-        now = time.time()
+        now = timeit.default_timer()
         if self.last_tick is not None:
             dt = now - self.last_tick
             if dt == 0:
                 self.skipped += 1
             else:
-                rate = self.model_dt * self.skipped / dt
+                rate = self.actual_model_dt * self.skipped / dt
                 decay = np.exp(-dt / self.rate_tau)
                 self.rate *= decay
                 self.rate += (1 - decay) * rate
@@ -65,6 +76,8 @@ class SimControl(Component):
 
         self.last_tick = now
 
+        # Sleeps to prevent the simulation from advancing
+        # while the simulation is paused
         while self.paused and self.page.sim is not None:
             time.sleep(0.01)
             self.last_tick = None
@@ -91,10 +104,10 @@ class SimControl(Component):
         if status != self.last_status:
             client.write('status:%s' % status)
             self.last_status = status
-        if self.send_config_options == True:
+        if self.send_config_options:
             client.write('sims:' + self.backend_options_html())
             client.write('config' +
-                'Nengo.Toolbar.prototype.config_modal_show();')
+                         'Nengo.Toolbar.prototype.config_modal_show();')
             self.send_config_options = False
 
     def get_status(self):

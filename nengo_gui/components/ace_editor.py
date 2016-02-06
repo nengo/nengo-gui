@@ -1,12 +1,13 @@
 import json
 
-import nengo
-
 from nengo_gui.components.component import Component
 import nengo_gui.exec_env
 
+
 class AceEditor(Component):
+
     config_defaults = {}
+
     def __init__(self):
         # the IPython integration requires this component to be early
         # in the list
@@ -44,14 +45,14 @@ class AceEditor(Component):
                 else:
                     short_msg = error['trace']
             client.write(json.dumps({'error': error,
-                                     'short_msg':short_msg,
-                                     'stdout':stdout}))
+                                     'short_msg': short_msg,
+                                     'stdout': stdout}))
             self.last_error = error
             self.last_stdout = stdout
 
     def javascript(self):
         args = json.dumps(dict(active=self.page.gui.interactive))
-        return 'ace_editor = new Nengo.Ace("%s", %s)' % (id(self), args)
+        return 'Nengo.ace = new Nengo.Ace("%s", %s)' % (id(self), args)
 
     def message(self, msg):
         if not self.page.gui.interactive:

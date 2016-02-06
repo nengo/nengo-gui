@@ -22,23 +22,26 @@ class NameFinder(object):
         classes = (nengo.Node, nengo.Ensemble, nengo.Network,
                    nengo.Connection)
 
-        for k in dir(net):
-            if not k.startswith('_') and k not in base_lists + all_lists:
-                v = getattr(net, k)
-                if isinstance(v, list):
-                    for i, obj in enumerate(v):
+        for inst_attr in dir(net):
+            private = inst_attr.startswith('_')
+            in_lists = inst_attr in base_lists + all_lists
+            if not private and not in_lists:
+                attr = getattr(net, inst_attr)
+                if isinstance(attr, list):
+                    for i, obj in enumerate(attr):
                         if obj not in self.known_name:
-                            n = '%s.%s[%d]' % (net_name, k, i)
+                            n = '%s.%s[%d]' % (net_name, inst_attr, i)
                             self.known_name[obj] = n
-                elif isinstance(v, classes):
-                    self.known_name[v] = '%s.%s' % (net_name, k)
+                elif isinstance(attr, classes):
+                    if attr not in self.known_name:
+                        self.known_name[attr] = '%s.%s' % (net_name, inst_attr)
 
 
-        for type in base_lists:
-            for i, obj in enumerate(getattr(net, type)):
+        for obj_type in base_lists:
+            for i, obj in enumerate(getattr(net, obj_type)):
                 name = self.known_name.get(obj, None)
                 if name is None:
-                    name = '%s.%s[%d]' % (net_name, type, i)
+                    name = '%s.%s[%d]' % (net_name, obj_type, i)
                     self.known_name[obj] = name
 
         for n in net.networks:

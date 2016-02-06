@@ -1,5 +1,6 @@
 import json
 
+
 class Component(object):
     """Abstract handler for a particular Component of the user interface.
 
@@ -10,7 +11,8 @@ class Component(object):
 
     Each Component can be configured via the nengo.Config system.  Components
     can add required nengo objects into the model to allow them to gather
-    the required data from the running model.  Communication from server to 
+    required data or input overriding data (in the case of Pointer and Slider)
+    to/from the running model.  Communication from server to
     client is done via Component.update_client(), which is called regularly
     by the Server.ws_viz_component handler.  Communication from client to
     server is via Component.message().
@@ -84,18 +86,24 @@ class Component(object):
 
     def javascript_config(self, cfg):
         """Convert the nengo.Config information into javascript.
-        
+
         This is needed so we can send that config information to the client.
         """
         for attr in self.config._clsparams.params:
-            cfg[attr] = getattr(self.config, attr)
+            if attr in cfg:
+                raise AttributeError("Value for %s is already set in the "
+                                     "config of this component. Do not try to "
+                                     "modify it via this function. Instead "
+                                     "modify the config directly." % (attr))
+            else:
+                cfg[attr] = getattr(self.config, attr)
         return json.dumps(cfg)
 
     def code_python(self, uids):
         """Generate Python code for this Component.
 
         This is used in the .cfg file to generate a valid Python expression
-        that re-creates this Component.  
+        that re-creates this Component.
 
         The input uids is a dictionary from Python objects to strings that
         refer to those Python objects (the reverse of the locals() dictionary)
@@ -114,4 +122,3 @@ class Component(object):
         refer to those Python objects (the reverse of the locals() dictionary)
         """
         return []
-

@@ -5,21 +5,29 @@ import collections
 import threading
 
 import nengo
+from nengo import spa
 import json
 
 from nengo_gui.components.component import Component
+from nengo_gui.components.value import Value
 from nengo_gui.modal_js import infomodal
 import nengo_gui.user_action
 import nengo_gui.layout
 
 
 class NetGraph(Component):
+    """Handles computations and communications for NetGraph on the JS side.
+
+    Communicates to all NetGraph components for creation, deletion and
+    manipulation.
+    """
+
     config_defaults = {}
     configs = {}
 
     def __init__(self):
-        # this component must be before all the normal graphs (so that
-        # those other graphs are on top of the NetGraph), so its
+        # this component must be ordered before all the normal graphs (so that
+        # other graphs are on top of the NetGraph), so its
         # order is between that of SimControl and the default (0)
         super(NetGraph, self).__init__(component_order=-5)
 
@@ -71,12 +79,18 @@ class NetGraph(Component):
             self.new_code = code
 
     def reload(self, code=None):
+        """Called when new code has been detected
+        checks that the page is not currently being used
+        and thus can be updated"""
         with self.page.lock:
             self._reload(code=code)
 
     def _reload(self, code=None):
+        """Loads and executes the code, removing old items,
+        updating changed items
+        and adding new ones"""
 
-        old_locals = self.page.locals
+        old_locals = self.page.last_good_locals
         old_default_labels = self.page.default_labels
 
         if code is None:
@@ -119,16 +133,22 @@ class NetGraph(Component):
             # "ensembles[0]" might still refer to something even after that
             # ensemble is removed.
             new_uid = self.page.get_uid(new_item,
-                        default_labels=name_finder.known_name)
+                                        default_labels=name_finder.known_name)
             if new_uid != uid:
                 new_item = None
+
+            same_class = False
+            for cls in [nengo.Ensemble, nengo.Node, nengo.Network, nengo.Connection]:
+                if isinstance(new_item, cls) and isinstance(old_item, cls):
+                    same_class = True
+                    break
 
             # find reasons to delete the object.  Any deleted object will
             # be recreated, so try to keep this to a minimum
             keep_object = True
             if new_item is None:
                 keep_object = False
-            elif not isinstance(new_item, old_item.__class__):
+            elif same_class:
                 # don't allow changing classes
                 keep_object = False
             elif self.get_extra_info(new_item) != self.get_extra_info(old_item):
@@ -142,10 +162,10 @@ class NetGraph(Component):
                 rebuilt_objects.append(uid)
             else:
                 # fix aspects of the item that may have changed
-                if self._reload_update_item(uid, old_item, new_item, 
+                if self._reload_update_item(uid, old_item, new_item,
                                             name_finder):
                     # something has changed about this object, so rebuild
-                    # and components that use it
+                    # the components that use it
                     rebuilt_objects.append(uid)
 
                 self.uids[uid] = new_item
@@ -162,9 +182,52 @@ class NetGraph(Component):
         orphan_components = []
         rebuild_components = []
 
+        # items that are shown in components, but not currently displayed
+        #  in the NetGraph (i.e. things that are inside collapsed
+        #  Networks, but whose values are being shown in a graph)
+        collapsed_items = []
+
+        # remove graphs no longer associated to NetgraphItems
         removed_items = list(removed_uids.values())
         for c in self.page.components[:]:
             for item in c.code_python_args(old_default_labels):
+                if item not in self.uids.keys() and item not in collapsed_items:
+
+                    # item is a python string that is an argument to the
+                    # constructor for the Component.  So it could be 'a',
+                    # 'model.ensembles[3]', 'True', or even 'target=a'.
+                    # We need to evaluate this string in the context of the
+                    # locals dictionary and see what object it refers to
+                    # so we can determine whether to rebuild this component.
+                    #
+                    # The following lambda should do this, handling both
+                    # the normal argument case and the keyword argument case.
+                    safe_eval = '(lambda *a, **b: list(a) + b.values())(%s)[0]'
+
+                    # this Component depends on an item inside a collapsed
+                    #  Network, so we need to check if that component has
+                    #  changed or been removed
+                    old_obj = eval(safe_eval % item, old_locals)
+
+                    try:
+                        new_obj = eval(safe_eval % item, self.page.locals)
+                    except:
+                        # the object this Component depends on no longer exists
+                        new_obj = None
+
+                    if new_obj is None:
+                        removed_items.append(item)
+                    elif not isinstance(new_obj, old_obj.__class__):
+                        rebuilt_objects.append(item)
+                    elif (self.get_extra_info(new_obj) != 
+                          self.get_extra_info(old_obj)):
+                        rebuilt_objects.append(item)
+
+                    # add this to the list of collapsed items, so we
+                    # don't recheck it if there's another Component that
+                    # also depends on this
+                    collapsed_items.append(item)
+
                 if item in rebuilt_objects:
                     self.to_be_sent.append(dict(type='delete_graph',
                                                 uid=c.original_id,
@@ -181,33 +244,31 @@ class NetGraph(Component):
                         orphan_components.append(c)
                         break
 
-
-
         components = []
         # the old names for the old components
         component_uids = [c.uid for c in self.page.components]
 
-        for k, v in list(self.page.locals.items()):
-            if isinstance(v, nengo_gui.components.component.Component):
+        for name, obj in list(self.page.locals.items()):
+            if isinstance(obj, Component):
                 # the object has been removed, so the Component should
                 #  be removed as well
-                if v in orphan_components:
+                if obj in orphan_components:
                     continue
 
                 # this is a Component that was previously removed,
                 #  but is still in the config file, or it has to be
                 #  rebuilt, so let's recover it
-                if k not in component_uids:
-                    self.page.add_component(v)
-                    self.to_be_sent.append(dict(type='js', 
-                                                code=v.javascript()))
-                    components.append(v)
+                if name not in component_uids:
+                    self.page.add_component(obj)
+                    self.to_be_sent.append(dict(type='js',
+                                                code=obj.javascript()))
+                    components.append(obj)
                     continue
-                
+
                 # otherwise, find the corresponding old Component
-                index = component_uids.index(k)
+                index = component_uids.index(name)
                 old_component = self.page.components[index]
-                if isinstance(v, (nengo_gui.components.SimControlTemplate,
+                if isinstance(obj, (nengo_gui.components.SimControlTemplate,
                                   nengo_gui.components.AceEditorTemplate,
                                   nengo_gui.components.NetGraphTemplate)):
                     # just keep these ones
@@ -215,18 +276,19 @@ class NetGraph(Component):
                 else:
                     # replace these components with the newly generated ones
                     try:
-                        self.page.add_component(v)
-                        old_component.replace_with = v
-                        v.original_id = old_component.original_id
+                        self.page.add_component(obj)
+                        old_component.replace_with = obj
+                        obj.original_id = old_component.original_id
                     except:
                         traceback.print_exc()
-                        print('failed to recreate plot for %s' % v)
-                    components.append(v)
+                        print('failed to recreate plot for %s' % obj)
+                    components.append(obj)
 
         components.sort(key=lambda x: x.component_order)
 
         self.page.components = components
 
+        # notifies SimControl to pause the simulation
         self.page.changed = True
 
     def _reload_update_item(self, uid, old_item, new_item, new_name_finder):
@@ -255,10 +317,14 @@ class NetGraph(Component):
             new_post = new_item.post_obj
             if isinstance(old_pre, nengo.ensemble.Neurons):
                 old_pre = old_pre.ensemble
+            if isinstance(old_post, nengo.connection.LearningRule):
+                old_post = old_post.connection.post_obj
             if isinstance(old_post, nengo.ensemble.Neurons):
                 old_post = old_post.ensemble
             if isinstance(new_pre, nengo.ensemble.Neurons):
                 new_pre = new_pre.ensemble
+            if isinstance(new_post, nengo.connection.LearningRule):
+                new_post = new_post.connection.post_obj
             if isinstance(new_post, nengo.ensemble.Neurons):
                 new_post = new_post.ensemble
 
@@ -469,8 +535,11 @@ class NetGraph(Component):
         elif isinstance(obj, nengo.Ensemble):
             info['dimensions'] = int(obj.size_out)
             info['n_neurons'] = int(obj.n_neurons)
+        elif Value.default_output(obj) is not None:
+            info['default_output'] = True
+
         info['sp_targets'] = (
-            nengo_gui.components.pointer.Pointer.applicable_targets(obj))
+            nengo_gui.components.spa_plot.SpaPlot.applicable_targets(obj))
         return info
 
     def send_pan_and_zoom(self, client):
@@ -493,6 +562,10 @@ class NetGraph(Component):
         if isinstance(pre, nengo.ensemble.Neurons):
             pre = pre.ensemble
         post = conn.post_obj
+        if isinstance(post, nengo.connection.LearningRule):
+            post = post.connection.post
+            if isinstance(post, nengo.base.ObjView):
+                post = post.obj
         if isinstance(post, nengo.ensemble.Neurons):
             post = post.ensemble
         pre = self.page.get_uid(pre)

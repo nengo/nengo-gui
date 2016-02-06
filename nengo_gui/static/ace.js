@@ -4,7 +4,7 @@
  *
  * @param {string} uid - A unique identifier
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
- * Ace function is written into HTML by server and called when the 
+ * Ace function is written into HTML by server and called when the
  * page is loaded.
  */
 
@@ -13,10 +13,9 @@ Nengo.Ace = function (uid, args) {
     if (uid[0] === '<') {
         console.log("invalid uid for Ace: " + uid);
     }
-    Nengo.ace = this;  // make a global pointing to this
     var self = this;
-    this.hidden = false;
     this.min_width = 50;
+    this.max_width = $(window).width() - 100;
 
     if (args.active === false) {
         $('#Toggle_ace').css('display', 'none');
@@ -54,28 +53,63 @@ Nengo.Ace = function (uid, args) {
 
     //Setup the button to toggle the code editor
     $('#Toggle_ace').on('click', function(){self.toggle_shown();});
-
     $('#Save_file').on('click', function(){self.save_file();});
-    $('#Font_increase').on('click', function(){self.font_increase();});
-    $('#Font_decrease').on('click', function(){self.font_decrease();});
+    $('#Font_increase').on('click', function(){self.font_size += 1;});
+    $('#Font_decrease').on('click', function(){self.font_size -= 1;});
 
     this.schedule_updates();
 
-    this.set_font_size(12);
-    this.width = 580;  // pixels needed to do 80 chars at 12pt font
+    Object.defineProperty(this, 'width', {
+        get: function() {
+            return Nengo.config.editor_width;
+        },
+        set: function(val) {
+            val = Math.max(Math.min(val, this.max_width), this.min_width);
+            $('#rightpane').width(val);
+            Nengo.config.editor_width = val;
+        }
 
-    self.set_width();
+    });
 
+    Object.defineProperty(this, 'hidden', {
+        get: function() {
+            return Nengo.config.hide_editor;
+        },
+        set: function(val) {
+            Nengo.config.hide_editor = val;
+            if (val) {
+                this.hide_editor();
+            } else {
+                this.show_editor();
+            }
+        }
+    });
+
+    Object.defineProperty(this, 'font_size', {
+        get: function() {
+            return Nengo.config.editor_font_size;
+        },
+        set: function(val) {
+            val = Math.max(val, 6);
+            this.editor.setFontSize(val);
+            Nengo.config.editor_font_size = val;
+        }
+    });
+
+    this.width = Nengo.config.editor_width;
+    this.hidden = Nengo.config.hide_editor;
+    this.font_size = Nengo.config.editor_font_size;
+    this.redraw();
+
+    $(window).on('resize', function() {self.on_resize();});
     interact('#editor')
         .resizable({
             edges: { left: true, right: false, bottom: false, top: false}
         })
         .on('resizemove', function (event) {
             self.width -= event.deltaRect.left;
-            self.set_width()
-        })
-    $(window).on('resize', function() {self.set_width(); });
-    this.update_main_width();
+            self.redraw();
+        });
 
     interact('#console')
         .resizable({
@@ -87,8 +121,9 @@ Nengo.Ace = function (uid, args) {
                 self.console_height = 20;
             }
             self.width -= event.deltaRect.left;
-            self.set_width();
-        })
+            $('#console').height(self.console_height);
+            self.redraw();
+        });
 }
 
 //Send changes to the code to server every 100ms
@@ -102,20 +137,6 @@ Nengo.Ace.prototype.schedule_updates = function () {
             self.enable_save();
         }
     }, 100)
-}
-
-Nengo.Ace.prototype.set_font_size = function (font_size) {
-    this.font_size = font_size;
-    this.editor.setFontSize(font_size);
-}
-
-Nengo.Ace.prototype.font_increase = function () {
-    this.set_font_size(this.font_size + 1);
-}
-Nengo.Ace.prototype.font_decrease = function () {
-    if (this.font_size > 6) {
-        this.set_font_size(this.font_size - 1);
-    }
 }
 
 Nengo.Ace.prototype.save_file = function () {
@@ -140,7 +161,7 @@ Nengo.Ace.prototype.on_message = function (event) {
         this.editor.setValue(msg.code);
         this.current_code = msg.code;
         this.editor.gotoLine(1);
-        this.set_width();
+        this.redraw();
         this.disable_save();
     } else if (msg.error === null) {
         if (this.marker !== null) {
@@ -174,68 +195,55 @@ Nengo.Ace.prototype.on_message = function (event) {
     }
 }
 
+Nengo.Ace.prototype.on_resize = function() {
+    this.max_width = $(window).width() - 100;
+    if (this.width > this.max_width) {
+        this.width = this.max_width;
+    }
+    this.redraw();
+}
+
 Nengo.Ace.prototype.show_editor = function () {
     var editor = document.getElementById('rightpane');
     editor.style.display = 'flex';
-    this.hidden = false;
     if (!this.console_hidden) {
         this.console.style.display = 'block';
     }
+    this.redraw();
 }
 
 Nengo.Ace.prototype.hide_editor = function () {
     var editor = document.getElementById('rightpane');
     editor.style.display = 'none';
-    this.hidden = true;
     if (!this.console_hidden) {
         this.console.style.display = 'none';
     }
+    this.redraw();
 }
 
 Nengo.Ace.prototype.show_console = function () {
     this.console.style.display = 'block';
     this.console_hidden = false;
-    this.set_width();
+    this.redraw();
 }
 
 Nengo.Ace.prototype.hide_console = function () {
     this.console.style.display = 'none';
     this.console_hidden = true;
-    this.set_width();
+    this.redraw();
 }
-
 
 Nengo.Ace.prototype.toggle_shown = function () {
     if (this.hidden) {
-        this.show_editor();
+        this.hidden = false;
+    } else {
+        this.hidden = true;
     }
-    else{
-        this.hide_editor();
-    }
-    this.set_width();
+    this.redraw();
 }
 
-Nengo.Ace.prototype.set_width = function () {
-    if (this.width < this.min_width) {
-        this.width = this.min_width;
-    }
-
-    this.max_width = $(window).width() - 100;
-
-    if (this.width > this.max_width){
-        this.width = this.max_width;
-    }
-
-
-    $('#rightpane').width(this.width);
-    $('#console').height(this.console_height);
-
+Nengo.Ace.prototype.redraw = function () {
     this.editor.resize();
-
-    this.update_main_width();
-}
-
-Nengo.Ace.prototype.update_main_width = function () {
     if (Nengo.netgraph !== undefined){
         Nengo.netgraph.on_resize();
     }

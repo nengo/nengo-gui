@@ -2,6 +2,7 @@
  * 2d axes set with the horizontal axis being a time axis.
 * @constructor
  *
+ * @param {DOMElement} parent - the element to add this component to
  * @param {dict} args - A set of constructor arguments (see Nengo.Axes2D)
  *
  * Called by a specific component when it requires an axes set (with the 

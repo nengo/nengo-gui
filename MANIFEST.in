@@ -1,8 +1,10 @@
 include *.md
 include *.py
 include *.rst
+include nengo_gui/grandalf/LICENSE
 recursive-include examples *.ipynb
 recursive-include examples *.py
+recursive-include nengo_gui *.cfg
 recursive-include nengo_gui *.css
 recursive-include nengo_gui *.eot
 recursive-include nengo_gui *.gif

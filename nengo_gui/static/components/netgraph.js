@@ -2,9 +2,9 @@
  * Network diagram
  * @constructor
  *
+ * @param {DOMElement} parent - the element to add this component to
  * @param {dict} args - A set of constructor arguments, including:
  * @param {int} args.id - the id of the server-side NetGraph to connect to
- * @param {DOMElement} args.parent - the element to add this component to
  *
  * NetGraph constructor is written into HTML file from the python
  * server and is run on page load.
@@ -13,21 +13,71 @@ Nengo.NetGraph = function(parent, args) {
     if (args.uid[0] === '<') {
         console.log("invalid uid for NetGraph: " + args.uid);
     }
-    this.scale = 1.0;          // global scaling factor
     this.offsetX = 0;          // global x,y pan offset
     this.offsetY = 0;
-    this.zoom_fonts = false;    // scale fonts when zooming
-    this.font_size = 100;       // font size as a percent of base
-    this.aspect_resize = false;  //preserve aspect ratios on window resize
 
-    var transparent_nets = false;  // Do networks have transparent backgrounds?
-    Object.defineProperty(this, 'transparent_nets', {
+    var scale = 1.0;
+    Object.defineProperty(this, 'scale', {
+        // global scaling factor
         get: function() {
-            return transparent_nets;
+            return scale;
         },
         set: function(val) {
-            if (val === transparent_nets) { return; }
-            transparent_nets = val;
+            if (val === scale) { return; }
+            scale = val;
+            this.update_fonts();
+            this.redraw();
+
+            viewport.scale = scale;
+            viewport.redraw_all();
+        }
+
+    });
+
+    Object.defineProperty(this, 'zoom_fonts', {
+        // scale fonts when zooming
+        get: function() {
+            return Nengo.config.zoom_fonts;
+        },
+        set: function(val) {
+            if (val === this.zoom_fonts) { return; }
+            Nengo.config.zoom_fonts = val;
+            this.update_fonts();
+        }
+    });
+
+    Object.defineProperty(this, 'aspect_resize', {
+        //preserve aspect ratios on window resize
+        get: function() {
+            return Nengo.config.aspect_resize;
+        },
+        set: function(val) {
+            if (val === this.aspect_resize) { return; }
+            Nengo.config.aspect_resize = val;
+
+        }
+
+    });
+
+    Object.defineProperty(this, 'font_size', {
+        get: function() {
+            return Nengo.config.font_size;
+        },
+        set: function(val) {
+            if (val === this.font_size) { return; }
+            Nengo.config.font_size = val;
+            this.update_fonts();
+        }
+    });
+
+    // Do networks have transparent backgrounds?
+    Object.defineProperty(this, 'transparent_nets', {
+        get: function() {
+            return Nengo.config.transparent_nets;
+        },
+        set: function(val) {
+            if (val === this.transparent_nets) { return; }
+            Nengo.config.transparent_nets = val;
             for (var key in this.svg_objects) {
                 var ngi = this.svg_objects[key];
                 ngi.compute_fill();
@@ -35,6 +85,7 @@ Nengo.NetGraph = function(parent, args) {
                     ngi.shape.style["fill-opacity"] = val ? 0.0 : 1.0;
                 }
             }
+
         }
     });
 
@@ -191,14 +242,12 @@ Nengo.NetGraph = function(parent, args) {
             self.offsetY = (self.offsetY + yy) / scale - yy;
 
             self.scale = scale * self.scale;
-            viewport.scale = self.scale;
             viewport.x = self.offsetX;
             viewport.y = self.offsetY;
             viewport.redraw_all();
 
             self.scaleMiniMapViewBox();
 
-            self.update_font_size();
             self.redraw();
 
             /** let the server know what happened */
@@ -266,7 +315,7 @@ Nengo.NetGraph.prototype.on_message = function(event) {
     } else if (data.type === 'pan') {
         this.set_offset(data.pan[0], data.pan[1]);
     } else if (data.type === 'zoom') {
-        this.set_scale(data.zoom);
+        this.scale = data.zoom;
     } else if (data.type === 'expand') {
         var item = this.svg_objects[data.uid];
         item.expand(true,true)
@@ -306,9 +355,6 @@ Nengo.NetGraph.prototype.on_message = function(event) {
     } else if (data.type === 'rename') {
         var item = this.svg_objects[data.uid];
         item.set_label(data.name);
-
-        var item_mini = this.minimap_objects[data.uid];
-        item_mini.set_label(data.name);
 
     } else if (data.type === 'remove') {
         var item = this.svg_objects[data.uid];
@@ -367,33 +413,12 @@ Nengo.NetGraph.prototype.set_offset = function(x, y) {
 }
 
 
-/** zoom the screen (and redraw accordingly) */
-Nengo.NetGraph.prototype.set_scale = function(scale) {
-    this.scale = scale;
-    this.update_font_size();
-    this.redraw();
-
-    viewport.scale = scale;
-    viewport.redraw_all();
-}
-
-
-Nengo.NetGraph.prototype.update_font_size = function(scale) {
+Nengo.NetGraph.prototype.update_fonts = function() {
     if (this.zoom_fonts) {
         $('#main').css('font-size', 3 * this.scale * this.font_size/100 + 'em');
     } else {
         $('#main').css('font-size', this.font_size/100 + 'em');
     }
-}
-
-Nengo.NetGraph.prototype.set_zoom_fonts = function(value) {
-    this.zoom_fonts = value;
-    this.update_font_size();
-}
-
-Nengo.NetGraph.prototype.set_font_size = function(value) {
-    this.font_size = value;
-    this.update_font_size();
 }
 
 /** redraw all elements */
@@ -649,11 +674,17 @@ Nengo.NetGraph.prototype.scaleMiniMap = function () {
  * main viewport and scale the viewbox to reflect that. */
 Nengo.NetGraph.prototype.scaleMiniMapViewBox = function () {
     if (this.mm_display == true) {
-        var w = $(this.minimap).width() * this.mm_scale;
-        var h = $(this.minimap).height() * this.mm_scale;
+        var mm_w = $(this.minimap).width();
+        var mm_h = $(this.minimap).height();
 
-        var view_offsetX = -(this.mm_min_x + this.offsetX) * w;
-        var view_offsetY = -(this.mm_min_y + this.offsetY) * h;
+        var w = mm_w * this.mm_scale;
+        var h = mm_h * this.mm_scale;
+
+        var disp_w = (this.mm_max_x - this.mm_min_x) * w;
+        var disp_h = (this.mm_max_y - this.mm_min_y) * h;
+
+        var view_offsetX = -(this.mm_min_x + this.offsetX) * w + (mm_w - disp_w) / 2.;
+        var view_offsetY = -(this.mm_min_y + this.offsetY) * h + (mm_h - disp_h) / 2.;
 
         this.view.setAttributeNS(null, 'x', view_offsetX);
         this.view.setAttributeNS(null, 'y', view_offsetY);

@@ -6,9 +6,9 @@ from nengo_gui.components.spa_plot import SpaPlot
 
 
 class SpaSimilarity(SpaPlot):
+    """Line graph showing semantic pointer decoded values over time"""
 
-    config_defaults = dict(max_value=1,
-                           min_value=-1,
+    config_defaults = dict(max_value=1.5, min_value=-1.5,
                            show_pairs=False,
                            **Component.config_defaults)
 
@@ -66,7 +66,7 @@ class SpaSimilarity(SpaPlot):
         self.old_vocab_length = len(vocab.keys)
         # and all the missing pairs if we're showing pairs
         if self.config.show_pairs:
-        # briefly there can be no pairs, so catch the error
+            # briefly there can be no pairs, so catch the error
             try:
                 legend_update += vocab.key_pairs[self.old_pairs_length:]
                 self.old_pairs_length = len(vocab.key_pairs)
@@ -76,12 +76,10 @@ class SpaSimilarity(SpaPlot):
         self.data.append('["update_legend", "%s"]'
                          %('","'.join(legend_update)))
 
-
     def javascript(self):
         """Generate the javascript that will create the client-side object"""
         info = dict(uid=id(self), label=self.label, n_lines=len(self.labels),
-                    synapse=0, min_value=-1.5, max_value=1.5,
-                    pointer_labels=self.labels)
+                    synapse=0, pointer_labels=self.labels)
         json = self.javascript_config(info)
         return 'new Nengo.SpaSimilarity(main, sim, %s);' % json
 
@@ -92,11 +90,11 @@ class SpaSimilarity(SpaPlot):
         if self.config.show_pairs:
             vocab.include_pairs = True
             self.data.append(
-                '["reset_legend_and_data", "%s"]' %(
+                '["reset_legend_and_data", "%s"]' % (
                     '","'.join(vocab.keys + vocab.key_pairs)))
             # if we're starting to show pairs, track pair length
             self.old_pairs_length = len(vocab.key_pairs)
         else:
             vocab.include_pairs = False
             self.data.append('["reset_legend_and_data", "%s"]'
-                             %('","'.join(vocab.keys)))
+                             % ('","'.join(vocab.keys)))
