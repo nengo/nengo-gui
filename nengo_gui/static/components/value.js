@@ -187,11 +187,9 @@ Nengo.Value.prototype.set_legend_labels = function() {
         var modal = $('#myModalForm').data('bs.validator');
         
         // No validation to do.
-        // Blank string mean do nothing
+        // Empty entries assumed to be indication to skip modification
         // Long strings okay
         // Excissive entries get ignored
-        // Missing entries get replaced by default value
-        // Empty entries assumed to be indication to skip modification
         // TODO: Allow escaping of commas
         if ((label_csv !== null) && (label_csv !== '')) {
             labels = label_csv.split(',');
@@ -206,6 +204,7 @@ Nengo.Value.prototype.set_legend_labels = function() {
             while (self.legend.lastChild) {
                 self.legend.removeChild(self.legend.lastChild);
             }
+            //console.log(self.legend_labels):
             Nengo.draw_legend(self.legend, self.legend_labels, self.color_func);
         }
         $('#OK').attr('data-dismiss', 'modal');
