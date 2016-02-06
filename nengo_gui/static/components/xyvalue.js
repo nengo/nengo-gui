@@ -42,7 +42,7 @@ Nengo.XYValue = function(parent, sim, args) {
     /** create the lines on the plots */
     var line = d3.svg.line()
         .x(function(d, i) {return self.axes2d.scale_x(self.data_store.data[this.index_x][i]);})
-        .y(function(d) {return self.axe2d.scale_y(d);})
+        .y(function(d) {return self.axe2d.scale_y(d);});
     this.path = this.axes2d.svg.append("g").selectAll('path')
                                     .data([this.data_store.data[this.index_y]]);
     this.path.enter().append('path')
@@ -50,7 +50,6 @@ Nengo.XYValue = function(parent, sim, args) {
              .style('stroke', Nengo.make_colors(1));
 
     /** create a circle to track the most recent data */
-    // TODO: This should be invisible initially
     this.recent_circle = this.axes2d.svg.append("circle")
                                         .attr("r", this.get_circle_radius())
                                         .attr('cx', this.axes2d.scale_x(0))
@@ -86,7 +85,8 @@ Nengo.XYValue.prototype.update = function() {
     this.data_store.update();
 
     /** update the lines if there is data with valid dimensions */
-    if(this.data_store.data.length > 1){
+    var good_idx = self.index_x < self.n_lines && self.index_y < self.n_lines
+    if(this.data_store.data.length > 1 && good_idx){
         var shown_data = this.data_store.get_shown_data();
 
         /** update the lines */
@@ -103,7 +103,6 @@ Nengo.XYValue.prototype.update = function() {
         if(last_index >= 0){
 
             /** update the circle if there is valid data */
-            // TODO: This is where visibility should be triggered
             this.recent_circle.attr('cx', self.axes2d.scale_x(shown_data[self.index_x][last_index]))
                             .attr('cy', self.axes2d.scale_y(shown_data[self.index_y][last_index]))
                             .style('fill-opacity', 1);
@@ -129,6 +128,8 @@ Nengo.XYValue.prototype.update = function() {
           .attr("stroke-width", 1)
           .attr("stroke", "rgb(0,0,0)")
           .attr("fill-opacity", 1);
+
+        // TODO: Create HTML text element
     }
 
 };
