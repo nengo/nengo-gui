@@ -55,7 +55,8 @@ Nengo.XYValue = function(parent, sim, args) {
                                         .attr("r", this.get_circle_radius())
                                         .attr('cx', this.axes2d.scale_x(0))
                                         .attr('cy', this.axes2d.scale_y(0))
-                                        .style("fill", Nengo.make_colors(2)[1]);
+                                        .style("fill", Nengo.make_colors(2)[1])
+                                        .style('fill-opacity', 0);
 
     this.warning_label = this.axes2d.svg.append("g");
     this.invalid_dims = false;
@@ -88,23 +89,24 @@ Nengo.XYValue.prototype.update = function() {
     if(this.data_store.data.length > 1){
         var shown_data = this.data_store.get_shown_data();
 
+        /** update the lines */
+        var line = d3.svg.line()
+            .x(function(d, i) {
+                return self.axes2d.scale_x(
+                    shown_data[self.index_x][i]);
+                })
+            .y(function(d) {return self.axes2d.scale_y(d);});
+        this.path.data([shown_data[this.index_y]])
+                 .attr('d', line);
+
         var last_index = shown_data[self.index_x].length - 1;
         if(last_index >= 0){
-
-            /** update the lines */
-            var line = d3.svg.line()
-                .x(function(d, i) {
-                    return self.axes2d.scale_x(
-                        shown_data[self.index_x][i]);
-                    })
-                .y(function(d) {return self.axes2d.scale_y(d);});
-            this.path.data([shown_data[this.index_y]])
-                     .attr('d', line);
 
             /** update the circle if there is valid data */
             // TODO: This is where visibility should be triggered
             this.recent_circle.attr('cx', self.axes2d.scale_x(shown_data[self.index_x][last_index]))
-                            .attr('cy', self.axes2d.scale_y(shown_data[self.index_y][last_index]));
+                            .attr('cy', self.axes2d.scale_y(shown_data[self.index_y][last_index]))
+                            .style('fill-opacity', 1);
         }
 
         /** if switching from invalids dimensions to valid dimensions, remove
