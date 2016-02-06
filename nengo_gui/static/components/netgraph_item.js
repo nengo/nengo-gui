@@ -188,9 +188,8 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                         var vertical_resize = event.edges.bottom || event.edges.top;
                         var horizontal_resize = event.edges.left || event.edges.right;
 
-                        var screen_offset = $('#netgraph').offset();
-                        var w = pos[0] - event.clientX + screen_offset.left;
-                        var h = pos[1] - event.clientY + screen_offset.top;
+                        var w = pos[0] - event.clientX + this.ng.offsetX;
+                        var h = pos[1] - event.clientY + this.ng.offsetY;
 
                         if (event.edges.right) {
                             w *= -1;
@@ -752,10 +751,10 @@ Nengo.NetGraphItem.prototype.get_width = function() {
     }
 
     if (this.minimap == false) {
-        var w = $(this.ng.svg).width();
+        var w = this.ng.width;
         var screen_w = this.get_nested_width() * w * this.ng.scale;
     } else {
-        var w = $(this.ng.minimap).width();
+        var w = this.ng.mm_width;
         var screen_w = this.get_nested_width() * w * this.ng.mm_scale;
     };
 
@@ -774,10 +773,10 @@ Nengo.NetGraphItem.prototype.get_height = function() {
     }
 
     if (this.minimap == false) {
-        var h = $(this.ng.svg).height();
+        var h = this.ng.height;
         var screen_h = this.get_nested_height() * h * this.ng.scale;
     } else {
-        var h = $(this.ng.minimap).height();
+        var h = this.ng.mm_height;
         var screen_h = this.get_nested_height() * h * this.ng.mm_scale;
     };
 
@@ -802,14 +801,14 @@ Nengo.NetGraphItem.prototype.get_screen_location = function() {
     if (this.minimap && !this.ng.mm_display) { return [1, 1]; }
     
     if (this.minimap == false) {
-        var w = $(this.ng.svg).width() * this.ng.scale;
-        var h = $(this.ng.svg).height() * this.ng.scale;
+        var w = this.ng.width * this.ng.scale;
+        var h = this.ng.height * this.ng.scale;
 
         var offsetX = this.ng.offsetX * w;
         var offsetY = this.ng.offsetY * h;
     } else {
-        var mm_w = $(this.ng.minimap).width();
-        var mm_h = $(this.ng.minimap).height();
+        var mm_w = this.ng.mm_width;
+        var mm_h = this.ng.mm_height;
 
         var w = mm_w * this.ng.mm_scale;
         var h = mm_h * this.ng.mm_scale;

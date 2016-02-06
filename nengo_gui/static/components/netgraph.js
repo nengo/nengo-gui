@@ -125,8 +125,10 @@ Nengo.NetGraph = function(parent, args) {
     parent.appendChild(this.svg);
     this.parent = parent;
 
-    this.old_width = $(this.svg).width();
-    this.old_height = $(this.svg).height();
+    this.width = $(this.svg).width();
+    this.height = $(this.svg).height();
+    
+    this.tool_height = $(toolbar.toolbar).height();
 
     /** three separate layers, so that expanded networks are at the back,
      *  then connection lines, and then other items (nodes, ensembles, and
@@ -203,9 +205,8 @@ Nengo.NetGraph = function(parent, args) {
             event.preventDefault();
 
             self.menu.hide_any();
-            var tool_h = $(toolbar.toolbar).height();
-            var x = (event.clientX) / $(self.svg).width()
-            var y = (event.clientY - tool_h) / $(self.svg).height();
+            var x = (event.clientX) / self.width
+            var y = (event.clientY - self.tool_height) / self.height;
 
 
             switch (event.deltaMode) {
@@ -496,17 +497,17 @@ Nengo.NetGraph.prototype.on_resize = function(event) {
         for (var key in this.svg_objects) {
             var item = this.svg_objects[key];
             if (item.depth == 1) {
-                var new_width = item.get_width()*
-                    this.old_width/width / this.scale;
-                var new_height = item.get_height()*
-                    this.old_height/height / this.scale;
+                var new_width = item.get_width() / this.scale;
+                var new_height = item.get_height() / this.scale;
                 item.size = [new_width/(2*width),
                     new_height/(2*height)];               }
         }
     }
 
-    this.old_width = width;
-    this.old_height = height;
+    this.width = width;
+    this.height = height;
+    this.mm_width = $(this.minimap).width();
+    this.mm_height = $(this.minimap).height();
 
     this.redraw();
 };
@@ -514,13 +515,13 @@ Nengo.NetGraph.prototype.on_resize = function(event) {
 
 /** return the pixel width of the SVG times the current scale factor */
 Nengo.NetGraph.prototype.get_scaled_width = function() {
-    return $(this.svg).width() * this.scale;
+    return this.width * this.scale;
 }
 
 
 /** return the pixel height of the SVG times the current scale factor */
 Nengo.NetGraph.prototype.get_scaled_height = function() {
-    return $(this.svg).height() * this.scale;
+    return this.height * this.scale;
 }
 
 
@@ -608,6 +609,9 @@ Nengo.NetGraph.prototype.create_minimap = function () {
     this.minimap.appendChild(this.g_conns_mini);
     this.minimap.appendChild(this.g_items_mini);
 
+    this.mm_width = $(this.minimap).width();
+    this.mm_height = $(this.minimap).height();
+    
     // default display minimap
     this.mm_display = true;
     this.toggleMiniMap();
@@ -690,8 +694,8 @@ Nengo.NetGraph.prototype.scaleMiniMap = function () {
  * main viewport and scale the viewbox to reflect that. */
 Nengo.NetGraph.prototype.scaleMiniMapViewBox = function () {
     if (this.mm_display == true) {
-        var mm_w = $(this.minimap).width();
-        var mm_h = $(this.minimap).height();
+        var mm_w = this.mm_width
+        var mm_h = this.mm_height
 
         var w = mm_w * this.mm_scale;
         var h = mm_h * this.mm_scale;
