@@ -57,7 +57,7 @@ class Raster(Component):
     def update_client(self, client):
         while len(self.data) > 0:
             data = self.data.popleft()
-            client.write(data, binary=True)
+            client.write_binary(data)
 
     def javascript(self):
         info = dict(uid=id(self), label=self.label,

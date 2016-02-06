@@ -34,7 +34,7 @@ class HTMLView(Component):
     def update_client(self, client):
         while len(self.data) > 0:
             item = self.data.popleft()
-            client.write(item)
+            client.write_text(item)
 
     def javascript(self):
         info = dict(uid=id(self), label=self.label)

@@ -8,6 +8,7 @@ import json
 
 from nengo_gui.components.component import Component
 import nengo_gui.exec_env
+from nengo_gui.backend.server import WebSocketFrame
 
 
 class SimControl(Component):
@@ -145,7 +146,8 @@ class SimControl(Component):
         now = time.time()
         # send off a ping now and then so we'll notice when connection closes
         if self.next_ping_time is None or now > self.next_ping_time:
-            client.write('', ping=True)
+            client.write_frame(WebSocketFrame(
+                1, 0, WebSocketFrame.OP_PING, 0, b''))
             self.next_ping_time = now + 2.0
 
         if self.page.changed:
@@ -153,15 +155,16 @@ class SimControl(Component):
             self.page.sim = None
             self.page.changed = False
         if not self.paused or self.reset_inform:
-            client.write(struct.pack('<fff', self.time, self.rate, self.rate_proportion), binary=True)
+            client.write_binary(struct.pack(
+                '<fff', self.time, self.rate, self.rate_proportion))
             self.reset_inform = False
         status = self.get_status()
         if status != self.last_status:
-            client.write('status:%s' % status)
+            client.write_text('status:%s' % status)
             self.last_status = status
         if self.send_config_options:
-            client.write('sims:' + self.backend_options_html())
-            client.write('config' +
+            client.write_text('sims:' + self.backend_options_html())
+            client.write_text('config' +
                          'Nengo.Toolbar.prototype.config_modal_show();')
             self.send_config_options = False
 

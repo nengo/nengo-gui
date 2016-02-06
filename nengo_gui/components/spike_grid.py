@@ -58,7 +58,7 @@ class SpikeGrid(Component):
             item = bytes().join(self.data[:length])
             del self.data[:length]
             try:
-                client.write(item, binary=True)
+                client.write_binary(item)
             except:
                 # if there is a communication problem, just drop the frames
                 # (this usually happens when there is too much data to send)

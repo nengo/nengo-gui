@@ -76,7 +76,7 @@ class Value(Component):
             # and deletion to maintain thread safety
             item = bytes().join(self.data[:length])
             del self.data[:length]
-            client.write(item, binary=True)
+            client.write_binary(item)
 
     def javascript(self):
         # generate the javascript that will create the client-side object

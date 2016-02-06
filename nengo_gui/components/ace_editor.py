@@ -34,7 +34,7 @@ class AceEditor(Component):
             client.write(self.pending_messages.pop())
         if self.serve_code:
             i = json.dumps({'code': self.current_code})
-            client.write(i)
+            client.write_text(i)
             self.serve_code = False
         if nengo_gui.exec_env.is_executing():
             return
@@ -48,7 +48,7 @@ class AceEditor(Component):
                     short_msg = error['trace'].rsplit('\n', 2)[-2]
                 else:
                     short_msg = error['trace']
-            client.write(json.dumps({'error': error,
+            client.write_text(json.dumps({'error': error,
                                      'short_msg': short_msg,
                                      'stdout': stdout}))
             self.last_error = error

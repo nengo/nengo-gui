@@ -42,7 +42,7 @@ class XYValue(Component):
     def update_client(self, client):
         while len(self.data) > 0:
             data = self.data.popleft()
-            client.write(data, binary=True)
+            client.write_binary(data)
 
     def javascript(self):
         info = dict(uid=id(self), n_lines=self.n_lines, label=self.label)

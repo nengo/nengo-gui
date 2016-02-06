@@ -23,7 +23,7 @@ class SpaPlot(Component):
     def update_client(self, client):
         while len(self.data) > 0:
             data = self.data.popleft()
-            client.write(data, binary=False)
+            client.write_text(data)
 
     def code_python_args(self, uids):
         return [uids[self.obj], 'target=%r' % self.target]

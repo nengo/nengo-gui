@@ -119,7 +119,7 @@ class Slider(Component):
     def update_client(self, client):
         while len(self.to_client) > 0:
             to_client = self.to_client.popleft()
-            client.write(to_client, binary=True)
+            client.write_binary(to_client)
 
     def message(self, msg):
         index, value = msg.split(',')

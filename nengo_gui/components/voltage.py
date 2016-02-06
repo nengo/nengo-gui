@@ -50,7 +50,7 @@ class Voltage(Component):
         for t, datum in zip(trange, data):
             datum = (datum + np.arange(self.n_neurons))
             packet = self.struct.pack(t, *datum)
-            client.write(packet, binary=True)
+            client.write_binary(packet)
 
     def javascript(self):
         info = dict(uid=id(self), label=self.label,

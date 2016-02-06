@@ -75,7 +75,7 @@ class Page(object):
 
         # use the default filename if none is given
         if filename is None:
-            self.filename = gui.filename
+            self.filename = gui.model_context.filename
         else:
             try:
                 self.filename = os.path.relpath(filename)
@@ -125,10 +125,10 @@ class Page(object):
 
     def load(self):
         """Load the model and initialize everything"""
-        if self.filename == self.gui.filename:
+        if self.filename == self.gui.model_context.filename:
             # if we're on the default filenaem, just load it from the GUI
-            self.model = self.gui.model
-            if self.gui.locals is None:
+            self.model = self.gui.model_context.model
+            if self.gui.model_context.locals is None:
                 self.locals = None
             else:
                 self.locals = self.gui.locals.copy()
@@ -316,7 +316,7 @@ class Page(object):
 
         component_js = '\n'.join([c.javascript() for c in self.components])
         component_js += webpage_title_js
-        if not self.gui.allow_file_change:
+        if not self.gui.model_context.writeable:
             component_js += "$('#Open_file_button').addClass('deactivated');"
         return component_js
 

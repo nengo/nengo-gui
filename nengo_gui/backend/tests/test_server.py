@@ -161,6 +161,7 @@ Content-Length: {len}
 
             def cmd(self):
                 self.called = True
+                return b''
 
         handler = HandlerClass(request, 'localhost', ServerMock())
         assert handler.called

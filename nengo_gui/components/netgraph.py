@@ -384,7 +384,7 @@ class NetGraph(Component):
 
         while len(self.to_be_sent) > 0:
             info = self.to_be_sent.popleft()
-            client.write(json.dumps(info))
+            client.write_text(json.dumps(info))
 
         if len(self.to_be_expanded) > 0:
             with self.page.lock:
@@ -517,7 +517,7 @@ class NetGraph(Component):
             info['expanded'] = self.page.config[obj].expanded
         info.update(self.get_extra_info(obj))
 
-        client.write(json.dumps(info))
+        client.write_text(json.dumps(info))
 
     def get_extra_info(self, obj):
         '''Determine helper information for each nengo object.
@@ -554,8 +554,8 @@ class NetGraph(Component):
             zoom = 1.0
         else:
             zoom = zoom[0]
-        client.write(json.dumps(dict(type='pan', pan=pan)))
-        client.write(json.dumps(dict(type='zoom', zoom=zoom)))
+        client.write_text(json.dumps(dict(type='pan', pan=pan)))
+        client.write_text(json.dumps(dict(type='zoom', zoom=zoom)))
 
     def create_connection(self, client, conn, parent):
         uid = self.page.get_uid(conn)
@@ -577,4 +577,4 @@ class NetGraph(Component):
         pres = self.get_parents(pre)[:-1]
         posts = self.get_parents(post)[:-1]
         info = dict(uid=uid, pre=pres, post=posts, type='conn', parent=parent)
-        client.write(json.dumps(info))
+        client.write_text(json.dumps(info))

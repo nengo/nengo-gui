@@ -33,7 +33,7 @@ Websockets are also supported via functions that begin with ws_:
         while True:
             msg = client.read()
             if msg is not None:
-                client.write('received: ' + msg)
+                client.write_text('received: ' + msg)
 """
 
 import base64
@@ -791,7 +791,7 @@ if __name__ == '__main__':
         def ws_timer(self, client):
             import time
             while True:
-                client.write(time.strftime('%H:%M:%S'))
+                client.write_text(time.strftime('%H:%M:%S'))
                 time.sleep(1)
 
     Demo.add_user('terry', 'password')

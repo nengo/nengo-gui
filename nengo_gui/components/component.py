@@ -48,9 +48,9 @@ class Component(object):
 
         This method is called regularly by Server.ws_viz_component().  You
         send text data to the client-side via a WebSocket as follows:
-            client.write(data)
+            client.write_text(data)
         You send binary data as:
-            client.write(data, binary=True)
+            client.write_binary(data)
         """
         pass
 
