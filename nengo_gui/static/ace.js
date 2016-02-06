@@ -98,9 +98,21 @@ Nengo.Ace = function (uid, args) {
         }
     });
 
+    // automatically update the model based on the text
+    Object.defineProperty(this, 'auto_update', {
+        get: function() {
+            return Nengo.config.auto_update;
+        },
+        set: function(val) {
+            this.update_trigger = val;
+            Nengo.config.auto_update = val;
+        }
+    });
+
     this.width = Nengo.config.editor_width;
     this.hidden = Nengo.config.hide_editor;
     this.font_size = Nengo.config.editor_font_size;
+    this.auto_update = Nengo.config.auto_update;
     this.redraw();
 
     $(window).on('resize', function() {self.on_resize();});
