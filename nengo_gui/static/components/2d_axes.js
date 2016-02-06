@@ -5,8 +5,8 @@
  * @param {DOMElement} parent - the element to add this component to
  * @param {float} args.width - the width of the axes (in pixels)
  * @param {float} args.height - the height of the axes (in pixels)
- * @param {array} args.x_range - minimum and maximum value on x-axis
- * @param {array} args.y_range - minimum and maximum value on y-axis
+  * @param {float} args.min_value - minimum value on y-axis
+ * @param {float} args.max_value - maximum value on y-axis
  */
 
 Nengo.Axes2D = function(parent, args) {
@@ -22,10 +22,7 @@ Nengo.Axes2D = function(parent, args) {
     /** scales for mapping x and y values to pixels */
     this.scale_x = d3.scale.linear();
     this.scale_y = d3.scale.linear();
-    if(args.x_range !== undefined){
-        this.scale_x.domain([args.x_range[0], args.x_range[1]]);
-    }
-    this.scale_y.domain([args.y_range[0], args.y_range[1]]);
+    this.scale_y.domain([args.min_value, args.max_value]);
 
     /** spacing between the graph and the outside edges (in pixels) */
     this.set_axes_geometry(args.width, args.height);
@@ -34,11 +31,8 @@ Nengo.Axes2D = function(parent, args) {
     this.axis_x = d3.svg.axis()
         .scale(this.scale_x)
         .orient("bottom")
-    if(args.x_range !== undefined){
-        this.axis_x.tickValues([args.x_range[0], args.x_range[1]]);
-    } else {
         this.axis_x.ticks(2);
-    }
+
     this.axis_x_g = this.svg.append("g")
         .attr("class", "axis axis_x unselectable")
         .call(this.axis_x);
@@ -47,7 +41,7 @@ Nengo.Axes2D = function(parent, args) {
     this.axis_y = d3.svg.axis()
         .scale(this.scale_y)
         .orient("left")
-        .tickValues([args.y_range[0], args.y_range[1]]);
+        .tickValues([args.min_value, args.max_value]);
 
     this.axis_y_g = this.svg.append("g")
         .attr("class", "axis axis_y unselectable")
@@ -90,9 +84,9 @@ Nengo.Axes2D.prototype.on_resize = function(width, height, x_offset, y_offset) {
         .tickPadding(this.tick_padding)
         .outerTickSize(this.tick_size, this.tick_size);
 
-    this.axis_x_g.attr("transform", "translate(0," + x_offset + ")");
+    this.axis_x_g.attr("transform", "translate(0," + this.ax_bottom + ")");
     this.axis_x_g.call(this.axis_x);
-    this.axis_y_g.attr("transform", "translate(" + y_offset + ", 0)");
+    this.axis_y_g.attr("transform", "translate(" + this.ax_left + ", 0)");
     this.axis_y_g.call(this.axis_y);
 };
 

@@ -6,10 +6,8 @@
  * @param {Nengo.SimControl} sim - the simulation controller
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
  * @param {int} args.n_lines - number of decoded values
- * @param {float} args.miny - minimum value on y-axis
- * @param {float} args.maxy - maximum value on y-axis
- * @param {array} args.x_range - minimum and maximum value on x-axis
- * @param {array} args.y_range - minimum and maximum value on y-axis
+ * @param {float} args.min_value - minimum value on x-axis and y-axis
+ * @param {float} args.max_value - maximum value on x-axis and y-axis
  * @param {Nengo.SimControl} args.sim - the simulation controller
  *
  * XYValue constructor is called by python server when a user requests a plot 
@@ -52,8 +50,6 @@ Nengo.XYValue = function(parent, sim, args) {
              .style('stroke', Nengo.make_colors(1));
 
     /** create a circle to track the most recent data */
-    // TODO:
-    // WHY AREN'T THE SCALES FREAKING WORKING
     this.recent_circle = this.axes2d.svg.append("circle")
                                         .attr("r", this.get_circle_radius())
                                         .attr('cx', this.axes2d.scale_x(0))
@@ -90,6 +86,8 @@ Nengo.XYValue.prototype.update = function() {
     /** update the lines if there is data with valid dimensions */
     if(this.data_store.data.length > 1){
         var shown_data = this.data_store.get_shown_data();
+
+        /** update the lines */
         var line = d3.svg.line()
             .x(function(d, i) {
                 return self.axes2d.scale_x(
@@ -99,17 +97,22 @@ Nengo.XYValue.prototype.update = function() {
         this.path.data([shown_data[this.index_y]])
                  .attr('d', line);
 
-        /** update the circle */
+        /** update the circle if there is valid data */
         var last_index = shown_data[self.index_x].length - 1;
-        this.recent_circle.attr('cx', self.axes2d.scale_x(shown_data[self.index_x][last_index]))
+        if(last_index >= 0){
+            this.recent_circle.attr('cx', self.axes2d.scale_x(shown_data[self.index_x][last_index]))
                             .attr('cy', self.axes2d.scale_y(shown_data[self.index_y][last_index]));
+        }
+
+        /** if switching from invalids dimensions to valid dimensions, remove
+        the label */
         if(this.invalid_dims === true){
-            // remove the label
              while(this.warning_label.lastChild){
                  this.warning_label.removeChild(this.warning_label.lastChild);
              }
             this.invalid_dims = false;
         }
+
     } else if(this.invalid_dims == false){
         this.invalid_dims = true;
 
@@ -222,8 +225,12 @@ Nengo.XYValue.prototype.set_range = function() {
                 var nums = $item.val().split(',');
                 var valid = false;
                 if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
-                    if (Number(nums[0]) < Number(nums[1])) {
-                        valid = true; //Two numbers, 1st less than 2nd
+                    // Two numbers, 1st less than 2nd
+                    // The axes must intersect at 0
+                    var ordered = Number(nums[0]) < Number(nums[1]);
+                    var zeroed = Number(nums[0]) * Number(nums[1]) <= 0;
+                    if (ordered && zeroed) {
+                        valid = true;
                     }
                 }
                 return (nums.length == 2 && valid);
@@ -232,17 +239,20 @@ Nengo.XYValue.prototype.set_range = function() {
     });
 
     $('#singleInput').attr('data-error', 'Input should be in the form ' +
-                           '"<min>,<max>".');
+                           '"<min>,<max>" and the axes must cross at zero.');
     Nengo.modal.show();
 }
 
 Nengo.XYValue.prototype.update_range = function(min, max) {
+    this.axes2d.min_val = min;
+    this.axes2d.max_val = max;
     this.axes2d.scale_x.domain([min, max]);
     this.axes2d.scale_y.domain([min, max]);
     this.axes2d.axis_x.tickValues([min, max]);
     this.axes2d.axis_y.tickValues([min, max]);
     this.axes2d.axis_y_g.call(this.axes2d.axis_y);
     this.axes2d.axis_x_g.call(this.axes2d.axis_x);
+    this.on_resize(this.get_screen_width(), this.get_screen_height());
 }
 
 Nengo.XYValue.prototype.set_indices = function() {
