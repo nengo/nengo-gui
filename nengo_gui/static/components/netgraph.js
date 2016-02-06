@@ -138,6 +138,24 @@ Nengo.NetGraph = function(parent, args) {
     this.g_items = this.createSVGElement('g');
     this.svg.appendChild(this.g_items);
 
+    /** Reading netgraph.css file as text and embedding it within def tags,
+     *  this is needed for saving the SVG plot to disk*/
+
+    /** load contents of the CSS file as string */
+    var file = document.getElementById('netgraphcss');
+    var css = Array.prototype.map.call(file.sheet.cssRules, function
+            css_text(x) {return x.cssText; } ).join('\n');
+
+    /** embed CSS code into SVG tag */
+    var s = document.createElement('style');
+    s.setAttribute('type', 'text/css');
+    s.innerHTML = "<![CDATA[\n" + css + "\n]]>";
+
+    var defs = document.createElement('defs');
+    defs.appendChild(s);
+
+    this.svg.insertBefore(defs, this.svg.firstChild);
+
     /** connect to server */
     this.ws = Nengo.create_websocket(args.uid);
     this.ws.onmessage = function(event) {self.on_message(event);}
