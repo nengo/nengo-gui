@@ -229,15 +229,16 @@ Nengo.Modal.prototype.main_config = function() {
             '<input type="checkbox" id="transparent-nets">' +
             'Expanded networks are transparent' +
           '</label>' +
-        '<div class="help-block with-errors"></div>' +
+          '<div class="help-block with-errors"></div>' +
+        '</div>' +
       '</div>' +
-      '<div class="select">' +
-          '<label for="config-backend" class="control-label">' +
-              'Select backend' +
-          '</label>' +
-          '<select class="form-control" id="config-backend">' +
-              sim.simulator_options +
-          '</select>' +
+      '<div class="form-group">' +
+        '<label for="config-backend" class="control-label">' +
+            'Select backend' +
+        '</label>' +
+        '<select class="form-control" id="config-backend">' +
+            sim.simulator_options +
+        '</select>' +
       '</div>' +
     '</div>').appendTo($form);
 

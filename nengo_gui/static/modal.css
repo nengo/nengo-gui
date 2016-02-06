@@ -116,20 +116,15 @@ div.modal {
 }
 
 #myModalForm .form-group {
-    margin-bottom:0px;
+    margin-bottom: 0px;
 }
 
 #myModalForm .checkbox {
-    padding-top:0px;
-    text-indent:10px;
+    padding-top: 0px;
+    text-indent: 10px;
 }
 
-#myModalForm .select {
-    padding-top:0px;
-    text-indent:10px;
-}
-
-#myModalForm .select select {
+#myModalForm .form-group select, #myModalForm .form-group input[type=text]  {
     width: calc(100% - 40px);
     margin-left: 20px;
 }
