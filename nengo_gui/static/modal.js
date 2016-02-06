@@ -262,7 +262,7 @@ Nengo.Modal.prototype.single_input_body = function(start_values, label) {
         }
         //Allow tabs to enter in default values
         if ((event.keyCode || event.which) == 9) {
-            var values = $("#singleInput").attr('placeholder').split(",");//start_values.split(", ");
+            var values = $("#singleInput").attr('placeholder').split(",");
             var cur_val = $("#singleInput").val();
             var cur_index = cur_val.split(",").length -1;
             var pre = ' '; // space and possible comma before value
