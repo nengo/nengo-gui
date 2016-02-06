@@ -122,3 +122,24 @@
     padding: 0.2em !important;
     border: none !important;
 }
+
+#speed_throttle {
+    height: 10px;
+    width: 110px;
+    #background: yellow;
+}
+
+#speed_throttle .guideline {
+    height: 0.25em;
+    width: 100%;
+    margin: auto;
+}
+
+#speed_throttle .btn {
+    position: absolute;
+    width: 0.8em;
+    height: 0.8em;
+    borderColor: #666;
+    transform: translate(50%, -75%);
+    padding: 0.1em 0;
+}

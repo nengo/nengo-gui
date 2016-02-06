@@ -67,6 +67,40 @@ Nengo.SimControl = function(div, args) {
     this.rate_tr = $('#rate_tr')[0];
     this.ticks_tr = $('#ticks_tr')[0];
 
+
+    this.speed_throttle_set = false;
+    this.speed_throttle = $('#speed_throttle')[0];
+
+    this.speed_throttle_guideline = document.createElement('div');
+    this.speed_throttle_guideline.classList.add('guideline');
+    this.speed_throttle.appendChild(this.speed_throttle_guideline);
+
+    this.speed_throttle_handle = document.createElement('div');
+    this.speed_throttle_handle.classList.add('btn');
+    this.speed_throttle_handle.classList.add('btn-default');
+    this.speed_throttle_handle.innerHTML = '';
+    this.speed_throttle.appendChild(this.speed_throttle_handle);
+
+    this.time_scale = d3.scale.linear();
+    this.time_scale.clamp(true);
+    this.time_scale.domain([0,  1.0]);
+    this.time_scale.range([0,  110.0]);  // width in pixels of slider
+    this.speed_throttle_handle.style.left = this.time_scale(1.0);
+
+    interact(this.speed_throttle_handle)
+        .draggable({
+            onstart: function (event) {
+                self.speed_throttle_set = true;
+            },
+            onmove: function (event) {
+                pixel_value = parseFloat(self.speed_throttle_handle.style.left) + event.dx;
+                value = self.time_scale.invert(pixel_value);
+                self.ws.send('delay_time:' + value);
+                self.ws.send('target_scale:' + value);
+                self.speed_throttle_handle.style.left = self.time_scale(value);
+            },
+        });
+
     this.simulator_options = '';
 
     this.update();
@@ -89,7 +123,10 @@ Nengo.SimControl.prototype.on_message = function(event) {
         var data = new Float32Array(event.data);
         this.time = data[0];
         this.rate = data[1];
-
+        this.rate_proportion = data[2];
+        if (!this.speed_throttle_set) {
+            this.speed_throttle_handle.style.left = this.time_scale(this.rate_proportion);
+        }
         this.schedule_update();
     }
 };
