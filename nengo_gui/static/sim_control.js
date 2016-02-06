@@ -50,7 +50,7 @@ Nengo.SimControl = function(div, args) {
     this.pause_button.onclick = function(event) {self.on_pause_click();};
     this.pause_button.onkeydown = function(event) {
         var key = event.key || String.fromCharCode(event.keyCode);
-        if (key = ' ') {
+        if (key == ' ') {
             event.stopPropagation();
         }
     };
