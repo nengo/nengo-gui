@@ -50,6 +50,7 @@ Nengo.XYValue = function(parent, sim, args) {
              .style('stroke', Nengo.make_colors(1));
 
     /** create a circle to track the most recent data */
+    // TODO: This should be invisible initially
     this.recent_circle = this.axes2d.svg.append("circle")
                                         .attr("r", this.get_circle_radius())
                                         .attr('cx', this.axes2d.scale_x(0))
@@ -87,19 +88,21 @@ Nengo.XYValue.prototype.update = function() {
     if(this.data_store.data.length > 1){
         var shown_data = this.data_store.get_shown_data();
 
-        /** update the lines */
-        var line = d3.svg.line()
-            .x(function(d, i) {
-                return self.axes2d.scale_x(
-                    shown_data[self.index_x][i]);
-                })
-            .y(function(d) {return self.axes2d.scale_y(d);})
-        this.path.data([shown_data[this.index_y]])
-                 .attr('d', line);
-
-        /** update the circle if there is valid data */
         var last_index = shown_data[self.index_x].length - 1;
         if(last_index >= 0){
+
+            /** update the lines */
+            var line = d3.svg.line()
+                .x(function(d, i) {
+                    return self.axes2d.scale_x(
+                        shown_data[self.index_x][i]);
+                    })
+                .y(function(d) {return self.axes2d.scale_y(d);});
+            this.path.data([shown_data[this.index_y]])
+                     .attr('d', line);
+
+            /** update the circle if there is valid data */
+            // TODO: This is where visibility should be triggered
             this.recent_circle.attr('cx', self.axes2d.scale_x(shown_data[self.index_x][last_index]))
                             .attr('cy', self.axes2d.scale_y(shown_data[self.index_y][last_index]));
         }
@@ -117,28 +120,13 @@ Nengo.XYValue.prototype.update = function() {
         this.invalid_dims = true;
 
         // add the label
-        // TODO: get rid of magic numbers... somehow
-        // probably need to figure out translation
         this.warning_label.append("rect")
-          .attr("x", 32.5)
-          .attr("y", 30)
-          .attr("width", this.width)
-          .attr("height", this.height)
-          .attr("fill", "yellow")
-          .attr("fill-opacity", 0.4);
-        // TODO: fix text alignment
-        this.warning_label.append("text")
-          .attr("x", this.width/2)
-          .attr("y", this.height/2)
-          .attr("text-anchor", "middle")
-          .attr("alignment-baseline", "middle")
-          .style("fill", "red")
-          .append("tspan")
-            .attr("dy", -12)
-            .text("INVALID")
-          .append("tspan")
-            .attr("dy", 12)
-            .text("DIMENSIONS");
+          .attr("x", 50)
+          .attr("y", 50)
+          .attr("fill", "white")
+          .attr("stroke-width", 1)
+          .attr("stroke", "rgb(0,0,0)")
+          .attr("fill-opacity", 1);
     }
 
 };
@@ -159,11 +147,11 @@ Nengo.XYValue.prototype.on_resize = function(width, height) {
     this.recent_circle.attr("r", this.get_circle_radius());
 
     this.warning_label.select("rect")
-      .attr("width", width - 60)
-      .attr("height", height - 60);
+      .attr("width", width - 100)
+      .attr("height", height - 100);
     this.warning_label.selectAll("text")
-      .attr("x", width/2)
-      .attr("y", this.height/2);
+      .attr("x", width/3)
+      .attr("y", height/3);
 };
 
 Nengo.XYValue.prototype.get_circle_radius = function() {
