@@ -297,7 +297,7 @@ Nengo.Value.prototype.set_legend_labels = function() {
             labels = label_csv.split(',');
 
             for (var i=0; i<self.n_lines; i++) {
-                if (labels[i] !== "") {
+                if (labels[i] !== "" && labels[i] !== undefined) {
                      self.legend_labels[i] = labels[i];
                 }
             }
@@ -306,7 +306,6 @@ Nengo.Value.prototype.set_legend_labels = function() {
             while (self.legend.lastChild) {
                 self.legend.removeChild(self.legend.lastChild);
             }
-            //console.log(self.legend_labels):
             Nengo.draw_legend(self.legend, self.legend_labels, self.color_func);
         }
         $('#OK').attr('data-dismiss', 'modal');
