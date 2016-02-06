@@ -141,9 +141,13 @@ Nengo.SimControl.prototype.start_rotating_cog = function() {
         self.pause_button_icon.style.transform = "rotate(" + self.rotation + "deg)";
         self.rotation += 2;
     }, 10);
+    this.pause_button.setAttribute("disabled","true");
+    $('#pause_button').addClass('play-pause-button-cog');        
 }
 
 Nengo.SimControl.prototype.stop_rotating_cog = function() {
+    this.pause_button.removeAttribute("disabled");
+    $('#pause_button').removeClass('play-pause-button-cog');        
     window.clearInterval(this.rotationInterval);
     this.pause_button_icon.style.transform = "";
 }
