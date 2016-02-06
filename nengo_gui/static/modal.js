@@ -253,12 +253,46 @@ Nengo.Modal.prototype.single_input_body = function(start_values, label) {
 
     //Add custom validator
     $('#singleInput').attr('data-my_validator', 'custom');
-
-    //Allow the enter key to submit
-    $("#singleInput").keypress(function(event) {
+    
+    $(".controls").on('keydown', '#singleInput', function(event) {
+        //Allow the enter key to submit
         if (event.which == 13) {
             event.preventDefault();
             $('#OK').click();
+        }
+        //Allow tabs to enter in default values
+        if ((event.keyCode || event.which) == 9) {
+            var values = $("#singleInput").attr('placeholder').split(",");//start_values.split(", ");
+            var cur_val = $("#singleInput").val();
+            var cur_index = cur_val.split(",").length -1;
+            var pre = ' '; // space and possible comma before value
+            var post = ','; // possible comma after value
+
+            // Only do special things if there are more values to enter
+            if (cur_index < values.length) {
+                // Compute the correct current index
+                if (cur_val.length > 0) {
+                    if (cur_val.trim().slice(-1) != ',') {
+                        cur_index += 1;
+                        pre = ', '; // need a comma as well between values
+                    }
+                } else {
+                    pre = ''; // no space for the first value
+                }
+                if (cur_index == values.length - 1) {
+                    post = '';
+                }
+                // If the last character is a comma or there are no characters, fill in the next default value
+                if (cur_val.length == 0 || cur_val.trim().slice(-1) == ',') {
+                    $("#singleInput").val($("#singleInput").val() + pre + values[cur_index].trim() + post);
+                    event.preventDefault();
+                } else {
+                    if (cur_index < values.length) {
+                        $("#singleInput").val($("#singleInput").val() + ', ');
+                        event.preventDefault();
+                    }
+                }
+            }
         }
     });
 }
