@@ -73,7 +73,7 @@
     background: #666;
 }
 
-#Toggle_ace, #Save_file, #Font_increase, #Font_decrease{
+#Toggle_ace, #Save_file, #Sync_editor_button, #Font_increase, #Font_decrease{
     float: right; 
 }
 
