@@ -19,6 +19,7 @@ Nengo.Value = function(parent, sim, args) {
     Nengo.Component.call(this, parent, args);
     var self = this;
     this.n_lines = args.n_lines || 1;
+    console.log(this.n_lines);
     this.sim = sim;
     this.display_time = args.display_time;
 
@@ -122,7 +123,6 @@ Nengo.Value = function(parent, sim, args) {
     this.div.appendChild(this.legend);
 
     this.legend_labels = args.legend_labels || [];
-    console.log(this.legend_labels);
     if (this.legend_labels.length !== this.n_lines) {
         // fill up the array with temporary labels
         for (var i=this.legend_labels.length; i<this.n_lines; i++) {
@@ -132,7 +132,7 @@ Nengo.Value = function(parent, sim, args) {
 
     this.show_legend = args.show_legend || false;
     if (this.show_legend === true) {
-        Nengo.draw_legend(this.legend, this.legend_labels, this.color_func);
+        Nengo.draw_legend(this.legend, this.legend_labels.slice(0, self.n_lines), this.color_func);
     }
 };
 
