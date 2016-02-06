@@ -21,6 +21,9 @@ Nengo.Hotkeys = function () {
                     case 191:
                         var key = '?';
                         break;
+                    case 8:
+                        var key = 'backspace';
+                        break;
                     default:
                         var key = String.fromCharCode(ev.keyCode)
                 }
@@ -63,6 +66,10 @@ Nengo.Hotkeys = function () {
             // bring up minimap with ctrl-m
             if (ctrl && key == 'm') {
                 Nengo.netgraph.toggleMiniMap();
+                ev.preventDefault();
+            }
+            // disable backspace navigation
+            if (key == 'backspace' && !on_editor) {
                 ev.preventDefault();
             }
         }
