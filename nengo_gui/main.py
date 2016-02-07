@@ -1,8 +1,10 @@
 import argparse
 import logging
+import os.path
 
 import nengo_gui
 import nengo_gui.gui
+from nengo_gui.backend.backend import ModelContext
 
 
 def old_main():
@@ -37,10 +39,15 @@ def main():
         logging.basicConfig()
 
     try:
-        s = nengo_gui.gui.GUI(filename=args.filename,
-                                           backend=args.backend)
-
-        s.start(port=args.port, password=args.password, browser=args.browser)
+        if args.filename is None:
+            filename = os.path.join(
+                nengo_gui.__path__[0], 'examples', 'default.py')
+        else:
+            filename = args.filename
+        s = nengo_gui.gui.InteractiveGUI(
+            ModelContext(filename=filename), port=args.port, password=args.password)
+                                           # TODO backend=args.backend)
+        s.start()
     finally:
         logging.shutdown()
 

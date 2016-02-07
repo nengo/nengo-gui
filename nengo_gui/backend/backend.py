@@ -376,10 +376,12 @@ class GuiServer(server.ManagedThreadHttpServer):
         self.model_context = model_context
         self.page_settings = page_settings
 
+        self.auto_shutdown = 2  # TODO make setable
         self._last_access = time.time()
 
     def create_page(self, filename, reset_cfg=False):
         """Create a new Page with this configuration"""
+        self._last_access = time.time()
         page = nengo_gui.page.Page(
             self, filename=filename, settings=self.page_settings,
             reset_cfg=reset_cfg)

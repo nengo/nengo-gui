@@ -1,4 +1,4 @@
-from .gui import GUI
+from .gui import InteractiveGUI
 from .viz import Viz   # deprecated
 from .version import version as __version__
 from .namefinder import NameFinder

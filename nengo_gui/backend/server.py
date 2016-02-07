@@ -99,10 +99,22 @@ class ManagedThreadHttpServer(
 
         # keep track of open threads, so we can close them when we exit
         self._requests = []
+        self._websockets = []
+
+        self._shutting_down = False
 
     @property
     def requests(self):
         return self._requests[:]
+
+    @property
+    def websockets(self):
+        return self._websockets[:]
+
+    def create_websocket(self, socket, addr):
+        ws = WebSocket(socket, addr)
+        self._websockets.append(ws)
+        return ws
 
     def process_request_thread(self, request, client_address):
         thread = threading.current_thread()
@@ -121,6 +133,30 @@ class ManagedThreadHttpServer(
             logger.exception("Server error.")
             BaseHTTPServer.HTTPServer.handle_error(
                 self, request, client_address)
+
+    def shutdown(self):
+        if self._shutting_down:
+            return
+        self._shutting_down = True
+
+        for ws in self.websockets:
+            ws.close()
+        for _, request in self.requests:
+            self.shutdown_request(request)
+
+        BaseHTTPServer.HTTPServer.shutdown(self)
+
+    def wait_for_shutdown(self, timeout=None):
+        """Wait for all request threads to finish.
+
+        Parameters
+        ----------
+        timeout : float, optional
+            Maximum time in seconds to wait for each thread to finish.
+        """
+        for thread, _ in self.requests:
+            if thread.is_alive():
+                thread.join(timeout)
 
 
 class HttpWsRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -238,7 +274,7 @@ Sec-WebSocket-Accept: {sec}
             (key + WS_MAGIC).encode('ascii')).digest()).decode('ascii')
         _sendall(self.request, response.format(sec=sec))
 
-        self.ws = WebSocket(self.request)
+        self.ws = self.server.create_websocket(self.request)
         self.ws.set_blocking(False)
 
         command = self._get_command(self.ws_commands, self.resource)
@@ -263,12 +299,6 @@ Sec-WebSocket-Accept: {sec}
         if '/' in commands:
             return commands['/']
         return None
-
-
-    def close(self):
-        if hasattr(self, 'ws'):
-            getattr(self, 'ws').close()
-
 
 
 class WebSocket(object):
@@ -314,11 +344,6 @@ class WebSocket(object):
         if frame.opcode == WebSocketFrame.OP_CLOSE:
             if self.state not in [self.ST_CLOSING, self.ST_CLOSED]:
                 self.close()
-            try:
-                self.socket.shutdown(socket.SHUT_RDWR)
-                self.socket.close()
-            except socket.error:
-                pass
             raise SocketClosedError("Websocket has been closed")
         elif frame.opcode == WebSocketFrame.OP_PING:
             if self.state == self.ST_OPEN:
@@ -337,7 +362,11 @@ class WebSocket(object):
             self.state = self.ST_CLOSING
             close_frame = WebSocketFrame(
                 fin=1, rsv=0, opcode=WebSocketFrame.OP_CLOSE, mask=0, data='')
-            _sendall(self.socket, close_frame.pack())
+            try:
+                _sendall(self.socket, close_frame.pack())
+            except socket.error as err:
+                if err.errno in [errno.EPIPE, errno.EBADF]:
+                    pass
 
     def write_frame(self, frame):
         if self.state != self.ST_OPEN:
