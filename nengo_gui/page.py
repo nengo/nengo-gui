@@ -15,7 +15,7 @@ import nengo_gui.config
 
 
 class Page(object):
-    """A handler for a singe page of the nengo_gui.
+    """A handler for a single page of the nengo_gui.
 
     Parameters
     ----------
