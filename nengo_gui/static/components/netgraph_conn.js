@@ -9,7 +9,7 @@
  * @param {array of strings} info.pre - uid to connect from and its parents
  * @param {array of strings} info.post - uid to connect to and its parents
  */
-Nengo.NetGraphConnection = function(ng, info, minimap) {
+Nengo.NetGraphConnection = function(ng, info, minimap, mini_conn) {
     this.ng = ng;
     this.uid = info.uid;
 
@@ -21,6 +21,7 @@ Nengo.NetGraphConnection = function(ng, info, minimap) {
     this.post = null;
 
     this.minimap = minimap;
+    this.mini_conn = mini_conn;
     if (!minimap) {
         this.g_conns = ng.g_conns;
         this.objects = ng.svg_objects;
@@ -69,6 +70,9 @@ Nengo.NetGraphConnection.prototype.set_recurrent = function(recurrent) {
     this.remove_line();
     this.recurrent = recurrent;
     this.create_line();
+    
+    // note: mini_conn is not set to recurrent, as we don't want to
+    // display the recurrent conns on the minimap
 }
 
 Nengo.NetGraphConnection.prototype.create_line = function() {
@@ -187,10 +191,18 @@ Nengo.NetGraphConnection.prototype.find_post = function() {
 Nengo.NetGraphConnection.prototype.set_pres = function(pres) {
     this.pres = pres;
     this.set_pre(this.find_pre());
+    
+    if (!this.minimap) {
+    	this.mini_conn.set_pres(pres);
+    }
 }
 Nengo.NetGraphConnection.prototype.set_posts = function(posts) {
     this.posts = posts;
     this.set_post(this.find_post());
+    
+    if (!this.minimap) {
+    	this.mini_conn.set_posts(posts);
+    }
 }
 
 
@@ -325,6 +337,10 @@ Nengo.NetGraphConnection.prototype.redraw = function() {
         angle = 180 / Math.PI * angle;
         this.marker.setAttribute('transform',
                           'translate(' + mx + ',' + my + ') rotate('+ angle +')');
+    }
+    
+    if (!this.minimap && this.ng.mm_display) {
+    	this.mini_conn.redraw();
     }
 }
 /**Function to determine the length of an intersection line through a rectangle

@@ -181,9 +181,6 @@ Nengo.NetGraph = function(parent, args) {
                 }
                 for (var key in self.svg_conns) {
                     self.svg_conns[key].redraw();
-                    if (self.mm_display) {
-                        self.minimap_conns[key].redraw();
-                    }
                 }
 
                 viewport.x = self.offsetX;
@@ -375,13 +372,6 @@ Nengo.NetGraph.prototype.on_message = function(event) {
         conn.set_recurrent(data.pres[0] === data.posts[0]);
         conn.redraw();
 
-        if (this.mm_display) {
-            var conn_mini = this.minimap_conns[data.uid];
-            conn_mini.set_pres(data.pres);
-            conn_mini.set_posts(data.posts);
-            conn_mini.redraw();
-        }
-
     } else if (data.type === 'delete_graph') {
         var uid = data.uid;
         for (var i = 0; i < Nengo.Component.components.length; i++) {
@@ -429,10 +419,6 @@ Nengo.NetGraph.prototype.redraw = function() {
     }
     for (var key in this.svg_conns) {
         this.svg_conns[key].redraw();
-        
-        if (this.mm_display) {
-            this.minimap_conns[key].redraw();
-        }
     }
 }
 
@@ -462,11 +448,11 @@ Nengo.NetGraph.prototype.create_object = function(info) {
 
 /** create a new NetGraphConnection */
 Nengo.NetGraph.prototype.create_connection = function(info) {
-    var conn = new Nengo.NetGraphConnection(this, info, false);
-    this.svg_conns[info.uid] = conn;
-
-    var conn_mini = new Nengo.NetGraphConnection(this, info, true);
+	var conn_mini = new Nengo.NetGraphConnection(this, info, true);
     this.minimap_conns[info.uid] = conn_mini;
+    
+    var conn = new Nengo.NetGraphConnection(this, info, false, conn_mini);
+    this.svg_conns[info.uid] = conn;
 };
 
 
