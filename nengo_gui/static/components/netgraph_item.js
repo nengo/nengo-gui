@@ -579,6 +579,10 @@ Nengo.NetGraphItem.prototype.remove = function() {
     if (this.depth == 1) {
         this.ng.scaleMiniMap();
     }
+    
+    if (!this.minimap) {
+    	this.mini_item.remove();
+    }
 };
 
 Nengo.NetGraphItem.prototype.constrain_aspect = function() {

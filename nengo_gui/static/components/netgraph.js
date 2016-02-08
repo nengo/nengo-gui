@@ -355,15 +355,8 @@ Nengo.NetGraph.prototype.on_message = function(event) {
         if (item === undefined) {
             item = this.svg_conns[data.uid];
         }
+        
         item.remove();
-
-        if (this.mm_display) {
-            var item_mini = this.minimap_objects[data.uid];
-            if (item_mini === undefined) {
-                item_mini = this.minimap_conns[data.uid];
-            }
-            item_mini.remove();
-        }
 
     } else if (data.type === 'reconnect') {
         var conn = this.svg_conns[data.uid];

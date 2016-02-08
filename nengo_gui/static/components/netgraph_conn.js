@@ -237,6 +237,10 @@ Nengo.NetGraphConnection.prototype.remove = function() {
     this.removed = true;
 
     delete this.ng.svg_conns[this.uid];
+    
+    if (!this.minimap) {
+    	this.mini_conn.remove();
+    }
 }
 
 
