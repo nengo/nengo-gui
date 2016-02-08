@@ -36,10 +36,9 @@ class IPythonViz(object):
             cfg = get_ipython().mktempfile()
 
         self._server_thread, server = self.start_server(cfg, model)
-        self.port = server.server_port
+        self.port = server.server.server_port
 
         self.url = self.get_url(self.host, self.port)
-
 
     @staticmethod
     def get_url(host, port, action=None):
@@ -58,20 +57,20 @@ class IPythonViz(object):
             warnings.warn(ConfigReuseWarning(
                 "Reusing config. Only the most recent visualization will "
                 "update the config."))
-            for page in server.gui.pages:
+            for page in server.pages:
                 page.save_config(force=True)
                 page.filename_cfg = get_ipython().mktempfile()
                 cls.servers[page.filename_cfg] = server
                 cls.threads[page.filename_cfg] = server_thread
 
         name = model.label
-        gui = nengo_gui.GUI(
-            name, cfg=cfg, model=model, locals=get_ipython().user_ns,
-            interactive=False, allow_file_change=False)
-        server = gui.prepare_server(port=0, browser=False)
-        server_thread = threading.Thread(
-            target=gui.begin_lifecycle,
-            kwargs={'server': server})
+        model_context = nengo_gui.backend.backend.ModelContext(
+            model=model, locals=get_ipython().user_ns, filename=name,
+            writeable=False)
+        page_settings = nengo_gui.page.PageSettings(
+            filename_cfg=cfg, editor_class=nengo_gui.components.editor.NoEditor)
+        server = nengo_gui.gui.GUI(model_context, page_settings, port=0)
+        server_thread = threading.Thread(target=server.start)
         server_thread.start()
         cls.servers[cfg] = server
         cls.threads[cfg] = server_thread

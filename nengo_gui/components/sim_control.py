@@ -203,7 +203,7 @@ class SimControl(Component):
             self.reset_inform = True
             self.page.sim = None
         elif msg[:8] == 'backend:':
-            self.page.backend = msg[8:]
+            self.page.settings.backend = msg[8:]
             self.page.changed = True
         elif msg[:13] == 'target_scale:':
             self.target_scale = float(msg[13:])
@@ -212,7 +212,7 @@ class SimControl(Component):
     def backend_options_html(self):
         items = []
         for module in nengo_gui.exec_env.discover_backends():
-            if module == self.page.backend:
+            if module == self.page.settings.backend:
                 selected = ' selected'
             else:
                 selected = ''

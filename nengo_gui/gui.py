@@ -7,6 +7,7 @@ import select
 import signal
 import sys
 
+import nengo_gui
 from nengo_gui.backend.backend import GuiServer
 
 
@@ -22,12 +23,16 @@ class GUI(object):
     ----------
     model_context : nengo_gui.backend.backend.ModelContext
         Model and its context served by the backend.
+    page_settings : nengo_gui.page.PageSettings, optional
+        Frontend page settings.
     port : int
         Port to listen on.
     password : str, optional
         Password required to connect to the backend.
     """
-    def __init__(self, model_context, port=8080, password=None):
+    def __init__(
+            self, model_context, page_settings=nengo_gui.page.PageSettings(),
+            port=8080, password=None):
         self.model_context = model_context
         if password is not None:
             raise NotImplementedError()
@@ -36,7 +41,8 @@ class GUI(object):
         else:
             addr = 'localhost'
 
-        self.server = GuiServer((addr, port), self.model_context)
+        self.server = GuiServer(
+            (addr, port), self.model_context, page_settings)
 
     def start(self):
         """Start the backend server and wait until it shuts down."""

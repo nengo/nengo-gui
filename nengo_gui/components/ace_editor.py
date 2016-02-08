@@ -1,37 +1,32 @@
 import json
 import os
 
-from nengo_gui.components.component import Component
+from nengo_gui.components.editor import Editor
 import nengo_gui.exec_env
 
 
-class AceEditor(Component):
+class AceEditor(Editor):
 
     config_defaults = {}
 
     def __init__(self):
-        # the IPython integration requires this component to be early
-        # in the list
-        super(AceEditor, self).__init__(component_order=-8)
+        super(AceEditor, self).__init__()
         self.pending_messages = []
 
     def attach(self, page, config, uid):
         super(AceEditor, self).attach(page, config, uid)
-        if page.gui.interactive:
-            self.current_code = page.code
-            self.serve_code = True
-            self.last_error = None
-            self.last_stdout = None
+        self.current_code = page.code
+        self.serve_code = True
+        self.last_error = None
+        self.last_stdout = None
 
     def update_code(self, code):
         self.current_code = code
         self.serve_code = True
 
     def update_client(self, client):
-        if not self.page.gui.interactive:
-            return
         while self.pending_messages:
-            client.write(self.pending_messages.pop())
+            client.write_text(self.pending_messages.pop())
         if self.serve_code:
             i = json.dumps({'code': self.current_code})
             client.write_text(i)
@@ -55,12 +50,9 @@ class AceEditor(Component):
             self.last_stdout = stdout
 
     def javascript(self):
-        args = json.dumps(dict(active=self.page.gui.interactive))
-        return 'Nengo.ace = new Nengo.Ace("%s", %s)' % (id(self), args)
+        return 'Nengo.ace = new Nengo.Ace("%s", {})' % (id(self),)
 
     def message(self, msg):
-        if not self.page.gui.interactive:
-            return
         data = json.loads(msg)
         self.current_code = data['code']
 

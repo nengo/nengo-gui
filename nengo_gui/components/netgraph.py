@@ -101,7 +101,7 @@ class NetGraph(Component):
                 return
             else:
                 # send the new code to the client
-                self.page.ace_editor.update_code(code)
+                self.page.editor.update_code(code)
 
         self.page.execute(code)
 

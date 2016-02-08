@@ -44,9 +44,10 @@ def main():
                 nengo_gui.__path__[0], 'examples', 'default.py')
         else:
             filename = args.filename
+        page_settings = nengo_gui.page.PageSettings(backend=args.backend)
         s = nengo_gui.gui.InteractiveGUI(
-            ModelContext(filename=filename), port=args.port, password=args.password)
-                                           # TODO backend=args.backend)
+            ModelContext(filename=filename), page_settings=page_settings,
+            port=args.port, password=args.password)
         s.start()
     finally:
         logging.shutdown()

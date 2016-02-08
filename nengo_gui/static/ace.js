@@ -8,6 +8,14 @@
  * page is loaded.
  */
 
+
+Nengo.disable_editor = function() {
+    $('#Toggle_ace').css('display', 'none');
+    $('#Save_file').css('display', 'none');
+    $('#Font_increase').css('display', 'none');
+    $('#Font_decrease').css('display', 'none');
+}
+
 Nengo.Ace = function (uid, args) {
     this.AceRange = ace.require('ace/range').Range;
     if (uid[0] === '<') {
@@ -16,14 +24,6 @@ Nengo.Ace = function (uid, args) {
     var self = this;
     this.min_width = 50;
     this.max_width = $(window).width() - 100;
-
-    if (args.active === false) {
-        $('#Toggle_ace').css('display', 'none');
-        $('#Save_file').css('display', 'none');
-        $('#Font_increase').css('display', 'none');
-        $('#Font_decrease').css('display', 'none');
-        return;
-    }
 
     this.ws = Nengo.create_websocket(uid);
     this.ws.onmessage = function(event) {self.on_message(event);}
