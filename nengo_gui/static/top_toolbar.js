@@ -48,6 +48,9 @@ Nengo.Toolbar = function(filename) {
     $('#Sync_editor_button')[0].addEventListener('click', function () {
         Nengo.ace.update_trigger = true;
     });
+    $('#Pdf_button')[0].addEventListener('click', function () {
+        self.pdf_modal();
+    });
     $('#Help_button')[0].addEventListener('click', function () {
         Nengo.hotkeys.callMenu();
     });
@@ -147,3 +150,11 @@ Nengo.Toolbar.prototype.config_modal_show = function() {
 
     Nengo.modal.show();
 };
+
+/** Export the layout to the SVG in Downloads folder **/
+Nengo.Toolbar.prototype.pdf_modal = function () {
+    Nengo.modal.title("Export the layout to SVG");
+    Nengo.modal.text_body("Do you want to save the file?", "info");
+    Nengo.modal.footer('confirm_savepdf');
+    Nengo.modal.show();
+}

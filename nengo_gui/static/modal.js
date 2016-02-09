@@ -55,6 +55,37 @@ Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function){
         $('#confirm_reset_button').on('click', function() {
             toolbar.reset_model_layout();
         });
+    } else if (type === 'confirm_savepdf') {
+        this.$footer.append('<button type="button" ' +
+            'id="confirm_savepdf_button" class="btn btn-primary" data-dismiss="modal">Save</button>');
+        this.$footer.append('<button type="button" ' +
+            'class="btn btn-default" data-dismiss="modal">Close</button>');
+        $('#confirm_savepdf_button').on('click', function() {
+            var svg = $("#main svg")[0];
+
+            // Serialize SVG as XML
+            var svg_xml = (new XMLSerializer).serializeToString(svg);
+            source = '<?xml version="1.0" standalone="no"?>' + svg_xml;
+            source = source.replace("&lt;", "<");
+            source = source.replace("&gt;", ">");
+
+            var svg_uri = 'data:image/svg+xml;base64,' + btoa(source);
+
+            // Extract filename from the path
+            var path = $("#filename")[0].textContent;
+            filename = path.split('/').pop()
+            filename = filename.split('.')[0]
+
+            // Initiate download
+            var link = document.createElement("a");
+            link.download = filename + ".svg";
+            link.href = svg_uri;
+
+            // Adding element to the DOM (needed for Firefox)
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
     } else if (type === 'refresh') {
         this.$footer.append('<button type="button" ' +
             'id="refresh_button" class="btn btn-primary">Refresh</button>');
@@ -229,7 +260,7 @@ Nengo.Modal.prototype.main_config = function() {
     $('#transparent-nets').change(function () {
         Nengo.netgraph.transparent_nets = $('#transparent-nets').prop('checked');
     });
-    
+
     $('#sync-editor').prop('checked', Nengo.ace.auto_update);
     $('#sync-editor').change(function () {
         Nengo.ace.auto_update = $('#sync-editor').prop('checked');
@@ -274,7 +305,7 @@ Nengo.Modal.prototype.single_input_body = function(start_values, label) {
 
     //Add custom validator
     $('#singleInput').attr('data-my_validator', 'custom');
-    
+
     $(".controls").on('keydown', '#singleInput', function(event) {
         //Allow the enter key to submit
         if (event.which == 13) {
