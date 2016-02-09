@@ -51,21 +51,13 @@ Nengo.Toolbar = function(filename) {
     $('#Pdf_button')[0].addEventListener('click', function () {
         self.pdf_modal();
     });
+    $('#Download_button')[0].addEventListener('click', function () {
+      self.csv_modal();
+    });
     $('#Help_button')[0].addEventListener('click', function () {
         Nengo.hotkeys.callMenu();
     });
-    $('#Download_button')[0].addEventListener('click', function () {
-      var data_items = Nengo.Component.components;
-      var CSV = data_to_csv(data_items);
-      var uri = 'data:text/csv;charset=utf-8,' + escape(CSV);
-      var link = document.createElement("a");
-      link.href = uri;
-      link.style = "visibility:hidden";
-      link.download = "Simulation_data" + ".csv";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
+
     $('#filename')[0].innerHTML = filename;
 
     // update the URL so reload and bookmarks work as expected
@@ -167,5 +159,13 @@ Nengo.Toolbar.prototype.pdf_modal = function () {
     Nengo.modal.title("Export the layout to SVG");
     Nengo.modal.text_body("Do you want to save the file?", "info");
     Nengo.modal.footer('confirm_savepdf');
+    Nengo.modal.show();
+}
+
+/** Export the graph data to the CSV in Downloads folder **/
+Nengo.Toolbar.prototype.csv_modal = function () {
+    Nengo.modal.title("Export the graph data to CSV");
+    Nengo.modal.text_body("Do you want to save the file?", "info");
+    Nengo.modal.footer('confirm_savecsv');
     Nengo.modal.show();
 }
