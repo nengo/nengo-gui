@@ -1,11 +1,10 @@
 """HTTP and WebSocket server implementation."""
 
-from __future__ import print_function
-
 import base64
 import BaseHTTPServer
 import errno
 import hashlib
+import logging
 import socket
 import SocketServer
 import struct
@@ -13,6 +12,9 @@ import sys
 import threading
 import traceback
 from urlparse import parse_qs, urlparse
+
+
+logger = logging.getLogger(__name__)
 
 
 WS_MAGIC = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
@@ -47,8 +49,8 @@ class Forbidden(HttpError):
 
 
 class InvalidResource(HttpError):
-    def __init__(self):
-        super(InvalidResource, self).__init__(404, 'Invalid resource')
+    def __init__(self, path):
+        super(InvalidResource, self).__init__(404, 'Invalid resource: ' + path)
 
 
 class UpgradeRequired(HttpError):
@@ -116,7 +118,7 @@ class ManagedThreadHttpServer(
                 [errno.EPIPE, errno.EBADF, errno.ECONNRESET]):
             return  # Probably caused by a server shutdown
         else:
-            print(exc_type, exc_value, dir(exc_value))
+            logger.exception("Server error.")
             BaseHTTPServer.HTTPServer.handle_error(
                 self, request, client_address)
 
@@ -172,9 +174,11 @@ class HttpWsRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             else:
                 self.http_GET()
         except HttpError as err:
+            logger.warning(
+                'Error response (%i): %s', err.code, err.msg, exc_info=True)
             err.to_response().send(self)
         except Exception as err:
-            print(traceback.format_exc())
+            logger.exception('Error response')
             err = InternalServerError(
                 '<pre>' + traceback.format_exc() + '</pre>')
             err.to_response().send(self)
@@ -188,7 +192,7 @@ class HttpWsRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         response.send(self)
 
     def http_default(self):
-        raise InvalidResource()
+        raise InvalidResource(self.path)
 
     def handle_upgrade(self):
         upgrade = self.headers.getheader('Upgrade').lower()
@@ -245,7 +249,7 @@ Sec-WebSocket-Accept: {sec}
         self.ws.close()
 
     def ws_default(self):
-        raise InvalidResource()
+        raise InvalidResource(self.path)
 
     @classmethod
     def _get_command(cls, commands, path):

@@ -1,4 +1,5 @@
 import argparse
+import logging
 
 import nengo_gui
 import nengo_gui.gui
@@ -31,13 +32,17 @@ def main():
     args = parser.parse_args()
 
     if args.debug:
-        import logging
         logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig()
 
-    s = nengo_gui.gui.GUI(filename=args.filename,
-                                       backend=args.backend)
+    try:
+        s = nengo_gui.gui.GUI(filename=args.filename,
+                                           backend=args.backend)
 
-    s.start(port=args.port, password=args.password, browser=args.browser)
+        s.start(port=args.port, password=args.password, browser=args.browser)
+    finally:
+        logging.shutdown()
 
 if __name__ == '__main__':
     main()

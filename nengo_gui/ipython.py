@@ -28,8 +28,6 @@ class IPythonViz(object):
     host = 'localhost'
 
     def __init__(self, model, cfg=None, height=600):
-        nengo_gui.server.Server.log_file = None
-
         self.height = height
 
         self._started = False

@@ -90,6 +90,9 @@ class RequireAuthentication(object):
         return auth_checked
 
 
+logger = logging.getLogger(__name__)
+
+
 class GuiRequestHandler(server.HttpWsRequestHandler):
     http_commands = {
         '/': 'serve_main',
@@ -280,6 +283,9 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
 
         self.cookie['_session_id'] = session_id
         return session
+
+    def log_message(self, format, *args):
+        logger.info(format, *args)
 
     def log_message(self, format, *args):
         logger.info(format, *args)
