@@ -42,7 +42,6 @@ Nengo.Toolbar = function(filename) {
     $('#Minimap_button')[0].addEventListener('click', function () {
         Nengo.netgraph.toggleMiniMap();
     });
-    
     $('#Config_button')[0].addEventListener('click', function () {
         self.config_modal();
     });
@@ -51,19 +50,6 @@ Nengo.Toolbar = function(filename) {
     });
     $('#Help_button')[0].addEventListener('click', function () {
         Nengo.hotkeys.callMenu();
-    });
-
-    $('#Download_button')[0].addEventListener('click', function () {
-        data_items = Nengo.Component.components;
-        var CSV = data_to_csv(data_items);
-        var uri = 'data:text/csv;charset=utf-8,' + escape(CSV);
-        var link = document.createElement("a");
-        link.href = uri;
-        link.style = "visibility:hidden";
-        link.download = "Simulation_data" + ".csv";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
     });
 
     $('#filename')[0].innerHTML = filename;
