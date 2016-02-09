@@ -1,8 +1,7 @@
 import argparse
-import threading
-import webbrowser
 
 import nengo_gui
+import nengo_gui.gui
 
 
 def main():
@@ -29,11 +28,9 @@ def main():
         import logging
         logging.basicConfig(level=logging.DEBUG)
 
-    s = nengo_gui.gui.GUI(filename=args.filename, backend=args.backend)
-    if args.browser:
-        threading.Thread(
-            target=webbrowser.open,
-            args=('http://localhost:%d' % args.port,)).start()
+    s = nengo_gui.gui.GUI(filename=args.filename,
+                                       backend=args.backend)
+
     s.start(port=args.port, password=args.password, browser=args.browser)
 
 if __name__ == '__main__':
