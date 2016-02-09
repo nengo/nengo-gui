@@ -32,6 +32,9 @@ def main():
         default='nengo', type=str, help='default backend to use')
     parser.add_argument('--browser', dest='browser', action='store_true')
     parser.add_argument('--no-browser', dest='browser', action='store_false')
+    parser.add_argument('--auto-shutdown', nargs=1, type=float,
+        help="Time limit before automatic shutdown. Set to 0 to deactivate.",
+        default=[2])
     parser.set_defaults(browser=True)
     args = parser.parse_args()
 
@@ -50,6 +53,7 @@ def main():
         s = nengo_gui.gui.InteractiveGUI(
             ModelContext(filename=filename), page_settings=page_settings,
             port=args.port, password=args.password)
+        s.server.auto_shutdown = args.auto_shutdown[0]
 
         if args.browser:
             threading.Thread(
