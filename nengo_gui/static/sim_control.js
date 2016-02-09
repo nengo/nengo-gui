@@ -91,12 +91,13 @@ Nengo.SimControl = function(div, args) {
     interact(this.speed_throttle_handle)
         .draggable({
             onstart: function (event) {
+                self.speed_throttle_x = parseFloat(self.speed_throttle_handle.style.left);
                 self.speed_throttle_set = true;
             },
             onmove: function (event) {
                 self.speed_throttle_changed = true;
-                var pixel_value = parseFloat(self.speed_throttle_handle.style.left) + event.dx;
-                pixel_value = self.time_scale(self.time_scale.invert(pixel_value));
+                self.speed_throttle_x += event.dx;
+                var pixel_value = self.time_scale(self.time_scale.invert(self.speed_throttle_x));
                 self.speed_throttle_handle.style.left = pixel_value;
             },
         });
