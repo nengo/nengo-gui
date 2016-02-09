@@ -40,6 +40,7 @@ class SimControl(Component):
         self.target_scale = None   # desired proportion of full speed
         self.delay_time = 0.0      # amount of delay per time step
         self.rate_proportion = 1.0 # current proportion of full speed
+        self.smart_sleep_offset = 0.0  # difference from actual sleep time
 
     def attach(self, page, config, uid):
         super(SimControl, self).attach(page, config, uid)
@@ -101,7 +102,7 @@ class SimControl(Component):
         self.delay_time = np.clip(self.delay_time, 0, 0.5)
 
         if self.delay_time > 0:
-            self.busy_sleep(self.delay_time)
+            self.smart_sleep(self.delay_time)
 
         # Sleeps to prevent the simulation from advancing
         # while the simulation is paused
@@ -114,6 +115,24 @@ class SimControl(Component):
         start = now
         while now < start + delay_time:
             now = timeit.default_timer()
+
+    def smart_sleep(self, delay_time):
+        """Attempt to sleep for an amount of time without a busy loop.
+
+        This keeps track of the difference between the requested time.sleep()
+        time and the actual amount of time slept, and then subtracts that
+        difference from future smart_sleep calls.  This should give an
+        overall consistent sleep() time even if the actual sleep() time
+        is inaccurate.
+        """
+        t = delay_time + self.smart_sleep_offset
+        if t >= 0:
+            start = timeit.default_timer()
+            time.sleep(t)
+            end = timeit.default_timer()
+            self.smart_sleep_offset += delay_time - (end - start)
+        else:
+            self.smart_sleep_offset += delay_time
 
     def config_settings(self, data):
         for i in data:
