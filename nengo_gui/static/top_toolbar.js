@@ -47,6 +47,7 @@ Nengo.Toolbar = function(filename) {
     });
     $('#Sync_editor_button')[0].addEventListener('click', function () {
         Nengo.ace.update_trigger = true;
+    });
     $('#Pdf_button')[0].addEventListener('click', function () {
         self.pdf_modal();
     });
