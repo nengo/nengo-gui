@@ -242,7 +242,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
                 component.message(msg.data)
                 return True
             except:
-                logging.exception('Error processing: "%s"', msg.data)
+                logging.exception('Error processing: %s', repr(msg.data))
 
     def _handle_config_msg(self, component, msg):
         cfg = json.loads(msg.data[7:])
@@ -283,9 +283,6 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
 
         self.cookie['_session_id'] = session_id
         return session
-
-    def log_message(self, format, *args):
-        logger.info(format, *args)
 
     def log_message(self, format, *args):
         logger.info(format, *args)
