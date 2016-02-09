@@ -23,26 +23,18 @@ class GUI(object):
     ----------
     model_context : nengo_gui.backend.backend.ModelContext
         Model and its context served by the backend.
+    server_settings : nengo_gui.backend.backend.GuiServerSettings
+        Backend settings.
     page_settings : nengo_gui.page.PageSettings, optional
         Frontend page settings.
-    port : int
-        Port to listen on.
-    password : str, optional
-        Password required to connect to the backend.
     """
     def __init__(
-            self, model_context, page_settings=nengo_gui.page.PageSettings(),
-            port=8080, password=None):
+            self, model_context, server_settings,
+            page_settings=nengo_gui.page.PageSettings()):
         self.model_context = model_context
-        if password is not None:
-            raise NotImplementedError()
-            #nengo_gui.server.Server.add_user('', password)
-            #addr = ''
-        else:
-            addr = 'localhost'
 
         self.server = GuiServer(
-            (addr, port), self.model_context, page_settings)
+            self.model_context, server_settings, page_settings)
 
     def start(self):
         """Start the backend server and wait until it shuts down."""
@@ -71,8 +63,9 @@ class InteractiveGUI(GUI):
     """
 
     def start(self):
-        print("Starting nengo server at http://localhost:%d" %
-              self.server.server_address[1])
+        protocol = 'https:' if self.server.settings.use_ssl else 'http:'
+        print("Starting nengo server at %s//%s:%d" %
+              (protocol, 'localhost', self.server.server_port))
 
         if not sys.platform.startswith('win'):
             signal.signal(signal.SIGINT, self._confirm_shutdown)

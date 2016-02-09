@@ -373,7 +373,6 @@ class GuiServer(server.ManagedThreadHttpServer):
         self.model_context = model_context
         self.page_settings = page_settings
 
-        self.auto_shutdown = 2  # Timeout for auto-shutdown
         self._last_access = time.time()
 
     def create_page(self, filename, reset_cfg=False):

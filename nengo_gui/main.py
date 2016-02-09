@@ -21,6 +21,11 @@ def main():
         '-p', '--password', dest='password', metavar='PASS',
         help='password for remote access')
     parser.add_argument(
+        '--cert', nargs=1, default=[None], type=str,
+        help="SSL certificate file")
+    parser.add_argument(
+        '--key', nargs=1, default=[None], type=str, help="SSL key file")
+    parser.add_argument(
         '-P', '--port', dest='port', metavar='PORT',
         default=8080, type=int, help='port to run server on')
     parser.add_argument(
@@ -43,6 +48,17 @@ def main():
     else:
         logging.basicConfig()
 
+    if args.password is not None:
+        server_settings = nengo_gui.backend.backend.GuiServerSettings(
+            ('', 8080), args.auto_shutdown[0], password_hash=args.password,
+            ssl_cert=args.cert[0], ssl_key=args.key[0])
+        if not server_settings.use_ssl:
+            raise ValueError("Password protection only allowed with SSL.")
+    else:
+        server_settings = nengo_gui.backend.backend.GuiServerSettings(
+            ('localhost', 8080), args.auto_shutdown[0], ssl_cert=args.cert[0],
+            ssl_key=args.key[0])
+
     try:
         if args.filename is None:
             filename = os.path.join(
@@ -51,14 +67,19 @@ def main():
             filename = args.filename
         page_settings = nengo_gui.page.PageSettings(backend=args.backend)
         s = nengo_gui.gui.InteractiveGUI(
-            ModelContext(filename=filename), page_settings=page_settings,
-            port=args.port, password=args.password)
+            ModelContext(filename=filename), server_settings,
+            page_settings=page_settings)
         s.server.auto_shutdown = args.auto_shutdown[0]
 
         if args.browser:
-            threading.Thread(
+            protocol = 'https:' if server_settings.use_ssl else 'http:'
+            host = 'localhost'
+            port = s.server.server_port
+            t = threading.Thread(
                 target=webbrowser.open,
-                args=('http://localhost:%d' % s.server.server_port,)).start()
+                args=('%s//%s:%d' % (protocol, host, port),))
+            t.start()
+
         s.start()
     finally:
         logging.shutdown()

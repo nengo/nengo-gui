@@ -8,6 +8,7 @@ import logging
 import socket
 import SocketServer
 import struct
+import ssl
 import sys
 import threading
 import traceback
@@ -318,6 +319,8 @@ class WebSocket(object):
     def _read(self):
         try:
             self._buf = self._buf + bytearray(self.socket.recv(512))
+        except ssl.SSLWantReadError:
+            pass
         except socket.error as e:
             if e.errno in [errno.EDEADLK, errno.EAGAIN, 10035]:
                 # no data available

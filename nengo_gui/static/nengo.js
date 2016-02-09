@@ -34,7 +34,12 @@ Nengo.set_transform = function(element, x, y) {
 Nengo.create_websocket = function(uid) {
     var parser = document.createElement('a');
     parser.href = document.URL;
-    var ws_url = 'ws://' + parser.host + '/viz_component?uid=' + uid;
+    if (window.location.protocol === 'https:') {
+        var ws_proto = 'wss:';
+    } else{
+        var ws_proto = 'ws:';
+    }
+    var ws_url = ws_proto + '//' + parser.host + '/viz_component?uid=' + uid;
     var ws = new WebSocket(ws_url);
     ws.binaryType = "arraybuffer";
     return ws;
