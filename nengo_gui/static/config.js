@@ -7,7 +7,7 @@ Nengo.Config = function(parent, args) {
             get: function() {
                 var val = localStorage.getItem("ng." + key) || default_val;
                 if (type === "boolean") {
-                    return val === "true";
+                    return val === "true" || val === true;
                 } else if (type === "number") {
                     return Number(val);
                 } else {
