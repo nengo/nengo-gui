@@ -64,7 +64,7 @@ class IPythonViz(object):
                 cls.threads[page.filename_cfg] = server_thread
 
         name = model.label
-        model_context = nengo_gui.backend.backend.ModelContext(
+        model_context = nengo_gui.guibackend.ModelContext(
             model=model, locals=get_ipython().user_ns, filename=name,
             writeable=False)
         page_settings = nengo_gui.page.PageSettings(

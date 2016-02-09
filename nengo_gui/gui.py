@@ -8,7 +8,7 @@ import signal
 import sys
 
 import nengo_gui
-from nengo_gui.backend.backend import GuiServer
+from nengo_gui.guibackend import GuiServer
 
 
 class ServerShutdown(Exception):

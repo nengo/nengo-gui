@@ -45,7 +45,7 @@ class SessionManager(object):
 
     def __getitem__(self, session_id):
         session = self._sessions.get(session_id, None)
-        if (session is None or 
+        if (session is None or
                 session.creation_time + self.time_to_live < time.time()):
             del self._sessions[session_id]
             raise SessionExpiredError()

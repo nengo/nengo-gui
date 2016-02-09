@@ -8,7 +8,7 @@ import json
 
 from nengo_gui.components.component import Component
 import nengo_gui.exec_env
-from nengo_gui.backend.server import WebSocketFrame
+from nengo_gui.server import WebSocketFrame
 
 
 class SimControl(Component):
