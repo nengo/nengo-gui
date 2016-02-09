@@ -69,6 +69,7 @@ Nengo.SimControl = function(div, args) {
 
 
     this.speed_throttle_set = false;
+    this.speed_throttle_changed = false;
     this.speed_throttle = $('#speed_throttle')[0];
 
     this.speed_throttle_guideline = document.createElement('div');
@@ -93,11 +94,10 @@ Nengo.SimControl = function(div, args) {
                 self.speed_throttle_set = true;
             },
             onmove: function (event) {
-                pixel_value = parseFloat(self.speed_throttle_handle.style.left) + event.dx;
-                value = self.time_scale.invert(pixel_value);
-                self.ws.send('delay_time:' + value);
-                self.ws.send('target_scale:' + value);
-                self.speed_throttle_handle.style.left = self.time_scale(value);
+                self.speed_throttle_changed = true;
+                var pixel_value = parseFloat(self.speed_throttle_handle.style.left) + event.dx;
+                pixel_value = self.time_scale(self.time_scale.invert(pixel_value));
+                self.speed_throttle_handle.style.left = pixel_value;
             },
         });
 
@@ -128,6 +128,13 @@ Nengo.SimControl.prototype.on_message = function(event) {
             this.speed_throttle_handle.style.left = this.time_scale(this.rate_proportion);
         }
         this.schedule_update();
+    }
+
+    if (this.speed_throttle_changed) {
+        this.speed_throttle_changed = false;
+        var pixel_value = parseFloat(this.speed_throttle_handle.style.left);
+        var value = this.time_scale.invert(pixel_value);
+        this.ws.send('target_scale:' + value);
     }
 };
 
