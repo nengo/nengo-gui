@@ -1,6 +1,8 @@
 import argparse
 import logging
 import os.path
+import threading
+import webbrowser
 
 import nengo_gui
 import nengo_gui.gui
@@ -48,6 +50,11 @@ def main():
         s = nengo_gui.gui.InteractiveGUI(
             ModelContext(filename=filename), page_settings=page_settings,
             port=args.port, password=args.password)
+
+        if args.browser:
+            threading.Thread(
+                target=webbrowser.open,
+                args=('http://localhost:%d' % s.server.server_port,)).start()
         s.start()
     finally:
         logging.shutdown()
