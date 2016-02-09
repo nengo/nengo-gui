@@ -70,9 +70,6 @@ Nengo.NetGraphConnection.prototype.set_recurrent = function(recurrent) {
     this.remove_line();
     this.recurrent = recurrent;
     this.create_line();
-    
-    // note: mini_conn is not set to recurrent, as we don't want to
-    // display the recurrent conns on the minimap
 }
 
 Nengo.NetGraphConnection.prototype.create_line = function() {

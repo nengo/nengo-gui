@@ -594,7 +594,7 @@ Nengo.NetGraphItem.prototype.get_displayed_size = function() {
         var h_scale = this.ng.get_scaled_width();
         var v_scale = this.ng.get_scaled_height();
     	var w = this.get_nested_width() * h_scale;
-    	var v = this.get_nested_height() * v_scale;
+    	var h = this.get_nested_height() * v_scale;
 
         if (h * this.aspect < w) {
             w = h * this.aspect;
@@ -612,8 +612,8 @@ Nengo.NetGraphItem.prototype.constrain_position = function() {
     this.constrain_aspect();
 
     if (this.parent !== null) {
-        this.width = Math.max(0.5, this.width);
-        this.height = Math.max(0.5, this.height);
+        this.width = Math.min(0.5, this.width);
+        this.height = Math.min(0.5, this.height);
         
         this.x = Math.min(this.x, 1.0-this.width);
         this.x = Math.max(this.x, this.width);
