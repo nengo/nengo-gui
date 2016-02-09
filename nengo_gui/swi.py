@@ -602,6 +602,8 @@ class ClientSocket(object):
                 pass
             elif e.errno == 9:  # "Bad file descriptor" means socket closed
                 raise SocketClosedError("Cannot read from closed socket.")
+            elif e.errno == 10053:  # aborted connection
+                raise SocketClosedError("Cannot read from closed socket.")
             else:
                 raise
         except socket.timeout:
