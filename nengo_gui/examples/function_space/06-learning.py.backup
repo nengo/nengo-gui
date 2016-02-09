@@ -68,11 +68,6 @@ with model:
     nengo.Connection(x, target_fx)
     nengo.Connection(target_fx[1], stimulus)
 
-    calc_fx = nengo.Ensemble(n_neurons=1, dimensions=fs.n_basis+1,
-            neuron_type=nengo.Direct())
-    nengo.Connection(x, calc_fx[0])
-    nengo.Connection(weights, calc_fx[1:])
-
     # this is for sampling from the represented function
     product = nengo.networks.Product(n_neurons=1, dimensions=fs.n_basis)
     sv_size = (fs.S/fs.scale)[:fs.n_basis]
