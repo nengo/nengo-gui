@@ -42,27 +42,30 @@ Nengo.Toolbar = function(filename) {
     $('#Minimap_button')[0].addEventListener('click', function () {
         Nengo.netgraph.toggleMiniMap();
     });
-
     $('#Config_button')[0].addEventListener('click', function () {
         self.config_modal();
+    });
+    $('#Sync_editor_button')[0].addEventListener('click', function () {
+        Nengo.ace.update_trigger = true;
+    });
+    $('#Pdf_button')[0].addEventListener('click', function () {
+        self.pdf_modal();
     });
     $('#Help_button')[0].addEventListener('click', function () {
         Nengo.hotkeys.callMenu();
     });
-
     $('#Download_button')[0].addEventListener('click', function () {
-        var data_items = Nengo.Component.components;
-        var CSV = data_to_csv(data_items);
-        var uri = 'data:text/csv;charset=utf-8,' + escape(CSV);
-        var link = document.createElement("a");
-        link.href = uri;
-        link.style = "visibility:hidden";
-        link.download = "Simulation_data" + ".csv";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      var data_items = Nengo.Component.components;
+      var CSV = data_to_csv(data_items);
+      var uri = 'data:text/csv;charset=utf-8,' + escape(CSV);
+      var link = document.createElement("a");
+      link.href = uri;
+      link.style = "visibility:hidden";
+      link.download = "Simulation_data" + ".csv";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     });
-
     $('#filename')[0].innerHTML = filename;
 
     // update the URL so reload and bookmarks work as expected
@@ -117,13 +120,15 @@ Nengo.Toolbar.prototype.config_modal = function () {
 Nengo.Toolbar.prototype.config_modal_show = function() {
     var self = this;
 
-    var options = {zoom: Nengo.netgraph.zoom_fonts,
-                   font_size: Nengo.netgraph.font_size,
-                   aspect_resize: Nengo.netgraph.aspect_resize,
-                   transparent_nets: Nengo.netgraph.transparent_nets};
+    // Get current state in case user clicks cancel
+    var original = {zoom: Nengo.netgraph.zoom_fonts,
+                    font_size: Nengo.netgraph.font_size,
+                    aspect_resize: Nengo.netgraph.aspect_resize,
+                    sync_editor: Nengo.ace.auto_update,
+                    transparent_nets: Nengo.netgraph.transparent_nets};
 
     Nengo.modal.title('Configure Options');
-    Nengo.modal.main_config(options);
+    Nengo.modal.main_config();
     Nengo.modal.footer('ok_cancel', function(e) {
         var zoom = $('#zoom-fonts').prop('checked');
         var font_size = $('#config-fontsize').val();
@@ -134,15 +139,14 @@ Nengo.Toolbar.prototype.config_modal_show = function() {
         if (modal.hasErrors() || modal.isIncomplete()) {
             return;
         }
-        Nengo.netgraph.set_zoom_fonts(zoom);
-        Nengo.netgraph.set_font_size(parseInt(font_size));
-        Nengo.netgraph.aspect_resize = fixed_resize;
-
         $('#OK').attr('data-dismiss', 'modal');
     },
         function () {  //cancel_function
-            Nengo.netgraph.set_zoom_fonts(options["zoom"]);
-            Nengo.netgraph.set_font_size(options["font_size"]);
+            Nengo.netgraph.zoom_fonts = original["zoom"];
+            Nengo.netgraph.font_size = original["font_size"];
+            Nengo.netgraph.transparent_nets = original["transparent_nets"];
+            Nengo.netgraph.aspect_resize = original["aspect_resize"];
+            Nengo.ace.auto_update = original["auto_update"];
             $('#cancel-button').attr('data-dismiss', 'modal');
     });
 
@@ -157,3 +161,11 @@ Nengo.Toolbar.prototype.config_modal_show = function() {
 
     Nengo.modal.show();
 };
+
+/** Export the layout to the SVG in Downloads folder **/
+Nengo.Toolbar.prototype.pdf_modal = function () {
+    Nengo.modal.title("Export the layout to SVG");
+    Nengo.modal.text_body("Do you want to save the file?", "info");
+    Nengo.modal.footer('confirm_savepdf');
+    Nengo.modal.show();
+}
