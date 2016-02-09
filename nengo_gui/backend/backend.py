@@ -45,7 +45,7 @@ class SessionManager(object):
 
     def __getitem__(self, session_id):
         session = self._sessions.get(session_id, None)
-        if (session is None or
+        if (session is None or 
                 session.creation_time + self.time_to_live < time.time()):
             del self._sessions[session_id]
             raise SessionExpiredError()
@@ -72,7 +72,9 @@ class SessionManager(object):
         session_id = hashlib.sha1()
         session_id.update(os.urandom(16))
         for elem in peer:
-            session_id.update(str(elem))
+            if isinstance(elem, str):
+                elem = elem.encode('utf-8')
+            session_id.update(bytes(elem))
         return session_id.hexdigest()
 
 
@@ -90,9 +92,6 @@ class RequireAuthentication(object):
         return auth_checked
 
 
-logger = logging.getLogger(__name__)
-
-
 class GuiRequestHandler(server.HttpWsRequestHandler):
     http_commands = {
         '/': 'serve_main',
@@ -104,21 +103,21 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
 
     def login_page(self):
         session = self.get_session()
-        content = ''
+        content = b''
 
         if 'pw' in self.db:
             if checkpw(self.db['pw'], self.server.settings.password_hash):
                 session.authenticated = True
             else:
-                content += '<p><strong>Invalid password. Try again.'
-                content += '</strong></p>'
+                content += b'<p><strong>Invalid password. Try again.'
+                content += b'</strong></p>'
         else:
-            content += '<p>Please enter the password:</p>'
+            content += b'<p>Please enter the password:</p>'
 
         if session.authenticated:
             return server.HttpRedirect('/')
 
-        return server.HtmlResponse(content + '''
+        return server.HtmlResponse(content + b'''
             <form method="POST"><p>
                 <label for="pw">Password: </label>
                 <input type="password" name="pw" />

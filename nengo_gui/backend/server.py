@@ -2,6 +2,7 @@
 
 import base64
 import BaseHTTPServer
+from Cookie import SimpleCookie
 import errno
 import hashlib
 import logging
@@ -75,10 +76,22 @@ class HttpResponse(object):
     def send(self, request):
         request.send_response(self.code)
         request.send_header('Content-type', self.mimetype)
+        request.wfile.write(request.cookie.output())
+        request.wfile.write('\r\n')
         for header in self.headers:
             request.send_header(*header)
         request.end_headers()
         request.wfile.write(self.data)
+
+
+class HttpRedirect(HttpResponse):
+    def __init__(
+            self, location, data='', mimetype='text/html', code=303,
+            headers=()):
+        super(HttpRedirect, self).__init__(
+            data=data, mimetype=mimetype, code=code,
+            headers=headers + (('Location', location),))
+        self.location = location
 
 
 class HtmlResponse(HttpResponse):
@@ -183,6 +196,7 @@ class HttpWsRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.resource = None
         self.query = None
         self.db = {}
+        self.cookie = SimpleCookie()
         self.ws = None
         BaseHTTPServer.BaseHTTPRequestHandler.__init__(self, *args, **kwargs)
 
@@ -203,6 +217,8 @@ class HttpWsRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.query = parse_qs(parsed.query)
         self.db.update(
             {k: v[0] for k, v in self.query.items() if k not in self.db})
+        if 'Cookie' in self.headers:
+            self.cookie.load(self.headers['Cookie'])
 
         try:
             connection = self.headers.getheader('Connection', 'close').lower()

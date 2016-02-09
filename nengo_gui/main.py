@@ -7,6 +7,7 @@ import webbrowser
 import nengo_gui
 import nengo_gui.gui
 from nengo_gui.backend.backend import ModelContext
+from nengo_gui.password import gensalt, hashpw, prompt_pw
 
 
 def old_main():
@@ -19,6 +20,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-p', '--password', dest='password', metavar='PASS',
+        nargs='?', default=False, const=True, type=str,
         help='password for remote access')
     parser.add_argument(
         '--cert', nargs=1, default=[None], type=str,
@@ -48,9 +50,13 @@ def main():
     else:
         logging.basicConfig()
 
-    if args.password is not None:
+    if args.password:
+        if args.password is True:
+            password = hashpw(prompt_pw(), gensalt())
+        else:
+            password = hashpw(args.password, gensalt())
         server_settings = nengo_gui.backend.backend.GuiServerSettings(
-            ('', 8080), args.auto_shutdown[0], password_hash=args.password,
+            ('', 8080), args.auto_shutdown[0], password_hash=password,
             ssl_cert=args.cert[0], ssl_key=args.key[0])
         if not server_settings.use_ssl:
             raise ValueError("Password protection only allowed with SSL.")
