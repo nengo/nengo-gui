@@ -84,23 +84,13 @@ class SimControl(Component):
 
         self.last_tick = now
 
-        # if we have a resired proportion, use it to control delay_time
+        # if we have a desired proportion, use it to control delay_time
         if self.target_scale is not None:
             s = self.target_scale
             if s <=0:
-                target_delay = 0.5
-            elif self.rate == 0:
-                target_delay = self.delay_time
-            elif s >= 0.99:
-                target_delay = 0
+                self.delay_time = 0.5
             else:
-                target_delay = (1-s)/s * (self.actual_model_dt /
-                                          (self.rate-self.delay_time))
-
-            if target_delay > 0.5:
-                target_delay = 0.5
-
-            self.delay_time = target_delay
+                self.delay_time = (1.0/s - s) * (dt - self.delay_time)
 
         # if we have a desired rate, do a simple P-controller to get there
         if self.target_rate is not None:
@@ -108,10 +98,7 @@ class SimControl(Component):
             delta = rate_error * 0.0000002
             self.delay_time += delta
 
-        if self.delay_time < 0:
-            self.delay_time = 0
-        if self.delay_time > 0.5:
-            self.delay_time = 0.5
+        self.delay_time = np.clip(self.delay_time, 0, 0.5)
 
         if self.delay_time > 0:
             self.busy_sleep(self.delay_time)
