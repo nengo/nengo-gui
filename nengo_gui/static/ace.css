@@ -22,6 +22,11 @@
     background: white;
     -webkit-flex: 0 0 auto;
     flex: 0 0 auto;
+    -webkit-user-select: text;
+    -khtml-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 #console pre {

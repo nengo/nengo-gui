@@ -148,7 +148,7 @@ class NetGraph(Component):
             keep_object = True
             if new_item is None:
                 keep_object = False
-            elif same_class:
+            elif not same_class:
                 # don't allow changing classes
                 keep_object = False
             elif self.get_extra_info(new_item) != self.get_extra_info(old_item):

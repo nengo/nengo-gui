@@ -91,6 +91,16 @@
     color: #eee !important;
 }
 
+.play-pause-button-cog {
+    background: #eee !important;
+    color: #666 !important;
+}
+
+.play-pause-button-cog:hover {
+    background: #eee !important;
+    color: #666 !important;
+}
+
 .play-pause-button span {
     font-size: 30px;
 }

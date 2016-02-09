@@ -1,4 +1,3 @@
-from selenium import webdriver
 import time
 import pytest
 from selenium import webdriver
@@ -22,4 +21,5 @@ def driver(request):
         print "ERROR: The nengo_gui server is not currently running. \
         Start the server before running tests."
         raise
+
     return driver

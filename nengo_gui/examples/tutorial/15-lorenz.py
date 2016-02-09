@@ -18,7 +18,7 @@
 
 import nengo
 
-model = nengo.Network()
+model = nengo.Network(seed=3)
 with model:
     
     x = nengo.Ensemble(n_neurons=600, dimensions=3, radius=30)

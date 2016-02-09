@@ -19,6 +19,8 @@ class XYValue(Component):
         self.data = collections.deque()
         self.n_lines = int(obj.size_out)
         self.struct = struct.Struct('<%df' % (1 + self.n_lines))
+        self.node = None
+        self.conn = None
 
     def attach(self, page, config, uid):
         super(XYValue, self).attach(page, config, uid)
