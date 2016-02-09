@@ -96,7 +96,7 @@ Nengo.Modal.prototype.help_body = function() {
     this.$div.find('.modal-dialog').addClass('modal-sm');
     var $body = $('<table class="table-striped" width=100%>');
     $body.append('<tr><td>Play / pause</td>' +
-                 '<td align="right">Spacebar</td></tr>');
+                 '<td align="right">Spacebar, ' + shift + '-Enter</td></tr>'); // TODO: make this fit
     $body.append('<tr><td>Undo</td>' +
                  '<td align="right">' + ctrl + '-z</td></tr>');
     $body.append('<tr><td>Redo</td>'+
@@ -106,6 +106,10 @@ Nengo.Modal.prototype.help_body = function() {
                  '<td align="right">' + ctrl + '-m</td></tr>');
     $body.append('<tr><td>Toggle editor</td>'+
                  '<td align="right">' + ctrl + '-e</td></tr>');
+    $body.append('<tr><td>Update display</td>'+
+                 '<td align="right">' + ctrl + '-1</td></tr>'); //TODO: possibly pick a better shortcut key
+    $body.append('<tr><td>Toggle auto-update</td>'+
+                 '<td align="right">' + ctrl + '-' + shift + '-1</td></tr>');
     $body.append('<tr><td>Show hotkeys</td>'+
                  '<td align="right">?</td></tr>');
     $body.append('</table>');
@@ -181,6 +185,15 @@ Nengo.Modal.prototype.main_config = function() {
       '</div>' +
       '<div class="form-group">' +
         '<div class="checkbox">' +
+          '<label for="sync-editor" class="control-label">' +
+            '<input type="checkbox" id="sync-editor">' +
+            'Automatically synchronize model with editor' +
+          '</label>' +
+          '<div class="help-block with-errors"></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<div class="checkbox">' +
           '<label for="transparent-nets" class="control-label">' +
             '<input type="checkbox" id="transparent-nets">' +
             'Expanded networks are transparent' +
@@ -215,6 +228,12 @@ Nengo.Modal.prototype.main_config = function() {
     $('#transparent-nets').prop('checked', Nengo.netgraph.transparent_nets);
     $('#transparent-nets').change(function () {
         Nengo.netgraph.transparent_nets = $('#transparent-nets').prop('checked');
+    });
+    
+    $('#sync-editor').prop('checked', Nengo.ace.auto_update);
+    $('#sync-editor').change(function () {
+        Nengo.ace.auto_update = $('#sync-editor').prop('checked');
+        Nengo.ace.update_trigger = $('#sync-editor').prop('checked');
     });
 
     $('#config-fontsize').bind('keyup input', function () {
