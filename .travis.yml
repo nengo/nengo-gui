@@ -17,7 +17,7 @@ before_script:
   - sleep 3 # give xvfb some time to start
   - "wget http://selenium.googlecode.com/files/selenium-server-standalone-2.31.0.jar"
   - "java -jar selenium-server-standalone-2.31.0.jar > /dev/null &"
-  - "nengo_gui --auto-shutdown 0 &"#starts up nengo_gui
+  - "nengo_gui --no-browser --auto-shutdown 0 &"#starts up nengo_gui
   - sleep 2
 # command to run tests
 script: 
