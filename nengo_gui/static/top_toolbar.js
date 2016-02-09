@@ -51,7 +51,7 @@ Nengo.Toolbar = function(filename) {
     });
 
     $('#Download_button')[0].addEventListener('click', function () {
-        data_items = Nengo.Component.components;
+        var data_items = Nengo.Component.components;
         var CSV = data_to_csv(data_items);
         var uri = 'data:text/csv;charset=utf-8,' + escape(CSV);
         var link = document.createElement("a");

@@ -14,7 +14,7 @@ var data_to_csv = function(data_set){
   var csv_string = "";
 
   var data_set = data_set.filter(function(data){
-      return (data.constructor === Nengo.Value || data.constructor == Nengo.XYValue)
+      return (data.constructor === Nengo.Value || data.constructor === Nengo.XYValue)
   });
 
   //Extracts all the values from the data_set variable
