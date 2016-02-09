@@ -8,8 +8,7 @@
         <link href="static/components/pointer.css" rel="stylesheet" type="text/css" />
         <link href="static/components/slider.css" rel="stylesheet" type="text/css" />
         <link href="static/components/spa_similarity.css" rel="stylesheet" type="text/css" />
-        <link href="static/components/netgraph.css" rel="stylesheet" id="netgraphcss" type="text/css" />
-        <link href="static/components/xyvalue.css" rel="stylesheet" type="text/css" />
+        <link href="static/components/netgraph.css" rel="stylesheet" type="text/css" />
         <link href="static/modal.css" rel="stylesheet" type="text/css" />
         <link href="static/tooltips.css" rel="stylesheet" type="text/css" />
         <link href="static/sim_control.css" rel="stylesheet" type="text/css" />
@@ -38,9 +37,8 @@
                 <li id='Minimap_button' role="presentation">
                     <a title='Minimap' class='glyphicon glyphicon-credit-card'> </a>
                 </li>
-                <li id='Pdf_button' role="presentation">
-                    <a title='Export to SVG' class='glyphicon
-                        glyphicon-export'> </a>
+                <li id='Download_button' role="presentation">
+                    <a title="Download simulation results" class="glyphicon glyphicon-download-alt"> </a>
                 </li>
                 <li id='Config_button' role="presentation">
                     <a title='Config panel' class='glyphicon glyphicon-cog'> </a>
@@ -58,9 +56,6 @@
                 </li>
                 <li id='Save_file' class='disabled' role="presentation">
                     <a title='Save file' class='glyphicon glyphicon-floppy-save'> </a>
-                </li>
-                <li id='Sync_editor_button' class='disabled' role="presentation">
-                    <a title='Sync diagram with editor' class='glyphicon glyphicon-circle-arrow-left'> </a>
                 </li>
                 <li id='filename' role="presentation"> </li>
             </ul>
@@ -124,11 +119,9 @@
         <script src="static/lib/js/bootstrap.min.js"></script>
         <script src="static/lib/js/validator.js"></script>
         <script src="static/nengo.js"></script>
-        <script src="static/config.js"></script>
         <script src="static/datastore.js"></script>
         <script src="static/components/component.js"></script>
         <script src="static/components/2d_axes.js"></script>
-        <script src="static/components/xy_axes.js"></script>
         <script src="static/components/time_axes.js"></script>
         <script src="static/components/value.js"></script>
         <script src="static/components/xyvalue.js"></script>
@@ -150,5 +143,6 @@
         <script src="static/viewport.js"></script>
         <script src="static/hotkeys.js"></script>
         <script src="static/ace.js"></script>
+        <script src="static/data_to_csv.js"></script>
     </body>
 </html>
