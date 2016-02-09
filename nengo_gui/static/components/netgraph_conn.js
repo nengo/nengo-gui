@@ -50,7 +50,9 @@ Nengo.NetGraphConnection = function(ng, info, minimap, mini_conn) {
         this.parent = null;
     } else {
         this.parent = this.objects[info.parent];
-        this.parent.child_connections.push(this);
+        if (!minimap) {
+        	this.parent.child_connections.push(this);
+        }
     }
 
     /** create the line and its arrowhead marker */
@@ -205,7 +207,7 @@ Nengo.NetGraphConnection.prototype.set_posts = function(posts) {
 
 /** remove this connection */
 Nengo.NetGraphConnection.prototype.remove = function() {
-    if (this.parent !== null) {
+    if (!this.minimap && this.parent !== null) {
         var index = this.parent.child_connections.indexOf(this);
         if (index === -1) {
             console.log('error removing in remove');

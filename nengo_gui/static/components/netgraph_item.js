@@ -110,7 +110,9 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
     } else {
         this.parent = ng.svg_objects[info.parent];
         this.depth = this.parent.depth + 1;
-        this.parent.children.push(this);
+        if (!minimap) {
+        	this.parent.children.push(this);
+        }
     }
 
     /** create the SVG group to hold this item */
@@ -553,7 +555,7 @@ Nengo.NetGraphItem.prototype.remove = function() {
     }
 
     // remove the item from the parent's children list
-    if (this.parent !== null) {
+    if (!this.minimap && this.parent !== null) {
         var index = this.parent.children.indexOf(this);
         this.parent.children.splice(index, 1);
     }
