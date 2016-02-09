@@ -381,7 +381,6 @@ class GuiServer(server.ManagedThreadHttpServer):
 
     def create_page(self, filename, reset_cfg=False):
         """Create a new Page with this configuration"""
-        self._last_access = time.time()
         page = nengo_gui.page.Page(
             self, filename=filename, settings=self.page_settings,
             reset_cfg=reset_cfg)
