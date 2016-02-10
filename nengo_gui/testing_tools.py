@@ -42,7 +42,7 @@ def start_stop_sim(driver):
     play_button = driver.find_element_by_xpath('//*[@id="pause_button"]')
     play_button.click()
 
-def folder_location(var_path):
+def folder_location(var_path,indiv_file=None):
     """Returns a list of the raw text from a python file in var_path
 
      Example:
@@ -71,6 +71,8 @@ def folder_location(var_path):
     test_files = os.listdir(test_folder)
     test_files = filter((lambda x: ((x.count('.') == 1) and ('.py' in x))),
         test_files)
+    if(indiv_file != None):
+        test_files = filter((lambda x: (x == indiv_file)),test_files)
     test_files = map((lambda file_: os.path.join(test_folder, file_)),
         test_files)
     test_files = map((lambda file_: open(file_, 'r').read()),
