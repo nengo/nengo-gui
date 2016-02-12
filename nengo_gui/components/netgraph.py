@@ -10,10 +10,10 @@ import json
 
 from nengo_gui.components.component import Component
 from nengo_gui.components.value import Value
+from nengo_gui.components.slider import Slider
 from nengo_gui.modal_js import infomodal
 import nengo_gui.user_action
 import nengo_gui.layout
-
 
 class NetGraph(Component):
     """Handles computations and communications for NetGraph on the JS side.
@@ -527,7 +527,7 @@ class NetGraph(Component):
         '''
         info = {}
         if isinstance(obj, nengo.Node):
-            if obj.output is None:
+            if obj.output is None or obj.output is Slider.passthrough_fcn:
                 info['passthrough'] = True
             if callable(obj.output) and hasattr(obj.output, '_nengo_html_'):
                 info['html'] = True
