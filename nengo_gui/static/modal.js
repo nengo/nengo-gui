@@ -86,7 +86,7 @@ Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function){
             link.click();
             document.body.removeChild(link);
         });
-    }else if (type === 'confirm_savecsv') {
+    } else if (type === 'confirm_savecsv') {
         this.$footer.append('<button type="button" ' +
             'id="confirm_savecsv_button" class="btn btn-primary" data-dismiss="modal">Save</button>');
         this.$footer.append('<button type="button" ' +
@@ -113,7 +113,7 @@ Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function){
             document.body.removeChild(link);
         });
 
-    }else if (type === 'refresh') {
+    } else if (type === 'refresh') {
         this.$footer.append('<button type="button" ' +
             'id="refresh_button" class="btn btn-primary">Refresh</button>');
         $('#refresh_button').on('click', function() {location.reload()})

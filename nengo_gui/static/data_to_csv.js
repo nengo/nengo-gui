@@ -1,7 +1,10 @@
 /**
- * A function that retuns simulation data as a csv
+ * A function that returns simulation data as a csv, only saves data which is present in graphs.
+ * As well it only saves the data in the datastore, which is based on the 
+ * amount of time kept in the simulation.
  *
- * @param {Nengo.Component.components} data_set A list of the graph items in the simulation
+ * @param {Nengo.Component.components} data_set: A list of the graph items in the simulation
+ * 
  */
 
 
