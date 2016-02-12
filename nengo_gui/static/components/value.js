@@ -269,7 +269,7 @@ Nengo.Value.prototype.set_show_legend = function(value){
         this.save_layout();
 
         if (this.show_legend === true) {
-            Nengo.draw_legend(this.legend, this.legend_labels, this.color_func);
+            Nengo.draw_legend(this.legend, this.legend_labels.slice(0, this.n_lines), this.color_func);
         } else {
             // delete the legend's children
             while (this.legend.lastChild) {
