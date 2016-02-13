@@ -123,17 +123,15 @@ Nengo.Value = function(parent, sim, args) {
 
     this.legend_labels = args.legend_labels || [];
     if (this.legend_labels.length !== this.n_lines) {
-        // fill up an array with temporary labels
-        for (i=0; i<this.n_lines; i++) {
-            if (this.legend_labels[i] === undefined) {
-                this.legend_labels[i] = "label_".concat(String(i));
-            }
+        // fill up the array with temporary labels
+        for (var i=this.legend_labels.length; i<this.n_lines; i++) {
+            this.legend_labels[i] = "label_" + i;
         }
     }
 
     this.show_legend = args.show_legend || false;
     if (this.show_legend === true) {
-        Nengo.draw_legend(this.legend, this.legend_labels, this.color_func, this.uid);
+        Nengo.draw_legend(this.legend, this.legend_labels.slice(0, self.n_lines), this.color_func);
     }
 };
 
@@ -269,13 +267,14 @@ Nengo.Value.prototype.set_show_legend = function(value){
     if (this.show_legend !== value) {
         this.show_legend = value;
         this.save_layout();
-    }
-    if (this.show_legend === true) {
-        Nengo.draw_legend(this.legend, this.legend_labels, this.color_func, this.uid);
-    } else {
-        // delete the legend's children
-        while (this.legend.lastChild) {
-            this.legend.removeChild(this.legend.lastChild);
+
+        if (this.show_legend === true) {
+            Nengo.draw_legend(this.legend, this.legend_labels.slice(0, this.n_lines), this.color_func);
+        } else {
+            // delete the legend's children
+            while (this.legend.lastChild) {
+                this.legend.removeChild(this.legend.lastChild);
+            }
         }
     }
 }
@@ -294,21 +293,16 @@ Nengo.Value.prototype.set_legend_labels = function() {
         var modal = $('#myModalForm').data('bs.validator');
         
         // No validation to do.
-        // Blank string mean do nothing
+        // Empty entries assumed to be indication to skip modification
         // Long strings okay
         // Excissive entries get ignored
-        // Blank entries get replaced by default value
-        // Missing entries are untouched
-        // Empty entries assumed to be indication to skip modification
         // TODO: Allow escaping of commas
         if ((label_csv !== null) && (label_csv !== '')) {
             labels = label_csv.split(',');
 
-            for (i=0; i<self.n_lines; i++) {
-                if (labels[i] == "") {
-                    self.legend_labels[i] = "label_".concat(String(i));
-                } else if (labels[i] !== undefined) {
-                    self.legend_labels[i] = labels[i];
+            for (var i=0; i<self.n_lines; i++) {
+                if (labels[i] !== "" && labels[i] !== undefined) {
+                     self.legend_labels[i] = labels[i];
                 }
             }
 
@@ -316,12 +310,13 @@ Nengo.Value.prototype.set_legend_labels = function() {
             while (self.legend.lastChild) {
                 self.legend.removeChild(self.legend.lastChild);
             }
-            Nengo.draw_legend(self.legend, self.legend_labels, self.color_func, this.uid);
+
+            Nengo.draw_legend(self.legend, self.legend_labels, self.color_func);
+            self.save_layout();
         }
         $('#OK').attr('data-dismiss', 'modal');
     });
 
-    // TODO: Add button so that a person can easily return to default labels
     Nengo.modal.show();
 }
 

@@ -9,7 +9,7 @@
  * @param {array of strings} info.pre - uid to connect from and its parents
  * @param {array of strings} info.post - uid to connect to and its parents
  */
-Nengo.NetGraphConnection = function(ng, info, minimap) {
+Nengo.NetGraphConnection = function(ng, info, minimap, mini_conn) {
     this.ng = ng;
     this.uid = info.uid;
 
@@ -21,7 +21,8 @@ Nengo.NetGraphConnection = function(ng, info, minimap) {
     this.post = null;
 
     this.minimap = minimap;
-    if (minimap == false) {
+    this.mini_conn = mini_conn;
+    if (!minimap) {
         this.g_conns = ng.g_conns;
         this.objects = ng.svg_objects;
     } else {
@@ -49,7 +50,9 @@ Nengo.NetGraphConnection = function(ng, info, minimap) {
         this.parent = null;
     } else {
         this.parent = this.objects[info.parent];
-        this.parent.child_connections.push(this);
+        if (!minimap) {
+        	this.parent.child_connections.push(this);
+        }
     }
 
     /** create the line and its arrowhead marker */
@@ -187,16 +190,24 @@ Nengo.NetGraphConnection.prototype.find_post = function() {
 Nengo.NetGraphConnection.prototype.set_pres = function(pres) {
     this.pres = pres;
     this.set_pre(this.find_pre());
+    
+    if (!this.minimap) {
+    	this.mini_conn.set_pres(pres);
+    }
 }
 Nengo.NetGraphConnection.prototype.set_posts = function(posts) {
     this.posts = posts;
     this.set_post(this.find_post());
+    
+    if (!this.minimap) {
+    	this.mini_conn.set_posts(posts);
+    }
 }
 
 
 /** remove this connection */
 Nengo.NetGraphConnection.prototype.remove = function() {
-    if (this.parent !== null) {
+    if (!this.minimap && this.parent !== null) {
         var index = this.parent.child_connections.indexOf(this);
         if (index === -1) {
             console.log('error removing in remove');
@@ -225,6 +236,10 @@ Nengo.NetGraphConnection.prototype.remove = function() {
     this.removed = true;
 
     delete this.ng.svg_conns[this.uid];
+    
+    if (!this.minimap) {
+    	this.mini_conn.remove();
+    }
 }
 
 
@@ -291,10 +306,10 @@ Nengo.NetGraphConnection.prototype.redraw = function() {
         var angle = Math.atan2(post_pos[1] - pre_pos[1], //angle between objects
                                                post_pos[0] - pre_pos[0]);
 
-        var w1 = this.pre.get_width();
-        var h1 = this.pre.get_height();
-        var w2 = this.post.get_width();
-        var h2 = this.post.get_height();
+        var w1 = this.pre.get_screen_width();
+        var h1 = this.pre.get_screen_height();
+        var w2 = this.post.get_screen_width();
+        var h2 = this.post.get_screen_height();
 
         a1 = Math.atan2(h1,w1);
         a2 = Math.atan2(h2,w2);
@@ -325,6 +340,10 @@ Nengo.NetGraphConnection.prototype.redraw = function() {
         angle = 180 / Math.PI * angle;
         this.marker.setAttribute('transform',
                           'translate(' + mx + ',' + my + ') rotate('+ angle +')');
+    }
+    
+    if (!this.minimap && this.ng.mm_display) {
+    	this.mini_conn.redraw();
     }
 }
 /**Function to determine the length of an intersection line through a rectangle

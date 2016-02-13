@@ -4,7 +4,6 @@ import collections
 
 from nengo_gui.components.component import Component
 
-
 class Slider(Component):
     """Input control component. Exclusively associated to Nodes"""
 
@@ -14,6 +13,8 @@ class Slider(Component):
     def __init__(self, node):
         super(Slider, self).__init__()
         self.node = node
+        if node.output is None:
+            node.output = Slider.passthrough_fcn
         self.base_output = node.output
         self.override = [None] * node.size_out
         self.last_time = None
@@ -33,6 +34,8 @@ class Slider(Component):
 
     def remove_nengo_objects(self, page):
         self.node.output = self.base_output
+        if self.node.output is Slider.passthrough_fcn:
+            self.node.output = None
 
     def override_output(self, t, *args):
         if self.last_time is None or t < self.last_time:
@@ -72,3 +75,7 @@ class Slider(Component):
 
     def code_python_args(self, uids):
         return [uids[self.node]]
+
+    @staticmethod
+    def passthrough_fcn(t, x):
+        return x

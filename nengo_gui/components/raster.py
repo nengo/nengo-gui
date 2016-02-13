@@ -21,6 +21,10 @@ class Raster(Component):
         if n_neurons is None:
             n_neurons = min(self.max_neurons, 10)
         self.n_neurons = n_neurons
+        self.conn = None
+        self.node = None
+
+
 
     def attach(self, page, config, uid):
         super(Raster, self).attach(page, config, uid)

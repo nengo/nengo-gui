@@ -21,6 +21,12 @@ Nengo.Hotkeys = function () {
                     case 191:
                         var key = '?';
                         break;
+                    case 8:
+                        var key = 'backspace';
+                        break;
+                    case 13:
+                        var key = 'enter';
+                        break;
                     default:
                         var key = String.fromCharCode(ev.keyCode)
                 }
@@ -48,8 +54,8 @@ Nengo.Hotkeys = function () {
                 Nengo.netgraph.notify({ undo: "0" });
                 ev.preventDefault();
             }
-            // run model with spacebar
-            if (key == ' ' && !on_editor) {
+            // run model with spacebar or with shift-enter
+            if ((key == ' ' && !on_editor) || (ev.shiftKey && key == 'enter')) {
                 if (!ev.repeat) {
                     sim.on_pause_click();
                 }
@@ -63,6 +69,21 @@ Nengo.Hotkeys = function () {
             // bring up minimap with ctrl-m
             if (ctrl && key == 'm') {
                 Nengo.netgraph.toggleMiniMap();
+                ev.preventDefault();
+            }
+            // disable backspace navigation
+            if (key == 'backspace' && !on_editor) {
+                ev.preventDefault();
+            }
+            // toggle auto-updating with TODO: pick a good shortcut
+            if (ctrl && ev.shiftKey && key == '1') {
+                Nengo.ace.auto_update = !Nengo.ace.auto_update;
+                Nengo.ace.update_trigger = Nengo.ace.auto_update;
+                ev.preventDefault();
+            }
+            // trigger a single update with TODO: pick a good shortcut
+            if (ctrl && !ev.shiftKey && key == '1') {
+                Nengo.ace.update_trigger = true;
                 ev.preventDefault();
             }
         }

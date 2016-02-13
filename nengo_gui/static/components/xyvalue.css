@@ -1,0 +1,14 @@
+.warning-text {
+    color:#a94442;
+    position: absolute;
+    text-align: center;
+    margin-left: 20%;
+    margin-right: auto;
+    width:60%;
+    top:37%;
+    display:box;
+    box-align:center;
+    box-pack:center;
+    border: 1px dashed #a94442;
+    background-color: white;
+}
