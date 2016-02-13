@@ -544,6 +544,7 @@ class NetGraph(Component):
                     info['input_labels'].append(ac.condition.expression.__str__())
                 else:
                     info['input_labels'].append(ac.name)
+            print("BG info: %s" %info['input_labels'])
         elif Value.default_output(obj) is not None:
             info['default_output'] = True
 

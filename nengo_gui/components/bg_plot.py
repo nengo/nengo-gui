@@ -44,8 +44,18 @@ class BGPlot(Value):
         info = dict(uid=id(self), label=self.label,
                     n_lines=self.n_lines, synapse=0)
 
-        if getattr(self.config, "legend_labels") == []:
-            self.config.legend_labels = self.def_legend_labels
+        # get the default labels from the bg object
+        def_lbl = []
+        for ac in self.obj.actions.actions:
+            if ac.name is None:
+                def_lbl.append(ac.condition.expression.__str__())
+            else:
+                def_lbl.append(ac.name)
+
+        # replace missing labels with defaults
+        cfg_lbl_len = len(getattr(self.config, "legend_labels"))
+        for lbl in def_lbl[cfg_lbl_len:]:
+            self.config.legend_labels.append(lbl)
 
         json = self.javascript_config(info)
         return 'new Nengo.Value(main, sim, %s);' % json
