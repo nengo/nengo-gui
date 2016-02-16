@@ -83,10 +83,10 @@ class SimControl(Component):
                 self.rate_proportion = 1.0 - ((self.rate * self.delay_time) /
                                               self.actual_model_dt)
 
-        self.last_tick = now
-
         # if we have a desired proportion, use it to control delay_time
-        if self.target_scale is not None:
+        #  Note that we need last_tick to not be None so that we have a
+        #  valid dt value.
+        if self.target_scale is not None and self.last_tick is not None:
             s = self.target_scale
             if s <=0:
                 self.delay_time = 0.5
@@ -103,6 +103,8 @@ class SimControl(Component):
 
         if self.delay_time > 0:
             self.smart_sleep(self.delay_time)
+
+        self.last_tick = now
 
         # Sleeps to prevent the simulation from advancing
         # while the simulation is paused
