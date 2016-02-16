@@ -19,8 +19,8 @@ def driver(request):
         assert driver.title != "Problem loading page"
 
     except AssertionError:
-        print "ERROR: The nengo_gui server is not currently running. \
-        Start the server before running tests."
+        print("ERROR: The nengo_gui server is not currently running. \
+        Start the server before running tests.")
         raise
 
     return driver
