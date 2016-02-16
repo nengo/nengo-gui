@@ -598,8 +598,8 @@ class ClientSocket(object):
                 pass
             elif e.errno == errno.EWOULDBLOCK:  # no data available
                 pass
-            elif e.errno == errno.ECONNABORTED: # software
-                raise
+            elif e.errno == errno.ECONNABORTED: # software disconnect
+                raise SocketClosedError("Cannot read from aborted socket")
             elif e.errno == errno.EBADF:  # "Bad file desc" means socket closed
                 raise SocketClosedError("Cannot read from closed socket.")
             else:
