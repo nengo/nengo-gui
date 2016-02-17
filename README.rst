@@ -103,13 +103,13 @@ is in the applications folder.
 Open a terminal and navigate to the nengo_gui folder on your machine
 for example, User/Git/nengo_gui/
 
-#Linux:
+**Linux**:
 
 .. code:: shell
 
     sudo pip install -r requirements-test.txt
 
-#Mac:
+**Mac**:
 
 .. code:: shell
 
