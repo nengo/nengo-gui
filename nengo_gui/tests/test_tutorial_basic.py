@@ -9,11 +9,14 @@ from nengo_gui import testing_tools as tt
 
 
 test_files = tt.folder_location('examples/tutorial')
+ignore = ["SPA","Tutorial 18: Networks"]
+test_files = filter(lambda x: not (ignore[0] in x or ignore[1] in x), test_files)
+# Gets rid of SPA and Network files
 
-@pytest.mark.parametrize('test_file', test_files[:17])
+@pytest.mark.parametrize('test_file', test_files)
 def test_tutorial_basic(driver, test_file):
-	# Tests the first 16 tutorials, these are the tutorials that do not
-	# utilize networks which require a different format of test
+	# Tests the first 18 tutorials, these are the tutorials that do not
+	# utilize networks or SPA which require a different format of test
 
 	try:
 		#Test page response by clicking the reset button and applying new code to ace-editor
@@ -38,7 +41,7 @@ def test_tutorial_basic(driver, test_file):
 
 		# Tests whether the file compiles and runs
 
-		hang_time = 20 # alloted time until test fails
+		hang_time = 25 # alloted time until test fails
 
 
 		compiled = False
