@@ -70,6 +70,17 @@ Nengo.NetGraph = function(parent, args) {
         }
     });
 
+    Object.defineProperty(this, 'kept_time', {
+        get: function() {
+            return Nengo.config.kept_time;
+        },
+        set: function(val) {
+            if (val === this.kept_time) { return; }
+            Nengo.config.kept_time = val;
+            sim.time_slider.update_kept_time(val);
+        }
+    });
+
     // Do networks have transparent backgrounds?
     Object.defineProperty(this, 'transparent_nets', {
         get: function() {

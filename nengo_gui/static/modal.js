@@ -181,6 +181,10 @@ Nengo.Modal.prototype.tabbed_body = function(tabinfo) {
 Nengo.Modal.prototype.main_config = function() {
     this.clear_body();
 
+    // Range on time kept, currently picked arbitrarily
+    var min_kept_time = 1;
+    var max_kept_time = 10;
+
     var $form = $('<form class="form-horizontal" id ' +
         '="myModalForm"/>').appendTo(this.$body);
     $('<div class="form-group" id="config-fontsize-group">' +
@@ -195,6 +199,21 @@ Nengo.Modal.prototype.main_config = function() {
         '</div>' +
         '<span class="help-block with-errors">As a percentage of' +
             ' the base size</span>' +
+      '</div>' +
+      '<div class="form-group" id="config-kept-time-group">' +
+        '<label for="kept-time" class="control-label">' +
+            'Time kept</label>' +
+        '<div class="input-group col-xs-2">' +
+          '<input type="number" min="' + min_kept_time +
+          '" max="' + max_kept_time + '" step="1" ' +
+            'maxlength="3" class="form-control" id="kept-time"' +
+                ' data-error="' + min_kept_time +
+                ' to ' + max_kept_time + ' seconds"' +
+                ' required>' +
+          '<span class="input-group-addon">s</span>' +
+        '</div>' +
+        '<span class="help-block with-errors">Amount of data to' +
+            ' save on the time slider</span>' +
       '</div>' +
       '<div class="form-group">' +
         '<div class="checkbox">' +
@@ -271,6 +290,14 @@ Nengo.Modal.prototype.main_config = function() {
         Nengo.netgraph.font_size = parseInt($('#config-fontsize').val());
     });
     $('#config-fontsize').attr('data-my_validator', 'custom');
+
+    $('#kept-time').val(Nengo.netgraph.kept_time);
+    $('#kept-time').bind('keyup input', function () {
+        var kept_time = parseInt($('#kept-time').val());
+        if (kept_time >= min_kept_time && kept_time <= max_kept_time) {
+            Nengo.netgraph.kept_time = kept_time;
+        }
+    });
 
     $('#config-backend').change(function () {
         sim.set_backend($('#config-backend').val());
