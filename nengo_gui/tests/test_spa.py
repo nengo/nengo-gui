@@ -32,7 +32,7 @@ def test_spa(driver, test_file):
         """)
         time.sleep(1)
         # Ensures the simulation has started
-        hang_time = 100 # alloted time until test fails
+        hang_time = 200 # alloted time until test fails
         compiled = False
         tt.start_stop_sim(driver)
         time_start = time.time()
@@ -82,7 +82,7 @@ def test_spa(driver, test_file):
         """)
         assert("RED" in result and float(result[:4]) > 0.4)
 
-    except Exception, e:
+    except Exception as e:
         #Travis Only: On fail takes screenshot and uploads it to imgur
 
 
