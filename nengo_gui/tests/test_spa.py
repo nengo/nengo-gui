@@ -32,7 +32,7 @@ def test_spa(driver, test_file):
         """)
         time.sleep(1)
         # Ensures the simulation has started
-        hang_time = 200 # alloted time until test fails
+        hang_time = 600 # alloted time until test fails
         compiled = False
         tt.start_stop_sim(driver)
         time_start = time.time()
