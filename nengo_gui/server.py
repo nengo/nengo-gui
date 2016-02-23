@@ -3,6 +3,7 @@ import mimetypes
 import os
 import os.path
 import pkgutil
+import re
 import time
 import traceback
 
@@ -14,6 +15,10 @@ except ImportError:
 import nengo_gui.swi as swi
 import nengo_gui
 
+def unquote_nonstandard(text):
+    def unicode_unquoter(match):
+        return unichr(int(match.group(1), 16))
+    return re.sub(r'%u([0-9a-fA-F]{4})', unicode_unquoter, text)
 
 class Server(swi.SimpleWebInterface):
     """Web server interface to nengo_gui"""
@@ -22,6 +27,7 @@ class Server(swi.SimpleWebInterface):
         if self.user is None: return
         r = ['<ul class="jqueryFileTree" style="display: none;">']
         d = unquote(dir)
+        d = unquote_nonstandard(d)
         ex_tag = '//examples//'
         ex_html = '<em>built-in examples</em>'
         if d == '.':
@@ -29,7 +35,7 @@ class Server(swi.SimpleWebInterface):
                      '<a href="#" rel="%s">%s</a></li>' % (ex_tag, ex_html))
             path = '.'
         elif d.startswith(ex_tag):
-            path = os.path.join(nengo_gui.__path__[0],
+            path = os.path.join(nengo_gui.__path__[0].decode('utf-8'),
                                 'examples', d[len(ex_tag):])
         else:
             path = os.path.join('.', d)
