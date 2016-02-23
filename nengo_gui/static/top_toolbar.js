@@ -57,6 +57,9 @@ Nengo.Toolbar = function(filename) {
     $('#Help_button')[0].addEventListener('click', function () {
         Nengo.hotkeys.callMenu();
     });
+    $('#filename')[0].addEventListener('click', function () {
+        self.save_as();
+    });
 
     $('#filename')[0].innerHTML = filename;
 
@@ -167,5 +170,37 @@ Nengo.Toolbar.prototype.csv_modal = function () {
     Nengo.modal.title("Export the graph data to CSV");
     Nengo.modal.text_body("Do you want to save the file?", "info");
     Nengo.modal.footer('confirm_savecsv');
+    Nengo.modal.show();
+}
+
+Nengo.Toolbar.prototype.save_as = function () {
+    var self = this;
+    Nengo.modal.title("Save file as");
+    Nengo.modal.clear_body();
+
+    var filename = $('#filename')[0].innerHTML;
+
+    var $form = $('<form class="form-horizontal" id ' +
+        '="myModalForm"/>').appendTo(Nengo.modal.$body);
+    $('<div class="form-group" id="save-as-group">' +
+        '<input type="text" id="save-as-filename" class="form-control" ' +
+               'value="' + filename + '"/>' +
+      '</div>').appendTo($form);
+
+    Nengo.modal.footer('ok_cancel', function() {
+        var save_as_filename = $('#save-as-filename')[0].value;
+        if (save_as_filename !== filename) {
+            var editor_code = Nengo.ace.editor.getValue();
+            Nengo.ace.ws.send(JSON.stringify({code:editor_code, save:true,
+                                              save_as:save_as_filename}));
+        }
+    });
+    $('#OK').attr('data-dismiss', 'modal');
+    $("#save-as-filename").keypress(function(event) {
+        if (event.which == 13) {
+            event.preventDefault();
+            $('#OK').click();
+        }
+    });
     Nengo.modal.show();
 }

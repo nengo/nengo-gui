@@ -1,4 +1,5 @@
 import json
+import os
 
 from nengo_gui.components.component import Component
 import nengo_gui.exec_env
@@ -12,6 +13,7 @@ class AceEditor(Component):
         # the IPython integration requires this component to be early
         # in the list
         super(AceEditor, self).__init__(component_order=-8)
+        self.pending_messages = []
 
     def attach(self, page, config, uid):
         super(AceEditor, self).attach(page, config, uid)
@@ -28,6 +30,8 @@ class AceEditor(Component):
     def update_client(self, client):
         if not self.page.gui.interactive:
             return
+        while self.pending_messages:
+            client.write(self.pending_messages.pop())
         if self.serve_code:
             i = json.dumps({'code': self.current_code})
             client.write(i)
@@ -60,7 +64,33 @@ class AceEditor(Component):
         data = json.loads(msg)
         self.current_code = data['code']
 
-        if data['save']:
+        save_as = data.get('save_as', None)
+        if save_as is not None:
+            if os.path.exists(save_as):
+                msg = ("Could not rename to %s; "
+                       "File already exists" % save_as)
+                self.pending_messages.append(json.dumps(
+                                             {'filename': save_as,
+                                              'valid': False,
+                                              'error': msg}))
+            else:
+                try:
+                    self.page.filename_cfg = save_as + '.cfg'
+                    self.page.save_config(force=True)
+                    self.page.filename = save_as
+                    with open(self.page.filename, 'w') as f:
+                        f.write(self.current_code)
+                    self.pending_messages.append(json.dumps(
+                                                 {'filename': save_as,
+                                                  'valid': True}))
+                    self.page.net_graph.update_code(self.current_code)
+                except IOError:
+                    msg = "Could not save %s; permission denied" % save_as
+                    self.pending_messages.append(json.dumps(
+                                                 {'filename': save_as,
+                                                  'valid': False,
+                                                  'error': msg}))
+        elif data['save']:
             try:
                 with open(self.page.filename, 'w') as f:
                     f.write(self.current_code)

@@ -197,6 +197,14 @@ Nengo.Ace.prototype.on_message = function (event) {
         } else {
             this.show_console();
         }
+    } else if (msg.filename !== undefined) {
+        if (msg.valid) {
+            $('#filename')[0].innerHTML = msg.filename;
+            // update the URL so reload and bookmarks work as expected
+            history.pushState({}, msg.filename, '/?filename=' + msg.filename);
+        } else {
+            alert(msg.error);
+        }
     } else if (msg.error !== undefined) {
         var line = msg.error.line;
         this.marker = this.editor.getSession()
