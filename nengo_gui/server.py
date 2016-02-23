@@ -3,7 +3,6 @@ import mimetypes
 import os
 import os.path
 import pkgutil
-import re
 import time
 import traceback
 
@@ -16,9 +15,9 @@ import nengo_gui.swi as swi
 import nengo_gui
 
 def unquote_nonstandard(text):
-    def unicode_unquoter(match):
-        return unichr(int(match.group(1), 16))
-    return re.sub(r'%u([0-9a-fA-F]{4})', unicode_unquoter, text)
+    if '%u' in text:
+        text = text.replace('%u', '\\u').decode('unicode_escape')
+    return text
 
 class Server(swi.SimpleWebInterface):
     """Web server interface to nengo_gui"""
@@ -26,8 +25,8 @@ class Server(swi.SimpleWebInterface):
     def swi_browse(self, dir):
         if self.user is None: return
         r = ['<ul class="jqueryFileTree" style="display: none;">']
-        d = unquote(dir)
-        d = unquote_nonstandard(d)
+        d = unquote_nonstandard(dir)
+        d = unquote(d)
         ex_tag = '//examples//'
         ex_html = '<em>built-in examples</em>'
         if d == '.':
