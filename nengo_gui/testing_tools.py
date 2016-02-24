@@ -5,9 +5,8 @@ import pytest
 import time
 
 def update_editor(driver, nengoCode):
-    """Inserts a string which represents code into ace editor"""
+    """Inserts a string which represents code into ace editor
 
-    """
     Example:
     driver = webdriver.firefox()
     driver.get(localhost:8080/)
