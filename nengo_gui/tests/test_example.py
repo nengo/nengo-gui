@@ -10,7 +10,7 @@ from nengo_gui import testing_tools as tt
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Use these import statments, they will be useful when testing
 
-@pytest.mark.skipif("not ('TRAVIS' in os.environ)") #Skips test on TravisCI
+@pytest.mark.skipif("('TRAVIS' in os.environ)") #Skips test on TravisCI
 def test_example(driver):
 	# Always include driver as a function parameter.
 	# This is the selenium webdriver that will allow
