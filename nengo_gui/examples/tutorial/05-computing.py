@@ -30,7 +30,3 @@ with model:
         return x * x
     
     nengo.Connection(a, b, synapse=0.01, function=compute_this)
-    
-    
-    import time
-    slowdown = nengo.Node(lambda t: time.sleep(0.001)) 
