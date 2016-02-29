@@ -43,9 +43,13 @@
 
 #filename{
     float: right;
-    margin-top: 0.5em;
-    margin-right: 1em;
+    padding: 0.5em;
     cursor: default !important;
+}
+
+#filename:hover {
+    color: #eee;
+    background: #666;
 }
 
 #Help_button{
