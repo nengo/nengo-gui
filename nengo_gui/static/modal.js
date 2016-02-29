@@ -86,6 +86,33 @@ Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function){
             link.click();
             document.body.removeChild(link);
         });
+    } else if (type === 'confirm_savecsv') {
+        this.$footer.append('<button type="button" ' +
+            'id="confirm_savecsv_button" class="btn btn-primary" data-dismiss="modal">Save</button>');
+        this.$footer.append('<button type="button" ' +
+            'class="btn btn-default" data-dismiss="modal">Close</button>');
+        $('#confirm_savecsv_button').on('click', function() {
+
+            var data_items = Nengo.Component.components;
+            var CSV = data_to_csv(data_items);
+            // Extract filename from the path
+            var path = $("#filename")[0].textContent;
+            var filename = path.split('/').pop();
+            filename = filename.split('.')[0];
+
+            var uri = 'data:text/csv;charset=utf-8,' + escape(CSV);
+
+
+            var link = document.createElement("a");
+            link.href = uri;
+            link.style = "visibility:hidden";
+            // Adding element to the DOM (needed for Firefox)
+            link.download = filename + ".csv";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
     } else if (type === 'refresh') {
         this.$footer.append('<button type="button" ' +
             'id="refresh_button" class="btn btn-primary">Refresh</button>');

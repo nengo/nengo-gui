@@ -51,6 +51,9 @@ Nengo.Toolbar = function(filename) {
     $('#Pdf_button')[0].addEventListener('click', function () {
         self.pdf_modal();
     });
+    $('#Download_button')[0].addEventListener('click', function () {
+      self.csv_modal();
+    });
     $('#Help_button')[0].addEventListener('click', function () {
         Nengo.hotkeys.callMenu();
     });
@@ -156,5 +159,13 @@ Nengo.Toolbar.prototype.pdf_modal = function () {
     Nengo.modal.title("Export the layout to SVG");
     Nengo.modal.text_body("Do you want to save the file?", "info");
     Nengo.modal.footer('confirm_savepdf');
+    Nengo.modal.show();
+}
+
+/** Export the graph data to the CSV in Downloads folder **/
+Nengo.Toolbar.prototype.csv_modal = function () {
+    Nengo.modal.title("Export the graph data to CSV");
+    Nengo.modal.text_body("Do you want to save the file?", "info");
+    Nengo.modal.footer('confirm_savecsv');
     Nengo.modal.show();
 }
