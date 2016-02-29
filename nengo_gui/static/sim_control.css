@@ -126,7 +126,6 @@
 #speed_throttle {
     height: 10px;
     width: 110px;
-    #background: yellow;
 }
 
 #speed_throttle .guideline {
