@@ -3,6 +3,7 @@ import mimetypes
 import os
 import os.path
 import pkgutil
+import re
 import time
 import traceback
 
@@ -15,9 +16,25 @@ import nengo_gui.swi as swi
 import nengo_gui
 
 def unquote_nonstandard(text):
+    print('unquote' + text)
     if '%u' in text:
-        text = text.replace('%u', '\\u').decode('unicode_escape')
+        text = text.replace('%u', '\\u')
+        if not hasattr(text, 'decode'):
+            text = text.encode('utf-8')
+        text = text.decode('unicode_escape')
+        print('unquoted: '+repr(text))
     return text
+
+def unquote_nonstandard(text):
+    def unicode_unquoter(match):
+        return chr(int(match.group(1),16))
+    return re.sub(r'%u([0-9a-fA-F]{4})',unicode_unquoter,text)
+def unquote(text):
+    def unicode_unquoter(match):
+        return chr(int(match.group(1),16))
+    return re.sub(r'%([0-9a-fA-F]{2})',unicode_unquoter,text)
+
+
 
 class Server(swi.SimpleWebInterface):
     """Web server interface to nengo_gui"""
@@ -27,6 +44,15 @@ class Server(swi.SimpleWebInterface):
         r = ['<ul class="jqueryFileTree" style="display: none;">']
         d = unquote_nonstandard(dir)
         d = unquote(d)
+        print('unquoted_all: '+repr(d))
+        print('current_dir: '+repr(os.listdir('.')[0]))
+
+        a = d
+        b = os.listdir('.')[0]
+
+        print(a.encode('utf-8'))
+        print(b.encode('utf-8'))
+
         ex_tag = '//examples//'
         ex_html = '<em>built-in examples</em>'
         if d == '.':
@@ -34,10 +60,15 @@ class Server(swi.SimpleWebInterface):
                      '<a href="#" rel="%s">%s</a></li>' % (ex_tag, ex_html))
             path = '.'
         elif d.startswith(ex_tag):
-            path = os.path.join(nengo_gui.__path__[0].decode('utf-8'),
-                                'examples', d[len(ex_tag):])
+            p = nengo_gui.__path__[0]
+            if hasattr(p, 'decode'):
+                p = p.decode('utf-8')
+
+            path = os.path.join(p, 'examples', d[len(ex_tag):])
         else:
             path = os.path.join('.', d)
+
+        print('examining path: '+repr(path))
 
         for f in sorted(os.listdir(path)):
             ff = os.path.join(path, f)

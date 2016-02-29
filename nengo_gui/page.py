@@ -303,16 +303,16 @@ class Page(object):
 
     def create_javascript(self):
         """Generate the javascript for the current model and layout."""
-        if self.filename is not None:
-            fn = json.dumps(self.filename)
-            webpage_title_js = ';document.title = %s;' % fn
-        else:
-            webpage_title_js = ''
+        #if self.filename is not None:
+        #    fn = json.dumps(self.filename)
+        #    webpage_title_js = ';document.title = %s;' % fn
+        #else:
+        #    webpage_title_js = ''
 
         assert isinstance(self.components[0], nengo_gui.components.SimControl)
 
         component_js = '\n'.join([c.javascript() for c in self.components])
-        component_js += webpage_title_js
+        #component_js += webpage_title_js
         if not self.gui.allow_file_change:
             component_js += "$('#Open_file_button').addClass('deactivated');"
         return component_js

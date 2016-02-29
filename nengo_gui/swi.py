@@ -285,7 +285,7 @@ class SimpleWebInterface(BaseHTTPServer.BaseHTTPRequestHandler):
                 text = text.replace('<', '<')
                 text = text.replace('>', '>')
                 print(text)
-                b = ("%s</pre></body></html>" % text)
+                b = ("%s</pre></body></html>" % text)#.encode('utf-8')
                 self.wfile.write(b)
             else:
                 if isinstance(text, tuple):
