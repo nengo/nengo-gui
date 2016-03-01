@@ -117,6 +117,7 @@ Nengo.Toolbar.prototype.config_modal_show = function() {
                     font_size: Nengo.netgraph.font_size,
                     aspect_resize: Nengo.netgraph.aspect_resize,
                     sync_editor: Nengo.ace.auto_update,
+                    kept_time: sim.time_slider.kept_time,
                     transparent_nets: Nengo.netgraph.transparent_nets};
 
     Nengo.modal.title('Configure Options');
@@ -137,6 +138,7 @@ Nengo.Toolbar.prototype.config_modal_show = function() {
             Nengo.netgraph.zoom_fonts = original["zoom"];
             Nengo.netgraph.font_size = original["font_size"];
             Nengo.netgraph.transparent_nets = original["transparent_nets"];
+            Nengo.netgraph.kept_time = original["kept_time"];
             Nengo.netgraph.aspect_resize = original["aspect_resize"];
             Nengo.ace.auto_update = original["auto_update"];
             $('#cancel-button').attr('data-dismiss', 'modal');

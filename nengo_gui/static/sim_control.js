@@ -336,6 +336,32 @@ Nengo.TimeSlider.prototype.reset = function() {
     this.sim.div.dispatchEvent(new Event('adjust_time'));
 }
 
+Nengo.TimeSlider.prototype.update_kept_time = function(kept_time) {
+    this.kept_time = kept_time;
+
+    /** update the limits on the time axis */
+    this.kept_scale.domain([this.last_time - this.kept_time, this.last_time]);
+
+    var width = this.sim.div.clientWidth - 290;
+    var height = this.sim.div.clientHeight - 20;
+    this.kept_scale.range([0, width]);
+    this.shown_div.style.width = width * this.shown_time / this.kept_time;
+
+    // If the shown time window will go off screen, move it on screen
+    if (this.first_shown_time < this.last_time - this.kept_time) {
+        this.first_shown_time = this.last_time - this.kept_time;
+    }
+
+    x = this.kept_scale(this.first_shown_time);
+    Nengo.set_transform(this.shown_div, x, 0);
+
+    /** update the time axis display */
+    this.axis_g.call(this.axis);
+
+    /** update any components who need to know the time changed */
+    this.sim.div.dispatchEvent(new Event('adjust_time'));
+}
+
 /**
  * Adjust size and location of parts based on overall size
  */
