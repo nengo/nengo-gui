@@ -2,13 +2,13 @@ from __future__ import print_function
 import os
 import inspect
 import nengo_gui
-import pytest
 import time
 
-def update_editor(driver, nengoCode):
-    """Inserts a string which represents code into ace editor"""
 
-    """
+def update_editor(driver, nengoCode):
+
+    """Inserts a string which represents code into ace editor
+
     Example:
     driver = webdriver.firefox()
     driver.get(localhost:8080/)
@@ -22,7 +22,9 @@ def update_editor(driver, nengoCode):
     driver.execute_script(js)
     time.sleep(1)
 
+
 def reset_page(driver):
+
     """Clicks the reset page button in nengo_gui
 
     Example:
@@ -38,12 +40,15 @@ def reset_page(driver):
     reset_acc.click()
     time.sleep(0.2)
 
+
 def start_stop_sim(driver):
     """Clicks the start simulation start button"""
     play_button = driver.find_element_by_xpath('//*[@id="pause_button"]')
     play_button.click()
 
-def folder_location(var_path):
+
+def folder_location(var_path, indiv_file=None):
+
     """Returns a list of the raw text from a python file in var_path
 
      Example:
@@ -71,16 +76,19 @@ def folder_location(var_path):
 
     test_files = os.listdir(test_folder)
     test_files = filter((lambda x: ((x.count('.') == 1) and ('.py' in x))),
-        test_files)
+                        test_files)
+    if(indiv_file is not None):
+        test_files = filter((lambda x: (x == indiv_file)), test_files)
     test_files = map((lambda file_: os.path.join(test_folder, file_)),
-        test_files)
-    test_files = map((lambda file_: open(file_, 'r').read()),
-        test_files)
+                     test_files)
+    test_files = map((lambda file_: open(file_, 'r').read()), test_files)
     test_files = map((lambda raw_file: raw_file.replace("'", r"\'")),
-        test_files)
+                     test_files)
     return test_files
 
+
 def mouse_scroll(driver, scroll_y):
+
     """scrolls by scroll_y in the netgraph div"""
 
     element = driver.find_element_by_id('netgraph')
@@ -95,7 +103,9 @@ def mouse_scroll(driver, scroll_y):
                 netg.dispatchEvent(evt);'''
     driver.execute_script(script % (scroll_y, mouse_x, mouse_y))
 
+
 def imgur_screenshot(driver):
+
     """Takes a screenshot, uploads it to imgur, and prints the link"""
 
     import pyimgur
