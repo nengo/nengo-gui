@@ -26,6 +26,7 @@ Nengo.Config = function(parent, args) {
     define_option("aspect_resize", false);
     define_option("zoom_fonts", false);
     define_option("font_size", 100);
+    define_option("scriptdir", ".");
 
     // Ace editor options
     define_option("hide_editor", false);
