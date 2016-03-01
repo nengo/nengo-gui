@@ -294,7 +294,7 @@ Nengo.Modal.prototype.main_config = function() {
     });
 
     //Allow the enter key to submit
-    submit = function(event) {
+    var submit = function(event) {
         if (event.which == 13) {
             event.preventDefault();
             $('#OK').click();
