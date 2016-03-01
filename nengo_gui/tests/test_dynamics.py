@@ -11,7 +11,9 @@ def test_lorenz():
                         'examples/tutorial/15-lorenz.py')
 
     model_objects = {}
-    execfile(pyfile, model_objects)
+    with open(pyfile) as f:
+        code = compile(f.read(), pyfile, 'exec')
+        exec(code, model_objects)
 
     with model_objects['model']:
         state_p = nengo.Probe(model_objects['x'], synapse=.01)

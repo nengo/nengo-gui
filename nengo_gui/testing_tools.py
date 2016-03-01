@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import inspect
 import nengo_gui
@@ -107,6 +108,6 @@ def imgur_screenshot(driver):
     PATH = os.path.join(current_folder, 'test_result.png')
     uploaded_image = im.upload_image(PATH, title="Uploaded to Imgur")
     os.remove('test_result.png')
-    print ""
+    print()
     print(uploaded_image.title)
     print(uploaded_image.link)

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import sys
 import time
@@ -10,7 +11,7 @@ from nengo_gui import testing_tools as tt
 
 test_files = tt.folder_location('examples/basics')
 
-@pytest.mark.parametrize('test_file', test_files[:])#
+@pytest.mark.parametrize('test_file', test_files)
 def test_basic_functionality(driver, test_file):
 	try:
 		#Test page response by clicking the reset button and applying new code to ace-editor
@@ -55,7 +56,7 @@ def test_basic_functionality(driver, test_file):
 
 		assert (float(sim_time) > 0)
 
-	except Exception, e:
+	except Exception as e:
 		#Travis Only: On fail takes screenshot and uploads it to imgur
 
 
