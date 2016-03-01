@@ -28,7 +28,3 @@ with model:
     stim = nengo.Node(0)
     ens = nengo.Ensemble(n_neurons=50, dimensions=1)
     nengo.Connection(stim, ens)
-    
-    # include these lines if the simulation is too fast
-    import time
-    slowdown = nengo.Node(lambda t: time.sleep(0.001))

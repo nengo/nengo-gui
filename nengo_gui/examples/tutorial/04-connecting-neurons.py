@@ -33,7 +33,3 @@ with model:
     b = nengo.Ensemble(n_neurons=50, dimensions=1)
     
     nengo.Connection(a, b, synapse=0.01)
-    
-    
-    import time
-    slowdown = nengo.Node(lambda t: time.sleep(0.001)) 

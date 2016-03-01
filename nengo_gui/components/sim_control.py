@@ -26,7 +26,7 @@ class SimControl(Component):
         self.last_tick = None
         self.rate = 0.0
         self.model_dt = dt
-        self.rate_tau = 1.0
+        self.rate_tau = 0.5
         self.last_send_rate = None
         self.sim_ticks = 0
         self.skipped = 1
@@ -36,6 +36,11 @@ class SimControl(Component):
         self.send_config_options = False
         self.reset_inform = False
         self.node = None
+        self.target_rate = 1.0     # desired speed of simulation
+        self.target_scale = None   # desired proportion of full speed
+        self.delay_time = 0.0      # amount of delay per time step
+        self.rate_proportion = 1.0 # current proportion of full speed
+        self.smart_sleep_offset = 0.0  # difference from actual sleep time
 
     def attach(self, page, config, uid):
         super(SimControl, self).attach(page, config, uid)
@@ -74,6 +79,31 @@ class SimControl(Component):
                 self.rate += (1 - decay) * rate
                 self.skipped = 1
 
+                # compute current proportion of full speed
+                self.rate_proportion = 1.0 - ((self.rate * self.delay_time) /
+                                              self.actual_model_dt)
+
+        # if we have a desired proportion, use it to control delay_time
+        #  Note that we need last_tick to not be None so that we have a
+        #  valid dt value.
+        if self.target_scale is not None and self.last_tick is not None:
+            s = self.target_scale
+            if s <=0:
+                self.delay_time = 0.5
+            else:
+                self.delay_time = (1.0/s - s) * (dt - self.delay_time)
+
+        # if we have a desired rate, do a simple P-controller to get there
+        if self.target_rate is not None:
+            rate_error = self.rate - self.target_rate
+            delta = rate_error * 0.0000002
+            self.delay_time += delta
+
+        self.delay_time = np.clip(self.delay_time, 0, 0.5)
+
+        if self.delay_time > 0:
+            self.smart_sleep(self.delay_time)
+
         self.last_tick = now
 
         # Sleeps to prevent the simulation from advancing
@@ -81,6 +111,30 @@ class SimControl(Component):
         while self.paused and self.page.sim is not None:
             time.sleep(0.01)
             self.last_tick = None
+
+    def busy_sleep(self, delay_time):
+        now = timeit.default_timer()
+        start = now
+        while now < start + delay_time:
+            now = timeit.default_timer()
+
+    def smart_sleep(self, delay_time):
+        """Attempt to sleep for an amount of time without a busy loop.
+
+        This keeps track of the difference between the requested time.sleep()
+        time and the actual amount of time slept, and then subtracts that
+        difference from future smart_sleep calls.  This should give an
+        overall consistent sleep() time even if the actual sleep() time
+        is inaccurate.
+        """
+        t = delay_time + self.smart_sleep_offset
+        if t >= 0:
+            start = timeit.default_timer()
+            time.sleep(t)
+            end = timeit.default_timer()
+            self.smart_sleep_offset += delay_time - (end - start)
+        else:
+            self.smart_sleep_offset += delay_time
 
     def config_settings(self, data):
         for i in data:
@@ -98,7 +152,7 @@ class SimControl(Component):
             self.page.sim = None
             self.page.changed = False
         if not self.paused or self.reset_inform:
-            client.write(struct.pack('<ff', self.time, self.rate), binary=True)
+            client.write(struct.pack('<fff', self.time, self.rate, self.rate_proportion), binary=True)
             self.reset_inform = False
         status = self.get_status()
         if status != self.last_status:
@@ -146,6 +200,9 @@ class SimControl(Component):
         elif msg[:8] == 'backend:':
             self.page.backend = msg[8:]
             self.page.changed = True
+        elif msg[:13] == 'target_scale:':
+            self.target_scale = float(msg[13:])
+            self.target_rate = None
 
     def backend_options_html(self):
         items = []
