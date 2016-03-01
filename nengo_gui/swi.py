@@ -594,13 +594,13 @@ class ClientSocket(object):
         try:
             data = data + bytearray(self.socket.recv(512))
         except socket.error as e:
-            if e.errno == 11:  # no data available
+            if e.errno == errno.EAGAIN:  # no data available
                 pass
-            elif e.errno == 10035:  # no data available
+            elif e.errno == errno.EWOULDBLOCK:  # no data available
                 pass
-            elif e.errno == 35:  # no data available
-                pass
-            elif e.errno == 9:  # "Bad file descriptor" means socket closed
+            elif e.errno == errno.ECONNABORTED: # software disconnect
+                raise SocketClosedError("Cannot read from aborted socket")
+            elif e.errno == errno.EBADF:  # "Bad file desc" means socket closed
                 raise SocketClosedError("Cannot read from closed socket.")
             else:
                 raise
@@ -695,7 +695,7 @@ class ClientSocket(object):
             self._sendall(header)
             self._sendall(data)
         except socket.error as e:
-            if e.errno == 32:  # Broken pipe
+            if e.errno == errno.EPIPE:  # Broken pipe
                 raise SocketClosedError("Cannot write to socket.")
             else:
                 raise
