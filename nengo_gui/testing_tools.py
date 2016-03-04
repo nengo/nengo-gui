@@ -2,6 +2,7 @@ from __future__ import print_function
 import os
 import inspect
 import nengo_gui
+from selenium.webdriver import ActionChains
 import time
 
 
@@ -11,7 +12,7 @@ def update_editor(driver, nengoCode):
 
     Example:
     driver = webdriver.firefox()
-    driver.get(localhost:8080/)
+    driver.get('localhost:8080/')
     code_string = "print hello world"
     update_editor(driver, code_string)
     Ace editor will update with "print hello world"
@@ -29,7 +30,7 @@ def reset_page(driver):
 
     Example:
     driver = webdriver.firefox()
-    driver.get(localhost:8080/)
+    driver.get('localhost:8080/')
     reset_page(driver)
     The page then resets
     """
@@ -45,6 +46,33 @@ def start_stop_sim(driver):
     """Clicks the start simulation start button"""
     play_button = driver.find_element_by_xpath('//*[@id="pause_button"]')
     play_button.click()
+
+
+def menu_click(driver,elem,menu_option):
+    """Selects a menu option from the right click menu for a nengo object
+
+    Example:
+    driver = webdriver.firefox()
+    driver.get('localhost:8080/')
+    ens = driver.get_element_by_xpath('//*[@class="ens"]')
+    make_graph(driver,ens,'Value')
+    """
+    actions = ActionChains(driver)
+    actions.move_to_element(elem)
+    actions.context_click()
+    actions.perform()
+    time.sleep(1)
+    actions = ActionChains(driver)
+
+    options = driver.find_elements_by_xpath('//*[@class="dropdown-menu"]/li')
+    graph_button = ""
+    for item in options:
+        if(item.text == menu_option):
+            graph_button = item
+    actions.move_to_element(graph_button)
+    actions.click()
+    actions.perform()
+    time.sleep(0.5)
 
 
 def folder_location(var_path, indiv_file=None):
