@@ -46,3 +46,6 @@ with model:
         
     nengo.Connection(ens, plot[:fs.n_basis], synapse=0.1)
     nengo.Connection(stimulus, plot[fs.n_basis:], synapse=0.1)
+
+sim = nengo.Simulator(model)
+sim.run(1)

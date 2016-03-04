@@ -15,6 +15,10 @@ domain = np.linspace(-1, 1, 200)
 def gaussian(mag, mean, sd):
     return mag * np.exp(-(domain-mean)**2/(2*sd**2))
 
+gauss = nengo.dists.Function(gaussian,
+                       mean=nengo.dists.Uniform(-1, 1),
+                       sd=nengo.dists.Uniform(0.1, 0.5),
+                       mag=1)
 
 # build the function space
 fs = nengo.FunctionSpace(nengo.dists.Function(gaussian,
@@ -24,19 +28,12 @@ fs = nengo.FunctionSpace(nengo.dists.Function(gaussian,
                          n_basis=10)
 
 model = nengo.Network()
-model.config[nengo.Ensemble].neuron_type = nengo.Direct()
+#model.config[nengo.Ensemble].neuron_type = nengo.Direct()
 with model:
     ens1 = nengo.Ensemble(n_neurons=500, dimensions=fs.n_basis, 
             neuron_type=nengo.Direct())
-    ens1.encoders = fs.project(nengo.dists.Function(gaussian,
-                mean=nengo.dists.Uniform(-1, 1),
-                sd=0.05,
-                mag=1))
-                
-    ens1.eval_points = fs.project(nengo.dists.Function(gaussian,
-                       mean=nengo.dists.Uniform(-1, 1),
-                       sd=nengo.dists.Uniform(0.1, 0.5),
-                       mag=1))
+    ens1.encoders = fs.project(gauss)
+    ens1.eval_points = fs.project(gauss)
     
     stimulus1 = fs.make_stimulus_node(gaussian, 3)
     nengo.Connection(stimulus1, ens1)
@@ -46,15 +43,8 @@ with model:
     
     ens2 = nengo.Ensemble(n_neurons=500, dimensions=fs.n_basis, 
             neuron_type=nengo.Direct())
-    ens2.encoders = fs.project(nengo.dists.Function(gaussian,
-                mean=nengo.dists.Uniform(-1, 1),
-                sd=0.05,
-                mag=1))
-                
-    ens2.eval_points = fs.project(nengo.dists.Function(gaussian,
-                       mean=nengo.dists.Uniform(-1, 1),
-                       sd=nengo.dists.Uniform(0.1, 0.5),
-                       mag=1))
+    ens2.encoders = fs.project(gauss)
+    ens2.eval_points = fs.project(gauss)
     
     stimulus2 = fs.make_stimulus_node(gaussian, 3)
     nengo.Connection(stimulus2, ens2)
@@ -62,8 +52,16 @@ with model:
     stim_control2 = nengo.Node([1, 0, 0.2])
     nengo.Connection(stim_control2, stimulus2)
     
-    ens3 = nengo.Ensemble(n_neurons=1500, dimensions=fs.n_basis*2, radius=2,)
-        # neuron_type=nengo.Direct())
+    n_neurons=1500
+    ens3 = nengo.Ensemble(n_neurons=n_neurons, dimensions=fs.n_basis*2)
+    ens3.encoders = np.hstack([fs.project(gauss).sample(n_neurons), 
+                                  fs.project(gauss).sample(n_neurons)])
+    ens3.eval_points = np.vstack([
+                        -1 * np.hstack([fs.project(gauss).sample(5000), 
+                                  fs.project(gauss).sample(5000)]),
+                        np.hstack([fs.project(gauss).sample(5000), 
+                                  fs.project(gauss).sample(5000)])])
+    #ens3.neuron_type=nengo.Direct()
     nengo.Connection(ens1, ens3[:fs.n_basis])
     nengo.Connection(ens2, ens3[fs.n_basis:])
 
@@ -75,10 +73,10 @@ with model:
     def dotproduct(x):
         p = fs.reconstruct(x[:fs.n_basis])
         q = fs.reconstruct(x[fs.n_basis:])
-        if np.max(p) != 0:
-            p = p/np.max(p) 
-            q = q/np.max(q)
-        print np.dot(p,q) 
+        norm_p = np.linalg.norm(p)
+        norm_q = np.linalg.norm(q)
+        p = p/norm_p if norm_p != 0 else p
+        q = q/norm_q if norm_q != 0 else q
         return np.dot(p,q)
 
     nengo.Connection(ens3, dp, function=dotproduct)

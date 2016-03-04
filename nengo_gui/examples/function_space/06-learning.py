@@ -50,9 +50,6 @@ with model:
     nengo.Connection(weights, plot, synapse=0.1)
 
     # the x value we'd like to sample from the represented function
-    # x_input = nengo.Node(output=np.sin)
-    # x = nengo.Ensemble(n_neurons=200, dimensions=1,
-    #         neuron_type=nengo.LIF())
     x = nengo.Node(output=lambda x: np.sin(x*2))
 
     # in this case, learn two different Gaussians, 
@@ -61,17 +58,13 @@ with model:
     def train_gaussians(t,x):
         stim = 1 if int(t) % 2 == 0 else -1 
         g = gaussian(1, stim/2.0, .05)
+        #g = stim/2.0 * np.linspace(-1, 1, n_samples)
         index = int(x[0] * n_samples/2 + n_samples/2)
         return g[index], stim
     # the target f(x) value for the represented function
     target_fx = nengo.Node(output=train_gaussians, size_in=1)
     nengo.Connection(x, target_fx)
     nengo.Connection(target_fx[1], stimulus)
-
-    calc_fx = nengo.Ensemble(n_neurons=1, dimensions=fs.n_basis+1,
-            neuron_type=nengo.Direct())
-    nengo.Connection(x, calc_fx[0])
-    nengo.Connection(weights, calc_fx[1:])
 
     # this is for sampling from the represented function
     product = nengo.networks.Product(n_neurons=1, dimensions=fs.n_basis)
@@ -120,8 +113,6 @@ with model:
             # neuron_type=nengo.LIF())
     error_filter = nengo.networks.EnsembleArray(100, fs.n_basis,
             intercepts=nengo.dists.Uniform(.05, 1))
-    # nengo.Connection(error, stim_conn.learning_rule, 
-    #         function=lambda x: fs.project(pad_error(x)))
     nengo.Connection(error, error_filter.input,
             function=lambda x: fs.project(pad_error(x)))
     nengo.Connection(error_filter.output, stim_conn.learning_rule)
@@ -142,6 +133,7 @@ with model:
                         bar_x[ii] * line_width, val, line_width)
         pad_error_vis._nengo_html_ = bar_graph
         # end of visualization code ---------
+        
     error_vis = nengo.Node(output=pad_error_vis, size_in=n_samples)
     nengo.Connection(error, error_vis, 
             function=pad_error)
