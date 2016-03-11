@@ -7,7 +7,8 @@ from selenium.webdriver import ActionChains
 from nengo_gui import conftest
 from nengo_gui import testing_tools as tt
 
-def set_cloud_value(driver,spa_nets):
+
+def set_cloud_value(driver, spa_nets):
     for name in spa_nets:
         prompt_script = """
         var items = Nengo.Component.components;
@@ -53,15 +54,15 @@ with model:
         """
         tt.reset_page(driver)
         tt.update_editor(driver, test_file)
-        tt.mouse_scroll(driver,200)
+        tt.mouse_scroll(driver, 200)
 
         # Generates semantic pointer clouds for each network
         driver.execute_script("""
         var a = Nengo.netgraph.svg_objects;
         for(model in a){
             if(a[model].sp_targets.length > 0){
-                a[model].create_graph('Pointer',a[model].sp_targets[0]);
-                a[model].create_graph('SpaSimilarity',a[model].sp_targets[0]);
+                a[model].create_graph('Pointer', a[model].sp_targets[0]);
+                a[model].create_graph('SpaSimilarity', a[model].sp_targets[0]);
             }
         };
         """)
@@ -84,7 +85,7 @@ with model:
 
         # Sets the semantic pointers appropriately
         spa_values = {"shape":"CIRCLE", "color":"BLUE", "query":"CIRCLE"}
-        set_cloud_value(driver,spa_values)
+        set_cloud_value(driver, spa_values)
         time.sleep(10)
         result = driver.execute_script("""
         var objects = Nengo.Component.components;
@@ -105,12 +106,12 @@ with model:
         plot_data = driver.execute_script(data_script)
 
         # Checks that the 'answer' is BLUE
-        assert(len(filter((lambda x: ("BLUE" in x)),result)) > 0)
+        assert(len(filter((lambda x: ("BLUE" in x)), result)) > 0)
 
         # Checks the dimensionality of the spa similarity plot
         assert(len(plot_data) == 2 and len(plot_data[0]) > 1)
 
-        set_cloud_value(driver,{"color":"ORANGE"})
+        set_cloud_value(driver, {"color":"ORANGE"})
 
         time.sleep(5)
 

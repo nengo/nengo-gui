@@ -67,7 +67,7 @@ def menu_click(driver,elem,menu_option):
     options = driver.find_elements_by_xpath('//*[@class="dropdown-menu"]/li')
     graph_button = ""
     for item in options:
-        if(item.text == menu_option):
+        if(menu_option in item.text):
             graph_button = item
     actions.move_to_element(graph_button)
     actions.click()
