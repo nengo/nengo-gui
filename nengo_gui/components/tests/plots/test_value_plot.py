@@ -5,7 +5,7 @@ from nengo_gui import testing_tools as tt
 
 def test_value_plot(driver):
 	stim_vals = [0, 1]
-	accuracy = 0.1
+	accuracy = 0.3
 	for val in stim_vals:
 		tt.reset_page(driver)
 		tt.update_editor(driver, """
