@@ -18,13 +18,13 @@ def gaussian(mag, mean, sd):
 gauss = nengo.dists.Function(gaussian,
                        mean=nengo.dists.Uniform(-1, 1),
                        sd=nengo.dists.Uniform(0.1, 0.5),
-                       mag=1)
+                       mag=nengo.dists.Uniform(-1, 1))
 
 # build the function space
 fs = nengo.FunctionSpace(nengo.dists.Function(gaussian,
                                               mean=nengo.dists.Uniform(-1, 1),
                                               sd=nengo.dists.Uniform(0.1, 0.7),
-                                              mag=1), 
+                                              mag=nengo.dists.Uniform(-1,1)), 
                          n_basis=10)
 
 model = nengo.Network()
@@ -55,12 +55,10 @@ with model:
     n_neurons=1500
     ens3 = nengo.Ensemble(n_neurons=n_neurons, dimensions=fs.n_basis*2)
     ens3.encoders = np.hstack([fs.project(gauss).sample(n_neurons), 
-                                  fs.project(gauss).sample(n_neurons)])
+                               fs.project(gauss).sample(n_neurons)])
     ens3.eval_points = np.vstack([
-                        -1 * np.hstack([fs.project(gauss).sample(5000), 
-                                  fs.project(gauss).sample(5000)]),
                         np.hstack([fs.project(gauss).sample(5000), 
-                                  fs.project(gauss).sample(5000)])])
+                                   fs.project(gauss).sample(5000)])])
     #ens3.neuron_type=nengo.Direct()
     nengo.Connection(ens1, ens3[:fs.n_basis])
     nengo.Connection(ens2, ens3[fs.n_basis:])
