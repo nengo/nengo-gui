@@ -8,7 +8,6 @@ nengo.FunctionSpace = nengo.utils.function_space.FunctionSpace
 
 import numpy as np
 
-
 domain = np.linspace(-1, 1, 200)
 
 # define your function
@@ -25,13 +24,11 @@ fs = nengo.FunctionSpace(nengo.dists.Function(gaussian,
                                               mean=nengo.dists.Uniform(-1, 1),
                                               sd=nengo.dists.Uniform(0.1, 0.7),
                                               mag=nengo.dists.Uniform(-1,1)), 
-                         n_basis=10)
+                         n_basis=15)
 
 model = nengo.Network()
-#model.config[nengo.Ensemble].neuron_type = nengo.Direct()
 with model:
-    ens1 = nengo.Ensemble(n_neurons=500, dimensions=fs.n_basis, 
-            neuron_type=nengo.Direct())
+    ens1 = nengo.Ensemble(n_neurons=500, dimensions=fs.n_basis)
     ens1.encoders = fs.project(gauss)
     ens1.eval_points = fs.project(gauss)
     
@@ -41,8 +38,7 @@ with model:
     stim_control1 = nengo.Node([1, 0, 0.2])
     nengo.Connection(stim_control1, stimulus1)
     
-    ens2 = nengo.Ensemble(n_neurons=500, dimensions=fs.n_basis, 
-            neuron_type=nengo.Direct())
+    ens2 = nengo.Ensemble(n_neurons=500, dimensions=fs.n_basis)
     ens2.encoders = fs.project(gauss)
     ens2.eval_points = fs.project(gauss)
     
@@ -59,7 +55,6 @@ with model:
     ens3.eval_points = np.vstack([
                         np.hstack([fs.project(gauss).sample(5000), 
                                    fs.project(gauss).sample(5000)])])
-    #ens3.neuron_type=nengo.Direct()
     nengo.Connection(ens1, ens3[:fs.n_basis])
     nengo.Connection(ens2, ens3[fs.n_basis:])
 
