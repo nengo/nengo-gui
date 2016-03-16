@@ -1,0 +1,80 @@
+
+.sidenav {
+    --nav-width: 250px;
+    height: 100%;
+    width: var(--nav-width);
+    position: fixed;
+    z-index: 5;
+    top: 34px;
+    left: 0;
+    background-color: white;
+    overflow-x: hidden;
+    transition: 0.5s;
+    border-right: 4px solid #4D4D4D;
+    font-size: 0px;
+}
+
+.sidenav .sub_menu{
+  font-size: 15px;
+  float: left;
+  width: var(--nav-width);
+  height:600px;
+  top: 0px;
+  margin-right:0px;
+}
+
+.sidenav #Menu_info{
+  position: relative;
+  width: 2000px;
+  margin: 0px;
+  padding: 0px;
+}
+
+.sidenav  a{
+    font-size: 15px;
+    color: black;
+    display: block;
+    transition: 0.3s
+}
+
+.nav-tabs > li > a:hover{
+  background-color: #303136 !important;
+  color:#fff;
+}
+
+.nav-tabs .menu_tab.selected a{
+  background-color: #303136 !important;
+  color:#fff;
+}
+
+.accordion-toggle {
+  cursor: pointer;
+  width: 100%;
+  background: none;
+  height:40px;
+  font-size: 18px;
+  border-top: solid black 1px;
+  border-bottom: solid black 1px;
+  margin-bottom: -1px;
+  color: black;
+}
+
+.accordion-toggle:hover {
+  background: #535353;
+  color: white;
+}
+
+.accordion-toggle p {
+  padding-left: 10px;
+  padding-top: 8px;
+}
+.accordion-content {display: none;}
+
+.accordion-content.default {display: block;}
+
+
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}

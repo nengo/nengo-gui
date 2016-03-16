@@ -18,11 +18,61 @@
         <link href="static/top_toolbar.css" rel="stylesheet" type="text/css" />
         <link href="static/lib/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
         <link href="static/lib/js/jqueryFileTree/jqueryFileTree.css" rel="stylesheet" type="text/css">
+        <link href="static/side_menu.css" rel="stylesheet" type="text/css" />
     </head>
     <!-- body needs an ID to fix cursor in Firefox -->
     <body id="body" onload="onload();">
+      <div class="sidenav">
+        <ul class="nav nav-tabs">
+            <li class="menu_tab" id="Component_menu">
+              <a href="#" class="glyphicon glyphicon-th"></a>
+            </li>
+            <li class="menu_tab" id="Download_menu">
+              <a href="#" class="glyphicon glyphicon-download-alt"></a>
+            </li>
+            <li class="menu_tab" id="Config_menu">
+              <a href="#" class='glyphicon glyphicon-cog'></a>
+            </li>
+        </ul>
+        <div id="Menu_info">
+          <div class="sub_menu">
+            <div class="accordion" id="accordion1">
+              <div class="accordion-toggle"><p>Basic</p></div>
+                <div class="accordion-content default">
+                  <p>Cras malesuada ultrices augue molestie risus.</p>
+                </div>
+              <div class="accordion-toggle"><p>Network</p></div>
+                <div class="accordion-content">
+                  <p>Lorem ipsum dolor sit amet mauris eu turpis.</p>
+                </div>
+              <div class="accordion-toggle"><p>SPA</p></div>
+                <div class="accordion-content">
+                  <p>Vivamus facilisisnibh scelerisque laoreet.</p>
+                </div>
+            </div>
+        </div>
+        <div class="sub_menu">
+          <div class="accordion" id="accordion2">
+            <div class="accordion-toggle"><p>Download Simulation Data</p></div>
+              <div class="accordion-content default">
+                <p>Cras malesuada ultrices augue molestie risus.</p>
+              </div>
+            <div class="accordion-toggle"><p>Export SVG as PDF</p></div>
+              <div class="accordion-content">
+                <p>Lorem ipsum dolor sit amet mauris eu turpis.</p>
+              </div>
+          </div>
+        </div>
+        <div class="sub_menu">
+          <div style="background:blue;height:350px"> WHATTSSS UP </div>
+        </div>
+      </div>
+    </div>
         <div id="top_toolbar_div">
             <ul id='toolbar_object' class="nav nav-pills">
+                <li id='Side_nav' role="presentation">
+                    <a class='glyphicon glyphicon-align-justify'></a>
+                </li>
                 <li id='Open_file_button' role="presentation">
                     <a title='Open file' class='glyphicon glyphicon-folder-open'> </a>
                 </li>
@@ -151,6 +201,7 @@
         <script src="static/modal.js"></script>
         <script src="static/tooltips.js"></script>
         <script src="static/menu.js"></script>
+        <script src="static/side_menu.js"></script>
         <script src="static/viewport.js"></script>
         <script src="static/hotkeys.js"></script>
         <script src="static/ace.js"></script>
