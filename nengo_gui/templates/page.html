@@ -33,70 +33,109 @@
             <li class="menu_tab" id="Config_menu">
               <a href="#" class='glyphicon glyphicon-cog'></a>
             </li>
+            <li class="menu_tab pull-right side_toggle">
+                <a href="#" class='glyphicon glyphicon-chevron-left'></a>
+            </li>
         </ul>
-        <div id="Menu_info">
-          <div class="sub_menu">
-            <div class="accordion" id="accordion1">
-              <div class="accordion-toggle"><p>Basic</p></div>
-                <div class="accordion-content default">
-                  <p>Cras malesuada ultrices augue molestie risus.</p>
-                </div>
-              <div class="accordion-toggle"><p>Network</p></div>
-                <div class="accordion-content">
-                  <p>Lorem ipsum dolor sit amet mauris eu turpis.</p>
-                </div>
-              <div class="accordion-toggle"><p>SPA</p></div>
-                <div class="accordion-content">
-                  <p>Vivamus facilisisnibh scelerisque laoreet.</p>
+
+            <div id="Menu_info">
+              <div class="sub_menu">
+                <div class="accordion" id="accordion1">
+
+                    <div class="accordion-toggle">
+                      <p class="title">Basic</p>
+                      <p class="icon">
+                          <span class="glyphicon glyphicon-chevron-down"></span>
+                      </p>
+                    </div>
+                    <div class="accordion-content default">
+                      <p>Cras malesuada ultrices augue molestie risus.</p>
+                    </div>
+
+                    <div class="accordion-toggle">
+                      <p class="title">SPA</p>
+                      <p class="icon">
+                          <span class="glyphicon glyphicon-chevron-down"></span>
+                      </p>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Vivamus facilisisnibh scelerisque laoreet.</p>
+                    </div>
+
                 </div>
             </div>
-        </div>
-        <div class="sub_menu">
-          <div class="accordion" id="accordion2">
-            <div class="accordion-toggle"><p>Download Simulation Data</p></div>
-              <div class="accordion-content default">
-                <p>Cras malesuada ultrices augue molestie risus.</p>
+            <div class="sub_menu">
+              <div class="accordion" id="accordion2">
+
+                <div id="Download_button" class="accordion-toggle">
+                    <p class="title">Download Simulation Data</p>
+                    <p class="icon">
+                        <span class="glyphicon glyphicon-signal"></span>
+                    </p>
+                </div>
+                <div class="accordion-content default"></div>
+
+                <div id='Pdf_button' class="accordion-toggle">
+                    <p class="title">Export layout as SVG</p>
+                    <p class="icon">
+                        <span class="glyphicon glyphicon-picture"></span>
+                    </p>
+                </div>
+                <div class="accordion-content default"></div>
+
               </div>
-            <div class="accordion-toggle"><p>Export SVG as PDF</p></div>
-              <div class="accordion-content">
-                <p>Lorem ipsum dolor sit amet mauris eu turpis.</p>
-              </div>
+            </div>
+            <div class="sub_menu">
+                <div class="accordion" id="accordion3">
+
+                    <div id='Reset_layout_button' class="accordion-toggle">
+                        <p class="title">Reset Layout</p>
+                        <p class="icon">
+                            <span class='glyphicon glyphicon-refresh'></span>
+                        </p>
+                    </div>
+                    <div class="accordion-content default"></div>
+
+                    <div id='Undo_last_button' class="accordion-toggle">
+                        <p class="title">Undo</p>
+                        <p class="icon">
+                            <span class='glyphicon glyphicon-arrow-left'></span>
+                        </p>
+                    </div>
+                    <div class="accordion-content default"></div>
+
+                    <div id='Redo_last_button' class="accordion-toggle">
+                        <p class="title">Redo</p>
+                        <p class="icon">
+                            <span class='glyphicon glyphicon-arrow-right'></span>
+                        </p>
+                    </div>
+                    <div class="accordion-content default"></div>
+
+                    <div id='Config_button' class="accordion-toggle">
+                        <p class="title">Configure Settings</p>
+                        <p class="icon">
+                            <span class='glyphicon glyphicon-wrench'></span>
+                        </p>
+                    </div>
+                    <div class="accordion-content default"></div>
+
+                </div>
+            </div>
+            </div>
           </div>
         </div>
-        <div class="sub_menu">
-          <div style="background:blue;height:350px"> WHATTSSS UP </div>
-        </div>
-      </div>
-    </div>
+
+        <button id="open" type="button" class="btn btn-default navbar-btn side_toggle">
+            <span class='glyphicon glyphicon-th-list'></span>
+        </button>
         <div id="top_toolbar_div">
             <ul id='toolbar_object' class="nav nav-pills">
-                <li id='Side_nav' role="presentation">
-                    <a class='glyphicon glyphicon-align-justify'></a>
-                </li>
                 <li id='Open_file_button' role="presentation">
                     <a title='Open file' class='glyphicon glyphicon-folder-open'> </a>
                 </li>
-                <li id='Reset_layout_button' role="presentation">
-                    <a title='Reset model layout' class='glyphicon glyphicon-refresh'> </a>
-                </li>
-                <li id='Undo_last_button' role="presentation">
-                    <a title='Undo last' class='glyphicon glyphicon-share-alt'> </a>
-                </li>
-                <li id='Redo_last_button' role="presentation">
-                    <a title='Redo last' class='glyphicon glyphicon-share-alt'> </a>
-                </li>
                 <li id='Minimap_button' role="presentation">
                     <a title='Minimap' class='glyphicon glyphicon-credit-card'> </a>
-                </li>
-                <li id='Pdf_button' role="presentation">
-                    <a title='Export to SVG' class='glyphicon
-                        glyphicon-export'> </a>
-                </li>
-                <li id='Download_button' role="presentation">
-                  <a title="Download simulation results" class="glyphicon glyphicon-download-alt"> </a>
-                </li>
-                <li id='Config_button' role="presentation">
-                    <a title='Config panel' class='glyphicon glyphicon-cog'> </a>
                 </li>
                 <li id='Help_button' role="presentation">
                     <a title='List of hotkeys' class='glyphicon glyphicon-question-sign'> </a>

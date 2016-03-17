@@ -26,7 +26,7 @@ function focus_reset(){
   });
 }
 
-$('#Side_nav').on('click',function(){
+$('.side_toggle').on('click',function(){
     toggle_side_nav();
 });
 
@@ -55,6 +55,7 @@ $('#Config_menu').click(function(){
 });
 
 $(document).ready(function($) {
+  $('#Config_menu').click();
   var accord_num = document.getElementsByClassName('accordion').length+1;
   for(var x = 1; x < accord_num; x++){
     $('#accordion'+String(x)).find('.accordion-toggle').click(function(){

@@ -7,7 +7,7 @@
     z-index: 5;
     top: 34px;
     left: 0;
-    background-color: white;
+    background-color: #303136;
     overflow-x: hidden;
     transition: 0.5s;
     border-right: 4px solid #4D4D4D;
@@ -32,7 +32,7 @@
 
 .sidenav  a{
     font-size: 15px;
-    color: black;
+    color: white;
     display: block;
     transition: 0.3s
 }
@@ -43,8 +43,9 @@
 }
 
 .nav-tabs .menu_tab.selected a{
-  background-color: #303136 !important;
+  background-color: #4D4D4D !important;
   color:#fff;
+  border-color: white;
 }
 
 .accordion-toggle {
@@ -52,27 +53,54 @@
   width: 100%;
   background: none;
   height:40px;
-  font-size: 18px;
   border-top: solid black 1px;
   border-bottom: solid black 1px;
   margin-bottom: -1px;
-  color: black;
-}
-
-.accordion-toggle:hover {
-  background: #535353;
   color: white;
 }
 
-.accordion-toggle p {
-  padding-left: 10px;
+.accordion-toggle:hover {
+  background: #4D4D4D;
+  color: white;
+}
+
+.accordion-toggle .title{
+  padding-left: 8px;
   padding-top: 8px;
+  float:left;
+  font-size: 14px;
+}
+.accordion-toggle .icon {
+  padding-right: 8px;
+  padding-top: 12px;
+  float:right;
+  font-size: 14px;
 }
 .accordion-content {display: none;}
 
 .accordion-content.default {display: block;}
 
+#open{
+    position:fixed;
+    top:40px;
+    left: -2px;
+    z-index:2;
+    background-color: #303136;
+    color: white;
+    font-size: 18px;
+    width:60px;
+    transition: 0.3s;
+    height: 45px;
+    text-align: left;
+}
 
+#open:hover{
+    background: #303136;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+    width: 85px;
+}
 
 @media screen and (max-height: 450px) {
   .sidenav {padding-top: 15px;}

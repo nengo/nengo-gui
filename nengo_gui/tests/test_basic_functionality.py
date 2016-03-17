@@ -18,6 +18,7 @@ def test_basic_functionality(driver, test_file):
 
 		tt.reset_page(driver)
 		tt.update_editor(driver, test_file)
+		tt.mouse_scroll(driver,500)
 		ens_elements = driver.find_elements_by_xpath('//*[@class="ens"]')
 		assert (len(ens_elements) > 0)
 		side_script = '''var right = document.getElementById("rightpane"); \
