@@ -52,6 +52,7 @@ Nengo.Ace = function (uid, args) {
     this.save_disabled = true;
     this.update_trigger = true; // if an update of the model from the code editor is allowed
     this.auto_update = true; // automatically update the model based on the text
+    this.auto_hide_console = true; // automatically hide console if no errors in code
 
     //Setup the button to toggle the code editor
     $('#Toggle_ace').on('click', function(){self.toggle_shown();});
