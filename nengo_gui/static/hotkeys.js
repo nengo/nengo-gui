@@ -86,6 +86,19 @@ Nengo.Hotkeys = function () {
                 Nengo.ace.update_trigger = true;
                 ev.preventDefault();
             }
+            // toggle auto-hide of console with TODO: pick a good shortcut
+            if (ctrl && ev.shiftKey && key == 'h') {
+                Nengo.ace.auto_hide_console = !Nengo.ace.auto_hide_console;
+                if (Nengo.ace.auto_hide_console == false) {
+                    Nengo.ace.console_height = document.getElementById('vmiddle').clientHeight / 4.0;
+                    $('#console').height(Nengo.ace.console_height);
+                    Nengo.ace.show_console();
+                }
+                else {
+                    Nengo.ace.hide_console();
+                }
+                ev.preventDefault();
+            }
         }
     });
 }
