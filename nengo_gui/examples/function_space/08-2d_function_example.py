@@ -12,23 +12,25 @@ nengo.FunctionSpace = nengo.utils.function_space.FunctionSpace
 import numpy as np
 
 # be careful with your sampling here because it gets squared
-domain = np.linspace(-1, 1, 10)
+domain = np.linspace(-1, 1, 15)
 
+min_std = .1
+max_std = .5
 # define your 2D function
 def gaussian2D(mean_x, mean_y, std_x, std_y):
     x_domain, y_domain = np.meshgrid(domain, domain)
     # flatten the result when returning
-    return np.exp(-((x_domain-mean_x)**2./(2.*std_x) +
-                          (y_domain-mean_y)**2./(2.*std_y))).flatten()
+    return np.exp(-((x_domain-mean_x)**2./(2.*min(max(std_x, min_std), max_std)) +
+                          (y_domain-mean_y)**2./(2.*min(max(std_y, min_std), max_std)))).flatten()
 
 gauss2D = nengo.dists.Function(gaussian2D,
                     mean_x=nengo.dists.Uniform(-1, 1),
                     mean_y=nengo.dists.Uniform(-1, 1),
-                    std_x=nengo.dists.Uniform(.1, .5),
-                    std_y=nengo.dists.Uniform(.1, .5))
+                    std_x=nengo.dists.Uniform(min_std, max_std),
+                    std_y=nengo.dists.Uniform(min_std, max_std))
 
 # build the function space
-fs = nengo.FunctionSpace(gauss2D, n_basis=10)
+fs = nengo.FunctionSpace(gauss2D, n_basis=12)
 
 model = nengo.Network()
 model.config[nengo.Ensemble].neuron_type = nengo.Direct()
