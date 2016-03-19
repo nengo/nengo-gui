@@ -235,8 +235,8 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                         var vertical_resize = event.edges.bottom || event.edges.top;
                         var horizontal_resize = event.edges.left || event.edges.right;
 
-                        var w = pos[0] - event.clientX + this.ng.offsetX;
-                        var h = pos[1] - event.clientY + this.ng.offsetY;
+                        var w = pos[0] - event.clientX + ng.offsetX;
+                        var h = pos[1] - event.clientY + ng.offsetY;
 
                         if (event.edges.right) {
                             w *= -1;
