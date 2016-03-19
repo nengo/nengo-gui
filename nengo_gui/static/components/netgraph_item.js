@@ -296,6 +296,18 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                             x:item.x, y:item.y,
                             width:item.width, height:item.height});
                     });
+
+            $(document).bind('keydown', function(event) {
+                if (event.ctrlKey) {
+                    interact(self.area).resizable(false);
+                }
+            });
+            $(document).bind('keyup', function(event) {
+                if (event.ctrlKey) {
+                    interact(self.area).resizable(true);
+                }
+            });
+
         }
 
         // Determine when to pull up the menu

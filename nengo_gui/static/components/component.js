@@ -117,6 +117,16 @@ Nengo.Component = function(parent, args) {
             self.save_layout();
         });
 
+    $(document).bind('keydown', function(event) {
+        if (event.ctrlKey) {
+            interact(self.div).resizable(false);
+        }
+    });
+    $(document).bind('keyup', function(event) {
+        interact(self.div).resizable(true);
+    });
+
+
     /** Open a WebSocket to the server */
     this.uid = args.uid;
     if (this.uid != undefined) {
