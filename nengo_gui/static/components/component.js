@@ -123,6 +123,7 @@ Nengo.Component = function(parent, args) {
         }
     });
     $(document).bind('keyup', function(event) {
+        // keyCode 17 == ctrlKey
         if (event.keyCode == 17) {
             interact(self.div).resizable(true);
         }

@@ -303,6 +303,7 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                 }
             });
             $(document).bind('keyup', function(event) {
+                // keyCode 17 == ctrlKey
                 if (event.keyCode == 17) {
                     interact(self.area).resizable(true);
                 }
