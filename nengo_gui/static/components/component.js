@@ -123,7 +123,9 @@ Nengo.Component = function(parent, args) {
         }
     });
     $(document).bind('keyup', function(event) {
-        interact(self.div).resizable(true);
+        if (event.keyCode == 17) {
+            interact(self.div).resizable(true);
+        }
     });
 
 
