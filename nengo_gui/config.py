@@ -8,7 +8,7 @@ def make_param(name, default):
     try:
         # the most recent way of making Parameter objects
         p = nengo.params.Parameter(name=name, default=default)
-    except:
+    except TypeError:
         # this was for older releases of nengo (v2.0.3 and earlier)
         p = nengo.params.Parameter(default=default)
     return p
