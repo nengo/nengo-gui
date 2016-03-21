@@ -170,7 +170,6 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
     if (!this.minimap) {
         // dragging an item to change its position
         var uid = this.uid;
-        var ng = ng;
         interact(g)
             .draggable({
                 onstart: function () {
@@ -178,9 +177,9 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                     self.move_to_front();
                 },
                 onmove: function(event) {
-                    var w = ng.get_scaled_width();
-                    var h = ng.get_scaled_height();
-                    var item = ng.svg_objects[uid];
+                    var w = self.ng.get_scaled_width();
+                    var h = self.ng.get_scaled_height();
+                    var item = self.ng.svg_objects[uid];
                     var parent = item.parent;
                     while (parent !== null) {
                         w = w * parent.width * 2;
@@ -196,9 +195,9 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                     }
                 },
                 onend: function(event) {
-                    var item = ng.svg_objects[uid];
+                    var item = self.ng.svg_objects[uid];
                     item.constrain_position();
-                    ng.notify({act:"pos", uid:uid, x:item.x, y:item.y});
+                    self.ng.notify({act:"pos", uid:uid, x:item.x, y:item.y});
 
                     item.redraw();
                 }});
@@ -218,10 +217,10 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                     self.menu.hide_any();
                     })
                 .on('resizemove', function(event) {
-                    var item = ng.svg_objects[uid];
+                    var item = self.ng.svg_objects[uid];
                     var pos = item.get_screen_location();
-                    var h_scale = ng.get_scaled_width();
-                    var v_scale = ng.get_scaled_height();
+                    var h_scale = self.ng.get_scaled_width();
+                    var v_scale = self.ng.get_scaled_height();
                     var parent = item.parent;
                     while (parent !== null) {
                         h_scale = h_scale * parent.width * 2;
@@ -235,8 +234,8 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                         var vertical_resize = event.edges.bottom || event.edges.top;
                         var horizontal_resize = event.edges.left || event.edges.right;
 
-                        var w = pos[0] - event.clientX + this.ng.offsetX;
-                        var h = pos[1] - event.clientY + this.ng.offsetY;
+                        var w = pos[0] - event.clientX + self.ng.offsetX;
+                        var h = pos[1] - event.clientY + self.ng.offsetY;
 
                         if (event.edges.right) {
                             w *= -1;
@@ -290,10 +289,10 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                     }
                 })
                 .on('resizeend', function(event) {
-                    var item = ng.svg_objects[uid];
+                    var item = self.ng.svg_objects[uid];
                     item.constrain_position();
                     item.redraw();
-                    ng.notify({act:"pos_size", uid:uid,
+                    self.ng.notify({act:"pos_size", uid:uid,
                             x:item.x, y:item.y,
                             width:item.width, height:item.height});
                     });
