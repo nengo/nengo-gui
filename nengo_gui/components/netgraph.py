@@ -10,7 +10,7 @@ import json
 
 from nengo_gui.components.component import Component
 from nengo_gui.components.value import Value
-from nengo_gui.components.slider import Slider
+from nengo_gui.components.slider import OverriddenOutput
 from nengo_gui.modal_js import infomodal
 import nengo_gui.user_action
 import nengo_gui.layout
@@ -219,7 +219,7 @@ class NetGraph(Component):
                         removed_items.append(item)
                     elif not isinstance(new_obj, old_obj.__class__):
                         rebuilt_objects.append(item)
-                    elif (self.get_extra_info(new_obj) != 
+                    elif (self.get_extra_info(new_obj) !=
                           self.get_extra_info(old_obj)):
                         rebuilt_objects.append(item)
 
@@ -527,7 +527,9 @@ class NetGraph(Component):
         '''
         info = {}
         if isinstance(obj, nengo.Node):
-            if obj.output is None or obj.output is Slider.passthrough_fcn:
+            if obj.output is None or (
+                    isinstance(obj.output, OverriddenOutput)
+                    and obj.output.base_output is None):
                 info['passthrough'] = True
             if callable(obj.output) and hasattr(obj.output, '_nengo_html_'):
                 info['html'] = True
