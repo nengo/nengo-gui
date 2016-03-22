@@ -2,7 +2,13 @@ import numpy as np
 import struct
 import collections
 
-from nengo.processes import Process
+try:
+    from nengo.processes import Process
+except ImportError:
+
+    class Process(object):
+        pass
+
 from nengo.utils.compat import is_iterable
 
 from nengo_gui.components.component import Component
@@ -83,6 +89,9 @@ class Slider(Component):
         self.from_client = np.zeros(node.size_out, dtype=np.float64) * np.nan
         self.override_output = OverriddenOutput(
             self.base_output, self.to_client, self.from_client)
+        if Process.__module__ == "nengo_gui.components.slider":
+            self.override_output = self.override_output.make_step(
+                shape_in=None, shape_out=node.size_out, dt=None, rng=None)
         self.start_value = np.zeros(node.size_out, dtype=np.float64)
         if not (self.base_output is None or
                 callable(self.base_output) or
