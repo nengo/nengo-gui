@@ -19,6 +19,7 @@
         <link href="static/lib/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
         <link href="static/lib/js/jqueryFileTree/jqueryFileTree.css" rel="stylesheet" type="text/css">
         <link href="static/side_menu.css" rel="stylesheet" type="text/css" />
+        <link href="static/drag_and_drop.css" rel="stylesheet" type="text/css" />
     </head>
     <!-- body needs an ID to fix cursor in Firefox -->
     <body id="body" onload="onload();">
@@ -50,6 +51,9 @@
                     </div>
                     <div class="accordion-content default">
                       <p>Cras malesuada ultrices augue molestie risus.</p>
+                      <div id="drag-1" class="draggable">
+                        <p> You can drag one element </p>
+                      </div>
                     </div>
 
                     <div class="accordion-toggle">
@@ -124,8 +128,6 @@
             </div>
             </div>
           </div>
-        </div>
-
         <button id="open" type="button" class="btn btn-default navbar-btn side_toggle">
             <span class='glyphicon glyphicon-th-list'></span>
         </button>
@@ -245,5 +247,6 @@
         <script src="static/hotkeys.js"></script>
         <script src="static/ace.js"></script>
         <script src="static/data_to_csv.js"></script>
+        <script src="static/drag_and_drop.js"></script>
     </body>
 </html>

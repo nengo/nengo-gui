@@ -1,0 +1,18 @@
+#drag-1{
+  position: absolute !important;
+  top:50px;
+  width: 150px;
+  height: 40px;
+  min-height: 6.5em;
+  margin: 10%;
+
+  background-color: #29e;
+  color: white;
+
+  border-radius: 0.75em;
+  padding: 4%;
+
+  -webkit-transform: translate(0px, 0px);
+          transform: translate(0px, 0px);
+  z-index:100 !important;
+}
