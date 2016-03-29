@@ -111,15 +111,6 @@ with model:
         # Checks the dimensionality of the spa similarity plot
         assert(len(plot_data) == 2 and len(plot_data[0]) > 1)
 
-        set_cloud_value(driver, {"color":"ORANGE"})
-
-        time.sleep(5)
-
-        plot_data = driver.execute_script(data_script)
-
-        # Checks that the data store grows when input changes
-        assert(len(plot_data) == 3 and len(plot_data[0]) > 1)
-
     except Exception as e:
         #Travis Only: On fail takes screenshot and uploads it to imgur
 
