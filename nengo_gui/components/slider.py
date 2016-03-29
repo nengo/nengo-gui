@@ -2,7 +2,72 @@ import numpy as np
 import struct
 import collections
 
+try:
+    from nengo.processes import Process
+except ImportError:
+
+    class Process(object):
+        pass
+
+from nengo.utils.compat import is_iterable
+
 from nengo_gui.components.component import Component
+
+
+class OverriddenOutput(Process):
+    def __init__(self, base_output, to_client=None, from_client=None):
+        super(OverriddenOutput, self).__init__()
+        self.base_output = base_output
+        self.to_client = to_client
+        self.from_client = from_client
+
+    def make_step(self, shape_in, shape_out, dt, rng):
+        size_out = shape_out[0] if is_iterable(shape_out) else shape_out
+
+        if self.base_output is None:
+            f = self.passthrough
+        elif isinstance(self.base_output, Process):
+            f = self.base_output.make_step(shape_in, shape_out, dt, rng)
+        else:
+            f = self.base_output
+        return self.Step(size_out, f,
+                         to_client=self.to_client,
+                         from_client=self.from_client)
+
+    @staticmethod
+    def passthrough(t, x):
+        return x
+
+    class Step(object):
+        def __init__(self, size_out, f, to_client=None, from_client=None):
+            self.size_out = size_out
+            self.f = f
+            self.to_client = to_client
+            self.from_client = from_client
+
+            self.last_time = None
+            self.struct = struct.Struct('<%df' % (1 + self.size_out))
+            self.value = np.zeros(size_out, dtype=np.float64)
+
+        def __call__(self, t, *args):
+            # Stop overriding if we've reset
+            if self.last_time is None or t < self.last_time:
+                self.from_client[:] = np.nan
+            self.last_time = t
+
+            val_idx = np.isnan(self.from_client)
+
+            if callable(self.f):
+                self.value[:] = np.atleast_1d(self.f(t, *args))
+                if self.to_client is not None:
+                    self.to_client.append(self.struct.pack(t, *self.value))
+            else:
+                self.value[:] = self.f
+
+            # Override values from the client
+            self.value[~val_idx] = self.from_client[~val_idx]
+            return self.value
+
 
 class Slider(Component):
     """Input control component. Exclusively associated to Nodes"""
@@ -13,16 +78,19 @@ class Slider(Component):
     def __init__(self, node):
         super(Slider, self).__init__()
         self.node = node
-        if node.output is None:
-            node.output = Slider.passthrough_fcn
         self.base_output = node.output
-        self.override = [None] * node.size_out
-        self.last_time = None
-        self.value = np.zeros(node.size_out)
-        self.start_value = np.zeros(node.size_out, dtype=float)
-        self.struct = struct.Struct('<%df' % (1 + node.size_out))
-        self.data = collections.deque()
-        if not callable(self.base_output):
+
+        self.to_client = collections.deque()
+        self.from_client = np.zeros(node.size_out, dtype=np.float64) * np.nan
+        self.override_output = OverriddenOutput(
+            self.base_output, self.to_client, self.from_client)
+        if Process.__module__ == "nengo_gui.components.slider":
+            self.override_output = self.override_output.make_step(
+                shape_in=None, shape_out=node.size_out, dt=None, rng=None)
+        self.start_value = np.zeros(node.size_out, dtype=np.float64)
+        if not (self.base_output is None or
+                callable(self.base_output) or
+                isinstance(self.base_output, Process)):
             self.start_value[:] = self.base_output
 
     def attach(self, page, config, uid):
@@ -34,48 +102,26 @@ class Slider(Component):
 
     def remove_nengo_objects(self, page):
         self.node.output = self.base_output
-        if self.node.output is Slider.passthrough_fcn:
-            self.node.output = None
-
-    def override_output(self, t, *args):
-        if self.last_time is None or t < self.last_time:
-            self.override = [None] * self.node.size_out
-        self.last_time = t
-        if callable(self.base_output):
-            self.value[:] = self.base_output(t, *args)
-            self.data.append(self.struct.pack(t, *self.value))
-        else:
-            self.value[:] = self.base_output
-
-        for i, v in enumerate(self.override):
-            if v is not None:
-                self.value[i] = v
-        return self.value
 
     def javascript(self):
-        info = dict(uid=id(self), n_sliders=len(self.override),
+        info = dict(uid=id(self), n_sliders=self.node.size_out,
                     label=self.label,
                     start_value=[float(x) for x in self.start_value])
         json = self.javascript_config(info)
         return 'new Nengo.Slider(main, sim, %s);' % json
 
     def update_client(self, client):
-        while len(self.data) > 0:
-            data = self.data.popleft()
-            client.write(data, binary=True)
+        while len(self.to_client) > 0:
+            to_client = self.to_client.popleft()
+            client.write(to_client, binary=True)
 
     def message(self, msg):
         index, value = msg.split(',')
         index = int(index)
         if value == 'reset':
-            self.override[index] = None
+            self.from_client[index] = np.nan
         else:
-            value = float(value)
-            self.override[index] = value
+            self.from_client[index] = float(value)
 
     def code_python_args(self, uids):
         return [uids[self.node]]
-
-    @staticmethod
-    def passthrough_fcn(t, x):
-        return x
