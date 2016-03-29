@@ -50,6 +50,7 @@ class Page(object):
         self.finished = False  # should this Page be shut down
         self._sim = None       # the current nengo.Simulator
         self.rebuild = False   # should the model be rebuilt
+        self.sims_to_close = []  # list of sims that should be closed
 
         self.code = None       # the source code currently displayed
         self.error = None      # any execute or build error
@@ -109,7 +110,7 @@ class Page(object):
     @sim.setter
     def sim(self, value):
         if hasattr(self._sim, 'close'):
-            self._sim.close()
+            self.sims_to_close.append(self._sim)
         self._sim = value
 
     def get_component(self, component_class):
@@ -470,6 +471,8 @@ class Page(object):
                     line = nengo_gui.exec_env.determine_line_number()
                     self.error = dict(trace=traceback.format_exc(), line=line)
                     self.sim = None
+            while self.sims_to_close:
+                self.sims_to_close.pop().close()
 
             if self.rebuild:
                 self.build()
