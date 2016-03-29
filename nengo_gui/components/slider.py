@@ -28,10 +28,8 @@ class OverriddenOutput(Process):
             f = self.passthrough
         elif isinstance(self.base_output, Process):
             f = self.base_output.make_step(shape_in, shape_out, dt, rng)
-        elif callable(self.base_output):
-            f = self.base_output
         else:
-            f = self.static
+            f = self.base_output
         return self.Step(size_out, f,
                          to_client=self.to_client,
                          from_client=self.from_client)
@@ -39,9 +37,6 @@ class OverriddenOutput(Process):
     @staticmethod
     def passthrough(t, x):
         return x
-
-    def static(self, t, *args):
-        return self.base_output
 
     class Step(object):
         def __init__(self, size_out, f, to_client=None, from_client=None):
@@ -52,7 +47,7 @@ class OverriddenOutput(Process):
 
             self.last_time = None
             self.struct = struct.Struct('<%df' % (1 + self.size_out))
-            self.value = np.zeros(size_out)
+            self.value = np.zeros(size_out, dtype=np.float64)
 
         def __call__(self, t, *args):
             # Stop overriding if we've reset
@@ -60,17 +55,17 @@ class OverriddenOutput(Process):
                 self.from_client[:] = np.nan
             self.last_time = t
 
-            val = np.atleast_1d(self.f(t, *args))
-
-            # Only send messages to client when values have changed
             val_idx = np.isnan(self.from_client)
-            if (self.to_client is not None
-                    and np.any(val[val_idx] != self.value[val_idx])):
-                self.to_client.append(self.struct.pack(t, *val))
+
+            if callable(self.f):
+                self.value[:] = np.atleast_1d(self.f(t, *args))
+                if self.to_client is not None:
+                    self.to_client.append(self.struct.pack(t, *self.value))
+            else:
+                self.value[:] = self.f
 
             # Override values from the client
-            val[~val_idx] = self.from_client[~val_idx]
-            self.value[:] = val
+            self.value[~val_idx] = self.from_client[~val_idx]
             return self.value
 
 
