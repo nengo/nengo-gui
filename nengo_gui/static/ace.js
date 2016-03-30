@@ -40,14 +40,14 @@ Nengo.Ace = function (uid, args) {
     this.console = document.createElement('div');
     this.console.id = 'console';
     $('#rightpane').append(this.console);
-    this.console_height = 100;
-    this.console_hidden = true;
+    this.console_height = Nengo.config.console_height;
     this.console_stdout = document.createElement('pre');
     this.console_error = document.createElement('pre');
     this.console_stdout.id = 'console_stdout';
     this.console_error.id = 'console_error';
     this.console.appendChild(this.console_stdout);
     this.console.appendChild(this.console_error);
+    $('#console').height(this.console_height);
 
     this.save_disabled = true;
     this.update_trigger = true; // if an update of the model from the code editor is allowed
@@ -130,13 +130,19 @@ Nengo.Ace = function (uid, args) {
             edges: { left: true, right: false, bottom: false, top: true}
         })
         .on('resizemove', function (event) {
+            var max = $('#rightpane').height() - 40;
+            var min = 20;
+
             self.console_height -= event.deltaRect.top;
-            if (self.console_height < 20) {
-                self.console_height = 20;
-            }
-            self.width -= event.deltaRect.left;
+
+            self.console_height = Nengo.clip(self.console_height, min, max);
             $('#console').height(self.console_height);
+
+            self.width -= event.deltaRect.left;
             self.redraw();
+        })
+        .on('resizeend', function (event) {
+            Nengo.config.console_height = self.console_height;
         });
 }
 
@@ -192,11 +198,7 @@ Nengo.Ace.prototype.on_message = function (event) {
         }
         $(this.console_stdout).text(msg.stdout);
         $(this.console_error).text('');
-        if (msg.stdout === '') {
-            this.hide_console();
-        } else {
-            this.show_console();
-        }
+        this.console.scrollTop = this.console.scrollHeight;
     } else if (msg.filename !== undefined) {
         if (msg.valid) {
             $('#filename')[0].innerHTML = msg.filename;
@@ -217,7 +219,6 @@ Nengo.Ace.prototype.on_message = function (event) {
         }]);
         $(this.console_stdout).text(msg.stdout);
         $(this.console_error).text(msg.error.trace);
-        this.show_console();
         this.console.scrollTop = this.console.scrollHeight;
     } else {
         console.log(msg);
@@ -235,30 +236,12 @@ Nengo.Ace.prototype.on_resize = function() {
 Nengo.Ace.prototype.show_editor = function () {
     var editor = document.getElementById('rightpane');
     editor.style.display = 'flex';
-    if (!this.console_hidden) {
-        this.console.style.display = 'block';
-    }
     this.redraw();
 }
 
 Nengo.Ace.prototype.hide_editor = function () {
     var editor = document.getElementById('rightpane');
     editor.style.display = 'none';
-    if (!this.console_hidden) {
-        this.console.style.display = 'none';
-    }
-    this.redraw();
-}
-
-Nengo.Ace.prototype.show_console = function () {
-    this.console.style.display = 'block';
-    this.console_hidden = false;
-    this.redraw();
-}
-
-Nengo.Ace.prototype.hide_console = function () {
-    this.console.style.display = 'none';
-    this.console_hidden = true;
     this.redraw();
 }
 

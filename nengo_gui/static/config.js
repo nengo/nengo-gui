@@ -33,6 +33,7 @@ Nengo.Config = function(parent, args) {
     define_option("editor_width", 580);
     define_option("editor_font_size", 12);
     define_option("auto_update", true);
+    define_option("console_height", 100);
 };
 
 Nengo.Config.prototype.restore_defaults = function() {
