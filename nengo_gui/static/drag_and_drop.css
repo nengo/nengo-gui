@@ -1,18 +1,19 @@
-#drag-1{
-  position: absolute !important;
-  top:50px;
+#drag_drop_menu{
+  padding-top: 10px;
+  padding-left: 50px;
+}
+
+.draggable {
   width: 150px;
-  height: 40px;
-  min-height: 6.5em;
-  margin: 10%;
-
-  background-color: #29e;
-  color: white;
-
-  border-radius: 0.75em;
-  padding: 4%;
-
-  -webkit-transform: translate(0px, 0px);
-          transform: translate(0px, 0px);
-  z-index:100 !important;
+  height: 150px;
+  z-index: 200;
+  background: grey;
+  margin-bottom: 10px;
+}
+.drag_elem {
+  position: absolute !important;
+  height: 150px;
+  padding: 0.5em;
+  z-index: 200;
+  background: grey
 }

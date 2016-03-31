@@ -123,6 +123,7 @@ Nengo.Ace = function (uid, args) {
         .on('resizemove', function (event) {
             self.width -= event.deltaRect.left;
             self.redraw();
+            $("#top_toolbar_div").width(self.width-4.5);
         });
 
     interact('#console')

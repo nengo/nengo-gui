@@ -15,9 +15,6 @@ Nengo.Toolbar = function(filename) {
     var main = document.getElementById('main');
 
     /** Make sure the file opener is initially hidden */
-    $('#filebrowser').hide()
-    /** Create event listener to hide file opener when the mouse leaves */
-    $('#filebrowser').mouseleave(function(){$(this).hide(200)});
 
     $('#Open_file_button')[0].addEventListener('click', function () {
         if (!$(this).hasClass('deactivated')) {
@@ -80,7 +77,7 @@ Nengo.Toolbar.prototype.file_browser = function () {
     sim.ws.send('browse');
 
     fb = $('#filebrowser');
-    fb.toggle(200);
+    //fb.toggle(200);
     if (fb.is(":visible")) {
         fb.fileTree({
             root: Nengo.config.scriptdir,

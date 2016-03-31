@@ -5,6 +5,10 @@
     border-radius: 0;
 }
 
+#top_toolbar_div li {
+    z-index: 2;
+}
+
 #top_toolbar_div .glyphicon:hover {
     color: #eee;
     background: #666;
@@ -20,11 +24,13 @@
 }
 
 #top_toolbar_div {
-    position: relative;
-    flex: 0 0 auto;
-    -webkit-flex: 0 0 auto;
-    width: 100%;
+    overflow-x: hidden;
+    position: absolute;
+    right: 0;
+    width: 25%;
     z-index: 99999;
+    border-left: 5px solid #4D4D4D;
+    border-bottom: 1px solid #4D4D4D;
 }
 
 #top_toolbar_div .nav {
@@ -33,9 +39,14 @@
 }
 
 #filename{
+    z-index: 1;
+    position: relative;
+    white-space: nowrap !important;
     float: right;
-    padding: 0.5em;
+    padding-top: 0.5em;
     cursor: default !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #filename:hover {
@@ -48,16 +59,15 @@
 }
 
 #filebrowser {
-    position: absolute;
+    position: relative;
     top: 0;
     left: 0;
-    width: 200px;
+    width: 250px;
     height: 300px;
-    border: solid 1px #ccc;
     border-bottom-right-radius: 4px;
-    box-shadow: 2px 2px 4px 0px #999;
+    color: white;
     padding: 0.2em;
-    background-color: #eee;
+    background-color: grey;
     z-index: 99999;
     overflow: auto;
     cursor: pointer !important;

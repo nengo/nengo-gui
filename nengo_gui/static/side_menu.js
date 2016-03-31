@@ -1,8 +1,12 @@
 var menu_open = true;
 var menu_width = document.getElementsByClassName("sidenav")[0].offsetWidth;
 //All Menu Tabs must appear in the HTML order in the array
-var sub_menus = ['#Component_menu','#Download_menu','#Config_menu'];
-
+var sub_menus = [];
+var menu_tabs = $("#menu_tabs > li");
+for(var x = 0; x < menu_tabs.length; x++){
+  var id = $(menu_tabs[x]).attr('id');
+  sub_menus.push("#"+id);
+}
 
 function toggle_side_nav(){
   var element = document.getElementsByClassName("sidenav")[0];

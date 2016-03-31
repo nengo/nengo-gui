@@ -24,7 +24,10 @@
     <!-- body needs an ID to fix cursor in Firefox -->
     <body id="body" onload="onload();">
       <div class="sidenav">
-        <ul class="nav nav-tabs">
+        <ul class="nav nav-tabs" id="menu_tabs">
+            <li class="menu_tab" id='Open_file_button'>
+                <a title='Open file' class='glyphicon glyphicon-folder-open'> </a>
+            </li>
             <li class="menu_tab" id="Component_menu">
               <a href="#" class="glyphicon glyphicon-th"></a>
             </li>
@@ -35,11 +38,15 @@
               <a href="#" class='glyphicon glyphicon-cog'></a>
             </li>
             <li class="menu_tab pull-right side_toggle">
-                <a href="#" class='glyphicon glyphicon-chevron-left'></a>
+                <a href="#" class='glyphicon glyphicon-remove'></a>
             </li>
         </ul>
 
             <div id="Menu_info">
+              <div class="sub_menu">
+                <div id="filebrowser"></div>
+              </div>
+
               <div class="sub_menu">
                 <div class="accordion" id="accordion1">
 
@@ -49,10 +56,12 @@
                           <span class="glyphicon glyphicon-chevron-down"></span>
                       </p>
                     </div>
-                    <div class="accordion-content default">
-                      <p>Cras malesuada ultrices augue molestie risus.</p>
-                      <div id="drag-1" class="draggable">
-                        <p> You can drag one element </p>
+                    <div id="drag_drop_menu" class="accordion-content default">
+                      <div id="Ensemble" class="ui-widget-content draggable">
+                        <p>Ensemble</p>
+                      </div>
+                      <div id="Node" class="ui-widget-content draggable">
+                        <p>Node</p>
                       </div>
                     </div>
 
@@ -124,6 +133,14 @@
                     </div>
                     <div class="accordion-content default"></div>
 
+                    <div id='Minimap_button' class="accordion-toggle">
+                        <p class="title">Minimap</p>
+                        <p class="icon">
+                            <span class='glyphicon glyphicon-credit-card'></span>
+                        </p>
+                    </div>
+                    <div class="accordion-content default"></div>
+
                 </div>
             </div>
             </div>
@@ -133,12 +150,6 @@
         </button>
         <div id="top_toolbar_div">
             <ul id='toolbar_object' class="nav nav-pills">
-                <li id='Open_file_button' role="presentation">
-                    <a title='Open file' class='glyphicon glyphicon-folder-open'> </a>
-                </li>
-                <li id='Minimap_button' role="presentation">
-                    <a title='Minimap' class='glyphicon glyphicon-credit-card'> </a>
-                </li>
                 <li id='Help_button' role="presentation">
                     <a title='List of hotkeys' class='glyphicon glyphicon-question-sign'> </a>
                 <li id='Toggle_ace' role="presentation">
@@ -156,13 +167,12 @@
                 <li id='Sync_editor_button' class='disabled' role="presentation">
                     <a title='Sync diagram with editor' class='glyphicon glyphicon-circle-arrow-left'> </a>
                 </li>
-                <li id='filename' role="presentation"> </li>
+                <li role="presentation"><div id='filename' ></div></li>
             </ul>
         </div>
         <div id="vmiddle">
-          <div id="main"></div>
+          <div id="main" class="droppable"></div>
           <div id="rightpane"></div>
-          <div id="filebrowser"></div>
         </div>
         <div id="control">
             <button id='reset_button' class="btn btn-default reset-button">
