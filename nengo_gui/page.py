@@ -201,7 +201,9 @@ class Page(object):
         exec_env = nengo_gui.exec_env.ExecutionEnvironment(self.filename)
         try:
             with exec_env:
-                exec(code, code_locals)
+                compiled = compile(code, nengo_gui.exec_env.compiled_filename,
+                                   'exec')
+                exec(compiled, code_locals)
         except nengo_gui.exec_env.StartedSimulatorException:
             line = nengo_gui.exec_env.determine_line_number()
             exec_env.stdout.write('Warning: Simulators cannot be manually'
