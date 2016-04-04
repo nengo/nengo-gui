@@ -48,24 +48,24 @@ def make_dummy(cls):
 # thread local storage for storing whether we are executing a script
 flag = threading.local()
 
+compiled_filename = '<nengo_gui_compiled>'
 
 def is_executing():
     return getattr(flag, 'executing', False)
 
 
-def determine_line_number(filename='<string>'):
+def determine_line_number():
     '''Checks stack trace to determine the line number we are currently at.
 
-    The default filname argument of "<string>" indicates it should only
-    pay attention to the line numbers in the main evaluated script (which
-    is evaluated using exec(), so it doesn't have a normal filename).
+    The filename argument should be the filename given to the code when
+    it was compiled (with compile())
     '''
 
     exc_type, exc_value, exc_traceback = sys.exc_info()
     if exc_traceback is not None:
         ex_tb = traceback.extract_tb(exc_traceback)
         for fn, line, function, code in reversed(ex_tb):
-            if fn == filename:
+            if fn == compiled_filename:
                 return line
 
     # if we can't find it that way, parse the text of the stack trace
