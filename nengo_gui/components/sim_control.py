@@ -79,8 +79,9 @@ class SimControl(Component):
                 self.rate += (1 - decay) * rate
                 self.skipped = 1
 
-                # compute current proportion of full speed
-                self.rate_proportion = 1.0 - ((self.rate * self.delay_time) /
+                if self.actual_model_dt > 0:
+                    # compute current proportion of full speed
+                    self.rate_proportion = 1.0 - ((self.rate * self.delay_time) /
                                               self.actual_model_dt)
 
         # if we have a desired proportion, use it to control delay_time
