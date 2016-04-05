@@ -50,6 +50,9 @@ for(var x = 0; x < sub_menus.length; x++){
 //RUNTIME
 $(document).ready(function($) {
   $('#Config_menu').click();
+  var h = $('.sidenav').height();
+  console.log(h);
+  $('#filebrowser').height(h-43);
   var accord_num = document.getElementsByClassName('accordion').length+1;
   for(var x = 1; x < accord_num; x++){
     $('#accordion'+String(x)).find('.accordion-toggle').click(function(){

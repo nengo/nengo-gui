@@ -1,14 +1,14 @@
 
 .sidenav {
-    --nav-width: 250px;
-    height: 100%;
-    width: var(--nav-width);
+    height: calc(100% - 120px);
+    width: 250px;
     position: fixed;
     z-index: 5;
-    top: 0px;
+    top: 34px;
     left: 0;
     background-color: #303136;
     overflow-x: hidden;
+    overflow-y: hidden;
     transition: 0.5s;
     border-right: 4px solid #4D4D4D;
     font-size: 0px;
@@ -17,8 +17,8 @@
 .sidenav .sub_menu{
   font-size: 15px;
   float: left;
-  width: var(--nav-width);
-  height:600px;
+  width: 250px;
+  height:100%;
   top: 0px;
   margin-right:0px;
 }

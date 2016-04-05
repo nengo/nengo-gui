@@ -28,9 +28,6 @@
             <li class="menu_tab" id='Open_file_button'>
                 <a title='Open file' class='glyphicon glyphicon-folder-open'> </a>
             </li>
-            <li class="menu_tab" id="Component_menu">
-              <a href="#" class="glyphicon glyphicon-th"></a>
-            </li>
             <li class="menu_tab" id="Download_menu">
               <a href="#" class="glyphicon glyphicon-download-alt"></a>
             </li>
@@ -42,41 +39,11 @@
             </li>
         </ul>
 
-            <div id="Menu_info">
-              <div class="sub_menu">
+        <div id="Menu_info">
+            <div class="sub_menu">
                 <div id="filebrowser"></div>
-              </div>
-
-              <div class="sub_menu">
-                <div class="accordion" id="accordion1">
-
-                    <div class="accordion-toggle">
-                      <p class="title">Basic</p>
-                      <p class="icon">
-                          <span class="glyphicon glyphicon-chevron-down"></span>
-                      </p>
-                    </div>
-                    <div id="drag_drop_menu" class="accordion-content default">
-                      <div id="Ensemble" class="ui-widget-content draggable">
-                        <p>Ensemble</p>
-                      </div>
-                      <div id="Node" class="ui-widget-content draggable">
-                        <p>Node</p>
-                      </div>
-                    </div>
-
-                    <div class="accordion-toggle">
-                      <p class="title">SPA</p>
-                      <p class="icon">
-                          <span class="glyphicon glyphicon-chevron-down"></span>
-                      </p>
-                    </div>
-                    <div class="accordion-content">
-                        <p>Vivamus facilisisnibh scelerisque laoreet.</p>
-                    </div>
-
-                </div>
             </div>
+
             <div class="sub_menu">
               <div class="accordion" id="accordion2">
 
@@ -100,39 +67,6 @@
             </div>
             <div class="sub_menu">
                 <div class="accordion" id="accordion3">
-
-                    <div id='Reset_layout_button' class="accordion-toggle">
-                        <p class="title">Reset Layout</p>
-                        <p class="icon">
-                            <span class='glyphicon glyphicon-refresh'></span>
-                        </p>
-                    </div>
-                    <div class="accordion-content default"></div>
-
-                    <div id='Undo_last_button' class="accordion-toggle">
-                        <p class="title">Undo</p>
-                        <p class="icon">
-                            <span class='glyphicon glyphicon-arrow-left'></span>
-                        </p>
-                    </div>
-                    <div class="accordion-content default"></div>
-
-                    <div id='Redo_last_button' class="accordion-toggle">
-                        <p class="title">Redo</p>
-                        <p class="icon">
-                            <span class='glyphicon glyphicon-arrow-right'></span>
-                        </p>
-                    </div>
-                    <div class="accordion-content default"></div>
-
-                    <div id='Config_button' class="accordion-toggle">
-                        <p class="title">Configure Settings</p>
-                        <p class="icon">
-                            <span class='glyphicon glyphicon-wrench'></span>
-                        </p>
-                    </div>
-                    <div class="accordion-content default"></div>
-
                     <div id='Minimap_button' class="accordion-toggle">
                         <p class="title">Minimap</p>
                         <p class="icon">
@@ -141,15 +75,33 @@
                     </div>
                     <div class="accordion-content default"></div>
 
+
+                        <div id='Config_button' class="accordion-toggle">
+                            <p class="title">Configure Settings</p>
+                            <p class="icon">
+                                <span class='glyphicon glyphicon-wrench'></span>
+                            </p>
+                        </div>
+                    <div class="accordion-content default"></div>
+
                 </div>
             </div>
-            </div>
           </div>
+        </div>
         <button id="open" type="button" class="btn btn-default navbar-btn side_toggle">
-            <span class='glyphicon glyphicon-th-list'></span>
+            <span class='glyphicon glyphicon-menu-hamburger'></span>
         </button>
         <div id="top_toolbar_div">
             <ul id='toolbar_object' class="nav nav-pills">
+                <li id='Reset_layout_button' role="presentation">
+                    <a title='Reset model layout' class='glyphicon glyphicon-refresh'> </a>
+                </li>
+                <li id='Undo_last_button' role="presentation">
+                    <a title='Undo last' class='glyphicon glyphicon-arrow-left'> </a>
+                </li>
+                <li id='Redo_last_button' role="presentation">
+                    <a title='Redo last' class='glyphicon glyphicon-arrow-right'> </a>
+                </li>
                 <li id='Help_button' role="presentation">
                     <a title='List of hotkeys' class='glyphicon glyphicon-question-sign'> </a>
                 <li id='Toggle_ace' role="presentation">

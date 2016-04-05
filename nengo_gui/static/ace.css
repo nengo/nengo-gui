@@ -1,6 +1,4 @@
 #rightpane {
-    position: relative;
-    top:34px;
     -webkit-flex: 0 0 auto;
     flex: 0 0 auto;
 
@@ -29,6 +27,7 @@
     -moz-user-select: text;
     -ms-user-select: text;
     user-select: text;
+    display: block;
 }
 
 #console pre {
