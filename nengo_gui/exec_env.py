@@ -72,7 +72,7 @@ def determine_line_number():
     #  note that this is required for indentation errors and other syntax
     #  problems
     trace = traceback.format_exc()
-    pattern = 'File "%s", line ' % filename
+    pattern = 'File "%s", line ' % compiled_filename
     index = trace.find(pattern)
     if index >=0:
         text = trace[index + len(pattern):].split('\n', 1)[0]
