@@ -1,26 +1,28 @@
 
 .sidenav {
-    --nav-width: 250px;
-    height: 100%;
-    width: var(--nav-width);
+    height: calc(100% - 120px);
+    width: 250px;
     position: fixed;
     z-index: 5;
-    top: 0px;
+    top: 34px;
     left: 0;
     background-color: #303136;
     overflow-x: hidden;
+    overflow-y: hidden;
     transition: 0.5s;
-    border-right: 4px solid #4D4D4D;
+    border-right: 1px solid #4D4D4D;
     font-size: 0px;
+    font-family: arial;
 }
 
 .sidenav .sub_menu{
   font-size: 15px;
   float: left;
-  width: var(--nav-width);
-  height:600px;
+  width: 250px;
+  height:100%;
   top: 0px;
   margin-right:0px;
+  color:white;
 }
 
 .sidenav #Menu_info{
@@ -48,7 +50,7 @@
   border-color: white;
 }
 
-.accordion-toggle {
+.side-menu-item, .accordion-toggle {
   cursor: pointer;
   width: 100%;
   background: none;
@@ -59,18 +61,38 @@
   color: white;
 }
 
-.accordion-toggle:hover {
+.side-menu-item{ margin-top: 1px;}
+
+.side-menu-item:hover, .accordion-toggle:hover {
   background: #4D4D4D;
   color: white;
 }
 
-.accordion-toggle .title{
+.side-menu-item .title, .accordion-toggle .title{
   padding-left: 8px;
   padding-top: 8px;
   float:left;
   font-size: 14px;
 }
-.accordion-toggle .icon {
+
+.side-menu-item.indent{
+  background: #555;
+  border: 0px;
+}
+
+.side-menu-item.indent:hover{
+  background: #666;
+}
+
+.side-menu-item.indent .title{
+  padding-left: 23px;
+  padding-top: 8px;
+  float:left;
+  font-size: 14px;
+}
+
+
+.side-menu-item .icon , .accordion-toggle .icon {
   padding-right: 8px;
   padding-top: 12px;
   float:right;

@@ -77,7 +77,6 @@ Nengo.Toolbar.prototype.file_browser = function () {
     sim.ws.send('browse');
 
     fb = $('#filebrowser');
-    //fb.toggle(200);
     if (fb.is(":visible")) {
         fb.fileTree({
             root: Nengo.config.scriptdir,
