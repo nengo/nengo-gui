@@ -38,15 +38,18 @@ Harmony (HA-CAA-I-ANY) Version 1.0
 Nengo GUI Individual Contributor Assignment Agreement
 -----------------------------------------------------
 
-Thank you for your interest in contributing to Nengo GUI ("We" or
-"Us"). This contributor agreement ("Agreement") documents the rights
-granted by contributors to Us. To make this document effective, please
-sign it and send it to Us by electronic submission, following the
-instructions at
+Thank you for your interest in contributing to Nengo GUI, a product of 
+Applied Brain Research Inc. ("We" or "Us"). This contributor agreement 
+("Agreement") documents the rights granted by contributors to Us. 
+
+Submitting a Contribution, as defined herein, and/or signing this agreement 
+shall be your binding consent to this Agreement. Please send signed copies 
+to Us by electronic submission, following the instructions at
 <https://github.com/nengo/nengo_gui/blob/master/CONTRIBUTORS.md>.
+
 This is a legally binding document, so please read it carefully before
-agreeing to it. The Agreement may cover more than one software project
-managed by Us.
+Submitting a Contribution or signing it to signify your agreement with it. 
+The Agreement may cover more than one software project managed by Us.
 
 ### 1. Definitions
 
@@ -204,7 +207,7 @@ CLAIM IS BASED.
 ### 6. Miscellaneous
 
 6.1 This Agreement will be governed by and construed in accordance
-with the laws of Applied Brain Research Inc. excluding its conflicts
+with the laws of Ontario, Canada, excluding its conflicts
 of law provisions. Under certain circumstances, the governing law in
 this section might be superseded by the United Nations Convention on
 Contracts for the International Sale of Goods ("UN Convention") and
@@ -235,3 +238,41 @@ provision and which is enforceable. The terms and conditions set forth
 in this Agreement shall apply notwithstanding any failure of essential
 purpose of this Agreement or any limited remedy to the maximum extent
 possible under law.
+
+You (Individual)
+________________________
+
+Name: __________________
+
+Address: 
+
+________________________
+
+________________________
+
+You (Legal Entity)
+________________________
+
+Name: __________________
+
+Title: ___________________
+
+Address: 
+
+________________________
+
+________________________
+
+Us - Applied Brain Research Inc.
+
+__________________________
+
+Name: ____________________
+
+Title: ___________________
+
+Address: 
+118 Woodbend Crescent, 
+Waterloo, Ontario, 
+N2T 1G9, Canada
+
