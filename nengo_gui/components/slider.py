@@ -84,9 +84,6 @@ class Slider(Component):
         self.from_client = np.zeros(node.size_out, dtype=np.float64) * np.nan
         self.override_output = OverriddenOutput(
             self.base_output, self.to_client, self.from_client)
-        if Process.__module__ == "nengo_gui.components.slider":
-            self.override_output = self.override_output.make_step(
-                shape_in=None, shape_out=node.size_out, dt=None, rng=None)
         self.start_value = np.zeros(node.size_out, dtype=np.float64)
         if not (self.base_output is None or
                 callable(self.base_output) or
@@ -98,7 +95,16 @@ class Slider(Component):
         self.label = page.get_label(self.node)
 
     def add_nengo_objects(self, page):
-        self.node.output = self.override_output
+        if Process.__module__ == "nengo_gui.components.slider":
+            self.node.output = self.override_output.make_step(
+                shape_in=None, shape_out=self.node.size_out, dt=None, rng=None)
+        elif page.backend == 'nengo_spinnaker':
+            # TODO: this should happen for any backend that does not support
+            #  Processes
+            self.node.output = self.override_output.make_step(
+                shape_in=None, shape_out=self.node.size_out, dt=None, rng=None)
+        else:
+            self.node.output = self.override_output
 
     def remove_nengo_objects(self, page):
         self.node.output = self.base_output
