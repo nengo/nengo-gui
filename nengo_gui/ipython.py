@@ -2,10 +2,13 @@ import atexit
 import socket
 import threading
 import time
-import urllib2
 import uuid
 import warnings
 import weakref
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
 
 from IPython import get_ipython
 from IPython.display import display, HTML
@@ -100,7 +103,7 @@ class IPythonViz(object):
             server_thread = cls.threads.get(cfg, None)
             if server_thread is not None and server_thread.is_alive():
                 if server is not None:
-                    urllib2.urlopen(
+                    urlopen(
                         cls.get_url(cls.host, server.server_port, 'shutdown'),
                         timeout=get_timeout()).read()
                 server_thread.join(get_timeout())
