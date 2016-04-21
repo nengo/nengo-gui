@@ -1,7 +1,6 @@
 
 /**
  * Menu for the side of the GUI
- * @constructor
  *
  * SideMenu constructor is written into HTML file by python and called
  * upon page load
@@ -23,11 +22,30 @@ Nengo.SideMenu = function(){
   }
   //----EVENT HANDLERS----
 
-    //Toggles Side Nav
+  //file_browser
+  $('#Open_file_button')[0].addEventListener('click', function () {
+      if (!$(this).hasClass('deactivated')) {
+          self.file_browser();
+      }
+  });
+
+  //Modal Handlers
+  $('#Pdf_button')[0].addEventListener('click', function () {
+      self.pdf_modal();
+  });
+  $('#Download_button')[0].addEventListener('click', function () {
+      self.csv_modal();
+  });
+  $('#Minimap_button')[0].addEventListener('click', function () {
+      Nengo.netgraph.toggleMiniMap();
+  });
+
+  //Toggles Side Nav
   $('.side_toggle').on('click',function(){
       self.toggle_side_nav();
   });
-    //Handles Menu tab switching
+
+  //Handles Menu tab switching
   for(var x = 0; x < self.sub_menus.length; x++){
     $(self.sub_menus[x]).click(this.menu_tab_click(self.sub_menus[x],x));
   }
@@ -84,4 +102,37 @@ Nengo.SideMenu.prototype.focus_reset = function(){
   menu_items.each(function(index){
    $(this).removeClass("selected");
   });
+}
+
+/** This lets you browse the files available on the server */
+Nengo.SideMenu.prototype.file_browser = function () {
+    sim.ws.send('browse');
+
+    fb = $('#filebrowser');
+
+    if (fb.is(":visible")) {
+        fb.fileTree({
+            root: Nengo.config.scriptdir,
+            script: '/browse?root=' + Nengo.config.scriptdir
+        },
+        function (file) {
+            window.location.assign('/?filename=' + file);
+        })
+    }
+};
+
+/** Export the layout to the SVG in Downloads folder **/
+Nengo.SideMenu.prototype.pdf_modal = function () {
+    Nengo.modal.title("Export the layout to SVG");
+    Nengo.modal.text_body("Do you want to save the file?", "info");
+    Nengo.modal.footer('confirm_savepdf');
+    Nengo.modal.show();
+}
+
+/** Export the graph data to the CSV in Downloads folder **/
+Nengo.SideMenu.prototype.csv_modal = function () {
+    Nengo.modal.title("Export the graph data to CSV");
+    Nengo.modal.text_body("Do you want to save the file?", "info");
+    Nengo.modal.footer('confirm_savecsv');
+    Nengo.modal.show();
 }

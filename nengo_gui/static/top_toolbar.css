@@ -46,29 +46,6 @@
     float: right;
 }
 
-#filebrowser {
-    position: relative;
-    top: 0;
-    left: 0;
-    width: 250px;
-    height: 0px;
-    border-bottom-right-radius: 4px;
-    color: white;
-    padding: 0.2em;
-    background-color: None;
-    z-index: 99999;
-    overflow: auto;
-    cursor: pointer !important;
-}
-
-#filebrowser a {
-    color: #eee;
-}
-
-#filebrowser a:hover {
-    background: #666;
-}
-
 #Toggle_ace, #Save_file, #Sync_editor_button, #Font_increase, #Font_decrease{
     float: right;
 }
@@ -76,10 +53,6 @@
 #top_toolbar_div li.disabled a.glyphicon {
     color: #ccc;
     background: #eee;
-}
-
-#filebrowser li.examples_dir {
-    background-color: #555;
 }
 
 #global_config_menu {

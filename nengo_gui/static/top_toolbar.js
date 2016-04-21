@@ -14,13 +14,6 @@ Nengo.Toolbar = function(filename) {
 
     var main = document.getElementById('main');
 
-    /** Make sure the file opener is initially hidden */
-
-    $('#Open_file_button')[0].addEventListener('click', function () {
-        if (!$(this).hasClass('deactivated')) {
-            self.file_browser();
-        }
-    });
     $('#Reset_layout_button')[0].addEventListener('click', function () {
         Nengo.modal.title("Are you sure you wish to reset this layout, " +
                         "removing all the graphs and resetting the position " +
@@ -36,20 +29,11 @@ Nengo.Toolbar = function(filename) {
     $('#Redo_last_button')[0].addEventListener('click', function () {
         Nengo.netgraph.notify({ undo: "0" });
     });
-    $('#Minimap_button')[0].addEventListener('click', function () {
-        Nengo.netgraph.toggleMiniMap();
-    });
     $('#Config_button')[0].addEventListener('click', function () {
         self.config_modal();
     });
     $('#Sync_editor_button')[0].addEventListener('click', function () {
         Nengo.ace.update_trigger = true;
-    });
-    $('#Pdf_button')[0].addEventListener('click', function () {
-        self.pdf_modal();
-    });
-    $('#Download_button')[0].addEventListener('click', function () {
-      self.csv_modal();
     });
     $('#Help_button')[0].addEventListener('click', function () {
         Nengo.hotkeys.callMenu();
@@ -70,22 +54,6 @@ Nengo.Toolbar = function(filename) {
     interact(toolbar).on('tap', function(){
         self.menu.hide_any();
     });
-};
-
-/** This lets you browse the files available on the server */
-Nengo.Toolbar.prototype.file_browser = function () {
-    sim.ws.send('browse');
-
-    fb = $('#filebrowser');
-    if (fb.is(":visible")) {
-        fb.fileTree({
-            root: Nengo.config.scriptdir,
-            script: '/browse?root=' + Nengo.config.scriptdir
-        },
-        function (file) {
-            window.location.assign('/?filename=' + file);
-        })
-    }
 };
 
 /** This is run once a file is selected, trims the filename
@@ -154,22 +122,6 @@ Nengo.Toolbar.prototype.config_modal_show = function() {
 
     Nengo.modal.show();
 };
-
-/** Export the layout to the SVG in Downloads folder **/
-Nengo.Toolbar.prototype.pdf_modal = function () {
-    Nengo.modal.title("Export the layout to SVG");
-    Nengo.modal.text_body("Do you want to save the file?", "info");
-    Nengo.modal.footer('confirm_savepdf');
-    Nengo.modal.show();
-}
-
-/** Export the graph data to the CSV in Downloads folder **/
-Nengo.Toolbar.prototype.csv_modal = function () {
-    Nengo.modal.title("Export the graph data to CSV");
-    Nengo.modal.text_body("Do you want to save the file?", "info");
-    Nengo.modal.footer('confirm_savecsv');
-    Nengo.modal.show();
-}
 
 Nengo.Toolbar.prototype.save_as = function () {
     var self = this;

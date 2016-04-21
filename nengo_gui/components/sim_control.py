@@ -181,7 +181,7 @@ class SimControl(Component):
         js = self.javascript_config(info)
         return ('sim = new Nengo.SimControl(control, %s);\n'
                 'toolbar = new Nengo.Toolbar(%s); '
-                'sidemenu = new Nengo.SideMenu();' % (js, fn))
+                'Nengo.sidemenu = new Nengo.SideMenu();' % (js, fn))
 
     def message(self, msg):
         if msg == 'pause':

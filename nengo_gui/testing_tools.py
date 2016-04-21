@@ -25,7 +25,7 @@ def update_editor(driver, nengoCode):
 
 def reset_page(driver):
 
-    """Clicks the reset page button in nengo_gui
+    """Resets the Nengo gui page and hides the sidenav
 
     Example:
     driver = webdriver.firefox()
@@ -33,12 +33,10 @@ def reset_page(driver):
     reset_page(driver)
     The page then resets
     """
-    reset = driver.find_element_by_xpath('//*[@id="Reset_layout_button"]')
-    reset.click()
-    time.sleep(0.5)
-    reset_acc = driver.find_element_by_xpath('//*[@id="confirm_reset_button"]')
-    reset_acc.click()
-    time.sleep(0.2)
+    driver.execute_script("toolbar.reset_model_layout();");
+    time.sleep(0.3);
+    driver.execute_script("Nengo.sidemenu.toggle_side_nav()")
+    time.sleep(0.1);
 
 
 def start_stop_sim(driver):
@@ -121,3 +119,7 @@ def imgur_screenshot(driver):
     print()
     print(uploaded_image.title)
     print(uploaded_image.link)
+
+def toggle_side_nav(driver):
+    driver.execute_script("Nengo.sidemenu.toggle_side_nav()")
+    time.sleep(0.1)

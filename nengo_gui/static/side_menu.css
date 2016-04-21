@@ -12,6 +12,7 @@
     transition: 0.5s;
     border-right: 1px solid #4D4D4D;
     font-size: 0px;
+    color: white;
     font-family: arial;
 }
 
@@ -22,7 +23,7 @@
   height:100%;
   top: 0px;
   margin-right:0px;
-  color:white;
+  color:inherit;
 }
 
 .sidenav #Menu_info{
@@ -34,19 +35,23 @@
 
 .sidenav  a{
     font-size: 15px;
-    color: white;
+    color: inherit;
     display: block;
     transition: 0.3s
 }
 
 .nav-tabs > li > a:hover{
   background-color: #303136 !important;
-  color:#fff;
+}
+
+.nav-tabs .menu_tab{
+  z-index: 999;
+  cursor: pointer !important;
 }
 
 .nav-tabs .menu_tab.selected a{
   background-color: #4D4D4D !important;
-  color:#fff;
+  color: inherit;
   border-color: white;
 }
 
@@ -54,18 +59,16 @@
   cursor: pointer;
   width: 100%;
   background: none;
-  height:40px;.
+  height:40px;
   border-top: solid black 1px;
   border-bottom: solid black 1px;
   margin-bottom: -1px;
-  color: white;
+  color: inherit;
 }
-
-.side-menu-item{ margin-top: 1px;}
 
 .side-menu-item:hover, .accordion-toggle:hover {
   background: #4D4D4D;
-  color: white;
+  color: inherit;
 }
 
 .side-menu-item .title, .accordion-toggle .title{
@@ -78,6 +81,7 @@
 .side-menu-item.indent{
   background: #555;
   border: 0px;
+  padding-top: 1px;
 }
 
 .side-menu-item.indent:hover{
@@ -122,6 +126,33 @@
     cursor: pointer;
     transition: 0.3s;
     width: 85px;
+}
+
+#filebrowser {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 0px;
+    border-bottom-right-radius: 4px;
+    color: inherit;
+    padding: 0.2em;
+    background-color: None;
+    z-index: 99999;
+    overflow: auto;
+    cursor: pointer !important;
+}
+
+#filebrowser a {
+    color: inherit;
+}
+
+#filebrowser a:hover {
+    background: #666;
+}
+
+#filebrowser li.examples_dir {
+    background-color: #555;
 }
 
 @media screen and (max-height: 450px) {

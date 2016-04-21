@@ -21,7 +21,6 @@ def test_tutorial_basic(driver, test_file):
 	try:
 		#Test page response by clicking the reset button and applying new code to ace-editor
 		tt.reset_page(driver)
-		driver.execute_script("toggle_side_nav()")
 		tt.update_editor(driver, test_file)
 		tt.mouse_scroll(driver,500)
 		side_script = '''var right = document.getElementById("rightpane"); \
