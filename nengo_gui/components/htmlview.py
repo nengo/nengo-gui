@@ -43,3 +43,6 @@ class HTMLView(Component):
 
     def code_python_args(self, uids):
         return [uids[self.obj]]
+
+    def message(self, msg):
+        self.obj_output._nengo_message_ = msg;
