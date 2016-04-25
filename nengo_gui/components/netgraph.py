@@ -202,7 +202,8 @@ class NetGraph(Component):
                     #
                     # The following lambda should do this, handling both
                     # the normal argument case and the keyword argument case.
-                    safe_eval = '(lambda *a, **b: list(a) + b.values())(%s)[0]'
+                    safe_eval = ('(lambda *a, **b: '
+                                     'list(a) + list(b.values()))(%s)[0]')
 
                     # this Component depends on an item inside a collapsed
                     #  Network, so we need to check if that component has
