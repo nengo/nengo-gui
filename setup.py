@@ -40,7 +40,8 @@ setup(
     zip_safe=False,
     entry_points={
         'console_scripts': [
-            'nengo_gui = nengo_gui:main',
+            'nengo_gui = nengo_gui:old_main',
+            'nengo = nengo_gui:main',
         ]
     },
     install_requires=[

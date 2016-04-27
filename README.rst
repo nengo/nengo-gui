@@ -36,13 +36,13 @@ To do this, open a command line window and run:
 
 .. code:: shell
 
-   nengo_gui
+   nengo
 
 If you specify a file, it will be loaded:
 
 .. code:: shell
 
-   nengo_gui myfile.py
+   nengo myfile.py
 
 Alternatively, you can start the GUI manually from within your code. To
 do so, add this to the bottom of your file that defines your Nengo model.
