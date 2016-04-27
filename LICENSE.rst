@@ -1,5 +1,6 @@
+*****************
 Nengo GUI license
-=================
+*****************
 
 Nengo GUI is made available under a proprietary license that permits
 using, copying, sharing, and making derivative works
@@ -9,34 +10,36 @@ If you would like to use Nengo GUI commercially, licenses can be
 purchased from Applied Brain Research, Inc. Please contact
 info@appliedbrainresearch.com for more information.
 
+*************
 Licensed code
-=============
+*************
 
 Nengo GUI depends on several open source libraries.
 
-* [D3](http://d3js.org/) - Used under
-  [MIT license](https://github.com/mbostock/d3/blob/master/LICENSE)
-* [jQuery](http://jquery.com/) - Used under
-  [MIT license](https://github.com/jquery/jquery/blob/master/MIT-LICENSE.txt)
-* [ace](http://ace.c9.io/) - Used under
-  [BSD license](https://github.com/ajaxorg/ace/blob/master/LICENSE)
-* [jQueryFileTree] - Used under
-  [MIT license](http://www.abeautifulsite.net/blog/2008/03/jquery-file-tree/)
-* [Bootstrap](http://getbootstrap.com/) - Used under
-  [MIT license](https://raw.githubusercontent.com/twbs/bootstrap/master/LICENSE)
-  * including [Glyphicons](http://glyphicons.com/)
-* [Grandalf](https://github.com/bdcht/grandalf) - Used under
-  [EPL license](https://github.com/bdcht/grandalf/blob/master/LICENSE)
-* [Validator](https://github.com/1000hz/bootstrap-validator) - Used under
-  [MIT license](http://www.abeautifulsite.net/blog/2008/03/jquery-file-tree/)
+* `D3 <http://d3js.org/>`_ - Used under
+  `MIT license <https://github.com/mbostock/d3/blob/master/LICENSE>`_
+* `jQuery <http://jquery.com/>`_ - Used under
+  `MIT license <https://github.com/jquery/jquery/blob/master/MIT-LICENSE.txt>`_
+* `ace <http://ace.c9.io/>`_ - Used under
+  `BSD license <https://github.com/ajaxorg/ace/blob/master/LICENSE>`_
+* ``jQueryFileTree`` - Used under
+  `MIT license <http://www.abeautifulsite.net/blog/2008/03/jquery-file-tree/>`_
+* `Bootstrap <http://getbootstrap.com/>`_ - Used under
+  `MIT license <https://raw.githubusercontent.com/twbs/bootstrap/master/LICENSE>`_
+  * including `Glyphicons <http://glyphicons.com/>`_
+* `Grandalf <https://github.com/bdcht/grandalf>`_ - Used under
+  `EPL license <https://github.com/bdcht/grandalf/blob/master/LICENSE>`_
+* `Validator <https://github.com/1000hz/bootstrap-validator>`_ - Used under
+  `MIT license <https://github.com/1000hz/bootstrap-validator/blob/master/LICENSE>`_
 
+********************************
 Contributor Assignment Agreement
-================================
+********************************
 
 Harmony (HA-CAA-I-ANY) Version 1.0
 
 Nengo GUI Individual Contributor Assignment Agreement
------------------------------------------------------
+=====================================================
 
 Thank you for your interest in contributing to Nengo GUI ("We" or
 "Us"). This contributor agreement ("Agreement") documents the rights
@@ -48,7 +51,8 @@ This is a legally binding document, so please read it carefully before
 agreeing to it. The Agreement may cover more than one software project
 managed by Us.
 
-### 1. Definitions
+1. Definitions
+--------------
 
 "You" means the individual who Submits a Contribution to Us.
 
@@ -83,43 +87,47 @@ Us.
 "Effective Date" means the date You execute this Agreement or the date
 You first Submit a Contribution to Us, whichever is earlier.
 
-### 2. Grant of Rights
+2. Grant of Rights
+------------------
 
-#### 2.1 Copyright Assignment
+2.1 Copyright Assignment
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 (a) At the time the Contribution is Submitted, You assign to Us all
-right, title, and interest worldwide in all Copyright covering the
-Contribution; provided that this transfer is conditioned upon
-compliance with Section 2.3.
+    right, title, and interest worldwide in all Copyright covering the
+    Contribution; provided that this transfer is conditioned upon
+    compliance with Section 2.3.
 
 (b) To the extent that any of the rights in Section 2.1(a) cannot be
-assigned by You to Us, You grant to Us a perpetual, worldwide,
-exclusive, royalty-free, transferable, irrevocable license under such
-non-assigned rights, with rights to sublicense through multiple tiers
-of sublicensees, to practice such non-assigned rights, including, but
-not limited to, the right to reproduce, modify, display, perform and
-distribute the Contribution; provided that this license is conditioned
-upon compliance with Section 2.3.
+    assigned by You to Us, You grant to Us a perpetual, worldwide,
+    exclusive, royalty-free, transferable, irrevocable license under
+    such non-assigned rights, with rights to sublicense through
+    multiple tiers of sublicensees, to practice such non-assigned
+    rights, including, but not limited to, the right to reproduce,
+    modify, display, perform and distribute the Contribution; provided
+    that this license is conditioned upon compliance with Section 2.3.
 
 (c) To the extent that any of the rights in Section 2.1(a) can neither
-be assigned nor licensed by You to Us, You irrevocably waive and agree
-never to assert such rights against Us, any of our successors in
-interest, or any of our licensees, either direct or indirect; provided
-that this agreement not to assert is conditioned upon compliance with
-Section 2.3.
+    be assigned nor licensed by You to Us, You irrevocably waive and
+    agree never to assert such rights against Us, any of our
+    successors in interest, or any of our licensees, either direct or
+    indirect; provided that this agreement not to assert is
+    conditioned upon compliance with Section 2.3.
 
 (d) Upon such transfer of rights to Us, to the maximum extent
-possible, We immediately grant to You a perpetual, worldwide,
-non-exclusive, royalty-free, transferable, irrevocable license under
-such rights covering the Contribution, with rights to sublicense
-through multiple tiers of sublicensees, to reproduce, modify, display,
-perform, and distribute the Contribution. The intention of the parties
-is that this license will be as broad as possible and to provide You
-with rights as similar as possible to the owner of the rights that You
-transferred. This license back is limited to the Contribution and does
-not provide any rights to the Material.
+    possible, We immediately grant to You a perpetual, worldwide,
+    non-exclusive, royalty-free, transferable, irrevocable license
+    under such rights covering the Contribution, with rights to
+    sublicense through multiple tiers of sublicensees, to reproduce,
+    modify, display, perform, and distribute the Contribution. The
+    intention of the parties is that this license will be as broad as
+    possible and to provide You with rights as similar as possible to
+    the owner of the rights that You transferred. This license back is
+    limited to the Contribution and does not provide any rights to the
+    Material.
 
-#### 2.2 Patent License
+2.2 Patent License
+^^^^^^^^^^^^^^^^^^
 
 For patent claims including, without limitation, method, process, and
 apparatus claims which You own, control or have the right to grant,
@@ -133,7 +141,8 @@ license is granted only to the extent that the exercise of the
 licensed rights infringes such patent claims; and provided that this
 license is conditioned upon compliance with Section 2.3.
 
-#### 2.3 Outbound License
+2.3 Outbound License
+^^^^^^^^^^^^^^^^^^^^
 
 Based on the grant of rights in Sections 2.1 and 2.2, if We include
 Your Contribution in a Material, We may license the Contribution under
@@ -143,46 +152,51 @@ agree to also license the Contribution under the terms of the license
 or licenses which We are using for the Material on the Submission
 Date.
 
-#### 2.4 Moral Rights
+2.4 Moral Rights
+^^^^^^^^^^^^^^^^
 
 If moral rights apply to the Contribution, to the maximum extent
 permitted by law, You waive and agree not to assert such moral rights
 against Us or our successors in interest, or any of our licensees,
 either direct or indirect.
 
-#### 2.5 Our Rights
+2.5 Our Rights
+^^^^^^^^^^^^^^
 
 You acknowledge that We are not obligated to use Your Contribution as
 part of the Material and may decide to include any Contribution We
 consider appropriate.
 
-#### 2.6 Reservation of Rights
+2.6 Reservation of Rights
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Any rights not expressly assigned or licensed under this section are
 expressly reserved by You.
 
-### 3. Agreement
+3. Agreement
+------------
 
 You confirm that:
 
 (a) You have the legal authority to enter into this Agreement.
 
 (b) You own the Copyright and patent claims covering the Contribution
-which are required to grant the rights under Section 2.
+    which are required to grant the rights under Section 2.
 
 (c) The grant of rights under Section 2 does not violate any grant of
-rights which You have made to third parties, including Your employer.
-If You are an employee, You have had Your employer approve this
-Agreement or sign the Entity version of this document. If You are less
-than eighteen years old, please have Your parents or guardian sign the
-Agreement.
+    rights which You have made to third parties, including Your
+    employer. If You are an employee, You have had Your employer
+    approve this Agreement or sign the Entity version of this
+    document. If You are less than eighteen years old, please have
+    Your parents or guardian sign the Agreement.
 
 (d) You have followed the instructions in
-<https://github.com/nengo/nengo_gui/blob/master/CONTRIBUTORS.md>,
-if You do not own the Copyright in the entire work of authorship
-Submitted.
+    <https://github.com/nengo/nengo_gui/blob/master/CONTRIBUTORS.md>,
+    if You do not own the Copyright in the entire work of authorship
+    Submitted.
 
-### 4. Disclaimer
+4. Disclaimer
+-------------
 
 EXCEPT FOR THE EXPRESS WARRANTIES IN SECTION 3, THE CONTRIBUTION IS
 PROVIDED "AS IS". MORE PARTICULARLY, ALL EXPRESS OR IMPLIED WARRANTIES
@@ -192,7 +206,8 @@ ARE EXPRESSLY DISCLAIMED BY YOU TO US AND BY US TO YOU. TO THE EXTENT
 THAT ANY SUCH WARRANTIES CANNOT BE DISCLAIMED, SUCH WARRANTY IS
 LIMITED IN DURATION TO THE MINIMUM PERIOD PERMITTED BY LAW.
 
-### 5. Consequential Damage Waiver
+5. Consequential Damage Waiver
+------------------------------
 
 TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT WILL
 YOU OR US BE LIABLE FOR ANY LOSS OF PROFITS, LOSS OF ANTICIPATED
@@ -201,9 +216,10 @@ AND EXEMPLARY DAMAGES ARISING OUT OF THIS AGREEMENT REGARDLESS OF THE
 LEGAL OR EQUITABLE THEORY (CONTRACT, TORT OR OTHERWISE) UPON WHICH THE
 CLAIM IS BASED.
 
-### 6. Miscellaneous
+6. Miscellaneous
+----------------
 
-6.1 This Agreement will be governed by and construed in accordance
+**6.1** This Agreement will be governed by and construed in accordance
 with the laws of Applied Brain Research Inc. excluding its conflicts
 of law provisions. Under certain circumstances, the governing law in
 this section might be superseded by the United Nations Convention on
@@ -212,23 +228,23 @@ the parties intend to avoid the application of the UN Convention to
 this Agreement and, thus, exclude the application of the UN Convention
 in its entirety to this Agreement.
 
-6.2 This Agreement sets out the entire agreement between You and Us
-for Your Contributions to Us and overrides all other agreements or
+**6.2** This Agreement sets out the entire agreement between You and
+Us for Your Contributions to Us and overrides all other agreements or
 understandings.
 
-6.3 If You or We assign the rights or obligations received through
+**6.3** If You or We assign the rights or obligations received through
 this Agreement to a third party, as a condition of the assignment,
 that third party must agree in writing to abide by all the rights and
 obligations in the Agreement.
 
-6.4 The failure of either party to require performance by the other
-party of any provision of this Agreement in one situation shall not
-affect the right of a party to require such performance at any time in
-the future. A waiver of performance under a provision in one situation
-shall not be considered a waiver of the performance of the provision
-in the future or a waiver of the provision in its entirety.
+**6.4** The failure of either party to require performance by the
+other party of any provision of this Agreement in one situation shall
+not affect the right of a party to require such performance at any
+time in the future. A waiver of performance under a provision in one
+situation shall not be considered a waiver of the performance of the
+provision in the future or a waiver of the provision in its entirety.
 
-6.5 If any provision of this Agreement is found void and
+**6.5** If any provision of this Agreement is found void and
 unenforceable, such provision will be replaced to the extent possible
 with a provision that comes closest to the meaning of the original
 provision and which is enforceable. The terms and conditions set forth
