@@ -24,27 +24,37 @@ def read(*filenames, **kwargs):
 root = os.path.dirname(os.path.realpath(__file__))
 version_module = imp.load_source(
     'version', os.path.join(root, 'nengo_gui', 'version.py'))
-description = "Web-based GUI for building and visualizing Nengo models."
-long_description = read('README.rst', 'CHANGES.rst')
 
 setup(
     name="nengo_gui",
     version=version_module.version,
-    author="CNRGlab at UWaterloo",
-    author_email="celiasmith@uwaterloo.ca",
+    author="Applied Brain Research",
+    author_email="info@appliedbrainresearch.com",
     packages=find_packages(),
+    scripts=[],
     include_package_data=True,
+    url="https://github.com/nengo/nengo_gui",
+    license="Free for non-commercial use",
+    description="Web-based GUI for building and visualizing Nengo models.",
+    long_description=read('README.rst', 'CHANGES.rst'),
+    zip_safe=False,
     entry_points={
         'console_scripts': [
             'nengo_gui = nengo_gui:main',
         ]
     },
-    scripts=[],
-    url="https://github.com/nengo/nengo_gui",
-    license="https://github.com/nengo/nengo_gui/blob/master/LICENSE.md",
-    description=description,
-    long_description=long_description,
     install_requires=[
         "nengo",
     ],
+    classifiers=[  # https://pypi.python.org/pypi?%3Aaction=list_classifiers
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Science/Research',
+        'License :: Free for non-commercial use',
+        'Operating System :: OS Independent',
+        'Programming Language :: JavaScript',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
+    ]
 )

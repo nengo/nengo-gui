@@ -1,14 +1,14 @@
 """Nengo GUI version information.
 
 We use semantic versioning (see http://semver.org/).
-Additionally, '-dev' will be added to the version unless the code base
-represents a release version. Commits for which the version doesn't have
-'-dev' should be git tagged with the version.
+and conform to PEP440 (see https://www.python.org/dev/peps/pep-0440/).
+'.devN' will be added to the version unless the code base represents
+a release version. Release versions are git tagged with the version.
 """
 
 name = "nengo_gui"
 version_info = (0, 2, 0)  # (major, minor, patch)
-dev = True
+dev = 0
 
 version = "{v}{dev}".format(v='.'.join(str(v) for v in version_info),
-                            dev='-dev' if dev else '')
+                            dev=('.dev%d' % dev) if dev is not None else '')
