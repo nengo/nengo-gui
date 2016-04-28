@@ -19,8 +19,21 @@ Release History
    - Bugfixes
    - Documentation
 
-0.2.0 (unreleased)
-==================
+0.2.0 (April 28, 2016)
+======================
+
+This release is compatible with Nengo 2.1.0.
+
+- The network graph can now be exported to SVG for inclusion in publications.
+- Simulation data can now be exported to CSV for later analysis.
+- The simulation will now automatically slow down to real time by default.
+  The speed can be controlled with a new slider in the bottom left.
+- Clicking on the file name allows you to save the model to a different file.
+- Configuration now persists when the browser is closed and reopened.
+- Value plots can now have a legend.
+- Added a unit testing system.
+- Optimized several parts of the code, which improved speed and responsiveness.
+- Many other bug fixes and look-and-feel improvements.
 
 0.1.5 (November 3, 2015)
 ========================
