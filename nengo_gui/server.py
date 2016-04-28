@@ -163,8 +163,7 @@ class Server(swi.SimpleWebInterface):
             if isinstance(component, nengo_gui.components.SimControl):
                 if gui.count_pages() == 0:
                     if gui.interactive:
-                        print("No connections remaining to the nengo_gui "
-                              "server.")
+                        print("No connections remaining to the nengo server.")
                     self.server.shutdown()
 
     def log_message(self, format, *args):

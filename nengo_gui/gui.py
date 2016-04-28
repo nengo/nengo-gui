@@ -81,7 +81,7 @@ class GUI(object):
 
     def start(self, port=8080, browser=True, password=None):
         """Start the web server"""
-        print("Starting nengo_gui server at http://localhost:%d" % port)
+        print("Starting nengo server at http://localhost:%d" % port)
         if password is not None:
             nengo_gui.server.Server.add_user('', password)
             addr = ''

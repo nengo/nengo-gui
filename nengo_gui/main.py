@@ -4,6 +4,12 @@ import nengo_gui
 import nengo_gui.gui
 
 
+def old_main():
+    print("'nengo_gui' has been renamed to 'nengo'.")
+    print("Please run 'nengo' in the future to avoid this message!\n")
+    main()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
