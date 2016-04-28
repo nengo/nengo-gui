@@ -26,6 +26,7 @@ Please keep this list sorted alphabetically by first name.
 - Eric Hunsberger <erichuns@gmail.com>
 - Jan Gosmann <jan@hyper-world.de>
 - Petrut Bogdan <petrutantoniu8@gmail.com>
+- Rees Simmons <rsimmons@uwaterloo.ca>
 - Sean Aubin <seanaubin@gmail.com>
 - Sugandha Sharma <sugandha974@gmail.com>
 - Terry Stewart <terry.stewart@gmail.com>
