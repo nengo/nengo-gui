@@ -46,7 +46,7 @@ class SpikeGrid(Component):
         self.max_value = max(self.max_value, np.max(x))
         if len(x) > self.n_neurons:
             x = x[:self.n_neurons]
-        y = np.zeros(self.n_pixels, dtype=np.uint8)
+        y = np.zeros(int(self.n_pixels), dtype=np.uint8)
         if self.max_value > 0:
             y[:x.size] = x * 255 / self.max_value
         data = self.struct.pack(t, *y)
