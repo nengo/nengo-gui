@@ -10,19 +10,19 @@ from nengo_gui.components.component import Component
 class Raster(Component):
     """Plot showing spike events over time."""
 
-    config_defaults = dict(**Component.config_defaults)
+    config_defaults = dict(n_neurons=10,
+                           **Component.config_defaults)
 
-    def __init__(self, obj, n_neurons=None):
+    def __init__(self, obj):
         super(Raster, self).__init__()
         self.neuron_type = obj.neuron_type
         self.obj = obj.neurons
         self.data = collections.deque()
         self.max_neurons = obj.n_neurons
-        if n_neurons is None:
-            n_neurons = min(self.max_neurons, 10)
-        self.n_neurons = n_neurons
+
         self.conn = None
         self.node = None
+        self.chosen = None
 
 
 
@@ -42,9 +42,17 @@ class Raster(Component):
             page.model.connections.remove(self.conn)
 
     def gather_data(self, t, x):
-        indices = np.nonzero(x[:self.n_neurons])[0]
+        if self.chosen is None:
+            self.compute_chosen_neurons()
+        indices = np.nonzero(x[self.chosen])[0]
         data = struct.pack('<f%dH' % len(indices), t, *indices)
         self.data.append(data)
+
+    def compute_chosen_neurons(self):
+        n_neurons = self.page.config[self].n_neurons
+        n_neurons = min(n_neurons, self.max_neurons)
+        self.chosen = np.linspace(0, self.max_neurons-1, 
+                                  n_neurons).astype(int)
 
     def update_client(self, client):
         while len(self.data) > 0:
@@ -52,10 +60,17 @@ class Raster(Component):
             client.write(data, binary=True)
 
     def javascript(self):
-        info = dict(uid=id(self), n_neurons=self.n_neurons, label=self.label,
+        info = dict(uid=id(self), label=self.label,
                     max_neurons=self.max_neurons)
         json = self.javascript_config(info)
         return 'new Nengo.Raster(main, sim, %s);' % json
 
     def code_python_args(self, uids):
         return [uids[self.obj.ensemble]]
+
+    def message(self, msg):
+        if msg.startswith('n_neurons:'):
+            n_neurons = min(int(msg[10:]), self.max_neurons)
+            self.page.config[self].n_neurons = n_neurons
+            self.compute_chosen_neurons()
+            self.page.modified_config()
