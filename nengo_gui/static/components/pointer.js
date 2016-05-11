@@ -28,6 +28,8 @@ Nengo.Pointer = function(parent, sim, args) {
 
     this.show_pairs = args.show_pairs;
 
+    this.max_size = args.max_size;
+
     /** for storing the accumulated data */
     this.data_store = new Nengo.DataStore(1, this.sim, 0);
 
@@ -84,6 +86,8 @@ Nengo.Pointer.prototype.generate_menu = function() {
     } else {
         items.push(['Show pairs', function() {self.set_show_pairs(true);}]);
     }
+    items.push(['Set maximum font size...', 
+                function() {self.set_max_size_dialog();}]);
 
     // add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
@@ -200,7 +204,8 @@ Nengo.Pointer.prototype.update = function() {
 
     for (var i=0; i < data.length; i++) {
         var size = parseFloat(data[i].substring(0,4));
-        items[i].style.fontSize = '' + (size * scale) + 'px'
+        scaled_size = Math.min(size * scale, this.max_size);
+        items[i].style.fontSize = '' + (scaled_size) + 'px'
     }
 };
 
@@ -241,3 +246,46 @@ Nengo.Pointer.prototype.reset = function(event) {
     this.data_store.reset();
     this.schedule_update();
 }
+
+Nengo.Pointer.prototype.set_max_size = function(max_size) {
+    this.max_size = max_size;
+    this.ws.send('config:{"max_size":' + max_size + '}');
+}
+
+Nengo.Pointer.prototype.set_max_size_dialog = function() {
+    var self = this;
+    Nengo.modal.title('Set maximum font size...');
+    Nengo.modal.single_input_body(this.max_size, 'Max font size');
+    Nengo.modal.footer('ok_cancel', function(e) {
+        var value = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
+        if ((value === null) || (value === '')) {
+            value = ':empty:';
+        } 
+        self.set_max_size(value);
+        $('#OK').attr('data-dismiss', 'modal');
+    });
+    var $form = $('#myModalForm').validator({
+        custom: {
+            my_validator: function($item) {
+                var num = $item.val();
+                if ($.isNumeric(num)) {
+                    num = Number(num);
+                    if (num > 0) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+    });
+
+    $('#singleInput').attr('data-error', 'Invalid font size ');
+    Nengo.modal.show();
+}
+

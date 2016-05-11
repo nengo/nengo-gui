@@ -12,7 +12,9 @@ from nengo_gui.components.spa_plot import SpaPlot
 class Pointer(SpaPlot):
     """Server side component for the Semantic Pointer Cloud"""
 
-    config_defaults = dict(show_pairs=False, **Component.config_defaults)
+    config_defaults = dict(show_pairs=False, 
+                           max_size=1000.0,
+                           **Component.config_defaults)
 
     def __init__(self, obj, **kwargs):
         super(Pointer, self).__init__(obj, **kwargs)
