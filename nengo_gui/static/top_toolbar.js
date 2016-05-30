@@ -119,7 +119,7 @@ Nengo.Toolbar.prototype.config_modal_show = function() {
     var original = {zoom: Nengo.netgraph.zoom_fonts,
                     font_size: Nengo.netgraph.font_size,
                     aspect_resize: Nengo.netgraph.aspect_resize,
-                    sync_editor: Nengo.ace.auto_update,
+                    auto_update: Nengo.ace.auto_update,
                     transparent_nets: Nengo.netgraph.transparent_nets,
                     scriptdir: Nengo.config.scriptdir};
 
