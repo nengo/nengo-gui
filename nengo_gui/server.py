@@ -261,6 +261,9 @@ class HttpWsRequestHandler(server.BaseHTTPRequestHandler):
         else:
             raise BadRequest()
 
+    def get_expected_origins(self):
+        raise NotImplementedError()
+
     def upgrade_to_ws(self):
         response = '''HTTP/1.1 101 Switching Protocols
 Upgrade: websocket
@@ -268,13 +271,7 @@ Connection: Upgrade
 Sec-WebSocket-Accept: {sec}
 
 '''
-        valid_srv_addrs = [
-            '{0}:{1}'.format(
-                self.server.server_name.lower(), self.server.server_port),
-            '{0}:{1}'.format(socket.getfqdn(), self.server.server_port)]
-        if self.server.server_port == 80:
-            valid_srv_addrs.append(self.server.settings.listen_addr[0].lower())
-            valid_srv_addrs.append(socket.getfqdn())
+        valid_srv_addrs = self.get_expected_origins()
 
         try:
             origin = urlparse(self.headers['Origin'])

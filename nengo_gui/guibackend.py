@@ -27,11 +27,12 @@ logger = logging.getLogger(__name__)
 
 
 class Session(object):
-    __slots__ = ['creation_time', 'authenticated']
+    __slots__ = ['creation_time', 'authenticated', 'login_host']
 
     def __init__(self):
         self.creation_time = time.time()
         self.authenticated = False
+        self.login_host = None
 
 
 class SessionExpiredError(Exception):
@@ -101,6 +102,18 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         '/favicon.ico': 'serve_favicon',
     }
 
+    def get_expected_origins(self):
+        session = self.get_session()
+        has_password = self.server.settings.password_hash is not None
+        origins = []
+        if not has_password:
+            origins.append('localhost:' + str(self.server.server_port))
+            if self.server.server_port in [80, 443]:
+                origins.append('localhost')
+        elif session.login_host is not None:
+            return [session.login_host]
+        return origins
+
     def login_page(self):
         session = self.get_session()
         content = b''
@@ -108,6 +121,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         if 'pw' in self.db:
             if checkpw(self.db['pw'], self.server.settings.password_hash):
                 session.authenticated = True
+                session.login_host = self.headers.get('host', None)
             else:
                 content += b'<p><strong>Invalid password. Try again.'
                 content += b'</strong></p>'
@@ -353,8 +367,6 @@ class GuiServer(server.ManagedThreadHttpServer):
 
         server.ManagedThreadHttpServer.__init__(
             self, self.settings.listen_addr, GuiRequestHandler)
-        if self.settings.listen_addr[0] != '':
-            server.server_name = self.settings.listen_addr[0]
         if self.settings.use_ssl:
             self.socket = ssl.wrap_socket(
                 self.socket, certfile=self.settings.ssl_cert,

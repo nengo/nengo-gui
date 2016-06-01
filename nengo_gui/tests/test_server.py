@@ -93,6 +93,9 @@ Sec-WebSocket-Version: 13
             def ws_default(self):
                 pass
 
+            def get_expected_origins(self):
+                return ['localhost:80']
+
         handler = HandlerClass(request, 'localhost', ServerMock())
         # Ignore errors in decoding because binary WebSocket data might follow
         # response.
@@ -116,8 +119,11 @@ Sec-WebSocket-Key: null
 Sec-WebSocket-Version: 13
 ''')
 
-        handler = server.HttpWsRequestHandler(
-            request, 'localhost', ServerMock())
+        class HandlerClass(server.HttpWsRequestHandler):
+            def get_expected_origins(self):
+                return ['localhost:80']
+
+        handler = HandlerClass(request, 'localhost', ServerMock())
         response = request.file_io.written_data.decode('utf-8')
 
         assert re.match(r'^HTTP\/\d+\.\d+\s+400.*$', response, re.M)
@@ -183,6 +189,9 @@ Sec-WebSocket-Version: 13
 
             def cmd(self):
                 self.called = True
+
+            def get_expected_origins(self):
+                return ['localhost:80']
 
         handler = HandlerClass(request, 'localhost', ServerMock())
         assert handler.called
