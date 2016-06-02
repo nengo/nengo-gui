@@ -114,6 +114,9 @@ Nengo.SideMenu.prototype.hide_side_nav = function() {
 Nengo.SideMenu.prototype.menu_tab_click = function(it, pos_num, close_if_selected) {
     var self = this;
     var trans_func = function() {
+        if ($(it).hasClass('deactivated')) {
+            return;
+        }
         if (close_if_selected && self.menu_open && $(it).hasClass('selected')) {
             self.hide_side_nav();
             self.focus_reset();
