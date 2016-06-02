@@ -18,38 +18,153 @@
         <link href="static/top_toolbar.css" rel="stylesheet" type="text/css" />
         <link href="static/lib/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
         <link href="static/lib/js/jqueryFileTree/jqueryFileTree.css" rel="stylesheet" type="text/css">
+        <link href="static/side_menu.css" rel="stylesheet" type="text/css" />
+        <link href="static/drag_and_drop.css" rel="stylesheet" type="text/css" />
     </head>
     <!-- body needs an ID to fix cursor in Firefox -->
+
     <body id="body" onload="onload();">
+        <!-- Contains all sidenav html -->
+        <div class="sidenav-container">
+
+            <!-- holds all the sidenav content -->
+            <div id="Menu_content">
+
+                <!-- tab-content hold the content for their correpsonding sidenav tab -->
+                <!-- The first tab-content holds the content for the first menu tab -->
+                <div class="tab-content">
+                    <div id="filebrowser"></div>
+                </div>
+
+                <div class="tab-content">
+                    <!-- accordion containers allow use of accordions in particular divs -->
+                    <!-- must be uniquely id'd by number -->
+                    <div class="accordion-container" id="accordion-container1">
+
+                        <div class="accordion-toggle">
+                            <p class="title">Basic</p>
+                            <p class="icon">
+                                <span class="glyphicon glyphicon-chevron-down"></span>
+                            </p>
+                        </div>
+                        <!-- accordion-content holds content for accordion above it -->
+                        <!-- the default class makes it initially hidden, removing it makes it shown -->
+                        <div id="drag_drop_menu" class="accordion-content default">
+                            <div>
+                                <p>Ensemble</p>
+                                <div id="Ensemble" class="ui-widget-content draggable">
+                                    <svg width="150" height="150">
+                                        <g transform="translate(75,75) scale(4)" style="fill:rgb(204,204,204);stroke-width:0.1;stroke:black">
+                                            <circle cx="-12.407" cy="-7.231" r="4.843" />
+                                            <circle cx="-1.064" cy="0.123" r="4.843" />
+                                            <circle cx="3.7619999999999996" cy="12.81" r="4.843" />
+                                            <circle cx="12.454" cy="-0.521" r="4.843" />
+                                            <circle cx="-11.603" cy="8.663" r="4.843" />
+                                            <circle cx="2.644" cy="-12.908" r="4.843" />
+                                        </g>
+                                    </svg>
+                                </div>
+
+                                <p>Node</p>
+                                <div id="Node" class="ui-widget-content draggable">
+                                    <svg width="150" height="150">
+                                        <g transform="translate(75,75) scale(1)" style="fill:rgb(204,204,204);stroke-width:0.5;stroke:black">
+                                            <rect transform="translate(-59, -48)" width="110" height="110" rx="9.595074226286059" ry="9.595074226286059"></rect>
+                                        </g>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-toggle">
+                            <p class="title">Network</p>
+                            <p class="icon">
+                                <span class="glyphicon glyphicon-chevron-down"></span>
+                            </p>
+                        </div>
+                        <div class="accordion-content"></div>
+
+                        <div class="accordion-toggle">
+                            <p class="title">SPA</p>
+                            <p class="icon">
+                                <span class="glyphicon glyphicon-chevron-down"></span>
+                            </p>
+                        </div>
+                        <div class="accordion-content"></div>
+
+                    </div>
+                </div>
+                <div class="tab-content">
+                    <div class="accordion-container" id="accordion-container2">
+                        <!-- side-menu-item creates a menu item for non accordion content -->
+                        <div id='Config_button' class="side-menu-item">
+                            <p class="title">Configure Settings</p>
+                            <p class="icon">
+                                <span class='glyphicon glyphicon-cog'></span>
+                            </p>
+                        </div>
+
+                        <div class="accordion-toggle">
+                            <p class="title">Download</p>
+                            <p class="icon">
+                                <span class="glyphicon glyphicon-chevron-down"></span>
+                            </p>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="side-menu-item indent" id="Download_button">
+                                <p class="title">Download Simulation Data</p>
+                                <p class="icon">
+                                    <span class="glyphicon glyphicon-signal"></span>
+                                </p>
+                            </div>
+                            <div class="side-menu-item indent" id='Pdf_button'>
+                                <p class="title">Export layout as SVG</p>
+                                <p class="icon">
+                                    <span class="glyphicon glyphicon-picture"></span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div id='Minimap_button' class="side-menu-item">
+                            <p class="title">Minimap</p>
+                            <p class="icon">
+                                <span class='glyphicon glyphicon-credit-card'></span>
+                            </p>
+                        </div>
+
+                        <div id='Toggle_drag_drop' class="side-menu-item">
+                            <p class="title">Drag and drop menu</p>
+                            <p class="icon">
+                                <span class='glyphicon glyphicon-th'></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div id="top_toolbar_div">
             <ul id='toolbar_object' class="nav nav-pills">
-                <li id='Open_file_button' role="presentation">
+                <li id='Open_file_button_top' role="presentation">
                     <a title='Open file' class='glyphicon glyphicon-folder-open'> </a>
                 </li>
+                <li id='Component_menu_top' role="presentation" class="hidden">
+                    <a title='Components' class='glyphicon glyphicon-th'> </a>
+                </li>
+                <li id='Config_menu_top' role="presentation">
+                    <a title='Utilities' class='glyphicon glyphicon-wrench'> </a>
+                </li>
                 <li id='Reset_layout_button' role="presentation">
-                    <a title='Reset model layout' class='glyphicon glyphicon-refresh'> </a>
+                    <a title='Reset model layout' class='glyphicon glyphicon-trash'> </a>
                 </li>
                 <li id='Undo_last_button' role="presentation">
-                    <a title='Undo last' class='glyphicon glyphicon-share-alt'> </a>
+                    <a title='Undo last' class='glyphicon glyphicon-share-alt reversed'> </a>
                 </li>
                 <li id='Redo_last_button' role="presentation">
                     <a title='Redo last' class='glyphicon glyphicon-share-alt'> </a>
                 </li>
-                <li id='Minimap_button' role="presentation">
-                    <a title='Minimap' class='glyphicon glyphicon-credit-card'> </a>
-                </li>
-                <li id='Pdf_button' role="presentation">
-                    <a title='Export to SVG' class='glyphicon
-                        glyphicon-export'> </a>
-                </li>
-                <li id='Download_button' role="presentation">
-                  <a title="Download simulation results" class="glyphicon glyphicon-download-alt"> </a>
-                </li>
-                <li id='Config_button' role="presentation">
-                    <a title='Config panel' class='glyphicon glyphicon-cog'> </a>
-                </li>
                 <li id='Help_button' role="presentation">
                     <a title='List of hotkeys' class='glyphicon glyphicon-question-sign'> </a>
+                </li>
                 <li id='Toggle_ace' role="presentation">
                     <a title='Open code editor' class='glyphicon glyphicon-list-alt'> </a>
                 </li>
@@ -65,13 +180,14 @@
                 <li id='Sync_editor_button' class='disabled' role="presentation">
                     <a title='Sync diagram with editor' class='glyphicon glyphicon-circle-arrow-left'> </a>
                 </li>
-                <li id='filename' role="presentation"> </li>
+                <li role="presentation">
+                    <div id='filename'></div>
+                </li>
             </ul>
         </div>
         <div id="vmiddle">
-          <div id="main"></div>
+          <div id="main" class="droppable"></div>
           <div id="rightpane"></div>
-          <div id="filebrowser"></div>
         </div>
         <div id="control">
             <button id='reset_button' class="btn btn-default reset-button">
@@ -151,9 +267,12 @@
         <script src="static/modal.js"></script>
         <script src="static/tooltips.js"></script>
         <script src="static/menu.js"></script>
+        <script src="static/side_menu.js"></script>
         <script src="static/viewport.js"></script>
         <script src="static/hotkeys.js"></script>
         <script src="static/ace.js"></script>
         <script src="static/data_to_csv.js"></script>
+        <script src="static/drag_and_drop.js"></script>
     </body>
+
 </html>
