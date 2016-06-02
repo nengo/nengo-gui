@@ -483,9 +483,9 @@ class Page(object):
                         self.sim.run_steps(self.sim.max_steps)
                     else:
                         self.sim.step()
-                except socket.error:  # if another thread closes the sim
-                    pass
-                except:
+                except Exception as err:
+                    if self.finished:
+                        return
                     line = nengo_gui.exec_env.determine_line_number()
                     self.error = dict(trace=traceback.format_exc(), line=line)
                     self.sim = None
@@ -494,3 +494,4 @@ class Page(object):
 
             if self.rebuild:
                 self.build()
+        self.sim = None

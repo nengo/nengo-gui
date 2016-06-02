@@ -240,9 +240,6 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         # After hot loop
         component.finish()
 
-        if isinstance(component, nengo_gui.components.SimControl):
-            component.page.sim = None
-
     def _handle_ws_msg(self, component, msg):
         """Handle websocket message. Returns True when further messages should
         be handled and false when no further messages should be processed."""
