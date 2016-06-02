@@ -18,13 +18,13 @@ Nengo.SideMenu = function() {
     // Gathers all the menu tabs from the HTML for the Event Handlers
     self.tabs = $(".tab-content");
 
-    self.top_buttons = ['#Open_file_button_top', '#Component_menu_top', '#Config_menu_top'];
+    self.top_buttons = ['#Open_file_button', '#Component_menu', '#Config_menu'];
     self.initialize_button_handlers();
 
     //----EVENT HANDLERS----
 
     // file_browser
-    $('#Open_file_button_top')[0].addEventListener('click', function() {
+    $('#Open_file_button')[0].addEventListener('click', function() {
         if (!$(this).hasClass('deactivated') && file_browser_open == false) {
             file_browser_open = true;
             self.file_browser();
@@ -42,7 +42,7 @@ Nengo.SideMenu = function() {
         Nengo.netgraph.toggleMiniMap();
     });
     $('#Toggle_drag_drop')[0].addEventListener('click', function() {
-        self.toggle_display_tab("#Component_menu_top");
+        self.toggle_display_tab("#Component_menu");
     });
 
     // Handles Accordions
