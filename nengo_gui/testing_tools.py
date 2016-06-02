@@ -25,7 +25,7 @@ def update_editor(driver, nengoCode):
 
 def reset_page(driver):
 
-    """Clicks the reset page button in nengo_gui
+    """Resets the Nengo gui page
 
     Example:
     driver = webdriver.firefox()
@@ -33,12 +33,8 @@ def reset_page(driver):
     reset_page(driver)
     The page then resets
     """
-    reset = driver.find_element_by_xpath('//*[@id="Reset_layout_button"]')
-    reset.click()
-    time.sleep(0.5)
-    reset_acc = driver.find_element_by_xpath('//*[@id="confirm_reset_button"]')
-    reset_acc.click()
-    time.sleep(0.2)
+    driver.execute_script("toolbar.reset_model_layout();");
+    time.sleep(0.3);
 
 
 def start_stop_sim(driver):

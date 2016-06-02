@@ -7,6 +7,8 @@ from nengo_gui import testing_tools as tt
 
 def test_config_persists(driver):
     tt.reset_page(driver)
+    driver.execute_script("$('#Config_menu').click()")
+    time.sleep(0.5)
     actions = ActionChains(driver)
     button = driver.find_element_by_id("Config_button")
     actions.move_to_element(button)
