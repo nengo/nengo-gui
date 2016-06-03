@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import atexit
 import socket
 import threading
@@ -64,12 +66,16 @@ class IPythonViz(object):
                 cls.threads[page.filename_cfg] = server_thread
 
         name = model.label
+        server_settings = nengo_gui.guibackend.GuiServerSettings(
+            ('localhost', 0))
         model_context = nengo_gui.guibackend.ModelContext(
             model=model, locals=get_ipython().user_ns, filename=name,
             writeable=False)
         page_settings = nengo_gui.page.PageSettings(
-            filename_cfg=cfg, editor_class=nengo_gui.components.editor.NoEditor)
-        server = nengo_gui.gui.GUI(model_context, page_settings, port=0)
+            filename_cfg=cfg,
+            editor_class=nengo_gui.components.editor.NoEditor)
+        server = nengo_gui.gui.GUI(
+            model_context, server_settings, page_settings)
         server_thread = threading.Thread(target=server.start)
         server_thread.start()
         cls.servers[cfg] = server
