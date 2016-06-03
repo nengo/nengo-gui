@@ -118,10 +118,25 @@ class GUI(InteractiveGUI):
     ----------
     filename : str
         Filename of the calling script (usually you want to use ``__file__``).
+    model : nengo.Network
+        The model to visualize.  If None, the script filename is evaluated to
+        create the model.
+    locals : dict
+        The locals() dictionary after running the script.  If None, it is
+        determinined by running the script filename.  Its contents are used
+        to give useful names for the objects in the model.
+    editor : bool
+        Whether or not to show the editor
     """
-    def __init__(self, filename):
+    def __init__(self, filename=None, model=None, locals=None, editor=True):
+        if not editor:
+            ps = nengo_gui.page.PageSettings(
+                    editor_class=nengo_gui.components.editor.NoEditor)
+        else:
+            ps = nengo_gui.page.PageSettings()
         super(GUI, self).__init__(nengo_gui.guibackend.ModelContext(
-            filename=filename))
+            filename=filename, model=model, locals=locals),
+            page_settings=ps)
 
     def start(self):
         t = threading.Thread(
