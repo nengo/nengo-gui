@@ -74,7 +74,7 @@ class IPythonViz(object):
         page_settings = nengo_gui.page.PageSettings(
             filename_cfg=cfg,
             editor_class=nengo_gui.components.editor.NoEditor)
-        server = nengo_gui.gui.GUI(
+        server = nengo_gui.gui.BaseGUI(
             model_context, server_settings, page_settings)
         server_thread = threading.Thread(target=server.start)
         server_thread.start()

@@ -15,4 +15,4 @@ with model:
 
 if __name__ == '__main__':
     import nengo_gui
-    nengo_gui.Viz(__file__).start()
+    nengo_gui.GUI(__file__).start()

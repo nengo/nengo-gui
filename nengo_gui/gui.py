@@ -6,6 +6,8 @@ from __future__ import print_function
 import select
 import signal
 import sys
+import threading
+import webbrowser
 
 import nengo_gui
 from nengo_gui.guibackend import GuiServer
@@ -16,21 +18,25 @@ class ServerShutdown(Exception):
     pass
 
 
-class GUI(object):
+class BaseGUI(object):
     """Creates a basic nengo_gui backend server.
 
     Parameters
     ----------
     model_context : nengo_gui.backend.backend.ModelContext
         Model and its context served by the backend.
-    server_settings : nengo_gui.backend.backend.GuiServerSettings
+    server_settings : nengo_gui.backend.backend.GuiServerSettings, optional
         Backend settings.
     page_settings : nengo_gui.page.PageSettings, optional
         Frontend page settings.
     """
     def __init__(
-            self, model_context, server_settings,
-            page_settings=nengo_gui.page.PageSettings()):
+            self, model_context, server_settings=None, page_settings=None):
+        if server_settings is None:
+            server_settings = nengo_gui.guibackend.GuiServerSettings()
+        if page_settings is None:
+            page_settings = nengo_gui.page.PageSettings()
+
         self.model_context = model_context
 
         self.server = GuiServer(
@@ -46,7 +52,7 @@ class GUI(object):
             self.server.wait_for_shutdown(0.05)
 
 
-class InteractiveGUI(GUI):
+class InteractiveGUI(BaseGUI):
     """Creates a nengo_gui backend server and provides some useful information
     on stdout. Also registers handlers to allow a server shutdown with Ctrl-C.
 
@@ -101,3 +107,26 @@ class InteractiveGUI(GUI):
 
     def _immediate_shutdown(self, signum, frame):
         raise ServerShutdown()
+
+
+class GUI(InteractiveGUI):
+    """Starts an InteractiveGUI.
+
+    Provides an easier instantiation syntax for the use in scripts.
+
+    Parameters
+    ----------
+    filename : str
+        Filename of the calling script (usually you want to use ``__file__``).
+    """
+    def __init__(self, filename):
+        super(GUI, self).__init__(nengo_gui.guibackend.ModelContext(
+            filename=filename))
+
+    def start(self):
+        t = threading.Thread(
+            target=webbrowser.open,
+            args=('http://localhost:%d' % self.server.server_port,))
+        t.start()
+
+        super(GUI, self).start()
