@@ -54,6 +54,14 @@ class Server(swi.SimpleWebInterface):
         data = pkgutil.get_data('nengo_gui', fn)
         return (mimetype, data)
 
+    def swi_local(self, *path):
+        """Handles http://host:port/local/* by using local directory"""
+        fn = os.path.join('local', *path)
+        mimetype, encoding = mimetypes.guess_type(fn)
+        with open(fn, 'rb') as f:
+            data = f.read()
+        return (mimetype, data)
+
     def swi_favicon_ico(self):
         icon = pkgutil.get_data('nengo_gui', 'static/favicon.ico')
         return ('image/ico', icon)
