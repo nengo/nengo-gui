@@ -12,6 +12,7 @@ class Value(Component):
     # the parameters to be stored in the .cfg file
     config_defaults = dict(max_value=1, min_value=-1,
                            show_legend=False, legend_labels=[],
+                           synapse=0.01,
                            **Component.config_defaults)
 
     def __init__(self, obj):
@@ -51,7 +52,9 @@ class Value(Component):
         with page.model:
             self.node = nengo.Node(self.gather_data,
                                    size_in=self.n_lines)
-            self.conn = nengo.Connection(self.output, self.node, synapse=0.01)
+            synapse = self.page.config[self].synapse
+            self.conn = nengo.Connection(self.output, self.node,
+                                         synapse=synapse)
 
     def remove_nengo_objects(self, page):
         # undo the changes made by add_nengo_objects
@@ -78,7 +81,7 @@ class Value(Component):
     def javascript(self):
         # generate the javascript that will create the client-side object
         info = dict(uid=id(self), label=self.label,
-                    n_lines=self.n_lines, synapse=0)
+                    n_lines=self.n_lines)
 
         json = self.javascript_config(info)
         return 'new Nengo.Value(main, sim, %s);' % json
@@ -87,6 +90,13 @@ class Value(Component):
         # generate the list of strings for the .cfg file to save this Component
         # (this is the text that would be passed in to the constructor)
         return [uids[self.obj]]
+
+    def message(self, msg):
+        if msg.startswith('synapse:'):
+            synapse = float(msg[8:])
+            self.page.config[self].synapse = synapse
+            self.page.modified_config()
+            self.page.sim = None
 
     @staticmethod
     def default_output(obj):

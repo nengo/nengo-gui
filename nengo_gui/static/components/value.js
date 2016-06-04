@@ -21,10 +21,10 @@ Nengo.Value = function(parent, sim, args) {
     this.n_lines = args.n_lines || 1;
     this.sim = sim;
     this.display_time = args.display_time;
+    this.synapse = args.synapse;
 
     /** for storing the accumulated data */
-    var synapse = (args.synapse !== null) ? args.synapse : 0.01;
-    this.data_store = new Nengo.DataStore(this.n_lines, this.sim, synapse);
+    this.data_store = new Nengo.DataStore(this.n_lines, this.sim, 0.0);
 
     this.axes2d = new Nengo.TimeAxes(this.div, args);
 
@@ -249,6 +249,7 @@ Nengo.Value.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['Set range...', function() {self.set_range();}]);
+    items.push(['Set synapse...', function() {self.set_synapse_dialog();}]);
 
     if (this.show_legend) {
         items.push(['Hide legend', function() {self.set_show_legend(false);}]);
@@ -386,4 +387,44 @@ Nengo.Value.prototype.update_range = function(min, max) {
 Nengo.Value.prototype.reset = function(event) {
     this.data_store.reset();
     this.schedule_update();
+}
+
+Nengo.Value.prototype.set_synapse_dialog = function() {
+    var self = this;
+    Nengo.modal.title('Set synaptic filter...');
+    Nengo.modal.single_input_body(this.synapse,
+                                  'Filter time constant (in seconds)');
+    Nengo.modal.footer('ok_cancel', function (e) {
+        var new_synapse = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
+        if (new_synapse !== null) {
+            new_synapse = parseFloat(new_synapse);
+            if (new_synapse === self.synapse) {
+                return;
+            }
+            self.synapse = new_synapse;
+            self.ws.send('synapse:' + self.synapse);
+        }
+        $('#OK').attr('data-dismiss', 'modal');
+    });
+    var $form = $('#myModalForm').validator({
+        custom: {
+            my_validator: function($item) {
+                var num = $item.val();
+                if ($.isNumeric(num)) {
+                    num = Number(num);
+                    if (num >= 0) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        },
+    });
+    $('#singleInput').attr('data-error', 'should be a non-negative number');
+    Nengo.modal.show();
 }
