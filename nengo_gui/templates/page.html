@@ -19,6 +19,7 @@
         <link href="static/lib/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
         <link href="static/lib/js/jqueryFileTree/jqueryFileTree.css" rel="stylesheet" type="text/css">
         <link href="static/side_menu.css" rel="stylesheet" type="text/css" />
+        <link href="static/drag_and_drop.css" rel="stylesheet" type="text/css" />
     </head>
     <!-- body needs an ID to fix cursor in Firefox -->
 
@@ -35,6 +36,64 @@
                     <div id="filebrowser"></div>
                 </div>
 
+                <div class="tab-content">
+                    <!-- accordion containers allow use of accordions in particular divs -->
+                    <!-- must be uniquely id'd by number -->
+                    <div class="accordion-container" id="accordion-container1">
+
+                        <div class="accordion-toggle">
+                            <p class="title">Basic</p>
+                            <p class="icon">
+                                <span class="glyphicon glyphicon-chevron-down"></span>
+                            </p>
+                        </div>
+                        <!-- accordion-content holds content for accordion above it -->
+                        <!-- the default class makes it initially hidden, removing it makes it shown -->
+                        <div id="drag_drop_menu" class="accordion-content default">
+                            <div>
+                                <p>Ensemble</p>
+                                <div id="Ensemble" class="ui-widget-content draggable">
+                                    <svg width="150" height="150">
+                                        <g transform="translate(75,75) scale(4)" style="fill:rgb(204,204,204);stroke-width:0.1;stroke:black">
+                                            <circle cx="-12.407" cy="-7.231" r="4.843" />
+                                            <circle cx="-1.064" cy="0.123" r="4.843" />
+                                            <circle cx="3.7619999999999996" cy="12.81" r="4.843" />
+                                            <circle cx="12.454" cy="-0.521" r="4.843" />
+                                            <circle cx="-11.603" cy="8.663" r="4.843" />
+                                            <circle cx="2.644" cy="-12.908" r="4.843" />
+                                        </g>
+                                    </svg>
+                                </div>
+
+                                <p>Node</p>
+                                <div id="Node" class="ui-widget-content draggable">
+                                    <svg width="150" height="150">
+                                        <g transform="translate(75,75) scale(1)" style="fill:rgb(204,204,204);stroke-width:0.5;stroke:black">
+                                            <rect transform="translate(-59, -48)" width="110" height="110" rx="9.595074226286059" ry="9.595074226286059"></rect>
+                                        </g>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-toggle">
+                            <p class="title">Network</p>
+                            <p class="icon">
+                                <span class="glyphicon glyphicon-chevron-down"></span>
+                            </p>
+                        </div>
+                        <div class="accordion-content"></div>
+
+                        <div class="accordion-toggle">
+                            <p class="title">SPA</p>
+                            <p class="icon">
+                                <span class="glyphicon glyphicon-chevron-down"></span>
+                            </p>
+                        </div>
+                        <div class="accordion-content"></div>
+
+                    </div>
+                </div>
                 <div class="tab-content">
                     <div class="accordion-container" id="accordion-container2">
                         <!-- side-menu-item creates a menu item for non accordion content -->
@@ -81,6 +140,9 @@
             <ul id='toolbar_object' class="nav nav-pills">
                 <li id='Open_file_button' role="presentation">
                     <a title='Open file' class='glyphicon glyphicon-folder-open'> </a>
+                </li>
+                <li id='Component_menu' role="presentation">
+                    <a title='Components' class='glyphicon glyphicon-th'> </a>
                 </li>
                 <li id='Config_menu' role="presentation">
                     <a title='Utilities' class='glyphicon glyphicon-wrench'> </a>
@@ -204,6 +266,7 @@
         <script src="static/hotkeys.js"></script>
         <script src="static/ace.js"></script>
         <script src="static/data_to_csv.js"></script>
+        <script src="static/drag_and_drop.js"></script>
     </body>
 
 </html>

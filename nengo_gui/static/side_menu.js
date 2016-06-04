@@ -18,7 +18,7 @@ Nengo.SideMenu = function() {
     // Gathers all the menu tabs from the HTML for the Event Handlers
     self.tabs = $(".tab-content");
 
-    self.top_buttons = ['#Open_file_button', '#Config_menu'];
+    self.top_buttons = ['#Open_file_button', '#Component_menu', '#Config_menu'];
     self.initialize_button_handlers();
 
     //----EVENT HANDLERS----
