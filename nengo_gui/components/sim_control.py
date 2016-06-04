@@ -181,7 +181,7 @@ class SimControl(Component):
         fn = json.dumps(self.page.filename)
         js = self.javascript_config(info)
         return ('sim = new Nengo.SimControl(control, %s);\n'
-                'toolbar = new Nengo.Toolbar(%s); '
+                'toolbar = new Nengo.Toolbar(%s);\n'
                 'Nengo.sidemenu = new Nengo.SideMenu();' % (js, fn))
 
     def message(self, msg):
