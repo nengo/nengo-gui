@@ -18,7 +18,7 @@ Nengo.SideMenu = function() {
     // Gathers all the menu tabs from the HTML for the Event Handlers
     self.tabs = $(".tab-content");
 
-    self.top_buttons = ['#Open_file_button', '#Component_menu', '#Config_menu'];
+    self.top_buttons = ['#Open_file_button', '#Config_menu'];
     self.initialize_button_handlers();
 
     //----EVENT HANDLERS----
@@ -40,9 +40,6 @@ Nengo.SideMenu = function() {
     });
     $('#Minimap_button')[0].addEventListener('click', function() {
         Nengo.netgraph.toggleMiniMap();
-    });
-    $('#Toggle_drag_drop')[0].addEventListener('click', function() {
-        self.toggle_display_tab("#Component_menu");
     });
 
     // Handles Accordions
@@ -82,11 +79,6 @@ Nengo.SideMenu.prototype.initialize_button_handlers = function() {
                 this.top_buttons[x], x, true
             ));
     }
-};
-
-//** Toggle show/hide of a given tab **/
-Nengo.SideMenu.prototype.toggle_display_tab = function(tab_id) {
-    $(tab_id).toggleClass('hidden');
 };
 
 Nengo.SideMenu.prototype.toggle_side_nav = function() {
