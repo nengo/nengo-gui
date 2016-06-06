@@ -1,5 +1,7 @@
 import collections
 
+import nengo
+
 from nengo_gui.components.component import Component
 
 
@@ -11,8 +13,8 @@ class HTMLView(Component):
     def __init__(self, obj):
         super(HTMLView, self).__init__()
         self.obj = obj
-        self.obj_output = obj.output
         self.data = collections.deque()
+        self.html_function = getattr(obj.output, '_nengo_html_function_')
 
     def attach(self, page, config, uid):
         super(HTMLView, self).attach(page, config, uid)
@@ -20,21 +22,22 @@ class HTMLView(Component):
 
     def add_nengo_objects(self, page):
         with page.model:
-            self.obj.output = self.gather_data
+            self.node = nengo.Node(self.gather_data, size_in=self.obj.size_out)
+            self.conn = nengo.Connection(self.obj, self.node, synapse=None)
 
     def remove_nengo_objects(self, page):
-        self.obj.output = self.obj_output
+        page.model.connections.remove(self.conn)
+        page.model.nodes.remove(self.node)
 
-    def gather_data(self, t, *x):
-        value = self.obj_output(t, *x)
-        data = '%g %s' % (t, self.obj_output._nengo_html_)
-        self.data.append(data)
-        return value
+    def gather_data(self, t, x):
+        self.data.append((t, x))
 
     def update_client(self, client):
         while len(self.data) > 0:
-            item = self.data.popleft()
-            client.write_text(item)
+            t, x = self.data.popleft()
+            html = self.html_function(t, x)
+            out = '%g %s' % (t, html)
+            client.write_text(out)
 
     def javascript(self):
         info = dict(uid=id(self), label=self.label)

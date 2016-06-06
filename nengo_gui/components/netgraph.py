@@ -532,7 +532,7 @@ class NetGraph(Component):
                     isinstance(obj.output, OverriddenOutput)
                     and obj.output.base_output is None):
                 info['passthrough'] = True
-            if callable(obj.output) and hasattr(obj.output, '_nengo_html_'):
+            if hasattr(obj.output, '_nengo_html_function_'):
                 info['html'] = True
             info['dimensions'] = int(obj.size_out)
         elif isinstance(obj, nengo.Ensemble):
