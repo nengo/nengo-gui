@@ -15,40 +15,49 @@
 #  shall be performed by the drawing engine associated with 'views'.
 #  (e.g. look at intersectC when the node shape is a circle)
 
-from .utils import (intersectR, getangle, setcurve, setroundcorner,
-    angle_to_x_axis_in_degrees, new_point_at_distance)
+from .utils import (intersectR, getangle, setroundcorner,
+                    angle_to_x_axis_in_degrees, new_point_at_distance)
 
-#------------------------------------------------------------------------------
-class  EdgeViewer(object):
-    def setpath(self,pts):
+# -----------------------------------------------------------------------------
+
+
+class EdgeViewer(object):
+
+    def setpath(self, pts):
         self._pts = pts
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #  basic edge routing with lines : nothing to do for routing
 #  since the layout engine has already provided to list of points through which
 #  the edge shall be drawn. We just compute the position where to adjust the
 #  tail and head.
-def  route_with_lines(e,pts):
-    assert hasattr(e,'view')
-    tail_pos = intersectR(e.v[0].view,topt=pts[1])
-    head_pos = intersectR(e.v[1].view,topt=pts[-2])
-    pts[0]  = tail_pos
-    pts[-1] = head_pos
-    e.view.head_angle = getangle(pts[-2],pts[-1])
 
-#------------------------------------------------------------------------------
+
+def route_with_lines(e, pts):
+    assert hasattr(e, 'view')
+    tail_pos = intersectR(e.v[0].view, topt=pts[1])
+    head_pos = intersectR(e.v[1].view, topt=pts[-2])
+    pts[0] = tail_pos
+    pts[-1] = head_pos
+    e.view.head_angle = getangle(pts[-2], pts[-1])
+
+# -----------------------------------------------------------------------------
 #  enhanced edge routing where 'corners' of the above polyline route are
 #  rounded with a bezier curve.
-def route_with_splines(e,pts):
-    route_with_lines(e,pts)
-    splines = setroundcorner(e,pts)
+
+
+def route_with_splines(e, pts):
+    route_with_lines(e, pts)
+    splines = setroundcorner(e, pts)
     e.view.splines = splines
 
 
 from math import sqrt
 
+
 def _gen_point(p1, p2, new_distance):
-    initial_distance = distance =  sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
+    initial_distance = distance = sqrt(
+        (p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
     if initial_distance < 1e-10:
         return None
 
@@ -89,7 +98,8 @@ def _gen_smoother_middle_points_from_3_points(pts, initial):
 def _round_corners(pts, round_at_distance):
     '''
     Future work: possibly work better when we already have 4 points?
-    maybe: http://stackoverflow.com/questions/1251438/catmull-rom-splines-in-python
+    Maybe try this:
+    http://stackoverflow.com/questions/1251438/catmull-rom-splines-in-python
     '''
 
     if len(pts) > 2:
@@ -105,7 +115,8 @@ def _round_corners(pts, round_at_distance):
 
                 if len(pts) > 3:
                     # i.e.: at least 4 points
-                    if sqrt((p3[0] - p2[0]) ** 2 + (p3[1] - p2[1]) ** 2) < (2 * calc_with_distance):
+                    if sqrt((p3[0] - p2[0]) ** 2 + (p3[1] - p2[1]) ** 2)\
+                            < (2 * calc_with_distance):
                         # prevent from crossing over.
                         new_lst.append(p2)
                         continue
@@ -120,7 +131,7 @@ def _round_corners(pts, round_at_distance):
             calc_with_distance /= 2.
     return pts
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Routing with a custom algorithm to round corners
 # It works by generating new points up to a distance from where an edge is
 # found (and then iteratively refining based on that).
@@ -132,11 +143,13 @@ def _round_corners(pts, round_at_distance):
 # rounding from an edge).
 ROUND_AT_DISTANCE = 40
 
+
 def route_with_rounded_corners(e, pts):
     route_with_lines(e, pts)
 
     try:
         new_pts = _round_corners(pts, round_at_distance=ROUND_AT_DISTANCE)
     except:
-        import traceback;traceback.print_exc()
+        import traceback
+        traceback.print_exc()
     pts[:] = new_pts[:]
