@@ -18,6 +18,7 @@ def set_cloud_value(driver,spa_nets):
         """
         time.sleep(0.6)
         driver.execute_script(prompt_script % name)
+        time.sleep(1.0)
         field = driver.find_element_by_xpath("//*[@id='singleInput']")
         time.sleep(0.6)
         field.send_keys(spa_nets[name])
@@ -112,7 +113,7 @@ with model:
 
         set_cloud_value(driver,{"color":"ORANGE"})
 
-        time.sleep(5)
+        time.sleep(10)
 
         plot_data = driver.execute_script(data_script)
 

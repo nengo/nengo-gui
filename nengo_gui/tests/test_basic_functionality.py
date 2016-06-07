@@ -17,7 +17,9 @@ def test_basic_functionality(driver, test_file):
 		#Test page response by clicking the reset button and applying new code to ace-editor
 
 		tt.reset_page(driver)
+                time.sleep(0.5)
 		tt.update_editor(driver, test_file)
+		tt.mouse_scroll(driver,500)
 		ens_elements = driver.find_elements_by_xpath('//*[@class="ens"]')
 		assert (len(ens_elements) > 0)
 		side_script = '''var right = document.getElementById("rightpane"); \

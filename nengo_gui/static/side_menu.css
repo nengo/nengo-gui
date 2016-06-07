@@ -1,0 +1,128 @@
+
+.sidenav-container {
+    height: calc(100% - 120px);
+    width: 250px;
+    position: fixed;
+    z-index: 9999;
+    top: 34px;
+    left: 0;
+    background-color: #eee;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    transition: 0.5s;
+    border-right: 1px solid #4D4D4D;
+    font-size: 0px;
+    color: #333;
+    font-family: arial;
+    transform: translate(-250px);
+}
+
+.sidenav-container .tab-content{
+  font-size: 15px;
+  float: left;
+  width: 250px;
+  height:100%;
+  top: 0px;
+  margin-right:0px;
+  color:inherit;
+}
+
+.sidenav-container #Menu_content{
+  position: absolute;
+  width: 2000px;
+  margin: 0px;
+  padding: 0px;
+}
+
+.sidenav-container  a{
+    font-size: 15px;
+    color: inherit;
+    display: block;
+    transition: 0.3s
+}
+
+.side-menu-item, .accordion-toggle {
+  cursor: pointer;
+  width: 100%;
+  background: none;
+  height:40px;
+  border-top: solid #999 1px;
+  border-bottom: solid #999 1px;
+  margin-bottom: -1px;
+  color: inherit;
+}
+
+.side-menu-item:hover, .accordion-toggle:hover {
+  background: #666;
+  color: #eee;
+}
+
+.side-menu-item .title, .accordion-toggle .title{
+  padding-left: 8px;
+  padding-top: 8px;
+  float:left;
+  font-size: 14px;
+}
+
+.side-menu-item.indent{
+  background: #ddd;
+  border: 0px;
+  padding-top: 1px;
+}
+
+.side-menu-item.indent:hover{
+  background: #666;
+}
+
+.side-menu-item.indent .title{
+  padding-left: 23px;
+  padding-top: 8px;
+  float:left;
+  font-size: 14px;
+}
+
+
+.side-menu-item .icon , .accordion-toggle .icon {
+  padding-right: 8px;
+  padding-top: 12px;
+  float:right;
+  font-size: 14px;
+}
+.accordion-content {display: none;}
+
+.accordion-content.default {display: block;}
+
+
+#filebrowser {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 0px;
+    border-bottom-right-radius: 4px;
+    color: inherit;
+    padding: 0.2em;
+    background-color: None;
+    z-index: 99999;
+    overflow: auto;
+    cursor: pointer !important;
+    border-top: solid #999 1px;
+}
+
+#filebrowser a {
+    color: inherit;
+}
+
+#filebrowser a:hover {
+    background: #666;
+    color: #eee;
+}
+
+#filebrowser li.examples_dir {
+    background-color: #ddd;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}

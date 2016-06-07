@@ -61,6 +61,14 @@ Nengo.Raster.prototype.on_message = function(event) {
     this.schedule_update();
 }
 
+Nengo.Raster.prototype.set_n_neurons = function(n_neurons) {
+    this.n_neurons = n_neurons;
+    this.axes2d.scale_y.domain([0, n_neurons]);
+    this.axes2d.axis_y.tickValues([0, n_neurons]);
+    this.ws.send('n_neurons:' + n_neurons);
+}
+
+
 /**
  * Redraw the lines and axis due to changed data
  */
@@ -119,3 +127,57 @@ Nengo.Raster.prototype.reset = function(event) {
     this.data_store.reset();
     this.schedule_update();
 }
+
+Nengo.Raster.prototype.generate_menu = function() {
+    var self = this;
+    var items = [];
+    items.push(['Set # neurons...', function() {self.set_neuron_count();}]);
+
+    return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
+};
+
+Nengo.Raster.prototype.set_neuron_count = function() {
+    var count = this.n_neurons;
+    var self = this;
+    Nengo.modal.title('Set number of neurons...');
+    Nengo.modal.single_input_body(count, 'Number of neurons');
+    Nengo.modal.footer('ok_cancel', function(e) {
+        var new_count = $('#singleInput').val();
+        var modal = $('#myModalForm').data('bs.validator');
+        modal.validate();
+        if (modal.hasErrors() || modal.isIncomplete()) {
+            return;
+        }
+        if (new_count !== null) {
+            new_count = parseInt(new_count);
+            self.set_n_neurons(new_count);
+            self.axes2d.fit_ticks(self);
+        }
+        $('#OK').attr('data-dismiss', 'modal');
+    });
+    var $form = $('#myModalForm').validator({
+        custom: {
+            my_validator: function($item) {
+                var num = $item.val();
+                var valid = false;
+                if ($.isNumeric(num)) {
+                    num = Number(num);
+                    if (num >= 0 && Number.isInteger(num)) {
+                        valid = true;
+                    }
+                }
+                return valid;
+            }
+        },
+    });
+
+    $('#singleInput').attr('data-error', 'Input should be a positive integer');
+
+    Nengo.modal.show();
+    $('#OK').on('click', function() {
+        var w = $(self.div).width();
+        var h = $(self.div).height();
+        self.on_resize(w, h);
+    })
+}
+
