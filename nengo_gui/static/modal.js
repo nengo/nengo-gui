@@ -160,6 +160,8 @@ Nengo.Modal.prototype.help_body = function() {
     $body.append('<tr><td>Redo</td>'+
                  '<td align="right">' + ctrl + '-' + shift +
                  '-z, ' + ctrl + '-y</td></tr>');
+    $body.append('<tr><td>Save</td>' +
+                 '<td align="right">' + ctrl + '-s</td></tr>');
     $body.append('<tr><td>Toggle minimap</td>' +
                  '<td align="right">' + ctrl + '-m</td></tr>');
     $body.append('<tr><td>Toggle editor</td>'+

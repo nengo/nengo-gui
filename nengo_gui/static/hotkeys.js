@@ -54,6 +54,11 @@ Nengo.Hotkeys = function () {
                 Nengo.netgraph.notify({ undo: "0" });
                 ev.preventDefault();
             }
+            // save with save-s
+            if (ctrl && key == 's') {
+                Nengo.ace.save_file();
+                ev.preventDefault();
+            }
             // run model with spacebar or with shift-enter
             if ((key == ' ' && !on_editor) || (ev.shiftKey && key == 'enter')) {
                 if (!ev.repeat) {
