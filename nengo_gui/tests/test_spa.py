@@ -106,7 +106,7 @@ with model:
         plot_data = driver.execute_script(data_script)
 
         # Checks that the 'answer' is BLUE
-        assert(len(filter((lambda x: ("BLUE" in x)),result)) > 0)
+        assert any("BLUE" in x for x in result)
 
         # Checks the dimensionality of the spa similarity plot
         assert(len(plot_data) == 2 and len(plot_data[0]) > 1)

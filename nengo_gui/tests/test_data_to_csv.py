@@ -51,7 +51,6 @@ if(data.constructor === Nengo.Value){
 	time.sleep(1)
 
 	result = driver.execute_script("return a()")
-	print result
 	test_data = '''Graph Name,stim,a
 Times,Dimension1,Dimension1
 1,11,12'''

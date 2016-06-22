@@ -59,7 +59,7 @@ def test_tutorial_basic(driver, test_file):
 
 		assert(compiled)
 
-	except Exception, e:
+	except Exception as e:
 		#Travis Only: On fail takes screenshot and uploads it to imgur
 
 
