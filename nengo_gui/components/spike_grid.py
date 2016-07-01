@@ -7,7 +7,7 @@ from nengo_gui.components.component import Component
 
 class SpikeGrid(Component):
     """Represents an ensemble of neurons as squares in a grid.
-    
+
     The color of the squares corresponds to the neuron spiking.
     """
 
@@ -48,7 +48,7 @@ class SpikeGrid(Component):
             x = x[:self.n_neurons]
         y = np.zeros(int(self.n_pixels), dtype=np.uint8)
         if self.max_value > 0:
-            y[:x.size] = x * 255 / self.max_value
+            y[:x.size] = np.clip(20 * x * 255 / self.max_value, 0, 255)
         data = self.struct.pack(t, *y)
         self.data.append(data)
 

@@ -451,7 +451,10 @@ class Page(object):
             # build the simulation
             try:
                 with exec_env:
-                    self.sim = backend.Simulator(self.model)
+                    dt = 0.001
+                    if self.backend == 'nengo_brainstorm_pp':
+                        dt = 1e-4
+                    self.sim = backend.Simulator(self.model, dt=dt)
             except:
                 line = nengo_gui.exec_env.determine_line_number()
                 self.error = dict(trace=traceback.format_exc(), line=line)
