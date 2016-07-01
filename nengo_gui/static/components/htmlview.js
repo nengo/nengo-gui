@@ -22,6 +22,8 @@ Nengo.HTMLView = function(parent, sim, args) {
     this.pdiv.classList.add('htmlview');
     this.div.appendChild(this.pdiv);
 
+    this.pdiv.ws = this.ws;
+
     /** for storing the accumulated data */
     this.data_store = new Nengo.DataStore(1, this.sim, 0);
 
