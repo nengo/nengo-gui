@@ -152,7 +152,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         r = [b'<ul class="jqueryFileTree" style="display: none;">']
         d = unquote(self.db['dir'])
         ex_tag = '//examples//'
-        ex_html = b'<em>built-in examples</em>'
+        ex_html = b'built-in examples'
         if d == '.':
             r.append(b'<li class="directory collapsed examples_dir">'
                      b'<a href="#" rel="' + ex_tag.encode('utf-8') + b'">' +
