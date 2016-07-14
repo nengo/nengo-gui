@@ -66,3 +66,5 @@ var data_to_csv = function(data_set){
   return csv_string;
 
 }
+
+module.exports = data_to_csv;

@@ -17,7 +17,7 @@ Nengo.disable_editor = function() {
 }
 
 Nengo.Ace = function (uid, args) {
-    this.AceRange = ace.require('ace/range').Range;
+    this.AceRange = ace.Range;
     if (uid[0] === '<') {
         console.log("invalid uid for Ace: " + uid);
     }

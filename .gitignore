@@ -62,3 +62,6 @@ target/
 # Vagrant
 .vagrant
 Vagrantfile
+
+# Node JS stuff
+node_modules/
