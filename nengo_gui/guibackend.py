@@ -9,7 +9,7 @@ import mimetypes
 import os
 import os.path
 import pkgutil
-from pkg_resources import iter_entry_points
+from pkg_resources import iter_entry_points, safe_name
 import posixpath
 try:
     from urllib.parse import unquote
@@ -154,8 +154,8 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
     def serve_plugin(self):
         """Routes request to plugin."""
         res = posixpath.relpath(self.resource, '/plugin')
-        plugin_name, path = res.split('/', 1)
-        plugin = self.server.plugins[plugin_name]
+        dist_name, plugin_name, path = res.split('/', 2)
+        plugin = self.server.plugins[safe_name(dist_name) + '/' + plugin_name]
         return plugin.serve('/' + path)
 
     @RequireAuthentication('/login')
@@ -388,7 +388,8 @@ class GuiServer(server.ManagedThreadHttpServer):
 
         # load plugins
         self.plugins = {
-            ep.name: ep.load()(ep.name, ep.module_name)
+            ep.dist.project_name + '/' + ep.name:
+            ep.load()(ep.name, ep.module_name)
             for ep in iter_entry_points(group='nengo_gui.plugins')
         }
         logger.info('Plugins loaded: %s', self.plugins.keys())
