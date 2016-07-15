@@ -261,7 +261,7 @@ class HttpWsRequestHandler(server.BaseHTTPRequestHandler):
         else:
             raise BadRequest()
 
-    def get_expected_origins(self):
+    def is_expected_origin(self, origin):
         raise NotImplementedError()
 
     def upgrade_to_ws(self):
@@ -271,11 +271,9 @@ Connection: Upgrade
 Sec-WebSocket-Accept: {sec}
 
 '''
-        valid_srv_addrs = self.get_expected_origins()
-
         try:
             origin = urlparse(self.headers['Origin'])
-            assert origin.netloc.lower() in valid_srv_addrs
+            assert self.is_expected_origin(origin.netloc.lower())
         except KeyError:
             raise Forbidden()
         except AssertionError:
@@ -283,7 +281,7 @@ Sec-WebSocket-Accept: {sec}
 
         try:
             host = self.headers['Host'].lower()
-            assert host in valid_srv_addrs
+            assert self.is_expected_origin(host)
             key = self.headers['Sec-WebSocket-Key']
             assert len(base64.b64decode(key)) == 16
         except KeyError:

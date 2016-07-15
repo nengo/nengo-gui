@@ -102,17 +102,39 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         '/favicon.ico': 'serve_favicon',
     }
 
-    def get_expected_origins(self):
-        session = self.get_session()
+    def _is_loopback(self, host):
+        if host == 'localhost':
+            return True
+        if host.startswith('127.0.0.'):
+            _, least_significant = host.rsplit('.', 1)
+            try:
+                return int(least_significant) < 256
+            except ValueError:
+                return False
+        return False
+
+    def _is_expected_port(self, port):
+        return port == self.server.server_port
+
+    def _is_expected_host(self, host):
         has_password = self.server.settings.password_hash is not None
-        origins = []
-        if not has_password:
-            origins.append('localhost:' + str(self.server.server_port))
-            if self.server.server_port in [80, 443]:
-                origins.append('localhost')
-        elif session.login_host is not None:
-            return [session.login_host]
-        return origins
+        if has_password:
+            session = self.get_session()
+            return host == session.login_host
+        else:
+            return self._is_loopback(host)
+
+    def is_expected_origin(self, origin):
+        if ':' in origin:
+            host, port = origin.split(':', 1)
+            try:
+                port = int(port)
+            except ValueError:
+                return False
+        else:
+            host, port = origin, self.server.server_port
+
+        return self._is_expected_host(host) and self._is_expected_port(port)
 
     def login_page(self):
         session = self.get_session()
