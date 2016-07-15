@@ -133,15 +133,15 @@ module.exports = Nengo;  // Have to do this first due to circular dependency
 require('./favicon.ico');
 require('bootstrap/dist/css/bootstrap.min.css');
 require('jqueryfiletree/dist/jQueryFileTree.min.css');
-
-require('./ace.css');
 require('brace');
 require('brace/mode/python');
-require('imports?Nengo=./nengo,ace=brace,interact=interact.js!./ace');
+
 require('imports?Nengo=./nengo!./config');
 // Exposing data_to_csv for testing
 require('expose?data_to_csv!imports?Nengo=./nengo!./data_to_csv');
 require('imports?Nengo=./nengo!./datastore');
+require('./editor.css');
+require('imports?Nengo=./nengo,ace=brace,interact=interact.js!./editor');
 require('imports?Nengo=./nengo!./hotkeys');
 require('./menu.css');
 require('imports?Nengo=./nengo!./menu');
