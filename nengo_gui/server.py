@@ -265,12 +265,11 @@ class HttpWsRequestHandler(server.BaseHTTPRequestHandler):
         raise NotImplementedError()
 
     def upgrade_to_ws(self):
-        response = '''HTTP/1.1 101 Switching Protocols\r\n\
-Upgrade: websocket\r\n\
-Connection: Upgrade\r\n\
-Sec-WebSocket-Accept: {sec}\r\n\
-\r\n\
-'''
+        response = (
+            'HTTP/1.1 101 Switching Protocols\r\n'
+            'Upgrade: websocket\r\n'
+            'Connection: Upgrade\r\n'
+            'Sec-WebSocket-Accept: {sec}\r\n\r\n')
         valid_srv_addrs = self.get_expected_origins()
 
         try:
