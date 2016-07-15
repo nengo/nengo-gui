@@ -115,6 +115,7 @@ class ManagedThreadHttpServer(socketserver.ThreadingMixIn, server.HTTPServer):
     to allow a proper shutdown."""
 
     daemon_threads = True  # this ensures all spawned threads exit
+    address_family = socket.AF_INET6
 
     def __init__(self, *args, **kwargs):
         server.HTTPServer.__init__(self, *args, **kwargs)

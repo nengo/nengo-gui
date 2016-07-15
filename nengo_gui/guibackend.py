@@ -9,12 +9,13 @@ import mimetypes
 import os
 import os.path
 import pkgutil
+import re
+import ssl
+import time
 try:
     from urllib.parse import unquote
 except ImportError:  # Python 2.7
     from urllib import unquote
-import ssl
-import time
 
 import nengo_gui
 import nengo_gui.exec_env
@@ -105,13 +106,21 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
     def _is_loopback(self, host):
         if host == 'localhost':
             return True
-        if host.startswith('127.0.0.'):
+        elif host.startswith('127.0.0.'):
             _, least_significant = host.rsplit('.', 1)
             try:
                 return int(least_significant) < 256
             except ValueError:
                 return False
-        return False
+        elif host[0] == '[' and host[-1] == ']':  # IPv6
+            blocks = host[1:-1].split(':')
+            if len(blocks) < 8 and not '' in blocks:
+                return False
+            return (
+                re.match('0{0,3}1', blocks[-1]) and
+                all(re.match('0{0,4}', b) for b in blocks[:-1]))
+        else:
+            return False
 
     def _is_expected_port(self, port):
         return port == self.server.server_port
@@ -126,7 +135,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
 
     def is_expected_origin(self, origin):
         if ':' in origin:
-            host, port = origin.split(':', 1)
+            host, port = origin.rsplit(':', 1)
             try:
                 port = int(port)
             except ValueError:
