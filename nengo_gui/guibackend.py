@@ -9,6 +9,8 @@ import mimetypes
 import os
 import os.path
 import pkgutil
+from pkg_resources import iter_entry_points
+import posixpath
 try:
     from urllib.parse import unquote
 except ImportError:  # Python 2.7
@@ -98,6 +100,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         '/': 'serve_main',
         '/login': 'login_page',
         '/static': 'serve_static',
+        '/plugin': 'serve_plugin',
         '/browse': 'browse',
         '/favicon.ico': 'serve_favicon',
     }
@@ -146,6 +149,14 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         mimetype, encoding = mimetypes.guess_type(fn)
         data = pkgutil.get_data('nengo_gui', fn)
         return server.HttpResponse(data, mimetype)
+
+    @RequireAuthentication('/login')
+    def serve_plugin(self):
+        """Routes request to plugin."""
+        res = posixpath.relpath(self.resource, '/plugin')
+        plugin_name, path = res.split('/', 1)
+        plugin = self.server.plugins[plugin_name]
+        return plugin.serve('/' + path)
 
     @RequireAuthentication('/login')
     def browse(self):
@@ -370,6 +381,13 @@ class GuiServer(server.ManagedThreadHttpServer):
                 keyfile=self.settings.ssl_key, server_side=True)
 
         self.sessions = SessionManager(self.settings.session_duration)
+
+        # load plugins
+        self.plugins = {
+            ep.name: ep.load()(ep.name, ep.module_name)
+            for ep in iter_entry_points(group='nengo_gui.plugins')
+        }
+        logger.info('Plugins loaded: %s', self.plugins.keys())
 
         # the list of running Pages
         self.pages = []
