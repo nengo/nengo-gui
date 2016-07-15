@@ -1,5 +1,8 @@
 """Respond to an action from the user on the NetGraph"""
 
+import importlib
+import pkg_resources
+
 from nengo.utils.compat import iteritems
 
 import nengo_gui.components
@@ -135,7 +138,12 @@ class CreateGraph(Action):
         self.type = type
         self.x, self.y = x, y
         self.width, self.height = width, height
-        cls = getattr(nengo_gui.components, self.type)
+        if '/' in self.type:
+            dist, name = self.type.split('/', 1)
+            cls = pkg_resources.load_entry_point(
+                dist=dist, group='nengo_gui.components', name=name)
+        else:
+            cls = getattr(nengo_gui.components, self.type)
         self.component = cls(self.obj, **kwargs)
 
         # If only one instance of the component is allowed, and another had to be
