@@ -266,12 +266,12 @@ class HttpWsRequestHandler(server.BaseHTTPRequestHandler):
         raise NotImplementedError()
 
     def upgrade_to_ws(self):
-        response = '''HTTP/1.1 101 Switching Protocols
-Upgrade: websocket
-Connection: Upgrade
-Sec-WebSocket-Accept: {sec}
+        response = (
+            'HTTP/1.1 101 Switching Protocols\r\n' +
+            'Upgrade: websocket\r\n' +
+            'Connection: Upgrade\r\n' +
+            'Sec-WebSocket-Accept: {sec}\r\n\r\n')
 
-'''
         try:
             origin = urlparse(self.headers['Origin'])
             assert self.is_expected_origin(origin.netloc.lower())
