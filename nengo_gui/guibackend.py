@@ -151,18 +151,19 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
     def browse(self):
         r = [b'<ul class="jqueryFileTree" style="display: none;">']
         d = unquote(self.db['dir'])
+        root = self.db['root'] if 'root' in self.db else '.'
         ex_tag = '//examples//'
         ex_html = b'built-in examples'
-        if d == '.':
+        if d == root:
             r.append(b'<li class="directory collapsed examples_dir">'
                      b'<a href="#" rel="' + ex_tag.encode('utf-8') + b'">' +
                      ex_html + b'</a></li>')
-            path = '.'
+            path = root
         elif d.startswith(ex_tag):
             path = os.path.join(nengo_gui.__path__[0],
                                 'examples', d[len(ex_tag):])
         else:
-            path = os.path.join('.', d)
+            path = os.path.join(root, d)
 
         for f in sorted(os.listdir(path)):
             ff = os.path.join(path, f).encode('utf-8')
