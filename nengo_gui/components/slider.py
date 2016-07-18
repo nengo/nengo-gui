@@ -114,7 +114,7 @@ class Slider(Component):
                     label=self.label,
                     start_value=[float(x) for x in self.start_value])
         json = self.javascript_config(info)
-        return 'new Nengo.Slider(main, sim, %s);' % json
+        return 'new Slider(nengo.main, nengo.viewport, nengo.sim, %s);' % json
 
     def update_client(self, client):
         while len(self.to_client) > 0:

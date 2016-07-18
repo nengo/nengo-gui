@@ -1,14 +1,15 @@
 /**
- * Initializes hotkeys
- *
- * Nengo.Hotkeys is called when this file is loaded
+ * Manages hotkeys.
  *
  * @constructor
  */
-Nengo.Hotkeys = function() {
+var Hotkeys = function(editor, modal) {
     var self = this;
 
     this.active = true;
+    this.editor = editor;
+    this.netgraph = this.editor.netgraph;
+    this.modal = modal;
 
     document.addEventListener('keydown', function(ev) {
         if (self.active) {
@@ -37,27 +38,27 @@ Nengo.Hotkeys = function() {
 
             // Toggle editor with ctrl-e
             if (ctrl && key == 'e') {
-                Nengo.ace.toggle_shown();
+                self.editor.toggle_shown();
                 ev.preventDefault();
             }
             // Undo with ctrl-z
             if (ctrl && key == 'z') {
-                Nengo.netgraph.notify({undo: "1"});
+                self.netgraph.notify({undo: "1"});
                 ev.preventDefault();
             }
             // Redo with shift-ctrl-z
             if (ctrl && ev.shiftKey && key == 'z') {
-                Nengo.netgraph.notify({undo: "0"});
+                self.netgraph.notify({undo: "0"});
                 ev.preventDefault();
             }
             // Redo with ctrl-y
             if (ctrl && key == 'y') {
-                Nengo.netgraph.notify({undo: "0"});
+                self.netgraph.notify({undo: "0"});
                 ev.preventDefault();
             }
             // Save with save-s
             if (ctrl && key == 's') {
-                Nengo.ace.save_file();
+                self.editor.save_file();
                 ev.preventDefault();
             }
             // Run model with spacebar or with shift-enter
@@ -75,7 +76,7 @@ Nengo.Hotkeys = function() {
             }
             // Bring up minimap with ctrl-m
             if (ctrl && key == 'm') {
-                Nengo.netgraph.toggleMiniMap();
+                self.netgraph.toggleMiniMap();
                 ev.preventDefault();
             }
             // Disable backspace navigation
@@ -84,24 +85,24 @@ Nengo.Hotkeys = function() {
             }
             // Toggle auto-updating with TODO: pick a good shortcut
             if (ctrl && ev.shiftKey && key == '1') {
-                Nengo.ace.auto_update = !Nengo.ace.auto_update;
-                Nengo.ace.update_trigger = Nengo.ace.auto_update;
+                self.editor.auto_update = !self.editor.auto_update;
+                self.editor.update_trigger = self.editor.auto_update;
                 ev.preventDefault();
             }
             // Trigger a single update with TODO: pick a good shortcut
             if (ctrl && !ev.shiftKey && key == '1') {
-                Nengo.ace.update_trigger = true;
+                self.editor.update_trigger = true;
                 ev.preventDefault();
             }
         }
     });
 };
 
-Nengo.Hotkeys.prototype.callMenu = function() {
-    Nengo.modal.title("Hotkeys list");
-    Nengo.modal.footer('close');
-    Nengo.modal.help_body();
-    Nengo.modal.show();
+Hotkeys.prototype.callMenu = function() {
+    this.modal.title("Hotkeys list");
+    this.modal.footer('close');
+    this.modal.help_body();
+    this.modal.show();
 };
 
 /**
@@ -110,9 +111,9 @@ Nengo.Hotkeys.prototype.callMenu = function() {
  * set_active is provided with a boolean argument, which will either
  * turn the hotkeys on or off.
  */
-Nengo.Hotkeys.prototype.set_active = function(bool) {
+Hotkeys.prototype.set_active = function(bool) {
     console.assert(typeof(bool) == 'boolean');
     this.active = bool;
 };
 
-Nengo.hotkeys = new Nengo.Hotkeys();
+module.exports = Hotkeys;

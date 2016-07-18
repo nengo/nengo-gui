@@ -1,4 +1,4 @@
-Nengo.Config = function(parent, args) {
+var Config = function() {
     var self = this;
 
     define_option = function(key, default_val) {
@@ -28,7 +28,7 @@ Nengo.Config = function(parent, args) {
     define_option("font_size", 100);
     define_option("scriptdir", ".");
 
-    // Ace editor options
+    // Editor options
     define_option("hide_editor", false);
     define_option("editor_width", 580);
     define_option("editor_font_size", 12);
@@ -36,7 +36,7 @@ Nengo.Config = function(parent, args) {
     define_option("console_height", 100);
 };
 
-Nengo.Config.prototype.restore_defaults = function() {
+Config.prototype.restore_defaults = function() {
     for (var option in this) {
         if (this.hasOwnProperty(option)) {
             localStorage.removeItem("ng." + option);
@@ -44,4 +44,4 @@ Nengo.Config.prototype.restore_defaults = function() {
     }
 };
 
-Nengo.config = new Nengo.Config();
+module.exports = Config;

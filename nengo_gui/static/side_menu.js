@@ -5,9 +5,15 @@
  * upon page load.
  */
 
-Nengo.SideMenu = function() {
+require('./side_menu.css');
+
+var SideMenu = function(sim) {
     var self = this;
     var file_browser_open = false;
+    self.sim = sim;
+    self.modal = self.sim.modal;
+    self.netgraph = self.modal.netgraph;
+    self.config = self.netgraph.config;
     // Menu initially closed
     self.menu_open = false;
 
@@ -38,7 +44,7 @@ Nengo.SideMenu = function() {
         self.csv_modal();
     });
     $('#Minimap_button')[0].addEventListener('click', function() {
-        Nengo.netgraph.toggleMiniMap();
+        self.netgraph.toggleMiniMap();
     });
 
     // Handles Accordions
@@ -63,7 +69,7 @@ Nengo.SideMenu = function() {
     self.on_resize();
 };
 
-Nengo.SideMenu.prototype.on_resize = function() {
+SideMenu.prototype.on_resize = function() {
     var h = $('.sidenav-container').height();
     $('#filebrowser').height(h);
 };
@@ -71,7 +77,7 @@ Nengo.SideMenu.prototype.on_resize = function() {
 /**
  * Finds all menu tabs and creates handlers.
  */
-Nengo.SideMenu.prototype.initialize_button_handlers = function() {
+SideMenu.prototype.initialize_button_handlers = function() {
     // Handles Menu tab switching
     for (var x = 0; x < this.top_buttons.length; x++) {
         $(this.top_buttons[x]).click(
@@ -81,7 +87,7 @@ Nengo.SideMenu.prototype.initialize_button_handlers = function() {
     }
 };
 
-Nengo.SideMenu.prototype.toggle_side_nav = function() {
+SideMenu.prototype.toggle_side_nav = function() {
     var self = this;
     var element = document.getElementsByClassName("sidenav-container")[0];
     var trans_val = "";
@@ -97,13 +103,13 @@ Nengo.SideMenu.prototype.toggle_side_nav = function() {
     element.style.transform = "translate(" + trans_val + "px)";
 };
 
-Nengo.SideMenu.prototype.show_side_nav = function() {
+SideMenu.prototype.show_side_nav = function() {
     if (!this.menu_open) {
         this.toggle_side_nav();
     }
 };
 
-Nengo.SideMenu.prototype.hide_side_nav = function() {
+SideMenu.prototype.hide_side_nav = function() {
     if (this.menu_open) {
         this.toggle_side_nav();
     }
@@ -112,8 +118,7 @@ Nengo.SideMenu.prototype.hide_side_nav = function() {
 /**
  * Determines which tab should be in view when clicked.
  */
-Nengo.SideMenu.prototype.menu_tab_click = function(
-        it, pos_num, close_if_selected) {
+SideMenu.prototype.menu_tab_click = function(it, pos_num, close_if_selected) {
     var self = this;
     var trans_func = function() {
         if ($(it).hasClass('deactivated')) {
@@ -137,7 +142,7 @@ Nengo.SideMenu.prototype.menu_tab_click = function(
 /**
  * Deselects all menu tabs.
  */
-Nengo.SideMenu.prototype.focus_reset = function() {
+SideMenu.prototype.focus_reset = function() {
     for (var i in this.top_buttons) {
         $(this.top_buttons[i]).removeClass("selected");
     }
@@ -146,13 +151,13 @@ Nengo.SideMenu.prototype.focus_reset = function() {
 /**
  * This lets you browse the files available on the server.
  */
-Nengo.SideMenu.prototype.file_browser = function() {
-    sim.ws.send('browse');
+SideMenu.prototype.file_browser = function() {
+    this.sim.ws.send('browse');
 
     fb = $('#filebrowser');
     fb.fileTree({
-            root: Nengo.config.scriptdir,
-            script: '/browse?root=' + Nengo.config.scriptdir
+            root: this.config.scriptdir,
+            script: '/browse?root=' + this.config.scriptdir
         },
         function(file) {
             window.location.assign('/?filename=' + file);
@@ -164,19 +169,21 @@ Nengo.SideMenu.prototype.file_browser = function() {
 /**
  * Export the layout to the SVG in Downloads folder.
  */
-Nengo.SideMenu.prototype.pdf_modal = function() {
-    Nengo.modal.title("Export the layout to SVG");
-    Nengo.modal.text_body("Do you want to save the file?", "info");
-    Nengo.modal.footer('confirm_savepdf');
-    Nengo.modal.show();
+SideMenu.prototype.pdf_modal = function() {
+    this.modal.title("Export the layout to SVG");
+    this.modal.text_body("Do you want to save the file?", "info");
+    this.modal.footer('confirm_savepdf');
+    this.modal.show();
 };
 
 /**
  * Export the graph data to the CSV in Downloads folder.
  */
-Nengo.SideMenu.prototype.csv_modal = function() {
-    Nengo.modal.title("Export the graph data to CSV");
-    Nengo.modal.text_body("Do you want to save the file?", "info");
-    Nengo.modal.footer('confirm_savecsv');
-    Nengo.modal.show();
+SideMenu.prototype.csv_modal = function() {
+    this.modal.title("Export the graph data to CSV");
+    this.modal.text_body("Do you want to save the file?", "info");
+    this.modal.footer('confirm_savecsv');
+    this.modal.show();
 };
+
+module.exports = SideMenu;

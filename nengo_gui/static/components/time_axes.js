@@ -6,11 +6,13 @@
  *
  * @constructor
  * @param {DOMElement} parent - the element to add this component to
- * @param {dict} args - A set of constructor arguments (see Nengo.Axes2D)
+ * @param {dict} args - A set of constructor arguments (see Axes2D)
  */
 
-Nengo.TimeAxes = function(parent, args) {
-    Nengo.Axes2D.call(this, parent, args);
+var Axes2D = require('./2d_axes');
+
+var TimeAxes = function(parent, args) {
+    Axes2D.call(this, parent, args);
     var self = this;
     this.display_time = args.display_time;
 
@@ -29,18 +31,18 @@ Nengo.TimeAxes = function(parent, args) {
     }
 };
 
-Nengo.TimeAxes.prototype = Object.create(Nengo.Axes2D.prototype);
-Nengo.TimeAxes.prototype.constructor = Nengo.TimeAxes;
+TimeAxes.prototype = Object.create(Axes2D.prototype);
+TimeAxes.prototype.constructor = TimeAxes;
 
-Nengo.TimeAxes.prototype.set_time_range = function(start, end) {
+TimeAxes.prototype.set_time_range = function(start, end) {
     this.scale_x.domain([start, end]);
     this.axis_time_start.textContent = start.toFixed(3);
     this.axis_time_end.textContent = end.toFixed(3);
     this.axis_x_g.call(this.axis_x);
 };
 
-Nengo.TimeAxes.prototype.on_resize = function(width, height) {
-    Nengo.Axes2D.prototype.on_resize.call(this, width, height);
+TimeAxes.prototype.on_resize = function(width, height) {
+    Axes2D.prototype.on_resize.call(this, width, height);
 
     scale = parseFloat($('#main').css('font-size'));
     var suppression_width = 6 * scale;
@@ -57,3 +59,5 @@ Nengo.TimeAxes.prototype.on_resize = function(width, height) {
     this.axis_time_end.setAttribute('y', this.ax_bottom + text_offset);
     this.axis_time_end.setAttribute('x', this.ax_right - text_offset);
 };
+
+module.exports = TimeAxes;

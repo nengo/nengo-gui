@@ -10,7 +10,11 @@
  * handle that is needed.
  */
 
-Nengo.SliderControl = function(min, max) {
+var d3 = require('d3');
+var interact = require('interact.js');
+var utils = require('../utils');
+
+var SliderControl = function(min, max) {
     var self = this;
 
     this.min = min;
@@ -86,18 +90,18 @@ Nengo.SliderControl = function(min, max) {
     this.listeners = {};
 };
 
-Nengo.SliderControl.prototype.on = function(type, fn) {
+SliderControl.prototype.on = function(type, fn) {
     this.listeners[type] = fn;
     return this;
 };
 
-Nengo.SliderControl.prototype.dispatch = function(type, ev) {
+SliderControl.prototype.dispatch = function(type, ev) {
     if (type in this.listeners) {
         this.listeners[type].call(this, ev);
     }
 };
 
-Nengo.SliderControl.prototype.set_range = function(min, max) {
+SliderControl.prototype.set_range = function(min, max) {
     this.min = min;
     this.max = max;
     this.scale.domain([max, min]);
@@ -105,7 +109,7 @@ Nengo.SliderControl.prototype.set_range = function(min, max) {
     this.on_resize();
 };
 
-Nengo.SliderControl.prototype.display_value = function(value) {
+SliderControl.prototype.display_value = function(value) {
     if (value < this.min) {
         value = this.min;
     }
@@ -119,13 +123,13 @@ Nengo.SliderControl.prototype.display_value = function(value) {
     this.update_value_text(value);
 };
 
-Nengo.SliderControl.prototype.set_value = function(value) {
+SliderControl.prototype.set_value = function(value) {
     var old_value = this.value;
     this.display_value(value);
     this.dispatch('change', {'target': this, 'value': this.value});
 };
 
-Nengo.SliderControl.prototype.activate_type_mode = function() {
+SliderControl.prototype.activate_type_mode = function() {
     if (this.type_mode) {
         return;
     }
@@ -146,7 +150,7 @@ Nengo.SliderControl.prototype.activate_type_mode = function() {
     elem.style.textAlign = 'center';
     elem.style.backgroundColor = 'transparent';
     $(elem).on('input', function(event) {
-        if (Nengo.is_num(elem.value)) {
+        if (utils.is_num(elem.value)) {
             self.handle.style.backgroundColor = '';
         } else {
             self.handle.style.backgroundColor = 'salmon';
@@ -156,7 +160,7 @@ Nengo.SliderControl.prototype.activate_type_mode = function() {
     });
 };
 
-Nengo.SliderControl.prototype.deactivate_type_mode = function(event) {
+SliderControl.prototype.deactivate_type_mode = function(event) {
     if (!this.type_mode) {
         return;
     }
@@ -170,7 +174,7 @@ Nengo.SliderControl.prototype.deactivate_type_mode = function(event) {
     this.handle.innerHTML = this.format_value(this.value);
 };
 
-Nengo.SliderControl.prototype.handle_keypress = function(event) {
+SliderControl.prototype.handle_keypress = function(event) {
     if (!this.type_mode) {
         return;
     }
@@ -181,7 +185,7 @@ Nengo.SliderControl.prototype.handle_keypress = function(event) {
 
     if (key == enter_keycode) {
         var input = this.handle.querySelector('#value_in_field').value;
-        if (Nengo.is_num(input)) {
+        if (utils.is_num(input)) {
             this.deactivate_type_mode();
             this.set_value(parseFloat(input));
         }
@@ -190,23 +194,25 @@ Nengo.SliderControl.prototype.handle_keypress = function(event) {
     }
 };
 
-Nengo.SliderControl.prototype.update_handle_pos = function(value) {
+SliderControl.prototype.update_handle_pos = function(value) {
     this.handle.style.top = this.scale(value) + this.border_width;
 };
 
-Nengo.SliderControl.prototype.get_handle_pos = function() {
+SliderControl.prototype.get_handle_pos = function() {
     return parseFloat(this.handle.style.top) - this.border_width;
 };
 
-Nengo.SliderControl.prototype.update_value_text = function(value) {
+SliderControl.prototype.update_value_text = function(value) {
     this.handle.innerHTML = this.format_value(value);
 };
 
-Nengo.SliderControl.prototype.format_value = function(value) {
+SliderControl.prototype.format_value = function(value) {
     return value.toFixed(2);
 };
 
-Nengo.SliderControl.prototype.on_resize = function() {
+SliderControl.prototype.on_resize = function() {
     this.scale.range([0, this.guideline.clientHeight]);
     this.update_handle_pos(this.value);
 };
+
+module.exports = SliderControl;

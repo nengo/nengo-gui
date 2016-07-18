@@ -3,16 +3,21 @@
  *
  * @constructor
  * @param {DOMElement} parent - the element to add this component to
- * @param {Nengo.SimControl} sim - the simulation controller
- * @param {dict} args - A set of constructor arguments (see Nengo.Component)
+ * @param {SimControl} sim - the simulation controller
+ * @param {dict} args - A set of constructor arguments (see Component)
  * @param {int} args.n_lines - number of decoded values
  * @param {float} args.miny - minimum value on y-axis
  * @param {float} args.maxy - maximum value on y-axis
  */
-Nengo.Image = function(parent, sim, args) {
+
+var d3 = require('d3');
+var Component = require('./component').Component;
+var DataStore = require('../datastore').DataStore;
+
+var Image = function(parent, viewport, sim, args) {
     var self = this;
 
-    Nengo.Component.call(self, parent, args);
+    Component.call(self, parent, viewport, args);
     self.sim = sim;
     self.display_time = args.display_time;
     self.pixels_x = args.pixels_x;
@@ -20,7 +25,7 @@ Nengo.Image = function(parent, sim, args) {
     self.n_pixels = self.pixels_x * self.pixels_y;
 
     // For storing the accumulated data
-    self.data_store = new Nengo.DataStore(self.n_pixels, self.sim, 0);
+    self.data_store = new DataStore(self.n_pixels, self.sim, 0);
 
     // Draw the plot as an SVG
     self.svg = d3.select(self.div).append('svg')
@@ -54,13 +59,13 @@ Nengo.Image = function(parent, sim, args) {
 
 };
 
-Nengo.Image.prototype = Object.create(Nengo.Component.prototype);
-Nengo.Image.prototype.constructor = Nengo.Image;
+Image.prototype = Object.create(Component.prototype);
+Image.prototype.constructor = Image;
 
 /**
  * Receive new line data from the server
  */
-Nengo.Image.prototype.on_message = function(event) {
+Image.prototype.on_message = function(event) {
     var data = new Uint8Array(event.data);
     var msg_size = this.n_pixels + 4;
 
@@ -76,7 +81,7 @@ Nengo.Image.prototype.on_message = function(event) {
 /**
  * Redraw the lines and axis due to changed data
  */
-Nengo.Image.prototype.update = function() {
+Image.prototype.update = function() {
     var self = this;
 
     // Let the data store clear out old values
@@ -100,7 +105,7 @@ Nengo.Image.prototype.update = function() {
 /**
  * Adjust the graph layout due to changed size
  */
-Nengo.Image.prototype.on_resize = function(width, height) {
+Image.prototype.on_resize = function(width, height) {
     var self = this;
     if (width < self.minWidth) {
         width = self.minWidth;
@@ -122,3 +127,5 @@ Nengo.Image.prototype.on_resize = function(width, height) {
     self.div.style.width = width;
     self.div.style.height = height;
 };
+
+module.exports = Image;

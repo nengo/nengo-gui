@@ -3,29 +3,36 @@
  *
  * @constructor
  * @param {DOMElement} parent - the exylement to add this component to
- * @param {Nengo.SimControl} sim - the simulation controller
- * @param {dict} args - A set of constructor arguments (see Nengo.Component)
+ * @param {SimControl} sim - the simulation controller
+ * @param {dict} args - A set of constructor arguments (see Component)
  * @param {int} args.n_lines - number of decoded values
  * @param {float} args.min_value - minimum value on x-axis and y-axis
  * @param {float} args.max_value - maximum value on x-axis and y-axis
- * @param {Nengo.SimControl} args.sim - the simulation controller
+ * @param {SimControl} args.sim - the simulation controller
  *
  * XYValue constructor is called by python server when a user requests a plot
  * or when the config file is making graphs. Server request is handled in
  * netgraph.js {.on_message} function.
  */
 
-Nengo.XYValue = function(parent, sim, args) {
-    Nengo.Component.call(this, parent, args);
+require('./xyvalue.css');
+var d3 = require('d3');
+var Component = require('./component').Component;
+var DataStore = require('../datastore').DataStore;
+var utils = require('../utils');
+var XYAxes = require('./xy_axes');
+
+var XYValue = function(parent, viewport, sim, args) {
+    Component.call(this, parent, viewport, args);
     var self = this;
 
     this.n_lines = args.n_lines || 1;
     this.sim = sim;
 
     // For storing the accumulated data
-    this.data_store = new Nengo.DataStore(this.n_lines, this.sim, 0);
+    this.data_store = new DataStore(this.n_lines, this.sim, 0);
 
-    this.axes2d = new Nengo.XYAxes(this.div, args);
+    this.axes2d = new XYAxes(this.div, args);
 
     // The two indices of the multi-dimensional data to display
     this.index_x = args.index_x;
@@ -53,14 +60,14 @@ Nengo.XYValue = function(parent, sim, args) {
         .data([this.data_store.data[this.index_y]]);
     this.path.enter().append('path')
         .attr('class', 'line')
-        .style('stroke', Nengo.make_colors(1));
+        .style('stroke', utils.make_colors(1));
 
     // Create a circle to track the most recent data
     this.recent_circle = this.axes2d.svg.append("circle")
         .attr("r", this.get_circle_radius())
         .attr('cx', this.axes2d.scale_x(0))
         .attr('cy', this.axes2d.scale_y(0))
-        .style("fill", Nengo.make_colors(1)[0])
+        .style("fill", utils.make_colors(1)[0])
         .style('fill-opacity', 0);
 
     this.invalid_dims = false;
@@ -69,13 +76,13 @@ Nengo.XYValue = function(parent, sim, args) {
     this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
 
-Nengo.XYValue.prototype = Object.create(Nengo.Component.prototype);
-Nengo.XYValue.prototype.constructor = Nengo.XYValue;
+XYValue.prototype = Object.create(Component.prototype);
+XYValue.prototype.constructor = XYValue;
 
 /**
  * Receive new line data from the server.
  */
-Nengo.XYValue.prototype.on_message = function(event) {
+XYValue.prototype.on_message = function(event) {
     var data = new Float32Array(event.data);
     this.data_store.push(data);
     this.schedule_update();
@@ -84,7 +91,7 @@ Nengo.XYValue.prototype.on_message = function(event) {
 /**
  * Redraw the lines and axis due to changed data.
  */
-Nengo.XYValue.prototype.update = function() {
+XYValue.prototype.update = function() {
     var self = this;
 
     // Let the data store clear out old values
@@ -138,7 +145,7 @@ Nengo.XYValue.prototype.update = function() {
 /**
  * Adjust the graph layout due to changed size
  */
-Nengo.XYValue.prototype.on_resize = function(width, height) {
+XYValue.prototype.on_resize = function(width, height) {
     this.axes2d.on_resize(width, height);
 
     this.update();
@@ -151,11 +158,11 @@ Nengo.XYValue.prototype.on_resize = function(width, height) {
     this.recent_circle.attr("r", this.get_circle_radius());
 };
 
-Nengo.XYValue.prototype.get_circle_radius = function() {
+XYValue.prototype.get_circle_radius = function() {
     return Math.min(this.width, this.height) / 30;
 };
 
-Nengo.XYValue.prototype.generate_menu = function() {
+XYValue.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['Set range...', function() {
@@ -166,11 +173,11 @@ Nengo.XYValue.prototype.generate_menu = function() {
     }]);
 
     // Add the parent's menu items to this
-    return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
+    return $.merge(items, Component.prototype.generate_menu.call(this));
 };
 
-Nengo.XYValue.prototype.layout_info = function() {
-    var info = Nengo.Component.prototype.layout_info.call(this);
+XYValue.prototype.layout_info = function() {
+    var info = Component.prototype.layout_info.call(this);
     info.min_value = this.axes2d.scale_y.domain()[0];
     info.max_value = this.axes2d.scale_y.domain()[1];
     info.index_x = this.index_x;
@@ -178,18 +185,18 @@ Nengo.XYValue.prototype.layout_info = function() {
     return info;
 };
 
-Nengo.XYValue.prototype.update_layout = function(config) {
+XYValue.prototype.update_layout = function(config) {
     this.update_indices(config.index_x, config.index_y);
     this.update_range(config.min_value, config.max_value);
-    Nengo.Component.prototype.update_layout.call(this, config);
+    Component.prototype.update_layout.call(this, config);
 };
 
-Nengo.XYValue.prototype.set_range = function() {
+XYValue.prototype.set_range = function() {
     var range = this.axes2d.scale_y.domain();
     var self = this;
-    Nengo.modal.title('Set graph range...');
-    Nengo.modal.single_input_body(range, 'New range');
-    Nengo.modal.footer('ok_cancel', function(e) {
+    self.sim.modal.title('Set graph range...');
+    self.sim.modal.single_input_body(range, 'New range');
+    self.sim.modal.footer('ok_cancel', function(e) {
         var new_range = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
 
@@ -228,10 +235,10 @@ Nengo.XYValue.prototype.set_range = function() {
 
     $('#singleInput').attr('data-error', 'Input should be in the form ' +
                            '"<min>,<max>" and the axes must cross at zero.');
-    Nengo.modal.show();
+    self.sim.modal.show();
 };
 
-Nengo.XYValue.prototype.update_range = function(min, max) {
+XYValue.prototype.update_range = function(min, max) {
     this.axes2d.min_val = min;
     this.axes2d.max_val = max;
     this.axes2d.scale_x.domain([min, max]);
@@ -243,11 +250,12 @@ Nengo.XYValue.prototype.update_range = function(min, max) {
     this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
 
-Nengo.XYValue.prototype.set_indices = function() {
+XYValue.prototype.set_indices = function() {
     var self = this;
-    Nengo.modal.title('Set X and Y indices...');
-    Nengo.modal.single_input_body([this.index_x, this.index_y], 'New indices');
-    Nengo.modal.footer('ok_cancel', function(e) {
+    self.sim.modal.title('Set X and Y indices...');
+    self.sim.modal.single_input_body(
+        [this.index_x, this.index_y], 'New indices');
+    self.sim.modal.footer('ok_cancel', function(e) {
         var new_indices = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
 
@@ -283,16 +291,18 @@ Nengo.XYValue.prototype.set_indices = function() {
             'integers in the form "<dimension 1>,<dimension 2>". ' +
             'Dimensions are zero indexed.');
 
-    Nengo.modal.show();
+    self.sim.modal.show();
 };
 
-Nengo.XYValue.prototype.update_indices = function(index_x, index_y) {
+XYValue.prototype.update_indices = function(index_x, index_y) {
     this.index_x = index_x;
     this.index_y = index_y;
     this.update();
 };
 
-Nengo.XYValue.prototype.reset = function(event) {
+XYValue.prototype.reset = function(event) {
     this.data_store.reset();
     this.schedule_update();
 };
+
+module.exports = XYValue;

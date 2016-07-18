@@ -4,9 +4,11 @@
  * As well, it only saves the data in the datastore, which is based on the
  * amount of time kept in the simulation.
  *
- * @param {Nengo.Component[]} data_set
- *     A list of the graph items in the simulation
+ * @param {Component[]} data_set - A list of the graph items in the simulation
  */
+
+var Value = require('./components/value');
+var XYValue = require('./components/xyvalue');
 
 var data_to_csv = function(data_set) {
 
@@ -17,8 +19,7 @@ var data_to_csv = function(data_set) {
     var csv_string = "";
 
     var data_set = data_set.filter(function(data) {
-        return data.constructor === Nengo.Value ||
-            data.constructor === Nengo.XYValue;
+        return data.constructor === Value || data.constructor === XYValue;
     });
 
     // Extracts all the values from the data_set variable

@@ -50,7 +50,7 @@ class AceEditor(Editor):
             self.last_stdout = stdout
 
     def javascript(self):
-        return 'Nengo.ace = new Nengo.Ace("%s", {})' % (id(self),)
+        return 'var editoruid = "%s";' % id(self)
 
     def message(self, msg):
         data = json.loads(msg)

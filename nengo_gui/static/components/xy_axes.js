@@ -10,8 +10,10 @@
  * @param {float} args.max_value - maximum value on y-axis
  */
 
-Nengo.XYAxes = function(parent, args) {
-    Nengo.Axes2D.call(this, parent, args);
+var Axes2D = require('./2d_axes');
+
+XYAxes = function(parent, args) {
+    Axes2D.call(this, parent, args);
 
     this.scale_x.domain([args.min_value, args.max_value]);
     this.axis_x.tickValues([args.min_value, args.max_value]);
@@ -21,14 +23,14 @@ Nengo.XYAxes = function(parent, args) {
     this.max_val = args.max_value;
 };
 
-Nengo.XYAxes.prototype = Object.create(Nengo.Axes2D.prototype);
-Nengo.XYAxes.prototype.constructor = Nengo.XYAxes;
+XYAxes.prototype = Object.create(Axes2D.prototype);
+XYAxes.prototype.constructor = XYAxes;
 
 /**
  * Adjust the graph layout due to changed size.
  */
-Nengo.XYAxes.prototype.on_resize = function(width, height) {
-    Nengo.Axes2D.prototype.on_resize.call(this, width, height);
+XYAxes.prototype.on_resize = function(width, height) {
+    Axes2D.prototype.on_resize.call(this, width, height);
 
     var x_offset = this.ax_bottom - this.min_val /
         (this.max_val - this.min_val) * (this.ax_top - this.ax_bottom);
@@ -40,3 +42,5 @@ Nengo.XYAxes.prototype.on_resize = function(width, height) {
     this.axis_y_g.attr("transform", "translate(" + y_offset + ", 0)");
     this.axis_y_g.call(this.axis_y);
 };
+
+module.exports = XYAxes;

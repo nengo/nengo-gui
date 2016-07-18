@@ -1,33 +1,46 @@
-Nengo.Modal = function($div) {
+require('./modal.css');
+var d3 = require('d3');
+var all_components = require('./components/component').all_components;
+var Hotkeys = require('./hotkeys');
+var tooltips = require('./tooltips');
+var utils = require('./utils');
+
+var Modal = function($div, editor, sim) {
     var self = this;
     this.$div = $div;
     this.$title = this.$div.find('.modal-title').first();
     this.$footer = this.$div.find('.modal-footer').first();
     this.$body = this.$div.find('.modal-body').first();
+    this.editor = editor;
+    this.sim = sim;
+    this.netgraph = this.editor.netgraph;
+    this.config = this.netgraph.config;
+    this.hotkeys = new Hotkeys(this.editor, this);
 
     this.sim_was_running = false;
 
     // This listener is triggered when the modal is closed
     this.$div.on('hidden.bs.modal', function() {
         if (self.sim_was_running) {
-            sim.play();
+            self.sim.play();
         }
-        Nengo.hotkeys.set_active(true);
+        self.hotkeys.set_active(true);
     });
 };
 
-Nengo.Modal.prototype.show = function() {
-    Nengo.hotkeys.set_active(false);
-    this.sim_was_running = !sim.paused;
+Modal.prototype.show = function() {
+    this.hotkeys.set_active(false);
+    this.sim_was_running = !this.sim.paused;
     this.$div.modal('show');
-    sim.pause();
+    this.sim.pause();
 };
 
-Nengo.Modal.prototype.title = function(title) {
+Modal.prototype.title = function(title) {
     this.$title.text(title);
 };
 
-Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function) {
+Modal.prototype.footer = function(type, ok_function, cancel_function) {
+    var self = this;
     this.$footer.empty();
 
     if (type === "close") {
@@ -53,7 +66,7 @@ Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function) {
         this.$footer.append('<button type="button" ' +
             'class="btn btn-default" data-dismiss="modal">Close</button>');
         $('#confirm_reset_button').on('click', function() {
-            toolbar.reset_model_layout();
+            self.toolbar.reset_model_layout();
         });
     } else if (type === 'confirm_savepdf') {
         this.$footer.append(
@@ -97,7 +110,7 @@ Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function) {
             'class="btn btn-default" data-dismiss="modal">Close</button>');
         $('#confirm_savecsv_button').on('click', function() {
 
-            var data_items = Nengo.Component.components;
+            var data_items = all_components;
             var CSV = data_to_csv(data_items);
             // Extract filename from the path
             var path = $("#filename")[0].textContent;
@@ -127,13 +140,13 @@ Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function) {
     }
 };
 
-Nengo.Modal.prototype.clear_body = function() {
+Modal.prototype.clear_body = function() {
     this.$body.empty();
     this.$div.find('.modal-dialog').removeClass('modal-sm');
     this.$div.off('shown.bs.modal');
 };
 
-Nengo.Modal.prototype.text_body = function(text, type) {
+Modal.prototype.text_body = function(text, type) {
     if (typeof type === 'undefined') { type = "info"; }
 
     this.clear_body();
@@ -145,7 +158,7 @@ Nengo.Modal.prototype.text_body = function(text, type) {
     $p.append(document.createTextNode(text));
 };
 
-Nengo.Modal.prototype.help_body = function() {
+Modal.prototype.help_body = function() {
     this.clear_body();
 
     var ctrl = 'Ctrl';
@@ -186,7 +199,7 @@ Nengo.Modal.prototype.help_body = function() {
 /**
  * Sets up the tabs for Info modals.
  */
-Nengo.Modal.prototype.tabbed_body = function(tabinfo) {
+Modal.prototype.tabbed_body = function(tabinfo) {
     this.clear_body();
     var tabdivs = {};
     var $tab_ul = $('<ul class="nav nav-tabs"/>').appendTo(this.$body);
@@ -213,7 +226,8 @@ Nengo.Modal.prototype.tabbed_body = function(tabinfo) {
 /**
  * Sets up the body for main configuration.
  */
-Nengo.Modal.prototype.main_config = function() {
+Modal.prototype.main_config = function() {
+    var self = this;
     this.clear_body();
 
     var $form = $('<form class="form-horizontal" id ' +
@@ -280,7 +294,7 @@ Nengo.Modal.prototype.main_config = function() {
             'Select backend' +
         '</label>' +
         '<select class="form-control" id="config-backend">' +
-            sim.simulator_options +
+            this.sim.simulator_options +
         '</select>' +
       '</div>' +
     '</div>').appendTo($form);
@@ -288,45 +302,44 @@ Nengo.Modal.prototype.main_config = function() {
     this.$div.on('shown.bs.modal', function() {
         $('#config-fontsize').focus();
     });
-    $('#zoom-fonts').prop('checked', Nengo.netgraph.zoom_fonts);
+    $('#zoom-fonts').prop('checked', this.netgraph.zoom_fonts);
     $('#zoom-fonts').change(function() {
-        Nengo.netgraph.zoom_fonts = $('#zoom-fonts').prop('checked');
+        self.netgraph.zoom_fonts = $('#zoom-fonts').prop('checked');
     });
 
-    $('#aspect-resize').prop('checked', Nengo.netgraph.aspect_resize);
+    $('#aspect-resize').prop('checked', this.netgraph.aspect_resize);
     $('#aspect-resize').change(function() {
-        Nengo.netgraph.aspect_resize = $('#aspect-resize').prop('checked');
+        self.netgraph.aspect_resize = $('#aspect-resize').prop('checked');
     });
 
-    $('#transparent-nets').prop('checked', Nengo.netgraph.transparent_nets);
+    $('#transparent-nets').prop('checked', this.netgraph.transparent_nets);
     $('#transparent-nets').change(function() {
-        Nengo.netgraph.transparent_nets =
-            $('#transparent-nets').prop('checked');
+        self.netgraph.transparent_nets = $('#transparent-nets').prop('checked');
     });
 
-    $('#sync-editor').prop('checked', Nengo.ace.auto_update);
+    $('#sync-editor').prop('checked', editor.auto_update);
     $('#sync-editor').change(function() {
-        Nengo.ace.auto_update = $('#sync-editor').prop('checked');
-        Nengo.ace.update_trigger = $('#sync-editor').prop('checked');
+        self.editor.auto_update = $('#sync-editor').prop('checked');
+        self.editor.update_trigger = $('#sync-editor').prop('checked');
     });
 
-    $('#config-fontsize').val(Nengo.netgraph.font_size);
+    $('#config-fontsize').val(this.netgraph.font_size);
     $('#config-fontsize').bind('keyup input', function() {
-        Nengo.netgraph.font_size = parseInt($('#config-fontsize').val());
+        self.netgraph.font_size = parseInt($('#config-fontsize').val());
     });
     $('#config-fontsize').attr('data-my_validator', 'custom');
 
-    var sd = Nengo.config.scriptdir;
+    var sd = this.config.scriptdir;
     if (sd === ".") { sd = ''; }
     $('#config-scriptdir').val(sd);
     $('#config-scriptdir').bind('keyup input', function() {
         var sd = $('#config-scriptdir').val();
         if (!sd) { sd = '.'; }
-        Nengo.config.scriptdir = sd;
+        self.config.scriptdir = sd;
     });
 
     $('#config-backend').change(function() {
-        sim.set_backend($('#config-backend').val());
+        self.sim.set_backend($('#config-backend').val());
     });
 
     // Allow the enter key to submit
@@ -343,7 +356,7 @@ Nengo.Modal.prototype.main_config = function() {
 /**
  * Sets up the body for standard input forms.
  */
-Nengo.Modal.prototype.single_input_body = function(start_values, label) {
+Modal.prototype.single_input_body = function(start_values, label) {
     this.clear_body();
 
     var $form = $('<form class="form-horizontal" id ="myModalForm"/>')
@@ -408,25 +421,25 @@ Nengo.Modal.prototype.single_input_body = function(start_values, label) {
     });
 };
 
-Nengo.Modal.prototype.ensemble_body = function(uid, params, plots, conninfo) {
+Modal.prototype.ensemble_body = function(uid, params, plots, conninfo) {
     var tabs = this.tabbed_body([{id: 'params', title: 'Parameters'},
                                  {id: 'plots', title: 'Plots'},
                                  {id: 'connections', title: 'Connections'}]);
-    this.render_params(tabs.params, params, Nengo.tooltips.ens);
+    this.render_params(tabs.params, params, tooltips.ens);
     this.render_plots(tabs.plots, plots);
     this.render_connections(tabs.connections, uid, conninfo);
 };
 
-Nengo.Modal.prototype.node_body = function(uid, params, plots, conninfo) {
+Modal.prototype.node_body = function(uid, params, plots, conninfo) {
     var tabs = this.tabbed_body([{id: 'params', title: 'Parameters'},
                                  {id: 'plots', title: 'Plots'},
                                  {id: 'connections', title: 'Connections'}]);
-    this.render_params(tabs.params, params, Nengo.tooltips.node);
+    this.render_params(tabs.params, params, tooltips.node);
     this.render_plots(tabs.plots, plots);
     this.render_connections(tabs.connections, uid, conninfo);
 };
 
-Nengo.Modal.prototype.net_body = function(uid, stats, conninfo) {
+Modal.prototype.net_body = function(uid, stats, conninfo) {
     var tabs = this.tabbed_body([{id: 'stats', title: 'Statistics'},
                                  {id: 'connections', title: 'Connections'}]);
     this.render_stats(tabs.stats, stats);
@@ -436,7 +449,7 @@ Nengo.Modal.prototype.net_body = function(uid, stats, conninfo) {
 /**
  * Renders information about the parameters of an object.
  */
-Nengo.Modal.prototype.render_params = function($parent, params, tooltips) {
+Modal.prototype.render_params = function($parent, params) {
     var $plist = $('<dl class="dl-horizontal"/>').appendTo($parent);
     for (var i = 0; i < params.length; i++) {
         var $dt = $('<dt/>').appendTo($plist);
@@ -444,16 +457,14 @@ Nengo.Modal.prototype.render_params = function($parent, params, tooltips) {
 
         var $dd = $('<dd/>').appendTo($plist);
         $dd.text(params[i][1]);
-        Nengo.tooltips.popover($dt,
-                             tooltips[String(params[i][0])][0],
-                             tooltips[String(params[i][0])][1]);
+        tooltips.popover($dt, params[i][0], params[i][1]);
     }
 };
 
 /**
  * Renders information about some statistics of an object.
  */
-Nengo.Modal.prototype.render_stats = function($parent, stats) {
+Modal.prototype.render_stats = function($parent, stats) {
     for (var i = 0; i < stats.length; i++) {
         $parent.append('<h3>' + stats[i].title + '</h3>');
         var $stable = $('<table class="table table-condensed table-hover"/>')
@@ -472,7 +483,7 @@ Nengo.Modal.prototype.render_stats = function($parent, stats) {
 /**
  * Renders information about plots related to an object.
  */
-Nengo.Modal.prototype.render_plots = function($parent, plots) {
+Modal.prototype.render_plots = function($parent, plots) {
     // This indicates an error (usually no sim running)
     if (typeof plots === 'string') {
         var $err = $('<div class="alert alert-danger" role="alert"/>')
@@ -491,7 +502,7 @@ Nengo.Modal.prototype.render_plots = function($parent, plots) {
 /**
  * Renders information about a single plot.
  */
-Nengo.Modal.prototype.render_plot = function($parent, plotinfo) {
+Modal.prototype.render_plot = function($parent, plotinfo) {
     $parent.append("<h4>" + plotinfo.title + "</h4>");
 
     if (plotinfo.warnings.length > 0) {
@@ -527,8 +538,7 @@ Nengo.Modal.prototype.render_plot = function($parent, plotinfo) {
  * @param {float[]} x - The shared x-axis
  * @param {float[][]} ys - The y data for each line
  */
-Nengo.Modal.prototype.multiline_plot = function(
-        selector, x, ys, x_label, y_label) {
+Modal.prototype.multiline_plot = function(selector, x, ys, x_label, y_label) {
 
     var margin = {left: 75, top: 10, right: 0, bottom: 50};
     var w = 500 - margin.left - margin.right;
@@ -593,7 +603,7 @@ Nengo.Modal.prototype.multiline_plot = function(
     }
 
     // Add the lines
-    var colors = Nengo.make_colors(ys.length);
+    var colors = utils.make_colors(ys.length);
 
     var line = d3.svg.line()
         .x(function(d, i) {
@@ -617,8 +627,8 @@ Nengo.Modal.prototype.multiline_plot = function(
 /**
  * Renders information about connections related to an object.
  */
-Nengo.Modal.prototype.render_connections = function($parent, uid, conninfo) {
-    var ngi = Nengo.netgraph.svg_objects[uid];
+Modal.prototype.render_connections = function($parent, uid, conninfo) {
+    var ngi = this.netgraph.svg_objects[uid];
     var conn_in_objs = ngi.conn_in;
     if (conn_in_objs.length > 0) {
         $parent.append('<h3>Incoming Connections</h3>');
@@ -628,27 +638,27 @@ Nengo.Modal.prototype.render_connections = function($parent, uid, conninfo) {
                                '<th class="conn-funcs">Function</th>' +
                                '<th class="conn-fan">Fan In</th></tr>')
             .appendTo($parent);
-        Nengo.tooltips.popover($conn_in_table.find('.conn-objs').first(),
-                             "'Pre' object",
-                             "This object plays the role of 'Pre' in the " +
-                             "connection to this object.",
-                             "top");
-        Nengo.tooltips.popover($conn_in_table.find('.conn-funcs').first(),
-                             "Connection function",
-                             "The function being computed across this " +
-                             "connection (in vector space).",
-                             "top");
-        Nengo.tooltips.popover($conn_in_table.find('.conn-fan').first(),
-                             "Neuron fan-in",
-                             "The number of incoming neural connections. " +
-                             "In biological terms, this is the maximum number" +
-                             " of " +
-                             "synapses in the dendritic tree of a single " +
-                             "neuron in this object, resulting from this " +
-                             "connection. The total number of synapses would " +
-                             "be the sum of the non-zero numbers in this " +
-                             "column.",
-                             "top");
+        tooltips.popover($conn_in_table.find('.conn-objs').first(),
+                         "'Pre' object",
+                         "This object plays the role of 'Pre' in the " +
+                         "connection to this object.",
+                         "top");
+        tooltips.popover($conn_in_table.find('.conn-funcs').first(),
+                         "Connection function",
+                         "The function being computed across this " +
+                         "connection (in vector space).",
+                         "top");
+        tooltips.popover($conn_in_table.find('.conn-fan').first(),
+                         "Neuron fan-in",
+                         "The number of incoming neural connections. " +
+                         "In biological terms, this is the maximum number" +
+                         " of " +
+                         "synapses in the dendritic tree of a single " +
+                         "neuron in this object, resulting from this " +
+                         "connection. The total number of synapses would " +
+                         "be the sum of the non-zero numbers in this " +
+                         "column.",
+                         "top");
 
         this.make_connections_table_row(
             $conn_in_table, conninfo, conn_in_objs,
@@ -672,27 +682,27 @@ Nengo.Modal.prototype.render_connections = function($parent, uid, conninfo) {
                                 '<th class="conn-fan">Fan Out</th></tr>')
             .appendTo($parent);
 
-        Nengo.tooltips.popover($conn_out_table.find('.conn-objs').first(),
-                             "'Post' object",
-                             "This object plays the role of 'Post' in the " +
-                             "connection from this object.",
-                             "top");
-        Nengo.tooltips.popover($conn_out_table.find('.conn-funcs').first(),
-                             "Connection function",
-                             "The function being computed across this " +
-                             "connection (in vector space).",
-                             "top");
-        Nengo.tooltips.popover($conn_out_table.find('.conn-fan').first(),
-                             "Neuron fan-out",
-                             "The number of outgoing neural connections. " +
-                             "In biological terms, this is the maximum number" +
-                             " of " +
-                             "synapses from axon terminals of a single " +
-                             "neuron in this object, resulting from this " +
-                             "connection. The total number of synapses would " +
-                             "be the sum of the non-zero numbers in this " +
-                             "column.",
-                             "top");
+        tooltips.popover($conn_out_table.find('.conn-objs').first(),
+                         "'Post' object",
+                         "This object plays the role of 'Post' in the " +
+                         "connection from this object.",
+                         "top");
+        tooltips.popover($conn_out_table.find('.conn-funcs').first(),
+                         "Connection function",
+                         "The function being computed across this " +
+                         "connection (in vector space).",
+                         "top");
+        tooltips.popover($conn_out_table.find('.conn-fan').first(),
+                         "Neuron fan-out",
+                         "The number of outgoing neural connections. " +
+                         "In biological terms, this is the maximum number" +
+                         " of " +
+                         "synapses from axon terminals of a single " +
+                         "neuron in this object, resulting from this " +
+                         "connection. The total number of synapses would " +
+                         "be the sum of the non-zero numbers in this " +
+                         "column.",
+                         "top");
 
         this.make_connections_table_row(
             $conn_out_table, conninfo, conn_out_objs,
@@ -725,7 +735,7 @@ Nengo.Modal.prototype.render_connections = function($parent, uid, conninfo) {
 /**
  * Generates one row in the connections table in the connections tab.
  */
-Nengo.Modal.prototype.make_connections_table_row = function(
+Modal.prototype.make_connections_table_row = function(
         $table, conninfo, conn_objs, get_conn_other, get_conn_conn_uid_list) {
     for (var i = 0; i < conn_objs.length; i++) {
         // Get a handle to the object that the current object is connected to
@@ -752,8 +762,7 @@ Nengo.Modal.prototype.make_connections_table_row = function(
                         conninfo.fan[String(conn_objs[i].uid)] + '</td>')
             .appendTo($tr);
         if (conninfo.obj_type[String(conn_objs[i].uid)] === "passthrough") {
-            Nengo.tooltips.tooltip(
-                $fan_td, Nengo.tooltips.conn.fan_passthrough);
+            tooltips.tooltip($fan_td, tooltips.conn.fan_passthrough);
         }
     }
 };
@@ -761,7 +770,7 @@ Nengo.Modal.prototype.make_connections_table_row = function(
 /**
  * Generates the connection path dropdown list for the connections tab.
  */
-Nengo.Modal.prototype.make_conn_path_dropdown_list = function(
+Modal.prototype.make_conn_path_dropdown_list = function(
         $container, others_uid, obj_type, conn_uid_list) {
     if (conn_uid_list.length > 1) {
         // Add expand control and the tooltip to the <dd> object
@@ -770,8 +779,7 @@ Nengo.Modal.prototype.make_conn_path_dropdown_list = function(
                            '" aria-expanded="false"/>').appendTo($container);
 
         // Make the "expand down" tooltip
-        Nengo.tooltips.tooltip($lg_header, Nengo.tooltips.conn.expand,
-                             "right", "glyphicon-collapse-down");
+        tooltips.tooltip($lg_header, tooltips.conn.expand, "right");
 
         // Make a list-group for the drop down items
         var $path_list = $('<ul class="list-group">')
@@ -788,9 +796,9 @@ Nengo.Modal.prototype.make_conn_path_dropdown_list = function(
         var shaded_option = "shaded";
         var endpoint_icon = "glyphicon glyphicon-triangle-right";
         for (var p = conn_uid_list.length - 1; p >= 0; p--) {
-            if (conn_uid_list[p] in Nengo.netgraph.svg_objects) {
+            if (conn_uid_list[p] in this.netgraph.svg_objects) {
                 // If the uid is in netgraph.svg_objects, use the obj's label
-                var path_item = Nengo.netgraph.svg_objects[conn_uid_list[p]]
+                var path_item = this.netgraph.svg_objects[conn_uid_list[p]]
                     .label.innerHTML;
             } else {
                 // Otherwise, use the object's uid (with brackets to indicate
@@ -830,8 +838,6 @@ Nengo.Modal.prototype.make_conn_path_dropdown_list = function(
     }
 };
 
-Nengo.modal = new Nengo.Modal($('.modal').first());
-
 // Change the global defaults of the modal validator
 $( document ).ready(function() {
     $validator = $.fn.validator.Constructor.DEFAULTS;
@@ -842,3 +848,5 @@ $( document ).ready(function() {
     // Set the error messages for new validators
     $validator.errors = {my_validator: 'Does not match'};
 });
+
+module.exports = Modal;

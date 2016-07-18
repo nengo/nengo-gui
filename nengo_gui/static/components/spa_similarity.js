@@ -3,25 +3,33 @@
  *
  * @constructor
  * @param {DOMElement} parent - the element to add this component to
- * @param {Nengo.SimControl} sim - the simulation controller
- * @param {dict} args - A set of constructor arguments (see Nengo.Component)
+ * @param {SimControl} sim - the simulation controller
+ * @param {dict} args - A set of constructor arguments (see Component)
  * @param {int} args.n_lines - number of decoded values
  */
 
-Nengo.SpaSimilarity = function(parent, sim, args) {
-    Nengo.Value.call(this, parent, sim, args);
+require('./spa_similarity.css');
+var d3 = require('d3');
+var Component = require('./component').Component;
+var GrowableDataStore = require('../datastore').GrowableDataStore;
+var utils = require('../utils');
+var Value = require('./value');
+
+var SpaSimilarity = function(parent, viewport, sim, args) {
+    Value.call(this, parent, viewport, sim, args);
 
     this.synapse = args.synapse;
     this.data_store =
-        new Nengo.GrowableDataStore(this.n_lines, this.sim, this.synapse);
+        new GrowableDataStore(this.n_lines, this.sim, this.synapse);
     this.show_pairs = false;
 
     var self = this;
 
-    this.colors = Nengo.make_colors(6);
+    this.colors = utils.make_colors(6);
     this.color_func = function(d, i) {
         return self.colors[i % 6];
     };
+
     this.line.defined(function(d) {
         return !isNaN(d);
     });
@@ -31,17 +39,17 @@ Nengo.SpaSimilarity = function(parent, sim, args) {
     this.legend = document.createElement('div');
     this.legend.classList.add('legend', 'unselectable');
     this.div.appendChild(this.legend);
-    this.legend_svg = Nengo.draw_legend(
+    this.legend_svg = utils.draw_legend(
         this.legend, args.pointer_labels, this.color_func, this.uid);
 };
 
-Nengo.SpaSimilarity.prototype = Object.create(Nengo.Value.prototype);
-Nengo.SpaSimilarity.prototype.constructor = Nengo.SpaSimilarity;
+SpaSimilarity.prototype = Object.create(Value.prototype);
+SpaSimilarity.prototype.constructor = SpaSimilarity;
 
-Nengo.SpaSimilarity.prototype.reset_legend_and_data = function(new_labels) {
+SpaSimilarity.prototype.reset_legend_and_data = function(new_labels) {
     // Clear the database and create a new one since dimensions have changed
     this.data_store =
-        new Nengo.GrowableDataStore(new_labels.length, this.sim, this.synapse);
+        new GrowableDataStore(new_labels.length, this.sim, this.synapse);
 
     // Delete the legend's children
     while (this.legend.lastChild) {
@@ -60,7 +68,7 @@ Nengo.SpaSimilarity.prototype.reset_legend_and_data = function(new_labels) {
     this.update();
 };
 
-Nengo.SpaSimilarity.prototype.data_msg = function(push_data) {
+SpaSimilarity.prototype.data_msg = function(push_data) {
     var data_dims = push_data.length - 1;
 
     // TODO: Move this check inside datastore?
@@ -73,7 +81,7 @@ Nengo.SpaSimilarity.prototype.data_msg = function(push_data) {
     this.schedule_update();
 };
 
-Nengo.SpaSimilarity.prototype.update_legend = function(new_labels) {
+SpaSimilarity.prototype.update_legend = function(new_labels) {
     var self = this;
     this.legend_labels = this.legend_labels.concat(new_labels);
 
@@ -138,7 +146,7 @@ Nengo.SpaSimilarity.prototype.update_legend = function(new_labels) {
  *   - show_pairs has been toggledn
  * This calls the method associated to handling the type of message.
  */
-Nengo.SpaSimilarity.prototype.on_message = function(event) {
+SpaSimilarity.prototype.on_message = function(event) {
     var data = JSON.parse(event.data);
     var func_name = data.shift();
     this[func_name](data);
@@ -147,11 +155,11 @@ Nengo.SpaSimilarity.prototype.on_message = function(event) {
 /**
  * Redraw the lines and axis due to changed data.
  */
-Nengo.SpaSimilarity.prototype.update = function() {
+SpaSimilarity.prototype.update = function() {
     // Let the data store clear out old values
     this.data_store.update();
 
-    // Determine visible range from the Nengo.SimControl
+    // Determine visible range from the SimControl
     var t1 = this.sim.time_slider.first_shown_time;
     var t2 = t1 + this.sim.time_slider.shown_time;
 
@@ -194,7 +202,7 @@ Nengo.SpaSimilarity.prototype.update = function() {
     }
 };
 
-Nengo.SpaSimilarity.prototype.generate_menu = function() {
+SpaSimilarity.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['Set range...', function() {
@@ -212,10 +220,10 @@ Nengo.SpaSimilarity.prototype.generate_menu = function() {
     }
 
     // Add the parent's menu items to this
-    return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
+    return $.merge(items, Component.prototype.generate_menu.call(this));
 };
 
-Nengo.SpaSimilarity.prototype.set_show_pairs = function(value) {
+SpaSimilarity.prototype.set_show_pairs = function(value) {
     if (this.show_pairs !== value) {
         this.show_pairs = value;
         this.save_layout();
@@ -223,24 +231,26 @@ Nengo.SpaSimilarity.prototype.set_show_pairs = function(value) {
     }
 };
 
-Nengo.SpaSimilarity.prototype.layout_info = function() {
-    var info = Nengo.Component.prototype.layout_info.call(this);
+SpaSimilarity.prototype.layout_info = function() {
+    var info = Component.prototype.layout_info.call(this);
     info.show_pairs = this.show_pairs;
     info.min_value = this.axes2d.scale_y.domain()[0];
     info.max_value = this.axes2d.scale_y.domain()[1];
     return info;
 };
 
-Nengo.SpaSimilarity.prototype.update_layout = function(config) {
+SpaSimilarity.prototype.update_layout = function(config) {
     this.update_range(config.min_value, config.max_value);
     this.show_pairs = config.show_pairs;
-    Nengo.Component.prototype.update_layout.call(this, config);
+    Component.prototype.update_layout.call(this, config);
 };
 
-Nengo.SpaSimilarity.prototype.reset = function() {
+SpaSimilarity.prototype.reset = function() {
     // Ask for a legend update
     this.ws.send("reset_legend");
 };
 
 // TODO: should I remove the ability to set range?
 // Or limit it to something intuitive
+
+module.exports = SpaSimilarity;

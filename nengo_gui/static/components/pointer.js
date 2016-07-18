@@ -3,16 +3,21 @@
  *
  * @constructor
  * @param {DOMElement} parent - the element to add this component to
- * @param {Nengo.SimControl} sim - the simulation controller
- * @param {dict} args - A set of constructor arguments (see Nengo.Component)
+ * @param {SimControl} sim - the simulation controller
+ * @param {dict} args - A set of constructor arguments (see Component)
  *
  * Pointer constructor is called by python server when a user requests a plot
  * or when the config file is making graphs. Server request is handled in
  * netgraph.js {.on_message} function.
  */
 
-Nengo.Pointer = function(parent, sim, args) {
-    Nengo.Component.call(this, parent, args);
+require('./pointer.css');
+var Component = require('./component').Component;
+var DataStore = require('../datastore').DataStore;
+var utils = require('../utils');
+
+var Pointer = function(parent, viewport, sim, args) {
+    Component.call(this, parent, viewport, args);
     var self = this;
 
     this.sim = sim;
@@ -21,7 +26,7 @@ Nengo.Pointer = function(parent, sim, args) {
     this.pdiv = document.createElement('div');
     this.pdiv.style.width = args.width;
     this.pdiv.style.height = args.height;
-    Nengo.set_transform(this.pdiv, 0, 25);
+    utils.set_transform(this.pdiv, 0, 25);
     this.pdiv.style.position = 'fixed';
     this.pdiv.classList.add('pointer');
     this.div.appendChild(this.pdiv);
@@ -29,7 +34,7 @@ Nengo.Pointer = function(parent, sim, args) {
     this.show_pairs = args.show_pairs;
 
     // For storing the accumulated data
-    this.data_store = new Nengo.DataStore(1, this.sim, 0);
+    this.data_store = new DataStore(1, this.sim, 0);
 
     // Call schedule_update whenever the time is adjusted in the SimControl
     this.sim.div.addEventListener('adjust_time', function(e) {
@@ -67,10 +72,10 @@ Nengo.Pointer = function(parent, sim, args) {
     });
 };
 
-Nengo.Pointer.prototype = Object.create(Nengo.Component.prototype);
-Nengo.Pointer.prototype.constructor = Nengo.Pointer;
+Pointer.prototype = Object.create(Component.prototype);
+Pointer.prototype.constructor = Pointer;
 
-Nengo.Pointer.prototype.generate_menu = function() {
+Pointer.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['Set value...', function() {
@@ -88,21 +93,21 @@ Nengo.Pointer.prototype.generate_menu = function() {
 
     // Add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
-    return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
+    return $.merge(items, Component.prototype.generate_menu.call(this));
 };
 
-Nengo.Pointer.prototype.set_show_pairs = function(value) {
+Pointer.prototype.set_show_pairs = function(value) {
     if (this.show_pairs !== value) {
         this.show_pairs = value;
         this.save_layout();
     }
 };
 
-Nengo.Pointer.prototype.set_value = function() {
+Pointer.prototype.set_value = function() {
     var self = this;
-    Nengo.modal.title('Enter a Semantic Pointer value...');
-    Nengo.modal.single_input_body('Pointer', 'New value');
-    Nengo.modal.footer('ok_cancel', function(e) {
+    self.sim.modal.title('Enter a Semantic Pointer value...');
+    self.sim.modal.single_input_body('Pointer', 'New value');
+    self.sim.modal.footer('ok_cancel', function(e) {
         var value = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
 
@@ -136,13 +141,13 @@ Nengo.Pointer.prototype.set_value = function() {
         'such as +, * (circular convolution), and ~ (pseudo-inverse). ' +
         'E.g., (A+~(B*C)*2)*0.5 would be a valid semantic pointer expression.');
 
-    Nengo.modal.show();
+    self.sim.modal.show();
 };
 
 /**
  * Receive new line data from the server.
  */
-Nengo.Pointer.prototype.on_message = function(event) {
+Pointer.prototype.on_message = function(event) {
     data = event.data.split(" ");
 
     if (data[0].substring(0, 11) == "bad_pointer") {
@@ -163,7 +168,7 @@ Nengo.Pointer.prototype.on_message = function(event) {
 /**
  * Redraw the lines and axis due to changed data.
  */
-Nengo.Pointer.prototype.update = function() {
+Pointer.prototype.update = function() {
     // Let the data store clear out old values
     this.data_store.update();
 
@@ -213,7 +218,7 @@ Nengo.Pointer.prototype.update = function() {
 /**
  * Adjust the graph layout due to changed size.
  */
-Nengo.Pointer.prototype.on_resize = function(width, height) {
+Pointer.prototype.on_resize = function(width, height) {
     if (width < this.minWidth) {
         width = this.minWidth;
     }
@@ -231,18 +236,20 @@ Nengo.Pointer.prototype.on_resize = function(width, height) {
     this.update();
 };
 
-Nengo.Pointer.prototype.layout_info = function() {
-    var info = Nengo.Component.prototype.layout_info.call(this);
+Pointer.prototype.layout_info = function() {
+    var info = Component.prototype.layout_info.call(this);
     info.show_pairs = this.show_pairs;
     return info;
 };
 
-Nengo.Pointer.prototype.update_layout = function(config) {
+Pointer.prototype.update_layout = function(config) {
     this.show_pairs = config.show_pairs;
-    Nengo.Component.prototype.update_layout.call(this, config);
+    Component.prototype.update_layout.call(this, config);
 };
 
-Nengo.Pointer.prototype.reset = function(event) {
+Pointer.prototype.reset = function(event) {
     this.data_store.reset();
     this.schedule_update();
 };
+
+module.exports = Pointer;

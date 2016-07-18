@@ -9,7 +9,21 @@
  * NetGraph constructor is written into HTML file from the python
  * server and is run on page load.
  */
-Nengo.NetGraph = function(parent, args) {
+
+var interact = require('interact.js');
+require('./netgraph.css');
+var comp = require('./component');
+var menu = require('../menu');
+var NetGraphConnection = require('./netgraph_conn');
+var NetGraphItem = require('./netgraph_item');
+var utils = require('../utils');
+var Viewport = require('../viewport');
+
+var NetGraph = function(parent, config, args) {
+    var self = this;
+    this.config = config;
+    this.viewport = new Viewport(this);
+
     if (args.uid[0] === '<') {
         console.log("invalid uid for NetGraph: " + args.uid);
     }
@@ -30,21 +44,21 @@ Nengo.NetGraph = function(parent, args) {
             this.update_fonts();
             this.redraw();
 
-            viewport.scale = scale;
-            viewport.redraw_all();
+            self.viewport.scale = scale;
+            self.viewport.redraw_all();
         }
     });
 
     Object.defineProperty(this, 'zoom_fonts', {
         // Scale fonts when zooming
         get: function() {
-            return Nengo.config.zoom_fonts;
+            return self.config.zoom_fonts;
         },
         set: function(val) {
             if (val === this.zoom_fonts) {
                 return;
             }
-            Nengo.config.zoom_fonts = val;
+            self.config.zoom_fonts = val;
             this.update_fonts();
         }
     });
@@ -52,25 +66,26 @@ Nengo.NetGraph = function(parent, args) {
     Object.defineProperty(this, 'aspect_resize', {
         // Preserve aspect ratios on window resize
         get: function() {
-            return Nengo.config.aspect_resize;
+            return self.config.aspect_resize;
         },
         set: function(val) {
             if (val === this.aspect_resize) {
                 return;
             }
-            Nengo.config.aspect_resize = val;
+            self.config.aspect_resize = val;
+
         }
     });
 
     Object.defineProperty(this, 'font_size', {
         get: function() {
-            return Nengo.config.font_size;
+            return self.config.font_size;
         },
         set: function(val) {
             if (val === this.font_size) {
                 return;
             }
-            Nengo.config.font_size = val;
+            self.config.font_size = val;
             this.update_fonts();
         }
     });
@@ -78,13 +93,13 @@ Nengo.NetGraph = function(parent, args) {
     // Do networks have transparent backgrounds?
     Object.defineProperty(this, 'transparent_nets', {
         get: function() {
-            return Nengo.config.transparent_nets;
+            return self.config.transparent_nets;
         },
         set: function(val) {
             if (val === this.transparent_nets) {
                 return;
             }
-            Nengo.config.transparent_nets = val;
+            self.config.transparent_nets = val;
             for (var key in this.svg_objects) {
                 var ngi = this.svg_objects[key];
                 ngi.compute_fill();
@@ -96,8 +111,8 @@ Nengo.NetGraph = function(parent, args) {
         }
     });
 
-    this.svg_objects = {}; // Dict of all Nengo.NetGraphItems, by uid
-    this.svg_conns = {}; // Dict of all Nengo.NetGraphConnections, by uid
+    this.svg_objects = {}; // Dict of all NetGraphItems, by uid
+    this.svg_conns = {}; // Dict of all NetGraphConnections, by uid
     this.minimap_objects = {};
     this.minimap_conns = {};
 
@@ -114,7 +129,7 @@ Nengo.NetGraph = function(parent, args) {
     // are inside a collapsed network), this dictionary keeps a list of
     // connections to be notified when a particular item appears.  The
     // key in the dictionary is the uid of the nonexistent item, and the
-    // value is a list of Nengo.NetGraphConnections that should be notified
+    // value is a list of NetGraphConnections that should be notified
     // when that item appears.
     this.collapsed_conns = {};
 
@@ -128,7 +143,6 @@ Nengo.NetGraph = function(parent, args) {
 
     interact(this.svg).styleCursor(false);
 
-    Nengo.netgraph = this;
     parent.appendChild(this.svg);
     this.parent = parent;
 
@@ -163,7 +177,7 @@ Nengo.NetGraph = function(parent, args) {
     this.svg.insertBefore(defs, this.svg.firstChild);
 
     // Connect to server
-    this.ws = Nengo.create_websocket(args.uid);
+    this.ws = utils.create_websocket(args.uid);
     this.ws.onmessage = function(event) {
         self.on_message(event);
     };
@@ -198,7 +212,7 @@ Nengo.NetGraph = function(parent, args) {
     interact(this.svg)
         .draggable({
             onstart: function() {
-                self.menu.hide_any();
+                menu.hide_any();
             },
             onmove: function(event) {
                 self.offsetX += event.dx / self.get_scaled_width();
@@ -213,9 +227,9 @@ Nengo.NetGraph = function(parent, args) {
                     self.svg_conns[key].redraw();
                 }
 
-                viewport.x = self.offsetX;
-                viewport.y = self.offsetY;
-                viewport.redraw_all();
+                self.viewport.x = self.offsetX;
+                self.viewport.y = self.offsetY;
+                self.viewport.redraw_all();
 
                 self.scaleMiniMapViewBox();
 
@@ -235,7 +249,7 @@ Nengo.NetGraph = function(parent, args) {
         .on('wheel', function(event) {
             event.preventDefault();
 
-            self.menu.hide_any();
+            menu.hide_any();
             var x = (event.clientX) / self.width;
             var y = (event.clientY - self.tool_height) / self.height;
 
@@ -263,7 +277,7 @@ Nengo.NetGraph = function(parent, args) {
                 scale = 1. / scale;
             }
 
-            Nengo.Component.save_components();
+            comp.save_all_components();
 
             var xx = x / self.scale - self.offsetX;
             var yy = y / self.scale - self.offsetY;
@@ -271,9 +285,9 @@ Nengo.NetGraph = function(parent, args) {
             self.offsetY = (self.offsetY + yy) / scale - yy;
 
             self.scale = scale * self.scale;
-            viewport.x = self.offsetX;
-            viewport.y = self.offsetY;
-            viewport.redraw_all();
+            self.viewport.x = self.offsetX;
+            self.viewport.y = self.offsetY;
+            self.viewport.redraw_all();
 
             self.scaleMiniMapViewBox();
 
@@ -285,14 +299,14 @@ Nengo.NetGraph = function(parent, args) {
             });
         });
 
-    this.menu = new Nengo.Menu(self.parent);
+    this.menu = new menu.Menu(self.parent);
 
     // Determine when to pull up the menu
     interact(this.svg)
         .on('hold', function(event) { // Change to 'tap' for right click
             if (event.button == 0) {
                 if (self.menu.visible_any()) {
-                    self.menu.hide_any();
+                    menu.hide_any();
                 } else {
                     self.menu.show(event.clientX, event.clientY,
                                    self.generate_menu());
@@ -303,7 +317,7 @@ Nengo.NetGraph = function(parent, args) {
         .on('tap', function(event) { // Get rid of menus when clicking off
             if (event.button == 0) {
                 if (self.menu.visible_any()) {
-                    self.menu.hide_any();
+                    menu.hide_any();
                 }
             }
         });
@@ -311,16 +325,17 @@ Nengo.NetGraph = function(parent, args) {
     $(this.svg).bind('contextmenu', function(event) {
         event.preventDefault();
         if (self.menu.visible_any()) {
-            self.menu.hide_any();
+            menu.hide_any();
         } else {
             self.menu.show(event.clientX, event.clientY, self.generate_menu());
         }
     });
 
     this.create_minimap();
+    this.update_fonts();
 };
 
-Nengo.NetGraph.prototype.generate_menu = function() {
+NetGraph.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['Auto-layout', function() {
@@ -332,7 +347,7 @@ Nengo.NetGraph.prototype.generate_menu = function() {
 /**
  * Event handler for received WebSocket messages
  */
-Nengo.NetGraph.prototype.on_message = function(event) {
+NetGraph.prototype.on_message = function(event) {
     data = JSON.parse(event.data);
     if (data.type === 'net') {
         this.create_object(data);
@@ -366,9 +381,9 @@ Nengo.NetGraph.prototype.on_message = function(event) {
     } else if (data.type === 'config') {
         // Anything about the config of a component has changed
         var uid = data.uid;
-        for (var i = 0; i < Nengo.Component.components.length; i++) {
-            if (Nengo.Component.components[i].uid === uid) {
-                Nengo.Component.components[i].update_layout(data.config);
+        for (var i = 0; i < comp.all_components.length; i++) {
+            if (comp.all_components[i].uid === uid) {
+                comp.all_components[i].update_layout(data.config);
                 break;
             }
         }
@@ -395,9 +410,9 @@ Nengo.NetGraph.prototype.on_message = function(event) {
 
     } else if (data.type === 'delete_graph') {
         var uid = data.uid;
-        for (var i = 0; i < Nengo.Component.components.length; i++) {
-            if (Nengo.Component.components[i].uid === uid) {
-                Nengo.Component.components[i].remove(true, data.notify_server);
+        for (var i = 0; i < comp.all_components.length; i++) {
+            if (comp.all_components[i].uid === uid) {
+                comp.all_components[i].remove(true, data.notify_server);
                 break;
             }
         }
@@ -410,24 +425,24 @@ Nengo.NetGraph.prototype.on_message = function(event) {
 /**
  * Report an event back to the server
  */
-Nengo.NetGraph.prototype.notify = function(info) {
+NetGraph.prototype.notify = function(info) {
     this.ws.send(JSON.stringify(info));
 };
 
 /**
  * Pan the screen (and redraw accordingly)
  */
-Nengo.NetGraph.prototype.set_offset = function(x, y) {
+NetGraph.prototype.set_offset = function(x, y) {
     this.offsetX = x;
     this.offsetY = y;
     this.redraw();
 
-    viewport.x = x;
-    viewport.y = y;
-    viewport.redraw_all();
+    this.viewport.x = x;
+    this.viewport.y = y;
+    this.viewport.redraw_all();
 };
 
-Nengo.NetGraph.prototype.update_fonts = function() {
+NetGraph.prototype.update_fonts = function() {
     if (this.zoom_fonts) {
         $('#main').css('font-size', 3 * this.scale * this.font_size/100 + 'em');
     } else {
@@ -438,7 +453,7 @@ Nengo.NetGraph.prototype.update_fonts = function() {
 /**
  * Redraw all elements
  */
-Nengo.NetGraph.prototype.redraw = function() {
+NetGraph.prototype.redraw = function() {
     for (var key in this.svg_objects) {
         this.svg_objects[key].redraw();
     }
@@ -450,7 +465,7 @@ Nengo.NetGraph.prototype.redraw = function() {
 /**
  * Helper function for correctly creating SVG elements.
  */
-Nengo.NetGraph.prototype.createSVGElement = function(tag) {
+NetGraph.prototype.createSVGElement = function(tag) {
     return document.createElementNS("http://www.w3.org/2000/svg", tag);
 };
 
@@ -460,11 +475,11 @@ Nengo.NetGraph.prototype.createSVGElement = function(tag) {
  * If an existing NetGraphConnection is looking for this item, it will be
  * notified
  */
-Nengo.NetGraph.prototype.create_object = function(info) {
-    var item_mini = new Nengo.NetGraphItem(this, info, true);
+NetGraph.prototype.create_object = function(info) {
+    var item_mini = new NetGraphItem(this, info, true);
     this.minimap_objects[info.uid] = item_mini;
 
-    var item = new Nengo.NetGraphItem(this, info, false, item_mini);
+    var item = new NetGraphItem(this, info, false, item_mini);
     this.svg_objects[info.uid] = item;
 
     this.detect_collapsed_conns(item.uid);
@@ -476,19 +491,18 @@ Nengo.NetGraph.prototype.create_object = function(info) {
 /**
  * Create a new NetGraphConnection.
  */
-Nengo.NetGraph.prototype.create_connection = function(info) {
-    var conn_mini = new Nengo.NetGraphConnection(this, info, true);
+NetGraph.prototype.create_connection = function(info) {
+    var conn_mini = new NetGraphConnection(this, info, true);
     this.minimap_conns[info.uid] = conn_mini;
 
-    var conn = new Nengo.NetGraphConnection(this, info, false, conn_mini);
+    var conn = new NetGraphConnection(this, info, false, conn_mini);
     this.svg_conns[info.uid] = conn;
 };
 
 /**
  * Handler for resizing the full SVG.
  */
-Nengo.NetGraph.prototype.on_resize = function(event) {
-
+NetGraph.prototype.on_resize = function(event) {
     var width = $(this.svg).width();
     var height = $(this.svg).height();
 
@@ -515,21 +529,21 @@ Nengo.NetGraph.prototype.on_resize = function(event) {
 /**
  * Return the pixel width of the SVG times the current scale factor.
  */
-Nengo.NetGraph.prototype.get_scaled_width = function() {
+NetGraph.prototype.get_scaled_width = function() {
     return this.width * this.scale;
 };
 
 /**
  * Return the pixel height of the SVG times the current scale factor.
  */
-Nengo.NetGraph.prototype.get_scaled_height = function() {
+NetGraph.prototype.get_scaled_height = function() {
     return this.height * this.scale;
 };
 
 /**
  * Expand or collapse a network.
  */
-Nengo.NetGraph.prototype.toggle_network = function(uid) {
+NetGraph.prototype.toggle_network = function(uid) {
     var item = this.svg_objects[uid];
     if (item.expanded) {
         item.collapse(true);
@@ -545,7 +559,7 @@ Nengo.NetGraph.prototype.toggle_network = function(uid) {
  * collapsed network. When it does appear, NetGraph.detect_collapsed will
  * handle notifying the NetGraphConnection.
  */
-Nengo.NetGraph.prototype.register_conn = function(conn, target) {
+NetGraph.prototype.register_conn = function(conn, target) {
     if (this.collapsed_conns[target] === undefined) {
         this.collapsed_conns[target] = [conn];
     } else {
@@ -565,7 +579,7 @@ Nengo.NetGraph.prototype.register_conn = function(conn, target) {
  * an item is created, this function is used to see if any
  * NetGraphConnections are waiting for it, and notifies them.
  */
-Nengo.NetGraph.prototype.detect_collapsed_conns = function(uid) {
+NetGraph.prototype.detect_collapsed_conns = function(uid) {
     var conns = this.collapsed_conns[uid];
     if (conns !== undefined) {
         delete this.collapsed_conns[uid];
@@ -585,7 +599,7 @@ Nengo.NetGraph.prototype.detect_collapsed_conns = function(uid) {
 /**
  * Create a minimap.
  */
-Nengo.NetGraph.prototype.create_minimap = function() {
+NetGraph.prototype.create_minimap = function() {
     var self = this;
 
     this.minimap_div = document.createElement('div');
@@ -618,7 +632,7 @@ Nengo.NetGraph.prototype.create_minimap = function() {
     this.toggleMiniMap();
 };
 
-Nengo.NetGraph.prototype.toggleMiniMap = function() {
+NetGraph.prototype.toggleMiniMap = function() {
     if (this.mm_display == true) {
         $('.minimap')[0].style.visibility = 'hidden';
         this.g_conns_mini.style.opacity = 0;
@@ -634,7 +648,7 @@ Nengo.NetGraph.prototype.toggleMiniMap = function() {
 /**
  * Calculate the minimap position offsets and scaling.
  */
-Nengo.NetGraph.prototype.scaleMiniMap = function() {
+NetGraph.prototype.scaleMiniMap = function() {
     if (!this.mm_display) {
         return;
     }
@@ -702,7 +716,7 @@ Nengo.NetGraph.prototype.scaleMiniMap = function() {
  * Calculate which part of the map is being displayed on the
  * main viewport and scale the viewbox to reflect that.
  */
-Nengo.NetGraph.prototype.scaleMiniMapViewBox = function() {
+NetGraph.prototype.scaleMiniMapViewBox = function() {
     if (!this.mm_display) {
         return;
     }
@@ -726,3 +740,5 @@ Nengo.NetGraph.prototype.scaleMiniMapViewBox = function() {
     this.view.setAttribute('width', w / this.scale);
     this.view.setAttribute('height', h / this.scale);
 };
+
+module.exports = NetGraph;

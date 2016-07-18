@@ -9,11 +9,20 @@
  * @param {dict} args - A set of constructor arguments, including:
  * @param {int} args.id - the id of the server-side SimControl to connect to
  */
-Nengo.SimControl = function(div, args) {
+
+var d3 = require('d3');
+var interact = require('interact.js');
+
+require('./sim_control.css');
+var Modal = require('./modal');
+var utils = require('./utils');
+
+var SimControl = function(div, args, editor) {
     if (args.uid[0] === '<') {
         console.log("invalid uid for SimControl: " + args.uid);
     }
     var self = this;
+    this.modal = new Modal($('.modal').first(), editor, this);
 
     div.classList.add('sim_control');
     this.div = div;
@@ -36,7 +45,7 @@ Nengo.SimControl = function(div, args) {
     this.pending_update = false;
 
     // Create the WebSocket to communicate with the server
-    this.ws = Nengo.create_websocket(args.uid);
+    this.ws = utils.create_websocket(args.uid);
 
     this.ws.onmessage = function(event) {
         self.on_message(event);
@@ -46,7 +55,7 @@ Nengo.SimControl = function(div, args) {
     };
 
     // Create the TimeSlider
-    this.time_slider = new Nengo.TimeSlider({
+    this.time_slider = new TimeSlider({
         x: 200,
         y: 10,
         sim: this,
@@ -67,7 +76,7 @@ Nengo.SimControl = function(div, args) {
             event.stopPropagation();
         }
     };
-    Nengo.set_transform(this.pause_button, this.div.clientWidth - 100, 30);
+    utils.set_transform(this.pause_button, this.div.clientWidth - 100, 30);
 
     this.pause_button_icon = $('#pause_button_icon')[0];
 
@@ -76,7 +85,7 @@ Nengo.SimControl = function(div, args) {
     this.reset_button.onclick = function(event) {
         self.reset();
     };
-    Nengo.set_transform(this.reset_button, 110, 30);
+    utils.set_transform(this.reset_button, 110, 30);
 
     // Create the speed and rate update sliders
     this.rate_tr = $('#rate_tr')[0];
@@ -126,7 +135,7 @@ Nengo.SimControl = function(div, args) {
 /**
  * Event handler for received WebSocket messages.
  */
-Nengo.SimControl.prototype.on_message = function(event) {
+SimControl.prototype.on_message = function(event) {
     if (typeof event.data === 'string') {
         if (event.data.substring(0, 7) === 'status:') {
             this.set_status(event.data.substring(7));
@@ -155,20 +164,20 @@ Nengo.SimControl.prototype.on_message = function(event) {
     }
 };
 
-Nengo.SimControl.prototype.disconnected = function() {
+SimControl.prototype.disconnected = function() {
     $('#main').css('background-color', '#a94442');
-    Nengo.modal.title("Nengo has stopped running");
-    Nengo.modal.text_body("To continue working with your model, re-run " +
-                          "nengo and click Refresh.", "danger");
-    Nengo.modal.footer('refresh');
-    Nengo.modal.show();
+    this.modal.title("Nengo has stopped running");
+    this.modal.text_body("To continue working with your model, re-run " +
+                         "nengo and click Refresh.", "danger");
+    this.modal.footer('refresh');
+    this.modal.show();
 };
 
-Nengo.SimControl.prototype.set_backend = function(backend) {
+SimControl.prototype.set_backend = function(backend) {
     this.ws.send('backend:' + backend);
 };
 
-Nengo.SimControl.prototype.set_status = function(status) {
+SimControl.prototype.set_status = function(status) {
     var icon;
     status = status.trim();
     if (status === 'building') {
@@ -196,7 +205,7 @@ Nengo.SimControl.prototype.set_status = function(status) {
     this.pause_button_icon.className = "glyphicon " + icon;
 };
 
-Nengo.SimControl.prototype.start_rotating_cog = function() {
+SimControl.prototype.start_rotating_cog = function() {
     var self = this;
     this.rotation = 0;
     this.rotationInterval = window.setInterval(function() {
@@ -208,7 +217,7 @@ Nengo.SimControl.prototype.start_rotating_cog = function() {
     $('#pause_button').addClass('play-pause-button-cog');
 };
 
-Nengo.SimControl.prototype.stop_rotating_cog = function() {
+SimControl.prototype.stop_rotating_cog = function() {
     this.pause_button.removeAttribute("disabled");
     $('#pause_button').removeClass('play-pause-button-cog');
     window.clearInterval(this.rotationInterval);
@@ -218,7 +227,7 @@ Nengo.SimControl.prototype.stop_rotating_cog = function() {
 /**
  * Make sure update() will be called in the next 10ms.
  */
-Nengo.SimControl.prototype.schedule_update = function() {
+SimControl.prototype.schedule_update = function() {
     if (this.pending_update == false) {
         this.pending_update = true;
         var self = this;
@@ -231,14 +240,14 @@ Nengo.SimControl.prototype.schedule_update = function() {
 /**
  * Add to list of functions to be called when SimControl options change.
  */
-Nengo.SimControl.prototype.register_listener = function(func) {
+SimControl.prototype.register_listener = function(func) {
     this.listeners.push(func);
 };
 
 /**
  * Update the visual display.
  */
-Nengo.SimControl.prototype.update = function() {
+SimControl.prototype.update = function() {
     this.pending_update = false;
 
     this.ticks_tr.innerHTML =
@@ -249,21 +258,21 @@ Nengo.SimControl.prototype.update = function() {
     this.time_slider.update_times(this.time);
 };
 
-Nengo.SimControl.prototype.pause = function() {
+SimControl.prototype.pause = function() {
     if (!this.paused) {
         this.ws.send('pause');
     }
     this.paused = true;
 };
 
-Nengo.SimControl.prototype.play = function() {
+SimControl.prototype.play = function() {
     if (this.paused) {
         this.ws.send('continue');
         this.paused = false;
     }
 };
 
-Nengo.SimControl.prototype.on_pause_click = function(event) {
+SimControl.prototype.on_pause_click = function(event) {
     if (this.paused) {
         this.play();
     } else {
@@ -274,19 +283,19 @@ Nengo.SimControl.prototype.on_pause_click = function(event) {
 /**
  * Informs the backend simulator of the time being reset.
  */
-Nengo.SimControl.prototype.reset = function() {
+SimControl.prototype.reset = function() {
     this.paused = true;
     this.ws.send('reset');
 };
 
-Nengo.SimControl.prototype.on_resize = function(event) {
+SimControl.prototype.on_resize = function(event) {
     this.time_slider.resize(this.div.clientWidth - 290,
                             this.div.clientHeight - 20);
-    Nengo.set_transform(this.pause_button, this.div.clientWidth - 100, 30);
-    Nengo.set_transform(this.reset_button, 110, 30);
+    utils.set_transform(this.pause_button, this.div.clientWidth - 100, 30);
+    utils.set_transform(this.reset_button, 110, 30);
 };
 
-Nengo.TimeSlider = function(args) {
+var TimeSlider = function(args) {
     var self = this;
 
     // The SimControl object
@@ -294,7 +303,7 @@ Nengo.TimeSlider = function(args) {
 
     // Get reference to the overall div
     this.div = $(".time_slider")[0];
-    Nengo.set_transform(this.div, args.x, args.y);
+    utils.set_transform(this.div, args.x, args.y);
 
     // Create reference to the div indicating currently shown time
     this.shown_div = $(".shown_time")[0];
@@ -326,14 +335,14 @@ Nengo.TimeSlider = function(args) {
             onmove: function(event) {
                 // Determine where we have been dragged to in time
                 var x = self.kept_scale(self.first_shown_time) + event.dx;
-                var new_time = Nengo.clip(
+                var new_time = utils.clip(
                     self.kept_scale.invert(x),
                     self.last_time - self.kept_time,
                     self.last_time - self.shown_time);
 
                 self.first_shown_time = new_time;
                 x = self.kept_scale(new_time);
-                Nengo.set_transform(event.target, x, 0);
+                utils.set_transform(event.target, x, 0);
 
                 // Update any components who need to know the time changed
                 self.sim.div.dispatchEvent(new Event('adjust_time'));
@@ -351,12 +360,12 @@ Nengo.TimeSlider = function(args) {
             var xb1 = xb0 + event.deltaRect.right;
 
             var min_width = 45;
-            xa1 = Nengo.clip(xa1, xmin, xb0 - min_width);
-            xb1 = Nengo.clip(xb1, xa0 + min_width, xmax);
+            xa1 = utils.clip(xa1, xmin, xb0 - min_width);
+            xb1 = utils.clip(xb1, xa0 + min_width, xmax);
 
             // Set slider width and position
             event.target.style.width = (xb1 - xa1) + 'px';
-            Nengo.set_transform(event.target, xa1, 0);
+            utils.set_transform(event.target, xa1, 0);
 
             // Update times
             var ta1 = self.kept_scale.invert(xa1);
@@ -383,17 +392,17 @@ Nengo.TimeSlider = function(args) {
         .call(this.axis);
 };
 
-Nengo.TimeSlider.prototype.jump_to_end = function() {
+TimeSlider.prototype.jump_to_end = function() {
     this.first_shown_time = this.last_time - this.shown_time;
 
     x = this.kept_scale(this.first_shown_time);
-    Nengo.set_transform(this.shown_div, x, 0);
+    utils.set_transform(this.shown_div, x, 0);
 
     // Update any components who need to know the time changed
     this.sim.div.dispatchEvent(new Event('adjust_time'));
 };
 
-Nengo.TimeSlider.prototype.reset = function() {
+TimeSlider.prototype.reset = function() {
     this.last_time = 0.0;
     this.first_shown_time = this.last_time - this.shown_time;
 
@@ -405,7 +414,7 @@ Nengo.TimeSlider.prototype.reset = function() {
         .call(this.axis);
 
     x = this.kept_scale(this.first_shown_time);
-    Nengo.set_transform(this.shown_div, x, 0);
+    utils.set_transform(this.shown_div, x, 0);
 
     // Update any components who need to know the time changed
     this.sim.div.dispatchEvent(new Event('adjust_time'));
@@ -414,14 +423,14 @@ Nengo.TimeSlider.prototype.reset = function() {
 /**
  * Adjust size and location of parts based on overall size.
  */
-Nengo.TimeSlider.prototype.resize = function(width, height) {
+TimeSlider.prototype.resize = function(width, height) {
     this.div.style.width = width;
     this.div.style.height = height;
     this.kept_scale.range([0, width]);
     this.shown_div.style.height = height;
     this.shown_div.style.width = width * this.shown_time / this.kept_time;
-    Nengo.set_transform(this.shown_div,
-                      this.kept_scale(this.first_shown_time), 0);
+    utils.set_transform(this.shown_div,
+                        this.kept_scale(this.first_shown_time), 0);
 
     if (this.axis_g !== undefined) {
         this.axis_g.call(this.axis);
@@ -431,11 +440,11 @@ Nengo.TimeSlider.prototype.resize = function(width, height) {
 /**
  * Update the axis given a new time point from the simulator.
  */
-Nengo.TimeSlider.prototype.update_times = function(time) {
+TimeSlider.prototype.update_times = function(time) {
     var delta = time - this.last_time; // Time since last update_time()
 
     if (delta < 0) {
-        self.sim.div.dispatchEvent(new Event('sim_reset'));
+        this.sim.div.dispatchEvent(new Event('sim_reset'));
         return;
     }
     this.last_time = time;
@@ -447,3 +456,5 @@ Nengo.TimeSlider.prototype.update_times = function(time) {
     // Update the time axis display
     this.axis_g.call(this.axis);
 };
+
+module.exports = SimControl;

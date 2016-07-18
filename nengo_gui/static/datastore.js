@@ -4,12 +4,12 @@
  *
  * @constructor
  * @param {int} dims - number of data points per time
- * @param {Nengo.SimControl} sim - the simulation controller
+ * @param {SimControl} sim - the simulation controller
  * @param {float} synapse - the filter to apply to the data
  */
 
-Nengo.DataStore = function(dims, sim, synapse) {
-    this.synapse = synapse; // TODO: get from Nengo.SimControl
+var DataStore = function(dims, sim, synapse) {
+    this.synapse = synapse; // TODO: get from SimControl
     this.sim = sim;
     this.times = [];
     this.data = [];
@@ -23,7 +23,7 @@ Nengo.DataStore = function(dims, sim, synapse) {
  *
  * @param {array} row - dims+1 data points, with time as the first one
  */
-Nengo.DataStore.prototype.push = function(row) {
+DataStore.prototype.push = function(row) {
     // If you get data out of order, wipe out the later data
     if (row[0] < this.times[this.times.length - 1]) {
         var index = 0;
@@ -64,7 +64,7 @@ Nengo.DataStore.prototype.push = function(row) {
  * This will clear current data so there is
  * nothing to display on a reset event.
  */
-Nengo.DataStore.prototype.reset = function() {
+DataStore.prototype.reset = function() {
     var index = 0;
     this.times.splice(index, this.times.length);
     for (var i = 0; i < this.data.length; i++) {
@@ -77,9 +77,9 @@ Nengo.DataStore.prototype.reset = function() {
  *
  * This should be call periodically (before visual updates, but not necessarily
  * after every push()).  Removes old data outside the storage limit set by
- * the Nengo.SimControl.
+ * the SimControl.
  */
-Nengo.DataStore.prototype.update = function() {
+DataStore.prototype.update = function() {
     // Figure out how many extra values we have (values whose time stamp is
     // outside the range to keep)
     var extra = 0;
@@ -102,7 +102,7 @@ Nengo.DataStore.prototype.update = function() {
 /**
  * Return just the data that is to be shown.
  */
-Nengo.DataStore.prototype.get_shown_data = function() {
+DataStore.prototype.get_shown_data = function() {
     // Determine time range
     var t1 = this.sim.time_slider.first_shown_time;
     var t2 = t1 + this.sim.time_slider.shown_time;
@@ -126,12 +126,12 @@ Nengo.DataStore.prototype.get_shown_data = function() {
     return shown;
 };
 
-Nengo.DataStore.prototype.is_at_end = function() {
+DataStore.prototype.is_at_end = function() {
     var ts = this.sim.time_slider;
     return (ts.last_time < ts.first_shown_time + ts.shown_time + 1e-9);
 };
 
-Nengo.DataStore.prototype.get_last_data = function() {
+DataStore.prototype.get_last_data = function() {
     // Determine time range
     var t1 = this.sim.time_slider.first_shown_time;
     var t2 = t1 + this.sim.time_slider.shown_time;
@@ -156,11 +156,12 @@ Nengo.DataStore.prototype.get_last_data = function() {
  *
  * @constructor
  * @param {int} dims - number of data points per time
- * @param {Nengo.SimControl} sim - the simulation controller
+ * @param {SimControl} sim - the simulation controller
  * @param {float} synapse - the filter to apply to the data
  */
-Nengo.GrowableDataStore = function(dims, sim, synapse) {
-    Nengo.DataStore.call(this, dims, sim, synapse);
+var GrowableDataStore = function(dims, sim, synapse) {
+    DataStore.call(this, dims, sim, synapse);
+
     this._dims = dims;
 
     Object.defineProperty(this, "dims", {
@@ -182,10 +183,10 @@ Nengo.GrowableDataStore = function(dims, sim, synapse) {
     });
 };
 
-Nengo.GrowableDataStore.prototype = Object.create(Nengo.DataStore.prototype);
-Nengo.GrowableDataStore.prototype.constructor = Nengo.GrowableDataStore;
+GrowableDataStore.prototype = Object.create(DataStore.prototype);
+GrowableDataStore.prototype.constructor = GrowableDataStore;
 
-Nengo.GrowableDataStore.prototype.get_offset = function() {
+GrowableDataStore.prototype.get_offset = function() {
     var offset = [];
     offset.push(0);
 
@@ -205,7 +206,7 @@ Nengo.GrowableDataStore.prototype.get_offset = function() {
  *
  * @param {array} row - dims+1 data points, with time as the first one
  */
-Nengo.GrowableDataStore.prototype.push = function(row) {
+GrowableDataStore.prototype.push = function(row) {
     // Get the offsets
     var offset = this.get_offset();
 
@@ -247,10 +248,10 @@ Nengo.GrowableDataStore.prototype.push = function(row) {
 /**
  * Reset dimensions before resetting the datastore.
  */
-Nengo.GrowableDataStore.prototype.reset = function() {
+GrowableDataStore.prototype.reset = function() {
     console.log("resetting growable");
     this._dims = 1;
-    Nengo.DataStore.call(this, this._dims, this.sim, this.synapse);
+    DataStore.call(this, this._dims, this.sim, this.synapse);
 };
 
 /**
@@ -258,9 +259,9 @@ Nengo.GrowableDataStore.prototype.reset = function() {
  *
  * This should be call periodically (before visual updates, but not necessarily
  * after every push()).  Removes old data outside the storage limit set by
- * the Nengo.SimControl.
+ * the SimControl.
  */
-Nengo.GrowableDataStore.prototype.update = function() {
+GrowableDataStore.prototype.update = function() {
     // Figure out how many extra values we have (values whose time stamp is
     // outside the range to keep)
     var offset = this.get_offset();
@@ -285,7 +286,7 @@ Nengo.GrowableDataStore.prototype.update = function() {
 /**
  * Return just the data that is to be shown.
  */
-Nengo.GrowableDataStore.prototype.get_shown_data = function() {
+GrowableDataStore.prototype.get_shown_data = function() {
     var offset = this.get_offset();
     // Determine time range
     var t1 = this.sim.time_slider.first_shown_time;
@@ -336,7 +337,7 @@ Nengo.GrowableDataStore.prototype.get_shown_data = function() {
     return shown;
 };
 
-Nengo.GrowableDataStore.prototype.get_last_data = function() {
+GrowableDataStore.prototype.get_last_data = function() {
     var offset = this.get_offset();
     // Determine time range
     var t1 = this.sim.time_slider.first_shown_time;
@@ -357,3 +358,6 @@ Nengo.GrowableDataStore.prototype.get_last_data = function() {
     }
     return shown;
 };
+
+module.exports.DataStore = DataStore;
+module.exports.GrowableDataStore = GrowableDataStore;

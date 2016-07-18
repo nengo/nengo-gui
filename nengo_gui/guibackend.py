@@ -197,8 +197,12 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
             html = html.decode("utf-8")
 
         # fill in the javascript needed and return the complete page
-        components = page.create_javascript()
-        data = (html % dict(components=components)).encode('utf-8')
+        main_components, components = page.create_javascript()
+
+        data = html % dict(
+            main_components=main_components, components=components)
+        data = data.encode('utf-8')
+
         return server.HttpResponse(data)
 
     def serve_favicon(self):

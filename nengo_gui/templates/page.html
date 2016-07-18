@@ -145,12 +145,11 @@
     <div id="loading-div" style="z-index:100000002; position:absolute; top:0; right:0; bottom:0; left:0; background:#ffffff;"></div>
     <script>
       function onload() {
-        viewport = new Nengo.Viewport();
-        main = document.getElementById("main");
-        control = document.getElementById("control");
-        %(components)s
         body = document.getElementById("body");
         body.removeChild(document.getElementById("loading-div"));
+        %(main_components)s
+        nengo = new Nengo(simargs, filename, editoruid, netgraphargs);
+        %(components)s
       }
     </script>
     <script src="static/dist/nengo.js" type="text/javascript" charset="utf-8"></script>

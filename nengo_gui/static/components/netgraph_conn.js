@@ -2,7 +2,7 @@
  * Network diagram connection line.
  *
  * @constructor
- * @param {Nengo.NetGraph} ng - The containing Nengo.NetGraph
+ * @param {NetGraph} ng - The containing NetGraph
  * @param {dict} info - A set of constructor arguments, including:
  * @param {string} info.uid - A unique identifier
  * @param {string|null} info.parent - A containing NetGraphItem
@@ -10,7 +10,7 @@
  * @param {string[]} info.post - uid to connect to and its parents
  */
 
-Nengo.NetGraphConnection = function(ng, info, minimap, mini_conn) {
+var NetGraphConnection = function(ng, info, minimap, mini_conn) {
     this.ng = ng;
     this.uid = info.uid;
 
@@ -67,7 +67,7 @@ Nengo.NetGraphConnection = function(ng, info, minimap, mini_conn) {
     this.g_conns.appendChild(this.g);
 };
 
-Nengo.NetGraphConnection.prototype.set_recurrent = function(recurrent) {
+NetGraphConnection.prototype.set_recurrent = function(recurrent) {
     if (this.recurrent === recurrent) {
         return;
     }
@@ -76,7 +76,7 @@ Nengo.NetGraphConnection.prototype.set_recurrent = function(recurrent) {
     this.create_line();
 };
 
-Nengo.NetGraphConnection.prototype.create_line = function() {
+NetGraphConnection.prototype.create_line = function() {
     if (this.recurrent) {
         this.recurrent_ellipse = this.ng.createSVGElement('path');
         this.recurrent_ellipse.setAttribute(
@@ -109,7 +109,7 @@ Nengo.NetGraphConnection.prototype.create_line = function() {
     }
 };
 
-Nengo.NetGraphConnection.prototype.remove_line = function() {
+NetGraphConnection.prototype.remove_line = function() {
     if (this.recurrent) {
         this.g.removeChild(this.recurrent_ellipse);
         this.g.removeChild(this.marker);
@@ -126,7 +126,7 @@ Nengo.NetGraphConnection.prototype.remove_line = function() {
 /**
  * Set the item connecting from.
  */
-Nengo.NetGraphConnection.prototype.set_pre = function(pre) {
+NetGraphConnection.prototype.set_pre = function(pre) {
     if (this.pre !== null) {
         // If we're currently connected, disconnect
         var index = this.pre.conn_out.indexOf(this);
@@ -145,7 +145,7 @@ Nengo.NetGraphConnection.prototype.set_pre = function(pre) {
 /**
  * Set the item connecting to.
  */
-Nengo.NetGraphConnection.prototype.set_post = function(post) {
+NetGraphConnection.prototype.set_post = function(post) {
     if (this.post !== null) {
         // If we're currently connected, disconnect
         var index = this.post.conn_in.indexOf(this);
@@ -164,7 +164,7 @@ Nengo.NetGraphConnection.prototype.set_post = function(post) {
 /**
  * Determine the best available item to connect from.
  */
-Nengo.NetGraphConnection.prototype.find_pre = function() {
+NetGraphConnection.prototype.find_pre = function() {
     for (var i in this.pres) {
         var pre = this.objects[this.pres[i]];
         if (pre !== undefined) {
@@ -180,7 +180,7 @@ Nengo.NetGraphConnection.prototype.find_pre = function() {
 /**
  * Determine the best available item to connect to.
  */
-Nengo.NetGraphConnection.prototype.find_post = function() {
+NetGraphConnection.prototype.find_post = function() {
     for (var i in this.posts) {
         var post = this.objects[this.posts[i]];
         if (post !== undefined) {
@@ -193,7 +193,7 @@ Nengo.NetGraphConnection.prototype.find_post = function() {
     return null;
 };
 
-Nengo.NetGraphConnection.prototype.set_pres = function(pres) {
+NetGraphConnection.prototype.set_pres = function(pres) {
     this.pres = pres;
     this.set_pre(this.find_pre());
 
@@ -202,7 +202,7 @@ Nengo.NetGraphConnection.prototype.set_pres = function(pres) {
     }
 };
 
-Nengo.NetGraphConnection.prototype.set_posts = function(posts) {
+NetGraphConnection.prototype.set_posts = function(posts) {
     this.posts = posts;
     this.set_post(this.find_post());
 
@@ -214,7 +214,7 @@ Nengo.NetGraphConnection.prototype.set_posts = function(posts) {
 /**
  * Remove this connection.
  */
-Nengo.NetGraphConnection.prototype.remove = function() {
+NetGraphConnection.prototype.remove = function() {
     if (!this.minimap && this.parent !== null) {
         var index = this.parent.child_connections.indexOf(this);
         if (index === -1) {
@@ -252,7 +252,7 @@ Nengo.NetGraphConnection.prototype.remove = function() {
 /**
  * Redraw the connection.
  */
-Nengo.NetGraphConnection.prototype.redraw = function() {
+NetGraphConnection.prototype.redraw = function() {
     if (this.pre === null || this.post === null) {
         if (this.line !== undefined) {
             this.line.setAttribute('visibility', 'hidden');
@@ -366,7 +366,7 @@ Nengo.NetGraphConnection.prototype.redraw = function() {
  * @param {number} alpha - the angle between zero and the top right corner
  *                         of the object
  **/
-Nengo.NetGraphConnection.prototype.intersect_length = function(
+NetGraphConnection.prototype.intersect_length = function(
         theta, alpha, width, height) {
     var quad = 0;
     var beta = 2 * (Math.PI/2 - alpha); // Angle between top corners
@@ -393,3 +393,5 @@ Nengo.NetGraphConnection.prototype.intersect_length = function(
 
     return [x, y];
 };
+
+module.exports = NetGraphConnection;

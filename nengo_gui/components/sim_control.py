@@ -165,8 +165,7 @@ class SimControl(Component):
             self.last_status = status
         if self.send_config_options:
             client.write_text('sims:' + self.backend_options_html())
-            client.write_text('config'
-                              'Nengo.Toolbar.prototype.config_modal_show();')
+            client.write_text('confignengo.toolbar.config_modal_show();')
             self.send_config_options = False
 
     def get_status(self):
@@ -184,9 +183,7 @@ class SimControl(Component):
         info = dict(uid=id(self))
         fn = json.dumps(self.page.filename)
         js = self.javascript_config(info)
-        return ('sim = new Nengo.SimControl(control, %s);\n'
-                'toolbar = new Nengo.Toolbar(%s);\n'
-                'Nengo.sidemenu = new Nengo.SideMenu();' % (js, fn))
+        return ('var simargs = %s;\nvar filename = %s;' % (js, fn))
 
     def message(self, msg):
         if msg == 'pause':

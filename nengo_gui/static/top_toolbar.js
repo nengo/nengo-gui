@@ -7,36 +7,48 @@
  * @constructor
  * @param {string} filename - The name of the file opened
  */
-Nengo.Toolbar = function(filename) {
+
+require('./top_toolbar.css');
+var interact = require('interact.js');
+var menu = require('./menu');
+
+var Toolbar = function(filename, sim) {
     console.assert(typeof filename === 'string');
 
     var self = this;
+    self.sim = sim;
+    self.modal = self.sim.modal;
+    self.modal.toolbar = this; // TODO: remove this hack
+    self.netgraph = self.modal.netgraph;
+    self.hotkeys = self.modal.hotkeys;
+    self.editor = self.modal.editor;
+    self.config = self.netgraph.config;
 
     var main = document.getElementById('main');
 
     $('#Reset_layout_button')[0].addEventListener('click', function() {
-        Nengo.modal.title("Are you sure you wish to reset this layout, " +
-                        "removing all the graphs and resetting the position " +
-                        "of all items?");
-        Nengo.modal.text_body("This operation cannot be undone!", "danger");
-        Nengo.modal.footer('confirm_reset');
-        Nengo.modal.show();
+        self.modal.title("Are you sure you wish to reset this layout, " +
+                         "removing all the graphs and resetting the position " +
+                         "of all items?");
+        self.modal.text_body("This operation cannot be undone!", "danger");
+        self.modal.footer('confirm_reset');
+        self.modal.show();
     });
 
     $('#Undo_last_button')[0].addEventListener('click', function() {
-        Nengo.netgraph.notify({undo: "1"});
+        self.netgraph.notify({undo: "1"});
     });
     $('#Redo_last_button')[0].addEventListener('click', function() {
-        Nengo.netgraph.notify({undo: "0"});
+        self.netgraph.notify({undo: "0"});
     });
     $('#Config_button')[0].addEventListener('click', function() {
         self.config_modal();
     });
     $('#Sync_editor_button')[0].addEventListener('click', function() {
-        Nengo.ace.update_trigger = true;
+        self.editor.update_trigger = true;
     });
     $('#Help_button')[0].addEventListener('click', function() {
-        Nengo.hotkeys.callMenu();
+        self.hotkeys.callMenu();
     });
     $('#filename')[0].addEventListener('click', function() {
         self.save_as();
@@ -49,20 +61,20 @@ Nengo.Toolbar = function(filename) {
 
     this.toolbar = $('#toolbar_object')[0];
 
-    this.menu = new Nengo.Menu(this.toolbar);
+    this.menu = new menu.Menu(this.toolbar);
 
     interact(toolbar).on('tap', function() {
-        self.menu.hide_any();
+        menu.hide_any();
     });
 };
 
 /**
  * Trims the filename and sends it to the server.
  */
-Nengo.Toolbar.prototype.file_name = function() {
+Toolbar.prototype.file_name = function() {
     var filename = document.getElementById('open_file').value;
     filename = filename.replace("C:\\fakepath\\", "");
-    sim.ws.send('open' + filename);
+    this.sim.ws.send('open' + filename);
 };
 
 /**
@@ -70,7 +82,7 @@ Nengo.Toolbar.prototype.file_name = function() {
  *
  * This is done by deleting the config file and reloading the script.
  */
-Nengo.Toolbar.prototype.reset_model_layout = function() {
+Toolbar.prototype.reset_model_layout = function() {
     window.location.assign(
         '/?reset=True&filename=' + $("#filename")[0].innerHTML);
 };
@@ -80,25 +92,25 @@ Nengo.Toolbar.prototype.reset_model_layout = function() {
  *
  * This is done by calling the server to call config_modal_show with config data.
  */
-Nengo.Toolbar.prototype.config_modal = function() {
+Toolbar.prototype.config_modal = function() {
     // Doing it this way in case we need to save options to a file later
-    sim.ws.send('config');
+    this.sim.ws.send('config');
 };
 
-Nengo.Toolbar.prototype.config_modal_show = function() {
+Toolbar.prototype.config_modal_show = function() {
     var self = this;
 
     // Get current state in case user clicks cancel
-    var original = {zoom: Nengo.netgraph.zoom_fonts,
-                    font_size: Nengo.netgraph.font_size,
-                    aspect_resize: Nengo.netgraph.aspect_resize,
-                    auto_update: Nengo.ace.auto_update,
-                    transparent_nets: Nengo.netgraph.transparent_nets,
-                    scriptdir: Nengo.config.scriptdir};
+    var original = {zoom: self.netgraph.zoom_fonts,
+                    font_size: self.netgraph.font_size,
+                    aspect_resize: self.netgraph.aspect_resize,
+                    auto_update: self.editor.auto_update,
+                    transparent_nets: self.netgraph.transparent_nets,
+                    scriptdir: self.config.scriptdir};
 
-    Nengo.modal.title('Configure Options');
-    Nengo.modal.main_config();
-    Nengo.modal.footer('ok_cancel', function(e) {
+    self.modal.title('Configure Options');
+    self.modal.main_config();
+    self.modal.footer('ok_cancel', function(e) {
         var zoom = $('#zoom-fonts').prop('checked');
         var font_size = $('#config-fontsize').val();
         var fixed_resize = $('#fixed-resize').prop('checked');
@@ -110,12 +122,12 @@ Nengo.Toolbar.prototype.config_modal_show = function() {
         }
         $('#OK').attr('data-dismiss', 'modal');
     }, function() { // Cancel_function
-        Nengo.netgraph.zoom_fonts = original.zoom;
-        Nengo.netgraph.font_size = original.font_size;
-        Nengo.netgraph.transparent_nets = original.transparent_nets;
-        Nengo.netgraph.aspect_resize = original.aspect_resize;
-        Nengo.ace.auto_update = original.auto_update;
-        Nengo.config.scriptdir = original.scriptdir;
+        self.netgraph.zoom_fonts = original.zoom;
+        self.netgraph.font_size = original.font_size;
+        self.netgraph.transparent_nets = original.transparent_nets;
+        self.netgraph.aspect_resize = original.aspect_resize;
+        self.editor.auto_update = original.auto_update;
+        self.config.scriptdir = original.scriptdir;
         $('#cancel-button').attr('data-dismiss', 'modal');
     });
 
@@ -128,28 +140,28 @@ Nengo.Toolbar.prototype.config_modal_show = function() {
         },
     });
 
-    Nengo.modal.show();
+    self.modal.show();
 };
 
-Nengo.Toolbar.prototype.save_as = function() {
+Toolbar.prototype.save_as = function() {
     var self = this;
-    Nengo.modal.title("Save file as");
-    Nengo.modal.clear_body();
+    self.modal.title("Save file as");
+    self.modal.clear_body();
 
     var filename = $('#filename')[0].innerHTML;
 
     var $form = $('<form class="form-horizontal" id ' +
-        '="myModalForm"/>').appendTo(Nengo.modal.$body);
+        '="myModalForm"/>').appendTo(self.modal.$body);
     $('<div class="form-group" id="save-as-group">' +
         '<input type="text" id="save-as-filename" class="form-control" ' +
                'value="' + filename + '"/>' +
       '</div>').appendTo($form);
 
-    Nengo.modal.footer('ok_cancel', function() {
+    self.modal.footer('ok_cancel', function() {
         var save_as_filename = $('#save-as-filename')[0].value;
         if (save_as_filename !== filename) {
-            var editor_code = Nengo.ace.editor.getValue();
-            Nengo.ace.ws.send(JSON.stringify(
+            var editor_code = self.editor.editor.getValue();
+            self.editor.ws.send(JSON.stringify(
                 {code: editor_code, save: true, save_as: save_as_filename}
             ));
         }
@@ -161,5 +173,7 @@ Nengo.Toolbar.prototype.save_as = function() {
             $('#OK').click();
         }
     });
-    Nengo.modal.show();
+    self.modal.show();
 };
+
+module.exports = Toolbar;

@@ -3,8 +3,8 @@
  *
  * @constructor
  * @param {DOMElement} parent - the element to add this component to
- * @param {Nengo.SimControl} sim - the simulation controller
- * @param {dict} args - A set of constructor arguments (see Nengo.Component)
+ * @param {SimControl} sim - the simulation controller
+ * @param {dict} args - A set of constructor arguments (see Component)
  * @param {int} args.n_neurons - number of neurons
  *
  * Raster constructor is called by python server when a user requests a plot
@@ -12,16 +12,23 @@
  * netgraph.js {.on_message} function.
  */
 
-Nengo.Raster = function(parent, sim, args) {
-    Nengo.Component.call(this, parent, args);
+require('./raster.css');
+var d3 = require('d3');
+var Component = require('./component').Component;
+var DataStore = require('../datastore').DataStore;
+var TimeAxes = require('./time_axes');
+var utils = require('../utils');
+
+var Raster = function(parent, viewport, sim, args) {
+    Component.call(this, parent, viewport, args);
     var self = this;
     this.n_neurons = args.n_neurons || 1;
     this.sim = sim;
 
     // For storing the accumulated data
-    this.data_store = new Nengo.DataStore(1, this.sim, 0);
+    this.data_store = new DataStore(1, this.sim, 0);
 
-    this.axes2d = new Nengo.TimeAxes(this.div, args);
+    this.axes2d = new TimeAxes(this.div, args);
     this.axes2d.scale_y.domain([0, args.n_neurons]);
 
     // Call schedule_update whenever the time is adjusted in the SimControl
@@ -49,7 +56,7 @@ Nengo.Raster = function(parent, sim, args) {
 
     this.path.enter().append('path')
         .attr('class', 'line')
-        .style('stroke', Nengo.make_colors(1));
+        .style('stroke', utils.make_colors(1));
 
     this.update();
     this.on_resize(this.get_screen_width(), this.get_screen_height());
@@ -57,20 +64,20 @@ Nengo.Raster = function(parent, sim, args) {
     this.axes2d.fit_ticks(this);
 };
 
-Nengo.Raster.prototype = Object.create(Nengo.Component.prototype);
-Nengo.Raster.prototype.constructor = Nengo.Raster;
+Raster.prototype = Object.create(Component.prototype);
+Raster.prototype.constructor = Raster;
 
 /**
  * Receive new line data from the server.
  */
-Nengo.Raster.prototype.on_message = function(event) {
+Raster.prototype.on_message = function(event) {
     var time = new Float32Array(event.data, 0, 1);
     var data = new Int16Array(event.data, 4);
     this.data_store.push([time[0], data]);
     this.schedule_update();
 };
 
-Nengo.Raster.prototype.set_n_neurons = function(n_neurons) {
+Raster.prototype.set_n_neurons = function(n_neurons) {
     this.n_neurons = n_neurons;
     this.axes2d.scale_y.domain([0, n_neurons]);
     this.axes2d.axis_y.tickValues([0, n_neurons]);
@@ -80,11 +87,11 @@ Nengo.Raster.prototype.set_n_neurons = function(n_neurons) {
 /**
  * Redraw the lines and axis due to changed data.
  */
-Nengo.Raster.prototype.update = function() {
+Raster.prototype.update = function() {
     // Let the data store clear out old values
     this.data_store.update();
 
-    // Determine visible range from the Nengo.SimControl
+    // Determine visible range from the SimControl
     var t1 = this.sim.time_slider.first_shown_time;
     var t2 = t1 + this.sim.time_slider.shown_time;
 
@@ -111,7 +118,7 @@ Nengo.Raster.prototype.update = function() {
 /**
  * Adjust the graph layout due to changed size.
  */
-Nengo.Raster.prototype.on_resize = function(width, height) {
+Raster.prototype.on_resize = function(width, height) {
     if (width < this.minWidth) {
         width = this.minWidth;
     }
@@ -131,25 +138,25 @@ Nengo.Raster.prototype.on_resize = function(width, height) {
     this.div.style.height = height;
 };
 
-Nengo.Raster.prototype.reset = function(event) {
+Raster.prototype.reset = function(event) {
     this.data_store.reset();
     this.schedule_update();
 };
 
-Nengo.Raster.prototype.generate_menu = function() {
+Raster.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['Set # neurons...', function() {self.set_neuron_count();}]);
 
-    return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
+    return $.merge(items, Component.prototype.generate_menu.call(this));
 };
 
-Nengo.Raster.prototype.set_neuron_count = function() {
+Raster.prototype.set_neuron_count = function() {
     var count = this.n_neurons;
     var self = this;
-    Nengo.modal.title('Set number of neurons...');
-    Nengo.modal.single_input_body(count, 'Number of neurons');
-    Nengo.modal.footer('ok_cancel', function(e) {
+    self.sim.modal.title('Set number of neurons...');
+    self.sim.modal.single_input_body(count, 'Number of neurons');
+    self.sim.modal.footer('ok_cancel', function(e) {
         var new_count = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
         modal.validate();
@@ -181,10 +188,12 @@ Nengo.Raster.prototype.set_neuron_count = function() {
 
     $('#singleInput').attr('data-error', 'Input should be a positive integer');
 
-    Nengo.modal.show();
+    self.sim.modal.show();
     $('#OK').on('click', function() {
         var w = $(self.div).width();
         var h = $(self.div).height();
         self.on_resize(w, h);
     });
 };
+
+module.exports = Raster;

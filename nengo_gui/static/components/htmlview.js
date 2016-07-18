@@ -4,11 +4,16 @@
  *
  * @constructor
  * @param {DOMElement} parent - the element to add this component to
- * @param {Nengo.SimControl} sim - the simulation controller
- * @param {dict} args - A set of constructor arguments (see Nengo.Component)
+ * @param {SimControl} sim - the simulation controller
+ * @param {dict} args - A set of constructor arguments (see Component)
  */
-Nengo.HTMLView = function(parent, sim, args) {
-    Nengo.Component.call(this, parent, args);
+
+var Component = require('./component').Component;
+var DataStore = require('../datastore').DataStore;
+var utils = require('../utils');
+
+var HTMLView = function(parent, viewport, sim, args) {
+    Component.call(this, parent, viewport, args);
     var self = this;
 
     this.sim = sim;
@@ -16,13 +21,13 @@ Nengo.HTMLView = function(parent, sim, args) {
     this.pdiv = document.createElement('div');
     this.pdiv.style.width = '100%';
     this.pdiv.style.height = '100%';
-    Nengo.set_transform(this.pdiv, 0, 0);
+    utils.set_transform(this.pdiv, 0, 0);
     this.pdiv.style.position = 'fixed';
     this.pdiv.classList.add('htmlview');
     this.div.appendChild(this.pdiv);
 
     // For storing the accumulated data.
-    this.data_store = new Nengo.DataStore(1, this.sim, 0);
+    this.data_store = new DataStore(1, this.sim, 0);
 
     // Call schedule_update whenever the time is adjusted in the SimControl
     this.sim.div.addEventListener('adjust_time',
@@ -31,13 +36,13 @@ Nengo.HTMLView = function(parent, sim, args) {
     this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
 
-Nengo.HTMLView.prototype = Object.create(Nengo.Component.prototype);
-Nengo.HTMLView.prototype.constructor = Nengo.HTMLView;
+HTMLView.prototype = Object.create(Component.prototype);
+HTMLView.prototype.constructor = HTMLView;
 
 /**
  * Receive new line data from the server
  */
-Nengo.HTMLView.prototype.on_message = function(event) {
+HTMLView.prototype.on_message = function(event) {
     var data = event.data.split(" ", 1);
     var time = parseFloat(data[0]);
 
@@ -50,7 +55,7 @@ Nengo.HTMLView.prototype.on_message = function(event) {
 /**
  * Redraw the lines and axis due to changed data
  */
-Nengo.HTMLView.prototype.update = function() {
+HTMLView.prototype.update = function() {
     // Let the data store clear out old values
     this.data_store.update();
 
@@ -67,7 +72,7 @@ Nengo.HTMLView.prototype.update = function() {
 /**
  * Adjust the graph layout due to changed size
  */
-Nengo.HTMLView.prototype.on_resize = function(width, height) {
+HTMLView.prototype.on_resize = function(width, height) {
     if (width < this.minWidth) {
         width = this.minWidth;
     }
@@ -81,3 +86,5 @@ Nengo.HTMLView.prototype.on_resize = function(width, height) {
 
     this.update();
 };
+
+module.exports = HTMLView;

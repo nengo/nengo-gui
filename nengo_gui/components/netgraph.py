@@ -393,7 +393,7 @@ class NetGraph(Component):
                 self.expand_network(network, client)
 
     def javascript(self):
-        return 'new Nengo.NetGraph(main, {uid:"%s"});' % id(self)
+        return 'var netgraphargs = {uid:"%s"};' % id(self)
 
     def message(self, msg):
         try:

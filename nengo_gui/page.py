@@ -323,19 +323,18 @@ class Page(object):
 
     def create_javascript(self):
         """Generate the javascript for the current model and layout."""
-        if self.filename is not None:
-            fn = json.dumps(self.filename)
-            webpage_title_js = ';document.title = %s;' % fn
-        else:
-            webpage_title_js = ''
-
         assert isinstance(self.components[0], nengo_gui.components.SimControl)
+        main = (nengo_gui.components.NetGraph,
+                nengo_gui.components.SimControl,
+                nengo_gui.components.AceEditor)
 
-        component_js = '\n'.join([c.javascript() for c in self.components])
-        component_js += webpage_title_js
+        main_js = '\n'.join([c.javascript() for c in self.components
+                             if isinstance(c, main)])
+        component_js = '\n'.join([c.javascript() for c in self.components
+                                  if not isinstance(c, main)])
         if not self.gui.model_context.writeable:
             component_js += "$('#Open_file_button').addClass('deactivated');"
-        return component_js
+        return main_js, component_js
 
     def get_label(self, obj, default_labels=None):
         """Return a readable label for an object.

@@ -46,7 +46,7 @@ class XYValue(Component):
     def javascript(self):
         info = dict(uid=id(self), n_lines=self.n_lines, label=self.label)
         json = self.javascript_config(info)
-        return 'new Nengo.XYValue(main, sim, %s);' % json
+        return 'new XYValue(nengo.main, nengo.viewport, nengo.sim, %s);' % json
 
     def code_python_args(self, uids):
         return [uids[self.obj]]

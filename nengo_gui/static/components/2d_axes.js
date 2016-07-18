@@ -9,7 +9,10 @@
  * @param {float} args.min_value - minimum value on y-axis
  * @param {float} args.max_value - maximum value on y-axis
  */
-Nengo.Axes2D = function(parent, args) {
+
+var d3 = require('d3');
+
+var Axes2D = function(parent, args) {
     var self = this;
 
     this.max_y_width = 100;
@@ -48,7 +51,7 @@ Nengo.Axes2D = function(parent, args) {
         .call(this.axis_y);
 };
 
-Nengo.Axes2D.prototype.set_axes_geometry = function(width, height) {
+Axes2D.prototype.set_axes_geometry = function(width, height) {
     scale = parseFloat($('#main').css('font-size'));
     this.width = width;
     this.height = height;
@@ -64,7 +67,7 @@ Nengo.Axes2D.prototype.set_axes_geometry = function(width, height) {
 /**
  * Adjust the graph layout due to changed size
  */
-Nengo.Axes2D.prototype.on_resize = function(width, height) {
+Axes2D.prototype.on_resize = function(width, height) {
     if (width < this.minWidth) {
         width = this.minWidth;
     }
@@ -90,7 +93,7 @@ Nengo.Axes2D.prototype.on_resize = function(width, height) {
     this.axis_y_g.call(this.axis_y);
 };
 
-Nengo.Axes2D.prototype.fit_ticks = function(parent) {
+Axes2D.prototype.fit_ticks = function(parent) {
     var self = this;
     setTimeout(function() {
         var ticks = $(parent.div).find('.tick');
@@ -106,3 +109,5 @@ Nengo.Axes2D.prototype.fit_ticks = function(parent) {
         self.on_resize(parent.width, parent.height);
     }, 1);
 };
+
+module.exports = Axes2D;

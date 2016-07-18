@@ -17,7 +17,20 @@
  * class prototypes (ie. Slider, Value).
  *
  */
-Nengo.Component = function(parent, args) {
+
+var interact = require('interact.js');
+var menu = require('../menu');
+var utils = require('../utils');
+
+var all_components = [];
+
+var save_all_components = function() {
+    for (var index in all_components) {
+        all_components[index].save_layout();
+    }
+};
+
+var Component = function(parent, viewport, args) {
     var self = this;
 
     this.viewport = viewport;
@@ -59,7 +72,7 @@ Nengo.Component = function(parent, args) {
     // Move element to be drawn on top when clicked on
 
     this.div.onmousedown = function() {
-        this.style.zIndex = Nengo.next_zindex();
+        this.style.zIndex = utils.next_zindex();
     };
 
     this.div.ontouchstart = this.div.onmousedown;
@@ -69,7 +82,7 @@ Nengo.Component = function(parent, args) {
         .draggable({
             inertia: true,
             onstart: function() {
-                self.menu.hide_any();
+                menu.hide_any();
             },
             onmove: function(event) {
                 var target = event.target;
@@ -93,7 +106,7 @@ Nengo.Component = function(parent, args) {
             edges: {left: true, top: true, right: true, bottom: true}
         })
         .on('resizestart', function(event) {
-            self.menu.hide_any();
+            menu.hide_any();
         })
         .on('resizemove', function(event) {
             var target = event.target;
@@ -121,19 +134,21 @@ Nengo.Component = function(parent, args) {
     // Open a WebSocket to the server
     this.uid = args.uid;
     if (this.uid != undefined) {
-        this.ws = Nengo.create_websocket(this.uid);
-        this.ws.onmessage = function(event) {self.on_message(event);};
+        this.ws = utils.create_websocket(this.uid);
+        this.ws.onmessage = function(event) {
+            self.on_message(event);
+        };
     }
 
     // Flag whether there is a scheduled update that hasn't happened yet
     this.pending_update = false;
 
-    this.menu = new Nengo.Menu(self.parent);
+    this.menu = new menu.Menu(self.parent);
     interact(this.div)
         .on('hold', function(event) { // Change to 'tap' for right click
             if (event.button == 0) {
                 if (self.menu.visible_any()) {
-                    self.menu.hide_any();
+                    menu.hide_any();
                 } else {
                     self.menu.show(event.clientX, event.clientY,
                                    self.generate_menu());
@@ -144,7 +159,7 @@ Nengo.Component = function(parent, args) {
         .on('tap', function(event) { // Get rid of menus when clicking off
             if (event.button == 0) {
                 if (self.menu.visible_any()) {
-                    self.menu.hide_any();
+                    menu.hide_any();
                 }
             }
         });
@@ -152,34 +167,26 @@ Nengo.Component = function(parent, args) {
         event.preventDefault();
         event.stopPropagation();
         if (self.menu.visible_any()) {
-            self.menu.hide_any();
+            menu.hide_any();
         } else {
-            self.menu.show(event.clientX, event.clientY,
-                           self.generate_menu());
+            self.menu.show(event.clientX, event.clientY, self.generate_menu());
         }
     });
 
-    Nengo.Component.components.push(this);
-};
-
-Nengo.Component.components = [];
-Nengo.Component.save_components = function() {
-    for (var index in Nengo.Component.components) {
-        Nengo.Component.components[index].save_layout();
-    }
+    all_components.push(this);
 };
 
 /**
  * Method to be called when Component is resized.
  */
-Nengo.Component.prototype.on_resize = function(width, height) {};
+Component.prototype.on_resize = function(width, height) {};
 
 /**
  * Method to be called when Component received a WebSocket message.
  */
-Nengo.Component.prototype.on_message = function(event) {};
+Component.prototype.on_message = function(event) {};
 
-Nengo.Component.prototype.generate_menu = function() {
+Component.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     if (this.label_visible) {
@@ -197,7 +204,7 @@ Nengo.Component.prototype.generate_menu = function() {
     return items;
 };
 
-Nengo.Component.prototype.remove = function(undo_flag, notify_server) {
+Component.prototype.remove = function(undo_flag, notify_server) {
     undo_flag = typeof undo_flag !== 'undefined' ? undo_flag : false;
     notify_server = typeof notify_server !== 'undefined' ? notify_server : true;
 
@@ -209,8 +216,8 @@ Nengo.Component.prototype.remove = function(undo_flag, notify_server) {
         }
     }
     this.parent.removeChild(this.div);
-    var index = Nengo.Component.components.indexOf(this);
-    Nengo.Component.components.splice(index, 1);
+    var index = all_components.indexOf(this);
+    all_components.splice(index, 1);
 };
 
 /**
@@ -220,7 +227,7 @@ Nengo.Component.prototype.remove = function(undo_flag, notify_server) {
  * how fast update() is called in the case that we are changing the data faster
  * than whatever processing is needed in update().
  */
-Nengo.Component.prototype.schedule_update = function(event) {
+Component.prototype.schedule_update = function(event) {
     if (this.pending_update == false) {
         this.pending_update = true;
         var self = this;
@@ -235,24 +242,24 @@ Nengo.Component.prototype.schedule_update = function(event) {
 /**
  * Do any visual updating that is needed due to changes in the underlying data.
  */
-Nengo.Component.prototype.update = function(event) {
+Component.prototype.update = function(event) {
 };
 
-Nengo.Component.prototype.hide_label = function(event) {
+Component.prototype.hide_label = function(event) {
     if (this.label_visible) {
         this.label.style.display = 'none';
         this.label_visible = false;
     }
 };
 
-Nengo.Component.prototype.show_label = function(event) {
+Component.prototype.show_label = function(event) {
     if (!this.label_visible) {
         this.label.style.display = 'inline';
         this.label_visible = true;
     }
 };
 
-Nengo.Component.prototype.layout_info = function() {
+Component.prototype.layout_info = function() {
     var info = {};
     info.x = this.x;
     info.y = this.y;
@@ -262,12 +269,12 @@ Nengo.Component.prototype.layout_info = function() {
     return info;
 };
 
-Nengo.Component.prototype.save_layout = function() {
+Component.prototype.save_layout = function() {
     var info = this.layout_info();
     this.ws.send('config:' + JSON.stringify(info));
 };
 
-Nengo.Component.prototype.update_layout = function(config) {
+Component.prototype.update_layout = function(config) {
     this.w = config.width;
     this.h = config.height;
     this.x = config.x;
@@ -284,25 +291,28 @@ Nengo.Component.prototype.update_layout = function(config) {
     }
 };
 
-Nengo.Component.prototype.redraw_size = function() {
+Component.prototype.redraw_size = function() {
     this.width = this.viewport.w * this.w * this.viewport.scale * 2;
     this.height = this.viewport.h * this.h * this.viewport.scale * 2;
     this.div.style.width = this.width;
     this.div.style.height = this.height;
 };
 
-Nengo.Component.prototype.redraw_pos = function() {
+Component.prototype.redraw_pos = function() {
     var x = (this.x + this.viewport.x - this.w) *
         this.viewport.w * this.viewport.scale;
     var y = (this.y + this.viewport.y - this.h) *
         this.viewport.h * this.viewport.scale;
-    Nengo.set_transform(this.div, x, y);
+    utils.set_transform(this.div, x, y);
 };
 
-Nengo.Component.prototype.get_screen_width = function() {
+Component.prototype.get_screen_width = function() {
     return this.viewport.w * this.w * this.viewport.scale * 2;
 };
-
-Nengo.Component.prototype.get_screen_height = function() {
+Component.prototype.get_screen_height = function() {
     return this.viewport.h * this.h * this.viewport.scale * 2;
 };
+
+module.exports.Component = Component;
+module.exports.all_components = all_components;
+module.exports.save_all_components = save_all_components;

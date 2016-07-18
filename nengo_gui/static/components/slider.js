@@ -3,8 +3,8 @@
  *
  * @constructor
  * @param {DOMElement} parent - the element to add this component to
- * @param {Nengo.SimControl} sim - the simulation controller
- * @param {dict} args - a set of constructor arguments (see Nengo.Component)
+ * @param {SimControl} sim - the simulation controller
+ * @param {dict} args - a set of constructor arguments (see Component)
  * @param {int} args.n_sliders - the number of sliders to show
  *
  * Slider constructor is called by python server when a user requests a slider
@@ -12,8 +12,14 @@
  * netgraph.js {.on_message} function.
  */
 
-Nengo.Slider = function(parent, sim, args) {
-    Nengo.Component.call(this, parent, args);
+require('./slider.css');
+var Component = require('./component').Component;
+var DataStore = require('../datastore').DataStore;
+var menu = require('../menu');
+var SliderControl = require('./slidercontrol');
+
+var Slider = function(parent, viewport, sim, args) {
+    Component.call(this, parent, viewport, args);
     var self = this;
     this.sim = sim;
 
@@ -48,7 +54,7 @@ Nengo.Slider = function(parent, sim, args) {
     this.sliders = [];
     for (var i = 0; i < args.n_sliders; i++) {
         // Creating a SliderControl object for every slider handle required
-        var slider = new Nengo.SliderControl(args.min_value, args.max_value);
+        var slider = new SliderControl(args.min_value, args.max_value);
         slider.container.style.width = (100 / args.n_sliders) + '%';
         slider.display_value(args.start_value[i]);
         slider.index = i;
@@ -58,7 +64,7 @@ Nengo.Slider = function(parent, sim, args) {
             event.target.fixed = true;
             self.send_value(event.target.index, event.value);
         }).on('changestart', function(event) {
-            self.menu.hide_any();
+            menu.hide_any();
             for (var i in this.sliders) {
                 if (this.sliders[i] !== event.target) {
                     this.sliders[i].deactivate_type_mode();
@@ -82,10 +88,10 @@ Nengo.Slider = function(parent, sim, args) {
     this.on_resize(this.get_screen_width(), this.get_screen_height());
 };
 
-Nengo.Slider.prototype = Object.create(Nengo.Component.prototype);
-Nengo.Slider.prototype.constructor = Nengo.Slider;
+Slider.prototype = Object.create(Component.prototype);
+Slider.prototype.constructor = Slider;
 
-Nengo.Slider.prototype.set_axes_geometry = function(width, height) {
+Slider.prototype.set_axes_geometry = function(width, height) {
     this.width = width;
     this.height = height;
     scale = parseFloat($('#main').css('font-size'));
@@ -94,7 +100,7 @@ Nengo.Slider.prototype.set_axes_geometry = function(width, height) {
     this.slider_height = this.height - this.ax_top;
 };
 
-Nengo.Slider.prototype.send_value = function(slider_index, value) {
+Slider.prototype.send_value = function(slider_index, value) {
     console.assert(typeof slider_index == 'number');
     console.assert(typeof value == 'number');
 
@@ -106,7 +112,7 @@ Nengo.Slider.prototype.send_value = function(slider_index, value) {
     this.sim.time_slider.jump_to_end();
 };
 
-Nengo.Slider.prototype.on_sim_reset = function(event) {
+Slider.prototype.on_sim_reset = function(event) {
     // Release slider position and reset it
     for (var i = 0; i < this.sliders.length; i++) {
         this.notify('' + i + ',reset');
@@ -118,11 +124,10 @@ Nengo.Slider.prototype.on_sim_reset = function(event) {
 /**
  * Receive new line data from the server.
  */
-Nengo.Slider.prototype.on_message = function(event) {
+Slider.prototype.on_message = function(event) {
     var data = new Float32Array(event.data);
     if (this.data_store === null) {
-        this.data_store =
-            new Nengo.DataStore(this.sliders.length, this.sim, 0);
+        this.data_store = new DataStore(this.sliders.length, this.sim, 0);
     }
     this.reset_value = [];
     for (var i = 0; i < this.sliders.length; i++) {
@@ -140,7 +145,7 @@ Nengo.Slider.prototype.on_message = function(event) {
 /**
  * Update visual display based when component is resized.
  */
-Nengo.Slider.prototype.on_resize = function(width, height) {
+Slider.prototype.on_resize = function(width, height) {
     console.assert(typeof width == 'number');
     console.assert(typeof height == 'number');
 
@@ -166,7 +171,7 @@ Nengo.Slider.prototype.on_resize = function(width, height) {
     this.div.style.height = this.height;
 };
 
-Nengo.Slider.prototype.generate_menu = function() {
+Slider.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['Set range...', function() {
@@ -181,13 +186,13 @@ Nengo.Slider.prototype.generate_menu = function() {
 
     // Add the parent's menu items to this
     // TODO: is this really the best way to call the parent's generate_menu()?
-    return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
+    return $.merge(items, Component.prototype.generate_menu.call(this));
 };
 
 /**
  * Report an event back to the server.
  */
-Nengo.Slider.prototype.notify = function(info) {
+Slider.prototype.notify = function(info) {
     this.notify_msgs.push(info);
 
     // Only send one message at a time
@@ -206,7 +211,7 @@ Nengo.Slider.prototype.notify = function(info) {
  *
  * Also schedule the next message to be sent, if any.
  */
-Nengo.Slider.prototype.send_notify_msg = function() {
+Slider.prototype.send_notify_msg = function() {
     msg = this.notify_msgs[0];
     this.ws.send(msg);
     if (this.notify_msgs.length > 1) {
@@ -218,7 +223,7 @@ Nengo.Slider.prototype.send_notify_msg = function() {
     this.notify_msgs.splice(0, 1);
 };
 
-Nengo.Slider.prototype.update = function() {
+Slider.prototype.update = function() {
     // Let the data store clear out old values
     if (this.data_store !== null) {
         this.data_store.update();
@@ -233,7 +238,7 @@ Nengo.Slider.prototype.update = function() {
     }
 };
 
-Nengo.Slider.prototype.user_value = function() {
+Slider.prototype.user_value = function() {
     var self = this;
 
     // First build the prompt string
@@ -244,9 +249,9 @@ Nengo.Slider.prototype.user_value = function() {
             prompt_string = prompt_string + ", ";
         }
     }
-    Nengo.modal.title('Set slider value(s)...');
-    Nengo.modal.single_input_body(prompt_string, 'New value(s)');
-    Nengo.modal.footer('ok_cancel', function(e) {
+    self.sim.modal.title('Set slider value(s)...');
+    self.sim.modal.single_input_body(prompt_string, 'New value(s)');
+    self.sim.modal.footer('ok_cancel', function(e) {
         var new_value = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
 
@@ -286,10 +291,10 @@ Nengo.Slider.prototype.user_value = function() {
 
     $('#singleInput').attr('data-error', 'Input should be one ' +
                            'comma-separated numerical value for each slider.');
-    Nengo.modal.show();
+    self.sim.modal.show();
 };
 
-Nengo.Slider.prototype.user_reset_value = function() {
+Slider.prototype.user_reset_value = function() {
     for (var i = 0; i < this.sliders.length; i++) {
         this.notify('' + i + ',reset');
 
@@ -298,12 +303,12 @@ Nengo.Slider.prototype.user_reset_value = function() {
     }
 };
 
-Nengo.Slider.prototype.set_range = function() {
+Slider.prototype.set_range = function() {
     var range = this.sliders[0].scale.domain();
     var self = this;
-    Nengo.modal.title('Set slider range...');
-    Nengo.modal.single_input_body([range[1], range[0]], 'New range');
-    Nengo.modal.footer('ok_cancel', function(e) {
+    self.sim.modal.title('Set slider range...');
+    self.sim.modal.single_input_body([range[1], range[0]], 'New range');
+    self.sim.modal.footer('ok_cancel', function(e) {
         var new_range = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
 
@@ -340,21 +345,23 @@ Nengo.Slider.prototype.set_range = function() {
 
     $('#singleInput').attr('data-error', 'Input should be in the ' +
                            'form "<min>,<max>".');
-    Nengo.modal.show();
+    self.sim.modal.show();
 };
 
-Nengo.Slider.prototype.layout_info = function() {
-    var info = Nengo.Component.prototype.layout_info.call(this);
+Slider.prototype.layout_info = function() {
+    var info = Component.prototype.layout_info.call(this);
     info.width = info.width;
     info.min_value = this.sliders[0].scale.domain()[1];
     info.max_value = this.sliders[0].scale.domain()[0];
     return info;
 };
 
-Nengo.Slider.prototype.update_layout = function(config) {
+Slider.prototype.update_layout = function(config) {
     // FIXME: this has to be backwards to work. Something fishy must be going on
     for (var i in this.sliders) {
         this.sliders[i].set_range(config.min_value, config.max_value);
     }
-    Nengo.Component.prototype.update_layout.call(this, config);
+    Component.prototype.update_layout.call(this, config);
 };
+
+module.exports = Slider;

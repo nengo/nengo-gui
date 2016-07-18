@@ -7,14 +7,22 @@
  *
  * @constructor
  * @param {DOMElement} parent - the element to add this component to
- * @param {Nengo.SimControl} sim - the simulation controller
- * @param {dict} args - A set of constructor arguments (see Nengo.Component)
+ * @param {SimControl} sim - the simulation controller
+ * @param {dict} args - A set of constructor arguments (see Component)
  * @param {int} args.n_lines - number of decoded values
  * @param {float} args.min_value - minimum value on y-axis
  * @param {float} args.max_value - maximum value on y-axis
  */
-Nengo.Value = function(parent, sim, args) {
-    Nengo.Component.call(this, parent, args);
+
+var d3 = require('d3');
+require('./value.css');
+var Component = require('./component').Component;
+var DataStore = require('../datastore').DataStore;
+var TimeAxes = require('./time_axes');
+var utils = require('../utils');
+
+var Value = function(parent, viewport, sim, args) {
+    Component.call(this, parent, viewport, args);
     var self = this;
     this.n_lines = args.n_lines || 1;
     this.sim = sim;
@@ -22,9 +30,9 @@ Nengo.Value = function(parent, sim, args) {
     this.synapse = args.synapse;
 
     // For storing the accumulated data
-    this.data_store = new Nengo.DataStore(this.n_lines, this.sim, 0.0);
+    this.data_store = new DataStore(this.n_lines, this.sim, 0.0);
 
-    this.axes2d = new Nengo.TimeAxes(this.div, args);
+    this.axes2d = new TimeAxes(this.div, args);
 
     // Call schedule_update whenever the time is adjusted in the SimControl
     this.sim.div.addEventListener('adjust_time', function(e) {
@@ -48,8 +56,9 @@ Nengo.Value = function(parent, sim, args) {
         .selectAll('path')
         .data(this.data_store.data);
 
-    this.colors = Nengo.make_colors(this.n_lines);
-    this.path.enter().append('path')
+    this.colors = utils.make_colors(this.n_lines);
+    this.path.enter()
+        .append('path')
         .attr('class', 'line')
         .style('stroke', function(d, i) {
             return self.colors[i];
@@ -116,7 +125,7 @@ Nengo.Value = function(parent, sim, args) {
     this.axes2d.axis_y.tickValues([args.min_value, args.max_value]);
     this.axes2d.fit_ticks(this);
 
-    this.colors = Nengo.make_colors(6);
+    this.colors = utils.make_colors(6);
     this.color_func = function(d, i) {
         return self.colors[i % 6];
     };
@@ -134,16 +143,16 @@ Nengo.Value = function(parent, sim, args) {
 
     this.show_legend = args.show_legend || false;
     if (this.show_legend === true) {
-        Nengo.draw_legend(this.legend,
+        utils.draw_legend(this.legend,
                           this.legend_labels.slice(0, self.n_lines),
                           this.color_func);
     }
 };
 
-Nengo.Value.prototype = Object.create(Nengo.Component.prototype);
-Nengo.Value.prototype.constructor = Nengo.Value;
+Value.prototype = Object.create(Component.prototype);
+Value.prototype.constructor = Value;
 
-Nengo.Value.prototype.update_crosshair = function(mouse) {
+Value.prototype.update_crosshair = function(mouse) {
     var self = this;
     var x = mouse[0];
     var y = mouse[1];
@@ -188,7 +197,7 @@ Nengo.Value.prototype.update_crosshair = function(mouse) {
 /**
  * Receive new line data from the server.
  */
-Nengo.Value.prototype.on_message = function(event) {
+Value.prototype.on_message = function(event) {
     var data = new Float32Array(event.data);
     data = Array.prototype.slice.call(data);
     var size = this.n_lines + 1;
@@ -207,11 +216,11 @@ Nengo.Value.prototype.on_message = function(event) {
 /**
  * Redraw the lines and axis due to changed data.
  */
-Nengo.Value.prototype.update = function() {
+Value.prototype.update = function() {
     // Let the data store clear out old values
     this.data_store.update();
 
-    // Determine visible range from the Nengo.SimControl
+    // Determine visible range from the SimControl
     var t1 = this.sim.time_slider.first_shown_time;
     var t2 = t1 + this.sim.time_slider.shown_time;
 
@@ -233,7 +242,7 @@ Nengo.Value.prototype.update = function() {
 /**
  * Adjust the graph layout due to changed size.
  */
-Nengo.Value.prototype.on_resize = function(width, height) {
+Value.prototype.on_resize = function(width, height) {
     if (width < this.minWidth) {
         width = this.minWidth;
     }
@@ -253,7 +262,7 @@ Nengo.Value.prototype.on_resize = function(width, height) {
     this.div.style.height = height;
 };
 
-Nengo.Value.prototype.generate_menu = function() {
+Value.prototype.generate_menu = function() {
     var self = this;
     var items = [];
     items.push(['Set range...', function() {
@@ -279,16 +288,16 @@ Nengo.Value.prototype.generate_menu = function() {
     }]);
 
     // Add the parent's menu items to this
-    return $.merge(items, Nengo.Component.prototype.generate_menu.call(this));
+    return $.merge(items, Component.prototype.generate_menu.call(this));
 };
 
-Nengo.Value.prototype.set_show_legend = function(value) {
+Value.prototype.set_show_legend = function(value) {
     if (this.show_legend !== value) {
         this.show_legend = value;
         this.save_layout();
 
         if (this.show_legend === true) {
-            Nengo.draw_legend(this.legend,
+            utils.draw_legend(this.legend,
                               this.legend_labels.slice(0, this.n_lines),
                               this.color_func);
         } else {
@@ -300,12 +309,12 @@ Nengo.Value.prototype.set_show_legend = function(value) {
     }
 };
 
-Nengo.Value.prototype.set_legend_labels = function() {
+Value.prototype.set_legend_labels = function() {
     var self = this;
 
-    Nengo.modal.title('Enter comma seperated legend label values');
-    Nengo.modal.single_input_body('Legend label', 'New value');
-    Nengo.modal.footer('ok_cancel', function(e) {
+    self.sim.modal.title('Enter comma seperated legend label values');
+    self.sim.modal.single_input_body('Legend label', 'New value');
+    self.sim.modal.footer('ok_cancel', function(e) {
         var label_csv = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
 
@@ -328,17 +337,17 @@ Nengo.Value.prototype.set_legend_labels = function() {
                 self.legend.removeChild(self.legend.lastChild);
             }
 
-            Nengo.draw_legend(self.legend, self.legend_labels, self.color_func);
+            utils.draw_legend(self.legend, self.legend_labels, self.color_func);
             self.save_layout();
         }
         $('#OK').attr('data-dismiss', 'modal');
     });
 
-    Nengo.modal.show();
+    self.sim.modal.show();
 };
 
-Nengo.Value.prototype.layout_info = function() {
-    var info = Nengo.Component.prototype.layout_info.call(this);
+Value.prototype.layout_info = function() {
+    var info = Component.prototype.layout_info.call(this);
     info.show_legend = this.show_legend;
     info.legend_labels = this.legend_labels;
     info.min_value = this.axes2d.scale_y.domain()[0];
@@ -346,17 +355,17 @@ Nengo.Value.prototype.layout_info = function() {
     return info;
 };
 
-Nengo.Value.prototype.update_layout = function(config) {
+Value.prototype.update_layout = function(config) {
     this.update_range(config.min_value, config.max_value);
-    Nengo.Component.prototype.update_layout.call(this, config);
+    Component.prototype.update_layout.call(this, config);
 };
 
-Nengo.Value.prototype.set_range = function() {
+Value.prototype.set_range = function() {
     var range = this.axes2d.scale_y.domain();
     var self = this;
-    Nengo.modal.title('Set graph range...');
-    Nengo.modal.single_input_body(range, 'New range');
-    Nengo.modal.footer('ok_cancel', function(e) {
+    self.sim.modal.title('Set graph range...');
+    self.sim.modal.single_input_body(range, 'New range');
+    self.sim.modal.footer('ok_cancel', function(e) {
         var new_range = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
         modal.validate();
@@ -391,7 +400,7 @@ Nengo.Value.prototype.set_range = function() {
 
     $('#singleInput').attr('data-error', 'Input should be in the ' +
                            'form "<min>,<max>".');
-    Nengo.modal.show();
+    self.sim.modal.show();
     $('#OK').on('click', function() {
         var w = $(self.div).width();
         var h = $(self.div).height();
@@ -399,22 +408,22 @@ Nengo.Value.prototype.set_range = function() {
     });
 };
 
-Nengo.Value.prototype.update_range = function(min, max) {
+Value.prototype.update_range = function(min, max) {
     this.axes2d.scale_y.domain([min, max]);
     this.axes2d.axis_y_g.call(this.axes2d.axis_y);
 };
 
-Nengo.Value.prototype.reset = function(event) {
+Value.prototype.reset = function(event) {
     this.data_store.reset();
     this.schedule_update();
 };
 
-Nengo.Value.prototype.set_synapse_dialog = function() {
+Value.prototype.set_synapse_dialog = function() {
     var self = this;
-    Nengo.modal.title('Set synaptic filter...');
-    Nengo.modal.single_input_body(this.synapse,
+    self.sim.modal.title('Set synaptic filter...');
+    self.sim.modal.single_input_body(this.synapse,
                                   'Filter time constant (in seconds)');
-    Nengo.modal.footer('ok_cancel', function(e) {
+    self.sim.modal.footer('ok_cancel', function(e) {
         var new_synapse = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');
         modal.validate();
@@ -446,5 +455,7 @@ Nengo.Value.prototype.set_synapse_dialog = function() {
         },
     });
     $('#singleInput').attr('data-error', 'should be a non-negative number');
-    Nengo.modal.show();
+    self.sim.modal.show();
 };
+
+module.exports = Value;

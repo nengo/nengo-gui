@@ -1,9 +1,36 @@
 /**
  * Create a menu that will appear inside the given div
  *
- * Each element that has a menu makes a call to Nengo.Menu constructor
+ * Each element that has a menu makes a call to Menu constructor
  */
-Nengo.Menu = function(div) {
+
+require('./menu.css');
+var utils = require('./utils');
+
+/**
+ * Dictionary of currently shown menus.
+ *
+ * The key is the div the menu is in.
+ */
+var visible_menus = {};
+
+/**
+ * Hide any menu that is displayed in the given div
+ */
+var hide_menu_in = function(div) {
+    var menu = visible_menus[div];
+    if (menu !== undefined) {
+        menu.hide();
+    }
+};
+
+var hide_any = function() {
+    for (var k in visible_menus) {
+        hide_menu_in(k);
+    }
+};
+
+var Menu = function(div) {
     this.visible = false; // Whether it's currently visible
     this.div = div; // The parent div
     this.menu_div = null; // The div for the menu itself
@@ -11,20 +38,13 @@ Nengo.Menu = function(div) {
 };
 
 /**
- * Dictionary of currently shown menus.
- *
- * The key is the div the menu is in.
- */
-Nengo.Menu.visible_menus = {};
-
-/**
  * Show this menu at the given (x,y) location.
  *
  * Automatically hides any menu that's in the same div
  * Called by a listener from netgraph.js
  */
-Nengo.Menu.prototype.show = function(x, y, items) {
-    Nengo.Menu.hide_menu_in(this.div);
+Menu.prototype.show = function(x, y, items) {
+    hide_menu_in(this.div);
 
     if (items.length == 0) {
         return;
@@ -35,7 +55,7 @@ Nengo.Menu.prototype.show = function(x, y, items) {
     this.menu_div.style.position = 'fixed';
     this.menu_div.style.left = x;
     this.menu_div.style.top = y;
-    this.menu_div.style.zIndex = Nengo.next_zindex();
+    this.menu_div.style.zIndex = utils.next_zindex();
 
     this.menu = document.createElement('ul');
     this.menu.className = 'dropdown-menu';
@@ -72,40 +92,25 @@ Nengo.Menu.prototype.show = function(x, y, items) {
     }
     this.visible = true;
     this.check_overflow(x, y);
-    Nengo.Menu.visible_menus[this.div] = this;
+    visible_menus[this.div] = this;
 };
 
 /**
  * Hide this menu.
  */
-Nengo.Menu.prototype.hide = function() {
+Menu.prototype.hide = function() {
     this.div.removeChild(this.menu_div);
     this.visible = false;
+
     this.menu_div = null;
-    delete Nengo.Menu.visible_menus[this.div];
+    delete visible_menus[this.div];
 };
 
-/**
- * Hide any menu that is displayed in the given div.
- */
-Nengo.Menu.hide_menu_in = function(div) {
-    var menu = Nengo.Menu.visible_menus[div];
-    if (menu !== undefined) {
-        menu.hide();
-    }
+Menu.prototype.visible_any = function() {
+    return visible_menus[this.div] !== undefined;
 };
 
-Nengo.Menu.prototype.visible_any = function() {
-    return Nengo.Menu.visible_menus[this.div] !== undefined;
-};
-
-Nengo.Menu.prototype.hide_any = function() {
-    for (var k in Nengo.Menu.visible_menus) {
-        Nengo.Menu.hide_menu_in(k);
-    }
-};
-
-Nengo.Menu.prototype.check_overflow = function(x, y) {
+Menu.prototype.check_overflow = function(x, y) {
     var corrected_y = y - $(toolbar.toolbar).height();
     var h = $(this.menu).outerHeight();
     var w = $(this.menu).outerWidth();
@@ -121,3 +126,8 @@ Nengo.Menu.prototype.check_overflow = function(x, y) {
         this.menu_div.style.left = main_w - w;
     }
 };
+
+module.exports.Menu = Menu;
+module.exports.visible_menus = visible_menus;
+module.exports.hide_menu_in = hide_menu_in;
+module.exports.hide_any = hide_any;

@@ -81,7 +81,7 @@ class SpaSimilarity(SpaPlot):
         info = dict(uid=id(self), label=self.label, n_lines=len(self.labels),
                     synapse=0, pointer_labels=self.labels)
         json = self.javascript_config(info)
-        return 'new Nengo.SpaSimilarity(main, sim, %s);' % json
+        return 'new SpaSimilarity(nengo.main, nengo.viewport, nengo.sim, %s);' % json
 
     def message(self, msg):
         """Message receive function for show_pairs toggling and reset"""
