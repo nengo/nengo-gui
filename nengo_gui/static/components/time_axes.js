@@ -1,12 +1,12 @@
 /**
  * 2d axes set with the horizontal axis being a time axis.
-* @constructor
  *
+ * Called by a specific component when it requires an axes set (with the
+ * x-axis showing current model time).
+ *
+ * @constructor
  * @param {DOMElement} parent - the element to add this component to
  * @param {dict} args - A set of constructor arguments (see Nengo.Axes2D)
- *
- * Called by a specific component when it requires an axes set (with the 
- * x-axis showing current model time).
  */
 
 Nengo.TimeAxes = function(parent, args) {
@@ -14,21 +14,21 @@ Nengo.TimeAxes = function(parent, args) {
     var self = this;
     this.display_time = args.display_time;
 
-
     this.axis_x.ticks(0);
 
-    this.axis_time_end =this.svg.append("text")
-                    .text("Time: NULL")
-                    .attr('class', 'graph_text unselectable')[0][0];
-    this.axis_time_start =this.svg.append("text")
-                    .text("Time: NULL")
-                    .attr('class','graph_text unselectable')[0][0];
+    this.axis_time_end = this.svg.append("text")
+        .text("Time: NULL")
+        .attr('class', 'graph_text unselectable')[0][0];
+    this.axis_time_start = this.svg.append("text")
+        .text("Time: NULL")
+        .attr('class', 'graph_text unselectable')[0][0];
 
     if (this.display_time == false) {
         this.axis_time_start.style.display = 'none';
         this.axis_time_end.style.display = 'none';
     }
 };
+
 Nengo.TimeAxes.prototype = Object.create(Nengo.Axes2D.prototype);
 Nengo.TimeAxes.prototype.constructor = Nengo.TimeAxes;
 
@@ -46,7 +46,7 @@ Nengo.TimeAxes.prototype.on_resize = function(width, height) {
     var suppression_width = 6 * scale;
     var text_offset = 1.2 * scale;
 
-    if (width < suppression_width || this.display_time == false){
+    if (width < suppression_width || this.display_time == false) {
         this.axis_time_start.style.display = 'none';
     } else {
         this.axis_time_start.style.display = 'block';

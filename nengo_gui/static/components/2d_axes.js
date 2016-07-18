@@ -1,33 +1,33 @@
 /**
  * Basic 2d axes set.
- * @constructor
  *
+ * @constructor
  * @param {DOMElement} parent - the element to add this component to
+ * @param {Object} args
  * @param {float} args.width - the width of the axes (in pixels)
  * @param {float} args.height - the height of the axes (in pixels)
-  * @param {float} args.min_value - minimum value on y-axis
+ * @param {float} args.min_value - minimum value on y-axis
  * @param {float} args.max_value - maximum value on y-axis
  */
-
 Nengo.Axes2D = function(parent, args) {
     var self = this;
 
     this.max_y_width = 100;
 
-    /** draw the plot as an SVG */
+    // Draw the plot as an SVG
     this.svg = d3.select(parent).append('svg')
         .attr('width', '100%')
         .attr('height', '100%');
 
-    /** scales for mapping x and y values to pixels */
+    // Scales for mapping x and y values to pixels
     this.scale_x = d3.scale.linear();
     this.scale_y = d3.scale.linear();
     this.scale_y.domain([args.min_value, args.max_value]);
 
-    /** spacing between the graph and the outside edges (in pixels) */
+    // Spacing between the graph and the outside edges (in pixels)
     this.set_axes_geometry(args.width, args.height);
 
-    /** define the x-axis */
+    // Define the x-axis
     this.axis_x = d3.svg.axis()
         .scale(this.scale_x)
         .orient("bottom")
@@ -37,7 +37,7 @@ Nengo.Axes2D = function(parent, args) {
         .attr("class", "axis axis_x unselectable")
         .call(this.axis_x);
 
-    /** define the y-axis */
+    // Define the y-axis
     this.axis_y = d3.svg.axis()
         .scale(this.scale_y)
         .orient("left")
@@ -76,7 +76,7 @@ Nengo.Axes2D.prototype.on_resize = function(width, height) {
     this.scale_x.range([this.ax_left, this.ax_right]);
     this.scale_y.range([this.ax_bottom, this.ax_top]);
 
-    //Adjust positions of x axis on resize
+    // Adjust positions of x axis on resize
     this.axis_x
         .tickPadding(this.tick_padding)
         .outerTickSize(this.tick_size, this.tick_size);
@@ -90,9 +90,9 @@ Nengo.Axes2D.prototype.on_resize = function(width, height) {
     this.axis_y_g.call(this.axis_y);
 };
 
-Nengo.Axes2D.prototype.fit_ticks = function(parent){
+Nengo.Axes2D.prototype.fit_ticks = function(parent) {
     var self = this;
-    setTimeout(function(){
+    setTimeout(function() {
         var ticks = $(parent.div).find('.tick');
         var max_w = 0;
         for (var i = 0; i < ticks.length; i++) {
@@ -104,5 +104,5 @@ Nengo.Axes2D.prototype.fit_ticks = function(parent){
         self.max_y_width = max_w;
         self.set_axes_geometry();
         self.on_resize(parent.width, parent.height);
-    }, 1)
-}
+    }, 1);
+};

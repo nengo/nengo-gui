@@ -1,29 +1,30 @@
 /**
- * A SliderControl object which creates a single guideline + handle within 
- * a slider object
- * @constructor
+ * A SliderControl object which creates a single guideline + handle within
+ * a slider object.
  *
- * @params {int} min - The minimum value the handle can take
- * @params {int} max - the maximum value the handle can take
+ * @constructor
+ * @param {int} min - The minimum value the handle can take
+ * @param {int} max - the maximum value the handle can take
  *
  * SliderControl is called within the Slider constructor for each
  * handle that is needed.
  */
+
 Nengo.SliderControl = function(min, max) {
     var self = this;
 
     this.min = min;
     this.max = max;
 
-    this.value = 0
+    this.value = 0;
     this.type_mode = false;
 
-    this.border_width = 1
+    this.border_width = 1;
 
     this.scale = d3.scale.linear();
-    this.scale.domain([max,  min]);
+    this.scale.domain([max, min]);
 
-    // TODO move CSS to CSS file
+    // TODO: move CSS to CSS file
     this.container = document.createElement('div');
     this.container.style.display = 'inline-block';
     this.container.style.position = 'relative';
@@ -37,9 +38,8 @@ Nengo.SliderControl = function(min, max) {
     this.guideline.style.margin = 'auto';
     $(this.guideline).on('mousedown', function(event) {
         self.set_value(self.value);
-    })
+    });
     this.container.appendChild(this.guideline);
-
 
     this.handle = document.createElement('div');
     this.handle.classList.add('btn');
@@ -58,30 +58,30 @@ Nengo.SliderControl = function(min, max) {
     this.update_handle_pos(0);
     this.container.appendChild(this.handle);
 
-    interact(this.handle)
-        .draggable({
-            onstart: function () {
-                self.dispatch('changestart', {'target': this});
-                self.deactivate_type_mode();
-                self._drag_y = self.get_handle_pos();
-            },
-            onmove: function (event) {
-                var target = event.target;
-                self._drag_y += event.dy;
+    interact(this.handle).draggable({
+        onstart: function() {
+            self.dispatch('changestart', {'target': this});
+            self.deactivate_type_mode();
+            self._drag_y = self.get_handle_pos();
+        },
+        onmove: function(event) {
+            var target = event.target;
+            self._drag_y += event.dy;
 
-                self.scale.range([0, self.guideline.clientHeight]);
-                self.set_value(self.scale.invert(self._drag_y))
-            },
-            onend: function (event) {
-                self.dispatch('changeend', {'target': this});
-            }
-        });
+            self.scale.range([0, self.guideline.clientHeight]);
+            self.set_value(self.scale.invert(self._drag_y));
+        },
+        onend: function(event) {
+            self.dispatch('changeend', {'target': this});
+        }
+    });
 
-    interact(this.handle)
-        .on('tap', function(event) {
-            self.activate_type_mode();
-            event.stopPropagation();
-         }).on('keydown', function(event) { self.handle_keypress(event); });
+    interact(this.handle).on('tap', function(event) {
+        self.activate_type_mode();
+        event.stopPropagation();
+    }).on('keydown', function(event) {
+        self.handle_keypress(event);
+    });
 
     this.listeners = {};
 };
@@ -89,18 +89,18 @@ Nengo.SliderControl = function(min, max) {
 Nengo.SliderControl.prototype.on = function(type, fn) {
     this.listeners[type] = fn;
     return this;
-}
+};
 
 Nengo.SliderControl.prototype.dispatch = function(type, ev) {
     if (type in this.listeners) {
         this.listeners[type].call(this, ev);
     }
-}
+};
 
 Nengo.SliderControl.prototype.set_range = function(min, max) {
     this.min = min;
     this.max = max;
-    this.scale.domain([max,  min]);
+    this.scale.domain([max, min]);
     this.set_value(this.value);
     this.on_resize();
 };
@@ -117,7 +117,7 @@ Nengo.SliderControl.prototype.display_value = function(value) {
 
     this.update_handle_pos(value);
     this.update_value_text(value);
-}
+};
 
 Nengo.SliderControl.prototype.set_value = function(value) {
     var old_value = this.value;
@@ -136,21 +136,22 @@ Nengo.SliderControl.prototype.activate_type_mode = function() {
 
     this.type_mode = true;
 
-    this.handle.innerHTML = '<input id="value_in_field" style=" border:0; outline:0;"></input>';
-    var elem = this.handle.querySelector('#value_in_field')
+    this.handle.innerHTML =
+        '<input id="value_in_field" style=" border:0; outline:0;"></input>';
+    var elem = this.handle.querySelector('#value_in_field');
     elem.value = this.format_value(this.value);
     elem.focus();
     elem.select();
     elem.style.width = '100%';
     elem.style.textAlign = 'center';
     elem.style.backgroundColor = 'transparent';
-    $(elem).on('input', function (event) {
+    $(elem).on('input', function(event) {
         if (Nengo.is_num(elem.value)) {
             self.handle.style.backgroundColor = '';
         } else {
             self.handle.style.backgroundColor = 'salmon';
         }
-    }).on('blur', function (event) {
+    }).on('blur', function(event) {
         self.deactivate_type_mode();
     });
 };
@@ -203,7 +204,7 @@ Nengo.SliderControl.prototype.update_value_text = function(value) {
 
 Nengo.SliderControl.prototype.format_value = function(value) {
     return value.toFixed(2);
-}
+};
 
 Nengo.SliderControl.prototype.on_resize = function() {
     this.scale.range([0, this.guideline.clientHeight]);

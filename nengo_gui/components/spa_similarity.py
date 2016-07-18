@@ -51,13 +51,13 @@ class SpaSimilarity(SpaPlot):
             # briefly there can be no pairs, so catch the error
             try:
                 pair_similarity = np.dot(vocab.vector_pairs, x)
-                simi_list += ['{:.2f}'.format(simi) for simi in pair_similarity]
+                simi_list += ['{:.2f}'.format(simi)
+                              for simi in pair_similarity]
             except TypeError:
                 pass
 
-        if(simi_list != []):
-            self.data.append(  '["data_msg", %g, %s]'
-                             %( t, ",".join(simi_list) )  )
+        if len(simi_list) > 0:
+            self.data.append('["data_msg", %g, %s]' % (t, ",".join(simi_list)))
 
     def update_legend(self, vocab):
         # pass all the missing keys
@@ -73,8 +73,8 @@ class SpaSimilarity(SpaPlot):
             except TypeError:
                 pass
 
-        self.data.append('["update_legend", "%s"]'
-                         %('","'.join(legend_update)))
+        self.data.append(
+            '["update_legend", "%s"]' % ('","'.join(legend_update)))
 
     def javascript(self):
         """Generate the javascript that will create the client-side object"""

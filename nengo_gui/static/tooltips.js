@@ -8,7 +8,7 @@ Nengo.tooltips.tooltip = function($parent, content, placement, icon) {
                      content + '"/>');
     $tooltip.append('<sup>?</sup>').appendTo($parent);
     $tooltip.tooltip();
-}
+};
 
 Nengo.tooltips.popover = function($parent, title, content, placement, icon) {
     if (typeof(placement) === 'undefined') { placement = "bottom"; }
@@ -18,9 +18,11 @@ Nengo.tooltips.popover = function($parent, title, content, placement, icon) {
                      title + '"' + 'data-content="' + content + '"/>');
     $tooltip.append('<sup>?</sup>').appendTo($parent);
     $tooltip.popover({"trigger": "hover"});
-}
+};
 
-/* Ensemble Parameters */
+/**
+ * Ensemble Parameters.
+ */
 Nengo.tooltips.ens = {};
 Nengo.tooltips.ens.n_neurons = ["Type: int", "The number of neurons."];
 Nengo.tooltips.ens.dimensions = [
@@ -29,15 +31,15 @@ Nengo.tooltips.ens.radius = [
     "Type: int\nDefault: 1.0", "The radius of the state space represented by " +
         "the ensemble."];
 Nengo.tooltips.ens.encoders = [
-    "Type: Distribution or ndarray (`n_neurons`, `dimensions`)\n"+
+    "Type: Distribution or ndarray (`n_neurons`, `dimensions`)\n" +
         "Default: UniformHypersphere(surface=True)",
-    "The encoders, used to transform from state space to neuron "+
-        "space. Each row is a neuron's encoder, each column is a "+
+    "The encoders, used to transform from state space to neuron " +
+        "space. Each row is a neuron's encoder, each column is a " +
         "dimension of the state space."];
 Nengo.tooltips.ens.intercepts = [
     "Type: Distribution or ndarray (`n_neurons`)\nDefault: Uniform(-1.0, 1.0)",
-    "The point along each neuron's encoder where its activity is zero. "+
-        "If e is the neuron's encoder, then the activity will be zero when "+
+    "The point along each neuron's encoder where its activity is zero. " +
+        "If e is the neuron's encoder, then the activity will be zero when " +
         "dot(x, e) <= c, where c is the given intercept."];
 Nengo.tooltips.ens.max_rates = [
     "Type: Distribution or ndarray (`n_neurons`)\nDefault: Uniform(200, 400)",
@@ -65,7 +67,9 @@ Nengo.tooltips.ens.noise = [
 Nengo.tooltips.ens.seed = ["Type: int\nDefault: None",
                          "The seed used for random number generation."];
 
-/* Node Parameters */
+/**
+ * Node Parameters.
+ */
 Nengo.tooltips.node = {};
 Nengo.tooltips.node.output = [
     "Type: callable, array_like, or None",
@@ -80,8 +84,11 @@ Nengo.tooltips.node.size_out = [
         "specified, it will " +
         "be determined based on the values of ``output`` and ``size_in``."];
 
-
-/* Connection Parameters */
+/**
+ * Connection Parameters.
+ */
 Nengo.tooltips.conn = {};
 Nengo.tooltips.conn.expand = ["Click to show / hide full path"];
-Nengo.tooltips.conn.fan_passthrough = ["This connection is to / from a passthrough node: Fan in / out information is approximate."];
+Nengo.tooltips.conn.fan_passthrough = [
+    "This connection is to / from a passthrough node: Fan in / out " +
+        "information is approximate."];

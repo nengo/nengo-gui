@@ -7,7 +7,7 @@ from nengo_gui.components.component import Component
 
 class SpikeGrid(Component):
     """Represents an ensemble of neurons as squares in a grid.
-    
+
     The color of the squares corresponds to the neuron spiking.
     """
 

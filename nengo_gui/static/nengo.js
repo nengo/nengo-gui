@@ -1,5 +1,8 @@
-/** namespace for all Nengo visualization */
-/** root functions contain miscelaneous utility functions */
+/**
+ * Namespace for all Nengo visualization.
+ *
+ * Root functions contain miscelaneous utility functions
+ */
 
 // Expose jquery globally
 var $ = require('expose?$!./jquery');
@@ -35,14 +38,14 @@ Nengo.set_transform = function(element, x, y) {
 };
 
 /**
- * Create a WebSocket connection to the given id
+ * Create a WebSocket connection to the given id.
  */
 Nengo.create_websocket = function(uid) {
     var parser = document.createElement('a');
     parser.href = document.URL;
     if (window.location.protocol === 'https:') {
         var ws_proto = 'wss:';
-    } else{
+    } else {
         var ws_proto = 'ws:';
     }
     var ws_url = ws_proto + '//' + parser.host + '/viz_component?uid=' + uid;
@@ -58,7 +61,8 @@ Nengo.create_websocket = function(uid) {
  */
 Nengo.make_colors = function(N) {
     // Color blind palette with blue, green, red, magenta, yellow, cyan
-    var palette = ["#1c73b3", "#039f74", "#d65e00", "#cd79a7", "#f0e542", "#56b4ea"];
+    var palette =
+        ["#1c73b3", "#039f74", "#d65e00", "#cd79a7", "#f0e542", "#56b4ea"];
     var c = [];
 
     for (var i = 0; i < N; i++) {
@@ -67,7 +71,9 @@ Nengo.make_colors = function(N) {
     return c;
 };
 
-//Check if a string value represents a number
+/**
+ * Check if a string value represents a number.
+ */
 Nengo.is_num = function(value) {
     if ( !(isNaN(value)) && !(value.trim() === '') ) {
         return true;
@@ -81,7 +87,9 @@ Nengo.next_zindex = function() {
     return Nengo.max_zindex;
 };
 
-/* draw a legend */
+/**
+ * Draw a legend.
+ */
 Nengo.draw_legend = function(parent, labels, color_func, uid) {
     // "20" is around the size of the font
     legend_svg = d3.select(parent)
@@ -91,34 +99,38 @@ Nengo.draw_legend = function(parent, labels, color_func, uid) {
                        .attr("id", "legend" + uid);
 
     if (labels.length === 0) {
-      return legend_svg;
+        return legend_svg;
     }
 
     legend_svg.selectAll('rect')
-              .data(labels)
-              .enter()
-              .append("rect")
-              .attr("x", 0)
-              .attr("y", function(d, i) { return i * 20;})
-              .attr("class", "legend-label")
-              .attr("width", 10)
-              .attr("height", 10)
-              .style("fill", color_func);
+        .data(labels)
+        .enter()
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", function(d, i) {
+            return i * 20;
+        }).attr("class", "legend-label")
+        .attr("width", 10)
+        .attr("height", 10)
+        .style("fill", color_func);
 
     legend_svg.selectAll('text')
-              .data(labels)
-              .enter()
-              .append("text")
-              .attr("x", 15)
-              .attr("y", function(d, i) { return i * 20 + 9;})
-              .attr("class", "legend-label")
-              .html(function(d, i) {
-                  return labels[i];
-              });
+        .data(labels)
+        .enter()
+        .append("text")
+        .attr("x", 15)
+        .attr("y", function(d, i) {
+            return i * 20 + 9;
+        }).attr("class", "legend-label")
+        .html(function(d, i) {
+            return labels[i];
+        });
 
-    // expand the width of the svg to the length of the longest string
-    var label_list = $("#legend"+uid+" .legend-label").toArray();
-    var longest_label = Math.max.apply(Math, label_list.map(function(o){return o.getBBox().width;}));
+    // Expand the width of the svg to the length of the longest string
+    var label_list = $("#legend" + uid + " .legend-label").toArray();
+    var longest_label = Math.max.apply(Math, label_list.map(function(o) {
+        return o.getBBox().width;
+    }));
     // "50" is for the similarity measure that is around three characters wide
     var svg_right_edge = longest_label + 50;
     legend_svg.attr("width", svg_right_edge);
@@ -126,7 +138,7 @@ Nengo.draw_legend = function(parent, labels, color_func, uid) {
     return legend_svg;
 };
 
-module.exports = Nengo;  // Have to do this first due to circular dependency
+module.exports = Nengo; // Have to do this first due to circular dependency
 
 // Require all of the files that make up the Nengo JS app
 
@@ -165,14 +177,16 @@ require('imports?Nengo=../nengo,d3!./components/image');
 require('./components/netgraph.css');
 require('imports?Nengo=../nengo,interact=interact.js!./components/netgraph');
 require('imports?Nengo=../nengo!./components/netgraph_conn');
-require('imports?Nengo=../nengo,interact=interact.js!./components/netgraph_item');
+require('imports?Nengo=../nengo,interact=interact.js!' +
+        './components/netgraph_item');
 require('./components/pointer.css');
 require('imports?Nengo=../nengo!./components/pointer');
 require('./components/raster.css');
 require('imports?Nengo=../nengo,d3!./components/raster');
 require('./components/slider.css');
 require('imports?Nengo=../nengo!./components/slider');
-require('imports?Nengo=../nengo,d3,interact=interact.js!./components/slidercontrol');
+require('imports?Nengo=../nengo,d3,interact=interact.js!' +
+        './components/slidercontrol');
 require('./components/spa_similarity.css');
 // Must go after value
 require('imports?Nengo=../nengo,d3!./components/spa_similarity');

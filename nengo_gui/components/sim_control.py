@@ -37,10 +37,10 @@ class SimControl(Component):
         self.send_config_options = False
         self.reset_inform = False
         self.node = None
-        self.target_rate = 1.0     # desired speed of simulation
-        self.target_scale = None   # desired proportion of full speed
-        self.delay_time = 0.0      # amount of delay per time step
-        self.rate_proportion = 1.0 # current proportion of full speed
+        self.target_rate = 1.0  # desired speed of simulation
+        self.target_scale = None  # desired proportion of full speed
+        self.delay_time = 0.0  # amount of delay per time step
+        self.rate_proportion = 1.0  # current proportion of full speed
         self.smart_sleep_offset = 0.0  # difference from actual sleep time
 
     def attach(self, page, config, uid):
@@ -82,15 +82,16 @@ class SimControl(Component):
 
                 if self.actual_model_dt > 0:
                     # compute current proportion of full speed
-                    self.rate_proportion = 1.0 - ((self.rate * self.delay_time) /
-                                              self.actual_model_dt)
+                    self.rate_proportion = 1.0 - (
+                        (self.rate * self.delay_time)
+                        / self.actual_model_dt)
 
         # if we have a desired proportion, use it to control delay_time
         #  Note that we need last_tick to not be None so that we have a
         #  valid dt value.
         if self.target_scale is not None and self.last_tick is not None:
             s = self.target_scale
-            if s <=0:
+            if s <= 0:
                 self.delay_time = 0.5
             else:
                 self.delay_time = (1.0/s - s) * (dt - self.delay_time)
@@ -164,8 +165,8 @@ class SimControl(Component):
             self.last_status = status
         if self.send_config_options:
             client.write_text('sims:' + self.backend_options_html())
-            client.write_text('config' +
-                         'Nengo.Toolbar.prototype.config_modal_show();')
+            client.write_text('config'
+                              'Nengo.Toolbar.prototype.config_modal_show();')
             self.send_config_options = False
 
     def get_status(self):

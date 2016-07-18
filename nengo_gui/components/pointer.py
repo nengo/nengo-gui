@@ -67,7 +67,8 @@ class Pointer(SpaPlot):
                                np.array(vocab.key_pairs)[over_threshold])
             matches = itertools.chain(matches, pair_matches)
 
-        text = ';'.join(['%0.2f%s' % ( min(sim, 9.99), key) for sim, key in matches])
+        text = ';'.join(
+            ['%0.2f%s' % (min(sim, 9.99), key) for sim, key in matches])
 
         # msg sent as a string due to variable size of pointer names
         msg = '%g %s' % (t, text)

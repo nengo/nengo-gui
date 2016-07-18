@@ -42,6 +42,6 @@ Nengo.Config.prototype.restore_defaults = function() {
             localStorage.removeItem("ng." + option);
         }
     }
-}
+};
 
 Nengo.config = new Nengo.Config();

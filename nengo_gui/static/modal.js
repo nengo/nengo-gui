@@ -7,27 +7,27 @@ Nengo.Modal = function($div) {
 
     this.sim_was_running = false;
 
-    //This listener is triggered when the modal is closed
-    this.$div.on('hidden.bs.modal', function () {
+    // This listener is triggered when the modal is closed
+    this.$div.on('hidden.bs.modal', function() {
         if (self.sim_was_running) {
             sim.play();
         }
         Nengo.hotkeys.set_active(true);
-    })
-}
+    });
+};
 
 Nengo.Modal.prototype.show = function() {
     Nengo.hotkeys.set_active(false);
     this.sim_was_running = !sim.paused;
     this.$div.modal('show');
-    sim.pause()
-}
+    sim.pause();
+};
 
 Nengo.Modal.prototype.title = function(title) {
     this.$title.text(title);
-}
+};
 
-Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function){
+Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function) {
     this.$footer.empty();
 
     if (type === "close") {
@@ -43,7 +43,7 @@ Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function){
         if (typeof cancel_function !== 'undefined') {
             $('#cancel-button').on('click', cancel_function);
         } else {
-            $('#cancel-button').on('click', function () {
+            $('#cancel-button').on('click', function() {
                 $('#cancel-button').attr('data-dismiss', 'modal');
             });
         }
@@ -56,8 +56,10 @@ Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function){
             toolbar.reset_model_layout();
         });
     } else if (type === 'confirm_savepdf') {
-        this.$footer.append('<button type="button" ' +
-            'id="confirm_savepdf_button" class="btn btn-primary" data-dismiss="modal">Save</button>');
+        this.$footer.append(
+            '<button type="button" ' +
+                'id="confirm_savepdf_button" class="btn btn-primary" ' +
+                'data-dismiss="modal">Save</button>');
         this.$footer.append('<button type="button" ' +
             'class="btn btn-default" data-dismiss="modal">Close</button>');
         $('#confirm_savepdf_button').on('click', function() {
@@ -73,8 +75,8 @@ Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function){
 
             // Extract filename from the path
             var path = $("#filename")[0].textContent;
-            filename = path.split('/').pop()
-            filename = filename.split('.')[0]
+            filename = path.split('/').pop();
+            filename = filename.split('.')[0];
 
             // Initiate download
             var link = document.createElement("a");
@@ -87,8 +89,10 @@ Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function){
             document.body.removeChild(link);
         });
     } else if (type === 'confirm_savecsv') {
-        this.$footer.append('<button type="button" ' +
-            'id="confirm_savecsv_button" class="btn btn-primary" data-dismiss="modal">Save</button>');
+        this.$footer.append(
+            '<button type="button" ' +
+                'id="confirm_savecsv_button" class="btn btn-primary" ' +
+                'data-dismiss="modal">Save</button>');
         this.$footer.append('<button type="button" ' +
             'class="btn btn-default" data-dismiss="modal">Close</button>');
         $('#confirm_savecsv_button').on('click', function() {
@@ -101,7 +105,6 @@ Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function){
             filename = filename.split('.')[0];
 
             var uri = 'data:text/csv;charset=utf-8,' + escape(CSV);
-
 
             var link = document.createElement("a");
             link.href = uri;
@@ -116,17 +119,19 @@ Nengo.Modal.prototype.footer = function(type, ok_function, cancel_function){
     } else if (type === 'refresh') {
         this.$footer.append('<button type="button" ' +
             'id="refresh_button" class="btn btn-primary">Refresh</button>');
-        $('#refresh_button').on('click', function() {location.reload()})
+        $('#refresh_button').on('click', function() {
+            location.reload();
+        });
     } else {
-        console.warn('Modal footer type ' + type + ' not recognized.')
+        console.warn('Modal footer type ' + type + ' not recognized.');
     }
-}
+};
 
 Nengo.Modal.prototype.clear_body = function() {
     this.$body.empty();
     this.$div.find('.modal-dialog').removeClass('modal-sm');
     this.$div.off('shown.bs.modal');
-}
+};
 
 Nengo.Modal.prototype.text_body = function(text, type) {
     if (typeof type === 'undefined') { type = "info"; }
@@ -138,7 +143,7 @@ Nengo.Modal.prototype.text_body = function(text, type) {
     $p.append('<span class="glyphicon glyphicon-exclamation-sign"' +
         ' aria-hidden="true"></span>');
     $p.append(document.createTextNode(text));
-}
+};
 
 Nengo.Modal.prototype.help_body = function() {
     this.clear_body();
@@ -153,36 +158,37 @@ Nengo.Modal.prototype.help_body = function() {
 
     this.$div.find('.modal-dialog').addClass('modal-sm');
     var $body = $('<table class="table-striped" width=100%>');
+    // TODO: make this fit
     $body.append('<tr><td>Play / pause</td>' +
-                 '<td align="right">Spacebar, ' + shift + '-Enter</td></tr>'); // TODO: make this fit
+                 '<td align="right">Spacebar, ' + shift + '-Enter</td></tr>');
     $body.append('<tr><td>Undo</td>' +
                  '<td align="right">' + ctrl + '-z</td></tr>');
-    $body.append('<tr><td>Redo</td>'+
+    $body.append('<tr><td>Redo</td>' +
                  '<td align="right">' + ctrl + '-' + shift +
                  '-z, ' + ctrl + '-y</td></tr>');
     $body.append('<tr><td>Save</td>' +
                  '<td align="right">' + ctrl + '-s</td></tr>');
     $body.append('<tr><td>Toggle minimap</td>' +
                  '<td align="right">' + ctrl + '-m</td></tr>');
-    $body.append('<tr><td>Toggle editor</td>'+
+    $body.append('<tr><td>Toggle editor</td>' +
                  '<td align="right">' + ctrl + '-e</td></tr>');
-    $body.append('<tr><td>Update display</td>'+
-                 '<td align="right">' + ctrl + '-1</td></tr>'); //TODO: possibly pick a better shortcut key
-    $body.append('<tr><td>Toggle auto-update</td>'+
+    // TODO: possibly pick a better shortcut key
+    $body.append('<tr><td>Update display</td>' +
+                 '<td align="right">' + ctrl + '-1</td></tr>');
+    $body.append('<tr><td>Toggle auto-update</td>' +
                  '<td align="right">' + ctrl + '-' + shift + '-1</td></tr>');
-    $body.append('<tr><td>Show hotkeys</td>'+
+    $body.append('<tr><td>Show hotkeys</td>' +
                  '<td align="right">?</td></tr>');
     $body.append('</table>');
     $body.appendTo(this.$body);
-}
-
+};
 
 /**
  * Sets up the tabs for Info modals.
  */
 Nengo.Modal.prototype.tabbed_body = function(tabinfo) {
     this.clear_body();
-    var tabdivs = {}
+    var tabdivs = {};
     var $tab_ul = $('<ul class="nav nav-tabs"/>').appendTo(this.$body);
     var $content = $('<div class="tab-content"/>').appendTo(this.$body);
 
@@ -202,10 +208,10 @@ Nengo.Modal.prototype.tabbed_body = function(tabinfo) {
         }
     }
     return tabdivs;
-}
+};
 
 /**
- * Sets up the body for main configuration
+ * Sets up the body for main configuration.
  */
 Nengo.Modal.prototype.main_config = function() {
     this.clear_body();
@@ -279,32 +285,33 @@ Nengo.Modal.prototype.main_config = function() {
       '</div>' +
     '</div>').appendTo($form);
 
-    this.$div.on('shown.bs.modal', function () {
+    this.$div.on('shown.bs.modal', function() {
         $('#config-fontsize').focus();
     });
     $('#zoom-fonts').prop('checked', Nengo.netgraph.zoom_fonts);
-    $('#zoom-fonts').change(function () {
+    $('#zoom-fonts').change(function() {
         Nengo.netgraph.zoom_fonts = $('#zoom-fonts').prop('checked');
     });
 
     $('#aspect-resize').prop('checked', Nengo.netgraph.aspect_resize);
-    $('#aspect-resize').change(function () {
+    $('#aspect-resize').change(function() {
         Nengo.netgraph.aspect_resize = $('#aspect-resize').prop('checked');
     });
 
     $('#transparent-nets').prop('checked', Nengo.netgraph.transparent_nets);
-    $('#transparent-nets').change(function () {
-        Nengo.netgraph.transparent_nets = $('#transparent-nets').prop('checked');
+    $('#transparent-nets').change(function() {
+        Nengo.netgraph.transparent_nets =
+            $('#transparent-nets').prop('checked');
     });
 
     $('#sync-editor').prop('checked', Nengo.ace.auto_update);
-    $('#sync-editor').change(function () {
+    $('#sync-editor').change(function() {
         Nengo.ace.auto_update = $('#sync-editor').prop('checked');
         Nengo.ace.update_trigger = $('#sync-editor').prop('checked');
     });
 
     $('#config-fontsize').val(Nengo.netgraph.font_size);
-    $('#config-fontsize').bind('keyup input', function () {
+    $('#config-fontsize').bind('keyup input', function() {
         Nengo.netgraph.font_size = parseInt($('#config-fontsize').val());
     });
     $('#config-fontsize').attr('data-my_validator', 'custom');
@@ -312,17 +319,17 @@ Nengo.Modal.prototype.main_config = function() {
     var sd = Nengo.config.scriptdir;
     if (sd === ".") { sd = ''; }
     $('#config-scriptdir').val(sd);
-    $('#config-scriptdir').bind('keyup input', function () {
+    $('#config-scriptdir').bind('keyup input', function() {
         var sd = $('#config-scriptdir').val();
         if (!sd) { sd = '.'; }
         Nengo.config.scriptdir = sd;
     });
 
-    $('#config-backend').change(function () {
+    $('#config-backend').change(function() {
         sim.set_backend($('#config-backend').val());
     });
 
-    //Allow the enter key to submit
+    // Allow the enter key to submit
     var submit = function(event) {
         if (event.which == 13) {
             event.preventDefault();
@@ -331,16 +338,16 @@ Nengo.Modal.prototype.main_config = function() {
     };
     $("#config-fontsize").keypress(submit);
     $("#config-scriptdir").keypress(submit);
-
-}
+};
 
 /**
- * Sets up the body for standard input forms
+ * Sets up the body for standard input forms.
  */
 Nengo.Modal.prototype.single_input_body = function(start_values, label) {
     this.clear_body();
 
-    var $form = $('<form class="form-horizontal" id ="myModalForm"/>').appendTo(this.$body);
+    var $form = $('<form class="form-horizontal" id ="myModalForm"/>')
+        .appendTo(this.$body);
     var $ctrlg = $('<div class="form-group"/>').appendTo($form);
     $ctrlg.append('<label class="control-label" for="singleInput">' + label +
                   '</label>');
@@ -348,26 +355,26 @@ Nengo.Modal.prototype.single_input_body = function(start_values, label) {
     $ctrls.append('<input id="singleInput" type="text" placeholder="' +
                   start_values + '"/>');
     $('<div class="help-block with-errors"/>').appendTo($ctrls);
-    this.$div.on('shown.bs.modal', function () {
+    this.$div.on('shown.bs.modal', function() {
         $('#singleInput').focus();
     });
 
-    //Add custom validator
+    // Add custom validator
     $('#singleInput').attr('data-my_validator', 'custom');
 
     $(".controls").on('keydown', '#singleInput', function(event) {
-        //Allow the enter key to submit
+        // Allow the enter key to submit
         if (event.which == 13) {
             event.preventDefault();
             $('#OK').click();
         }
-        //Allow tabs to enter in default values
+        // Allow tabs to enter in default values
         if ((event.keyCode || event.which) == 9) {
             var values = $("#singleInput").attr('placeholder').split(",");
             var cur_val = $("#singleInput").val();
-            var cur_index = cur_val.split(",").length -1;
-            var pre = ' '; // space and possible comma before value
-            var post = ','; // possible comma after value
+            var cur_index = cur_val.split(",").length - 1;
+            var pre = ' '; // Space and possible comma before value
+            var post = ','; // Possible comma after value
 
             // Only do special things if there are more values to enter
             if (cur_index < values.length) {
@@ -375,17 +382,20 @@ Nengo.Modal.prototype.single_input_body = function(start_values, label) {
                 if (cur_val.length > 0) {
                     if (cur_val.trim().slice(-1) != ',') {
                         cur_index += 1;
-                        pre = ', '; // need a comma as well between values
+                        pre = ', '; // Need a comma as well between values
                     }
                 } else {
-                    pre = ''; // no space for the first value
+                    pre = ''; // No space for the first value
                 }
                 if (cur_index == values.length - 1) {
                     post = '';
                 }
-                // If the last character is a comma or there are no characters, fill in the next default value
+                // If the last character is a comma or there are no characters,
+                // fill in the next default value
                 if (cur_val.length == 0 || cur_val.trim().slice(-1) == ',') {
-                    $("#singleInput").val($("#singleInput").val() + pre + values[cur_index].trim() + post);
+                    $("#singleInput").val(
+                        $("#singleInput").val() + pre +
+                            values[cur_index].trim() + post);
                     event.preventDefault();
                 } else {
                     if (cur_index < values.length) {
@@ -396,7 +406,7 @@ Nengo.Modal.prototype.single_input_body = function(start_values, label) {
             }
         }
     });
-}
+};
 
 Nengo.Modal.prototype.ensemble_body = function(uid, params, plots, conninfo) {
     var tabs = this.tabbed_body([{id: 'params', title: 'Parameters'},
@@ -405,7 +415,7 @@ Nengo.Modal.prototype.ensemble_body = function(uid, params, plots, conninfo) {
     this.render_params(tabs.params, params, Nengo.tooltips.ens);
     this.render_plots(tabs.plots, plots);
     this.render_connections(tabs.connections, uid, conninfo);
-}
+};
 
 Nengo.Modal.prototype.node_body = function(uid, params, plots, conninfo) {
     var tabs = this.tabbed_body([{id: 'params', title: 'Parameters'},
@@ -414,14 +424,14 @@ Nengo.Modal.prototype.node_body = function(uid, params, plots, conninfo) {
     this.render_params(tabs.params, params, Nengo.tooltips.node);
     this.render_plots(tabs.plots, plots);
     this.render_connections(tabs.connections, uid, conninfo);
-}
+};
 
 Nengo.Modal.prototype.net_body = function(uid, stats, conninfo) {
     var tabs = this.tabbed_body([{id: 'stats', title: 'Statistics'},
                                  {id: 'connections', title: 'Connections'}]);
     this.render_stats(tabs.stats, stats);
     this.render_connections(tabs.connections, uid, conninfo);
-}
+};
 
 /**
  * Renders information about the parameters of an object.
@@ -438,14 +448,14 @@ Nengo.Modal.prototype.render_params = function($parent, params, tooltips) {
                              tooltips[String(params[i][0])][0],
                              tooltips[String(params[i][0])][1]);
     }
-}
+};
 
 /**
  * Renders information about some statistics of an object.
  */
 Nengo.Modal.prototype.render_stats = function($parent, stats) {
     for (var i = 0; i < stats.length; i++) {
-        $parent.append('<h3>' + stats[i].title + '</h3>')
+        $parent.append('<h3>' + stats[i].title + '</h3>');
         var $stable = $('<table class="table table-condensed table-hover"/>')
             .appendTo($parent);
 
@@ -457,7 +467,7 @@ Nengo.Modal.prototype.render_stats = function($parent, stats) {
             $val.text(stats[i].stats[j][1]);
         }
     }
-}
+};
 
 /**
  * Renders information about plots related to an object.
@@ -467,22 +477,22 @@ Nengo.Modal.prototype.render_plots = function($parent, plots) {
     if (typeof plots === 'string') {
         var $err = $('<div class="alert alert-danger" role="alert"/>')
             .appendTo($parent);
-        $err.append('<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>');
+        $err.append('<span class="glyphicon glyphicon-exclamation-sign" ' +
+                    'aria-hidden="true"></span>');
         $err.append('<span class="sr-only">Error:</span>');
         $err.append(document.createTextNode(plots));
-    }
-    else {
-        for (var i=0; i < plots.length; i++) {
+    } else {
+        for (var i = 0; i < plots.length; i++) {
             this.render_plot($parent, plots[i]);
         }
     }
-}
+};
 
 /**
  * Renders information about a single plot.
  */
 Nengo.Modal.prototype.render_plot = function($parent, plotinfo) {
-    $parent.append("<h4>" + plotinfo.title + "</h4>")
+    $parent.append("<h4>" + plotinfo.title + "</h4>");
 
     if (plotinfo.warnings.length > 0) {
         var $warn = $('<div class="alert alert-warning" role="alert"/>')
@@ -490,7 +500,8 @@ Nengo.Modal.prototype.render_plot = function($parent, plotinfo) {
 
         for (var i = 0; i < plotinfo.warnings.length; i++) {
             var $p = $('<p/>').appendTo($warn);
-            $p.append('<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>');
+            $p.append('<span class="glyphicon glyphicon-exclamation-sign" ' +
+                      'aria-hidden="true"></span>');
             $p.append('<span class="sr-only">Warning:</span>');
             $p.append(document.createTextNode(plotinfo.warnings[i]));
         }
@@ -507,16 +518,17 @@ Nengo.Modal.prototype.render_plot = function($parent, plotinfo) {
         console.warn("Plot type " + plotinfo.plot +
                      " not understood, or not implemented yet.");
     }
-}
+};
 
 /**
  * Static multiline plot with shared x-axis
  *
- * @param {String} selector - Where the svg will be added
- * @param {Array of Float} x - The shared x-axis
- * @param {Array of Array of Float} ys - The y data for each line
+ * @param {string} selector - Where the svg will be added
+ * @param {float[]} x - The shared x-axis
+ * @param {float[][]} ys - The y data for each line
  */
-Nengo.Modal.prototype.multiline_plot = function(selector, x, ys, x_label, y_label) {
+Nengo.Modal.prototype.multiline_plot = function(
+        selector, x, ys, x_label, y_label) {
 
     var margin = {left: 75, top: 10, right: 0, bottom: 50};
     var w = 500 - margin.left - margin.right;
@@ -526,25 +538,28 @@ Nengo.Modal.prototype.multiline_plot = function(selector, x, ys, x_label, y_labe
     var text_offset = 15;
 
     var scale_x = d3.scale.linear()
-        .domain([  x[0], x[x.length - 1]  ])
+        .domain([x[0], x[x.length - 1]])
         .range([margin.left, w - margin.right]);
     var scale_y = d3.scale.linear()
-        .domain([d3.min(ys, function(y){ return d3.min(y); }) - 0.01,
-                 d3.max(ys, function(y){ return d3.max(y); }) + 0.01])
-        .range([h+margin.top, margin.top]);
+        .domain([d3.min(ys, function(y) {
+            return d3.min(y);
+        }) - 0.01, d3.max(ys, function(y) {
+            return d3.max(y);
+        }) + 0.01])
+        .range([h + margin.top, margin.top]);
 
     // Add an SVG element with the desired dimensions and margin.
     var svg = d3.select(selector).append("svg");
     var graph = svg.attr("width", graph_w).attr("height", graph_h);
 
-    // create the axes
+    // Create the axes
     var xAxis = d3.svg.axis()
         .scale(scale_x)
         .orient("bottom")
         .ticks(9);
     graph.append("g")
         .attr("class", "axis axis_x unselectable")
-        .attr("transform", "translate(0," + (h+margin.top)  + ")")
+        .attr("transform", "translate(0," + (h + margin.top) + ")")
         .call(xAxis);
 
     var yAxisLeft = d3.svg.axis()
@@ -556,7 +571,7 @@ Nengo.Modal.prototype.multiline_plot = function(selector, x, ys, x_label, y_labe
         .attr("transform", "translate(" + margin.left + ",0)")
         .call(yAxisLeft);
 
-    // label the axes
+    // Label the axes
     if (x_label !== "") {
         svg.append("text")
             .attr("class", "x label")
@@ -577,12 +592,15 @@ Nengo.Modal.prototype.multiline_plot = function(selector, x, ys, x_label, y_labe
             .text(y_label);
     }
 
-    // add the lines
+    // Add the lines
     var colors = Nengo.make_colors(ys.length);
 
     var line = d3.svg.line()
-        .x(function(d, i) { return scale_x(x[i]); })
-        .y(function(d) { return scale_y(d); })
+        .x(function(d, i) {
+            return scale_x(x[i]);
+        }).y(function(d) {
+            return scale_y(d);
+        });
 
     graph.append("g")
         .selectAll("path")
@@ -591,11 +609,13 @@ Nengo.Modal.prototype.multiline_plot = function(selector, x, ys, x_label, y_labe
         .append("path")
         .attr("d", line)
         .attr("class", "line")
-        .style("stroke", function(d, i) { return colors[i]; });
-}
+        .style("stroke", function(d, i) {
+            return colors[i];
+        });
+};
 
-/*
- *  Renders information about connections related to an object.
+/**
+ * Renders information about connections related to an object.
  */
 Nengo.Modal.prototype.render_connections = function($parent, uid, conninfo) {
     var ngi = Nengo.netgraph.svg_objects[uid];
@@ -632,8 +652,11 @@ Nengo.Modal.prototype.render_connections = function($parent, uid, conninfo) {
 
         this.make_connections_table_row(
             $conn_in_table, conninfo, conn_in_objs,
-            function (conn_obj) { return conn_obj.pre },
-            function (conn_obj) { return conn_obj.pres });
+            function(conn_obj) {
+                return conn_obj.pre;
+            }, function(conn_obj) {
+                return conn_obj.pres;
+            });
     }
 
     var conn_out_objs = ngi.conn_out;
@@ -673,31 +696,39 @@ Nengo.Modal.prototype.render_connections = function($parent, uid, conninfo) {
 
         this.make_connections_table_row(
             $conn_out_table, conninfo, conn_out_objs,
-            function (conn_obj) { return conn_obj.post },
-            function (conn_obj) { return conn_obj.posts });
+            function(conn_obj) {
+                return conn_obj.post;
+            },
+            function(conn_obj) {
+                return conn_obj.posts;
+            });
     }
 
     if (conn_in_objs.length === 0 && conn_out_objs.length === 0) {
         var $warn = $('<div class="alert alert-warning" role="alert"/>')
             .appendTo($parent);
         var $p = $('<p/>').appendTo($warn);
-        $p.append('<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>');
+        $p.append('<span class="glyphicon glyphicon-exclamation-sign" ' +
+                  'aria-hidden="true"></span>');
         $p.append('<span class="sr-only">Warning:</span>');
         if (ngi.type === 'net' && ngi.expanded) {
             $p.append(document.createTextNode(
-                "Network is expanded. Please see individual objects for connection info."));
+                "Network is expanded. Please see individual objects " +
+                    "for connection info."));
         } else {
-            $p.append(document.createTextNode("No connections to or from this object."));
+            $p.append(document.createTextNode(
+                "No connections to or from this object."));
         }
     }
-}
+};
 
-/*
- *  Generates one row in the connections table in the connections tab.
+/**
+ * Generates one row in the connections table in the connections tab.
  */
-Nengo.Modal.prototype.make_connections_table_row = function($table, conninfo, conn_objs, get_conn_other, get_conn_conn_uid_list) {
+Nengo.Modal.prototype.make_connections_table_row = function(
+        $table, conninfo, conn_objs, get_conn_other, get_conn_conn_uid_list) {
     for (var i = 0; i < conn_objs.length; i++) {
-        // Get a reference to the object that the current object is connected to
+        // Get a handle to the object that the current object is connected to
         var conn_other = get_conn_other(conn_objs[i]);
 
         // Make a row in the table
@@ -709,25 +740,29 @@ Nengo.Modal.prototype.make_connections_table_row = function($table, conninfo, co
         this.make_conn_path_dropdown_list(
             $objs_td,
             conn_other.uid,
-            conninfo["obj_type"][String(conn_objs[i].uid)],
+            conninfo.obj_type[String(conn_objs[i].uid)],
             get_conn_conn_uid_list(conn_objs[i]));
 
         // Make the functions column
         var $func_td = $('<td/>').appendTo($tr);
-        $func_td.text(conninfo["func"][String(conn_objs[i].uid)]);
+        $func_td.text(conninfo.func[String(conn_objs[i].uid)]);
 
         // Make the fan data column
-        var $fan_td = $('<td>' + conninfo["fan"][String(conn_objs[i].uid)] + '</td>').appendTo($tr);
-        if (conninfo["obj_type"][String(conn_objs[i].uid)] === "passthrough") {
-            Nengo.tooltips.tooltip($fan_td, Nengo.tooltips.conn.fan_passthrough);
+        var $fan_td = $('<td>' +
+                        conninfo.fan[String(conn_objs[i].uid)] + '</td>')
+            .appendTo($tr);
+        if (conninfo.obj_type[String(conn_objs[i].uid)] === "passthrough") {
+            Nengo.tooltips.tooltip(
+                $fan_td, Nengo.tooltips.conn.fan_passthrough);
         }
     }
-}
+};
 
-/*
- *  Generates the connection path dropdown list for the connections tab.
+/**
+ * Generates the connection path dropdown list for the connections tab.
  */
-Nengo.Modal.prototype.make_conn_path_dropdown_list = function($container, others_uid, obj_type, conn_uid_list) {
+Nengo.Modal.prototype.make_conn_path_dropdown_list = function(
+        $container, others_uid, obj_type, conn_uid_list) {
     if (conn_uid_list.length > 1) {
         // Add expand control and the tooltip to the <dd> object
         var $lg_header = $('<a data-toggle="collapse" href="#pathlist' +
@@ -740,30 +775,31 @@ Nengo.Modal.prototype.make_conn_path_dropdown_list = function($container, others
 
         // Make a list-group for the drop down items
         var $path_list = $('<ul class="list-group">')
-                            .appendTo($('<div class="collapse" id="pathlist' +
-                                      String(conn_uid_list[0]).replace(/[\.\[\]]/g, '_') +
-                                      '"/>')
-                                .appendTo($container));
+            .appendTo($('<div class="collapse" id="pathlist' +
+                        String(conn_uid_list[0]).replace(/[\.\[\]]/g, '_') +
+                        '"/>')
+                      .appendTo($container));
 
         // Add the root "Model" item to the drop down list
-        $path_list.append('<li class="list-group-item shaded"><span class="glyphicon glyphicon-home"/>Model</a>')
+        $path_list.append('<li class="list-group-item shaded">' +
+                          '<span class="glyphicon glyphicon-home"/>Model</a>');
 
         // Populate the list-group
         var shaded_option = "shaded";
         var endpoint_icon = "glyphicon glyphicon-triangle-right";
         for (var p = conn_uid_list.length - 1; p >= 0; p--) {
-            if (conn_uid_list[p] in Nengo.netgraph.svg_objects){
-                // If the uid is in netgraph.svg_objects, use the object's label
-                var path_item = Nengo.netgraph.svg_objects[conn_uid_list[p]].label.innerHTML;
-            }
-            else {
-                // Otherwise, use the object's uid (with brackets to indicate that the UI
-                // is unsure of the exact label)
+            if (conn_uid_list[p] in Nengo.netgraph.svg_objects) {
+                // If the uid is in netgraph.svg_objects, use the obj's label
+                var path_item = Nengo.netgraph.svg_objects[conn_uid_list[p]]
+                    .label.innerHTML;
+            } else {
+                // Otherwise, use the object's uid (with brackets to indicate
+                // that the UI is unsure of the exact label)
                 var path_item = '(' + String(conn_uid_list[p]) + ')';
             }
 
             if (others_uid === conn_uid_list[p]) {
-                // Toggle the shading option when the others_uid has been reached
+                // Toggle the shading option when others_uid has been reached
                 shaded_option = '';
             }
 
@@ -792,17 +828,17 @@ Nengo.Modal.prototype.make_conn_path_dropdown_list = function($container, others
                               path_item + '</li>');
         }
     }
-}
+};
 
 Nengo.modal = new Nengo.Modal($('.modal').first());
 
-//Change the global defaults of the modal validator
+// Change the global defaults of the modal validator
 $( document ).ready(function() {
     $validator = $.fn.validator.Constructor.DEFAULTS;
-    //Change the delay before showing errors
-    $validator["delay"] = 5000;
-    //Leave the ok button on
-    $validator["disable"] = false;
-    //Set the error messages for new validators
-    $validator["errors"] = {my_validator: 'Does not match'};
+    // Change the delay before showing errors
+    $validator.delay = 5000;
+    // Leave the ok button on
+    $validator.disable = false;
+    // Set the error messages for new validators
+    $validator.errors = {my_validator: 'Does not match'};
 });

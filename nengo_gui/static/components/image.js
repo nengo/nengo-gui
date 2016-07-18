@@ -1,7 +1,7 @@
 /**
- * Shows an image or pixel grid over time
- * @constructor
+ * Shows an image or pixel grid over time.
  *
+ * @constructor
  * @param {DOMElement} parent - the element to add this component to
  * @param {Nengo.SimControl} sim - the simulation controller
  * @param {dict} args - A set of constructor arguments (see Nengo.Component)
@@ -9,7 +9,6 @@
  * @param {float} args.miny - minimum value on y-axis
  * @param {float} args.maxy - maximum value on y-axis
  */
-
 Nengo.Image = function(parent, sim, args) {
     var self = this;
 
@@ -20,10 +19,10 @@ Nengo.Image = function(parent, sim, args) {
     self.pixels_y = args.pixels_y;
     self.n_pixels = self.pixels_x * self.pixels_y;
 
-    /** for storing the accumulated data */
+    // For storing the accumulated data
     self.data_store = new Nengo.DataStore(self.n_pixels, self.sim, 0);
 
-    /** draw the plot as an SVG */
+    // Draw the plot as an SVG
     self.svg = d3.select(self.div).append('svg')
         .attr('width', '100%')
         .attr('height', '100%')
@@ -31,11 +30,11 @@ Nengo.Image = function(parent, sim, args) {
             'padding-top:', '2em',
         ].join(""));
 
-    /** call schedule_update whenever the time is adjusted in the SimControl */
+    // Call schedule_update whenever the time is adjusted in the SimControl
     self.sim.div.addEventListener('adjust_time',
             function(e) {self.schedule_update();}, false);
 
-    /** create the image */
+    // Create the image
     self.image = self.svg.append("image")
         .attr("x", 0)
         .attr("y", 0)
@@ -54,6 +53,7 @@ Nengo.Image = function(parent, sim, args) {
     self.on_resize(this.get_screen_width(), this.get_screen_height());
 
 };
+
 Nengo.Image.prototype = Object.create(Nengo.Component.prototype);
 Nengo.Image.prototype.constructor = Nengo.Image;
 
@@ -71,7 +71,7 @@ Nengo.Image.prototype.on_message = function(event) {
         this.data_store.push(data);
     }
     this.schedule_update();
-}
+};
 
 /**
  * Redraw the lines and axis due to changed data
@@ -79,7 +79,7 @@ Nengo.Image.prototype.on_message = function(event) {
 Nengo.Image.prototype.update = function() {
     var self = this;
 
-    /** let the data store clear out old values */
+    // Let the data store clear out old values
     self.data_store.update();
 
     var data = self.data_store.get_last_data();

@@ -172,7 +172,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
                 r.append(b'<li class="directory collapsed">'
                          b'<a href="#" rel="' + ff + b'/">' + f + b'</a></li>')
             else:
-                e = os.path.splitext(f)[1][1:] # get .ext and remove dot
+                e = os.path.splitext(f)[1][1:]  # get .ext and remove dot
                 if e == 'py':
                     e = e.encode('utf-8')
                     f = f.encode('utf-8')

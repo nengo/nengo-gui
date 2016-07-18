@@ -44,8 +44,8 @@ class AceEditor(Editor):
                 else:
                     short_msg = error['trace']
             client.write_text(json.dumps({'error': error,
-                                     'short_msg': short_msg,
-                                     'stdout': stdout}))
+                                          'short_msg': short_msg,
+                                          'stdout': stdout}))
             self.last_error = error
             self.last_stdout = stdout
 

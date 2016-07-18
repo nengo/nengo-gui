@@ -2,12 +2,11 @@
 
 import json
 
-import numpy as np
-
 import nengo
 
 from .static_plots import tuning_curve_plot, response_curve_plot
 from .static_plots import node_output_plot
+
 
 def infomodal(ng, uid, **args):
     obj = ng.uids[uid]
@@ -20,14 +19,18 @@ def infomodal(ng, uid, **args):
     else:
         raise NotImplementedError()
 
+
 def add_modal_title_js(title_text):
     return 'Nengo.modal.title("%s");' % (title_text)
+
 
 def add_modal_footer_js(footer_text):
     return 'Nengo.modal.footer("%s");' % (footer_text)
 
+
 def show_modal_js():
     return 'Nengo.modal.show();'
+
 
 def ensemble_infomodal(ng, uid, conn_in_uids, conn_out_uids):
     ens = ng.uids[uid]
@@ -53,6 +56,7 @@ def ensemble_infomodal(ng, uid, conn_in_uids, conn_out_uids):
         uid, json.dumps(params), json.dumps(plots), json.dumps(conninfo)))
     js.append('Nengo.modal.show();')
     return '\n'.join(js)
+
 
 def node_infomodal(ng, uid, conn_in_uids, conn_out_uids):
     node = ng.uids[uid]
