@@ -14,8 +14,6 @@ var Nengo = {};
 
 Nengo.user_settings = [];
 
-Nengo.max_zindex = 0;
-
 /**
  * Helper function to clip a number, keeping it between two values.
  */
@@ -82,10 +80,13 @@ Nengo.is_num = function(value) {
     }
 };
 
-Nengo.next_zindex = function() {
-    Nengo.max_zindex++;
-    return Nengo.max_zindex;
-};
+Nengo.next_zindex = (function() {
+    var max_zindex = 0;
+    return function() {
+        max_zindex += 1;
+        return max_zindex;
+    };
+})();
 
 /**
  * Draw a legend.
