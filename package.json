@@ -15,7 +15,9 @@
   "private": true,
   "scripts": {
     "build": "webpack --debug --devtool source-map --output-pathinfo",
-    "release": "webpack --optimize-minimize --optimize-occurence-order"
+    "docs": "jsdoc nengo_gui/static",
+    "release": "webpack --optimize-minimize --optimize-occurence-order",
+    "style": "jscs --config=./.jscs.json --max-errors -1 nengo_gui/static"
   },
   "devDependencies": {
     "bootstrap": "^3.3.4",
@@ -30,6 +32,8 @@
     "jquery": "^2.1.3",
     "jquery-ui": "^1.10.4",
     "jqueryfiletree": "jqueryfiletree/jqueryfiletree#2.1.4",
+    "jscs": "^3.0.7",
+    "jsdoc": "^3.4.0",
     "style-loader": "^0.13.1",
     "url-loader": "^0.5.7",
     "webpack": "^1.13.1"
