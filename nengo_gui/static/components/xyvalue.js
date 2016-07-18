@@ -70,7 +70,7 @@ Nengo.XYValue = function(parent, sim, args) {
 };
 
 Nengo.XYValue.prototype = Object.create(Nengo.Component.prototype);
-Nengo.XYValue.prototype.constructor = Nengo.Value;
+Nengo.XYValue.prototype.constructor = Nengo.XYValue;
 
 /**
  * Receive new line data from the server.

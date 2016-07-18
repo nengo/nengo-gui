@@ -32,7 +32,7 @@ Nengo.HTMLView = function(parent, sim, args) {
 };
 
 Nengo.HTMLView.prototype = Object.create(Nengo.Component.prototype);
-Nengo.HTMLView.prototype.constructor = Nengo.Pointer;
+Nengo.HTMLView.prototype.constructor = Nengo.HTMLView;
 
 /**
  * Receive new line data from the server
