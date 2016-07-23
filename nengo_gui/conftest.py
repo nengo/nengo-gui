@@ -4,7 +4,7 @@ import pytest
 from selenium import webdriver
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def driver(request):
 
     driver = webdriver.Firefox()
