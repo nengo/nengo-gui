@@ -48,4 +48,4 @@ def driver(gui):
     assert driver.title != "Problem loading page"
     yield driver
 
-    driver.close()
+    driver.quit()
