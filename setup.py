@@ -47,7 +47,7 @@ setup(
     install_requires=[
         "nengo",
     ],
-    test_requires=[
+    tests_require=[
         "pytest",
         "selenium",
         "pyimgur",
