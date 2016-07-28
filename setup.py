@@ -47,6 +47,11 @@ setup(
     install_requires=[
         "nengo",
     ],
+    tests_require=[
+        "pytest",
+        "selenium",
+        "pyimgur",
+    ],
     classifiers=[  # https://pypi.python.org/pypi?%3Aaction=list_classifiers
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
