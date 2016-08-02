@@ -297,14 +297,14 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                             width:item.width, height:item.height});
                     });
 
+            var ctrlKey = 17;
             $(document).bind('keydown', function(event) {
-                if (event.ctrlKey) {
+                if (event.keyCode = ctrlKey) {
                     interact(self.area).resizable(false);
                 }
             });
             $(document).bind('keyup', function(event) {
-                // keyCode 17 == ctrlKey
-                if (event.keyCode == 17) {
+                if (event.keyCode == ctrlKey) {
                     interact(self.area).resizable(true);
                 }
             });

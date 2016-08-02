@@ -117,14 +117,14 @@ Nengo.Component = function(parent, args) {
             self.save_layout();
         });
 
+    var ctrlKey = 17;
     $(document).bind('keydown', function(event) {
-        if (event.ctrlKey) {
+        if (event.keyCode == ctrlKey) {
             interact(self.div).resizable(false);
         }
     });
     $(document).bind('keyup', function(event) {
-        // keyCode 17 == ctrlKey
-        if (event.keyCode == 17) {
+        if (event.keyCode == ctrlKey) {
             interact(self.div).resizable(true);
         }
     });
