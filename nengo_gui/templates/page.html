@@ -148,7 +148,7 @@
         body = document.getElementById("body");
         body.removeChild(document.getElementById("loading-div"));
         %(main_components)s
-        nengo = new Nengo(simargs, filename, editoruid, netgraphargs);
+        nengo = new Nengo.default(simargs, filename, editoruid, netgraphargs);
         %(components)s
       }
     </script>

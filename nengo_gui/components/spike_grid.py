@@ -68,7 +68,7 @@ class SpikeGrid(Component):
         info = dict(uid=id(self), label=self.label,
                     pixels_x=self.pixels_x, pixels_y=self.pixels_y)
         json = self.javascript_config(info)
-        return 'new Image(nengo.main, nengo.viewport, nengo.sim, %s);' % json
+        return 'new Image.default(nengo.main, nengo.viewport, nengo.sim, %s);' % json
 
     def code_python_args(self, uids):
         args = [uids[self.obj]]

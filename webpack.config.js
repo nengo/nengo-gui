@@ -5,7 +5,7 @@ module.exports = {
     context: __dirname, // Paths are relative to nengo_gui
     // Putting the entry point in a list is a workaround for this error:
     // Error: a dependency to an entry point is not allowed
-    entry: ['./nengo_gui/static/nengo.js'],
+    entry: ['./nengo_gui/static/nengo.ts'],
     output: {
         path: './nengo_gui/static/dist',
         filename: 'nengo.js',
@@ -14,7 +14,7 @@ module.exports = {
         publicPath: '/static/dist/' // Fixes issue finding emitted files
     },
     resolve: {
-        extensions: ['', '.js']
+        extensions: ['', '.js', '.ts']
     },
     module: {
         loaders: [
@@ -28,14 +28,26 @@ module.exports = {
             {
                 test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                 loader: 'file-loader?name=./[hash].[ext]'
-            }
+            },
+            { test: /\.tsx?$/, loader: 'ts-loader' }
         ]
     },
     plugins: [
+        require('webpack-fail-plugin'),
         new webpack.ProvidePlugin({
             $: 'jquery',
             jQuery: 'jquery',
             "window.jQuery": 'jquery',
         })
-    ]
+    ],
+    ts: {
+        ignoreDiagnostics: [
+            "2322",
+            "2339",
+            "2342",
+            "2345",
+            "2346",
+            "2403"
+        ]
+    }
 }

@@ -39,7 +39,7 @@ class HTMLView(Component):
     def javascript(self):
         info = dict(uid=id(self), label=self.label)
         json = self.javascript_config(info)
-        return 'new HTMLView(nengo.main, nengo.viewport, nengo.sim, %s);' % json
+        return 'new HTMLView.default(nengo.main, nengo.viewport, nengo.sim, %s);' % json
 
     def code_python_args(self, uids):
         return [uids[self.obj]]

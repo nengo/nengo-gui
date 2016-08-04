@@ -87,7 +87,7 @@ class Pointer(SpaPlot):
     def javascript(self):
         info = dict(uid=id(self), label=self.label)
         json = self.javascript_config(info)
-        return 'new Pointer(nengo.main, nengo.viewport, nengo.sim, %s);' % json
+        return 'new Pointer.default(nengo.main, nengo.viewport, nengo.sim, %s);' % json
 
     def code_python_args(self, uids):
         return [uids[self.obj], 'target=%r' % self.target]
