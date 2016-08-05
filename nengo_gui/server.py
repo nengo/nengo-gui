@@ -585,6 +585,7 @@ class WebSocket(object):
 def _sendall(socket, data):
     bytes_sent = 0
     while bytes_sent < len(data):
+        select.select((), (socket,), ())  # ensure socket is not full
         bytes_sent += socket.send(data[bytes_sent:])
 
 
