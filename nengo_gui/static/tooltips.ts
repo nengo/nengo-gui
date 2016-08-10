@@ -65,7 +65,7 @@ ens.noise = [
         "as current. A sample is drawn for each individual neuron " +
         "on every simulation step."];
 ens.seed = ["Type: int\nDefault: None",
-                         "The seed used for random number generation."];
+            "The seed used for random number generation."];
 
 /**
  * Node Parameters.

@@ -21,24 +21,24 @@ import Toolbar from "./top_toolbar";
 
 export default class Nengo {
 
-constructor(simargs, filename, editoruid, netgraphargs) {
-    this.main = document.getElementById('main');
-    this.control = document.getElementById('control');
+    constructor(simargs, filename, editoruid, netgraphargs) {
+        this.main = document.getElementById('main');
+        this.control = document.getElementById('control');
 
-    this.config = new Config();
+        this.config = new Config();
 
-    this.netgraph = new NetGraph(this.main, this.config, netgraphargs);
-    this.editor = new Editor(editoruid, this.netgraph);
-    this.sim = new SimControl(this.control, simargs, this.editor);
-    this.sidemenu = new SideMenu(this.sim);
-    this.toolbar = new Toolbar(filename, this.sim);
+        this.netgraph = new NetGraph(this.main, this.config, netgraphargs);
+        this.editor = new Editor(editoruid, this.netgraph);
+        this.sim = new SimControl(this.control, simargs, this.editor);
+        this.sidemenu = new SideMenu(this.sim);
+        this.toolbar = new Toolbar(filename, this.sim);
 
-    this.modal = this.sim.modal;
-    this.hotkeys = this.modal.hotkeys;
-    this.viewport = this.netgraph.viewport;
+        this.modal = this.sim.modal;
+        this.hotkeys = this.modal.hotkeys;
+        this.viewport = this.netgraph.viewport;
 
-    document.title = filename;
-}
+        document.title = filename;
+    }
 
 }
 
