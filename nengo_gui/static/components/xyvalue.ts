@@ -16,18 +16,29 @@
  */
 
 import * as d3 from "d3";
+import * as $ from "jquery";
 
-import "./xyvalue.css";
-import { Component } from "./component";
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
+import { Component } from "./component";
 import XYAxes from "./xy_axes";
+import "./xyvalue.css";
 
 export default class XYValue extends Component {
+    axes2d;
+    data_store;
+    index_x;
+    index_y;
+    invalid_dims;
+    n_lines;
+    path;
+    recent_circle;
+    sim;
+    warning_text;
 
     constructor(parent, viewport, sim, args) {
         super(parent, viewport, args);
-        var self = this;
+        const self = this;
 
         this.n_lines = args.n_lines || 1;
         this.sim = sim;
@@ -42,36 +53,36 @@ export default class XYValue extends Component {
         this.index_y = args.index_y;
 
         // Call schedule_update whenever the time is adjusted in the SimControl
-        this.sim.div.addEventListener('adjust_time', function(e) {
-            self.schedule_update();
+        this.sim.div.addEventListener("adjust_time", function(e) {
+            self.schedule_update(e);
         }, false);
 
         // Call reset whenever the simulation is reset
-        this.sim.div.addEventListener('sim_reset', function(e) {
-            self.reset();
+        this.sim.div.addEventListener("sim_reset", function(e) {
+            self.reset(e);
         }, false);
 
         // Create the lines on the plots
-        var line = d3.svg.line()
+        d3.svg.line()
             .x(function(d, i) {
                 return self.axes2d.scale_x(self.data_store.data[this.index_x][i]);
             }).y(function(d) {
-                return self.axe2d.scale_y(d);
+                return self.axes2d.scale_y(d);
             });
         this.path = this.axes2d.svg.append("g")
-            .selectAll('path')
+            .selectAll("path")
             .data([this.data_store.data[this.index_y]]);
-        this.path.enter().append('path')
-            .attr('class', 'line')
-            .style('stroke', utils.make_colors(1));
+        this.path.enter().append("path")
+            .attr("class", "line")
+            .style("stroke", utils.make_colors(1));
 
         // Create a circle to track the most recent data
         this.recent_circle = this.axes2d.svg.append("circle")
             .attr("r", this.get_circle_radius())
-            .attr('cx', this.axes2d.scale_x(0))
-            .attr('cy', this.axes2d.scale_y(0))
+            .attr("cx", this.axes2d.scale_x(0))
+            .attr("cy", this.axes2d.scale_y(0))
             .style("fill", utils.make_colors(1)[0])
-            .style('fill-opacity', 0);
+            .style("fill-opacity", 0);
 
         this.invalid_dims = false;
 
@@ -83,45 +94,45 @@ export default class XYValue extends Component {
      * Receive new line data from the server.
      */
     on_message(event) {
-        var data = new Float32Array(event.data);
+        const data = new Float32Array(event.data);
         this.data_store.push(data);
-        this.schedule_update();
+        this.schedule_update(event);
     };
 
     /**
      * Redraw the lines and axis due to changed data.
      */
     update() {
-        var self = this;
+        const self = this;
 
         // Let the data store clear out old values
         this.data_store.update();
 
         // Update the lines if there is data with valid dimensions
-        var good_idx = self.index_x < self.n_lines && self.index_y < self.n_lines;
+        const good_idx = self.index_x < self.n_lines && self.index_y < self.n_lines;
         if (good_idx) {
-            var shown_data = this.data_store.get_shown_data();
+            const shown_data = this.data_store.get_shown_data();
 
             // Update the lines
-            var line = d3.svg.line()
+            const line = d3.svg.line()
                 .x(function(d, i) {
                     return self.axes2d.scale_x(shown_data[self.index_x][i]);
                 }).y(function(d) {
                     return self.axes2d.scale_y(d);
                 });
             this.path.data([shown_data[this.index_y]])
-                .attr('d', line);
+                .attr("d", line);
 
-            var last_index = shown_data[self.index_x].length - 1;
+            const last_index = shown_data[self.index_x].length - 1;
 
             if (last_index >= 0) {
                 // Update the circle if there is valid data
                 this.recent_circle
-                    .attr('cx', self.axes2d.scale_x(
+                    .attr("cx", self.axes2d.scale_x(
                         shown_data[self.index_x][last_index]))
-                    .attr('cy', self.axes2d.scale_y(
+                    .attr("cy", self.axes2d.scale_y(
                         shown_data[self.index_y][last_index]))
-                    .style('fill-opacity', 0.5);
+                    .style("fill-opacity", 0.5);
             }
 
             // If switching from invalids dimensions to valid dimensions, remove
@@ -131,11 +142,11 @@ export default class XYValue extends Component {
                 this.invalid_dims = false;
             }
 
-        } else if (this.invalid_dims == false) {
+        } else if (this.invalid_dims === false) {
             this.invalid_dims = true;
 
             // Create the HTML text element
-            this.warning_text = document.createElement('div');
+            this.warning_text = document.createElement("div");
             this.div.appendChild(this.warning_text);
             this.warning_text.className = "warning-text";
             this.warning_text.innerHTML = "Change<br>Dimension<br>Indices";
@@ -163,21 +174,22 @@ export default class XYValue extends Component {
     };
 
     generate_menu() {
-        var self = this;
-        var items = [];
-        items.push(['Set range...', function() {
-            self.set_range();
-        }]);
-        items.push(['Set X, Y indices...', function() {
-            self.set_indices();
-        }]);
+        const self = this;
+        const items = [
+            ["Set range...", function() {
+                self.set_range();
+            }],
+            ["Set X, Y indices...", function() {
+                self.set_indices();
+            }],
+        ];
 
         // Add the parent's menu items to this
         return $.merge(items, Component.prototype.generate_menu.call(this));
     };
 
     layout_info() {
-        var info = Component.prototype.layout_info.call(this);
+        const info = Component.prototype.layout_info.call(this);
         info.min_value = this.axes2d.scale_y.domain()[0];
         info.max_value = this.axes2d.scale_y.domain()[1];
         info.index_x = this.index_x;
@@ -192,49 +204,49 @@ export default class XYValue extends Component {
     };
 
     set_range() {
-        var range = this.axes2d.scale_y.domain();
-        var self = this;
-        self.sim.modal.title('Set graph range...');
-        self.sim.modal.single_input_body(range, 'New range');
-        self.sim.modal.footer('ok_cancel', function(e) {
-            var new_range = $('#singleInput').val();
-            var modal = $('#myModalForm').data('bs.validator');
+        const range = this.axes2d.scale_y.domain();
+        const self = this;
+        self.sim.modal.title("Set graph range...");
+        self.sim.modal.single_input_body(range, "New range");
+        self.sim.modal.footer("ok_cancel", function(e) {
+            let new_range = $("#singleInput").val();
+            const modal = $("#myModalForm").data("bs.validator");
 
             modal.validate();
             if (modal.hasErrors() || modal.isIncomplete()) {
                 return;
             }
             if (new_range !== null) {
-                new_range = new_range.split(',');
-                var min = parseFloat(new_range[0]);
-                var max = parseFloat(new_range[1]);
+                new_range = new_range.split(",");
+                const min = parseFloat(new_range[0]);
+                const max = parseFloat(new_range[1]);
                 self.update_range(min, max);
                 self.update();
                 self.save_layout();
             }
-            $('#OK').attr('data-dismiss', 'modal');
+            $("#OK").attr("data-dismiss", "modal");
         });
-        var $form = $('#myModalForm').validator({
+        $("#myModalForm").validator({
             custom: {
                 my_validator: function($item) {
-                    var nums = $item.val().split(',');
-                    var valid = false;
+                    const nums = $item.val().split(",");
+                    let valid = false;
                     if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
                         // Two numbers, 1st less than 2nd.
                         // The axes must intersect at 0.
-                        var ordered = Number(nums[0]) < Number(nums[1]);
-                        var zeroed = Number(nums[0]) * Number(nums[1]) <= 0;
+                        const ordered = Number(nums[0]) < Number(nums[1]);
+                        const zeroed = Number(nums[0]) * Number(nums[1]) <= 0;
                         if (ordered && zeroed) {
                             valid = true;
                         }
                     }
-                    return (nums.length == 2 && valid);
-                }
-            }
+                    return (nums.length === 2 && valid);
+                },
+            },
         });
 
-        $('#singleInput').attr('data-error', 'Input should be in the form ' +
-                               '"<min>,<max>" and the axes must cross at zero.');
+        $("#singleInput").attr("data-error", "Input should be in the form " +
+                               "'<min>,<max>' and the axes must cross at zero.");
         self.sim.modal.show();
     };
 
@@ -251,45 +263,45 @@ export default class XYValue extends Component {
     };
 
     set_indices() {
-        var self = this;
-        self.sim.modal.title('Set X and Y indices...');
+        const self = this;
+        self.sim.modal.title("Set X and Y indices...");
         self.sim.modal.single_input_body(
-            [this.index_x, this.index_y], 'New indices');
-        self.sim.modal.footer('ok_cancel', function(e) {
-            var new_indices = $('#singleInput').val();
-            var modal = $('#myModalForm').data('bs.validator');
+            [this.index_x, this.index_y], "New indices");
+        self.sim.modal.footer("ok_cancel", function(e) {
+            let new_indices = $("#singleInput").val();
+            const modal = $("#myModalForm").data("bs.validator");
 
             modal.validate();
             if (modal.hasErrors() || modal.isIncomplete()) {
                 return;
             }
             if (new_indices !== null) {
-                new_indices = new_indices.split(',');
-                self.update_indices(parseInt(new_indices[0]),
-                                    parseInt(new_indices[1]));
+                new_indices = new_indices.split(",");
+                self.update_indices(parseInt(new_indices[0], 10),
+                                    parseInt(new_indices[1], 10));
                 self.save_layout();
             }
-            $('#OK').attr('data-dismiss', 'modal');
+            $("#OK").attr("data-dismiss", "modal");
         });
-        var $form = $('#myModalForm').validator({
+        $("#myModalForm").validator({
             custom: {
                 my_validator: function($item) {
-                    var nums = $item.val().split(',');
-                    return ((parseInt(Number(nums[0])) == nums[0]) &&
-                            (parseInt(Number(nums[1])) == nums[1]) &&
-                            (nums.length == 2) &&
+                    const nums = $item.val().split(",").map(Number);
+                    return ((parseInt(nums[0], 10) === nums[0]) &&
+                            (parseInt(nums[1], 10) === nums[1]) &&
+                            (nums.length === 2) &&
                             (Number(nums[1]) < self.n_lines &&
                              Number(nums[1]) >= 0) &&
                             (Number(nums[0]) < self.n_lines &&
                              Number(nums[0]) >= 0));
-                }
-            }
+                },
+            },
         });
 
-        $('#singleInput').attr(
-            'data-error', 'Input should be two positive ' +
-                'integers in the form "<dimension 1>,<dimension 2>". ' +
-                'Dimensions are zero indexed.');
+        $("#singleInput").attr(
+            "data-error", "Input should be two positive " +
+                "integers in the form '<dimension 1>,<dimension 2>'. " +
+                "Dimensions are zero indexed.");
 
         self.sim.modal.show();
     };
@@ -302,7 +314,7 @@ export default class XYValue extends Component {
 
     reset(event) {
         this.data_store.reset();
-        this.schedule_update();
+        this.schedule_update(event);
     };
 
 }

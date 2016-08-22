@@ -1,4 +1,5 @@
 import * as d3 from "d3";
+import * as $ from "jquery";
 
 /**
  * Clip a number, keeping it between two values.
@@ -17,24 +18,25 @@ export function clip(x, low, high) {
  * Create a WebSocket connection to the given id
  */
 export function create_websocket(uid) {
-    var parser = document.createElement('a');
+    const parser = document.createElement("a");
     parser.href = document.URL;
-    if (window.location.protocol === 'https:') {
-        var ws_proto = 'wss:';
+    let ws_proto;
+    if (window.location.protocol === "https:") {
+        ws_proto = "wss:";
     } else {
-        var ws_proto = 'ws:';
+        ws_proto = "ws:";
     }
-    var ws_url = ws_proto + '//' + parser.host + '/viz_component?uid=' + uid;
-    var ws = new WebSocket(ws_url);
+    const ws_url = ws_proto + "//" + parser.host + "/viz_component?uid=" + uid;
+    const ws = new WebSocket(ws_url);
     ws.binaryType = "arraybuffer";
     return ws;
 };
 
 export function disable_editor() {
-    $('#Toggle_ace').css('display', 'none');
-    $('#Save_file').css('display', 'none');
-    $('#Font_increase').css('display', 'none');
-    $('#Font_decrease').css('display', 'none');
+    $("#Toggle_ace").css("display", "none");
+    $("#Save_file").css("display", "none");
+    $("#Font_increase").css("display", "none");
+    $("#Font_decrease").css("display", "none");
 };
 
 /**
@@ -42,7 +44,7 @@ export function disable_editor() {
  */
 export function draw_legend(parent, labels, color_func, uid) {
     // "20" is around the size of the font
-    var legend_svg = d3.select(parent)
+    const legend_svg = d3.select(parent)
         .append("svg")
         .attr("width", 150)
         .attr("height", 20 * labels.length)
@@ -52,7 +54,7 @@ export function draw_legend(parent, labels, color_func, uid) {
         return legend_svg;
     }
 
-    legend_svg.selectAll('rect')
+    legend_svg.selectAll("rect")
         .data(labels)
         .enter()
         .append("rect")
@@ -64,7 +66,7 @@ export function draw_legend(parent, labels, color_func, uid) {
         .attr("height", 10)
         .style("fill", color_func);
 
-    legend_svg.selectAll('text')
+    legend_svg.selectAll("text")
         .data(labels)
         .enter()
         .append("text")
@@ -77,12 +79,12 @@ export function draw_legend(parent, labels, color_func, uid) {
         });
 
     // Expand the width of the svg to the length of the longest string
-    var label_list = $("#legend" + uid + " .legend-label").toArray();
-    var longest_label = Math.max.apply(Math, label_list.map(function(o) {
+    const label_list = $("#legend" + uid + " .legend-label").toArray();
+    const longest_label = Math.max.apply(Math, label_list.map(function(o) {
         return o.getBBox().width;
     }));
     // "50" is for the similarity measure that is around three characters wide
-    var svg_right_edge = longest_label + 50;
+    const svg_right_edge = longest_label + 50;
     legend_svg.attr("width", svg_right_edge);
 
     return legend_svg;
@@ -92,7 +94,7 @@ export function draw_legend(parent, labels, color_func, uid) {
  * Check if a string value represents a number
  */
 export function is_num(value) {
-    return !(isNaN(value)) && !(value.trim() === '');
+    return !(isNaN(value)) && !(value.trim() === "");
 };
 
 /**
@@ -102,11 +104,11 @@ export function is_num(value) {
  */
 export function make_colors(N) {
     // Color blind palette with blue, green, red, magenta, yellow, cyan
-    var palette =
+    const palette =
         ["#1c73b3", "#039f74", "#d65e00", "#cd79a7", "#f0e542", "#56b4ea"];
-    var c = [];
+    const c = [];
 
-    for (var i = 0; i < N; i++) {
+    for (let i = 0; i < N; i++) {
         c.push(palette[i % palette.length]);
     }
     return c;
@@ -116,7 +118,7 @@ export function make_colors(N) {
  * Gets a new unique zindex.
  */
 export var next_zindex = (function() {
-    var max_zindex = 0;
+    let max_zindex = 0;
     return function() {
         max_zindex += 1;
         return max_zindex;
@@ -128,5 +130,5 @@ export var next_zindex = (function() {
  */
 export function set_transform(element, x, y) {
     element.style.webkitTransform =
-        element.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+        element.style.transform = "translate(" + x + "px, " + y + "px)";
 };

@@ -1,48 +1,58 @@
+import * as $ from "jquery";
+
 import { all_components } from "./components/component";
 
-export default class Viewport{
+export default class Viewport {
+    height;
+    netgraph;
+    scale;
+    width;
+    x;
+    y;
 
     constructor(netgraph) {
+        const self = this;
         this.netgraph = netgraph;
 
         this.x = 0;
         this.y = 0;
         this.scale = 1.0;
 
-        this.w = $("#main").width();
-        this.h = $("#main").height();
-        var self = this;
-        window.addEventListener("resize", function() {self.on_resize();});
+        this.width = $("#main").width();
+        this.height = $("#main").height();
+        window.addEventListener("resize", function() {
+            self.on_resize(null);
+        });
     };
 
     redraw_all(event) {
-        for (var i in all_components) {
-            var c = all_components[i];
+        for (let i = 0; i < all_components.length; i++) {
+            let c = all_components[i];
             c.on_resize(
-                c.w * this.scale * this.w * 2, c.h * this.scale * this.h * 2);
+                c.w * this.scale * this.width * 2,
+                c.h * this.scale * this.height * 2);
             c.redraw_size();
             c.redraw_pos();
         }
     };
 
     on_resize(event) {
-        var ow = this.w;
-        var oh = this.h;
+        const ow = this.width;
+        const oh = this.height;
 
-        this.w = $("#main").width();
-        this.h = $("#main").height();
+        this.width = $("#main").width();
+        this.height = $("#main").height();
 
-        for (var i in all_components) {
-            var c = all_components[i];
+        for (let i = 0; i < all_components.length; i++) {
+            const c = all_components[i];
             if (this.netgraph.aspect_resize) {
-                c.w = c.w * ow/this.w;
-                c.h = c.h * oh/this.h;
+                c.w = c.w * ow / this.width;
+                c.h = c.h * oh / this.height;
             }
-            c.on_resize(c.w * this.scale * this.w * 2,
-                        c.h * this.scale * this.h * 2);
+            c.on_resize(c.w * this.scale * this.width * 2,
+                        c.h * this.scale * this.height * 2);
             c.redraw_size();
             c.redraw_pos();
         }
     };
-
 }

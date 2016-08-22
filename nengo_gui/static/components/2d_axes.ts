@@ -11,18 +11,35 @@
  */
 
 import * as d3 from "d3";
+import * as $ from "jquery";
 
 export default class Axes2D {
+    ax_bottom;
+    ax_left;
+    ax_right;
+    ax_top;
+    axis_x;
+    axis_x_g;
+    axis_y;
+    axis_y_g;
+    height;
+    max_y_width;
+    min_height;
+    min_width;
+    scale_x;
+    scale_y;
+    svg;
+    tick_padding;
+    tick_size;
+    width;
 
     constructor(parent, args) {
-        var self = this;
-
         this.max_y_width = 100;
 
         // Draw the plot as an SVG
-        this.svg = d3.select(parent).append('svg')
-            .attr('width', '100%')
-            .attr('height', '100%');
+        this.svg = d3.select(parent).append("svg")
+            .attr("width", "100%")
+            .attr("height", "100%");
 
         // Scales for mapping x and y values to pixels
         this.scale_x = d3.scale.linear();
@@ -54,7 +71,7 @@ export default class Axes2D {
     };
 
     set_axes_geometry(width, height) {
-        var scale = parseFloat($('#main').css('font-size'));
+        const scale = parseFloat($("#main").css("font-size"));
         this.width = width;
         this.height = height;
         this.ax_left = this.max_y_width;
@@ -70,12 +87,12 @@ export default class Axes2D {
      * Adjust the graph layout due to changed size
      */
     on_resize(width, height) {
-        if (width < this.minWidth) {
-            width = this.minWidth;
+        if (width < this.min_width) {
+            width = this.min_width;
         }
-        if (height < this.minHeight) {
-            height = this.minHeight;
-        };
+        if (height < this.min_height) {
+            height = this.min_height;
+        }
         this.set_axes_geometry(width, height);
 
         this.scale_x.range([this.ax_left, this.ax_right]);
@@ -96,20 +113,19 @@ export default class Axes2D {
     };
 
     fit_ticks(parent) {
-        var self = this;
+        const self = this;
         setTimeout(function() {
-            var ticks = $(parent.div).find('.tick');
-            var max_w = 0;
-            for (var i = 0; i < ticks.length; i++) {
-                var w = ticks[i].getBBox().width;
+            const ticks = $(parent.div).find(".tick");
+            let max_w = 0;
+            for (let i = 0; i < ticks.length; i++) {
+                const w = (<any> ticks[i]).getBBox().width;
                 if (w > max_w) {
                     max_w = w;
                 }
             }
             self.max_y_width = max_w;
-            self.set_axes_geometry();
+            self.set_axes_geometry(parent.width, parent.height); // TODO: parent?
             self.on_resize(parent.width, parent.height);
         }, 1);
     };
-
 }

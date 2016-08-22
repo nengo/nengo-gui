@@ -11,15 +11,25 @@
  */
 
 import * as d3 from "d3";
-import { Component } from "./component";
+
 import { DataStore } from "../datastore";
+import { Component } from "./component";
 
 export default class Image extends Component {
+    canvas;
+    data_store;
+    display_time;
+    image;
+    n_pixels;
+    pixels_x;
+    pixels_y;
+    sim;
+    svg;
 
     constructor(parent, viewport, sim, args) {
         super(parent, viewport, args);
 
-        var self = this;
+        const self = this;
         self.sim = sim;
         self.display_time = args.display_time;
         self.pixels_x = args.pixels_x;
@@ -30,16 +40,17 @@ export default class Image extends Component {
         self.data_store = new DataStore(self.n_pixels, self.sim, 0);
 
         // Draw the plot as an SVG
-        self.svg = d3.select(self.div).append('svg')
-            .attr('width', '100%')
-            .attr('height', '100%')
-            .attr('style', [
-                'padding-top:', '2em',
+        self.svg = d3.select(self.div).append("svg")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("style", [
+                "padding-top:", "2em",
             ].join(""));
 
         // Call schedule_update whenever the time is adjusted in the SimControl
-        self.sim.div.addEventListener('adjust_time',
-                                      function(e) {self.schedule_update();}, false);
+        self.sim.div.addEventListener("adjust_time", function(e) {
+            self.schedule_update(null);
+        }, false);
 
         // Create the image
         self.image = self.svg.append("image")
@@ -50,10 +61,10 @@ export default class Image extends Component {
             .attr("style", [
                 "image-rendering: -webkit-optimize-contrast;",
                 "image-rendering: -moz-crisp-edges;",
-                "image-rendering: pixelated;"
+                "image-rendering: pixelated;",
             ].join(""));
 
-        self.canvas = document.createElement('CANVAS');
+        self.canvas = document.createElement("CANVAS");
         self.canvas.width = self.pixels_x;
         self.canvas.height = self.pixels_y;
 
@@ -65,38 +76,38 @@ export default class Image extends Component {
      * Receive new line data from the server
      */
     on_message(event) {
-        var data = new Uint8Array(event.data);
-        var msg_size = this.n_pixels + 4;
+        let data = new Uint8Array(event.data);
+        const msg_size = this.n_pixels + 4;
 
-        for (var i = 0; i < data.length; i += msg_size) {
-            var time_data = new Float32Array(event.data.slice(i, i + 4));
+        for (let i = 0; i < data.length; i += msg_size) {
+            const time_data = new Float32Array(event.data.slice(i, i + 4));
             data = Array.prototype.slice.call(data, i + 3, i + msg_size);
             data[0] = time_data[0];
             this.data_store.push(data);
         }
-        this.schedule_update();
+        this.schedule_update(event);
     };
 
     /**
      * Redraw the lines and axis due to changed data
      */
     update() {
-        var self = this;
+        const self = this;
 
         // Let the data store clear out old values
         self.data_store.update();
 
-        var data = self.data_store.get_last_data();
-        var ctx = self.canvas.getContext("2d");
-        var imgData = ctx.getImageData(0, 0, self.pixels_x, self.pixels_y);
-        for (var i = 0; i < self.n_pixels; i++) {
-            imgData.data[4*i + 0] = data[i];
-            imgData.data[4*i + 1] = data[i];
-            imgData.data[4*i + 2] = data[i];
-            imgData.data[4*i + 3] = 255;
+        const data = self.data_store.get_last_data();
+        const ctx = self.canvas.getContext("2d");
+        const imgData = ctx.getImageData(0, 0, self.pixels_x, self.pixels_y);
+        for (let i = 0; i < self.n_pixels; i++) {
+            imgData.data[4 * i + 0] = data[i];
+            imgData.data[4 * i + 1] = data[i];
+            imgData.data[4 * i + 2] = data[i];
+            imgData.data[4 * i + 3] = 255;
         }
         ctx.putImageData(imgData, 0, 0);
-        var dataURL = self.canvas.toDataURL("image/png");
+        const dataURL = self.canvas.toDataURL("image/png");
 
         self.image.attr("xlink:href", dataURL);
     };
@@ -105,13 +116,13 @@ export default class Image extends Component {
      * Adjust the graph layout due to changed size
      */
     on_resize(width, height) {
-        var self = this;
-        if (width < self.minWidth) {
-            width = self.minWidth;
+        const self = this;
+        if (width < self.min_width) {
+            width = self.min_width;
         }
-        if (height < self.minHeight) {
-            height = self.minHeight;
-        };
+        if (height < self.min_height) {
+            height = self.min_height;
+        }
 
         self.svg
             .attr("width", width)
@@ -126,5 +137,4 @@ export default class Image extends Component {
         self.div.style.width = width;
         self.div.style.height = height;
     };
-
 }

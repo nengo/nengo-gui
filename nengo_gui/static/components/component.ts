@@ -19,6 +19,7 @@
  */
 
 import * as interact from "interact.js";
+import * as $ from "jquery";
 
 import * as menu from "../menu";
 import * as utils from "../utils";
@@ -26,20 +27,37 @@ import * as utils from "../utils";
 export var all_components = [];
 
 export function save_all_components() {
-    for (var index in all_components) {
-        all_components[index].save_layout();
+    for (let i = 0; i < all_components.length; i++) {
+        all_components[i].save_layout();
     }
 };
 
 export class Component {
+    div;
+    h;
+    height;
+    label;
+    label_visible;
+    menu;
+    min_height;
+    min_width;
+    parent;
+    pending_update;
+    uid;
+    viewport;
+    w;
+    width;
+    ws;
+    x;
+    y;
 
     constructor(parent, viewport, args) {
-        var self = this;
+        const self = this;
 
         this.viewport = viewport;
 
         // Create the div for the component and position it
-        this.div = document.createElement('div');
+        this.div = document.createElement("div");
 
         // Prevent interact from messing up cursor
         interact(this.div).styleCursor(true);
@@ -52,25 +70,25 @@ export class Component {
         this.redraw_size();
         this.redraw_pos();
 
-        this.div.style.position = 'absolute';
-        this.div.classList.add('graph');
+        this.div.style.position = "absolute";
+        this.div.classList.add("graph");
         parent.appendChild(this.div);
         this.parent = parent;
 
-        this.label = document.createElement('div');
-        this.label.classList.add('label', 'unselectable');
-        this.label.innerHTML = args.label.replace('<', '&lt;').replace('>', '&gt;');
-        this.label.style.position = 'fixed';
+        this.label = document.createElement("div");
+        this.label.classList.add("label", "unselectable");
+        this.label.innerHTML = args.label.replace("<", "&lt;").replace(">", "&gt;");
+        this.label.style.position = "fixed";
         this.label.style.width = args.width;
-        this.label.style.height = '2em';
+        this.label.style.height = "2em";
         this.label_visible = true;
         this.div.appendChild(this.label);
         if (args.label_visible === false) {
-            this.hide_label();
+            this.hide_label(null);
         }
 
-        self.minWidth = 2;
-        self.minHeight = 2;
+        self.min_width = 2;
+        self.min_height = 2;
 
         // Move element to be drawn on top when clicked on
 
@@ -84,59 +102,58 @@ export class Component {
         interact(this.div)
             .draggable({
                 inertia: true,
+                onend: function(event) {
+                    self.save_layout();
+                },
+                onmove: function(event) {
+                    self.x = self.x + event.dx /
+                        (self.viewport.width * self.viewport.scale);
+                    self.y = self.y + event.dy /
+                        (self.viewport.height * self.viewport.scale);
+                    self.redraw_pos();
+                },
                 onstart: function() {
                     menu.hide_any();
                 },
-                onmove: function(event) {
-                    var target = event.target;
-
-                    self.x = self.x + event.dx /
-                        (self.viewport.w * self.viewport.scale);
-                    self.y = self.y + event.dy /
-                        (self.viewport.h * self.viewport.scale);
-
-                    self.redraw_pos();
-
-                },
-                onend: function(event) {
-                    self.save_layout();
-                }
             });
 
         // Allow element to be resized
         interact(this.div)
             .resizable({
-                edges: {left: true, top: true, right: true, bottom: true}
+                edges: { bottom: true, left: true, right: true, top: true },
             })
-            .on('resizestart', function(event) {
+            .on("resizestart", function(event) {
                 menu.hide_any();
             })
-            .on('resizemove', function(event) {
-                var target = event.target;
-                var newWidth = event.rect.width;
-                var newHeight = event.rect.height;
-                var dx = event.deltaRect.left ;
-                var dy = event.deltaRect.top ;
-                var dz = event.deltaRect.right;
-                var da = event.deltaRect.bottom;
+            .on("resizemove", function(event) {
+                const newWidth = event.rect.width;
+                const newHeight = event.rect.height;
+                const dx = event.deltaRect.left;
+                const dy = event.deltaRect.top;
+                const dz = event.deltaRect.right;
+                const da = event.deltaRect.bottom;
 
-                self.x += (dx + dz) / 2 / (viewport.w * viewport.scale);
-                self.y += (dy + da) / 2 / (viewport.h * viewport.scale);
+                self.x += (dx + dz) / 2 /
+                    (self.viewport.width * self.viewport.scale);
+                self.y += (dy + da) / 2 /
+                    (self.viewport.height * self.viewport.scale);
 
-                self.w = newWidth / (viewport.w * viewport.scale) / 2;
-                self.h = newHeight / (viewport.h * viewport.scale) / 2;
+                self.w = newWidth /
+                    (self.viewport.width * self.viewport.scale) / 2;
+                self.h = newHeight /
+                    (self.viewport.height * self.viewport.scale) / 2;
 
                 self.on_resize(newWidth, newHeight);
                 self.redraw_size();
                 self.redraw_pos();
             })
-            .on('resizeend', function(event) {
+            .on("resizeend", function(event) {
                 self.save_layout();
             });
 
         // Open a WebSocket to the server
         this.uid = args.uid;
-        if (this.uid != undefined) {
+        if (this.uid !== undefined) {
             this.ws = utils.create_websocket(this.uid);
             this.ws.onmessage = function(event) {
                 self.on_message(event);
@@ -148,8 +165,8 @@ export class Component {
 
         this.menu = new menu.Menu(self.parent);
         interact(this.div)
-            .on('hold', function(event) { // Change to 'tap' for right click
-                if (event.button == 0) {
+            .on("hold", function(event) { // Change to 'tap' for right click
+                if (event.button === 0) {
                     if (self.menu.visible_any()) {
                         menu.hide_any();
                     } else {
@@ -159,14 +176,14 @@ export class Component {
                     event.stopPropagation();
                 }
             })
-            .on('tap', function(event) { // Get rid of menus when clicking off
-                if (event.button == 0) {
+            .on("tap", function(event) { // Get rid of menus when clicking off
+                if (event.button === 0) {
                     if (self.menu.visible_any()) {
                         menu.hide_any();
                     }
                 }
             });
-        $(this.div).bind('contextmenu', function(event) {
+        $(this.div).bind("contextmenu", function(event) {
             event.preventDefault();
             event.stopPropagation();
             if (self.menu.visible_any()) {
@@ -182,98 +199,105 @@ export class Component {
     /**
      * Method to be called when Component is resized.
      */
-    on_resize(width, height) {};
+    on_resize(width, height) {
+        // Subclasses should implement this.
+    };
 
     /**
      * Method to be called when Component received a WebSocket message.
      */
-    on_message(event) {};
+    on_message(event) {
+        // Subclasses should implement this.
+    };
 
     generate_menu() {
-        var self = this;
-        var items = [];
+        const self = this;
+        const items = [];
         if (this.label_visible) {
-            items.push(['Hide label', function() {
-                self.hide_label();
+            items.push(["Hide label", function() {
+                self.hide_label(null);
                 self.save_layout();
             }]);
         } else {
-            items.push(['Show label', function() {
-                self.show_label();
+            items.push(["Show label", function() {
+                self.show_label(null);
                 self.save_layout();
             }]);
         }
-        items.push(['Remove', function() {self.remove();}]);
+        items.push(["Remove", function() {
+            self.remove(undefined, undefined);
+        }]);
         return items;
     };
 
     remove(undo_flag, notify_server) {
-        undo_flag = typeof undo_flag !== 'undefined' ? undo_flag : false;
-        notify_server = typeof notify_server !== 'undefined' ? notify_server : true;
+        undo_flag = typeof undo_flag !== "undefined" ? undo_flag : false;
+        notify_server = typeof notify_server !== "undefined" ? notify_server : true;
 
         if (notify_server) {
             if (undo_flag === true) {
-                this.ws.send('remove_undo');
+                this.ws.send("remove_undo");
             } else {
-                this.ws.send('remove');
+                this.ws.send("remove");
             }
         }
         this.parent.removeChild(this.div);
-        var index = all_components.indexOf(this);
+        const index = all_components.indexOf(this);
         all_components.splice(index, 1);
     };
 
     /**
      * Schedule update() to be called in the near future.
-
+     *
      * If update() is already scheduled, then do nothing. This is meant to limit
      * how fast update() is called in the case that we are changing the data faster
      * than whatever processing is needed in update().
      */
     schedule_update(event) {
-        if (this.pending_update == false) {
+        if (this.pending_update === false) {
             this.pending_update = true;
-            var self = this;
-            window.setTimeout(
-                function() {
-                    self.pending_update = false;
-                    self.update();
-                }, 10);
+            const self = this;
+            window.setTimeout(function() {
+                self.pending_update = false;
+                self.update(null);
+            }, 10);
         }
     };
 
     /**
      * Do any visual updating that is needed due to changes in the underlying data.
      */
-    update(event) {};
+    update(event) {
+        // Subclasses should implement this.
+    };
 
     hide_label(event) {
         if (this.label_visible) {
-            this.label.style.display = 'none';
+            this.label.style.display = "none";
             this.label_visible = false;
         }
     };
 
     show_label(event) {
         if (!this.label_visible) {
-            this.label.style.display = 'inline';
+            this.label.style.display = "inline";
             this.label_visible = true;
         }
     };
 
     layout_info() {
-        var info = {};
-        info.x = this.x;
-        info.y = this.y;
-        info.width = this.w;
-        info.height = this.h;
-        info.label_visible = this.label_visible;
-        return info;
+        return {
+            "height": this.h,
+            "label_visible": this.label_visible,
+            "width": this.w,
+            "x": this.x,
+            "y": this.y,
+        };
     };
 
     save_layout() {
-        var info = this.layout_info();
-        this.ws.send('config:' + JSON.stringify(info));
+        const info = this.layout_info();
+        this.ws.send("config:" + JSON.stringify(info));
     };
 
     update_layout(config) {
@@ -287,33 +311,33 @@ export class Component {
         this.on_resize(this.get_screen_width(), this.get_screen_height());
 
         if (config.label_visible === true) {
-            this.show_label();
+            this.show_label(null);
         } else {
-            this.hide_label();
+            this.hide_label(null);
         }
     };
 
     redraw_size() {
-        this.width = this.viewport.w * this.w * this.viewport.scale * 2;
-        this.height = this.viewport.h * this.h * this.viewport.scale * 2;
+        const vpscale = this.viewport.scale * 2;
+        this.width = this.viewport.width * this.w * vpscale;
+        this.height = this.viewport.height * this.h * vpscale;
         this.div.style.width = this.width;
         this.div.style.height = this.height;
     };
 
     redraw_pos() {
-        var x = (this.x + this.viewport.x - this.w) *
-            this.viewport.w * this.viewport.scale;
-        var y = (this.y + this.viewport.y - this.h) *
-            this.viewport.h * this.viewport.scale;
+        const x = (this.x + this.viewport.x - this.w) *
+            this.viewport.width * this.viewport.scale;
+        const y = (this.y + this.viewport.y - this.h) *
+            this.viewport.height * this.viewport.scale;
         utils.set_transform(this.div, x, y);
     };
 
     get_screen_width() {
-        return this.viewport.w * this.w * this.viewport.scale * 2;
+        return this.viewport.width * this.w * this.viewport.scale * 2;
     };
 
     get_screen_height() {
-        return this.viewport.h * this.h * this.viewport.scale * 2;
+        return this.viewport.height * this.h * this.viewport.scale * 2;
     };
-
 }

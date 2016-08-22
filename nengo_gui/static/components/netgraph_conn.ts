@@ -11,6 +11,23 @@
  */
 
 export default class NetGraphConnection {
+    g;
+    g_conns;
+    line;
+    marker;
+    mini_conn;
+    minimap;
+    ng;
+    objects;
+    parent;
+    post;
+    posts;
+    pre;
+    pres;
+    recurrent;
+    recurrent_ellipse;
+    removed;
+    uid;
 
     constructor(ng, info, minimap, mini_conn) {
         this.ng = ng;
@@ -60,7 +77,7 @@ export default class NetGraphConnection {
         }
 
         // Create the line and its arrowhead marker
-        this.g = ng.createSVGElement('g');
+        this.g = ng.createSVGElement("g");
 
         this.create_line();
 
@@ -80,32 +97,32 @@ export default class NetGraphConnection {
 
     create_line() {
         if (this.recurrent) {
-            this.recurrent_ellipse = this.ng.createSVGElement('path');
+            this.recurrent_ellipse = this.ng.createSVGElement("path");
             this.recurrent_ellipse.setAttribute(
-                'd',
+                "d",
                 "M6.451,28.748C2.448,26.041,0,22.413,0,18.425C0, " +
                     "10.051,10.801,3.262,24.125,3.262 " +
                     "S48.25,10.051,48.25,18.425c0," +
                     "6.453-6.412,11.964-15.45,14.153");
-            this.recurrent_ellipse.setAttribute('class', 'recur');
+            this.recurrent_ellipse.setAttribute("class", "recur");
             this.g.appendChild(this.recurrent_ellipse);
 
-            this.marker = this.ng.createSVGElement('path');
+            this.marker = this.ng.createSVGElement("path");
             this.g.appendChild(this.marker);
 
-            if (this.minimap == false) {
-                this.marker.setAttribute('d', "M 6.5 0 L 0 5.0 L 7.5 8.0 z");
+            if (this.minimap === false) {
+                this.marker.setAttribute("d", "M 6.5 0 L 0 5.0 L 7.5 8.0 z");
             } else {
-                this.marker.setAttribute('d', "M 4 0 L 0 2 L 4 4 z");
+                this.marker.setAttribute("d", "M 4 0 L 0 2 L 4 4 z");
             }
         } else {
-            this.line = this.ng.createSVGElement('line');
+            this.line = this.ng.createSVGElement("line");
             this.g.appendChild(this.line);
-            this.marker = this.ng.createSVGElement('path');
-            if (this.minimap == false) {
-                this.marker.setAttribute('d', "M 10 0 L -5 -5 L -5 5 z");
+            this.marker = this.ng.createSVGElement("path");
+            if (this.minimap === false) {
+                this.marker.setAttribute("d", "M 10 0 L -5 -5 L -5 5 z");
             } else {
-                this.marker.setAttribute('d', "M 3 0 L -2.5 -2.5 L -2.5 2.5 z");
+                this.marker.setAttribute("d", "M 3 0 L -2.5 -2.5 L -2.5 2.5 z");
             }
             this.g.appendChild(this.marker);
         }
@@ -131,9 +148,9 @@ export default class NetGraphConnection {
     set_pre(pre) {
         if (this.pre !== null) {
             // If we're currently connected, disconnect
-            var index = this.pre.conn_out.indexOf(this);
+            const index = this.pre.conn_out.indexOf(this);
             if (index === -1) {
-                console.log('error removing in set_pre');
+                console.warn("error removing in set_pre");
             }
             this.pre.conn_out.splice(index, 1);
         }
@@ -150,9 +167,9 @@ export default class NetGraphConnection {
     set_post(post) {
         if (this.post !== null) {
             // If we're currently connected, disconnect
-            var index = this.post.conn_in.indexOf(this);
+            const index = this.post.conn_in.indexOf(this);
             if (index === -1) {
-                console.log('error removing in set_pre');
+                console.warn("error removing in set_pre");
             }
             this.post.conn_in.splice(index, 1);
         }
@@ -167,8 +184,8 @@ export default class NetGraphConnection {
      * Determine the best available item to connect from.
      */
     find_pre() {
-        for (var i in this.pres) {
-            var pre = this.objects[this.pres[i]];
+        for (let i = 0; i < this.pres.length; i++) {
+            const pre = this.objects[this.pres[i]];
             if (pre !== undefined) {
                 return pre;
             } else {
@@ -183,8 +200,8 @@ export default class NetGraphConnection {
      * Determine the best available item to connect to.
      */
     find_post() {
-        for (var i in this.posts) {
-            var post = this.objects[this.posts[i]];
+        for (let i = 0; i < this.posts.length; i++) {
+            const post = this.objects[this.posts[i]];
             if (post !== undefined) {
                 return post;
             } else {
@@ -218,25 +235,25 @@ export default class NetGraphConnection {
      */
     remove() {
         if (!this.minimap && this.parent !== null) {
-            var index = this.parent.child_connections.indexOf(this);
+            const index = this.parent.child_connections.indexOf(this);
             if (index === -1) {
-                console.log('error removing in remove');
+                console.warn("error removing in remove");
             }
             this.parent.child_connections.splice(index, 1);
         }
 
         if (this.pre != null) {
-            var index = this.pre.conn_out.indexOf(this);
+            const index = this.pre.conn_out.indexOf(this);
             if (index === -1) {
-                console.log('error removing from conn_out');
+                console.warn("error removing from conn_out");
             }
             this.pre.conn_out.splice(index, 1);
         }
 
         if (this.post != null) {
-            var index = this.post.conn_in.indexOf(this);
+            const index = this.post.conn_in.indexOf(this);
             if (index === -1) {
-                console.log('error removing from conn_in');
+                console.warn("error removing from conn_in");
             }
             this.post.conn_in.splice(index, 1);
         }
@@ -257,91 +274,91 @@ export default class NetGraphConnection {
     redraw() {
         if (this.pre === null || this.post === null) {
             if (this.line !== undefined) {
-                this.line.setAttribute('visibility', 'hidden');
+                this.line.setAttribute("visibility", "hidden");
             }
-            this.marker.setAttribute('visibility', 'hidden');
+            this.marker.setAttribute("visibility", "hidden");
             return;
         } else {
             if (this.line !== undefined) {
-                this.line.setAttribute('visibility', 'visible');
+                this.line.setAttribute("visibility", "visible");
             }
-            this.marker.setAttribute('visibility', 'visible');
+            this.marker.setAttribute("visibility", "visible");
         }
-        var pre_pos = this.pre.get_screen_location();
+        const pre_pos = this.pre.get_screen_location();
 
         if (this.recurrent) {
-            var item = this.objects[this.pres[0]];
+            const item = this.objects[this.pres[0]];
             if (item === undefined) {
-                this.marker.setAttribute('visibility', 'hidden');
-                this.recurrent_ellipse.setAttribute('visibility', 'hidden');
+                this.marker.setAttribute("visibility", "hidden");
+                this.recurrent_ellipse.setAttribute("visibility", "hidden");
             } else {
-                this.marker.setAttribute('visibility', 'visible');
-                this.recurrent_ellipse.setAttribute('visibility', 'visible');
-                var width = item.get_displayed_size()[0];
-                var height = item.get_displayed_size()[1];
+                this.marker.setAttribute("visibility", "visible");
+                this.recurrent_ellipse.setAttribute("visibility", "visible");
+                const height = item.get_displayed_size()[1];
 
-                var scale = item.shape.getAttribute('transform');
-                var scale_value = parseFloat(scale.split(/[()]+/)[1]);
+                const scale = item.shape.getAttribute("transform");
+                const scale_value = parseFloat(scale.split(/[()]+/)[1]);
 
-                if (this.minimap == false) {
+                if (this.minimap === false) {
                     this.recurrent_ellipse.setAttribute(
-                        'style', 'stroke-width:' + 2/scale_value + ';');
+                        "style", "stroke-width:" + 2 / scale_value + ";");
                 } else {
                     this.recurrent_ellipse.setAttribute(
-                        'style', 'stroke-width:' + 1/scale_value + ';');
+                        "style", "stroke-width:" + 1 / scale_value + ";");
                 }
 
-                var ex = pre_pos[0] - scale_value*17.5;
-                var ey = pre_pos[1] - height - scale_value*36;
+                const ex = pre_pos[0] - scale_value * 17.5;
+                const ey = pre_pos[1] - height - scale_value * 36;
 
                 this.recurrent_ellipse.setAttribute(
-                    'transform', 'translate(' + ex + ',' + ey + ')' + scale);
+                    "transform", "translate(" + ex + "," + ey + ")" + scale);
 
-                var mx = pre_pos[0] - 1;
-                if (this.minimap == false) {
-                    var my = pre_pos[1] - height - scale_value*32.15 - 5;
+                const mx = pre_pos[0] - 1;
+                let my;
+                if (this.minimap === false) {
+                    my = pre_pos[1] - height - scale_value * 32.15 - 5;
                 } else {
-                    var my = pre_pos[1] - height - scale_value*32 - 2;
+                    my = pre_pos[1] - height - scale_value * 32 - 2;
                 }
                 this.marker.setAttribute(
-                    'transform', 'translate(' + mx + ',' + my + ')');
+                    "transform", "translate(" + mx + "," + my + ")");
             }
         } else {
-            var post_pos = this.post.get_screen_location();
-            this.line.setAttribute('x1', pre_pos[0]);
-            this.line.setAttribute('y1', pre_pos[1]);
-            this.line.setAttribute('x2', post_pos[0]);
-            this.line.setAttribute('y2', post_pos[1]);
+            const post_pos = this.post.get_screen_location();
+            this.line.setAttribute("x1", pre_pos[0]);
+            this.line.setAttribute("y1", pre_pos[1]);
+            this.line.setAttribute("x2", post_pos[0]);
+            this.line.setAttribute("y2", post_pos[1]);
 
             // Angle between objects
-            var angle = Math.atan2(
+            let angle = Math.atan2(
                 post_pos[1] - pre_pos[1], post_pos[0] - pre_pos[0]);
 
-            var w1 = this.pre.get_screen_width();
-            var h1 = this.pre.get_screen_height();
-            var w2 = this.post.get_screen_width();
-            var h2 = this.post.get_screen_height();
+            const w1 = this.pre.get_screen_width();
+            const h1 = this.pre.get_screen_height();
+            const w2 = this.post.get_screen_width();
+            const h2 = this.post.get_screen_height();
 
-            var a1 = Math.atan2(h1, w1);
-            var a2 = Math.atan2(h2, w2);
+            const a1 = Math.atan2(h1, w1);
+            const a2 = Math.atan2(h2, w2);
 
-            var pre_length = this.intersect_length(angle, a1, w1, h1);
-            var post_to_pre_angle = angle - Math.PI;
+            const pre_length = this.intersect_length(angle, a1, w1, h1);
+            let post_to_pre_angle = angle - Math.PI;
             if (post_to_pre_angle < -Math.PI) {
-                post_to_pre_angle += 2*Math.PI;
+                post_to_pre_angle += 2 * Math.PI;
             }
-            var post_length = this.intersect_length(post_to_pre_angle, a2, w2, h2);
+            const post_length = this.intersect_length(post_to_pre_angle, a2, w2, h2);
 
-            var mx = (pre_pos[0] + pre_length[0]) * 0.4 +
+            let mx = (pre_pos[0] + pre_length[0]) * 0.4 +
                 (post_pos[0] + post_length[0]) * 0.6;
-            var my = (pre_pos[1] + pre_length[1]) * 0.4 +
+            let my = (pre_pos[1] + pre_length[1]) * 0.4 +
                 (post_pos[1] + post_length[1]) * 0.6;
 
             // Check to make sure the marker doesn't go past either endpoint
-            var vec1 = [post_pos[0] - pre_pos[0], post_pos[1] - pre_pos[1]];
-            var vec2 = [mx - pre_pos[0], my - pre_pos[1]];
-            var dot_prod = (vec1[0]*vec2[0] + vec1[1]*vec2[1]) /
-                (vec1[0]*vec1[0] + vec1[1]*vec1[1]);
+            const vec1 = [post_pos[0] - pre_pos[0], post_pos[1] - pre_pos[1]];
+            const vec2 = [mx - pre_pos[0], my - pre_pos[1]];
+            const dot_prod = (vec1[0] * vec2[0] + vec1[1] * vec2[1]) /
+                (vec1[0] * vec1[0] + vec1[1] * vec1[1]);
 
             if (dot_prod < 0) {
                 mx = pre_pos[0];
@@ -352,8 +369,8 @@ export default class NetGraphConnection {
             }
             angle = 180 / Math.PI * angle;
             this.marker.setAttribute(
-                'transform', 'translate(' + mx + ',' + my + ')' +
-                    ' rotate(' + angle + ')');
+                "transform", "translate(" + mx + "," + my + ")" +
+                    " rotate(" + angle + ")");
         }
 
         if (!this.minimap && this.ng.mm_display) {
@@ -367,33 +384,31 @@ export default class NetGraphConnection {
      * @param {number} theta - the angle of the line
      * @param {number} alpha - the angle between zero and the top right corner
      *                         of the object
-     **/
+     */
     intersect_length(
         theta, alpha, width, height) {
-        var quad = 0;
-        var beta = 2 * (Math.PI/2 - alpha); // Angle between top corners
-        var h2 = (height/2) * (height/2);
-        var w2 = (width/2) * (width/2);
+        const beta = 2 * (Math.PI / 2 - alpha); // Angle between top corners
+        let x;
+        let y;
 
         if (theta >= -alpha && theta < alpha) {
             // 1st quadrant
-            var x = width/2;
-            var y = width/2 * Math.tan(theta);
+            x = width / 2;
+            y = width / 2 * Math.tan(theta);
         } else if (theta >= alpha && theta < alpha + beta) {
             // 2nd quadrant
-            var x = (height/2) / Math.tan(theta);
-            var y = height/2;
+            x = (height / 2) / Math.tan(theta);
+            y = height / 2;
         } else if (theta >= alpha + beta || theta < -(alpha + beta)) {
             // 3rd quadrant
-            var x = -width/2;
-            var y = -width/2 * Math.tan(theta);
+            x = -width / 2;
+            y = -width / 2 * Math.tan(theta);
         } else {
             // 4th quadrant
-            var x = -(height/2) / Math.tan(theta);
-            var y = -height/2;
+            x = -(height / 2) / Math.tan(theta);
+            y = -height / 2;
         }
 
         return [x, y];
     };
-
 }

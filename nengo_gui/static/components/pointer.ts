@@ -11,26 +11,35 @@
  * netgraph.js {.on_message} function.
  */
 
-import "./pointer.css";
-import { Component } from "./component";
+import * as $ from "jquery";
+
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
+import { Component } from "./component";
+import "./pointer.css";
 
 export default class Pointer extends Component {
+    data_store;
+    fixed_value;
+    mouse_down_time;
+    pdiv;
+    pointer_status;
+    show_pairs;
+    sim;
 
     constructor(parent, viewport, sim, args) {
         super(parent, viewport, args);
-        var self = this;
+        const self = this;
 
         this.sim = sim;
         this.pointer_status = false;
 
-        this.pdiv = document.createElement('div');
+        this.pdiv = document.createElement("div");
         this.pdiv.style.width = args.width;
         this.pdiv.style.height = args.height;
         utils.set_transform(this.pdiv, 0, 25);
-        this.pdiv.style.position = 'fixed';
-        this.pdiv.classList.add('pointer');
+        this.pdiv.style.position = "fixed";
+        this.pdiv.classList.add("pointer");
         this.div.appendChild(this.pdiv);
 
         this.show_pairs = args.show_pairs;
@@ -39,27 +48,27 @@ export default class Pointer extends Component {
         this.data_store = new DataStore(1, this.sim, 0);
 
         // Call schedule_update whenever the time is adjusted in the SimControl
-        this.sim.div.addEventListener('adjust_time', function(e) {
-            self.schedule_update();
+        this.sim.div.addEventListener("adjust_time", function(e) {
+            self.schedule_update(null);
         }, false);
 
         // Call reset whenever the simulation is reset
-        this.sim.div.addEventListener('sim_reset', function(e) {
-            self.reset();
+        this.sim.div.addEventListener("sim_reset", function(e) {
+            self.reset(null);
         }, false);
 
         this.on_resize(this.get_screen_width(), this.get_screen_height());
 
-        this.fixed_value = '';
+        this.fixed_value = "";
 
         this.div.addEventListener("mouseup", function(event) {
-            // For some reason 'tap' doesn't seem to work here while the
+            // For some reason "tap" doesn't seem to work here while the
             // simulation is running, so I'm doing the timing myself
-            var now = new Date().getTime() / 1000;
+            const now = new Date().getTime() / 1000;
             if (now - self.mouse_down_time > 0.1) {
                 return;
             }
-            if (event.button == 0) {
+            if (event.button === 0) {
                 if (self.menu.visible) {
                     self.menu.hide();
                 } else {
@@ -75,17 +84,17 @@ export default class Pointer extends Component {
     };
 
     generate_menu() {
-        var self = this;
-        var items = [];
-        items.push(['Set value...', function() {
+        const self = this;
+        const items = [];
+        items.push(["Set value...", function() {
             self.set_value();
         }]);
         if (this.show_pairs) {
-            items.push(['Hide pairs', function() {
+            items.push(["Hide pairs", function() {
                 self.set_show_pairs(false);
             }]);
         } else {
-            items.push(['Show pairs', function() {
+            items.push(["Show pairs", function() {
                 self.set_show_pairs(true);
             }]);
         }
@@ -103,42 +112,45 @@ export default class Pointer extends Component {
     };
 
     set_value() {
-        var self = this;
-        self.sim.modal.title('Enter a Semantic Pointer value...');
-        self.sim.modal.single_input_body('Pointer', 'New value');
-        self.sim.modal.footer('ok_cancel', function(e) {
-            var value = $('#singleInput').val();
-            var modal = $('#myModalForm').data('bs.validator');
+        const self = this;
+        self.sim.modal.title("Enter a Semantic Pointer value...");
+        self.sim.modal.single_input_body("Pointer", "New value");
+        self.sim.modal.footer("ok_cancel", function(e) {
+            let value = $("#singleInput").val();
+            const modal = $("#myModalForm").data("bs.validator");
 
             modal.validate();
             if (modal.hasErrors() || modal.isIncomplete()) {
                 return;
             }
-            if ((value === null) || (value === '')) {
-                value = ':empty:';
+            if ((value === null) || (value === "")) {
+                value = ":empty:";
             }
             self.fixed_value = value;
             self.ws.send(value);
-            $('#OK').attr('data-dismiss', 'modal');
+            $("#OK").attr("data-dismiss", "modal");
         });
-        var $form = $('#myModalForm').validator({
+        $("#myModalForm").validator({
             custom: {
                 my_validator: function($item) {
-                    var ptr = $item.val();
+                    let ptr = $item.val();
                     if (ptr === null) {
-                        ptr = '';
+                        ptr = "";
                     }
-                    self.ws.send(':check only:' + ptr);
+                    self.ws.send(":check only:" + ptr);
                     return self.pointer_status;
-                }
-            }
+                },
+            },
         });
 
-        $('#singleInput').attr('data-error', 'Invalid semantic ' +
-                               'pointer expression. Semantic pointers themselves must start with ' +
-                               'a capital letter. Expressions can include mathematical operators ' +
-                               'such as +, * (circular convolution), and ~ (pseudo-inverse). ' +
-                               'E.g., (A+~(B*C)*2)*0.5 would be a valid semantic pointer expression.');
+        $("#singleInput").attr(
+            "data-error",
+            "Invalid semantic pointer expression. Semantic pointers " +
+                "themselves must start with a capital letter. Expressions " +
+                "can include mathematical operators such as +, * (circular " +
+                "convolution), and ~ (pseudo-inverse). E.g., " +
+                "(A+~(B*C)*2)*0.5 would be a valid semantic pointer " +
+                "expression.");
 
         self.sim.modal.show();
     };
@@ -147,21 +159,21 @@ export default class Pointer extends Component {
      * Receive new line data from the server.
      */
     on_message(event) {
-        var data = event.data.split(" ");
+        const data = event.data.split(" ");
 
-        if (data[0].substring(0, 11) == "bad_pointer") {
+        if (data[0].substring(0, 11) === "bad_pointer") {
             this.pointer_status = false;
             return;
-        } else if (data[0].substring(0, 12) == "good_pointer") {
+        } else if (data[0].substring(0, 12) === "good_pointer") {
             this.pointer_status = true;
             return;
         }
 
-        var time = parseFloat(data[0]);
+        const time = parseFloat(data[0]);
 
-        var items = data[1].split(";");
+        const items = data[1].split(";");
         this.data_store.push([time, items]);
-        this.schedule_update();
+        this.schedule_update(null);
     };
 
     /**
@@ -171,7 +183,7 @@ export default class Pointer extends Component {
         // Let the data store clear out old values
         this.data_store.update();
 
-        var data = this.data_store.get_last_data()[0];
+        const data = this.data_store.get_last_data()[0];
 
         while (this.pdiv.firstChild) {
             this.pdiv.removeChild(this.pdiv.firstChild);
@@ -183,18 +195,17 @@ export default class Pointer extends Component {
             return;
         }
 
-        var total_size = 0;
-
-        var items = [];
+        let total_size = 0;
+        const items = [];
 
         // Display the text in proportion to similarity
-        for (var i = 0; i < data.length; i++) {
-            var size = parseFloat(data[i].substring(0, 4));
-            var span = document.createElement('span');
+        for (let i = 0; i < data.length; i++) {
+            const size = parseFloat(data[i].substring(0, 4));
+            const span = document.createElement("span");
             span.innerHTML = data[i].substring(4);
             this.pdiv.appendChild(span);
             total_size += size;
-            var c = Math.floor(255 - 255 * size);
+            let c = Math.floor(255 - 255 * size);
             // TODO: Use clip
             if (c < 0) {
                 c = 0;
@@ -202,15 +213,15 @@ export default class Pointer extends Component {
             if (c > 255) {
                 c = 255;
             }
-            span.style.color = 'rgb(' + c + ',' + c + ',' + c + ')';
+            span.style.color = "rgb(" + c + "," + c + "," + c + ")";
             items.push(span);
         }
 
-        var scale = this.height / total_size * 0.6;
+        const scale = this.height / total_size * 0.6;
 
-        for (var i = 0; i < data.length; i++) {
-            var size = parseFloat(data[i].substring(0, 4));
-            items[i].style.fontSize = '' + (size * scale) + 'px';
+        for (let i = 0; i < data.length; i++) {
+            const size = parseFloat(data[i].substring(0, 4));
+            items[i].style.fontSize = "" + (size * scale) + "px";
         }
     };
 
@@ -218,12 +229,12 @@ export default class Pointer extends Component {
      * Adjust the graph layout due to changed size.
      */
     on_resize(width, height) {
-        if (width < this.minWidth) {
-            width = this.minWidth;
+        if (width < this.min_width) {
+            width = this.min_width;
         }
-        if (height < this.minHeight) {
-            height = this.minHeight;
-        };
+        if (height < this.min_height) {
+            height = this.min_height;
+        }
 
         this.width = width;
         this.height = height;
@@ -236,7 +247,7 @@ export default class Pointer extends Component {
     };
 
     layout_info() {
-        var info = Component.prototype.layout_info.call(this);
+        const info = Component.prototype.layout_info.call(this);
         info.show_pairs = this.show_pairs;
         return info;
     };
@@ -248,7 +259,6 @@ export default class Pointer extends Component {
 
     reset(event) {
         this.data_store.reset();
-        this.schedule_update();
+        this.schedule_update(event);
     };
-
 }

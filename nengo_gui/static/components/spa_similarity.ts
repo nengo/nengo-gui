@@ -9,14 +9,18 @@
  */
 
 import * as d3 from "d3";
+import * as $ from "jquery";
 
-import "./spa_similarity.css";
-import { Component } from "./component";
 import { GrowableDataStore } from "../datastore";
 import * as utils from "../utils";
+import { Component } from "./component";
+import "./spa_similarity.css";
 import Value from "./value";
 
 export default class SpaSimilarity extends Value {
+    legend_svg;
+    synapse;
+    show_pairs;
 
     constructor(parent, viewport, sim, args) {
         super(parent, viewport, sim, args);
@@ -26,7 +30,7 @@ export default class SpaSimilarity extends Value {
             new GrowableDataStore(this.n_lines, this.sim, this.synapse);
         this.show_pairs = false;
 
-        var self = this;
+        const self = this;
 
         this.colors = utils.make_colors(6);
         this.color_func = function(d, i) {
@@ -39,8 +43,8 @@ export default class SpaSimilarity extends Value {
 
         // Create the legend from label args
         this.legend_labels = args.pointer_labels;
-        this.legend = document.createElement('div');
-        this.legend.classList.add('legend', 'unselectable');
+        this.legend = document.createElement("div");
+        this.legend.classList.add("legend", "unselectable");
         this.div.appendChild(this.legend);
         this.legend_svg = utils.draw_legend(
             this.legend, args.pointer_labels, this.color_func, this.uid);
@@ -61,7 +65,7 @@ export default class SpaSimilarity extends Value {
 
         // Redraw all the legends if they exist
         this.legend_labels = [];
-        if (new_labels[0] != "") {
+        if (new_labels[0] !== "") {
             this.update_legend(new_labels);
         }
 
@@ -69,7 +73,7 @@ export default class SpaSimilarity extends Value {
     };
 
     data_msg(push_data) {
-        var data_dims = push_data.length - 1;
+        const data_dims = push_data.length - 1;
 
         // TODO: Move this check inside datastore?
         if (data_dims > this.data_store.dims) {
@@ -78,22 +82,22 @@ export default class SpaSimilarity extends Value {
         }
 
         this.data_store.push(push_data);
-        this.schedule_update();
+        this.schedule_update(null);
     };
 
     update_legend(new_labels) {
-        var self = this;
+        const self = this;
         this.legend_labels = this.legend_labels.concat(new_labels);
 
         // Expand the height of the svg, where 20 is around the height of the font
         this.legend_svg.attr("height", 20 * this.legend_labels.length);
 
         // Data join
-        var recs = this.legend_svg.selectAll("rect")
+        const recs = this.legend_svg.selectAll("rect")
             .data(this.legend_labels);
-        var legend_labels = this.legend_svg.selectAll(".legend-label")
+        const legend_labels = this.legend_svg.selectAll(".legend-label")
             .data(this.legend_labels);
-        var val_texts = this.legend_svg.selectAll(".val").data(this.legend_labels);
+        const val_texts = this.legend_svg.selectAll(".val").data(this.legend_labels);
         // Enter to append remaining lines
         recs.enter()
             .append("rect")
@@ -116,12 +120,12 @@ export default class SpaSimilarity extends Value {
             });
 
         // Expand the width of the svg of the longest string
-        var label_list = $("#legend" + this.uid + " .legend-label").toArray();
-        var longest_label = Math.max.apply(Math, label_list.map(function(o) {
+        const label_list = $("#legend" + this.uid + " .legend-label").toArray();
+        const longest_label = Math.max.apply(Math, label_list.map(function(o) {
             return o.getBBox().width;
         }));
         // 50 is for the similarity measure that is around three characters wide
-        var svg_right_edge = longest_label + 50;
+        const svg_right_edge = longest_label + 50;
         this.legend_svg.attr("width", svg_right_edge);
 
         val_texts.attr("x", svg_right_edge)
@@ -147,8 +151,8 @@ export default class SpaSimilarity extends Value {
      * This calls the method associated to handling the type of message.
      */
     on_message(event) {
-        var data = JSON.parse(event.data);
-        var func_name = data.shift();
+        const data = JSON.parse(event.data);
+        const func_name = data.shift();
         this[func_name](data);
     };
 
@@ -160,40 +164,40 @@ export default class SpaSimilarity extends Value {
         this.data_store.update();
 
         // Determine visible range from the SimControl
-        var t1 = this.sim.time_slider.first_shown_time;
-        var t2 = t1 + this.sim.time_slider.shown_time;
+        const t1 = this.sim.time_slider.first_shown_time;
+        const t2 = t1 + this.sim.time_slider.shown_time;
 
         this.axes2d.set_time_range(t1, t2);
 
         // Update the lines
-        var self = this;
-        var shown_data = this.data_store.get_shown_data();
+        const self = this;
+        const shown_data = this.data_store.get_shown_data();
         // Data join
         this.path = this.axes2d.svg.selectAll(".line").data(shown_data);
         // Update
-        this.path.attr('d', self.line);
+        this.path.attr("d", self.line);
         // Enter to append remaining lines
         this.path.enter()
-            .append('path')
-            .attr('class', 'line')
-            .style('stroke', this.color_func)
-            .attr('d', self.line);
+            .append("path")
+            .attr("class", "line")
+            .style("stroke", this.color_func)
+            .attr("d", self.line);
         // Remove any lines that aren't needed anymore
         this.path.exit().remove();
 
         // Update the legend text
         if (this.legend_svg && shown_data[0].length !== 0) {
             // Get the most recent similarity
-            var latest_simi = [];
-            for (var i = 0; i < shown_data.length; i++) {
+            const latest_simi = [];
+            for (let i = 0; i < shown_data.length; i++) {
                 latest_simi.push(shown_data[i][shown_data[i].length - 1]);
             }
 
             // Update the text in the legend
-            var texts = this.legend_svg.selectAll(".val").data(this.legend_labels);
+            const texts = this.legend_svg.selectAll(".val").data(this.legend_labels);
 
             texts.html(function(d, i) {
-                var sign = '';
+                let sign = "";
                 if (latest_simi[i] < 0) {
                     sign = "&minus;";
                 }
@@ -203,18 +207,19 @@ export default class SpaSimilarity extends Value {
     };
 
     generate_menu() {
-        var self = this;
-        var items = [];
-        items.push(['Set range...', function() {
-            self.set_range();
-        }]);
+        const self = this;
+        const items = [
+            ["Set range...", function() {
+                self.set_range();
+            }],
+        ];
 
         if (this.show_pairs) {
-            items.push(['Hide pairs', function() {
+            items.push(["Hide pairs", function() {
                 self.set_show_pairs(false);
             }]);
         } else {
-            items.push(['Show pairs', function() {
+            items.push(["Show pairs", function() {
                 self.set_show_pairs(true);
             }]);
         }
@@ -232,7 +237,7 @@ export default class SpaSimilarity extends Value {
     };
 
     layout_info() {
-        var info = Component.prototype.layout_info.call(this);
+        const info = Component.prototype.layout_info.call(this);
         info.show_pairs = this.show_pairs;
         info.min_value = this.axes2d.scale_y.domain()[0];
         info.max_value = this.axes2d.scale_y.domain()[1];

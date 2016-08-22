@@ -39,15 +39,5 @@ module.exports = {
             jQuery: 'jquery',
             "window.jQuery": 'jquery',
         })
-    ],
-    ts: {
-        ignoreDiagnostics: [
-            "2322",
-            "2339",
-            "2342",
-            "2345",
-            "2346",
-            "2403"
-        ]
-    }
+    ]
 }

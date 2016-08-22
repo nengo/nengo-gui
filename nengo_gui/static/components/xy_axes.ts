@@ -13,6 +13,8 @@
 import Axes2D from "./2d_axes";
 
 export default class XYAxes extends Axes2D {
+    max_val;
+    min_val;
 
     constructor(parent, args) {
         super(parent, args);
@@ -31,9 +33,9 @@ export default class XYAxes extends Axes2D {
     on_resize(width, height) {
         Axes2D.prototype.on_resize.call(this, width, height);
 
-        var x_offset = this.ax_bottom - this.min_val /
+        const x_offset = this.ax_bottom - this.min_val /
             (this.max_val - this.min_val) * (this.ax_top - this.ax_bottom);
-        var y_offset = this.ax_left - this.min_val /
+        const y_offset = this.ax_left - this.min_val /
             (this.max_val - this.min_val) * (this.ax_right - this.ax_left);
 
         this.axis_x_g.attr("transform", "translate(0," + x_offset + ")");
@@ -41,5 +43,4 @@ export default class XYAxes extends Axes2D {
         this.axis_y_g.attr("transform", "translate(" + y_offset + ", 0)");
         this.axis_y_g.call(this.axis_y);
     };
-
 }

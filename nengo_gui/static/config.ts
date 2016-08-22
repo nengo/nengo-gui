@@ -1,16 +1,16 @@
 export default class Config {
-
     constructor() {
-        var self = this;
+        const self = this;
 
-        var define_option = function(key, default_val) {
-            var type = typeof(default_val);
+        const define_option = function(key, default_val) {
+            const typ = typeof(default_val);
             Object.defineProperty(self, key, {
+                enumerable: true,
                 get: function() {
-                    var val = localStorage.getItem("ng." + key) || default_val;
-                    if (type === "boolean") {
+                    const val = localStorage.getItem("ng." + key) || default_val;
+                    if (typ === "boolean") {
                         return val === "true" || val === true;
-                    } else if (type === "number") {
+                    } else if (typ === "number") {
                         return Number(val);
                     } else {
                         return val;
@@ -19,7 +19,6 @@ export default class Config {
                 set: function(val) {
                     return localStorage.setItem("ng." + key, val);
                 },
-                enumerable: true
             });
         };
 
@@ -39,11 +38,10 @@ export default class Config {
     };
 
     restore_defaults() {
-        for (var option in this) {
+        for (let option in this) {
             if (this.hasOwnProperty(option)) {
                 localStorage.removeItem("ng." + option);
             }
         }
     };
-
 }

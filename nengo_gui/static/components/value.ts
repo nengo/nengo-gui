@@ -15,18 +15,35 @@
  */
 
 import * as d3 from "d3";
+import * as $ from "jquery";
 
-import "./value.css";
-import { Component } from "./component";
 import { DataStore } from "../datastore";
-import TimeAxes from "./time_axes";
 import * as utils from "../utils";
+import { Component } from "./component";
+import TimeAxes from "./time_axes";
+import "./value.css";
 
 export default class Value extends Component {
+    axes2d;
+    color_func;
+    colors;
+    crosshair_g;
+    crosshair_mouse;
+    crosshair_updates;
+    data_store;
+    display_time;
+    legend;
+    legend_labels;
+    line;
+    n_lines;
+    path;
+    show_legend;
+    sim;
+    synapse;
 
     constructor(parent, viewport, sim, args) {
         super(parent, viewport, args);
-        var self = this;
+        const self = this;
         this.n_lines = args.n_lines || 1;
         this.sim = sim;
         this.display_time = args.display_time;
@@ -38,13 +55,13 @@ export default class Value extends Component {
         this.axes2d = new TimeAxes(this.div, args);
 
         // Call schedule_update whenever the time is adjusted in the SimControl
-        this.sim.div.addEventListener('adjust_time', function(e) {
-            self.schedule_update();
+        this.sim.div.addEventListener("adjust_time", function(e) {
+            self.schedule_update(e);
         }, false);
 
         // Call reset whenever the simulation is reset
-        this.sim.div.addEventListener('sim_reset', function(e) {
-            self.reset();
+        this.sim.div.addEventListener("sim_reset", function(e) {
+            self.reset(e);
         }, false);
 
         // Create the lines on the plots
@@ -56,14 +73,14 @@ export default class Value extends Component {
                 return self.axes2d.scale_y(d);
             });
         this.path = this.axes2d.svg.append("g")
-            .selectAll('path')
+            .selectAll("path")
             .data(this.data_store.data);
 
         this.colors = utils.make_colors(this.n_lines);
         this.path.enter()
-            .append('path')
-            .attr('class', 'line')
-            .style('stroke', function(d, i) {
+            .append("path")
+            .attr("class", "line")
+            .style("stroke", function(d, i) {
                 return self.colors[i];
             });
 
@@ -75,52 +92,52 @@ export default class Value extends Component {
         // Keep track of mouse position TODO: fix this to be not required
         this.crosshair_mouse = [0, 0];
 
-        this.crosshair_g = this.axes2d.svg.append('g')
-            .attr('class', 'crosshair');
+        this.crosshair_g = this.axes2d.svg.append("g")
+            .attr("class", "crosshair");
 
         // TODO: put the crosshair properties in CSS
-        this.crosshair_g.append('line')
-            .attr('id', 'crosshairX')
-            .attr('stroke', 'black')
-            .attr('stroke-width', '0.5px');
+        this.crosshair_g.append("line")
+            .attr("id", "crosshairX")
+            .attr("stroke", "black")
+            .attr("stroke-width", "0.5px");
 
-        this.crosshair_g.append('line')
-            .attr('id', 'crosshairY')
-            .attr('stroke', 'black')
-            .attr('stroke-width', '0.5px');
+        this.crosshair_g.append("line")
+            .attr("id", "crosshairY")
+            .attr("stroke", "black")
+            .attr("stroke-width", "0.5px");
 
         // TODO: have the fonts and colour set appropriately
-        this.crosshair_g.append('text')
-            .attr('id', 'crosshairXtext')
-            .style('text-anchor', 'middle')
-            .attr('class', 'graph_text');
+        this.crosshair_g.append("text")
+            .attr("id", "crosshairXtext")
+            .style("text-anchor", "middle")
+            .attr("class", "graph_text");
 
-        this.crosshair_g.append('text')
-            .attr('id', 'crosshairYtext')
-            .style('text-anchor', 'end')
-            .attr('class', 'graph_text');
+        this.crosshair_g.append("text")
+            .attr("id", "crosshairYtext")
+            .style("text-anchor", "end")
+            .attr("class", "graph_text");
 
         this.axes2d.svg
-            .on('mouseover', function() {
-                var mouse = d3.mouse(this);
+            .on("mouseover", function() {
+                const mouse = d3.mouse(this);
                 self.crosshair_updates = true;
-                self.crosshair_g.style('display', null);
-                self.cross_hair_mouse = [mouse[0], mouse[1]];
-            }).on('mouseout', function() {
-                var mouse = d3.mouse(this);
+                self.crosshair_g.style("display", null);
+                self.crosshair_mouse = [mouse[0], mouse[1]];
+            }).on("mouseout", function() {
+                const mouse = d3.mouse(this);
                 self.crosshair_updates = false;
-                self.crosshair_g.style('display', 'none');
-                self.cross_hair_mouse = [mouse[0], mouse[1]];
-            }).on('mousemove', function() {
-                var mouse = d3.mouse(this);
+                self.crosshair_g.style("display", "none");
+                self.crosshair_mouse = [mouse[0], mouse[1]];
+            }).on("mousemove", function() {
+                const mouse = d3.mouse(this);
                 self.crosshair_updates = true;
-                self.cross_hair_mouse = [mouse[0], mouse[1]];
+                self.crosshair_mouse = [mouse[0], mouse[1]];
                 self.update_crosshair(mouse);
-            }).on('mousewheel', function() {
+            }).on("mousewheel", function() {
                 // Hide the crosshair when zooming,
                 // until a better option comes along
                 self.crosshair_updates = false;
-                self.crosshair_g.style('display', 'none');
+                self.crosshair_g.style("display", "none");
             });
 
         this.update();
@@ -132,14 +149,14 @@ export default class Value extends Component {
         this.color_func = function(d, i) {
             return self.colors[i % 6];
         };
-        this.legend = document.createElement('div');
-        this.legend.classList.add('legend');
+        this.legend = document.createElement("div");
+        this.legend.classList.add("legend");
         this.div.appendChild(this.legend);
 
         this.legend_labels = args.legend_labels || [];
         if (this.legend_labels.length !== this.n_lines) {
             // Fill up the array with temporary labels
-            for (var i = this.legend_labels.length; i < this.n_lines; i++) {
+            for (let i = this.legend_labels.length; i < this.n_lines; i++) {
                 this.legend_labels[i] = "label_" + i;
             }
         }
@@ -148,49 +165,49 @@ export default class Value extends Component {
         if (this.show_legend === true) {
             utils.draw_legend(this.legend,
                               this.legend_labels.slice(0, self.n_lines),
-                              this.color_func);
+                              this.color_func,
+                              this.uid);
         }
     };
 
     update_crosshair(mouse) {
-        var self = this;
-        var x = mouse[0];
-        var y = mouse[1];
+        const self = this;
+        const {x, y} = mouse;
 
         // TODO: I don't like having ifs here.
         //       Make a smaller rectangle for mouseovers
         if (x > this.axes2d.ax_left && x < this.axes2d.ax_right &&
             y > this.axes2d.ax_top && y < this.axes2d.ax_bottom) {
-            this.crosshair_g.style('display', null);
+            this.crosshair_g.style("display", null);
 
-            this.crosshair_g.select('#crosshairX')
-                .attr('x1', x)
-                .attr('y1', this.axes2d.ax_top)
-                .attr('x2', x)
-                .attr('y2', this.axes2d.ax_bottom);
+            this.crosshair_g.select("#crosshairX")
+                .attr("x1", x)
+                .attr("y1", this.axes2d.ax_top)
+                .attr("x2", x)
+                .attr("y2", this.axes2d.ax_bottom);
 
-            this.crosshair_g.select('#crosshairY')
-                .attr('x1', this.axes2d.ax_left)
-                .attr('y1', y)
-                .attr('x2', this.axes2d.ax_right)
-                .attr('y2', y);
+            this.crosshair_g.select("#crosshairY")
+                .attr("x1", this.axes2d.ax_left)
+                .attr("y1", y)
+                .attr("x2", this.axes2d.ax_right)
+                .attr("y2", y);
 
             // TODO: don't use magic numbers
-            this.crosshair_g.select('#crosshairXtext')
-                .attr('x', x - 2)
-                .attr('y', this.axes2d.ax_bottom + 17)
+            this.crosshair_g.select("#crosshairXtext")
+                .attr("x", x - 2)
+                .attr("y", this.axes2d.ax_bottom + 17)
                 .text(function() {
                     return Math.round(self.axes2d.scale_x.invert(x) * 100) / 100;
                 });
 
-            this.crosshair_g.select('#crosshairYtext')
-                .attr('x', this.axes2d.ax_left - 3)
-                .attr('y', y + 3)
+            this.crosshair_g.select("#crosshairYtext")
+                .attr("x", this.axes2d.ax_left - 3)
+                .attr("y", y + 3)
                 .text(function() {
                     return Math.round(self.axes2d.scale_y.invert(y) * 100) / 100;
                 });
         } else {
-            this.crosshair_g.style('display', 'none');
+            this.crosshair_g.style("display", "none");
         }
     };
 
@@ -198,9 +215,9 @@ export default class Value extends Component {
      * Receive new line data from the server.
      */
     on_message(event) {
-        var data = new Float32Array(event.data);
+        let data = new Float32Array(event.data);
         data = Array.prototype.slice.call(data);
-        var size = this.n_lines + 1;
+        const size = this.n_lines + 1;
         // Since multiple data packets can be sent with a single event,
         // make sure to process all the packets.
         while (data.length >= size) {
@@ -208,9 +225,9 @@ export default class Value extends Component {
             data = data.slice(size);
         }
         if (data.length > 0) {
-            console.log('extra data: ' + data.length);
+            console.warn("extra data: " + data.length);
         }
-        this.schedule_update();
+        this.schedule_update(event);
     };
 
     /**
@@ -221,21 +238,21 @@ export default class Value extends Component {
         this.data_store.update();
 
         // Determine visible range from the SimControl
-        var t1 = this.sim.time_slider.first_shown_time;
-        var t2 = t1 + this.sim.time_slider.shown_time;
+        const t1 = this.sim.time_slider.first_shown_time;
+        const t2 = t1 + this.sim.time_slider.shown_time;
 
         this.axes2d.set_time_range(t1, t2);
 
         // Update the lines
-        var self = this;
-        var shown_data = this.data_store.get_shown_data();
+        const self = this;
+        const shown_data = this.data_store.get_shown_data();
 
         this.path.data(shown_data)
-            .attr('d', self.line);
+            .attr("d", self.line);
 
         // Update the crosshair text if the mouse is on top
         if (this.crosshair_updates) {
-            this.update_crosshair(this.cross_hair_mouse);
+            this.update_crosshair(this.crosshair_mouse);
         }
     };
 
@@ -243,12 +260,12 @@ export default class Value extends Component {
      * Adjust the graph layout due to changed size.
      */
     on_resize(width, height) {
-        if (width < this.minWidth) {
-            width = this.minWidth;
+        if (width < this.min_width) {
+            width = this.min_width;
         }
-        if (height < this.minHeight) {
-            height = this.minHeight;
-        };
+        if (height < this.min_height) {
+            height = this.min_height;
+        }
 
         this.axes2d.on_resize(width, height);
 
@@ -263,27 +280,28 @@ export default class Value extends Component {
     };
 
     generate_menu() {
-        var self = this;
-        var items = [];
-        items.push(['Set range...', function() {
-            self.set_range();
-        }]);
-        items.push(['Set synapse...', function() {
-            self.set_synapse_dialog();
-        }]);
+        const self = this;
+        const items = [
+            ["Set range...", function() {
+                self.set_range();
+            }],
+            ["Set synapse...", function() {
+                self.set_synapse_dialog();
+            }],
+        ];
 
         if (this.show_legend) {
-            items.push(['Hide legend', function() {
+            items.push(["Hide legend", function() {
                 self.set_show_legend(false);
             }]);
         } else {
-            items.push(['Show legend', function() {
+            items.push(["Show legend", function() {
                 self.set_show_legend(true);
             }]);
         }
 
         // TODO: give the legend it's own context menu
-        items.push(['Set legend labels', function() {
+        items.push(["Set legend labels", function() {
             self.set_legend_labels();
         }]);
 
@@ -299,7 +317,8 @@ export default class Value extends Component {
             if (this.show_legend === true) {
                 utils.draw_legend(this.legend,
                                   this.legend_labels.slice(0, this.n_lines),
-                                  this.color_func);
+                                  this.color_func,
+                                  this.uid);
             } else {
                 // Delete the legend's children
                 while (this.legend.lastChild) {
@@ -310,23 +329,23 @@ export default class Value extends Component {
     };
 
     set_legend_labels() {
-        var self = this;
+        const self = this;
 
-        self.sim.modal.title('Enter comma seperated legend label values');
-        self.sim.modal.single_input_body('Legend label', 'New value');
-        self.sim.modal.footer('ok_cancel', function(e) {
-            var label_csv = $('#singleInput').val();
-            var modal = $('#myModalForm').data('bs.validator');
+        self.sim.modal.title("Enter comma seperated legend label values");
+        self.sim.modal.single_input_body("Legend label", "New value");
+        self.sim.modal.footer("ok_cancel", function(e) {
+            const label_csv = $("#singleInput").val();
+            $("#myModalForm").data("bs.validator");
 
             // No validation to do.
             // Empty entries assumed to be indication to skip modification.
             // Long strings okay.
             // Excissive entries get ignored.
             // TODO: Allow escaping of commas
-            if ((label_csv !== null) && (label_csv !== '')) {
-                var labels = label_csv.split(',');
+            if ((label_csv !== null) && (label_csv !== "")) {
+                const labels = label_csv.split(",");
 
-                for (var i = 0; i < self.n_lines; i++) {
+                for (let i = 0; i < self.n_lines; i++) {
                     if (labels[i] !== "" && labels[i] !== undefined) {
                         self.legend_labels[i] = labels[i];
                     }
@@ -337,17 +356,20 @@ export default class Value extends Component {
                     self.legend.removeChild(self.legend.lastChild);
                 }
 
-                utils.draw_legend(self.legend, self.legend_labels, self.color_func);
+                utils.draw_legend(self.legend,
+                                  self.legend_labels,
+                                  self.color_func,
+                                  self.uid);
                 self.save_layout();
             }
-            $('#OK').attr('data-dismiss', 'modal');
+            $("#OK").attr("data-dismiss", "modal");
         });
 
         self.sim.modal.show();
     };
 
     layout_info() {
-        var info = Component.prototype.layout_info.call(this);
+        const info = Component.prototype.layout_info.call(this);
         info.show_legend = this.show_legend;
         info.legend_labels = this.legend_labels;
         info.min_value = this.axes2d.scale_y.domain()[0];
@@ -361,50 +383,49 @@ export default class Value extends Component {
     };
 
     set_range() {
-        var range = this.axes2d.scale_y.domain();
-        var self = this;
-        self.sim.modal.title('Set graph range...');
-        self.sim.modal.single_input_body(range, 'New range');
-        self.sim.modal.footer('ok_cancel', function(e) {
-            var new_range = $('#singleInput').val();
-            var modal = $('#myModalForm').data('bs.validator');
+        const range = this.axes2d.scale_y.domain();
+        const self = this;
+        self.sim.modal.title("Set graph range...");
+        self.sim.modal.single_input_body(range, "New range");
+        self.sim.modal.footer("ok_cancel", function(e) {
+            let new_range = $("#singleInput").val();
+            const modal = $("#myModalForm").data("bs.validator");
             modal.validate();
             if (modal.hasErrors() || modal.isIncomplete()) {
                 return;
             }
             if (new_range !== null) {
-                new_range = new_range.split(',');
-                var min = parseFloat(new_range[0]);
-                var max = parseFloat(new_range[1]);
+                new_range = new_range.split(",");
+                const min = parseFloat(new_range[0]);
+                const max = parseFloat(new_range[1]);
                 self.update_range(min, max);
                 self.save_layout();
                 self.axes2d.axis_y.tickValues([min, max]);
                 self.axes2d.fit_ticks(self);
             }
-            $('#OK').attr('data-dismiss', 'modal');
+            $("#OK").attr("data-dismiss", "modal");
         });
-        var $form = $('#myModalForm').validator({
+        $("#myModalForm").validator({
             custom: {
                 my_validator: function($item) {
-                    var nums = $item.val().split(',');
-                    var valid = false;
+                    const nums = $item.val().split(",");
+                    let valid = false;
                     if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
                         if (Number(nums[0]) < Number(nums[1])) {
                             valid = true; // Two numbers, 1st less than 2nd
                         }
                     }
-                    return (nums.length == 2 && valid);
-                }
+                    return (nums.length === 2 && valid);
+                },
             },
         });
 
-        $('#singleInput').attr('data-error', 'Input should be in the ' +
-                               'form "<min>,<max>".');
+        $("#singleInput").attr("data-error", "Input should be in the " +
+                               "form '<min>,<max>'.");
         self.sim.modal.show();
-        $('#OK').on('click', function() {
-            var w = $(self.div).width();
-            var h = $(self.div).height();
-            self.on_resize(w, h);
+        $("#OK").on("click", function() {
+            const div = $(self.div);
+            self.on_resize(div.width(), div.height());
         });
     };
 
@@ -415,17 +436,17 @@ export default class Value extends Component {
 
     reset(event) {
         this.data_store.reset();
-        this.schedule_update();
+        this.schedule_update(event);
     };
 
     set_synapse_dialog() {
-        var self = this;
-        self.sim.modal.title('Set synaptic filter...');
+        const self = this;
+        self.sim.modal.title("Set synaptic filter...");
         self.sim.modal.single_input_body(this.synapse,
-                                         'Filter time constant (in seconds)');
-        self.sim.modal.footer('ok_cancel', function(e) {
-            var new_synapse = $('#singleInput').val();
-            var modal = $('#myModalForm').data('bs.validator');
+                                         "Filter time constant (in seconds)");
+        self.sim.modal.footer("ok_cancel", function(e) {
+            let new_synapse = $("#singleInput").val();
+            const modal = $("#myModalForm").data("bs.validator");
             modal.validate();
             if (modal.hasErrors() || modal.isIncomplete()) {
                 return;
@@ -436,14 +457,14 @@ export default class Value extends Component {
                     return;
                 }
                 self.synapse = new_synapse;
-                self.ws.send('synapse:' + self.synapse);
+                self.ws.send("synapse:" + self.synapse);
             }
-            $('#OK').attr('data-dismiss', 'modal');
+            $("#OK").attr("data-dismiss", "modal");
         });
-        var $form = $('#myModalForm').validator({
+        $("#myModalForm").validator({
             custom: {
                 my_validator: function($item) {
-                    var num = $item.val();
+                    let num = $item.val();
                     if ($.isNumeric(num)) {
                         num = Number(num);
                         if (num >= 0) {
@@ -451,10 +472,10 @@ export default class Value extends Component {
                         }
                     }
                     return false;
-                }
+                },
             },
         });
-        $('#singleInput').attr('data-error', 'should be a non-negative number');
+        $("#singleInput").attr("data-error", "should be a non-negative number");
         self.sim.modal.show();
     };
 

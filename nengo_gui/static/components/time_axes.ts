@@ -9,27 +9,31 @@
  * @param {dict} args - A set of constructor arguments (see Axes2D)
  */
 
+import * as $ from "jquery";
+
 import Axes2D from "./2d_axes";
 
 export default class TimeAxes extends Axes2D {
+    axis_time_end;
+    axis_time_start;
+    display_time;
 
     constructor(parent, args) {
         super(parent, args);
-        var self = this;
         this.display_time = args.display_time;
 
         this.axis_x.ticks(0);
 
         this.axis_time_end = this.svg.append("text")
             .text("Time: NULL")
-            .attr('class', 'graph_text unselectable')[0][0];
+            .attr("class", "graph_text unselectable")[0][0];
         this.axis_time_start = this.svg.append("text")
             .text("Time: NULL")
-            .attr('class', 'graph_text unselectable')[0][0];
+            .attr("class", "graph_text unselectable")[0][0];
 
-        if (this.display_time == false) {
-            this.axis_time_start.style.display = 'none';
-            this.axis_time_end.style.display = 'none';
+        if (this.display_time === false) {
+            this.axis_time_start.style.display = "none";
+            this.axis_time_end.style.display = "none";
         }
     };
 
@@ -43,20 +47,20 @@ export default class TimeAxes extends Axes2D {
     on_resize(width, height) {
         Axes2D.prototype.on_resize.call(this, width, height);
 
-        var scale = parseFloat($('#main').css('font-size'));
-        var suppression_width = 6 * scale;
-        var text_offset = 1.2 * scale;
+        const scale = parseFloat($("#main").css("font-size"));
+        const suppression_width = 6 * scale;
+        const text_offset = 1.2 * scale;
 
-        if (width < suppression_width || this.display_time == false) {
-            this.axis_time_start.style.display = 'none';
+        if (width < suppression_width || this.display_time === false) {
+            this.axis_time_start.style.display = "none";
         } else {
-            this.axis_time_start.style.display = 'block';
+            this.axis_time_start.style.display = "block";
         }
 
-        this.axis_time_start.setAttribute('y', this.ax_bottom + text_offset);
-        this.axis_time_start.setAttribute('x', this.ax_left - text_offset);
-        this.axis_time_end.setAttribute('y', this.ax_bottom + text_offset);
-        this.axis_time_end.setAttribute('x', this.ax_right - text_offset);
+        this.axis_time_start.setAttribute("y", this.ax_bottom + text_offset);
+        this.axis_time_start.setAttribute("x", this.ax_left - text_offset);
+        this.axis_time_end.setAttribute("y", this.ax_bottom + text_offset);
+        this.axis_time_end.setAttribute("x", this.ax_right - text_offset);
     };
 
 }

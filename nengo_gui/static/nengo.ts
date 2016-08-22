@@ -1,14 +1,16 @@
-// Expose jquery globally
-var $ = require('expose?$!./jquery');
+import "bootstrap/dist/css/bootstrap.min.css";
+import "imports?$=jquery,jQuery=jquery!bootstrap";
+import "imports?$=jquery,jQuery=jquery!bootstrap-validator";
+import "imports?$=jquery,jQuery=jquery!jquery-ui";
+import "imports?$=jquery,jQuery=jquery!jqueryfiletree/src/jQueryFileTree";
+import "jqueryfiletree/dist/jQueryFileTree.min.css";
 
 import "./favicon.ico";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "jqueryfiletree/dist/jQueryFileTree.min.css";
-import "./nengo.css"
+import "./nengo.css";
 
+import NetGraph from "./components/netgraph";
 import Config from "./config";
 import Editor from "./editor";
-import NetGraph from "./components/netgraph";
 import SideMenu from "./side_menu";
 import SimControl from "./sim_control";
 import Toolbar from "./top_toolbar";
@@ -20,10 +22,21 @@ import Toolbar from "./top_toolbar";
 // filename
 
 export default class Nengo {
+    config;
+    control;
+    editor;
+    hotkeys;
+    main;
+    modal;
+    netgraph;
+    sidemenu;
+    sim;
+    toolbar;
+    viewport;
 
     constructor(simargs, filename, editoruid, netgraphargs) {
-        this.main = document.getElementById('main');
-        this.control = document.getElementById('control');
+        this.main = document.getElementById("main");
+        this.control = document.getElementById("control");
 
         this.config = new Config();
 
@@ -43,14 +56,15 @@ export default class Nengo {
 }
 
 // Exposing data_to_csv for testing
-require('expose?data_to_csv!./data_to_csv');
+import "expose?data_to_csv!./data_to_csv";
+
 // Exposing components for server
-require('expose?HTMLView!./components/htmlview');
-require('expose?Image!./components/image');
-require('expose?Pointer!./components/pointer');
-require('expose?Raster!./components/raster');
-require('expose?Slider!./components/slider');
-require('expose?SpaSimilarity!./components/spa_similarity');
-require('expose?Value!./components/value');
-require('expose?XYValue!./components/xyvalue');
-require('expose?utils!./utils');
+import "expose?HTMLView!./components/htmlview";
+import "expose?Image!./components/image";
+import "expose?Pointer!./components/pointer";
+import "expose?Raster!./components/raster";
+import "expose?Slider!./components/slider";
+import "expose?SpaSimilarity!./components/spa_similarity";
+import "expose?Value!./components/value";
+import "expose?XYValue!./components/xyvalue";
+import "expose?utils!./utils";

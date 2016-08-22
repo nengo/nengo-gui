@@ -3,8 +3,7 @@
     "target": "es5",
     "sourceMap": true
   },
-  "files": [
-    "./typings/index.d.ts",
-    "./nengo_gui/static/webpack.d.ts"
+  "exclude": [
+    "node_modules"
   ]
 }

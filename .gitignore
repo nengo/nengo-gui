@@ -71,3 +71,6 @@ out/
 
 # TypeScript
 typings/
+
+# JS files associated with tests
+**/tests/*.js
