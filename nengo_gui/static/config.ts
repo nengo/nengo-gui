@@ -1,12 +1,49 @@
-export default class Config {
+/**
+ * A class that takes the place of localStorage if it doesn't exist.
+ *
+ * Note that this does not aim to implements the whole localStorage spec;
+ * it only implements what Config uses. The values set in this object will
+ * only exist for the current session and will not persist across sessions.
+ */
+class MockLocalStorage {
+    items: any;
+
     constructor() {
+        this.items = {};
+    }
+
+    getItem(key: string) {
+        return this.items[key];
+    }
+
+    removeItem(key: string) {
+        delete this.items[key];
+    }
+
+    setItem(key: string, val: any) {
+        this.items[key] = String(val);
+    }
+}
+
+/* tslint:disable:no-typeof-undefined */
+
+export default class Config {
+    localStorage;
+
+    constructor() {
+        if (typeof localStorage === "undefined" || localStorage === null) {
+            this.localStorage = new MockLocalStorage();
+        } else {
+            this.localStorage = localStorage;
+        }
+
         const define_option = (key, default_val) => {
             const typ = typeof(default_val);
             Object.defineProperty(this, key, {
                 enumerable: true,
                 get: () => {
                     const val =
-                        localStorage.getItem("ng." + key) || default_val;
+                        this.localStorage.getItem("ng." + key) || default_val;
                     if (typ === "boolean") {
                         return val === "true" || val === true;
                     } else if (typ === "number") {
@@ -16,7 +53,7 @@ export default class Config {
                     }
                 },
                 set: val => {
-                    return localStorage.setItem("ng." + key, val);
+                    return this.localStorage.setItem("ng." + key, val);
                 },
             });
         };
@@ -38,7 +75,7 @@ export default class Config {
 
     restore_defaults() {
         Object.keys(this).forEach(option => {
-            localStorage.removeItem("ng." + option);
+            this.localStorage.removeItem("ng." + option);
         });
     }
 }
