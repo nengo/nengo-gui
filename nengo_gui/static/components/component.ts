@@ -26,7 +26,7 @@ import * as utils from "../utils";
 
 export var all_components = [];
 
-export function save_all_components() {
+export function save_all_layouts() {
     all_components.forEach(component => {
         component.save_layout();
     });

@@ -317,7 +317,7 @@ export default class NetGraph {
                     z_scale = 1. / z_scale;
                 }
 
-                comp.save_all_components();
+                comp.save_all_layouts();
 
                 const xx = x / this.scale - this.offsetX;
                 const yy = y / this.scale - this.offsetY;
