@@ -15,7 +15,7 @@ before_script:
   - "export DISPLAY=:99.0"
   - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/cucumber_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1920x1080x16
   - sleep 3 # give xvfb some time to start
-  - "wget http://selenium.googlecode.com/files/selenium-server-standalone-2.31.0.jar"
+  - "wget http://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.1.jar"
   - "java -jar selenium-server-standalone-2.31.0.jar > /dev/null &"
   - "nengo_gui --no-browser --auto-shutdown 0 &"#starts up nengo_gui
   - sleep 2
