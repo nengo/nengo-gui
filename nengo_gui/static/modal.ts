@@ -1,8 +1,7 @@
 import * as d3 from "d3";
 import * as $ from "jquery";
 
-import { all_components } from "./components/component";
-import data_to_csv from "./data_to_csv";
+import * as all_components from "./components/all_components";
 import Hotkeys from "./hotkeys";
 import "./modal.css";
 import * as tooltips from "./tooltips";
@@ -22,6 +21,7 @@ export default class Modal {
     toolbar;
 
     constructor($div, editor, sim) {
+        const self = this;
         this.$div = $div;
         this.$title = this.$div.find(".modal-title").first();
         this.$footer = this.$div.find(".modal-footer").first();
@@ -35,33 +35,34 @@ export default class Modal {
         this.sim_was_running = false;
 
         // This listener is triggered when the modal is closed
-        this.$div.on("hidden.bs.modal", () => {
-            if (this.sim_was_running) {
-                this.sim.play();
+        this.$div.on("hidden.bs.modal", function() {
+            if (self.sim_was_running) {
+                self.sim.play();
             }
-            this.hotkeys.set_active(true);
+            self.hotkeys.set_active(true);
         });
-    }
+    };
 
     show() {
         this.hotkeys.set_active(false);
         this.sim_was_running = !this.sim.paused;
         this.$div.modal("show");
         this.sim.pause();
-    }
+    };
 
     title(title) {
         this.$title.text(title);
-    }
+    };
 
-    footer(ftype, ok_function, cancel_function=null) { // tslint:disable-line
+    footer(type, ok_function, cancel_function) {
+        const self = this;
         this.$footer.empty();
 
-        if (ftype === "close") {
+        if (type === "close") {
             this.$footer.append(
                 "<button type='button' class='btn btn-default'" +
                     " data-dismiss='modal'>Close</button>");
-        } else if (ftype === "ok_cancel") {
+        } else if (type === "ok_cancel") {
             const $footerBtn = $("<div class='form-group'/>")
                 .appendTo(this.$footer);
             $footerBtn.append("<button id='cancel-button' type='button' " +
@@ -69,24 +70,24 @@ export default class Modal {
             $footerBtn.append("<button id='OK' type='submit' " +
                               "class='btn btn-primary'>OK</button>");
             $("#OK").on("click", ok_function);
-            if (cancel_function !== null) {
+            if (typeof cancel_function !== "undefined") {
                 $("#cancel-button").on("click", cancel_function);
             } else {
-                $("#cancel-button").on("click", () => {
+                $("#cancel-button").on("click", function() {
                     $("#cancel-button").attr("data-dismiss", "modal");
                 });
             }
-        } else if (ftype === "confirm_reset") {
+        } else if (type === "confirm_reset") {
             this.$footer.append("<button type='button' " +
                                 "id='confirm_reset_button' " +
                                 "class='btn btn-primary'>Reset</button>");
             this.$footer.append("<button type='button' " +
                                 "class='btn btn-default' " +
                                 "data-dismiss='modal'>Close</button>");
-            $("#confirm_reset_button").on("click", () => {
-                this.toolbar.reset_model_layout();
+            $("#confirm_reset_button").on("click", function() {
+                self.toolbar.reset_model_layout();
             });
-        } else if (ftype === "confirm_savepdf") {
+        } else if (type === "confirm_savepdf") {
             this.$footer.append(
                 "<button type='button' " +
                     "id='confirm_savepdf_button' class='btn btn-primary' " +
@@ -94,7 +95,7 @@ export default class Modal {
             this.$footer.append("<button type='button' " +
                                 "class='btn btn-default' " +
                                 "data-dismiss='modal'>Close</button>");
-            $("#confirm_savepdf_button").on("click", () => {
+            $("#confirm_savepdf_button").on("click", function() {
                 const svg = $("#main svg")[0];
 
                 // Serialize SVG as XML
@@ -111,7 +112,7 @@ export default class Modal {
                 filename = filename.split(".")[0];
 
                 // Initiate download
-                const link = document.createElement("a");
+                let link = document.createElement("a");
                 // Experimental future feature; uncomment when finalized.
                 // link.download = filename + ".svg";
                 link.href = svg_uri;
@@ -121,7 +122,7 @@ export default class Modal {
                 link.click();
                 document.body.removeChild(link);
             });
-        } else if (ftype === "confirm_savecsv") {
+        } else if (type === "confirm_savecsv") {
             this.$footer.append(
                 "<button type='button' " +
                     "id='confirm_savecsv_button' class='btn btn-primary' " +
@@ -129,9 +130,9 @@ export default class Modal {
             this.$footer.append("<button type='button' " +
                                 "class='btn btn-default' " +
                                 "data-dismiss='modal'>Close</button>");
-            $("#confirm_savecsv_button").on("click", () => {
+            $("#confirm_savecsv_button").on("click", function() {
 
-                const csv = data_to_csv(all_components);
+                const csv = all_components.to_csv();
                 // Extract filename from the path
                 const path = $("#filename")[0].textContent;
                 let filename = path.split("/").pop();
@@ -140,7 +141,7 @@ export default class Modal {
                 const uri =
                     "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
 
-                const link = document.createElement("a");
+                let link = document.createElement("a");
                 link.href = uri;
                 link.style.visibility = "hidden";
                 // Experimental future feature; uncomment when finalized.
@@ -151,34 +152,35 @@ export default class Modal {
                 document.body.removeChild(link);
             });
 
-        } else if (ftype === "refresh") {
+        } else if (type === "refresh") {
             this.$footer.append("<button type='button' " +
                                 "id='refresh_button' " +
                                 "class='btn btn-primary'>Refresh</button>");
-            $("#refresh_button").on("click", () => {
+            $("#refresh_button").on("click", function() {
                 location.reload();
             });
         } else {
-            console.warn("Modal footer type " + ftype + " not recognized.");
+            console.warn("Modal footer type " + type + " not recognized.");
         }
-    }
+    };
 
     clear_body() {
         this.$body.empty();
         this.$div.find(".modal-dialog").removeClass("modal-sm");
         this.$div.off("shown.bs.modal");
-    }
+    };
 
-    text_body(text, mtype="info") { // tslint:disable-line
+    text_body(text, type) {
+        if (typeof type === "undefined") { type = "info"; }
+
         this.clear_body();
-        const $alert =
-            $("<div class='alert alert-" + mtype + "' role='alert'/>")
+        const $alert = $("<div class='alert alert-" + type + "' role='alert'/>")
             .appendTo(this.$body);
         const $p = $("<p/>").appendTo($alert);
         $p.append("<span class='glyphicon glyphicon-exclamation-sign' " +
                   "aria-hidden='true'></span>");
         $p.append(document.createTextNode(text));
-    }
+    };
 
     help_body() {
         this.clear_body();
@@ -218,15 +220,10 @@ export default class Modal {
                      "<td align='right'>?</td></tr>");
         $body.append("</table>");
         $body.appendTo(this.$body);
-    }
+    };
 
     /**
      * Sets up the tabs for Info modals.
-     *
-     * @param {object} tabinfo - Info about each tab; specifically
-     * @param {string} tabinfo.id - Tab ID
-     * @param {string} tabinfo.title - Tab title
-     * @returns {object} tabdivs - Divs associated with each tab ID
      */
     tabbed_body(tabinfo) {
         this.clear_body();
@@ -234,27 +231,30 @@ export default class Modal {
         const $tab_ul = $("<ul class='nav nav-tabs'/>").appendTo(this.$body);
         const $content = $("<div class='tab-content'/>").appendTo(this.$body);
 
-        tabinfo.forEach((tab, i) => {
+        for (let i = 0; i < tabinfo.length; i++) {
             // <li> for the tab label
             const $tab_li = $("<li/>").appendTo($tab_ul);
-            $tab_li.append("<a href='#" + tab.id + "' data-toggle='tab'>" +
-                           tab.title + "</a>");
+            $tab_li.append("<a href='#" + tabinfo[i].id +
+                           "' data-toggle='tab'>" +
+                           tabinfo[i].title + "</a>");
 
             // <div> for the tab content
-            tabdivs[tab.id] = $("<div class='tab-pane' id='" + tab.id + "'/>")
+            tabdivs[tabinfo[i].id] = $(
+                "<div class='tab-pane' id='" + tabinfo[i].id + "'/>")
                 .appendTo($content);
             if (i === 0) {
                 $tab_li.addClass("active");
-                tabdivs[tab.id].addClass("active");
+                tabdivs[tabinfo[i].id].addClass("active");
             }
-        });
+        }
         return tabdivs;
-    }
+    };
 
     /**
      * Sets up the body for main configuration.
      */
     main_config() {
+        const self = this;
         this.clear_body();
 
         const $form = $("<form class='form-horizontal' id" +
@@ -326,34 +326,34 @@ export default class Modal {
           "</div>" +
           "</div>").appendTo($form);
 
-        this.$div.on("shown.bs.modal", () => {
+        this.$div.on("shown.bs.modal", function() {
             $("#config-fontsize").focus();
         });
         $("#zoom-fonts").prop("checked", this.netgraph.zoom_fonts);
-        $("#zoom-fonts").change(() => {
-            this.netgraph.zoom_fonts = $("#zoom-fonts").prop("checked");
+        $("#zoom-fonts").change(function() {
+            self.netgraph.zoom_fonts = $("#zoom-fonts").prop("checked");
         });
 
         $("#aspect-resize").prop("checked", this.netgraph.aspect_resize);
-        $("#aspect-resize").change(() => {
-            this.netgraph.aspect_resize = $("#aspect-resize").prop("checked");
+        $("#aspect-resize").change(function() {
+            self.netgraph.aspect_resize = $("#aspect-resize").prop("checked");
         });
 
         $("#transparent-nets").prop("checked", this.netgraph.transparent_nets);
-        $("#transparent-nets").change(() => {
-            this.netgraph.transparent_nets =
+        $("#transparent-nets").change(function() {
+            self.netgraph.transparent_nets =
                 $("#transparent-nets").prop("checked");
         });
 
-        $("#sync-editor").prop("checked", this.editor.auto_update);
-        $("#sync-editor").change(() => {
-            this.editor.auto_update = $("#sync-editor").prop("checked");
-            this.editor.update_trigger = $("#sync-editor").prop("checked");
+        $("#sync-editor").prop("checked", self.editor.auto_update);
+        $("#sync-editor").change(function() {
+            self.editor.auto_update = $("#sync-editor").prop("checked");
+            self.editor.update_trigger = $("#sync-editor").prop("checked");
         });
 
         $("#config-fontsize").val(this.netgraph.font_size);
-        $("#config-fontsize").bind("keyup input", () => {
-            this.netgraph.font_size = parseInt($("#config-fontsize").val(), 10);
+        $("#config-fontsize").bind("keyup input", function() {
+            self.netgraph.font_size = parseInt($("#config-fontsize").val(), 10);
         });
         $("#config-fontsize").attr("data-my_validator", "custom");
 
@@ -362,20 +362,20 @@ export default class Modal {
             sd = "";
         }
         $("#config-scriptdir").val(sd);
-        $("#config-scriptdir").bind("keyup input", () => {
+        $("#config-scriptdir").bind("keyup input", function() {
             let newsd = $("#config-scriptdir").val();
             if (!newsd) {
                 newsd = ".";
             }
-            this.config.scriptdir = newsd;
+            self.config.scriptdir = newsd;
         });
 
-        $("#config-backend").change(() => {
-            this.sim.set_backend($("#config-backend").val());
+        $("#config-backend").change(function() {
+            self.sim.set_backend($("#config-backend").val());
         });
 
         // Allow the enter key to submit
-        const submit = event => {
+        const submit = function(event) {
             if (event.which === 13) {
                 event.preventDefault();
                 $("#OK").click();
@@ -383,13 +383,10 @@ export default class Modal {
         };
         $("#config-fontsize").keypress(submit);
         $("#config-scriptdir").keypress(submit);
-    }
+    };
 
     /**
      * Sets up the body for standard input forms.
-     *
-     * @param {string} start_values - Initial values to show first
-     * @param {string} label - Label associated with the input
      */
     single_input_body(start_values, label) {
         this.clear_body();
@@ -403,14 +400,14 @@ export default class Modal {
         $ctrls.append("<input id='singleInput' type='text' placeholder='" +
                       start_values + "'/>");
         $("<div class='help-block with-errors'/>").appendTo($ctrls);
-        this.$div.on("shown.bs.modal", () => {
+        this.$div.on("shown.bs.modal", function() {
             $("#singleInput").focus();
         });
 
         // Add custom validator
         $("#singleInput").attr("data-my_validator", "custom");
 
-        $(".controls").on("keydown", "#singleInput", event => {
+        $(".controls").on("keydown", "#singleInput", function(event) {
             // Allow the enter key to submit
             if (event.which === 13) {
                 event.preventDefault();
@@ -440,35 +437,33 @@ export default class Modal {
                     }
                     // If the last character is a comma or there are no
                     // characters, fill in the next default value
-                    if (cur_val.length === 0
-                            || cur_val.trim().slice(-1) === ",") {
+                    if (cur_val.length === 0 ||
+                            cur_val.trim().slice(-1) === ",") {
                         $("#singleInput").val(
                             $("#singleInput").val() + pre +
                                 values[cur_index].trim() + post);
                         event.preventDefault();
                     } else {
                         if (cur_index < values.length) {
-                            $("#singleInput").val(
-                                $("#singleInput").val() + ", "
-                            );
+                            $("#singleInput")
+                                .val($("#singleInput").val() + ", ");
                             event.preventDefault();
                         }
                     }
                 }
             }
         });
-    }
+    };
 
     ensemble_body(uid, params, plots, conninfo) {
-        const tabs: any = this.tabbed_body([
+        const tabs = this.tabbed_body([
             {id: "params", title: "Parameters"},
             {id: "plots", title: "Plots"},
-            {id: "connections", title: "Connections"},
-        ]);
-        this.render_params(tabs.params, params, tooltips.Ens);
-        this.render_plots(tabs.plots, plots);
-        this.render_connections(tabs.connections, uid, conninfo);
-    }
+            {id: "connections", title: "Connections"}]);
+        this.render_params(tabs["params"], params, tooltips.Ens); // tslint:disable-line
+        this.render_plots(tabs["plots"], plots); // tslint:disable-line
+        this.render_connections(tabs["connections"], uid, conninfo); // tslint:disable-line
+    };
 
     node_body(uid, params, plots, conninfo) {
         const tabs: any = this.tabbed_body([
@@ -479,7 +474,7 @@ export default class Modal {
         this.render_params(tabs.params, params, tooltips.Node);
         this.render_plots(tabs.plots, plots);
         this.render_connections(tabs.connections, uid, conninfo);
-    }
+    };
 
     net_body(uid, stats, conninfo) {
         const tabs: any = this.tabbed_body([
@@ -488,55 +483,45 @@ export default class Modal {
         ]);
         this.render_stats(tabs.stats, stats);
         this.render_connections(tabs.connections, uid, conninfo);
-    }
+    };
 
     /**
      * Renders information about the parameters of an object.
-     *
-     * @param {object} $parent - Parent element to append to.
-     * @param {[string, string][]} params - Information about params
-     * @param {object} strings - String resource object
      */
     render_params($parent, params, strings) {
         const $plist = $("<dl class='dl-horizontal'/>").appendTo($parent);
-        params.forEach(param => {
+        for (let i = 0; i < params.length; i++) {
             const $dt = $("<dt/>").appendTo($plist);
-            $dt.text(param[0]);
+            $dt.text(params[i][0]);
 
             const $dd = $("<dd/>").appendTo($plist);
-            $dd.text(param[1]);
-            tooltips.popover($dt, param[0], strings[param[0]]);
-        });
-    }
+            $dd.text(params[i][1]);
+            tooltips.popover($dt, params[i][0], strings[params[i][0]]);
+        }
+    };
 
     /**
      * Renders information about some statistics of an object.
-     *
-     * @param {object} $parent - Parent element to append to.
-     * @param {object} stats - Object statistics
      */
     render_stats($parent, stats) {
-        stats.forEach(stat => {
-            $parent.append("<h3>" + stat.title + "</h3>");
+        for (let i = 0; i < stats.length; i++) {
+            $parent.append("<h3>" + stats[i].title + "</h3>");
             const $stable =
                 $("<table class='table table-condensed table-hover'/>")
                 .appendTo($parent);
 
-            stat.stats.forEach(statstat => {
+            for (let j = 0; j < stats[i].stats.length; j++) {
                 const $tr = $("<tr/>").appendTo($stable);
                 const $desc = $("<td class='col-md-8'/>").appendTo($tr);
-                $desc.text(statstat[0]);
+                $desc.text(stats[i].stats[j][0]);
                 const $val = $("<td class='col-md-4'/>").appendTo($tr);
-                $val.text(statstat[1]);
-            });
-        });
-    }
+                $val.text(stats[i].stats[j][1]);
+            }
+        }
+    };
 
     /**
      * Renders information about plots related to an object.
-     *
-     * @param {object} $parent - Parent element to append to.
-     * @param {object} plots - Object plots
      */
     render_plots($parent, plots) {
         // This indicates an error (usually no sim running)
@@ -548,17 +533,14 @@ export default class Modal {
             $err.append("<span class='sr-only'>Error:</span>");
             $err.append(document.createTextNode(plots));
         } else {
-            plots.forEach(plot => {
-                this.render_plot($parent, plot);
-            });
+            for (let i = 0; i < plots.length; i++) {
+                this.render_plot($parent, plots[i]);
+            }
         }
-    }
+    };
 
     /**
      * Renders information about a single plot.
-     *
-     * @param {object} $parent - Parent element to append to.
-     * @param {object} plotinfo - Object plot info
      */
     render_plot($parent, plotinfo) {
         $parent.append("<h4>" + plotinfo.title + "</h4>");
@@ -567,14 +549,13 @@ export default class Modal {
             const $warn = $("<div class='alert alert-warning' role='alert'/>")
                 .appendTo($parent);
 
-            plotinfo.warnings.forEach(warning => {
+            for (let i = 0; i < plotinfo.warnings.length; i++) {
                 const $p = $("<p/>").appendTo($warn);
-                $p.append(
-                    "<span class='glyphicon glyphicon-exclamation-sign' " +
-                        "aria-hidden='true'></span>");
+                $p.append("<span class='glyphicon glyphicon" +
+                          "-exclamation-sign' aria-hidden='true'></span>");
                 $p.append("<span class='sr-only'>Warning:</span>");
-                $p.append(document.createTextNode(warning));
-            });
+                $p.append(document.createTextNode(plotinfo.warnings[i]));
+            }
         }
 
         if (plotinfo.plot === "multiline") {
@@ -588,16 +569,14 @@ export default class Modal {
             console.warn("Plot type " + plotinfo.plot +
                          " not understood, or not implemented yet.");
         }
-    }
+    };
 
     /**
-     * Static multiline plot with shared x-axis.
+     * Static multiline plot with shared x-axis
      *
      * @param {string} selector - Where the svg will be added
-     * @param {number[]} x - The shared x-axis
-     * @param {number[][]} ys - The y data for each line
-     * @param {string} x_label - Label for x-axis
-     * @param {string} y_label - Label for y-axis
+     * @param {float[]} x - The shared x-axis
+     * @param {float[][]} ys - The y data for each line
      */
     multiline_plot(selector, x, ys: number[][], x_label, y_label) {
 
@@ -612,9 +591,9 @@ export default class Modal {
             .domain([x[0], x[x.length - 1]])
             .range([margin.left, w - margin.right]);
         const scale_y = d3.scale.linear()
-            .domain([d3.min(ys, y => {
+            .domain([d3.min(ys, function(y) {
                 return d3.min(y);
-            }) - 0.01, d3.max(ys, y => {
+            }) - 0.01, d3.max(ys, function(y) {
                 return d3.max(y);
             }) + 0.01])
             .range([h + margin.top, margin.top]);
@@ -667,9 +646,9 @@ export default class Modal {
         const colors = utils.make_colors(ys.length);
 
         const line = d3.svg.line<number>()
-            .x((d, i) => {
+            .x(function(d, i) {
                 return scale_x(x[i]);
-            }).y(d => {
+            }).y(function(d) {
                 return scale_y(d);
             });
 
@@ -680,17 +659,13 @@ export default class Modal {
             .append("path")
             .attr("d", line)
             .attr("class", "line")
-            .style("stroke", (d, i) => {
+            .style("stroke", function(d, i) {
                 return colors[i];
             });
-    }
+    };
 
     /**
      * Renders information about connections related to an object.
-     *
-     * @param {object} $parent - Parent element to append to.
-     * @param {string} uid - Object uid
-     * @param {object} conninfo - Information about connections
      */
     render_connections($parent, uid, conninfo) {
         const ngi = this.netgraph.svg_objects[uid];
@@ -728,9 +703,9 @@ export default class Modal {
 
             this.make_connections_table_row(
                 $conn_in_table, conninfo, conn_in_objs,
-                conn_obj => {
+                function(conn_obj) {
                     return conn_obj.pre;
-                }, conn_obj => {
+                }, function(conn_obj) {
                     return conn_obj.pres;
                 });
         }
@@ -773,10 +748,10 @@ export default class Modal {
 
             this.make_connections_table_row(
                 $conn_out_table, conninfo, conn_out_objs,
-                conn_obj => {
+                function(conn_obj) {
                     return conn_obj.post;
                 },
-                conn_obj => {
+                function(conn_obj) {
                     return conn_obj.posts;
                 });
         }
@@ -788,7 +763,7 @@ export default class Modal {
             $p.append("<span class='glyphicon glyphicon-exclamation-sign' " +
                       "aria-hidden='true'></span>");
             $p.append("<span class='sr-only'>Warning:</span>");
-            if (ngi.itemtype === "net" && ngi.expanded) {
+            if (ngi.type === "net" && ngi.expanded) {
                 $p.append(document.createTextNode(
                     "Network is expanded. Please see individual objects " +
                         "for connection info."));
@@ -797,16 +772,16 @@ export default class Modal {
                     "No connections to or from this object."));
             }
         }
-    }
+    };
 
     /**
      * Generates one row in the connections table in the connections tab.
      */
     make_connections_table_row(
         $table, conninfo, conn_objs, get_conn_other, get_conn_conn_uid_list) {
-        conn_objs.forEach(conn_obj => {
-            // Get a handle to the connected object
-            const conn_other = get_conn_other(conn_obj);
+        for (let i = 0; i < conn_objs.length; i++) {
+            // Get a handle to the object that we're connected to
+            const conn_other = get_conn_other(conn_objs[i]);
 
             // Make a row in the table
             const $tr = $("<tr/>").appendTo($table);
@@ -817,22 +792,22 @@ export default class Modal {
             this.make_conn_path_dropdown_list(
                 $objs_td,
                 conn_other.uid,
-                conninfo.obj_type[String(conn_obj.uid)],
-                get_conn_conn_uid_list(conn_obj));
+                conninfo.obj_type[String(conn_objs[i].uid)],
+                get_conn_conn_uid_list(conn_objs[i]));
 
             // Make the functions column
             const $func_td = $("<td/>").appendTo($tr);
-            $func_td.text(conninfo.func[String(conn_obj.uid)]);
+            $func_td.text(conninfo.func[String(conn_objs[i].uid)]);
 
             // Make the fan data column
             const $fan_td = $("<td>" +
-                            conninfo.fan[String(conn_obj.uid)] + "</td>")
+                            conninfo.fan[String(conn_objs[i].uid)] + "</td>")
                 .appendTo($tr);
-            if (conninfo.obj_type[String(conn_obj.uid)] === "passthrough") {
+            if (conninfo.obj_type[String(conn_objs[i].uid)] === "passthrough") {
                 tooltips.tooltip($fan_td, tooltips.Conn.fan_passthrough);
             }
-        });
-    }
+        }
+    };
 
     /**
      * Generates the connection path dropdown list for the connections tab.
@@ -867,7 +842,7 @@ export default class Modal {
             let path_item: string;
             for (let p = conn_uid_list.length - 1; p >= 0; p--) {
                 if (conn_uid_list[p] in this.netgraph.svg_objects) {
-                    // If the uid is in netgraph.svg_objects, use the obj label
+                    // If the uid is in ng.svg_objects, use the obj's label
                     path_item = this.netgraph.svg_objects[conn_uid_list[p]]
                         .label.innerHTML;
                 } else {
@@ -877,7 +852,7 @@ export default class Modal {
                 }
 
                 if (others_uid === conn_uid_list[p]) {
-                    // Toggle the shading option once we reach others_uid
+                    // Toggle the shading option when others_uid is reached
                     shaded_option = "";
                 }
 
@@ -901,16 +876,18 @@ export default class Modal {
                     }
                 }
 
-                $path_list.append("<li class='list-group-item " +
-                                  shaded_option + "'><span class='" +
-                                  endpoint_icon + "'/>" + path_item + "</li>");
+                $path_list.append(
+                    "<li class='list-group-item " + shaded_option +
+                        "'><span class='" + endpoint_icon + "'/>" +
+                        path_item + "</li>");
             }
         }
-    }
+    };
+
 }
 
 // Change the global defaults of the modal validator
-$(document).ready(() => {
+$( document ).ready(function() {
     const $validator = $.fn.validator.Constructor.DEFAULTS;
     // Change the delay before showing errors
     $validator.delay = 5000;

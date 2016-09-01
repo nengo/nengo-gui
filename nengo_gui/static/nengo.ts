@@ -36,7 +36,6 @@ export default class Nengo {
     sidemenu;
     sim;
     toolbar;
-    viewport;
 
     constructor(simargs, filename, editoruid, netgraphargs) {
         this.main = document.getElementById("main");
@@ -52,15 +51,10 @@ export default class Nengo {
 
         this.modal = this.sim.modal;
         this.hotkeys = this.modal.hotkeys;
-        this.viewport = this.netgraph.viewport;
 
         document.title = filename;
     }
-
 }
-
-// Exposing data_to_csv for testing
-import "expose?data_to_csv!./data_to_csv";
 
 // Exposing components for server
 import "expose?HTMLView!./components/htmlview";

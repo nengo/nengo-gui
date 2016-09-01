@@ -71,11 +71,11 @@ var Nengo =
 	__webpack_require__(/*! ./favicon.ico */ 57);
 	__webpack_require__(/*! ./nengo.css */ 58);
 	var netgraph_1 = __webpack_require__(/*! ./components/netgraph */ 60);
-	var config_1 = __webpack_require__(/*! ./config */ 73);
-	var editor_1 = __webpack_require__(/*! ./editor */ 74);
-	var side_menu_1 = __webpack_require__(/*! ./side_menu */ 81);
-	var sim_control_1 = __webpack_require__(/*! ./sim_control */ 84);
-	var top_toolbar_1 = __webpack_require__(/*! ./top_toolbar */ 105);
+	var config_1 = __webpack_require__(/*! ./config */ 80);
+	var editor_1 = __webpack_require__(/*! ./editor */ 81);
+	var side_menu_1 = __webpack_require__(/*! ./side_menu */ 88);
+	var sim_control_1 = __webpack_require__(/*! ./sim_control */ 91);
+	var top_toolbar_1 = __webpack_require__(/*! ./top_toolbar */ 101);
 	// TODO: put all of this in an ajax call to Python. To get:
 	// editor uid (uid)
 	// netgraph uid
@@ -93,25 +93,22 @@ var Nengo =
 	        this.toolbar = new top_toolbar_1.default(filename, this.sim);
 	        this.modal = this.sim.modal;
 	        this.hotkeys = this.modal.hotkeys;
-	        this.viewport = this.netgraph.viewport;
 	        document.title = filename;
 	    }
 	    return Nengo;
 	}());
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Nengo;
-	// Exposing data_to_csv for testing
-	__webpack_require__(/*! expose?data_to_csv!./data_to_csv */ 108);
 	// Exposing components for server
-	__webpack_require__(/*! expose?HTMLView!./components/htmlview */ 109);
-	__webpack_require__(/*! expose?Image!./components/image */ 111);
-	__webpack_require__(/*! expose?Pointer!./components/pointer */ 113);
-	__webpack_require__(/*! expose?Raster!./components/raster */ 117);
-	__webpack_require__(/*! expose?Slider!./components/slider */ 121);
-	__webpack_require__(/*! expose?SpaSimilarity!./components/spa_similarity */ 126);
-	__webpack_require__(/*! expose?Value!./components/value */ 130);
-	__webpack_require__(/*! expose?XYValue!./components/xyvalue */ 131);
-	__webpack_require__(/*! expose?utils!./utils */ 132);
+	__webpack_require__(/*! expose?HTMLView!./components/htmlview */ 104);
+	__webpack_require__(/*! expose?Image!./components/image */ 106);
+	__webpack_require__(/*! expose?Pointer!./components/pointer */ 108);
+	__webpack_require__(/*! expose?Raster!./components/raster */ 112);
+	__webpack_require__(/*! expose?Slider!./components/slider */ 116);
+	__webpack_require__(/*! expose?SpaSimilarity!./components/spa_similarity */ 121);
+	__webpack_require__(/*! expose?Value!./components/value */ 125);
+	__webpack_require__(/*! expose?XYValue!./components/xyvalue */ 126);
+	__webpack_require__(/*! expose?utils!./utils */ 131);
 
 
 /***/ },
@@ -28111,16 +28108,15 @@ var Nengo =
 	var $ = __webpack_require__(/*! jquery */ 12);
 	var menu = __webpack_require__(/*! ../menu */ 62);
 	var utils = __webpack_require__(/*! ../utils */ 65);
-	var viewport_1 = __webpack_require__(/*! ../viewport */ 67);
-	var comp = __webpack_require__(/*! ./component */ 68);
-	__webpack_require__(/*! ./netgraph.css */ 69);
-	var netgraph_conn_1 = __webpack_require__(/*! ./netgraph_conn */ 71);
-	var netgraph_item_1 = __webpack_require__(/*! ./netgraph_item */ 72);
+	var viewport = __webpack_require__(/*! ../viewport */ 67);
+	var all_components = __webpack_require__(/*! ./all_components */ 68);
+	__webpack_require__(/*! ./netgraph.css */ 76);
+	var netgraph_conn_1 = __webpack_require__(/*! ./netgraph_conn */ 78);
+	var netgraph_item_1 = __webpack_require__(/*! ./netgraph_item */ 79);
 	var NetGraph = (function () {
 	    function NetGraph(parent, config, args) {
-	        var _this = this;
+	        var self = this;
 	        this.config = config;
-	        this.viewport = new viewport_1.default(this);
 	        if (args.uid[0] === "<") {
 	            console.warn("invalid uid for NetGraph: " + args.uid);
 	        }
@@ -28137,66 +28133,67 @@ var Nengo =
 	                    return;
 	                }
 	                scale = val;
-	                _this.update_fonts();
-	                _this.redraw();
-	                _this.viewport.scale = scale;
-	                _this.viewport.redraw_all();
+	                this.update_fonts();
+	                this.redraw();
+	                viewport.set_scale(scale);
 	            },
 	        });
 	        Object.defineProperty(this, "zoom_fonts", {
 	            // Scale fonts when zooming
 	            get: function () {
-	                return _this.config.zoom_fonts;
+	                return self.config.zoom_fonts;
 	            },
 	            set: function (val) {
-	                if (val === _this.config.zoom_fonts) {
+	                if (val === this.zoom_fonts) {
 	                    return;
 	                }
-	                _this.config.zoom_fonts = val;
-	                _this.update_fonts();
+	                self.config.zoom_fonts = val;
+	                this.update_fonts();
 	            },
 	        });
 	        Object.defineProperty(this, "aspect_resize", {
 	            // Preserve aspect ratios on window resize
 	            get: function () {
-	                return _this.config.aspect_resize;
+	                return self.config.aspect_resize;
 	            },
 	            set: function (val) {
-	                if (val === _this.config.aspect_resize) {
+	                if (val === this.aspect_resize) {
 	                    return;
 	                }
-	                _this.config.aspect_resize = val;
+	                self.config.aspect_resize = val;
 	            },
 	        });
 	        Object.defineProperty(this, "font_size", {
 	            get: function () {
-	                return _this.config.font_size;
+	                return self.config.font_size;
 	            },
 	            set: function (val) {
-	                if (val === _this.config.font_size) {
+	                if (val === this.font_size) {
 	                    return;
 	                }
-	                _this.config.font_size = val;
-	                _this.update_fonts();
+	                self.config.font_size = val;
+	                this.update_fonts();
 	            },
 	        });
 	        // Do networks have transparent backgrounds?
 	        Object.defineProperty(this, "transparent_nets", {
 	            get: function () {
-	                return _this.config.transparent_nets;
+	                return self.config.transparent_nets;
 	            },
 	            set: function (val) {
-	                if (val === _this.config.transparent_nets) {
+	                if (val === this.transparent_nets) {
 	                    return;
 	                }
-	                _this.config.transparent_nets = val;
-	                Object.keys(_this.svg_objects).forEach(function (key) {
-	                    var ngi = _this.svg_objects[key];
-	                    ngi.compute_fill();
-	                    if (ngi.itemtype === "net" && ngi.expanded) {
-	                        ngi.shape.setAttribute("fill-opacity", val ? 0.0 : 1.0);
+	                self.config.transparent_nets = val;
+	                for (var key in this.svg_objects) {
+	                    if (this.svg_objects.hasOwnProperty(key)) {
+	                        var ngi = this.svg_objects[key];
+	                        ngi.compute_fill();
+	                        if (ngi.type === "net" && ngi.expanded) {
+	                            ngi.shape.style["fill-opacity"] = val ? 0.0 : 1.0;
+	                        }
 	                    }
-	                });
+	                }
 	            },
 	        });
 	        this.svg_objects = {}; // Dict of all NetGraphItems, by uid
@@ -28219,10 +28216,10 @@ var Nengo =
 	        // Create the master SVG element
 	        this.svg = this.createSVGElement("svg");
 	        this.svg.classList.add("netgraph");
-	        this.svg.setAttribute("width", "100%");
-	        this.svg.setAttribute("height", "100%");
-	        this.svg.setAttribute("style", "position: absolute;");
+	        this.svg.style.width = "100%";
 	        this.svg.id = "netgraph";
+	        this.svg.style.height = "100%";
+	        this.svg.style.position = "absolute";
 	        interact(this.svg).styleCursor(false);
 	        parent.appendChild(this.svg);
 	        this.parent = parent;
@@ -28241,25 +28238,25 @@ var Nengo =
 	        // Reading netgraph.css file as text and embedding it within def tags;
 	        // this is needed for saving the SVG plot to disk.
 	        // Load contents of the CSS file as string
-	        var css = __webpack_require__(/*! !css-loader!./netgraph.css */ 70).toString();
+	        var css = __webpack_require__(/*! !css-loader!./netgraph.css */ 77).toString();
 	        // Embed CSS code into SVG tag
 	        var s = document.createElement("style");
 	        s.setAttribute("type", "text/css");
-	        utils.safe_set_text(s, "<![CDATA[\n" + css + "\n]]>");
+	        s.innerHTML = "<![CDATA[\n" + css + "\n]]>";
 	        var defs = document.createElement("defs");
 	        defs.appendChild(s);
 	        this.svg.insertBefore(defs, this.svg.firstChild);
 	        // Connect to server
 	        this.ws = utils.create_websocket(args.uid);
 	        this.ws.onmessage = function (event) {
-	            _this.on_message(event);
+	            self.on_message(event);
 	        };
 	        // Respond to resize events
 	        this.svg.addEventListener("resize", function () {
-	            _this.on_resize(null);
+	            self.on_resize(null);
 	        });
 	        window.addEventListener("resize", function () {
-	            _this.on_resize(null);
+	            self.on_resize(null);
 	        });
 	        // Dragging the background pans the full area by changing offsetX,Y
 	        // Define cursor behaviour for background
@@ -28281,24 +28278,26 @@ var Nengo =
 	            .draggable({
 	            onend: function (event) {
 	                // Let the server know what happened
-	                _this.notify({ act: "pan", x: _this.offsetX, y: _this.offsetY });
+	                self.notify({ act: "pan", x: self.offsetX, y: self.offsetY });
 	            },
 	            onmove: function (event) {
-	                _this.offsetX += event.dx / _this.get_scaled_width();
-	                _this.offsetY += event.dy / _this.get_scaled_height();
-	                Object.keys(_this.svg_objects).forEach(function (key) {
-	                    _this.svg_objects[key].redraw_position();
-	                    if (_this.mm_display) {
-	                        _this.minimap_objects[key].redraw_position();
+	                self.offsetX += event.dx / self.get_scaled_width();
+	                self.offsetY += event.dy / self.get_scaled_height();
+	                for (var key in self.svg_objects) {
+	                    if (self.svg_objects.hasOwnProperty(key)) {
+	                        self.svg_objects[key].redraw_position();
+	                        if (self.mm_display) {
+	                            self.minimap_objects[key].redraw_position();
+	                        }
 	                    }
-	                });
-	                Object.keys(_this.svg_conns).forEach(function (key) {
-	                    _this.svg_conns[key].redraw();
-	                });
-	                _this.viewport.x = _this.offsetX;
-	                _this.viewport.y = _this.offsetY;
-	                _this.viewport.redraw_all();
-	                _this.scaleMiniMapViewBox();
+	                }
+	                for (var key in self.svg_conns) {
+	                    if (self.svg_conns.hasOwnProperty(key)) {
+	                        self.svg_conns[key].redraw();
+	                    }
+	                }
+	                viewport.set_position(self.offsetX, self.offsetY);
+	                self.scaleMiniMapViewBox();
 	            },
 	            onstart: function () {
 	                menu.hide_any();
@@ -28314,8 +28313,8 @@ var Nengo =
 	            .on("wheel", function (event) {
 	            event.preventDefault();
 	            menu.hide_any();
-	            var x = (event.clientX) / _this.width;
-	            var y = (event.clientY - _this.tool_height) / _this.height;
+	            var x = (event.clientX) / self.width;
+	            var y = (event.clientY - self.tool_height) / self.height;
 	            var delta;
 	            if (event.deltaMode === 1) {
 	                // DOM_DELTA_LINE
@@ -28342,65 +28341,64 @@ var Nengo =
 	            if (delta > 0) {
 	                z_scale = 1. / z_scale;
 	            }
-	            comp.save_all_components();
-	            var xx = x / _this.scale - _this.offsetX;
-	            var yy = y / _this.scale - _this.offsetY;
-	            _this.offsetX = (_this.offsetX + xx) / z_scale - xx;
-	            _this.offsetY = (_this.offsetY + yy) / z_scale - yy;
-	            _this.scale = z_scale * _this.scale;
-	            _this.viewport.x = _this.offsetX;
-	            _this.viewport.y = _this.offsetY;
-	            _this.viewport.redraw_all();
-	            _this.scaleMiniMapViewBox();
-	            _this.redraw();
+	            all_components.save_layouts();
+	            var xx = x / self.scale - self.offsetX;
+	            var yy = y / self.scale - self.offsetY;
+	            self.offsetX = (self.offsetX + xx) / z_scale - xx;
+	            self.offsetY = (self.offsetY + yy) / z_scale - yy;
+	            self.scale = z_scale * self.scale;
+	            viewport.set_position(self.offsetX, self.offsetY);
+	            self.scaleMiniMapViewBox();
+	            self.redraw();
 	            // Let the server know what happened
-	            _this.notify({
+	            self.notify({
 	                act: "zoom",
-	                scale: _this.scale,
-	                x: _this.offsetX,
-	                y: _this.offsetY,
+	                scale: self.scale,
+	                x: self.offsetX,
+	                y: self.offsetY,
 	            });
 	        });
-	        this.menu = new menu.Menu(this.parent);
+	        this.menu = new menu.Menu(self.parent);
 	        // Determine when to pull up the menu
 	        interact(this.svg)
 	            .on("hold", function (event) {
 	            if (event.button === 0) {
-	                if (_this.menu.visible_any()) {
+	                if (self.menu.visible_any()) {
 	                    menu.hide_any();
 	                }
 	                else {
-	                    _this.menu.show(event.clientX, event.clientY, _this.generate_menu());
+	                    self.menu.show(event.clientX, event.clientY, self.generate_menu());
 	                }
 	                event.stopPropagation();
 	            }
 	        })
 	            .on("tap", function (event) {
 	            if (event.button === 0) {
-	                if (_this.menu.visible_any()) {
+	                if (self.menu.visible_any()) {
 	                    menu.hide_any();
 	                }
 	            }
 	        });
 	        $(this.svg).bind("contextmenu", function (event) {
 	            event.preventDefault();
-	            if (_this.menu.visible_any()) {
+	            if (self.menu.visible_any()) {
 	                menu.hide_any();
 	            }
 	            else {
-	                _this.menu.show(event.clientX, event.clientY, _this.generate_menu());
+	                self.menu.show(event.clientX, event.clientY, self.generate_menu());
 	            }
-	            return false;
 	        });
 	        this.create_minimap();
 	        this.update_fonts();
 	    }
+	    ;
 	    NetGraph.prototype.generate_menu = function () {
-	        var _this = this;
+	        var self = this;
 	        return [["Auto-layout", function () {
-	                    _this.notify({ act: "feedforward_layout", uid: null });
+	                    self.notify({ act: "feedforward_layout", uid: null });
 	                }]];
 	    };
+	    ;
 	    /**
 	     * Event handler for received WebSocket messages
 	     */
@@ -28444,13 +28442,8 @@ var Nengo =
 	        }
 	        else if (data.type === "config") {
 	            // Anything about the config of a component has changed
-	            var uid = data.uid;
-	            for (var i = 0; i < comp.all_components.length; i++) {
-	                if (comp.all_components[i].uid === uid) {
-	                    comp.all_components[i].update_layout(data.config);
-	                    break;
-	                }
-	            }
+	            var component = all_components.by_uid(data.uid);
+	            component.update_layout(data.config);
 	        }
 	        else if (data.type === "js") {
 	            eval(data.code); // tslint:disable-line
@@ -28474,24 +28467,21 @@ var Nengo =
 	            conn.redraw();
 	        }
 	        else if (data.type === "delete_graph") {
-	            var uid = data.uid;
-	            for (var i = 0; i < comp.all_components.length; i++) {
-	                if (comp.all_components[i].uid === uid) {
-	                    comp.all_components[i].remove(true, data.notify_server);
-	                    break;
-	                }
-	            }
+	            var component = all_components.by_uid(data.uid);
+	            component.remove(true, data.notify_server);
 	        }
 	        else {
 	            console.warn("invalid message:" + data);
 	        }
 	    };
+	    ;
 	    /**
 	     * Report an event back to the server
 	     */
 	    NetGraph.prototype.notify = function (info) {
 	        this.ws.send(JSON.stringify(info));
 	    };
+	    ;
 	    /**
 	     * Pan the screen (and redraw accordingly)
 	     */
@@ -28499,10 +28489,9 @@ var Nengo =
 	        this.offsetX = x;
 	        this.offsetY = y;
 	        this.redraw();
-	        this.viewport.x = x;
-	        this.viewport.y = y;
-	        this.viewport.redraw_all();
+	        viewport.set_position(x, y);
 	    };
+	    ;
 	    NetGraph.prototype.update_fonts = function () {
 	        if (this.zoom_fonts) {
 	            $("#main").css("font-size", 3 * this.scale * this.font_size / 100 + "em");
@@ -28511,24 +28500,30 @@ var Nengo =
 	            $("#main").css("font-size", this.font_size / 100 + "em");
 	        }
 	    };
+	    ;
 	    /**
 	     * Redraw all elements
 	     */
 	    NetGraph.prototype.redraw = function () {
-	        var _this = this;
-	        Object.keys(this.svg_objects).forEach(function (key) {
-	            _this.svg_objects[key].redraw();
-	        });
-	        Object.keys(this.svg_conns).forEach(function (key) {
-	            _this.svg_conns[key].redraw();
-	        });
+	        for (var key in this.svg_objects) {
+	            if (this.svg_objects.hasOwnProperty(key)) {
+	                this.svg_objects[key].redraw();
+	            }
+	        }
+	        for (var key in this.svg_conns) {
+	            if (this.svg_conns.hasOwnProperty(key)) {
+	                this.svg_conns[key].redraw();
+	            }
+	        }
 	    };
+	    ;
 	    /**
 	     * Helper function for correctly creating SVG elements.
 	     */
 	    NetGraph.prototype.createSVGElement = function (tag) {
-	        return document.createElementNS("https://www.w3.org/2000/svg", tag);
+	        return document.createElementNS("http://www.w3.org/2000/svg", tag);
 	    };
+	    ;
 	    /**
 	     * Create a new NetGraphItem.
 	     *
@@ -28544,6 +28539,7 @@ var Nengo =
 	        this.detect_collapsed_conns(item_mini.uid);
 	        this.scaleMiniMap();
 	    };
+	    ;
 	    /**
 	     * Create a new NetGraphConnection.
 	     */
@@ -28553,23 +28549,25 @@ var Nengo =
 	        var conn = new netgraph_conn_1.default(this, info, false, conn_mini);
 	        this.svg_conns[info.uid] = conn;
 	    };
+	    ;
 	    /**
 	     * Handler for resizing the full SVG.
 	     */
 	    NetGraph.prototype.on_resize = function (event) {
-	        var _this = this;
 	        var width = $(this.svg).width();
 	        var height = $(this.svg).height();
 	        if (this.aspect_resize) {
-	            Object.keys(this.svg_objects).forEach(function (key) {
-	                var item = _this.svg_objects[key];
-	                if (item.depth === 1) {
-	                    var new_width = item.get_screen_width() / _this.scale;
-	                    var new_height = item.get_screen_height() / _this.scale;
-	                    item.width = new_width / (2 * width);
-	                    item.height = new_height / (2 * height);
+	            for (var key in this.svg_objects) {
+	                if (this.svg_objects.hasOwnProperty(key)) {
+	                    var item = this.svg_objects[key];
+	                    if (item.depth === 1) {
+	                        var new_width = item.get_screen_width() / this.scale;
+	                        var new_height = item.get_screen_height() / this.scale;
+	                        item.width = new_width / (2 * width);
+	                        item.height = new_height / (2 * height);
+	                    }
 	                }
-	            });
+	            }
 	        }
 	        this.width = width;
 	        this.height = height;
@@ -28577,18 +28575,21 @@ var Nengo =
 	        this.mm_height = $(this.minimap).height();
 	        this.redraw();
 	    };
+	    ;
 	    /**
 	     * Return the pixel width of the SVG times the current scale factor.
 	     */
 	    NetGraph.prototype.get_scaled_width = function () {
 	        return this.width * this.scale;
 	    };
+	    ;
 	    /**
 	     * Return the pixel height of the SVG times the current scale factor.
 	     */
 	    NetGraph.prototype.get_scaled_height = function () {
 	        return this.height * this.scale;
 	    };
+	    ;
 	    /**
 	     * Expand or collapse a network.
 	     */
@@ -28601,6 +28602,7 @@ var Nengo =
 	            item.expand();
 	        }
 	    };
+	    ;
 	    /**
 	     * Register a NetGraphConnection with a target item that it is looking for.
 	     *
@@ -28619,6 +28621,7 @@ var Nengo =
 	            }
 	        }
 	    };
+	    ;
 	    /**
 	     * Manage collapsed_conns dictionary.
 	     *
@@ -28632,7 +28635,8 @@ var Nengo =
 	        var conns = this.collapsed_conns[uid];
 	        if (conns !== undefined) {
 	            delete this.collapsed_conns[uid];
-	            conns.forEach(function (conn) {
+	            for (var i = 0; i < conns.length; i++) {
+	                var conn = conns[i];
 	                // Make sure the NetGraphConnection hasn't been removed since
 	                // it started listening.
 	                if (!conn.removed) {
@@ -28640,9 +28644,10 @@ var Nengo =
 	                    conn.set_post(conn.find_post());
 	                    conn.redraw();
 	                }
-	            });
+	            }
 	        }
 	    };
+	    ;
 	    /**
 	     * Create a minimap.
 	     */
@@ -28671,24 +28676,25 @@ var Nengo =
 	        this.mm_display = true;
 	        this.toggleMiniMap();
 	    };
+	    ;
 	    NetGraph.prototype.toggleMiniMap = function () {
 	        if (this.mm_display === true) {
 	            $(".minimap")[0].style.visibility = "hidden";
-	            this.g_conns_mini.setAttribute("style", "opacity: 0;");
+	            this.g_conns_mini.style.opacity = 0;
 	            this.mm_display = false;
 	        }
 	        else {
 	            $(".minimap")[0].style.visibility = "visible";
-	            this.g_conns_mini.setAttribute("style", "opacity: 1;");
+	            this.g_conns_mini.style.opacity = 1;
 	            this.mm_display = true;
 	            this.scaleMiniMap();
 	        }
 	    };
+	    ;
 	    /**
 	     * Calculate the minimap position offsets and scaling.
 	     */
 	    NetGraph.prototype.scaleMiniMap = function () {
-	        var _this = this;
 	        if (!this.mm_display) {
 	            return;
 	        }
@@ -28701,45 +28707,50 @@ var Nengo =
 	        // in the lists when they move. Might be important for larger
 	        // networks.
 	        var first_item = true;
-	        Object.keys(this.svg_objects).forEach(function (key) {
-	            var item = _this.svg_objects[key];
-	            // Ignore anything inside a subnetwork
-	            if (item.depth > 1) {
-	                return;
+	        for (var key in this.svg_objects) {
+	            if (this.svg_objects.hasOwnProperty(key)) {
+	                var item = this.svg_objects[key];
+	                // Ignore anything inside a subnetwork
+	                if (item.depth > 1) {
+	                    continue;
+	                }
+	                var minmax_xy = item.getMinMaxXY();
+	                if (first_item === true) {
+	                    this.mm_min_x = minmax_xy[0];
+	                    this.mm_max_x = minmax_xy[1];
+	                    this.mm_min_y = minmax_xy[2];
+	                    this.mm_max_y = minmax_xy[3];
+	                    first_item = false;
+	                    continue;
+	                }
+	                if (this.mm_min_x > minmax_xy[0]) {
+	                    this.mm_min_x = minmax_xy[0];
+	                }
+	                if (this.mm_max_x < minmax_xy[1]) {
+	                    this.mm_max_x = minmax_xy[1];
+	                }
+	                if (this.mm_min_y > minmax_xy[2]) {
+	                    this.mm_min_y = minmax_xy[2];
+	                }
+	                if (this.mm_max_y < minmax_xy[3]) {
+	                    this.mm_max_y = minmax_xy[3];
+	                }
 	            }
-	            var minmax_xy = item.getMinMaxXY();
-	            if (first_item === true) {
-	                _this.mm_min_x = minmax_xy[0];
-	                _this.mm_max_x = minmax_xy[1];
-	                _this.mm_min_y = minmax_xy[2];
-	                _this.mm_max_y = minmax_xy[3];
-	                first_item = false;
-	                return;
-	            }
-	            if (_this.mm_min_x > minmax_xy[0]) {
-	                _this.mm_min_x = minmax_xy[0];
-	            }
-	            if (_this.mm_max_x < minmax_xy[1]) {
-	                _this.mm_max_x = minmax_xy[1];
-	            }
-	            if (_this.mm_min_y > minmax_xy[2]) {
-	                _this.mm_min_y = minmax_xy[2];
-	            }
-	            if (_this.mm_max_y < minmax_xy[3]) {
-	                _this.mm_max_y = minmax_xy[3];
-	            }
-	        });
-	        this.mm_scale = 1 / Math.max(this.mm_max_x - this.mm_min_x, this.mm_max_y - this.mm_min_y);
+	        }
+	        this.mm_scale = 1 /
+	            Math.max(this.mm_max_x - this.mm_min_x, this.mm_max_y - this.mm_min_y);
 	        // Give a bit of a border
 	        this.mm_min_x -= this.mm_scale * .05;
 	        this.mm_max_x += this.mm_scale * .05;
 	        this.mm_min_y -= this.mm_scale * .05;
 	        this.mm_max_y += this.mm_scale * .05;
 	        // TODO: there is a better way to do this than recalculate
-	        this.mm_scale = 1 / Math.max(this.mm_max_x - this.mm_min_x, this.mm_max_y - this.mm_min_y);
+	        this.mm_scale = 1 /
+	            Math.max(this.mm_max_x - this.mm_min_x, this.mm_max_y - this.mm_min_y);
 	        this.redraw();
 	        this.scaleMiniMapViewBox();
 	    };
+	    ;
 	    /**
 	     * Scale the viewbox in the minimap.
 	     *
@@ -28765,6 +28776,7 @@ var Nengo =
 	        this.view.setAttribute("width", w / this.scale);
 	        this.view.setAttribute("height", h / this.scale);
 	    };
+	    ;
 	    return NetGraph;
 	}());
 	Object.defineProperty(exports, "__esModule", { value: true });
@@ -44592,62 +44604,985 @@ var Nengo =
   \**************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Keep track of the viewable area of the screen.
-	 */
 	"use strict";
 	var $ = __webpack_require__(/*! jquery */ 12);
-	var component_1 = __webpack_require__(/*! ./components/component */ 68);
-	var Viewport = (function () {
-	    function Viewport(netgraph) {
-	        var _this = this;
-	        this.netgraph = netgraph;
-	        this.x = 0;
-	        this.y = 0;
-	        this.scale = 1.0;
-	        this.width = $("#main").width();
-	        this.height = $("#main").height();
-	        window.addEventListener("resize", function () {
-	            _this.on_resize(null);
-	        });
+	var all_components = __webpack_require__(/*! ./components/all_components */ 68);
+	var scale = 1.0;
+	var x = 0;
+	var y = 0;
+	var height = 0;
+	var width = 0;
+	var $main;
+	var netgraph;
+	function set_netgraph(new_netgraph) {
+	    netgraph = new_netgraph;
+	    $main = $("#main");
+	    width = $main.width();
+	    height = $main.height();
+	    window.addEventListener("resize", on_resize);
+	}
+	exports.set_netgraph = set_netgraph;
+	;
+	function set_position(new_x, new_y) {
+	    x = new_x;
+	    y = new_y;
+	    redraw();
+	}
+	exports.set_position = set_position;
+	function set_scale(new_scale) {
+	    scale = new_scale;
+	    redraw();
+	}
+	exports.set_scale = set_scale;
+	function redraw() {
+	    all_components.on_resize(scale * width * 2, height * scale * 2);
+	    all_components.redraw();
+	}
+	exports.redraw = redraw;
+	;
+	function on_resize() {
+	    var old_width = width;
+	    var old_height = height;
+	    width = $main.width();
+	    height = $main.height();
+	    if (netgraph.aspect_resize) {
+	        all_components.rescale(old_width / width, old_height / height);
 	    }
-	    Viewport.prototype.redraw_all = function (event) {
-	        var _this = this;
-	        component_1.all_components.forEach(function (c) {
-	            c.on_resize(c.w * _this.scale * _this.width * 2, c.h * _this.scale * _this.height * 2);
-	            c.redraw_size();
-	            c.redraw_pos();
-	        });
-	    };
-	    Viewport.prototype.on_resize = function (event) {
-	        var _this = this;
-	        var ow = this.width;
-	        var oh = this.height;
-	        this.width = $("#main").width();
-	        this.height = $("#main").height();
-	        component_1.all_components.forEach(function (c) {
-	            if (_this.netgraph.aspect_resize) {
-	                c.w = c.w * ow / _this.width;
-	                c.h = c.h * oh / _this.height;
-	            }
-	            c.on_resize(c.w * _this.scale * _this.width * 2, c.h * _this.scale * _this.height * 2);
-	            c.redraw_size();
-	            c.redraw_pos();
-	        });
-	    };
-	    return Viewport;
-	}());
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = Viewport;
+	    redraw();
+	}
+	exports.on_resize = on_resize;
+	;
+	function from_screen_x(screen_x) {
+	    return screen_x / (width * scale);
+	}
+	exports.from_screen_x = from_screen_x;
+	function shift_x(component_x) {
+	    return component_x + x;
+	}
+	exports.shift_x = shift_x;
+	function to_screen_x(component_x) {
+	    return shift_x(component_x) * width * scale;
+	}
+	exports.to_screen_x = to_screen_x;
+	function from_screen_y(screen_y) {
+	    return screen_y / (height * scale);
+	}
+	exports.from_screen_y = from_screen_y;
+	function shift_y(component_y) {
+	    return component_y + y;
+	}
+	exports.shift_y = shift_y;
+	function to_screen_y(component_y) {
+	    return shift_y(component_y) * height * scale;
+	}
+	exports.to_screen_y = to_screen_y;
+	function scale_width(component_width) {
+	    return component_width * width * scale * 2;
+	}
+	exports.scale_width = scale_width;
+	function scale_height(component_height) {
+	    return component_height * height * scale * 2;
+	}
+	exports.scale_height = scale_height;
+	function unscale_width(screen_width) {
+	    return screen_width / (width * scale) / 2;
+	}
+	exports.unscale_width = unscale_width;
+	function unscale_height(screen_height) {
+	    return screen_height / (height * scale) / 2;
+	}
+	exports.unscale_height = unscale_height;
 
 
 /***/ },
 /* 68 */
+/*!*******************************************************!*\
+  !*** ./nengo_gui/static/components/all_components.ts ***!
+  \*******************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var value_1 = __webpack_require__(/*! ./value */ 69);
+	var uids = [];
+	var components = [];
+	var values = [];
+	function add(component) {
+	    components.push(component);
+	    uids.push(component.uid);
+	    if (component instanceof value_1.default) {
+	        values.push(component);
+	    }
+	}
+	exports.add = add;
+	function remove(component) {
+	    var index = components.indexOf(component);
+	    components.splice(index, 1);
+	    uids.splice(index, 1);
+	    if (component instanceof value_1.default) {
+	        values.splice(values.indexOf(component), 1);
+	    }
+	}
+	exports.remove = remove;
+	function by_uid(uid) {
+	    return components[uids.indexOf(uid)];
+	}
+	exports.by_uid = by_uid;
+	function on_resize(width_scale, height_scale) {
+	    components.forEach(function (component) {
+	        component.on_resize(component.width * width_scale, component.height * height_scale);
+	    });
+	}
+	exports.on_resize = on_resize;
+	function redraw() {
+	    components.forEach(function (component) {
+	        component.redraw_size();
+	        component.redraw_pos();
+	    });
+	}
+	exports.redraw = redraw;
+	function rescale(width_scale, height_scale) {
+	    components.forEach(function (component) {
+	        component.w *= width_scale;
+	        component.h *= height_scale;
+	    });
+	}
+	exports.rescale = rescale;
+	function save_layouts() {
+	    components.forEach(function (component) {
+	        component.save_layout();
+	    });
+	}
+	exports.save_layouts = save_layouts;
+	/**
+	 * Return simulation data as a csv-formatted string.
+	 *
+	 * Only simulation data from Value components is included,
+	 * and only for the amount of time kept in the simulation, which is
+	 * managed by the DataStore.
+	 */
+	function to_csv() {
+	    var data = [];
+	    var csv = [];
+	    // Extract all the data from the value components
+	    for (var i = 0; i < values.length; i++) {
+	        data.push(values[i].data_store.data);
+	    }
+	    // Grabs all the time steps
+	    var times = values[0].data_store.times;
+	    // Headers for the csv file
+	    csv.push(["Graph Name"]);
+	    csv.push(["Times"]);
+	    // Adds ensemble name and appropriate number of spaces to the header
+	    for (var i = 0; i < values.length; i++) {
+	        csv[0].push(values[i].label.innerHTML);
+	        for (var j = 0; j < data[i].length - 1; j++) {
+	            csv[0].push([]);
+	        }
+	    }
+	    for (var i = 0; i < data.length; i++) {
+	        for (var j = 0; j < data[i].length; j++) {
+	            csv[1].push("Dimension" + (j + 1));
+	        }
+	    }
+	    // Puts the data at each time step into a row in the csv
+	    for (var i = 0; i < times.length; i++) {
+	        var temp_arr = [times[i]];
+	        for (var j = 0; j < data.length; j++) {
+	            for (var k = 0; k < data[j].length; k++) {
+	                temp_arr.push(data[j][k][i]);
+	            }
+	        }
+	        csv.push(temp_arr);
+	    }
+	    // Turns the array into a CSV string
+	    csv.forEach(function (elem, index) {
+	        csv[index] = elem.join(",");
+	    });
+	    return csv.join("\n");
+	}
+	exports.to_csv = to_csv;
+
+
+/***/ },
+/* 69 */
+/*!************************************************************!*\
+  !*** ./~/ts-loader!./nengo_gui/static/components/value.ts ***!
+  \************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Line graph showing decoded values over time
+	 *
+	 * Value constructor is called by python server when a user requests a plot
+	 * or when the config file is making graphs. Server request is handled in
+	 * netgraph.js {.on_message} function.
+	 *
+	 * @constructor
+	 * @param {DOMElement} parent - the element to add this component to
+	 * @param {SimControl} sim - the simulation controller
+	 * @param {dict} args - A set of constructor arguments (see Component)
+	 * @param {int} args.n_lines - number of decoded values
+	 * @param {float} args.min_value - minimum value on y-axis
+	 * @param {float} args.max_value - maximum value on y-axis
+	 */
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var d3 = __webpack_require__(/*! d3 */ 66);
+	var $ = __webpack_require__(/*! jquery */ 12);
+	var datastore_1 = __webpack_require__(/*! ../datastore */ 70);
+	var utils = __webpack_require__(/*! ../utils */ 65);
+	var viewport = __webpack_require__(/*! ../viewport */ 67);
+	var component_1 = __webpack_require__(/*! ./component */ 71);
+	var time_axes_1 = __webpack_require__(/*! ./time_axes */ 72);
+	__webpack_require__(/*! ./value.css */ 74);
+	var Value = (function (_super) {
+	    __extends(Value, _super);
+	    function Value(parent, sim, args) {
+	        _super.call(this, parent, args);
+	        var self = this;
+	        this.n_lines = args.n_lines || 1;
+	        this.sim = sim;
+	        this.display_time = args.display_time;
+	        this.synapse = args.synapse;
+	        // For storing the accumulated data
+	        this.data_store = new datastore_1.DataStore(this.n_lines, this.sim, 0.0);
+	        this.axes2d = new time_axes_1.default(this.div, args);
+	        // Call schedule_update whenever the time is adjusted in the SimControl
+	        this.sim.div.addEventListener("adjust_time", function (e) {
+	            self.schedule_update(e);
+	        }, false);
+	        // Call reset whenever the simulation is reset
+	        this.sim.div.addEventListener("sim_reset", function (e) {
+	            self.reset(e);
+	        }, false);
+	        // Create the lines on the plots
+	        this.line = d3.svg.line()
+	            .x(function (d, i) {
+	            return self.axes2d.scale_x(self.data_store.times[i + self.data_store.first_shown_index]);
+	        }).y(function (d) {
+	            return self.axes2d.scale_y(d);
+	        });
+	        this.path = this.axes2d.svg.append("g")
+	            .selectAll("path")
+	            .data(this.data_store.data);
+	        this.colors = utils.make_colors(this.n_lines);
+	        this.path.enter()
+	            .append("path")
+	            .attr("class", "line")
+	            .style("stroke", function (d, i) {
+	            return self.colors[i];
+	        });
+	        // Flag for whether or not update code should be changing the crosshair.
+	        // Both zooming and the simulator time changing cause an update, but the
+	        // crosshair should only update when the time is changing.
+	        this.crosshair_updates = false;
+	        // Keep track of mouse position TODO: fix this to be not required
+	        this.crosshair_mouse = [0, 0];
+	        this.crosshair_g = this.axes2d.svg.append("g")
+	            .attr("class", "crosshair");
+	        // TODO: put the crosshair properties in CSS
+	        this.crosshair_g.append("line")
+	            .attr("id", "crosshairX")
+	            .attr("stroke", "black")
+	            .attr("stroke-width", "0.5px");
+	        this.crosshair_g.append("line")
+	            .attr("id", "crosshairY")
+	            .attr("stroke", "black")
+	            .attr("stroke-width", "0.5px");
+	        // TODO: have the fonts and colour set appropriately
+	        this.crosshair_g.append("text")
+	            .attr("id", "crosshairXtext")
+	            .style("text-anchor", "middle")
+	            .attr("class", "graph_text");
+	        this.crosshair_g.append("text")
+	            .attr("id", "crosshairYtext")
+	            .style("text-anchor", "end")
+	            .attr("class", "graph_text");
+	        this.axes2d.svg
+	            .on("mouseover", function () {
+	            var mouse = d3.mouse(this);
+	            self.crosshair_updates = true;
+	            self.crosshair_g.style("display", null);
+	            self.crosshair_mouse = [mouse[0], mouse[1]];
+	        }).on("mouseout", function () {
+	            var mouse = d3.mouse(this);
+	            self.crosshair_updates = false;
+	            self.crosshair_g.style("display", "none");
+	            self.crosshair_mouse = [mouse[0], mouse[1]];
+	        }).on("mousemove", function () {
+	            var mouse = d3.mouse(this);
+	            self.crosshair_updates = true;
+	            self.crosshair_mouse = [mouse[0], mouse[1]];
+	            self.update_crosshair(mouse);
+	        }).on("mousewheel", function () {
+	            // Hide the crosshair when zooming,
+	            // until a better option comes along
+	            self.crosshair_updates = false;
+	            self.crosshair_g.style("display", "none");
+	        });
+	        this.update();
+	        this.on_resize(viewport.scale_width(this.w), viewport.scale_height(this.h));
+	        this.axes2d.axis_y.tickValues([args.min_value, args.max_value]);
+	        this.axes2d.fit_ticks(this);
+	        this.colors = utils.make_colors(6);
+	        this.color_func = function (d, i) {
+	            return self.colors[i % 6];
+	        };
+	        this.legend = document.createElement("div");
+	        this.legend.classList.add("legend");
+	        this.div.appendChild(this.legend);
+	        this.legend_labels = args.legend_labels || [];
+	        if (this.legend_labels.length !== this.n_lines) {
+	            // Fill up the array with temporary labels
+	            for (var i = this.legend_labels.length; i < this.n_lines; i++) {
+	                this.legend_labels[i] = "label_" + i;
+	            }
+	        }
+	        this.show_legend = args.show_legend || false;
+	        if (this.show_legend === true) {
+	            utils.draw_legend(this.legend, this.legend_labels.slice(0, self.n_lines), this.color_func, this.uid);
+	        }
+	    }
+	    ;
+	    Value.prototype.update_crosshair = function (mouse) {
+	        var self = this;
+	        var x = mouse.x, y = mouse.y;
+	        // TODO: I don't like having ifs here.
+	        //       Make a smaller rectangle for mouseovers
+	        if (x > this.axes2d.ax_left && x < this.axes2d.ax_right &&
+	            y > this.axes2d.ax_top && y < this.axes2d.ax_bottom) {
+	            this.crosshair_g.style("display", null);
+	            this.crosshair_g.select("#crosshairX")
+	                .attr("x1", x)
+	                .attr("y1", this.axes2d.ax_top)
+	                .attr("x2", x)
+	                .attr("y2", this.axes2d.ax_bottom);
+	            this.crosshair_g.select("#crosshairY")
+	                .attr("x1", this.axes2d.ax_left)
+	                .attr("y1", y)
+	                .attr("x2", this.axes2d.ax_right)
+	                .attr("y2", y);
+	            // TODO: don't use magic numbers
+	            this.crosshair_g.select("#crosshairXtext")
+	                .attr("x", x - 2)
+	                .attr("y", this.axes2d.ax_bottom + 17)
+	                .text(function () {
+	                return Math.round(self.axes2d.scale_x.invert(x) * 100) / 100;
+	            });
+	            this.crosshair_g.select("#crosshairYtext")
+	                .attr("x", this.axes2d.ax_left - 3)
+	                .attr("y", y + 3)
+	                .text(function () {
+	                return Math.round(self.axes2d.scale_y.invert(y) * 100) / 100;
+	            });
+	        }
+	        else {
+	            this.crosshair_g.style("display", "none");
+	        }
+	    };
+	    ;
+	    /**
+	     * Receive new line data from the server.
+	     */
+	    Value.prototype.on_message = function (event) {
+	        var data = new Float32Array(event.data);
+	        data = Array.prototype.slice.call(data);
+	        var size = this.n_lines + 1;
+	        // Since multiple data packets can be sent with a single event,
+	        // make sure to process all the packets.
+	        while (data.length >= size) {
+	            this.data_store.push(data.slice(0, size));
+	            data = data.slice(size);
+	        }
+	        if (data.length > 0) {
+	            console.warn("extra data: " + data.length);
+	        }
+	        this.schedule_update(event);
+	    };
+	    ;
+	    /**
+	     * Redraw the lines and axis due to changed data.
+	     */
+	    Value.prototype.update = function () {
+	        // Let the data store clear out old values
+	        this.data_store.update();
+	        // Determine visible range from the SimControl
+	        var t1 = this.sim.time_slider.first_shown_time;
+	        var t2 = t1 + this.sim.time_slider.shown_time;
+	        this.axes2d.set_time_range(t1, t2);
+	        // Update the lines
+	        var self = this;
+	        var shown_data = this.data_store.get_shown_data();
+	        this.path.data(shown_data)
+	            .attr("d", self.line);
+	        // Update the crosshair text if the mouse is on top
+	        if (this.crosshair_updates) {
+	            this.update_crosshair(this.crosshair_mouse);
+	        }
+	    };
+	    ;
+	    /**
+	     * Adjust the graph layout due to changed size.
+	     */
+	    Value.prototype.on_resize = function (width, height) {
+	        if (width < this.min_width) {
+	            width = this.min_width;
+	        }
+	        if (height < this.min_height) {
+	            height = this.min_height;
+	        }
+	        this.axes2d.on_resize(width, height);
+	        this.update();
+	        this.label.style.width = width;
+	        this.width = width;
+	        this.height = height;
+	        this.div.style.width = width;
+	        this.div.style.height = height;
+	    };
+	    ;
+	    Value.prototype.generate_menu = function () {
+	        var self = this;
+	        var items = [
+	            ["Set range...", function () {
+	                    self.set_range();
+	                }],
+	            ["Set synapse...", function () {
+	                    self.set_synapse_dialog();
+	                }],
+	        ];
+	        if (this.show_legend) {
+	            items.push(["Hide legend", function () {
+	                    self.set_show_legend(false);
+	                }]);
+	        }
+	        else {
+	            items.push(["Show legend", function () {
+	                    self.set_show_legend(true);
+	                }]);
+	        }
+	        // TODO: give the legend it's own context menu
+	        items.push(["Set legend labels", function () {
+	                self.set_legend_labels();
+	            }]);
+	        // Add the parent's menu items to this
+	        return $.merge(items, component_1.default.prototype.generate_menu.call(this));
+	    };
+	    ;
+	    Value.prototype.set_show_legend = function (value) {
+	        if (this.show_legend !== value) {
+	            this.show_legend = value;
+	            this.save_layout();
+	            if (this.show_legend === true) {
+	                utils.draw_legend(this.legend, this.legend_labels.slice(0, this.n_lines), this.color_func, this.uid);
+	            }
+	            else {
+	                // Delete the legend's children
+	                while (this.legend.lastChild) {
+	                    this.legend.removeChild(this.legend.lastChild);
+	                }
+	            }
+	        }
+	    };
+	    ;
+	    Value.prototype.set_legend_labels = function () {
+	        var self = this;
+	        self.sim.modal.title("Enter comma seperated legend label values");
+	        self.sim.modal.single_input_body("Legend label", "New value");
+	        self.sim.modal.footer("ok_cancel", function (e) {
+	            var label_csv = $("#singleInput").val();
+	            $("#myModalForm").data("bs.validator");
+	            // No validation to do.
+	            // Empty entries assumed to be indication to skip modification.
+	            // Long strings okay.
+	            // Excissive entries get ignored.
+	            // TODO: Allow escaping of commas
+	            if ((label_csv !== null) && (label_csv !== "")) {
+	                var labels = label_csv.split(",");
+	                for (var i = 0; i < self.n_lines; i++) {
+	                    if (labels[i] !== "" && labels[i] !== undefined) {
+	                        self.legend_labels[i] = labels[i];
+	                    }
+	                }
+	                // Redraw the legend with the updated label values
+	                while (self.legend.lastChild) {
+	                    self.legend.removeChild(self.legend.lastChild);
+	                }
+	                utils.draw_legend(self.legend, self.legend_labels, self.color_func, self.uid);
+	                self.save_layout();
+	            }
+	            $("#OK").attr("data-dismiss", "modal");
+	        });
+	        self.sim.modal.show();
+	    };
+	    ;
+	    Value.prototype.layout_info = function () {
+	        var info = component_1.default.prototype.layout_info.call(this);
+	        info.show_legend = this.show_legend;
+	        info.legend_labels = this.legend_labels;
+	        info.min_value = this.axes2d.scale_y.domain()[0];
+	        info.max_value = this.axes2d.scale_y.domain()[1];
+	        return info;
+	    };
+	    ;
+	    Value.prototype.update_layout = function (config) {
+	        this.update_range(config.min_value, config.max_value);
+	        component_1.default.prototype.update_layout.call(this, config);
+	    };
+	    ;
+	    Value.prototype.set_range = function () {
+	        var range = this.axes2d.scale_y.domain();
+	        var self = this;
+	        self.sim.modal.title("Set graph range...");
+	        self.sim.modal.single_input_body(range, "New range");
+	        self.sim.modal.footer("ok_cancel", function (e) {
+	            var new_range = $("#singleInput").val();
+	            var modal = $("#myModalForm").data("bs.validator");
+	            modal.validate();
+	            if (modal.hasErrors() || modal.isIncomplete()) {
+	                return;
+	            }
+	            if (new_range !== null) {
+	                new_range = new_range.split(",");
+	                var min = parseFloat(new_range[0]);
+	                var max = parseFloat(new_range[1]);
+	                self.update_range(min, max);
+	                self.save_layout();
+	                self.axes2d.axis_y.tickValues([min, max]);
+	                self.axes2d.fit_ticks(self);
+	            }
+	            $("#OK").attr("data-dismiss", "modal");
+	        });
+	        $("#myModalForm").validator({
+	            custom: {
+	                my_validator: function ($item) {
+	                    var nums = $item.val().split(",");
+	                    var valid = false;
+	                    if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
+	                        if (Number(nums[0]) < Number(nums[1])) {
+	                            valid = true; // Two numbers, 1st less than 2nd
+	                        }
+	                    }
+	                    return (nums.length === 2 && valid);
+	                },
+	            },
+	        });
+	        $("#singleInput").attr("data-error", "Input should be in the " +
+	            "form '<min>,<max>'.");
+	        self.sim.modal.show();
+	        $("#OK").on("click", function () {
+	            var div = $(self.div);
+	            self.on_resize(div.width(), div.height());
+	        });
+	    };
+	    ;
+	    Value.prototype.update_range = function (min, max) {
+	        this.axes2d.scale_y.domain([min, max]);
+	        this.axes2d.axis_y_g.call(this.axes2d.axis_y);
+	    };
+	    ;
+	    Value.prototype.reset = function (event) {
+	        this.data_store.reset();
+	        this.schedule_update(event);
+	    };
+	    ;
+	    Value.prototype.set_synapse_dialog = function () {
+	        var self = this;
+	        self.sim.modal.title("Set synaptic filter...");
+	        self.sim.modal.single_input_body(this.synapse, "Filter time constant (in seconds)");
+	        self.sim.modal.footer("ok_cancel", function (e) {
+	            var new_synapse = $("#singleInput").val();
+	            var modal = $("#myModalForm").data("bs.validator");
+	            modal.validate();
+	            if (modal.hasErrors() || modal.isIncomplete()) {
+	                return;
+	            }
+	            if (new_synapse !== null) {
+	                new_synapse = parseFloat(new_synapse);
+	                if (new_synapse === self.synapse) {
+	                    return;
+	                }
+	                self.synapse = new_synapse;
+	                self.ws.send("synapse:" + self.synapse);
+	            }
+	            $("#OK").attr("data-dismiss", "modal");
+	        });
+	        $("#myModalForm").validator({
+	            custom: {
+	                my_validator: function ($item) {
+	                    var num = $item.val();
+	                    if ($.isNumeric(num)) {
+	                        num = Number(num);
+	                        if (num >= 0) {
+	                            return true;
+	                        }
+	                    }
+	                    return false;
+	                },
+	            },
+	        });
+	        $("#singleInput").attr("data-error", "should be a non-negative number");
+	        self.sim.modal.show();
+	    };
+	    ;
+	    return Value;
+	}(component_1.default));
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = Value;
+
+
+/***/ },
+/* 70 */
+/*!***************************************!*\
+  !*** ./nengo_gui/static/datastore.ts ***!
+  \***************************************/
+/***/ function(module, exports) {
+
+	/**
+	 * Storage of a set of data points and associated times with a fixed
+	 * number of dimensions.
+	 *
+	 * @constructor
+	 * @param {int} dims - number of data points per time
+	 * @param {SimControl} sim - the simulation controller
+	 * @param {float} synapse - the filter to apply to the data
+	 */
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var DataStore = (function () {
+	    function DataStore(dims, sim, synapse) {
+	        this.synapse = synapse; // TODO: get from SimControl
+	        this.sim = sim;
+	        this.times = [];
+	        this.data = [];
+	        for (var i = 0; i < dims; i++) {
+	            this.data.push([]);
+	        }
+	    }
+	    /**
+	     * Add a set of data.
+	     *
+	     * @param {array} row - dims+1 data points, with time as the first one
+	     */
+	    DataStore.prototype.push = function (row) {
+	        // If you get data out of order, wipe out the later data
+	        if (row[0] < this.times[this.times.length - 1]) {
+	            var index_1 = 0;
+	            while (this.times[index_1] < row[0]) {
+	                index_1 += 1;
+	            }
+	            this.times.splice(index_1, this.times.length);
+	            this.data.forEach(function (dimdata) {
+	                dimdata.splice(index_1, dimdata.length);
+	            });
+	        }
+	        // Compute lowpass filter (value = value*decay + new_value*(1-decay)
+	        var decay = 0.0;
+	        if ((this.times.length !== 0) && (this.synapse > 0)) {
+	            var dt = row[0] - this.times[this.times.length - 1];
+	            decay = Math.exp(-dt / this.synapse);
+	        }
+	        // Put filtered values into data array
+	        for (var i = 0; i < this.data.length; i++) {
+	            if (decay === 0.0) {
+	                this.data[i].push(row[i + 1]);
+	            }
+	            else {
+	                this.data[i].push(row[i + 1] * (1 - decay) +
+	                    this.data[i][this.data[i].length - 1] * decay);
+	            }
+	        }
+	        // Store the time as well
+	        this.times.push(row[0]);
+	    };
+	    /**
+	     * Reset the data storage.
+	     *
+	     * This will clear current data so there is
+	     * nothing to display on a reset event.
+	     */
+	    DataStore.prototype.reset = function () {
+	        this.times.splice(0, this.times.length);
+	        this.data.forEach(function (dimdata) {
+	            dimdata.splice(0, dimdata.length);
+	        });
+	    };
+	    /**
+	     * Update the data storage.
+	     *
+	     * This should be called periodically (before visual updates, but not
+	     * necessarily after every push()).  Removes old data outside the storage
+	     * limit set by the SimControl.
+	     */
+	    DataStore.prototype.update = function () {
+	        // Figure out how many extra values we have (values whose time stamp is
+	        // outside the range to keep)
+	        var extra = 0;
+	        // How much has the most recent time exceeded how much is kept?
+	        var limit = this.sim.time_slider.last_time -
+	            this.sim.time_slider.kept_time;
+	        while (this.times[extra] < limit) {
+	            extra += 1;
+	        }
+	        // Remove the extra data
+	        if (extra > 0) {
+	            this.times = this.times.slice(extra);
+	            for (var i = 0; i < this.data.length; i++) {
+	                this.data[i] = this.data[i].slice(extra);
+	            }
+	        }
+	    };
+	    /**
+	     * Return just the data that is to be shown.
+	     */
+	    DataStore.prototype.get_shown_data = function () {
+	        // Determine time range
+	        var t1 = this.sim.time_slider.first_shown_time;
+	        var t2 = t1 + this.sim.time_slider.shown_time;
+	        // Find the corresponding index values
+	        var index = 0;
+	        while (this.times[index] < t1) {
+	            index += 1;
+	        }
+	        var last_index = index;
+	        while (this.times[last_index] < t2 && last_index < this.times.length) {
+	            last_index += 1;
+	        }
+	        this.first_shown_index = index;
+	        // Return the visible slice of the data
+	        var shown = [];
+	        this.data.forEach(function (dimdata) {
+	            shown.push(dimdata.slice(index, last_index));
+	        });
+	        return shown;
+	    };
+	    DataStore.prototype.is_at_end = function () {
+	        var ts = this.sim.time_slider;
+	        return (ts.last_time < ts.first_shown_time + ts.shown_time + 1e-9);
+	    };
+	    DataStore.prototype.get_last_data = function () {
+	        // Determine time range
+	        var t1 = this.sim.time_slider.first_shown_time;
+	        var t2 = t1 + this.sim.time_slider.shown_time;
+	        // Find the corresponding index values
+	        var last_index = 0;
+	        while (this.times[last_index] < t2
+	            && last_index < this.times.length - 1) {
+	            last_index += 1;
+	        }
+	        // Return the visible slice of the data
+	        var shown = [];
+	        this.data.forEach(function (dimdata) {
+	            shown.push(dimdata[last_index]);
+	        });
+	        return shown;
+	    };
+	    return DataStore;
+	}());
+	exports.DataStore = DataStore;
+	/**
+	 * Storage of a set of data points and associated times with an increasable
+	 * number of dimensions.
+	 *
+	 * @constructor
+	 * @param {int} dims - number of data points per time
+	 * @param {SimControl} sim - the simulation controller
+	 * @param {float} synapse - the filter to apply to the data
+	 */
+	var GrowableDataStore = (function (_super) {
+	    __extends(GrowableDataStore, _super);
+	    function GrowableDataStore(dims, sim, synapse) {
+	        _super.call(this, dims, sim, synapse);
+	        this._dims = dims;
+	    }
+	    Object.defineProperty(GrowableDataStore.prototype, "dims", {
+	        get: function () {
+	            return this._dims;
+	        },
+	        set: function (dim_val) {
+	            // Throw a bunch of errors if bad things happen.
+	            // Assuming you can only grow dims and not shrink them...
+	            if (this._dims < dim_val) {
+	                for (var i = 0; i < dim_val - this._dims; i++) {
+	                    this.data.push([]);
+	                }
+	            }
+	            else if (this._dims > dim_val) {
+	                throw "can't decrease size of datastore";
+	            }
+	            this._dims = dim_val;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    GrowableDataStore.prototype.get_offset = function () {
+	        var offset = [0];
+	        for (var i = 1; i < this._dims; i++) {
+	            if (this.data[i] === undefined) {
+	                offset.push(this.data[0].length);
+	            }
+	            else {
+	                offset.push(this.data[0].length - this.data[i].length);
+	            }
+	        }
+	        return offset;
+	    };
+	    /**
+	     * Add a set of data.
+	     *
+	     * @param {array} row - dims+1 data points, with time as the first one
+	     */
+	    GrowableDataStore.prototype.push = function (row) {
+	        // Get the offsets
+	        var offset = this.get_offset();
+	        // If you get data out of order, wipe out the later data
+	        if (row[0] < this.times[this.times.length - 1]) {
+	            var index = 0;
+	            while (this.times[index] < row[0]) {
+	                index += 1;
+	            }
+	            this.times.splice(index, this.times.length);
+	            for (var i = 0; i < this._dims; i++) {
+	                if (index - offset[i] >= 0) {
+	                    this.data[i].splice(index - offset[i], this.data[i].length);
+	                }
+	            }
+	        }
+	        // Compute lowpass filter (value = value*decay + new_value*(1-decay)
+	        var decay = 0.0;
+	        if ((this.times.length !== 0) && (this.synapse > 0)) {
+	            var dt = row[0] - this.times[this.times.length - 1];
+	            decay = Math.exp(-dt / this.synapse);
+	        }
+	        // Put filtered values into data array
+	        for (var i = 0; i < this._dims; i++) {
+	            if (decay === 0.0 || this.data[i].length === 0) {
+	                this.data[i].push(row[i + 1]);
+	            }
+	            else {
+	                this.data[i].push(row[i + 1] * (1 - decay) +
+	                    this.data[i][this.data[i].length - 1] * decay);
+	            }
+	        }
+	        // Store the time as well
+	        this.times.push(row[0]);
+	    };
+	    /**
+	     * Update the data storage.
+	     *
+	     * This should be call periodically (before visual updates, but not
+	     * necessarily after every push()).  Removes old data outside the storage
+	     * limit set by the SimControl.
+	     */
+	    GrowableDataStore.prototype.update = function () {
+	        // Figure out how many extra values we have (values whose time stamp is
+	        // outside the range to keep)
+	        var offset = this.get_offset();
+	        var extra = 0;
+	        var limit = this.sim.time_slider.last_time -
+	            this.sim.time_slider.kept_time;
+	        while (this.times[extra] < limit) {
+	            extra += 1;
+	        }
+	        // Remove the extra data
+	        if (extra > 0) {
+	            this.times = this.times.slice(extra);
+	            for (var i = 0; i < this.data.length; i++) {
+	                if (extra - offset[i] >= 0) {
+	                    this.data[i] = this.data[i].slice(extra - offset[i]);
+	                }
+	            }
+	        }
+	    };
+	    /**
+	     * Return just the data that is to be shown.
+	     */
+	    GrowableDataStore.prototype.get_shown_data = function () {
+	        var offset = this.get_offset();
+	        // Determine time range
+	        var t1 = this.sim.time_slider.first_shown_time;
+	        var t2 = t1 + this.sim.time_slider.shown_time;
+	        // Find the corresponding index values
+	        var index = 0;
+	        while (this.times[index] < t1) {
+	            index += 1;
+	        }
+	        // Logically, you should start the search for the
+	        var last_index = index;
+	        while (this.times[last_index] < t2 && last_index < this.times.length) {
+	            last_index += 1;
+	        }
+	        this.first_shown_index = index;
+	        // Return the visible slice of the data
+	        var shown = [];
+	        for (var i = 0; i < this._dims; i++) {
+	            var nan_number = void 0;
+	            var slice_start = void 0;
+	            if (last_index > offset[i] && offset[i] !== 0) {
+	                if (index < offset[i]) {
+	                    nan_number = offset[i] - index;
+	                    slice_start = 0;
+	                }
+	                else {
+	                    nan_number = 0;
+	                    slice_start = index - offset[i];
+	                }
+	                shown.push(Array.apply(null, Array(nan_number)).map(function () {
+	                    return "NaN";
+	                }).concat(this.data[i].slice(slice_start, last_index - offset[i])));
+	            }
+	            else {
+	                shown.push(this.data[i].slice(index, last_index));
+	            }
+	        }
+	        return shown;
+	    };
+	    GrowableDataStore.prototype.get_last_data = function () {
+	        var offset = this.get_offset();
+	        // Determine time range
+	        var t1 = this.sim.time_slider.first_shown_time;
+	        var t2 = t1 + this.sim.time_slider.shown_time;
+	        // Find the corresponding index values
+	        var last_index = 0;
+	        while (this.times[last_index] < t2
+	            && last_index < this.times.length - 1) {
+	            last_index += 1;
+	        }
+	        // Return the visible slice of the data
+	        var shown = [];
+	        for (var i = 0; i < this._dims; i++) {
+	            if (last_index - offset[i] >= 0) {
+	                shown.push(this.data[i][last_index - offset[i]]);
+	            }
+	        }
+	        return shown;
+	    };
+	    return GrowableDataStore;
+	}(DataStore));
+	exports.GrowableDataStore = GrowableDataStore;
+
+
+/***/ },
+/* 71 */
 /*!**************************************************!*\
   !*** ./nengo_gui/static/components/component.ts ***!
   \**************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
+	"use strict";
+	var interact = __webpack_require__(/*! interact.js */ 61);
+	var $ = __webpack_require__(/*! jquery */ 12);
+	var menu = __webpack_require__(/*! ../menu */ 62);
+	var utils = __webpack_require__(/*! ../utils */ 65);
+	var viewport = __webpack_require__(/*! ../viewport */ 67);
+	var all_components = __webpack_require__(/*! ./all_components */ 68);
 	/**
 	 * Base class for interactive visualization
 	 * Components (value/raster/XY plots, sliders, etc...) will inherit from
@@ -44667,22 +45602,9 @@ var Nengo =
 	 * class prototypes (ie. Slider, Value).
 	 *
 	 */
-	"use strict";
-	var interact = __webpack_require__(/*! interact.js */ 61);
-	var $ = __webpack_require__(/*! jquery */ 12);
-	var menu = __webpack_require__(/*! ../menu */ 62);
-	var utils = __webpack_require__(/*! ../utils */ 65);
-	exports.all_components = [];
-	function save_all_components() {
-	    exports.all_components.forEach(function (component) {
-	        component.save_layout();
-	    });
-	}
-	exports.save_all_components = save_all_components;
 	var Component = (function () {
-	    function Component(parent, viewport, args) {
+	    function Component(parent, args) {
 	        var _this = this;
-	        this.viewport = viewport;
 	        // Create the div for the component and position it
 	        this.div = document.createElement("div");
 	        // Prevent interact from messing up cursor
@@ -44723,10 +45645,8 @@ var Nengo =
 	                _this.save_layout();
 	            },
 	            onmove: function (event) {
-	                _this.x = _this.x + event.dx /
-	                    (_this.viewport.width * _this.viewport.scale);
-	                _this.y = _this.y + event.dy /
-	                    (_this.viewport.height * _this.viewport.scale);
+	                _this.x += viewport.from_screen_x(event.dx);
+	                _this.y += viewport.from_screen_y(event.dy);
 	                _this.redraw_pos();
 	            },
 	            onstart: function () {
@@ -44742,21 +45662,17 @@ var Nengo =
 	            menu.hide_any();
 	        })
 	            .on("resizemove", function (event) {
-	            var newWidth = event.rect.width;
-	            var newHeight = event.rect.height;
-	            var dx = event.deltaRect.left;
-	            var dy = event.deltaRect.top;
-	            var dz = event.deltaRect.right;
-	            var da = event.deltaRect.bottom;
-	            _this.x += (dx + dz) / 2 /
-	                (_this.viewport.width * _this.viewport.scale);
-	            _this.y += (dy + da) / 2 /
-	                (_this.viewport.height * _this.viewport.scale);
-	            _this.w = newWidth /
-	                (_this.viewport.width * _this.viewport.scale) / 2;
-	            _this.h = newHeight /
-	                (_this.viewport.height * _this.viewport.scale) / 2;
-	            _this.on_resize(newWidth, newHeight);
+	            var new_width = event.rect.width;
+	            var new_height = event.rect.height;
+	            var dleft = event.deltaRect.left;
+	            var dtop = event.deltaRect.top;
+	            var dright = event.deltaRect.right;
+	            var dbottom = event.deltaRect.bottom;
+	            _this.x += viewport.from_screen_x((dleft + dright) / 2);
+	            _this.y += viewport.from_screen_y((dtop + dbottom) / 2);
+	            _this.w = viewport.unscale_width(new_width);
+	            _this.h = viewport.unscale_height(new_height);
+	            _this.on_resize(new_width, new_height);
 	            _this.redraw_size();
 	            _this.redraw_pos();
 	        })
@@ -44804,7 +45720,7 @@ var Nengo =
 	            }
 	            return false;
 	        });
-	        exports.all_components.push(this);
+	        all_components.add(this);
 	    }
 	    /**
 	     * Method to be called when Component is resized.
@@ -44850,8 +45766,7 @@ var Nengo =
 	            }
 	        }
 	        this.parent.removeChild(this.div);
-	        var index = exports.all_components.indexOf(this);
-	        exports.all_components.splice(index, 1);
+	        all_components.remove(this);
 	    };
 	    /**
 	     * Schedule update() to be called in the near future.
@@ -44871,7 +45786,7 @@ var Nengo =
 	        }
 	    };
 	    /**
-	     * Do any visual updating needed due to changes in the underlying data.
+	     * Do any visual updates needed due to changes in the underlying data.
 	     */
 	    Component.prototype.update = function (event) {
 	        // Subclasses should implement this.
@@ -44908,7 +45823,7 @@ var Nengo =
 	        this.y = config.y;
 	        this.redraw_size();
 	        this.redraw_pos();
-	        this.on_resize(this.get_screen_width(), this.get_screen_height());
+	        this.on_resize(viewport.scale_width(this.w), viewport.scale_height(this.h));
 	        if (config.label_visible === true) {
 	            this.show_label(null);
 	        }
@@ -44917,32 +45832,250 @@ var Nengo =
 	        }
 	    };
 	    Component.prototype.redraw_size = function () {
-	        var vpscale = this.viewport.scale * 2;
-	        this.width = this.viewport.width * this.w * vpscale;
-	        this.height = this.viewport.height * this.h * vpscale;
+	        this.width = viewport.scale_width(this.w);
+	        this.height = viewport.scale_height(this.h);
 	        this.div.style.width = this.width;
 	        this.div.style.height = this.height;
 	    };
 	    Component.prototype.redraw_pos = function () {
-	        var x = (this.x + this.viewport.x - this.w) *
-	            this.viewport.width * this.viewport.scale;
-	        var y = (this.y + this.viewport.y - this.h) *
-	            this.viewport.height * this.viewport.scale;
+	        var x = viewport.to_screen_x(this.x - this.w);
+	        var y = viewport.to_screen_y(this.y - this.h);
 	        utils.set_transform(this.div, x, y);
-	    };
-	    Component.prototype.get_screen_width = function () {
-	        return this.viewport.width * this.w * this.viewport.scale * 2;
-	    };
-	    Component.prototype.get_screen_height = function () {
-	        return this.viewport.height * this.h * this.viewport.scale * 2;
 	    };
 	    return Component;
 	}());
-	exports.Component = Component;
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = Component;
 
 
 /***/ },
-/* 69 */
+/* 72 */
+/*!**************************************************!*\
+  !*** ./nengo_gui/static/components/time_axes.ts ***!
+  \**************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * 2d axes set with the horizontal axis being a time axis.
+	 *
+	 * Called by a specific component when it requires an axes set (with the
+	 * x-axis showing current model time).
+	 *
+	 * @constructor
+	 * @param {DOMElement} parent - the element to add this component to
+	 * @param {dict} args - A set of constructor arguments (see Axes2D)
+	 */
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var $ = __webpack_require__(/*! jquery */ 12);
+	var _2d_axes_1 = __webpack_require__(/*! ./2d_axes */ 73);
+	var TimeAxes = (function (_super) {
+	    __extends(TimeAxes, _super);
+	    function TimeAxes(parent, args) {
+	        _super.call(this, parent, args);
+	        this.display_time = args.display_time;
+	        this.axis_x.ticks(0);
+	        this.axis_time_end = this.svg.append("text")
+	            .text("Time: NULL")
+	            .attr("class", "graph_text unselectable")[0][0];
+	        this.axis_time_start = this.svg.append("text")
+	            .text("Time: NULL")
+	            .attr("class", "graph_text unselectable")[0][0];
+	        if (this.display_time === false) {
+	            this.axis_time_start.setAttribute("display", "none");
+	            this.axis_time_end.setAttribute("display", "none");
+	        }
+	    }
+	    TimeAxes.prototype.set_time_range = function (start, end) {
+	        this.scale_x.domain([start, end]);
+	        this.axis_time_start.textContent = start.toFixed(3);
+	        this.axis_time_end.textContent = end.toFixed(3);
+	        this.axis_x_g.call(this.axis_x);
+	    };
+	    TimeAxes.prototype.on_resize = function (width, height) {
+	        _2d_axes_1.default.prototype.on_resize.call(this, width, height);
+	        var scale = parseFloat($("#main").css("font-size"));
+	        var suppression_width = 6 * scale;
+	        var text_offset = 1.2 * scale;
+	        if (width < suppression_width || this.display_time === false) {
+	            this.axis_time_start.setAttribute("display", "none");
+	        }
+	        else {
+	            this.axis_time_start.setAttribute("display", "block");
+	        }
+	        this.axis_time_start.setAttribute("x", this.ax_left - text_offset);
+	        this.axis_time_start.setAttribute("y", this.ax_bottom + text_offset);
+	        this.axis_time_end.setAttribute("x", this.ax_right - text_offset);
+	        this.axis_time_end.setAttribute("y", this.ax_bottom + text_offset);
+	    };
+	    return TimeAxes;
+	}(_2d_axes_1.default));
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = TimeAxes;
+
+
+/***/ },
+/* 73 */
+/*!************************************************!*\
+  !*** ./nengo_gui/static/components/2d_axes.ts ***!
+  \************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Basic 2d axes set.
+	 *
+	 * @constructor
+	 * @param {DOMElement} parent - the element to add this component to
+	 * @param {Object} args
+	 * @param {float} args.width - the width of the axes (in pixels)
+	 * @param {float} args.height - the height of the axes (in pixels)
+	 * @param {float} args.min_value - minimum value on y-axis
+	 * @param {float} args.max_value - maximum value on y-axis
+	 */
+	"use strict";
+	var d3 = __webpack_require__(/*! d3 */ 66);
+	var $ = __webpack_require__(/*! jquery */ 12);
+	var Axes2D = (function () {
+	    function Axes2D(parent, args) {
+	        this.max_y_width = 100;
+	        // Draw the plot as an SVG
+	        this.svg = d3.select(parent).append("svg")
+	            .attr("width", "100%")
+	            .attr("height", "100%");
+	        // Scales for mapping x and y values to pixels
+	        this.scale_x = d3.scale.linear();
+	        this.scale_y = d3.scale.linear();
+	        this.scale_y.domain([args.min_value, args.max_value]);
+	        // Spacing between the graph and the outside edges (in pixels)
+	        this.set_axes_geometry(args.width, args.height);
+	        // Define the x-axis
+	        this.axis_x = d3.svg.axis()
+	            .scale(this.scale_x)
+	            .orient("bottom")
+	            .ticks(2);
+	        this.axis_x_g = this.svg.append("g")
+	            .attr("class", "axis axis_x unselectable")
+	            .call(this.axis_x);
+	        // Define the y-axis
+	        this.axis_y = d3.svg.axis()
+	            .scale(this.scale_y)
+	            .orient("left")
+	            .tickValues([args.min_value, args.max_value]);
+	        this.axis_y_g = this.svg.append("g")
+	            .attr("class", "axis axis_y unselectable")
+	            .call(this.axis_y);
+	    }
+	    Axes2D.prototype.set_axes_geometry = function (width, height) {
+	        var scale = parseFloat($("#main").css("font-size"));
+	        this.width = width;
+	        this.height = height;
+	        this.ax_left = this.max_y_width;
+	        this.ax_right = width - 1.75 * scale;
+	        this.ax_bottom = height - 1.75 * scale;
+	        this.ax_top = 1.75 * scale;
+	        this.tick_size = 0.4 * scale;
+	        this.tick_padding = 0.2 * scale;
+	    };
+	    /**
+	     * Adjust the graph layout due to changed size
+	     */
+	    Axes2D.prototype.on_resize = function (width, height) {
+	        if (width < this.min_width) {
+	            width = this.min_width;
+	        }
+	        if (height < this.min_height) {
+	            height = this.min_height;
+	        }
+	        this.set_axes_geometry(width, height);
+	        this.scale_x.range([this.ax_left, this.ax_right]);
+	        this.scale_y.range([this.ax_bottom, this.ax_top]);
+	        // Adjust positions of x axis on resize
+	        this.axis_x
+	            .tickPadding(this.tick_padding)
+	            .outerTickSize(this.tick_size, this.tick_size);
+	        this.axis_y
+	            .tickPadding(this.tick_padding)
+	            .outerTickSize(this.tick_size, this.tick_size);
+	        this.axis_x_g.attr("transform", "translate(0," + this.ax_bottom + ")");
+	        this.axis_x_g.call(this.axis_x);
+	        this.axis_y_g.attr("transform", "translate(" + this.ax_left + ", 0)");
+	        this.axis_y_g.call(this.axis_y);
+	    };
+	    Axes2D.prototype.fit_ticks = function (parent) {
+	        var _this = this;
+	        setTimeout(function () {
+	            var ticks = $(parent.div).find(".tick");
+	            var max_w = 0;
+	            for (var i = 0; i < ticks.length; i++) {
+	                var w = ticks[i].getBBox().width;
+	                if (w > max_w) {
+	                    max_w = w;
+	                }
+	            }
+	            _this.max_y_width = max_w;
+	            // TODO: parent?
+	            _this.set_axes_geometry(parent.width, parent.height);
+	            _this.on_resize(parent.width, parent.height);
+	        }, 1);
+	    };
+	    return Axes2D;
+	}());
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = Axes2D;
+
+
+/***/ },
+/* 74 */
+/*!***********************************************!*\
+  !*** ./nengo_gui/static/components/value.css ***!
+  \***********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+	
+	// load the styles
+	var content = __webpack_require__(/*! !./../../../~/css-loader!./value.css */ 75);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 10)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./value.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./value.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 75 */
+/*!**************************************************************!*\
+  !*** ./~/css-loader!./nengo_gui/static/components/value.css ***!
+  \**************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(/*! ./../../../~/css-loader/lib/css-base.js */ 4)();
+	// imports
+	
+	
+	// module
+	exports.push([module.id, ".graph .line {\n    fill: none;\n    stroke: black;\n    stroke-width: 1.5px;\n}\n", ""]);
+	
+	// exports
+
+
+/***/ },
+/* 76 */
 /*!**************************************************!*\
   !*** ./nengo_gui/static/components/netgraph.css ***!
   \**************************************************/
@@ -44951,7 +46084,7 @@ var Nengo =
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../../~/css-loader!./netgraph.css */ 70);
+	var content = __webpack_require__(/*! !./../../../~/css-loader!./netgraph.css */ 77);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 10)(content, {});
@@ -44971,7 +46104,7 @@ var Nengo =
 	}
 
 /***/ },
-/* 70 */
+/* 77 */
 /*!*****************************************************************!*\
   !*** ./~/css-loader!./nengo_gui/static/components/netgraph.css ***!
   \*****************************************************************/
@@ -44982,13 +46115,13 @@ var Nengo =
 	
 	
 	// module
-	exports.push([module.id, ".netgraph {\n    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;\n}\n\n.ensemble{\n    stroke-width:1;\n}\n\ng.node rect{\n    stroke-width:1;\n}\n\ng.net rect{\n    stroke-width:1;\n}\n\n.netgraph g text {\n    text-anchor: middle;\n    dominant-baseline: text-before-edge;\n    cursor: default !important;\n}\n\n.netgraph g text:active {\n    cursor: move;\n}\n\n.netgraph line {\n    stroke: black;\n    stroke-width: 2px;\n}\n\n.minimap {\n    border-radius: 10px/60px;\n    height: 100%;\n    opacity: 0.85;\n    position: 'relative';\n    width: 100%;\n}\n\n.minimap line {\n    stroke: black;\n    stroke-width: 1px;\n}\n\nrect.view{\n    fill: #d9edf7;\n    stroke: #ccc;\n}\n\n.recur {\n    stroke: black;\n    stroke-width: 2px;\n    fill: none;\n}\n\n.netgraph g.passthrough ellipse {\n    stroke-width: 0px;\n    fill: black;\n}\n\n.netgraph g.passthrough text {\n    text-anchor: middle;\n    dominant-baseline: text-before-edge;\n}\n", ""]);
+	exports.push([module.id, ".netgraph {\n    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;\n}\n\n.ensemble{\n    stroke-width:1;\n    }\n\ng.node rect{\n    stroke-width:1;\n    }\n\ng.net rect{\n    stroke-width:1;\n    }\n\n.netgraph g text {\n    text-anchor: middle;\n    dominant-baseline: text-before-edge;\n    cursor: default !important;\n    }\n\n.netgraph g text:active {\n    cursor: move;\n}\n\n.netgraph line {\n    stroke: black;\n    stroke-width: 2px;\n}\n\n.minimap {\n    border-radius: 10px/60px;\n    height: 100%;\n    opacity: 0.85;\n    position: 'relative';\n    width: 100%;\n}\n\n.minimap line {\n    stroke: black;\n    stroke-width: 1px;\n}\n\nrect.view{\n    fill: #d9edf7;\n    stroke: #ccc;\n}\n\n.recur {\n    stroke: black;\n    stroke-width: 2px;\n    fill: none;\n}\n\n.netgraph g.passthrough ellipse {\n    stroke-width: 0px;\n    fill: black;\n}\n\n.netgraph g.passthrough text {\n    text-anchor: middle;\n    dominant-baseline: text-before-edge;\n}\n\n", ""]);
 	
 	// exports
 
 
 /***/ },
-/* 71 */
+/* 78 */
 /*!******************************************************!*\
   !*** ./nengo_gui/static/components/netgraph_conn.ts ***!
   \******************************************************/
@@ -45355,7 +46488,7 @@ var Nengo =
 
 
 /***/ },
-/* 72 */
+/* 79 */
 /*!******************************************************!*\
   !*** ./nengo_gui/static/components/netgraph_item.ts ***!
   \******************************************************/
@@ -45377,12 +46510,12 @@ var Nengo =
 	var interact = __webpack_require__(/*! interact.js */ 61);
 	var $ = __webpack_require__(/*! jquery */ 12);
 	var menu = __webpack_require__(/*! ../menu */ 62);
-	var utils = __webpack_require__(/*! ../utils */ 65);
+	var viewport = __webpack_require__(/*! ../viewport */ 67);
 	var NetGraphItem = (function () {
 	    function NetGraphItem(ng, info, minimap, mini_item) {
-	        var _this = this;
+	        var self = this;
 	        this.ng = ng;
-	        this.itemtype = info.type;
+	        this.type = info.type;
 	        this.uid = info.uid;
 	        this.sp_targets = info.sp_targets;
 	        this.default_output = info.default_output;
@@ -45408,8 +46541,8 @@ var Nengo =
 	            },
 	            set: function (val) {
 	                width = val;
-	                if (!_this.minimap) {
-	                    _this.mini_item.width = val;
+	                if (!this.minimap) {
+	                    this.mini_item.width = val;
 	                }
 	            },
 	        });
@@ -45420,8 +46553,8 @@ var Nengo =
 	            },
 	            set: function (val) {
 	                height = val;
-	                if (!_this.minimap) {
-	                    _this.mini_item.height = val;
+	                if (!this.minimap) {
+	                    this.mini_item.height = val;
 	                }
 	            },
 	        });
@@ -45432,8 +46565,8 @@ var Nengo =
 	            },
 	            set: function (val) {
 	                x = val;
-	                if (!_this.minimap) {
-	                    _this.mini_item.x = val;
+	                if (!this.minimap) {
+	                    this.mini_item.x = val;
 	                }
 	            },
 	        });
@@ -45444,8 +46577,8 @@ var Nengo =
 	            },
 	            set: function (val) {
 	                y = val;
-	                if (!_this.minimap) {
-	                    _this.mini_item.y = val;
+	                if (!this.minimap) {
+	                    this.mini_item.y = val;
 	                }
 	            },
 	        });
@@ -45468,7 +46601,7 @@ var Nengo =
 	            this.depth = 1;
 	        }
 	        else {
-	            this.parent = this.ng.svg_objects[info.parent];
+	            this.parent = self.ng.svg_objects[info.parent];
 	            this.depth = this.parent.depth + 1;
 	            if (!minimap) {
 	                this.parent.children.push(this);
@@ -45478,9 +46611,9 @@ var Nengo =
 	        var g = this.ng.createSVGElement("g");
 	        this.g = g;
 	        this.g_items.appendChild(g);
-	        g.classList.add(this.itemtype);
+	        g.classList.add(this.type);
 	        this.area = this.ng.createSVGElement("rect");
-	        this.area.setAttribute("style", "fill: transparent;");
+	        this.area.style.fill = "transparent";
 	        this.menu = new menu.Menu(this.ng.parent);
 	        // Different types use different SVG elements for display
 	        if (info.type === "node") {
@@ -45514,7 +46647,7 @@ var Nengo =
 	        if (this.minimap === false) {
 	            var label = this.ng.createSVGElement("text");
 	            this.label = label;
-	            utils.safe_set_text(label, info.label);
+	            label.innerHTML = info.label;
 	            g.appendChild(label);
 	        }
 	        g.appendChild(this.shape);
@@ -45525,17 +46658,17 @@ var Nengo =
 	            var uid_1 = this.uid;
 	            interact(g).draggable({
 	                onend: function (event) {
-	                    var item = _this.ng.svg_objects[uid_1];
+	                    var item = self.ng.svg_objects[uid_1];
 	                    item.constrain_position();
-	                    _this.ng.notify({
+	                    self.ng.notify({
 	                        act: "pos", uid: uid_1, x: item.x, y: item.y,
 	                    });
 	                    item.redraw();
 	                },
 	                onmove: function (event) {
-	                    var item = _this.ng.svg_objects[uid_1];
-	                    var w = _this.ng.get_scaled_width();
-	                    var h = _this.ng.get_scaled_height();
+	                    var item = self.ng.svg_objects[uid_1];
+	                    var w = self.ng.get_scaled_width();
+	                    var h = self.ng.get_scaled_height();
 	                    var parent = item.parent;
 	                    while (parent !== null) {
 	                        w *= parent.width * 2;
@@ -45545,13 +46678,13 @@ var Nengo =
 	                    item.x += event.dx / w;
 	                    item.y += event.dy / h;
 	                    item.redraw();
-	                    if (_this.depth === 1) {
-	                        _this.ng.scaleMiniMap();
+	                    if (self.depth === 1) {
+	                        self.ng.scaleMiniMap();
 	                    }
 	                },
 	                onstart: function () {
 	                    menu.hide_any();
-	                    _this.move_to_front();
+	                    self.move_to_front();
 	                },
 	            });
 	            if (!this.passthrough) {
@@ -45562,27 +46695,27 @@ var Nengo =
 	                }
 	                interact(this.area).resizable({
 	                    edges: { bottom: true, left: true, right: true, top: true },
-	                    invert: this.itemtype === "ens" ? "reposition" : "none",
+	                    invert: this.type === "ens" ? "reposition" : "none",
 	                    margin: 10,
 	                }).on("resizestart", function (event) {
 	                    menu.hide_any();
 	                }).on("resizemove", function (event) {
-	                    var item = _this.ng.svg_objects[uid_1];
+	                    var item = self.ng.svg_objects[uid_1];
 	                    var pos = item.get_screen_location();
-	                    var h_scale = _this.ng.get_scaled_width();
-	                    var v_scale = _this.ng.get_scaled_height();
+	                    var h_scale = self.ng.get_scaled_width();
+	                    var v_scale = self.ng.get_scaled_height();
 	                    var parent = item.parent;
 	                    while (parent !== null) {
 	                        h_scale = h_scale * parent.width * 2;
 	                        v_scale = v_scale * parent.height * 2;
 	                        parent = parent.parent;
 	                    }
-	                    if (_this.aspect !== null) {
-	                        _this.constrain_aspect();
+	                    if (self.aspect !== null) {
+	                        self.constrain_aspect();
 	                        var vertical_resize = event.edges.bottom || event.edges.top;
 	                        var horizontal_resize = event.edges.left || event.edges.right;
-	                        var w = pos[0] - event.clientX + _this.ng.offsetX;
-	                        var h = pos[1] - event.clientY + _this.ng.offsetY;
+	                        var w = pos[0] - event.clientX + self.ng.offsetX;
+	                        var h = pos[1] - event.clientY + self.ng.offsetY;
 	                        if (event.edges.right) {
 	                            w *= -1;
 	                        }
@@ -45599,15 +46732,15 @@ var Nengo =
 	                        var screen_h = item.height * v_scale;
 	                        if (horizontal_resize && vertical_resize) {
 	                            var p = (screen_w * w + screen_h * h) / Math.sqrt(screen_w * screen_w + screen_h * screen_h);
-	                            var norm = Math.sqrt(_this.aspect * _this.aspect + 1);
-	                            h = p / (_this.aspect / norm);
-	                            w = p * (_this.aspect / norm);
+	                            var norm = Math.sqrt(self.aspect * self.aspect + 1);
+	                            h = p / (self.aspect / norm);
+	                            w = p * (self.aspect / norm);
 	                        }
 	                        else if (horizontal_resize) {
-	                            h = w / _this.aspect;
+	                            h = w / self.aspect;
 	                        }
 	                        else {
-	                            w = h * _this.aspect;
+	                            w = h * self.aspect;
 	                        }
 	                        item.width = w / h_scale;
 	                        item.height = h / v_scale;
@@ -45623,14 +46756,14 @@ var Nengo =
 	                        item.y += offset_y;
 	                    }
 	                    item.redraw();
-	                    if (_this.depth === 1) {
-	                        _this.ng.scaleMiniMap();
+	                    if (self.depth === 1) {
+	                        self.ng.scaleMiniMap();
 	                    }
 	                }).on("resizeend", function (event) {
-	                    var item = _this.ng.svg_objects[uid_1];
+	                    var item = self.ng.svg_objects[uid_1];
 	                    item.constrain_position();
 	                    item.redraw();
-	                    _this.ng.notify({
+	                    self.ng.notify({
 	                        act: "pos_size",
 	                        height: item.height,
 	                        uid: uid_1,
@@ -45645,11 +46778,11 @@ var Nengo =
 	                .on("hold", function (event) {
 	                // Change to "tap" for right click
 	                if (event.button === 0) {
-	                    if (_this.menu.visible_any()) {
+	                    if (self.menu.visible_any()) {
 	                        menu.hide_any();
 	                    }
 	                    else {
-	                        _this.menu.show(event.clientX, event.clientY, _this.generate_menu());
+	                        self.menu.show(event.clientX, event.clientY, self.generate_menu());
 	                    }
 	                    event.stopPropagation();
 	                }
@@ -45657,7 +46790,7 @@ var Nengo =
 	                .on("tap", function (event) {
 	                // Get rid of menus when clicking off
 	                if (event.button === 0) {
-	                    if (_this.menu.visible_any()) {
+	                    if (self.menu.visible_any()) {
 	                        menu.hide_any();
 	                    }
 	                }
@@ -45665,15 +46798,15 @@ var Nengo =
 	                .on("doubletap", function (event) {
 	                // Get rid of menus when clicking off
 	                if (event.button === 0) {
-	                    if (_this.menu.visible_any()) {
+	                    if (self.menu.visible_any()) {
 	                        menu.hide_any();
 	                    }
-	                    else if (_this.itemtype === "net") {
-	                        if (_this.expanded) {
-	                            _this.collapse(true);
+	                    else if (self.type === "net") {
+	                        if (self.expanded) {
+	                            self.collapse(true);
 	                        }
 	                        else {
-	                            _this.expand();
+	                            self.expand();
 	                        }
 	                    }
 	                }
@@ -45681,13 +46814,12 @@ var Nengo =
 	            $(this.g).bind("contextmenu", function (event) {
 	                event.preventDefault();
 	                event.stopPropagation();
-	                if (_this.menu.visible_any()) {
+	                if (self.menu.visible_any()) {
 	                    menu.hide_any();
 	                }
 	                else {
-	                    _this.menu.show(event.clientX, event.clientY, _this.generate_menu());
+	                    self.menu.show(event.clientX, event.clientY, self.generate_menu());
 	                }
-	                return false;
 	            });
 	            if (info.type === "net") {
 	                // If a network is flagged to expand on creation, then expand it
@@ -45698,107 +46830,110 @@ var Nengo =
 	            }
 	        }
 	    }
+	    ;
 	    NetGraphItem.prototype.set_label = function (label) {
-	        utils.safe_set_text(this.label, label);
+	        this.label.innerHTML = label;
 	    };
+	    ;
 	    NetGraphItem.prototype.move_to_front = function () {
-	        var _this = this;
 	        this.g.parentNode.appendChild(this.g);
-	        Object.keys(this.children).forEach(function (item) {
-	            _this.children[item].move_to_front();
-	        });
+	        for (var item in this.children) {
+	            if (this.children.hasOwnProperty(item)) {
+	                this.children[item].move_to_front();
+	            }
+	        }
 	    };
+	    ;
 	    NetGraphItem.prototype.generate_menu = function () {
-	        var _this = this;
+	        var self = this;
 	        var items = [];
-	        if (this.itemtype === "net") {
+	        if (this.type === "net") {
 	            if (this.expanded) {
 	                items.push(["Collapse network", function () {
-	                        _this.collapse(true);
+	                        self.collapse(true);
 	                    }]);
 	                items.push(["Auto-layout", function () {
-	                        _this.request_feedforward_layout();
+	                        self.request_feedforward_layout();
 	                    }]);
 	            }
 	            else {
 	                items.push(["Expand network", function () {
-	                        _this.expand();
+	                        self.expand();
 	                    }]);
 	            }
 	            if (this.default_output && this.sp_targets.length === 0) {
 	                items.push(["Output Value", function () {
-	                        _this.create_graph("Value");
+	                        self.create_graph("Value");
 	                    }]);
 	            }
 	        }
-	        if (this.itemtype === "ens") {
+	        if (this.type === "ens") {
 	            items.push(["Value", function () {
-	                    _this.create_graph("Value");
+	                    self.create_graph("Value");
 	                }]);
 	            if (this.dimensions > 1) {
 	                items.push(["XY-value", function () {
-	                        _this.create_graph("XYValue");
+	                        self.create_graph("XYValue");
 	                    }]);
 	            }
 	            items.push(["Spikes", function () {
-	                    _this.create_graph("Raster");
+	                    self.create_graph("Raster");
 	                }]);
 	            items.push(["Voltages", function () {
-	                    _this.create_graph("Voltage");
+	                    self.create_graph("Voltage");
 	                }]);
 	            items.push(["Firing pattern", function () {
-	                    _this.create_graph("SpikeGrid");
+	                    self.create_graph("SpikeGrid");
 	                }]);
 	        }
-	        if (this.itemtype === "node") {
+	        if (this.type === "node") {
 	            items.push(["Slider", function () {
-	                    _this.create_graph("Slider");
+	                    self.create_graph("Slider");
 	                }]);
 	            if (this.dimensions > 0) {
 	                items.push(["Value", function () {
-	                        _this.create_graph("Value");
+	                        self.create_graph("Value");
 	                    }]);
 	            }
 	            if (this.dimensions > 1) {
 	                items.push(["XY-value", function () {
-	                        _this.create_graph("XYValue");
+	                        self.create_graph("XYValue");
 	                    }]);
 	            }
 	            if (this.html_node) {
 	                items.push(["HTML", function () {
-	                        _this.create_graph("HTMLView");
+	                        self.create_graph("HTMLView");
 	                    }]);
 	            }
 	        }
 	        if (this.sp_targets.length > 0) {
 	            items.push(["Semantic pointer cloud", function () {
-	                    _this.create_graph("Pointer", _this.sp_targets[0]);
+	                    self.create_graph("Pointer", self.sp_targets[0]);
 	                }]);
 	            items.push(["Semantic pointer plot", function () {
-	                    _this.create_graph("SpaSimilarity", _this.sp_targets[0]);
+	                    self.create_graph("SpaSimilarity", self.sp_targets[0]);
 	                }]);
 	        }
 	        // TODO: Enable input and output value plots for basal ganglia network
 	        items.push(["Details ...", function () {
-	                _this.create_modal();
+	                self.create_modal();
 	            }]);
 	        return items;
 	    };
-	    NetGraphItem.prototype.create_graph = function (graphtype, args) {
+	    ;
+	    NetGraphItem.prototype.create_graph = function (type, args) {
 	        if (args === void 0) { args = null; }
 	        var w = this.get_nested_width();
 	        var h = this.get_nested_height();
 	        var pos = this.get_screen_location();
 	        var info = {
 	            "act": "create_graph",
-	            "height": 100 / (this.ng.viewport.height * this.ng.viewport.scale),
-	            "type": graphtype,
+	            "height": viewport.from_screen_y(100),
+	            "type": type,
 	            "uid": this.uid,
-	            "width": 100 / (this.ng.viewport.width * this.ng.viewport.scale),
-	            "x": pos[0] / (this.ng.viewport.width * this.ng.viewport.scale) -
-	                this.ng.viewport.x + w,
-	            "y": pos[1] / (this.ng.viewport.height * this.ng.viewport.scale) -
-	                this.ng.viewport.y + h,
+	            "width": viewport.from_screen_x(100),
+	            "x": viewport.from_screen_x(pos[0]) - viewport.shift_x(w),
+	            "y": viewport.from_screen_y(pos[1]) - viewport.shift_y(h),
 	        };
 	        if (args !== null) {
 	            info.args = args;
@@ -45808,6 +46943,7 @@ var Nengo =
 	        }
 	        this.ng.notify(info);
 	    };
+	    ;
 	    NetGraphItem.prototype.create_modal = function () {
 	        this.ng.notify({
 	            "act": "create_modal",
@@ -45820,20 +46956,25 @@ var Nengo =
 	            "uid": this.uid,
 	        });
 	    };
+	    ;
 	    NetGraphItem.prototype.request_feedforward_layout = function () {
 	        this.ng.notify({ act: "feedforward_layout", uid: this.uid });
 	    };
+	    ;
 	    /**
 	     * Expand a collapsed network.
 	     */
 	    NetGraphItem.prototype.expand = function (rts, auto) {
 	        if (rts === void 0) { rts = true; }
 	        if (auto === void 0) { auto = false; }
+	        // Default to true if no parameter is specified
+	        rts = typeof rts !== "undefined" ? rts : true;
+	        auto = typeof auto !== "undefined" ? auto : false;
 	        this.g.classList.add("expanded");
 	        if (!this.expanded) {
 	            this.expanded = true;
 	            if (this.ng.transparent_nets) {
-	                this.shape.setAttribute("fill-opacity", 0.0);
+	                this.shape.style["fill-opacity"] = 0.0;
 	            }
 	            this.g_items.removeChild(this.g);
 	            this.g_networks.appendChild(this.g);
@@ -45854,6 +46995,7 @@ var Nengo =
 	            }
 	        }
 	    };
+	    ;
 	    NetGraphItem.prototype.set_label_below = function (flag) {
 	        if (flag && !this.label_below) {
 	            var screen_h = this.get_screen_height();
@@ -45863,6 +47005,7 @@ var Nengo =
 	            this.label.setAttribute("transform", "");
 	        }
 	    };
+	    ;
 	    /**
 	     * Collapse an expanded network.
 	     */
@@ -45900,6 +47043,7 @@ var Nengo =
 	            }
 	        }
 	    };
+	    ;
 	    /**
 	     * Determine the fill color based on the depth.
 	     */
@@ -45907,11 +47051,14 @@ var Nengo =
 	        var depth = this.ng.transparent_nets ? 1 : this.depth;
 	        if (!this.passthrough) {
 	            var fill = Math.round(255 * Math.pow(0.8, depth));
-	            this.shape.setAttribute("fill", "rgb(" + fill + "," + fill + "," + fill + ")");
+	            this.shape.style.fill =
+	                "rgb(" + fill + "," + fill + "," + fill + ")";
 	            var stroke = Math.round(255 * Math.pow(0.8, depth + 2));
-	            this.shape.setAttribute("stroke", "rgb(" + stroke + "," + stroke + "," + stroke + ")");
+	            this.shape.style.stroke =
+	                "rgb(" + stroke + "," + stroke + "," + stroke + ")";
 	        }
 	    };
+	    ;
 	    /**
 	     * Remove the item from the graph.
 	     */
@@ -45929,15 +47076,17 @@ var Nengo =
 	        delete this.ng.svg_objects[this.uid];
 	        // Update any connections into or out of this item
 	        var conn_in = this.conn_in.slice();
-	        conn_in.forEach(function (conn) {
+	        for (var i = 0; i < conn_in.length; i++) {
+	            var conn = conn_in[i];
 	            conn.set_post(conn.find_post());
 	            conn.redraw();
-	        });
+	        }
 	        var conn_out = this.conn_out.slice();
-	        conn_out.forEach(function (conn) {
+	        for (var i = 0; i < conn_out; i++) {
+	            var conn = conn_out[i];
 	            conn.set_pre(conn.find_pre());
 	            conn.redraw();
-	        });
+	        }
 	        // Remove from the SVG
 	        this.g_items.removeChild(this.g);
 	        if (this.depth === 1) {
@@ -45947,9 +47096,11 @@ var Nengo =
 	            this.mini_item.remove();
 	        }
 	    };
+	    ;
 	    NetGraphItem.prototype.constrain_aspect = function () {
 	        this.size = this.get_displayed_size();
 	    };
+	    ;
 	    NetGraphItem.prototype.get_displayed_size = function () {
 	        if (this.aspect !== null) {
 	            var h_scale = this.ng.get_scaled_width();
@@ -45968,6 +47119,7 @@ var Nengo =
 	            return [this.width, this.height];
 	        }
 	    };
+	    ;
 	    NetGraphItem.prototype.constrain_position = function () {
 	        this.constrain_aspect();
 	        if (this.parent !== null) {
@@ -45979,33 +47131,38 @@ var Nengo =
 	            this.y = Math.max(this.y, this.height);
 	        }
 	    };
+	    ;
 	    NetGraphItem.prototype.redraw_position = function () {
 	        var screen = this.get_screen_location();
 	        // Update my position
 	        this.g.setAttribute("transform", "translate(" + screen[0] + ", " +
 	            screen[1] + ")");
 	    };
+	    ;
 	    NetGraphItem.prototype.redraw_children = function () {
 	        // Update any children's positions
-	        this.children.forEach(function (child) {
-	            child.redraw();
-	        });
+	        for (var i = 0; i < this.children.length; i++) {
+	            this.children[i].redraw();
+	        }
 	    };
+	    ;
 	    NetGraphItem.prototype.redraw_child_connections = function () {
 	        // Update any children's positions
-	        this.child_connections.forEach(function (conn) {
-	            conn.redraw();
-	        });
+	        for (var i = 0; i < this.child_connections.length; i++) {
+	            this.child_connections[i].redraw();
+	        }
 	    };
+	    ;
 	    NetGraphItem.prototype.redraw_connections = function () {
 	        // Update any connections into and out of this
-	        this.conn_in.forEach(function (conn) {
-	            conn.redraw();
-	        });
-	        this.conn_out.forEach(function (conn) {
-	            conn.redraw();
-	        });
+	        for (var i = 0; i < this.conn_in.length; i++) {
+	            this.conn_in[i].redraw();
+	        }
+	        for (var i = 0; i < this.conn_out.length; i++) {
+	            this.conn_out[i].redraw();
+	        }
 	    };
+	    ;
 	    /**
 	     * Return the width of the item, taking into account parent widths.
 	     */
@@ -46018,6 +47175,7 @@ var Nengo =
 	        }
 	        return w;
 	    };
+	    ;
 	    /**
 	     * Return the height of the item, taking into account parent heights.
 	     */
@@ -46030,6 +47188,7 @@ var Nengo =
 	        }
 	        return h;
 	    };
+	    ;
 	    NetGraphItem.prototype.redraw_size = function () {
 	        var screen_w = this.get_screen_width();
 	        var screen_h = this.get_screen_height();
@@ -46042,17 +47201,17 @@ var Nengo =
 	            }
 	        }
 	        // The circle pattern isn't perfectly square, so make its area smaller
-	        var area_w = this.itemtype === "ens" ? screen_w * 0.97 : screen_w;
+	        var area_w = this.type === "ens" ? screen_w * 0.97 : screen_w;
 	        var area_h = screen_h;
 	        this.area.setAttribute("transform", "translate(-" + (area_w / 2) + ", -" + (area_h / 2) + ")");
 	        this.area.setAttribute("width", area_w);
 	        this.area.setAttribute("height", area_h);
-	        if (this.itemtype === "ens") {
+	        if (this.type === "ens") {
 	            var scale = Math.sqrt(screen_h * screen_h + screen_w * screen_w) /
 	                Math.sqrt(2);
 	            var r = 17.8; // TODO: Don't hardcode the size of the ensemble
 	            this.shape.setAttribute("transform", "scale(" + scale / 2 / r + ")");
-	            this.shape.setAttribute("stroke-width", 20 / scale);
+	            this.shape.style.setProperty("stroke-width", 20 / scale);
 	        }
 	        else if (this.passthrough) {
 	            this.shape.setAttribute("rx", screen_w / 2);
@@ -46062,7 +47221,7 @@ var Nengo =
 	            this.shape.setAttribute("transform", "translate(-" + (screen_w / 2) + ", -" + (screen_h / 2) + ")");
 	            this.shape.setAttribute("width", screen_w);
 	            this.shape.setAttribute("height", screen_h);
-	            if (this.itemtype === "node") {
+	            if (this.type === "node") {
 	                var radius = Math.min(screen_w, screen_h);
 	                // TODO: Don't hardcode .1 as the corner radius scale
 	                this.shape.setAttribute("rx", radius * .1);
@@ -46073,6 +47232,7 @@ var Nengo =
 	            this.label.setAttribute("transform", "translate(0, " + (screen_h / 2) + ")");
 	        }
 	    };
+	    ;
 	    NetGraphItem.prototype.get_screen_width = function () {
 	        if (this.minimap && !this.ng.mm_display) {
 	            return 1;
@@ -46095,6 +47255,7 @@ var Nengo =
 	        }
 	        return screen_w * 2;
 	    };
+	    ;
 	    NetGraphItem.prototype.get_screen_height = function () {
 	        if (this.minimap && !this.ng.mm_display) {
 	            return 1;
@@ -46117,6 +47278,7 @@ var Nengo =
 	        }
 	        return screen_h * 2;
 	    };
+	    ;
 	    /**
 	     * Force a redraw of the item.
 	     */
@@ -46130,6 +47292,7 @@ var Nengo =
 	            this.mini_item.redraw();
 	        }
 	    };
+	    ;
 	    /**
 	     * Determine the pixel location of the centre of the item.
 	     */
@@ -46180,6 +47343,7 @@ var Nengo =
 	        return [this.x * ww + dx + offsetX,
 	            this.y * hh + dy + offsetY];
 	    };
+	    ;
 	    /**
 	     * Function for drawing ensemble svg.
 	     */
@@ -46208,14 +47372,18 @@ var Nengo =
 	        shape.appendChild(circle);
 	        return shape;
 	    };
+	    ;
 	    /**
 	     * Helper function for setting attributes.
 	     */
 	    NetGraphItem.prototype.setAttributes = function (el, attrs) {
-	        Object.keys(attrs).forEach(function (key) {
-	            el.setAttribute(key, attrs[key]);
-	        });
+	        for (var key in attrs) {
+	            if (attrs.hasOwnProperty(key)) {
+	                el.setAttribute(key, attrs[key]);
+	            }
+	        }
 	    };
+	    ;
 	    NetGraphItem.prototype.getMinMaxXY = function () {
 	        var min_x = this.x - this.width;
 	        var max_x = this.x + this.width;
@@ -46223,6 +47391,7 @@ var Nengo =
 	        var max_y = this.y + this.height;
 	        return [min_x, max_x, min_y, max_y];
 	    };
+	    ;
 	    return NetGraphItem;
 	}());
 	Object.defineProperty(exports, "__esModule", { value: true });
@@ -46230,22 +47399,51 @@ var Nengo =
 
 
 /***/ },
-/* 73 */
+/* 80 */
 /*!************************************!*\
   !*** ./nengo_gui/static/config.ts ***!
   \************************************/
 /***/ function(module, exports) {
 
 	"use strict";
+	/**
+	 * A class that takes the place of localStorage if it doesn't exist.
+	 *
+	 * Note that this does not aim to implements the whole localStorage spec;
+	 * it only implements what Config uses. The values set in this object will
+	 * only exist for the current session and will not persist across sessions.
+	 */
+	var MockLocalStorage = (function () {
+	    function MockLocalStorage() {
+	        this.items = {};
+	    }
+	    MockLocalStorage.prototype.getItem = function (key) {
+	        return this.items[key];
+	    };
+	    MockLocalStorage.prototype.removeItem = function (key) {
+	        delete this.items[key];
+	    };
+	    MockLocalStorage.prototype.setItem = function (key, val) {
+	        this.items[key] = String(val);
+	    };
+	    return MockLocalStorage;
+	}());
+	/* tslint:disable:no-typeof-undefined */
 	var Config = (function () {
 	    function Config() {
 	        var _this = this;
+	        if (typeof localStorage === "undefined" || localStorage === null) {
+	            this.localStorage = new MockLocalStorage();
+	        }
+	        else {
+	            this.localStorage = localStorage;
+	        }
 	        var define_option = function (key, default_val) {
 	            var typ = typeof (default_val);
 	            Object.defineProperty(_this, key, {
 	                enumerable: true,
 	                get: function () {
-	                    var val = localStorage.getItem("ng." + key) || default_val;
+	                    var val = _this.localStorage.getItem("ng." + key) || default_val;
 	                    if (typ === "boolean") {
 	                        return val === "true" || val === true;
 	                    }
@@ -46257,7 +47455,7 @@ var Nengo =
 	                    }
 	                },
 	                set: function (val) {
-	                    return localStorage.setItem("ng." + key, val);
+	                    return _this.localStorage.setItem("ng." + key, val);
 	                },
 	            });
 	        };
@@ -46275,8 +47473,9 @@ var Nengo =
 	        define_option("console_height", 100);
 	    }
 	    Config.prototype.restore_defaults = function () {
+	        var _this = this;
 	        Object.keys(this).forEach(function (option) {
-	            localStorage.removeItem("ng." + option);
+	            _this.localStorage.removeItem("ng." + option);
 	        });
 	    };
 	    return Config;
@@ -46286,7 +47485,7 @@ var Nengo =
 
 
 /***/ },
-/* 74 */
+/* 81 */
 /*!************************************!*\
   !*** ./nengo_gui/static/editor.ts ***!
   \************************************/
@@ -46303,19 +47502,19 @@ var Nengo =
 	 * @param {dict} args - A set of constructor arguments (see Component)
 	 */
 	"use strict";
-	var ace = __webpack_require__(/*! brace */ 75);
-	__webpack_require__(/*! brace/mode/python */ 78);
+	var ace = __webpack_require__(/*! brace */ 82);
+	__webpack_require__(/*! brace/mode/python */ 85);
 	var interact = __webpack_require__(/*! interact.js */ 61);
 	var $ = __webpack_require__(/*! jquery */ 12);
-	__webpack_require__(/*! ./editor.css */ 79);
+	__webpack_require__(/*! ./editor.css */ 86);
 	var utils = __webpack_require__(/*! ./utils */ 65);
+	var viewport = __webpack_require__(/*! ./viewport */ 67);
 	var Range = ace.acequire("ace/range").Range;
 	var Editor = (function () {
 	    function Editor(uid, netgraph) {
-	        var _this = this;
+	        var self = this;
 	        this.netgraph = netgraph;
 	        this.config = this.netgraph.config;
-	        this.viewport = this.netgraph.viewport;
 	        if (uid[0] === "<") {
 	            console.error("invalid uid for Editor: " + uid);
 	        }
@@ -46323,7 +47522,7 @@ var Nengo =
 	        this.max_width = $(window).width() - 100;
 	        this.ws = utils.create_websocket(uid);
 	        this.ws.onmessage = function (event) {
-	            _this.on_message(event);
+	            self.on_message(event);
 	        };
 	        this.current_code = "";
 	        var code_div = document.createElement("div");
@@ -46351,60 +47550,60 @@ var Nengo =
 	        this.auto_update = true;
 	        // Setup the button to toggle the code editor
 	        $("#Toggle_ace").on("click", function () {
-	            _this.toggle_shown();
+	            self.toggle_shown();
 	        });
 	        $("#Save_file").on("click", function () {
-	            _this.save_file();
+	            self.save_file();
 	        });
 	        $("#Font_increase").on("click", function () {
-	            _this.font_size += 1;
+	            self.font_size += 1;
 	        });
 	        $("#Font_decrease").on("click", function () {
-	            _this.font_size -= 1;
+	            self.font_size -= 1;
 	        });
 	        this.schedule_updates();
 	        Object.defineProperty(this, "width", {
 	            get: function () {
-	                return _this.config.editor_width;
+	                return self.config.editor_width;
 	            },
 	            set: function (val) {
-	                val = Math.max(Math.min(val, _this.max_width), _this.min_width);
+	                val = Math.max(Math.min(val, this.max_width), this.min_width);
 	                $("#rightpane").width(val);
-	                _this.config.editor_width = val;
+	                self.config.editor_width = val;
 	            },
 	        });
 	        Object.defineProperty(this, "hidden", {
 	            get: function () {
-	                return _this.config.hide_editor;
+	                return self.config.hide_editor;
 	            },
 	            set: function (val) {
-	                _this.config.hide_editor = val;
+	                self.config.hide_editor = val;
 	                if (val) {
-	                    _this.hide_editor();
+	                    this.hide_editor();
 	                }
 	                else {
-	                    _this.show_editor();
+	                    this.show_editor();
 	                }
 	            },
 	        });
 	        Object.defineProperty(this, "font_size", {
 	            get: function () {
-	                return _this.config.editor_font_size;
+	                return self.config.editor_font_size;
 	            },
 	            set: function (val) {
 	                val = Math.max(val, 6);
-	                _this.editor.setFontSize(val);
-	                _this.config.editor_font_size = val;
+	                this.editor.setFontSize(val);
+	                self.config.editor_font_size = val;
 	            },
 	        });
 	        // Automatically update the model based on the text
 	        Object.defineProperty(this, "auto_update", {
 	            get: function () {
-	                return _this.config.auto_update;
+	                return self.config.auto_update;
 	            },
 	            set: function (val) {
-	                _this.update_trigger = val;
-	                _this.config.auto_update = val;
+	                this.update_trigger = val;
+	                self.config.auto_update = val;
 	            },
 	        });
 	        this.width = this.config.editor_width;
@@ -46413,14 +47612,14 @@ var Nengo =
 	        this.auto_update = this.config.auto_update;
 	        this.redraw();
 	        $(window).on("resize", function () {
-	            _this.on_resize();
+	            self.on_resize();
 	        });
 	        interact("#editor")
 	            .resizable({
 	            edges: { bottom: false, left: true, right: false, top: false },
 	        }).on("resizemove", function (event) {
-	            _this.width -= event.deltaRect.left;
-	            _this.redraw();
+	            self.width -= event.deltaRect.left;
+	            self.redraw();
 	        });
 	        interact("#console")
 	            .resizable({
@@ -46428,31 +47627,32 @@ var Nengo =
 	        }).on("resizemove", function (event) {
 	            var max = $("#rightpane").height() - 40;
 	            var min = 20;
-	            _this.console_height -= event.deltaRect.top;
-	            _this.console_height = utils.clip(_this.console_height, min, max);
-	            $("#console").height(_this.console_height);
-	            _this.width -= event.deltaRect.left;
-	            _this.redraw();
+	            self.console_height -= event.deltaRect.top;
+	            self.console_height = utils.clip(self.console_height, min, max);
+	            $("#console").height(self.console_height);
+	            self.width -= event.deltaRect.left;
+	            self.redraw();
 	        }).on("resizeend", function (event) {
-	            _this.config.console_height = _this.console_height;
+	            self.config.console_height = self.console_height;
 	        });
 	    }
+	    ;
 	    /**
 	     * Send changes to the code to server every 100ms.
 	     */
 	    Editor.prototype.schedule_updates = function () {
-	        var _this = this;
+	        var self = this;
 	        setInterval(function () {
-	            var editor_code = _this.editor.getValue();
-	            if (editor_code !== _this.current_code) {
-	                if (_this.update_trigger) {
-	                    _this.update_trigger = _this.auto_update;
-	                    _this.ws.send(JSON.stringify({
+	            var editor_code = self.editor.getValue();
+	            if (editor_code !== self.current_code) {
+	                if (self.update_trigger) {
+	                    self.update_trigger = self.auto_update;
+	                    self.ws.send(JSON.stringify({
 	                        code: editor_code,
 	                        save: false,
 	                    }));
-	                    _this.current_code = editor_code;
-	                    _this.enable_save();
+	                    self.current_code = editor_code;
+	                    self.enable_save();
 	                    $("#Sync_editor_button").addClass("disabled");
 	                }
 	                else {
@@ -46463,6 +47663,7 @@ var Nengo =
 	            }
 	        }, 100);
 	    };
+	    ;
 	    Editor.prototype.save_file = function () {
 	        if (!($("#Save_file").hasClass("disabled"))) {
 	            var editor_code = this.editor.getValue();
@@ -46470,12 +47671,15 @@ var Nengo =
 	            this.disable_save();
 	        }
 	    };
+	    ;
 	    Editor.prototype.enable_save = function () {
 	        $("#Save_file").removeClass("disabled");
 	    };
+	    ;
 	    Editor.prototype.disable_save = function () {
 	        $("#Save_file").addClass("disabled");
 	    };
+	    ;
 	    Editor.prototype.on_message = function (event) {
 	        var msg = JSON.parse(event.data);
 	        if (msg.code !== undefined) {
@@ -46497,7 +47701,7 @@ var Nengo =
 	        }
 	        else if (msg.filename !== undefined) {
 	            if (msg.valid) {
-	                utils.safe_set_text($("#filename")[0], msg.filename);
+	                $("#filename")[0].innerHTML = msg.filename;
 	                // Update the URL so reload and bookmarks work as expected
 	                history.pushState({}, msg.filename, "/?filename=" + msg.filename);
 	            }
@@ -46522,6 +47726,7 @@ var Nengo =
 	            console.warn("Unhandled message: " + msg);
 	        }
 	    };
+	    ;
 	    Editor.prototype.on_resize = function () {
 	        this.max_width = $(window).width() - 100;
 	        if (this.width > this.max_width) {
@@ -46529,16 +47734,19 @@ var Nengo =
 	        }
 	        this.redraw();
 	    };
+	    ;
 	    Editor.prototype.show_editor = function () {
 	        var editor = document.getElementById("rightpane");
 	        editor.style.display = "flex";
 	        this.redraw();
 	    };
+	    ;
 	    Editor.prototype.hide_editor = function () {
 	        var editor = document.getElementById("rightpane");
 	        editor.style.display = "none";
 	        this.redraw();
 	    };
+	    ;
 	    Editor.prototype.toggle_shown = function () {
 	        if (this.hidden) {
 	            this.hidden = false;
@@ -46548,13 +47756,15 @@ var Nengo =
 	        }
 	        this.redraw();
 	    };
+	    ;
 	    Editor.prototype.redraw = function () {
 	        this.editor.resize();
 	        if (this.netgraph !== undefined) {
 	            this.netgraph.on_resize();
 	        }
-	        this.viewport.on_resize();
+	        viewport.on_resize();
 	    };
+	    ;
 	    return Editor;
 	}());
 	Object.defineProperty(exports, "__esModule", { value: true });
@@ -46562,7 +47772,7 @@ var Nengo =
 
 
 /***/ },
-/* 75 */
+/* 82 */
 /*!*************************!*\
   !*** ../brace/index.js ***!
   \*************************/
@@ -50292,7 +51502,7 @@ var Nengo =
 	    if (!global || !global.document)
 	        return;
 	    
-	    options.packaged = packaged || acequire.packaged || module.packaged || (global.define && __webpack_require__(/*! !webpack amd define */ 76).packaged);
+	    options.packaged = packaged || acequire.packaged || module.packaged || (global.define && __webpack_require__(/*! !webpack amd define */ 83).packaged);
 	
 	    var scriptOptions = {};
 	    var scriptUrl = "";
@@ -62975,7 +64185,7 @@ var Nengo =
 	
 	    try {
 	            var workerSrc = mod.src;
-	    var Blob = __webpack_require__(/*! w3c-blob */ 77);
+	    var Blob = __webpack_require__(/*! w3c-blob */ 84);
 	    var blob = new Blob([ workerSrc ], { type: 'application/javascript' });
 	    var blobUrl = (window.URL || window.webkitURL).createObjectURL(blob);
 	
@@ -65250,7 +66460,7 @@ var Nengo =
 	module.exports = window.ace.acequire("ace/ace");
 
 /***/ },
-/* 76 */
+/* 83 */
 /*!***************************************!*\
   !*** (webpack)/buildin/amd-define.js ***!
   \***************************************/
@@ -65260,7 +66470,7 @@ var Nengo =
 
 
 /***/ },
-/* 77 */
+/* 84 */
 /*!**************************************!*\
   !*** ../brace/~/w3c-blob/browser.js ***!
   \**************************************/
@@ -65298,7 +66508,7 @@ var Nengo =
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 78 */
+/* 85 */
 /*!*******************************!*\
   !*** ../brace/mode/python.js ***!
   \*******************************/
@@ -65571,7 +66781,7 @@ var Nengo =
 
 
 /***/ },
-/* 79 */
+/* 86 */
 /*!*************************************!*\
   !*** ./nengo_gui/static/editor.css ***!
   \*************************************/
@@ -65580,7 +66790,7 @@ var Nengo =
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../~/css-loader!./editor.css */ 80);
+	var content = __webpack_require__(/*! !./../../~/css-loader!./editor.css */ 87);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(/*! ./../../~/style-loader/addStyles.js */ 10)(content, {});
@@ -65600,7 +66810,7 @@ var Nengo =
 	}
 
 /***/ },
-/* 80 */
+/* 87 */
 /*!****************************************************!*\
   !*** ./~/css-loader!./nengo_gui/static/editor.css ***!
   \****************************************************/
@@ -65617,7 +66827,7 @@ var Nengo =
 
 
 /***/ },
-/* 81 */
+/* 88 */
 /*!***************************************!*\
   !*** ./nengo_gui/static/side_menu.ts ***!
   \***************************************/
@@ -65631,7 +66841,7 @@ var Nengo =
 	 */
 	"use strict";
 	var $ = __webpack_require__(/*! jquery */ 12);
-	__webpack_require__(/*! ./side_menu.css */ 82);
+	__webpack_require__(/*! ./side_menu.css */ 89);
 	var SideMenu = (function () {
 	    function SideMenu(sim) {
 	        var _this = this;
@@ -65794,7 +67004,7 @@ var Nengo =
 
 
 /***/ },
-/* 82 */
+/* 89 */
 /*!****************************************!*\
   !*** ./nengo_gui/static/side_menu.css ***!
   \****************************************/
@@ -65803,7 +67013,7 @@ var Nengo =
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../~/css-loader!./side_menu.css */ 83);
+	var content = __webpack_require__(/*! !./../../~/css-loader!./side_menu.css */ 90);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(/*! ./../../~/style-loader/addStyles.js */ 10)(content, {});
@@ -65823,7 +67033,7 @@ var Nengo =
 	}
 
 /***/ },
-/* 83 */
+/* 90 */
 /*!*******************************************************!*\
   !*** ./~/css-loader!./nengo_gui/static/side_menu.css ***!
   \*******************************************************/
@@ -65840,7 +67050,7 @@ var Nengo =
 
 
 /***/ },
-/* 84 */
+/* 91 */
 /*!*****************************************!*\
   !*** ./nengo_gui/static/sim_control.ts ***!
   \*****************************************/
@@ -65850,8 +67060,8 @@ var Nengo =
 	var d3 = __webpack_require__(/*! d3 */ 66);
 	var interact = __webpack_require__(/*! interact.js */ 61);
 	var $ = __webpack_require__(/*! jquery */ 12);
-	var modal_1 = __webpack_require__(/*! ./modal */ 85);
-	__webpack_require__(/*! ./sim_control.css */ 103);
+	var modal_1 = __webpack_require__(/*! ./modal */ 92);
+	__webpack_require__(/*! ./sim_control.css */ 99);
 	var utils = __webpack_require__(/*! ./utils */ 65);
 	/**
 	 * Control panel for a simulation.
@@ -66264,7 +67474,7 @@ var Nengo =
 
 
 /***/ },
-/* 85 */
+/* 92 */
 /*!***********************************!*\
   !*** ./nengo_gui/static/modal.ts ***!
   \***********************************/
@@ -66273,15 +67483,14 @@ var Nengo =
 	"use strict";
 	var d3 = __webpack_require__(/*! d3 */ 66);
 	var $ = __webpack_require__(/*! jquery */ 12);
-	var component_1 = __webpack_require__(/*! ./components/component */ 68);
-	var data_to_csv_1 = __webpack_require__(/*! ./data_to_csv */ 86);
-	var hotkeys_1 = __webpack_require__(/*! ./hotkeys */ 97);
-	__webpack_require__(/*! ./modal.css */ 98);
-	var tooltips = __webpack_require__(/*! ./tooltips */ 100);
+	var all_components = __webpack_require__(/*! ./components/all_components */ 68);
+	var hotkeys_1 = __webpack_require__(/*! ./hotkeys */ 93);
+	__webpack_require__(/*! ./modal.css */ 94);
+	var tooltips = __webpack_require__(/*! ./tooltips */ 96);
 	var utils = __webpack_require__(/*! ./utils */ 65);
 	var Modal = (function () {
 	    function Modal($div, editor, sim) {
-	        var _this = this;
+	        var self = this;
 	        this.$div = $div;
 	        this.$title = this.$div.find(".modal-title").first();
 	        this.$footer = this.$div.find(".modal-footer").first();
@@ -66294,30 +67503,32 @@ var Nengo =
 	        this.sim_was_running = false;
 	        // This listener is triggered when the modal is closed
 	        this.$div.on("hidden.bs.modal", function () {
-	            if (_this.sim_was_running) {
-	                _this.sim.play();
+	            if (self.sim_was_running) {
+	                self.sim.play();
 	            }
-	            _this.hotkeys.set_active(true);
+	            self.hotkeys.set_active(true);
 	        });
 	    }
+	    ;
 	    Modal.prototype.show = function () {
 	        this.hotkeys.set_active(false);
 	        this.sim_was_running = !this.sim.paused;
 	        this.$div.modal("show");
 	        this.sim.pause();
 	    };
+	    ;
 	    Modal.prototype.title = function (title) {
 	        this.$title.text(title);
 	    };
-	    Modal.prototype.footer = function (ftype, ok_function, cancel_function) {
-	        var _this = this;
-	        if (cancel_function === void 0) { cancel_function = null; }
+	    ;
+	    Modal.prototype.footer = function (type, ok_function, cancel_function) {
+	        var self = this;
 	        this.$footer.empty();
-	        if (ftype === "close") {
+	        if (type === "close") {
 	            this.$footer.append("<button type='button' class='btn btn-default'" +
 	                " data-dismiss='modal'>Close</button>");
 	        }
-	        else if (ftype === "ok_cancel") {
+	        else if (type === "ok_cancel") {
 	            var $footerBtn = $("<div class='form-group'/>")
 	                .appendTo(this.$footer);
 	            $footerBtn.append("<button id='cancel-button' type='button' " +
@@ -66325,7 +67536,7 @@ var Nengo =
 	            $footerBtn.append("<button id='OK' type='submit' " +
 	                "class='btn btn-primary'>OK</button>");
 	            $("#OK").on("click", ok_function);
-	            if (cancel_function !== null) {
+	            if (typeof cancel_function !== "undefined") {
 	                $("#cancel-button").on("click", cancel_function);
 	            }
 	            else {
@@ -66334,7 +67545,7 @@ var Nengo =
 	                });
 	            }
 	        }
-	        else if (ftype === "confirm_reset") {
+	        else if (type === "confirm_reset") {
 	            this.$footer.append("<button type='button' " +
 	                "id='confirm_reset_button' " +
 	                "class='btn btn-primary'>Reset</button>");
@@ -66342,10 +67553,10 @@ var Nengo =
 	                "class='btn btn-default' " +
 	                "data-dismiss='modal'>Close</button>");
 	            $("#confirm_reset_button").on("click", function () {
-	                _this.toolbar.reset_model_layout();
+	                self.toolbar.reset_model_layout();
 	            });
 	        }
-	        else if (ftype === "confirm_savepdf") {
+	        else if (type === "confirm_savepdf") {
 	            this.$footer.append("<button type='button' " +
 	                "id='confirm_savepdf_button' class='btn btn-primary' " +
 	                "data-dismiss='modal'>Save</button>");
@@ -66375,7 +67586,7 @@ var Nengo =
 	                document.body.removeChild(link);
 	            });
 	        }
-	        else if (ftype === "confirm_savecsv") {
+	        else if (type === "confirm_savecsv") {
 	            this.$footer.append("<button type='button' " +
 	                "id='confirm_savecsv_button' class='btn btn-primary' " +
 	                "data-dismiss='modal'>Save</button>");
@@ -66383,7 +67594,7 @@ var Nengo =
 	                "class='btn btn-default' " +
 	                "data-dismiss='modal'>Close</button>");
 	            $("#confirm_savecsv_button").on("click", function () {
-	                var csv = data_to_csv_1.default(component_1.all_components);
+	                var csv = all_components.to_csv();
 	                // Extract filename from the path
 	                var path = $("#filename")[0].textContent;
 	                var filename = path.split("/").pop();
@@ -66400,7 +67611,7 @@ var Nengo =
 	                document.body.removeChild(link);
 	            });
 	        }
-	        else if (ftype === "refresh") {
+	        else if (type === "refresh") {
 	            this.$footer.append("<button type='button' " +
 	                "id='refresh_button' " +
 	                "class='btn btn-primary'>Refresh</button>");
@@ -66409,24 +67620,29 @@ var Nengo =
 	            });
 	        }
 	        else {
-	            console.warn("Modal footer type " + ftype + " not recognized.");
+	            console.warn("Modal footer type " + type + " not recognized.");
 	        }
 	    };
+	    ;
 	    Modal.prototype.clear_body = function () {
 	        this.$body.empty();
 	        this.$div.find(".modal-dialog").removeClass("modal-sm");
 	        this.$div.off("shown.bs.modal");
 	    };
-	    Modal.prototype.text_body = function (text, mtype) {
-	        if (mtype === void 0) { mtype = "info"; }
+	    ;
+	    Modal.prototype.text_body = function (text, type) {
+	        if (typeof type === "undefined") {
+	            type = "info";
+	        }
 	        this.clear_body();
-	        var $alert = $("<div class='alert alert-" + mtype + "' role='alert'/>")
+	        var $alert = $("<div class='alert alert-" + type + "' role='alert'/>")
 	            .appendTo(this.$body);
 	        var $p = $("<p/>").appendTo($alert);
 	        $p.append("<span class='glyphicon glyphicon-exclamation-sign' " +
 	            "aria-hidden='true'></span>");
 	        $p.append(document.createTextNode(text));
 	    };
+	    ;
 	    Modal.prototype.help_body = function () {
 	        this.clear_body();
 	        var ctrl = "Ctrl";
@@ -66463,39 +67679,37 @@ var Nengo =
 	        $body.append("</table>");
 	        $body.appendTo(this.$body);
 	    };
+	    ;
 	    /**
 	     * Sets up the tabs for Info modals.
-	     *
-	     * @param {object} tabinfo - Info about each tab; specifically
-	     * @param {string} tabinfo.id - Tab ID
-	     * @param {string} tabinfo.title - Tab title
-	     * @returns {object} tabdivs - Divs associated with each tab ID
 	     */
 	    Modal.prototype.tabbed_body = function (tabinfo) {
 	        this.clear_body();
 	        var tabdivs = {};
 	        var $tab_ul = $("<ul class='nav nav-tabs'/>").appendTo(this.$body);
 	        var $content = $("<div class='tab-content'/>").appendTo(this.$body);
-	        tabinfo.forEach(function (tab, i) {
+	        for (var i = 0; i < tabinfo.length; i++) {
 	            // <li> for the tab label
 	            var $tab_li = $("<li/>").appendTo($tab_ul);
-	            $tab_li.append("<a href='#" + tab.id + "' data-toggle='tab'>" +
-	                tab.title + "</a>");
+	            $tab_li.append("<a href='#" + tabinfo[i].id +
+	                "' data-toggle='tab'>" +
+	                tabinfo[i].title + "</a>");
 	            // <div> for the tab content
-	            tabdivs[tab.id] = $("<div class='tab-pane' id='" + tab.id + "'/>")
+	            tabdivs[tabinfo[i].id] = $("<div class='tab-pane' id='" + tabinfo[i].id + "'/>")
 	                .appendTo($content);
 	            if (i === 0) {
 	                $tab_li.addClass("active");
-	                tabdivs[tab.id].addClass("active");
+	                tabdivs[tabinfo[i].id].addClass("active");
 	            }
-	        });
+	        }
 	        return tabdivs;
 	    };
+	    ;
 	    /**
 	     * Sets up the body for main configuration.
 	     */
 	    Modal.prototype.main_config = function () {
-	        var _this = this;
+	        var self = this;
 	        this.clear_body();
 	        var $form = $("<form class='form-horizontal' id" +
 	            "='myModalForm'/>").appendTo(this.$body);
@@ -66570,25 +67784,25 @@ var Nengo =
 	        });
 	        $("#zoom-fonts").prop("checked", this.netgraph.zoom_fonts);
 	        $("#zoom-fonts").change(function () {
-	            _this.netgraph.zoom_fonts = $("#zoom-fonts").prop("checked");
+	            self.netgraph.zoom_fonts = $("#zoom-fonts").prop("checked");
 	        });
 	        $("#aspect-resize").prop("checked", this.netgraph.aspect_resize);
 	        $("#aspect-resize").change(function () {
-	            _this.netgraph.aspect_resize = $("#aspect-resize").prop("checked");
+	            self.netgraph.aspect_resize = $("#aspect-resize").prop("checked");
 	        });
 	        $("#transparent-nets").prop("checked", this.netgraph.transparent_nets);
 	        $("#transparent-nets").change(function () {
-	            _this.netgraph.transparent_nets =
+	            self.netgraph.transparent_nets =
 	                $("#transparent-nets").prop("checked");
 	        });
-	        $("#sync-editor").prop("checked", this.editor.auto_update);
+	        $("#sync-editor").prop("checked", self.editor.auto_update);
 	        $("#sync-editor").change(function () {
-	            _this.editor.auto_update = $("#sync-editor").prop("checked");
-	            _this.editor.update_trigger = $("#sync-editor").prop("checked");
+	            self.editor.auto_update = $("#sync-editor").prop("checked");
+	            self.editor.update_trigger = $("#sync-editor").prop("checked");
 	        });
 	        $("#config-fontsize").val(this.netgraph.font_size);
 	        $("#config-fontsize").bind("keyup input", function () {
-	            _this.netgraph.font_size = parseInt($("#config-fontsize").val(), 10);
+	            self.netgraph.font_size = parseInt($("#config-fontsize").val(), 10);
 	        });
 	        $("#config-fontsize").attr("data-my_validator", "custom");
 	        var sd = this.config.scriptdir;
@@ -66601,10 +67815,10 @@ var Nengo =
 	            if (!newsd) {
 	                newsd = ".";
 	            }
-	            _this.config.scriptdir = newsd;
+	            self.config.scriptdir = newsd;
 	        });
 	        $("#config-backend").change(function () {
-	            _this.sim.set_backend($("#config-backend").val());
+	            self.sim.set_backend($("#config-backend").val());
 	        });
 	        // Allow the enter key to submit
 	        var submit = function (event) {
@@ -66616,11 +67830,9 @@ var Nengo =
 	        $("#config-fontsize").keypress(submit);
 	        $("#config-scriptdir").keypress(submit);
 	    };
+	    ;
 	    /**
 	     * Sets up the body for standard input forms.
-	     *
-	     * @param {string} start_values - Initial values to show first
-	     * @param {string} label - Label associated with the input
 	     */
 	    Modal.prototype.single_input_body = function (start_values, label) {
 	        this.clear_body();
@@ -66668,15 +67880,16 @@ var Nengo =
 	                    }
 	                    // If the last character is a comma or there are no
 	                    // characters, fill in the next default value
-	                    if (cur_val.length === 0
-	                        || cur_val.trim().slice(-1) === ",") {
+	                    if (cur_val.length === 0 ||
+	                        cur_val.trim().slice(-1) === ",") {
 	                        $("#singleInput").val($("#singleInput").val() + pre +
 	                            values[cur_index].trim() + post);
 	                        event.preventDefault();
 	                    }
 	                    else {
 	                        if (cur_index < values.length) {
-	                            $("#singleInput").val($("#singleInput").val() + ", ");
+	                            $("#singleInput")
+	                                .val($("#singleInput").val() + ", ");
 	                            event.preventDefault();
 	                        }
 	                    }
@@ -66684,16 +67897,17 @@ var Nengo =
 	            }
 	        });
 	    };
+	    ;
 	    Modal.prototype.ensemble_body = function (uid, params, plots, conninfo) {
 	        var tabs = this.tabbed_body([
 	            { id: "params", title: "Parameters" },
 	            { id: "plots", title: "Plots" },
-	            { id: "connections", title: "Connections" },
-	        ]);
-	        this.render_params(tabs.params, params, tooltips.Ens);
-	        this.render_plots(tabs.plots, plots);
-	        this.render_connections(tabs.connections, uid, conninfo);
+	            { id: "connections", title: "Connections" }]);
+	        this.render_params(tabs["params"], params, tooltips.Ens); // tslint:disable-line
+	        this.render_plots(tabs["plots"], plots); // tslint:disable-line
+	        this.render_connections(tabs["connections"], uid, conninfo); // tslint:disable-line
 	    };
+	    ;
 	    Modal.prototype.node_body = function (uid, params, plots, conninfo) {
 	        var tabs = this.tabbed_body([
 	            { id: "params", title: "Parameters" },
@@ -66704,6 +67918,7 @@ var Nengo =
 	        this.render_plots(tabs.plots, plots);
 	        this.render_connections(tabs.connections, uid, conninfo);
 	    };
+	    ;
 	    Modal.prototype.net_body = function (uid, stats, conninfo) {
 	        var tabs = this.tabbed_body([
 	            { id: "stats", title: "Statistics" },
@@ -66712,51 +67927,43 @@ var Nengo =
 	        this.render_stats(tabs.stats, stats);
 	        this.render_connections(tabs.connections, uid, conninfo);
 	    };
+	    ;
 	    /**
 	     * Renders information about the parameters of an object.
-	     *
-	     * @param {object} $parent - Parent element to append to.
-	     * @param {[string, string][]} params - Information about params
-	     * @param {object} strings - String resource object
 	     */
 	    Modal.prototype.render_params = function ($parent, params, strings) {
 	        var $plist = $("<dl class='dl-horizontal'/>").appendTo($parent);
-	        params.forEach(function (param) {
+	        for (var i = 0; i < params.length; i++) {
 	            var $dt = $("<dt/>").appendTo($plist);
-	            $dt.text(param[0]);
+	            $dt.text(params[i][0]);
 	            var $dd = $("<dd/>").appendTo($plist);
-	            $dd.text(param[1]);
-	            tooltips.popover($dt, param[0], strings[param[0]]);
-	        });
+	            $dd.text(params[i][1]);
+	            tooltips.popover($dt, params[i][0], strings[params[i][0]]);
+	        }
 	    };
+	    ;
 	    /**
 	     * Renders information about some statistics of an object.
-	     *
-	     * @param {object} $parent - Parent element to append to.
-	     * @param {object} stats - Object statistics
 	     */
 	    Modal.prototype.render_stats = function ($parent, stats) {
-	        stats.forEach(function (stat) {
-	            $parent.append("<h3>" + stat.title + "</h3>");
+	        for (var i = 0; i < stats.length; i++) {
+	            $parent.append("<h3>" + stats[i].title + "</h3>");
 	            var $stable = $("<table class='table table-condensed table-hover'/>")
 	                .appendTo($parent);
-	            stat.stats.forEach(function (statstat) {
+	            for (var j = 0; j < stats[i].stats.length; j++) {
 	                var $tr = $("<tr/>").appendTo($stable);
 	                var $desc = $("<td class='col-md-8'/>").appendTo($tr);
-	                $desc.text(statstat[0]);
+	                $desc.text(stats[i].stats[j][0]);
 	                var $val = $("<td class='col-md-4'/>").appendTo($tr);
-	                $val.text(statstat[1]);
-	            });
-	        });
+	                $val.text(stats[i].stats[j][1]);
+	            }
+	        }
 	    };
+	    ;
 	    /**
 	     * Renders information about plots related to an object.
-	     *
-	     * @param {object} $parent - Parent element to append to.
-	     * @param {object} plots - Object plots
 	     */
 	    Modal.prototype.render_plots = function ($parent, plots) {
-	        var _this = this;
 	        // This indicates an error (usually no sim running)
 	        if (typeof plots === "string") {
 	            var $err = $("<div class='alert alert-danger' role='alert'/>")
@@ -66767,29 +67974,27 @@ var Nengo =
 	            $err.append(document.createTextNode(plots));
 	        }
 	        else {
-	            plots.forEach(function (plot) {
-	                _this.render_plot($parent, plot);
-	            });
+	            for (var i = 0; i < plots.length; i++) {
+	                this.render_plot($parent, plots[i]);
+	            }
 	        }
 	    };
+	    ;
 	    /**
 	     * Renders information about a single plot.
-	     *
-	     * @param {object} $parent - Parent element to append to.
-	     * @param {object} plotinfo - Object plot info
 	     */
 	    Modal.prototype.render_plot = function ($parent, plotinfo) {
 	        $parent.append("<h4>" + plotinfo.title + "</h4>");
 	        if (plotinfo.warnings.length > 0) {
-	            var $warn_1 = $("<div class='alert alert-warning' role='alert'/>")
+	            var $warn = $("<div class='alert alert-warning' role='alert'/>")
 	                .appendTo($parent);
-	            plotinfo.warnings.forEach(function (warning) {
-	                var $p = $("<p/>").appendTo($warn_1);
-	                $p.append("<span class='glyphicon glyphicon-exclamation-sign' " +
-	                    "aria-hidden='true'></span>");
+	            for (var i = 0; i < plotinfo.warnings.length; i++) {
+	                var $p = $("<p/>").appendTo($warn);
+	                $p.append("<span class='glyphicon glyphicon" +
+	                    "-exclamation-sign' aria-hidden='true'></span>");
 	                $p.append("<span class='sr-only'>Warning:</span>");
-	                $p.append(document.createTextNode(warning));
-	            });
+	                $p.append(document.createTextNode(plotinfo.warnings[i]));
+	            }
 	        }
 	        if (plotinfo.plot === "multiline") {
 	            this.multiline_plot($parent.get(0), plotinfo.x, plotinfo.y, plotinfo.x_label, plotinfo.y_label);
@@ -66799,14 +68004,13 @@ var Nengo =
 	                " not understood, or not implemented yet.");
 	        }
 	    };
+	    ;
 	    /**
-	     * Static multiline plot with shared x-axis.
+	     * Static multiline plot with shared x-axis
 	     *
 	     * @param {string} selector - Where the svg will be added
-	     * @param {number[]} x - The shared x-axis
-	     * @param {number[][]} ys - The y data for each line
-	     * @param {string} x_label - Label for x-axis
-	     * @param {string} y_label - Label for y-axis
+	     * @param {float[]} x - The shared x-axis
+	     * @param {float[][]} ys - The y data for each line
 	     */
 	    Modal.prototype.multiline_plot = function (selector, x, ys, x_label, y_label) {
 	        var margin = { bottom: 50, left: 75, right: 0, top: 10 };
@@ -66883,12 +68087,9 @@ var Nengo =
 	            return colors[i];
 	        });
 	    };
+	    ;
 	    /**
 	     * Renders information about connections related to an object.
-	     *
-	     * @param {object} $parent - Parent element to append to.
-	     * @param {string} uid - Object uid
-	     * @param {object} conninfo - Information about connections
 	     */
 	    Modal.prototype.render_connections = function ($parent, uid, conninfo) {
 	        var ngi = this.netgraph.svg_objects[uid];
@@ -66954,7 +68155,7 @@ var Nengo =
 	            $p.append("<span class='glyphicon glyphicon-exclamation-sign' " +
 	                "aria-hidden='true'></span>");
 	            $p.append("<span class='sr-only'>Warning:</span>");
-	            if (ngi.itemtype === "net" && ngi.expanded) {
+	            if (ngi.type === "net" && ngi.expanded) {
 	                $p.append(document.createTextNode("Network is expanded. Please see individual objects " +
 	                    "for connection info."));
 	            }
@@ -66963,32 +68164,33 @@ var Nengo =
 	            }
 	        }
 	    };
+	    ;
 	    /**
 	     * Generates one row in the connections table in the connections tab.
 	     */
 	    Modal.prototype.make_connections_table_row = function ($table, conninfo, conn_objs, get_conn_other, get_conn_conn_uid_list) {
-	        var _this = this;
-	        conn_objs.forEach(function (conn_obj) {
-	            // Get a handle to the connected object
-	            var conn_other = get_conn_other(conn_obj);
+	        for (var i = 0; i < conn_objs.length; i++) {
+	            // Get a handle to the object that we're connected to
+	            var conn_other = get_conn_other(conn_objs[i]);
 	            // Make a row in the table
 	            var $tr = $("<tr/>").appendTo($table);
 	            // Make the objects column
 	            var $objs_td = $("<td>" + String(conn_other.label.innerHTML) +
 	                "</td>").appendTo($tr);
-	            _this.make_conn_path_dropdown_list($objs_td, conn_other.uid, conninfo.obj_type[String(conn_obj.uid)], get_conn_conn_uid_list(conn_obj));
+	            this.make_conn_path_dropdown_list($objs_td, conn_other.uid, conninfo.obj_type[String(conn_objs[i].uid)], get_conn_conn_uid_list(conn_objs[i]));
 	            // Make the functions column
 	            var $func_td = $("<td/>").appendTo($tr);
-	            $func_td.text(conninfo.func[String(conn_obj.uid)]);
+	            $func_td.text(conninfo.func[String(conn_objs[i].uid)]);
 	            // Make the fan data column
 	            var $fan_td = $("<td>" +
-	                conninfo.fan[String(conn_obj.uid)] + "</td>")
+	                conninfo.fan[String(conn_objs[i].uid)] + "</td>")
 	                .appendTo($tr);
-	            if (conninfo.obj_type[String(conn_obj.uid)] === "passthrough") {
+	            if (conninfo.obj_type[String(conn_objs[i].uid)] === "passthrough") {
 	                tooltips.tooltip($fan_td, tooltips.Conn.fan_passthrough);
 	            }
-	        });
+	        }
 	    };
+	    ;
 	    /**
 	     * Generates the connection path dropdown list for the connections tab.
 	     */
@@ -67015,7 +68217,7 @@ var Nengo =
 	            var path_item = void 0;
 	            for (var p = conn_uid_list.length - 1; p >= 0; p--) {
 	                if (conn_uid_list[p] in this.netgraph.svg_objects) {
-	                    // If the uid is in netgraph.svg_objects, use the obj label
+	                    // If the uid is in ng.svg_objects, use the obj's label
 	                    path_item = this.netgraph.svg_objects[conn_uid_list[p]]
 	                        .label.innerHTML;
 	                }
@@ -67025,7 +68227,7 @@ var Nengo =
 	                    path_item = "(" + String(conn_uid_list[p]) + ")";
 	                }
 	                if (others_uid === conn_uid_list[p]) {
-	                    // Toggle the shading option once we reach others_uid
+	                    // Toggle the shading option when others_uid is reached
 	                    shaded_option = "";
 	                }
 	                if (p === 0) {
@@ -67047,12 +68249,13 @@ var Nengo =
 	                            break;
 	                    }
 	                }
-	                $path_list.append("<li class='list-group-item " +
-	                    shaded_option + "'><span class='" +
-	                    endpoint_icon + "'/>" + path_item + "</li>");
+	                $path_list.append("<li class='list-group-item " + shaded_option +
+	                    "'><span class='" + endpoint_icon + "'/>" +
+	                    path_item + "</li>");
 	            }
 	        }
 	    };
+	    ;
 	    return Modal;
 	}());
 	Object.defineProperty(exports, "__esModule", { value: true });
@@ -67070,1437 +68273,7 @@ var Nengo =
 
 
 /***/ },
-/* 86 */
-/*!*******************************************************!*\
-  !*** ./~/ts-loader!./nengo_gui/static/data_to_csv.ts ***!
-  \*******************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * A function that returns simulation data as a csv, only saving data
-	 * which is present in a graph.
-	 * As well, it only saves the data in the datastore, which is based on the
-	 * amount of time kept in the simulation.
-	 *
-	 * @param {Component[]} data_set - A list of the graph items in the simulation
-	 */
-	"use strict";
-	var value_1 = __webpack_require__(/*! ./components/value */ 87);
-	var xyvalue_1 = __webpack_require__(/*! ./components/xyvalue */ 93);
-	function data_to_csv(data_set) {
-	    var values = [];
-	    var csv = [];
-	    data_set = data_set.filter(function (data) {
-	        return data.constructor === value_1.default || data.constructor === xyvalue_1.default;
-	    });
-	    // Extracts all the values from the data_set variable
-	    for (var x = 0; x < data_set.length; x++) {
-	        values.push([]);
-	        for (var y = 0; y < data_set[x].data_store.data.length; y++) {
-	            values[x].push(data_set[x].data_store.data[y]);
-	        }
-	    }
-	    // Grabs all the time steps
-	    var times = data_set[0].data_store.times;
-	    // Headers for the csv file
-	    csv.push(["Graph Name"]);
-	    csv.push(["Times"]);
-	    // Adds ensemble name and appropirate number of spaces to the header
-	    for (var x = 0; x < data_set.length; x++) {
-	        csv[0].push(data_set[x].label.innerHTML);
-	        for (var z = 0; z < values[x].length - 1; z++) {
-	            csv[0].push([]);
-	        }
-	    }
-	    for (var x = 0; x < values.length; x++) {
-	        for (var y = 0; y < values[x].length; y++) {
-	            csv[1].push("Dimension" + (y + 1));
-	        }
-	    }
-	    // Puts the data at each time step into a row in the csv
-	    for (var x = 0; x < times.length; x++) {
-	        var temp_arr = [times[x]];
-	        for (var y = 0; y < values.length; y++) {
-	            for (var z = 0; z < values[y].length; z++) {
-	                temp_arr.push(values[y][z][x]);
-	            }
-	        }
-	        csv.push(temp_arr);
-	    }
-	    // Turns the array into a CSV string
-	    csv.forEach(function (elem, index) {
-	        csv[index] = elem.join(",");
-	    });
-	    return csv.join("\n");
-	}
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = data_to_csv;
-
-
-/***/ },
-/* 87 */
-/*!************************************************************!*\
-  !*** ./~/ts-loader!./nengo_gui/static/components/value.ts ***!
-  \************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Line graph showing decoded values over time
-	 *
-	 * Value constructor is called by python server when a user requests a plot
-	 * or when the config file is making graphs. Server request is handled in
-	 * netgraph.js {.on_message} function.
-	 *
-	 * @constructor
-	 * @param {DOMElement} parent - the element to add this component to
-	 * @param {SimControl} sim - the simulation controller
-	 * @param {dict} args - A set of constructor arguments (see Component)
-	 * @param {int} args.n_lines - number of decoded values
-	 * @param {float} args.min_value - minimum value on y-axis
-	 * @param {float} args.max_value - maximum value on y-axis
-	 */
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var d3 = __webpack_require__(/*! d3 */ 66);
-	var $ = __webpack_require__(/*! jquery */ 12);
-	var datastore_1 = __webpack_require__(/*! ../datastore */ 88);
-	var utils = __webpack_require__(/*! ../utils */ 65);
-	var component_1 = __webpack_require__(/*! ./component */ 68);
-	var time_axes_1 = __webpack_require__(/*! ./time_axes */ 89);
-	__webpack_require__(/*! ./value.css */ 91);
-	var Value = (function (_super) {
-	    __extends(Value, _super);
-	    function Value(parent, viewport, sim, args) {
-	        var _this = this;
-	        _super.call(this, parent, viewport, args);
-	        this.n_lines = args.n_lines || 1;
-	        this.sim = sim;
-	        this.display_time = args.display_time;
-	        this.synapse = args.synapse;
-	        // For storing the accumulated data
-	        this.data_store = new datastore_1.DataStore(this.n_lines, this.sim, 0.0);
-	        this.axes2d = new time_axes_1.default(this.div, args);
-	        // Call schedule_update whenever the time is adjusted in the SimControl
-	        this.sim.div.addEventListener("adjust_time", function (e) {
-	            _this.schedule_update(e);
-	        }, false);
-	        // Call reset whenever the simulation is reset
-	        this.sim.div.addEventListener("sim_reset", function (e) {
-	            _this.reset(e);
-	        }, false);
-	        // Create the lines on the plots
-	        this.line = d3.svg.line()
-	            .x(function (d, i) {
-	            return _this.axes2d.scale_x(_this.data_store.times[i + _this.data_store.first_shown_index]);
-	        }).y(function (d) {
-	            return _this.axes2d.scale_y(d);
-	        });
-	        this.path = this.axes2d.svg.append("g")
-	            .selectAll("path")
-	            .data(this.data_store.data);
-	        this.colors = utils.make_colors(this.n_lines);
-	        this.path.enter()
-	            .append("path")
-	            .attr("class", "line")
-	            .style("stroke", function (d, i) {
-	            return _this.colors[i];
-	        });
-	        // Flag for whether or not update code should be changing the crosshair.
-	        // Both zooming and the simulator time changing cause an update, but the
-	        // crosshair should only update when the time is changing.
-	        this.crosshair_updates = false;
-	        // Keep track of mouse position TODO: fix this to be not required
-	        this.crosshair_mouse = [0, 0];
-	        this.crosshair_g = this.axes2d.svg.append("g")
-	            .attr("class", "crosshair");
-	        // TODO: put the crosshair properties in CSS
-	        this.crosshair_g.append("line")
-	            .attr("id", "crosshairX")
-	            .attr("stroke", "black")
-	            .attr("stroke-width", "0.5px");
-	        this.crosshair_g.append("line")
-	            .attr("id", "crosshairY")
-	            .attr("stroke", "black")
-	            .attr("stroke-width", "0.5px");
-	        // TODO: have the fonts and colour set appropriately
-	        this.crosshair_g.append("text")
-	            .attr("id", "crosshairXtext")
-	            .style("text-anchor", "middle")
-	            .attr("class", "graph_text");
-	        this.crosshair_g.append("text")
-	            .attr("id", "crosshairYtext")
-	            .style("text-anchor", "end")
-	            .attr("class", "graph_text");
-	        var self = this; // tslint:disable-line
-	        this.axes2d.svg
-	            .on("mouseover", function () {
-	            var mouse = d3.mouse(this);
-	            self.crosshair_updates = true;
-	            self.crosshair_g.style("display", null);
-	            self.crosshair_mouse = [mouse[0], mouse[1]];
-	        }).on("mouseout", function () {
-	            var mouse = d3.mouse(this);
-	            self.crosshair_updates = false;
-	            self.crosshair_g.style("display", "none");
-	            self.crosshair_mouse = [mouse[0], mouse[1]];
-	        }).on("mousemove", function () {
-	            var mouse = d3.mouse(this);
-	            self.crosshair_updates = true;
-	            self.crosshair_mouse = [mouse[0], mouse[1]];
-	            self.update_crosshair(mouse);
-	        }).on("mousewheel", function () {
-	            // Hide the crosshair when zooming,
-	            // until a better option comes along
-	            _this.crosshair_updates = false;
-	            _this.crosshair_g.style("display", "none");
-	        });
-	        this.update();
-	        this.on_resize(this.get_screen_width(), this.get_screen_height());
-	        this.axes2d.axis_y.tickValues([args.min_value, args.max_value]);
-	        this.axes2d.fit_ticks(this);
-	        this.colors = utils.make_colors(6);
-	        this.color_func = function (d, i) {
-	            return _this.colors[i % 6];
-	        };
-	        this.legend = document.createElement("div");
-	        this.legend.classList.add("legend");
-	        this.div.appendChild(this.legend);
-	        this.legend_labels = args.legend_labels || [];
-	        if (this.legend_labels.length !== this.n_lines) {
-	            // Fill up the array with temporary labels
-	            for (var i = this.legend_labels.length; i < this.n_lines; i++) {
-	                this.legend_labels[i] = "label_" + i;
-	            }
-	        }
-	        this.show_legend = args.show_legend || false;
-	        if (this.show_legend === true) {
-	            utils.draw_legend(this.legend, this.legend_labels.slice(0, this.n_lines), this.color_func, this.uid);
-	        }
-	    }
-	    Value.prototype.update_crosshair = function (mouse) {
-	        var _this = this;
-	        var x = mouse.x, y = mouse.y;
-	        // TODO: I don't like having ifs here.
-	        //       Make a smaller rectangle for mouseovers
-	        if (x > this.axes2d.ax_left && x < this.axes2d.ax_right &&
-	            y > this.axes2d.ax_top && y < this.axes2d.ax_bottom) {
-	            this.crosshair_g.style("display", null);
-	            this.crosshair_g.select("#crosshairX")
-	                .attr("x1", x)
-	                .attr("y1", this.axes2d.ax_top)
-	                .attr("x2", x)
-	                .attr("y2", this.axes2d.ax_bottom);
-	            this.crosshair_g.select("#crosshairY")
-	                .attr("x1", this.axes2d.ax_left)
-	                .attr("y1", y)
-	                .attr("x2", this.axes2d.ax_right)
-	                .attr("y2", y);
-	            // TODO: don't use magic numbers
-	            this.crosshair_g.select("#crosshairXtext")
-	                .attr("x", x - 2)
-	                .attr("y", this.axes2d.ax_bottom + 17)
-	                .text(function () {
-	                return Math.round(_this.axes2d.scale_x.invert(x) * 100) / 100;
-	            });
-	            this.crosshair_g.select("#crosshairYtext")
-	                .attr("x", this.axes2d.ax_left - 3)
-	                .attr("y", y + 3)
-	                .text(function () {
-	                return Math.round(_this.axes2d.scale_y.invert(y) * 100) / 100;
-	            });
-	        }
-	        else {
-	            this.crosshair_g.style("display", "none");
-	        }
-	    };
-	    /**
-	     * Receive new line data from the server.
-	     */
-	    Value.prototype.on_message = function (event) {
-	        var data = new Float32Array(event.data);
-	        data = Array.prototype.slice.call(data);
-	        var size = this.n_lines + 1;
-	        // Since multiple data packets can be sent with a single event,
-	        // make sure to process all the packets.
-	        while (data.length >= size) {
-	            this.data_store.push(data.slice(0, size));
-	            data = data.slice(size);
-	        }
-	        if (data.length > 0) {
-	            console.warn("extra data: " + data.length);
-	        }
-	        this.schedule_update(event);
-	    };
-	    /**
-	     * Redraw the lines and axis due to changed data.
-	     */
-	    Value.prototype.update = function () {
-	        // Let the data store clear out old values
-	        this.data_store.update();
-	        // Determine visible range from the SimControl
-	        var t1 = this.sim.time_slider.first_shown_time;
-	        var t2 = t1 + this.sim.time_slider.shown_time;
-	        this.axes2d.set_time_range(t1, t2);
-	        // Update the lines
-	        var shown_data = this.data_store.get_shown_data();
-	        this.path.data(shown_data)
-	            .attr("d", this.line);
-	        // Update the crosshair text if the mouse is on top
-	        if (this.crosshair_updates) {
-	            this.update_crosshair(this.crosshair_mouse);
-	        }
-	    };
-	    /**
-	     * Adjust the graph layout due to changed size.
-	     */
-	    Value.prototype.on_resize = function (width, height) {
-	        if (!this.hasOwnProperty("axes2d")) {
-	            return;
-	        }
-	        if (width < this.min_width) {
-	            width = this.min_width;
-	        }
-	        if (height < this.min_height) {
-	            height = this.min_height;
-	        }
-	        this.axes2d.on_resize(width, height);
-	        this.update();
-	        this.label.style.width = width;
-	        this.width = width;
-	        this.height = height;
-	        this.div.style.width = width;
-	        this.div.style.height = height;
-	    };
-	    Value.prototype.generate_menu = function () {
-	        var _this = this;
-	        var items = [
-	            ["Set range...", function () {
-	                    _this.set_range();
-	                }],
-	            ["Set synapse...", function () {
-	                    _this.set_synapse_dialog();
-	                }],
-	        ];
-	        if (this.show_legend) {
-	            items.push(["Hide legend", function () {
-	                    _this.set_show_legend(false);
-	                }]);
-	        }
-	        else {
-	            items.push(["Show legend", function () {
-	                    _this.set_show_legend(true);
-	                }]);
-	        }
-	        // TODO: give the legend it's own context menu
-	        items.push(["Set legend labels", function () {
-	                _this.set_legend_labels();
-	            }]);
-	        // Add the parent's menu items to this
-	        return $.merge(items, component_1.Component.prototype.generate_menu.call(this));
-	    };
-	    Value.prototype.set_show_legend = function (value) {
-	        if (this.show_legend !== value) {
-	            this.show_legend = value;
-	            this.save_layout();
-	            if (this.show_legend === true) {
-	                utils.draw_legend(this.legend, this.legend_labels.slice(0, this.n_lines), this.color_func, this.uid);
-	            }
-	            else {
-	                // Delete the legend's children
-	                while (this.legend.lastChild) {
-	                    this.legend.removeChild(this.legend.lastChild);
-	                }
-	            }
-	        }
-	    };
-	    Value.prototype.set_legend_labels = function () {
-	        var _this = this;
-	        this.sim.modal.title("Enter comma seperated legend label values");
-	        this.sim.modal.single_input_body("Legend label", "New value");
-	        this.sim.modal.footer("ok_cancel", function (e) {
-	            var label_csv = $("#singleInput").val();
-	            $("#myModalForm").data("bs.validator");
-	            // No validation to do.
-	            // Empty entries assumed to be indication to skip modification.
-	            // Long strings okay.
-	            // Excissive entries get ignored.
-	            // TODO: Allow escaping of commas
-	            if ((label_csv !== null) && (label_csv !== "")) {
-	                var labels = label_csv.split(",");
-	                for (var i = 0; i < _this.n_lines; i++) {
-	                    if (labels[i] !== "" && labels[i] !== undefined) {
-	                        _this.legend_labels[i] = labels[i];
-	                    }
-	                }
-	                // Redraw the legend with the updated label values
-	                while (_this.legend.lastChild) {
-	                    _this.legend.removeChild(_this.legend.lastChild);
-	                }
-	                utils.draw_legend(_this.legend, _this.legend_labels, _this.color_func, _this.uid);
-	                _this.save_layout();
-	            }
-	            $("#OK").attr("data-dismiss", "modal");
-	        });
-	        this.sim.modal.show();
-	    };
-	    Value.prototype.layout_info = function () {
-	        var info = component_1.Component.prototype.layout_info.call(this);
-	        info.show_legend = this.show_legend;
-	        info.legend_labels = this.legend_labels;
-	        info.min_value = this.axes2d.scale_y.domain()[0];
-	        info.max_value = this.axes2d.scale_y.domain()[1];
-	        return info;
-	    };
-	    Value.prototype.update_layout = function (config) {
-	        this.update_range(config.min_value, config.max_value);
-	        component_1.Component.prototype.update_layout.call(this, config);
-	    };
-	    Value.prototype.set_range = function () {
-	        var _this = this;
-	        var range = this.axes2d.scale_y.domain();
-	        this.sim.modal.title("Set graph range...");
-	        this.sim.modal.single_input_body(range, "New range");
-	        this.sim.modal.footer("ok_cancel", function (e) {
-	            var new_range = $("#singleInput").val();
-	            var modal = $("#myModalForm").data("bs.validator");
-	            modal.validate();
-	            if (modal.hasErrors() || modal.isIncomplete()) {
-	                return;
-	            }
-	            if (new_range !== null) {
-	                new_range = new_range.split(",");
-	                var min = parseFloat(new_range[0]);
-	                var max = parseFloat(new_range[1]);
-	                _this.update_range(min, max);
-	                _this.save_layout();
-	                _this.axes2d.axis_y.tickValues([min, max]);
-	                _this.axes2d.fit_ticks(_this);
-	            }
-	            $("#OK").attr("data-dismiss", "modal");
-	        });
-	        $("#myModalForm").validator({
-	            custom: {
-	                my_validator: function ($item) {
-	                    var nums = $item.val().split(",");
-	                    var valid = false;
-	                    if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
-	                        if (Number(nums[0]) < Number(nums[1])) {
-	                            valid = true; // Two numbers, 1st less than 2nd
-	                        }
-	                    }
-	                    return (nums.length === 2 && valid);
-	                },
-	            },
-	        });
-	        $("#singleInput").attr("data-error", "Input should be in the " +
-	            "form '<min>,<max>'.");
-	        this.sim.modal.show();
-	        $("#OK").on("click", function () {
-	            var div = $(_this.div);
-	            _this.on_resize(div.width(), div.height());
-	        });
-	    };
-	    Value.prototype.update_range = function (min, max) {
-	        this.axes2d.scale_y.domain([min, max]);
-	        this.axes2d.axis_y_g.call(this.axes2d.axis_y);
-	    };
-	    Value.prototype.reset = function (event) {
-	        this.data_store.reset();
-	        this.schedule_update(event);
-	    };
-	    Value.prototype.set_synapse_dialog = function () {
-	        var _this = this;
-	        this.sim.modal.title("Set synaptic filter...");
-	        this.sim.modal.single_input_body(this.synapse, "Filter time constant (in seconds)");
-	        this.sim.modal.footer("ok_cancel", function (e) {
-	            var new_synapse = $("#singleInput").val();
-	            var modal = $("#myModalForm").data("bs.validator");
-	            modal.validate();
-	            if (modal.hasErrors() || modal.isIncomplete()) {
-	                return;
-	            }
-	            if (new_synapse !== null) {
-	                new_synapse = parseFloat(new_synapse);
-	                if (new_synapse === _this.synapse) {
-	                    return;
-	                }
-	                _this.synapse = new_synapse;
-	                _this.ws.send("synapse:" + _this.synapse);
-	            }
-	            $("#OK").attr("data-dismiss", "modal");
-	        });
-	        $("#myModalForm").validator({
-	            custom: {
-	                my_validator: function ($item) {
-	                    var num = $item.val();
-	                    if ($.isNumeric(num)) {
-	                        num = Number(num);
-	                        if (num >= 0) {
-	                            return true;
-	                        }
-	                    }
-	                    return false;
-	                },
-	            },
-	        });
-	        $("#singleInput").attr("data-error", "should be a non-negative number");
-	        this.sim.modal.show();
-	    };
-	    return Value;
-	}(component_1.Component));
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = Value;
-
-
-/***/ },
-/* 88 */
-/*!***************************************!*\
-  !*** ./nengo_gui/static/datastore.ts ***!
-  \***************************************/
-/***/ function(module, exports) {
-
-	/**
-	 * Storage of a set of data points and associated times with a fixed
-	 * number of dimensions.
-	 *
-	 * @constructor
-	 * @param {int} dims - number of data points per time
-	 * @param {SimControl} sim - the simulation controller
-	 * @param {float} synapse - the filter to apply to the data
-	 */
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var DataStore = (function () {
-	    function DataStore(dims, sim, synapse) {
-	        this.synapse = synapse; // TODO: get from SimControl
-	        this.sim = sim;
-	        this.times = [];
-	        this.data = [];
-	        for (var i = 0; i < dims; i++) {
-	            this.data.push([]);
-	        }
-	    }
-	    /**
-	     * Add a set of data.
-	     *
-	     * @param {array} row - dims+1 data points, with time as the first one
-	     */
-	    DataStore.prototype.push = function (row) {
-	        // If you get data out of order, wipe out the later data
-	        if (row[0] < this.times[this.times.length - 1]) {
-	            var index_1 = 0;
-	            while (this.times[index_1] < row[0]) {
-	                index_1 += 1;
-	            }
-	            this.times.splice(index_1, this.times.length);
-	            this.data.forEach(function (dimdata) {
-	                dimdata.splice(index_1, dimdata.length);
-	            });
-	        }
-	        // Compute lowpass filter (value = value*decay + new_value*(1-decay)
-	        var decay = 0.0;
-	        if ((this.times.length !== 0) && (this.synapse > 0)) {
-	            var dt = row[0] - this.times[this.times.length - 1];
-	            decay = Math.exp(-dt / this.synapse);
-	        }
-	        // Put filtered values into data array
-	        for (var i = 0; i < this.data.length; i++) {
-	            if (decay === 0.0) {
-	                this.data[i].push(row[i + 1]);
-	            }
-	            else {
-	                this.data[i].push(row[i + 1] * (1 - decay) +
-	                    this.data[i][this.data[i].length - 1] * decay);
-	            }
-	        }
-	        // Store the time as well
-	        this.times.push(row[0]);
-	    };
-	    /**
-	     * Reset the data storage.
-	     *
-	     * This will clear current data so there is
-	     * nothing to display on a reset event.
-	     */
-	    DataStore.prototype.reset = function () {
-	        this.times.splice(0, this.times.length);
-	        this.data.forEach(function (dimdata) {
-	            dimdata.splice(0, dimdata.length);
-	        });
-	    };
-	    /**
-	     * Update the data storage.
-	     *
-	     * This should be called periodically (before visual updates, but not
-	     * necessarily after every push()).  Removes old data outside the storage
-	     * limit set by the SimControl.
-	     */
-	    DataStore.prototype.update = function () {
-	        // Figure out how many extra values we have (values whose time stamp is
-	        // outside the range to keep)
-	        var extra = 0;
-	        // How much has the most recent time exceeded how much is kept?
-	        var limit = this.sim.time_slider.last_time -
-	            this.sim.time_slider.kept_time;
-	        while (this.times[extra] < limit) {
-	            extra += 1;
-	        }
-	        // Remove the extra data
-	        if (extra > 0) {
-	            this.times = this.times.slice(extra);
-	            for (var i = 0; i < this.data.length; i++) {
-	                this.data[i] = this.data[i].slice(extra);
-	            }
-	        }
-	    };
-	    /**
-	     * Return just the data that is to be shown.
-	     */
-	    DataStore.prototype.get_shown_data = function () {
-	        // Determine time range
-	        var t1 = this.sim.time_slider.first_shown_time;
-	        var t2 = t1 + this.sim.time_slider.shown_time;
-	        // Find the corresponding index values
-	        var index = 0;
-	        while (this.times[index] < t1) {
-	            index += 1;
-	        }
-	        var last_index = index;
-	        while (this.times[last_index] < t2 && last_index < this.times.length) {
-	            last_index += 1;
-	        }
-	        this.first_shown_index = index;
-	        // Return the visible slice of the data
-	        var shown = [];
-	        this.data.forEach(function (dimdata) {
-	            shown.push(dimdata.slice(index, last_index));
-	        });
-	        return shown;
-	    };
-	    DataStore.prototype.is_at_end = function () {
-	        var ts = this.sim.time_slider;
-	        return (ts.last_time < ts.first_shown_time + ts.shown_time + 1e-9);
-	    };
-	    DataStore.prototype.get_last_data = function () {
-	        // Determine time range
-	        var t1 = this.sim.time_slider.first_shown_time;
-	        var t2 = t1 + this.sim.time_slider.shown_time;
-	        // Find the corresponding index values
-	        var last_index = 0;
-	        while (this.times[last_index] < t2
-	            && last_index < this.times.length - 1) {
-	            last_index += 1;
-	        }
-	        // Return the visible slice of the data
-	        var shown = [];
-	        this.data.forEach(function (dimdata) {
-	            shown.push(dimdata[last_index]);
-	        });
-	        return shown;
-	    };
-	    return DataStore;
-	}());
-	exports.DataStore = DataStore;
-	/**
-	 * Storage of a set of data points and associated times with an increasable
-	 * number of dimensions.
-	 *
-	 * @constructor
-	 * @param {int} dims - number of data points per time
-	 * @param {SimControl} sim - the simulation controller
-	 * @param {float} synapse - the filter to apply to the data
-	 */
-	var GrowableDataStore = (function (_super) {
-	    __extends(GrowableDataStore, _super);
-	    function GrowableDataStore(dims, sim, synapse) {
-	        _super.call(this, dims, sim, synapse);
-	        this._dims = dims;
-	    }
-	    Object.defineProperty(GrowableDataStore.prototype, "dims", {
-	        get: function () {
-	            return this._dims;
-	        },
-	        set: function (dim_val) {
-	            // Throw a bunch of errors if bad things happen.
-	            // Assuming you can only grow dims and not shrink them...
-	            if (this._dims < dim_val) {
-	                for (var i = 0; i < dim_val - this._dims; i++) {
-	                    this.data.push([]);
-	                }
-	            }
-	            else if (this._dims > dim_val) {
-	                throw "can't decrease size of datastore";
-	            }
-	            this._dims = dim_val;
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    GrowableDataStore.prototype.get_offset = function () {
-	        var offset = [0];
-	        for (var i = 1; i < this._dims; i++) {
-	            if (this.data[i] === undefined) {
-	                offset.push(this.data[0].length);
-	            }
-	            else {
-	                offset.push(this.data[0].length - this.data[i].length);
-	            }
-	        }
-	        return offset;
-	    };
-	    /**
-	     * Add a set of data.
-	     *
-	     * @param {array} row - dims+1 data points, with time as the first one
-	     */
-	    GrowableDataStore.prototype.push = function (row) {
-	        // Get the offsets
-	        var offset = this.get_offset();
-	        // If you get data out of order, wipe out the later data
-	        if (row[0] < this.times[this.times.length - 1]) {
-	            var index = 0;
-	            while (this.times[index] < row[0]) {
-	                index += 1;
-	            }
-	            this.times.splice(index, this.times.length);
-	            for (var i = 0; i < this._dims; i++) {
-	                if (index - offset[i] >= 0) {
-	                    this.data[i].splice(index - offset[i], this.data[i].length);
-	                }
-	            }
-	        }
-	        // Compute lowpass filter (value = value*decay + new_value*(1-decay)
-	        var decay = 0.0;
-	        if ((this.times.length !== 0) && (this.synapse > 0)) {
-	            var dt = row[0] - this.times[this.times.length - 1];
-	            decay = Math.exp(-dt / this.synapse);
-	        }
-	        // Put filtered values into data array
-	        for (var i = 0; i < this._dims; i++) {
-	            if (decay === 0.0 || this.data[i].length === 0) {
-	                this.data[i].push(row[i + 1]);
-	            }
-	            else {
-	                this.data[i].push(row[i + 1] * (1 - decay) +
-	                    this.data[i][this.data[i].length - 1] * decay);
-	            }
-	        }
-	        // Store the time as well
-	        this.times.push(row[0]);
-	    };
-	    /**
-	     * Update the data storage.
-	     *
-	     * This should be call periodically (before visual updates, but not
-	     * necessarily after every push()).  Removes old data outside the storage
-	     * limit set by the SimControl.
-	     */
-	    GrowableDataStore.prototype.update = function () {
-	        // Figure out how many extra values we have (values whose time stamp is
-	        // outside the range to keep)
-	        var offset = this.get_offset();
-	        var extra = 0;
-	        var limit = this.sim.time_slider.last_time -
-	            this.sim.time_slider.kept_time;
-	        while (this.times[extra] < limit) {
-	            extra += 1;
-	        }
-	        // Remove the extra data
-	        if (extra > 0) {
-	            this.times = this.times.slice(extra);
-	            for (var i = 0; i < this.data.length; i++) {
-	                if (extra - offset[i] >= 0) {
-	                    this.data[i] = this.data[i].slice(extra - offset[i]);
-	                }
-	            }
-	        }
-	    };
-	    /**
-	     * Return just the data that is to be shown.
-	     */
-	    GrowableDataStore.prototype.get_shown_data = function () {
-	        var offset = this.get_offset();
-	        // Determine time range
-	        var t1 = this.sim.time_slider.first_shown_time;
-	        var t2 = t1 + this.sim.time_slider.shown_time;
-	        // Find the corresponding index values
-	        var index = 0;
-	        while (this.times[index] < t1) {
-	            index += 1;
-	        }
-	        // Logically, you should start the search for the
-	        var last_index = index;
-	        while (this.times[last_index] < t2 && last_index < this.times.length) {
-	            last_index += 1;
-	        }
-	        this.first_shown_index = index;
-	        // Return the visible slice of the data
-	        var shown = [];
-	        for (var i = 0; i < this._dims; i++) {
-	            var nan_number = void 0;
-	            var slice_start = void 0;
-	            if (last_index > offset[i] && offset[i] !== 0) {
-	                if (index < offset[i]) {
-	                    nan_number = offset[i] - index;
-	                    slice_start = 0;
-	                }
-	                else {
-	                    nan_number = 0;
-	                    slice_start = index - offset[i];
-	                }
-	                shown.push(Array.apply(null, Array(nan_number)).map(function () {
-	                    return "NaN";
-	                }).concat(this.data[i].slice(slice_start, last_index - offset[i])));
-	            }
-	            else {
-	                shown.push(this.data[i].slice(index, last_index));
-	            }
-	        }
-	        return shown;
-	    };
-	    GrowableDataStore.prototype.get_last_data = function () {
-	        var offset = this.get_offset();
-	        // Determine time range
-	        var t1 = this.sim.time_slider.first_shown_time;
-	        var t2 = t1 + this.sim.time_slider.shown_time;
-	        // Find the corresponding index values
-	        var last_index = 0;
-	        while (this.times[last_index] < t2
-	            && last_index < this.times.length - 1) {
-	            last_index += 1;
-	        }
-	        // Return the visible slice of the data
-	        var shown = [];
-	        for (var i = 0; i < this._dims; i++) {
-	            if (last_index - offset[i] >= 0) {
-	                shown.push(this.data[i][last_index - offset[i]]);
-	            }
-	        }
-	        return shown;
-	    };
-	    return GrowableDataStore;
-	}(DataStore));
-	exports.GrowableDataStore = GrowableDataStore;
-
-
-/***/ },
-/* 89 */
-/*!**************************************************!*\
-  !*** ./nengo_gui/static/components/time_axes.ts ***!
-  \**************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * 2d axes set with the horizontal axis being a time axis.
-	 *
-	 * Called by a specific component when it requires an axes set (with the
-	 * x-axis showing current model time).
-	 *
-	 * @constructor
-	 * @param {DOMElement} parent - the element to add this component to
-	 * @param {dict} args - A set of constructor arguments (see Axes2D)
-	 */
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var $ = __webpack_require__(/*! jquery */ 12);
-	var _2d_axes_1 = __webpack_require__(/*! ./2d_axes */ 90);
-	var TimeAxes = (function (_super) {
-	    __extends(TimeAxes, _super);
-	    function TimeAxes(parent, args) {
-	        _super.call(this, parent, args);
-	        this.display_time = args.display_time;
-	        this.axis_x.ticks(0);
-	        this.axis_time_end = this.svg.append("text")
-	            .text("Time: NULL")
-	            .attr("class", "graph_text unselectable")[0][0];
-	        this.axis_time_start = this.svg.append("text")
-	            .text("Time: NULL")
-	            .attr("class", "graph_text unselectable")[0][0];
-	        if (this.display_time === false) {
-	            this.axis_time_start.setAttribute("display", "none");
-	            this.axis_time_end.setAttribute("display", "none");
-	        }
-	    }
-	    TimeAxes.prototype.set_time_range = function (start, end) {
-	        this.scale_x.domain([start, end]);
-	        this.axis_time_start.textContent = start.toFixed(3);
-	        this.axis_time_end.textContent = end.toFixed(3);
-	        this.axis_x_g.call(this.axis_x);
-	    };
-	    TimeAxes.prototype.on_resize = function (width, height) {
-	        _2d_axes_1.default.prototype.on_resize.call(this, width, height);
-	        var scale = parseFloat($("#main").css("font-size"));
-	        var suppression_width = 6 * scale;
-	        var text_offset = 1.2 * scale;
-	        if (width < suppression_width || this.display_time === false) {
-	            this.axis_time_start.setAttribute("display", "none");
-	        }
-	        else {
-	            this.axis_time_start.setAttribute("display", "block");
-	        }
-	        this.axis_time_start.setAttribute("x", this.ax_left - text_offset);
-	        this.axis_time_start.setAttribute("y", this.ax_bottom + text_offset);
-	        this.axis_time_end.setAttribute("x", this.ax_right - text_offset);
-	        this.axis_time_end.setAttribute("y", this.ax_bottom + text_offset);
-	    };
-	    return TimeAxes;
-	}(_2d_axes_1.default));
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = TimeAxes;
-
-
-/***/ },
-/* 90 */
-/*!************************************************!*\
-  !*** ./nengo_gui/static/components/2d_axes.ts ***!
-  \************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Basic 2d axes set.
-	 *
-	 * @constructor
-	 * @param {DOMElement} parent - the element to add this component to
-	 * @param {Object} args
-	 * @param {float} args.width - the width of the axes (in pixels)
-	 * @param {float} args.height - the height of the axes (in pixels)
-	 * @param {float} args.min_value - minimum value on y-axis
-	 * @param {float} args.max_value - maximum value on y-axis
-	 */
-	"use strict";
-	var d3 = __webpack_require__(/*! d3 */ 66);
-	var $ = __webpack_require__(/*! jquery */ 12);
-	var Axes2D = (function () {
-	    function Axes2D(parent, args) {
-	        this.max_y_width = 100;
-	        // Draw the plot as an SVG
-	        this.svg = d3.select(parent).append("svg")
-	            .attr("width", "100%")
-	            .attr("height", "100%");
-	        // Scales for mapping x and y values to pixels
-	        this.scale_x = d3.scale.linear();
-	        this.scale_y = d3.scale.linear();
-	        this.scale_y.domain([args.min_value, args.max_value]);
-	        // Spacing between the graph and the outside edges (in pixels)
-	        this.set_axes_geometry(args.width, args.height);
-	        // Define the x-axis
-	        this.axis_x = d3.svg.axis()
-	            .scale(this.scale_x)
-	            .orient("bottom")
-	            .ticks(2);
-	        this.axis_x_g = this.svg.append("g")
-	            .attr("class", "axis axis_x unselectable")
-	            .call(this.axis_x);
-	        // Define the y-axis
-	        this.axis_y = d3.svg.axis()
-	            .scale(this.scale_y)
-	            .orient("left")
-	            .tickValues([args.min_value, args.max_value]);
-	        this.axis_y_g = this.svg.append("g")
-	            .attr("class", "axis axis_y unselectable")
-	            .call(this.axis_y);
-	    }
-	    Axes2D.prototype.set_axes_geometry = function (width, height) {
-	        var scale = parseFloat($("#main").css("font-size"));
-	        this.width = width;
-	        this.height = height;
-	        this.ax_left = this.max_y_width;
-	        this.ax_right = width - 1.75 * scale;
-	        this.ax_bottom = height - 1.75 * scale;
-	        this.ax_top = 1.75 * scale;
-	        this.tick_size = 0.4 * scale;
-	        this.tick_padding = 0.2 * scale;
-	    };
-	    /**
-	     * Adjust the graph layout due to changed size
-	     */
-	    Axes2D.prototype.on_resize = function (width, height) {
-	        if (width < this.min_width) {
-	            width = this.min_width;
-	        }
-	        if (height < this.min_height) {
-	            height = this.min_height;
-	        }
-	        this.set_axes_geometry(width, height);
-	        this.scale_x.range([this.ax_left, this.ax_right]);
-	        this.scale_y.range([this.ax_bottom, this.ax_top]);
-	        // Adjust positions of x axis on resize
-	        this.axis_x
-	            .tickPadding(this.tick_padding)
-	            .outerTickSize(this.tick_size, this.tick_size);
-	        this.axis_y
-	            .tickPadding(this.tick_padding)
-	            .outerTickSize(this.tick_size, this.tick_size);
-	        this.axis_x_g.attr("transform", "translate(0," + this.ax_bottom + ")");
-	        this.axis_x_g.call(this.axis_x);
-	        this.axis_y_g.attr("transform", "translate(" + this.ax_left + ", 0)");
-	        this.axis_y_g.call(this.axis_y);
-	    };
-	    Axes2D.prototype.fit_ticks = function (parent) {
-	        var _this = this;
-	        setTimeout(function () {
-	            var ticks = $(parent.div).find(".tick");
-	            var max_w = 0;
-	            for (var i = 0; i < ticks.length; i++) {
-	                var w = ticks[i].getBBox().width;
-	                if (w > max_w) {
-	                    max_w = w;
-	                }
-	            }
-	            _this.max_y_width = max_w;
-	            // TODO: parent?
-	            _this.set_axes_geometry(parent.width, parent.height);
-	            _this.on_resize(parent.width, parent.height);
-	        }, 1);
-	    };
-	    return Axes2D;
-	}());
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = Axes2D;
-
-
-/***/ },
-/* 91 */
-/*!***********************************************!*\
-  !*** ./nengo_gui/static/components/value.css ***!
-  \***********************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(/*! !./../../../~/css-loader!./value.css */ 92);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 10)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./value.css", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js!./value.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 92 */
-/*!**************************************************************!*\
-  !*** ./~/css-loader!./nengo_gui/static/components/value.css ***!
-  \**************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(/*! ./../../../~/css-loader/lib/css-base.js */ 4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, ".graph .line {\n    fill: none;\n    stroke: black;\n    stroke-width: 1.5px;\n}\n", ""]);
-	
-	// exports
-
-
-/***/ },
 /* 93 */
-/*!**************************************************************!*\
-  !*** ./~/ts-loader!./nengo_gui/static/components/xyvalue.ts ***!
-  \**************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Line graph showing decoded values over time.
-	 *
-	 * @constructor
-	 * @param {DOMElement} parent - the exylement to add this component to
-	 * @param {SimControl} sim - the simulation controller
-	 * @param {dict} args - A set of constructor arguments (see Component)
-	 * @param {int} args.n_lines - number of decoded values
-	 * @param {float} args.min_value - minimum value on x-axis and y-axis
-	 * @param {float} args.max_value - maximum value on x-axis and y-axis
-	 * @param {SimControl} args.sim - the simulation controller
-	 *
-	 * XYValue constructor is called by python server when a user requests a plot
-	 * or when the config file is making graphs. Server request is handled in
-	 * netgraph.js {.on_message} function.
-	 */
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var d3 = __webpack_require__(/*! d3 */ 66);
-	var $ = __webpack_require__(/*! jquery */ 12);
-	var datastore_1 = __webpack_require__(/*! ../datastore */ 88);
-	var utils = __webpack_require__(/*! ../utils */ 65);
-	var component_1 = __webpack_require__(/*! ./component */ 68);
-	var xy_axes_1 = __webpack_require__(/*! ./xy_axes */ 94);
-	__webpack_require__(/*! ./xyvalue.css */ 95);
-	var XYValue = (function (_super) {
-	    __extends(XYValue, _super);
-	    function XYValue(parent, viewport, sim, args) {
-	        var _this = this;
-	        _super.call(this, parent, viewport, args);
-	        this.n_lines = args.n_lines || 1;
-	        this.sim = sim;
-	        // For storing the accumulated data
-	        this.data_store = new datastore_1.DataStore(this.n_lines, this.sim, 0);
-	        this.axes2d = new xy_axes_1.default(this.div, args);
-	        // The two indices of the multi-dimensional data to display
-	        this.index_x = args.index_x;
-	        this.index_y = args.index_y;
-	        // Call schedule_update whenever the time is adjusted in the SimControl
-	        this.sim.div.addEventListener("adjust_time", function (e) {
-	            _this.schedule_update(e);
-	        }, false);
-	        // Call reset whenever the simulation is reset
-	        this.sim.div.addEventListener("sim_reset", function (e) {
-	            _this.reset(e);
-	        }, false);
-	        // Create the lines on the plots
-	        d3.svg.line()
-	            .x(function (d, i) {
-	            return _this.axes2d.scale_x(_this.data_store.data[_this.index_x][i]);
-	        }).y(function (d) {
-	            return _this.axes2d.scale_y(d);
-	        });
-	        this.path = this.axes2d.svg.append("g")
-	            .selectAll("path")
-	            .data([this.data_store.data[this.index_y]]);
-	        this.path.enter().append("path")
-	            .attr("class", "line")
-	            .style("stroke", utils.make_colors(1));
-	        // Create a circle to track the most recent data
-	        this.recent_circle = this.axes2d.svg.append("circle")
-	            .attr("r", this.get_circle_radius())
-	            .attr("cx", this.axes2d.scale_x(0))
-	            .attr("cy", this.axes2d.scale_y(0))
-	            .style("fill", utils.make_colors(1)[0])
-	            .style("fill-opacity", 0);
-	        this.invalid_dims = false;
-	        this.axes2d.fit_ticks(this);
-	        this.on_resize(this.get_screen_width(), this.get_screen_height());
-	    }
-	    /**
-	     * Receive new line data from the server.
-	     */
-	    XYValue.prototype.on_message = function (event) {
-	        var data = new Float32Array(event.data);
-	        this.data_store.push(data);
-	        this.schedule_update(event);
-	    };
-	    /**
-	     * Redraw the lines and axis due to changed data.
-	     */
-	    XYValue.prototype.update = function () {
-	        var _this = this;
-	        // Let the data store clear out old values
-	        this.data_store.update();
-	        // Update the lines if there is data with valid dimensions
-	        if (this.index_x < this.n_lines && this.index_y < this.n_lines) {
-	            var shown_data_1 = this.data_store.get_shown_data();
-	            // Update the lines
-	            var line = d3.svg.line()
-	                .x(function (d, i) {
-	                return _this.axes2d.scale_x(shown_data_1[_this.index_x][i]);
-	            }).y(function (d) {
-	                return _this.axes2d.scale_y(d);
-	            });
-	            this.path.data([shown_data_1[this.index_y]])
-	                .attr("d", line);
-	            var last_index = shown_data_1[this.index_x].length - 1;
-	            if (last_index >= 0) {
-	                // Update the circle if there is valid data
-	                this.recent_circle
-	                    .attr("cx", this.axes2d.scale_x(shown_data_1[this.index_x][last_index]))
-	                    .attr("cy", this.axes2d.scale_y(shown_data_1[this.index_y][last_index]))
-	                    .style("fill-opacity", 0.5);
-	            }
-	            // If switching from invalids dimensions to valid dimensions, remove
-	            // the label
-	            if (this.invalid_dims === true) {
-	                this.div.removeChild(this.warning_text);
-	                this.invalid_dims = false;
-	            }
-	        }
-	        else if (this.invalid_dims === false) {
-	            this.invalid_dims = true;
-	            // Create the HTML text element
-	            this.warning_text = document.createElement("div");
-	            this.div.appendChild(this.warning_text);
-	            this.warning_text.className = "warning-text";
-	            utils.safe_set_text(this.warning_text, "Change<br>Dimension<br>Indices");
-	        }
-	    };
-	    /**
-	     * Adjust the graph layout due to changed size
-	     */
-	    XYValue.prototype.on_resize = function (width, height) {
-	        this.axes2d.on_resize(width, height);
-	        this.update();
-	        this.label.style.width = width;
-	        this.width = width;
-	        this.height = height;
-	        this.div.style.width = width;
-	        this.div.style.height = height;
-	        this.recent_circle.attr("r", this.get_circle_radius());
-	    };
-	    XYValue.prototype.get_circle_radius = function () {
-	        return Math.min(this.width, this.height) / 30;
-	    };
-	    XYValue.prototype.generate_menu = function () {
-	        var _this = this;
-	        var items = [
-	            ["Set range...", function () {
-	                    _this.set_range();
-	                }],
-	            ["Set X, Y indices...", function () {
-	                    _this.set_indices();
-	                }],
-	        ];
-	        // Add the parent's menu items to this
-	        return $.merge(items, component_1.Component.prototype.generate_menu.call(this));
-	    };
-	    XYValue.prototype.layout_info = function () {
-	        var info = component_1.Component.prototype.layout_info.call(this);
-	        info.min_value = this.axes2d.scale_y.domain()[0];
-	        info.max_value = this.axes2d.scale_y.domain()[1];
-	        info.index_x = this.index_x;
-	        info.index_y = this.index_y;
-	        return info;
-	    };
-	    XYValue.prototype.update_layout = function (config) {
-	        this.update_indices(config.index_x, config.index_y);
-	        this.update_range(config.min_value, config.max_value);
-	        component_1.Component.prototype.update_layout.call(this, config);
-	    };
-	    XYValue.prototype.set_range = function () {
-	        var _this = this;
-	        var range = this.axes2d.scale_y.domain();
-	        this.sim.modal.title("Set graph range...");
-	        this.sim.modal.single_input_body(range, "New range");
-	        this.sim.modal.footer("ok_cancel", function (e) {
-	            var new_range = $("#singleInput").val();
-	            var modal = $("#myModalForm").data("bs.validator");
-	            modal.validate();
-	            if (modal.hasErrors() || modal.isIncomplete()) {
-	                return;
-	            }
-	            if (new_range !== null) {
-	                new_range = new_range.split(",");
-	                var min = parseFloat(new_range[0]);
-	                var max = parseFloat(new_range[1]);
-	                _this.update_range(min, max);
-	                _this.update();
-	                _this.save_layout();
-	            }
-	            $("#OK").attr("data-dismiss", "modal");
-	        });
-	        $("#myModalForm").validator({
-	            custom: {
-	                my_validator: function ($item) {
-	                    var nums = $item.val().split(",");
-	                    var valid = false;
-	                    if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
-	                        // Two numbers, 1st less than 2nd.
-	                        // The axes must intersect at 0.
-	                        var ordered = Number(nums[0]) < Number(nums[1]);
-	                        var zeroed = Number(nums[0]) * Number(nums[1]) <= 0;
-	                        if (ordered && zeroed) {
-	                            valid = true;
-	                        }
-	                    }
-	                    return (nums.length === 2 && valid);
-	                },
-	            },
-	        });
-	        $("#singleInput").attr("data-error", "Input should be in the form " +
-	            "'<min>,<max>' and the axes must cross at zero.");
-	        this.sim.modal.show();
-	    };
-	    XYValue.prototype.update_range = function (min, max) {
-	        this.axes2d.min_val = min;
-	        this.axes2d.max_val = max;
-	        this.axes2d.scale_x.domain([min, max]);
-	        this.axes2d.scale_y.domain([min, max]);
-	        this.axes2d.axis_x.tickValues([min, max]);
-	        this.axes2d.axis_y.tickValues([min, max]);
-	        this.axes2d.axis_y_g.call(this.axes2d.axis_y);
-	        this.axes2d.axis_x_g.call(this.axes2d.axis_x);
-	        this.on_resize(this.get_screen_width(), this.get_screen_height());
-	    };
-	    XYValue.prototype.set_indices = function () {
-	        var _this = this;
-	        this.sim.modal.title("Set X and Y indices...");
-	        this.sim.modal.single_input_body([this.index_x, this.index_y], "New indices");
-	        this.sim.modal.footer("ok_cancel", function (e) {
-	            var new_indices = $("#singleInput").val();
-	            var modal = $("#myModalForm").data("bs.validator");
-	            modal.validate();
-	            if (modal.hasErrors() || modal.isIncomplete()) {
-	                return;
-	            }
-	            if (new_indices !== null) {
-	                new_indices = new_indices.split(",");
-	                _this.update_indices(parseInt(new_indices[0], 10), parseInt(new_indices[1], 10));
-	                _this.save_layout();
-	            }
-	            $("#OK").attr("data-dismiss", "modal");
-	        });
-	        $("#myModalForm").validator({
-	            custom: {
-	                my_validator: function ($item) {
-	                    var nums = $item.val().split(",").map(Number);
-	                    return ((parseInt(nums[0], 10) === nums[0]) &&
-	                        (parseInt(nums[1], 10) === nums[1]) &&
-	                        (nums.length === 2) &&
-	                        (Number(nums[1]) < _this.n_lines &&
-	                            Number(nums[1]) >= 0) &&
-	                        (Number(nums[0]) < _this.n_lines &&
-	                            Number(nums[0]) >= 0));
-	                },
-	            },
-	        });
-	        $("#singleInput").attr("data-error", "Input should be two positive " +
-	            "integers in the form '<dimension 1>,<dimension 2>'. " +
-	            "Dimensions are zero indexed.");
-	        this.sim.modal.show();
-	    };
-	    XYValue.prototype.update_indices = function (index_x, index_y) {
-	        this.index_x = index_x;
-	        this.index_y = index_y;
-	        this.update();
-	    };
-	    XYValue.prototype.reset = function (event) {
-	        this.data_store.reset();
-	        this.schedule_update(event);
-	    };
-	    return XYValue;
-	}(component_1.Component));
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = XYValue;
-
-
-/***/ },
-/* 94 */
-/*!************************************************!*\
-  !*** ./nengo_gui/static/components/xy_axes.ts ***!
-  \************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Basic 2d axes set.
-	 *
-	 * @constructor
-	 * @param {DOMElement} parent - the element to add this component to
-	 * @param {dict} args
-	 * @param {float} args.width - the width of the axes (in pixels)
-	 * @param {float} args.height - the height of the axes (in pixels)
-	 * @param {float} args.min_value - minimum value on y-axis
-	 * @param {float} args.max_value - maximum value on y-axis
-	 */
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var _2d_axes_1 = __webpack_require__(/*! ./2d_axes */ 90);
-	var XYAxes = (function (_super) {
-	    __extends(XYAxes, _super);
-	    function XYAxes(parent, args) {
-	        _super.call(this, parent, args);
-	        this.scale_x.domain([args.min_value, args.max_value]);
-	        this.axis_x.tickValues([args.min_value, args.max_value]);
-	        this.axis_x.ticks(this.axis_y.ticks()[0]);
-	        this.min_val = args.min_value;
-	        this.max_val = args.max_value;
-	    }
-	    /**
-	     * Adjust the graph layout due to changed size.
-	     */
-	    XYAxes.prototype.on_resize = function (width, height) {
-	        _2d_axes_1.default.prototype.on_resize.call(this, width, height);
-	        var x_offset = this.ax_bottom - this.min_val /
-	            (this.max_val - this.min_val) * (this.ax_top - this.ax_bottom);
-	        var y_offset = this.ax_left - this.min_val /
-	            (this.max_val - this.min_val) * (this.ax_right - this.ax_left);
-	        this.axis_x_g.attr("transform", "translate(0," + x_offset + ")");
-	        this.axis_x_g.call(this.axis_x);
-	        this.axis_y_g.attr("transform", "translate(" + y_offset + ", 0)");
-	        this.axis_y_g.call(this.axis_y);
-	    };
-	    return XYAxes;
-	}(_2d_axes_1.default));
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = XYAxes;
-
-
-/***/ },
-/* 95 */
-/*!*************************************************!*\
-  !*** ./nengo_gui/static/components/xyvalue.css ***!
-  \*************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(/*! !./../../../~/css-loader!./xyvalue.css */ 96);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 10)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./xyvalue.css", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js!./xyvalue.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 96 */
-/*!****************************************************************!*\
-  !*** ./~/css-loader!./nengo_gui/static/components/xyvalue.css ***!
-  \****************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(/*! ./../../../~/css-loader/lib/css-base.js */ 4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, ".warning-text {\n    color:#a94442;\n    position: absolute;\n    text-align: center;\n    margin-left: 20%;\n    margin-right: auto;\n    width:60%;\n    top:37%;\n    display:box;\n    box-align:center;\n    box-pack:center;\n    border: 1px dashed #a94442;\n    background-color: white;\n}\n", ""]);
-	
-	// exports
-
-
-/***/ },
-/* 97 */
 /*!*************************************!*\
   !*** ./nengo_gui/static/hotkeys.ts ***!
   \*************************************/
@@ -68628,7 +68401,7 @@ var Nengo =
 
 
 /***/ },
-/* 98 */
+/* 94 */
 /*!************************************!*\
   !*** ./nengo_gui/static/modal.css ***!
   \************************************/
@@ -68637,7 +68410,7 @@ var Nengo =
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../~/css-loader!./modal.css */ 99);
+	var content = __webpack_require__(/*! !./../../~/css-loader!./modal.css */ 95);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(/*! ./../../~/style-loader/addStyles.js */ 10)(content, {});
@@ -68657,7 +68430,7 @@ var Nengo =
 	}
 
 /***/ },
-/* 99 */
+/* 95 */
 /*!***************************************************!*\
   !*** ./~/css-loader!./nengo_gui/static/modal.css ***!
   \***************************************************/
@@ -68674,7 +68447,7 @@ var Nengo =
 
 
 /***/ },
-/* 100 */
+/* 96 */
 /*!**************************************!*\
   !*** ./nengo_gui/static/tooltips.ts ***!
   \**************************************/
@@ -68682,7 +68455,7 @@ var Nengo =
 
 	"use strict";
 	var $ = __webpack_require__(/*! jquery */ 12);
-	__webpack_require__(/*! ./tooltips.css */ 101);
+	__webpack_require__(/*! ./tooltips.css */ 97);
 	function tooltip($parent, content, placement) {
 	    if (placement === void 0) { placement = "bottom"; }
 	    var $tooltip = $("<a href='#' data-toggle='tooltip' " +
@@ -68766,7 +68539,7 @@ var Nengo =
 
 
 /***/ },
-/* 101 */
+/* 97 */
 /*!***************************************!*\
   !*** ./nengo_gui/static/tooltips.css ***!
   \***************************************/
@@ -68775,7 +68548,7 @@ var Nengo =
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../~/css-loader!./tooltips.css */ 102);
+	var content = __webpack_require__(/*! !./../../~/css-loader!./tooltips.css */ 98);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(/*! ./../../~/style-loader/addStyles.js */ 10)(content, {});
@@ -68795,7 +68568,7 @@ var Nengo =
 	}
 
 /***/ },
-/* 102 */
+/* 98 */
 /*!******************************************************!*\
   !*** ./~/css-loader!./nengo_gui/static/tooltips.css ***!
   \******************************************************/
@@ -68812,7 +68585,7 @@ var Nengo =
 
 
 /***/ },
-/* 103 */
+/* 99 */
 /*!******************************************!*\
   !*** ./nengo_gui/static/sim_control.css ***!
   \******************************************/
@@ -68821,7 +68594,7 @@ var Nengo =
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../~/css-loader!./sim_control.css */ 104);
+	var content = __webpack_require__(/*! !./../../~/css-loader!./sim_control.css */ 100);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(/*! ./../../~/style-loader/addStyles.js */ 10)(content, {});
@@ -68841,7 +68614,7 @@ var Nengo =
 	}
 
 /***/ },
-/* 104 */
+/* 100 */
 /*!*********************************************************!*\
   !*** ./~/css-loader!./nengo_gui/static/sim_control.css ***!
   \*********************************************************/
@@ -68858,7 +68631,7 @@ var Nengo =
 
 
 /***/ },
-/* 105 */
+/* 101 */
 /*!*****************************************!*\
   !*** ./nengo_gui/static/top_toolbar.ts ***!
   \*****************************************/
@@ -68877,7 +68650,7 @@ var Nengo =
 	var interact = __webpack_require__(/*! interact.js */ 61);
 	var $ = __webpack_require__(/*! jquery */ 12);
 	var menu = __webpack_require__(/*! ./menu */ 62);
-	__webpack_require__(/*! ./top_toolbar.css */ 106);
+	__webpack_require__(/*! ./top_toolbar.css */ 102);
 	var utils = __webpack_require__(/*! ./utils */ 65);
 	var Toolbar = (function () {
 	    function Toolbar(filename, sim) {
@@ -69024,7 +68797,7 @@ var Nengo =
 
 
 /***/ },
-/* 106 */
+/* 102 */
 /*!******************************************!*\
   !*** ./nengo_gui/static/top_toolbar.css ***!
   \******************************************/
@@ -69033,7 +68806,7 @@ var Nengo =
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../~/css-loader!./top_toolbar.css */ 107);
+	var content = __webpack_require__(/*! !./../../~/css-loader!./top_toolbar.css */ 103);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(/*! ./../../~/style-loader/addStyles.js */ 10)(content, {});
@@ -69053,7 +68826,7 @@ var Nengo =
 	}
 
 /***/ },
-/* 107 */
+/* 103 */
 /*!*********************************************************!*\
   !*** ./~/css-loader!./nengo_gui/static/top_toolbar.css ***!
   \*********************************************************/
@@ -69070,27 +68843,17 @@ var Nengo =
 
 
 /***/ },
-/* 108 */
-/*!***********************************************************************!*\
-  !*** ./~/expose-loader?data_to_csv!./nengo_gui/static/data_to_csv.ts ***!
-  \***********************************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["data_to_csv"] = __webpack_require__(/*! -!./~/ts-loader!./nengo_gui/static/data_to_csv.ts */ 86);
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 109 */
+/* 104 */
 /*!****************************************************************************!*\
   !*** ./~/expose-loader?HTMLView!./nengo_gui/static/components/htmlview.ts ***!
   \****************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["HTMLView"] = __webpack_require__(/*! -!./~/ts-loader!./nengo_gui/static/components/htmlview.ts */ 110);
+	/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["HTMLView"] = __webpack_require__(/*! -!./~/ts-loader!./nengo_gui/static/components/htmlview.ts */ 105);
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 110 */
+/* 105 */
 /*!***************************************************************!*\
   !*** ./~/ts-loader!./nengo_gui/static/components/htmlview.ts ***!
   \***************************************************************/
@@ -69111,14 +68874,15 @@ var Nengo =
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var datastore_1 = __webpack_require__(/*! ../datastore */ 88);
+	var datastore_1 = __webpack_require__(/*! ../datastore */ 70);
 	var utils = __webpack_require__(/*! ../utils */ 65);
-	var component_1 = __webpack_require__(/*! ./component */ 68);
+	var viewport = __webpack_require__(/*! ../viewport */ 67);
+	var component_1 = __webpack_require__(/*! ./component */ 71);
 	var HTMLView = (function (_super) {
 	    __extends(HTMLView, _super);
-	    function HTMLView(parent, viewport, sim, args) {
-	        var _this = this;
-	        _super.call(this, parent, viewport, args);
+	    function HTMLView(parent, sim, args) {
+	        _super.call(this, parent, args);
+	        var self = this;
 	        this.sim = sim;
 	        this.pdiv = document.createElement("div");
 	        this.pdiv.style.width = "100%";
@@ -69131,10 +68895,11 @@ var Nengo =
 	        this.data_store = new datastore_1.DataStore(1, this.sim, 0);
 	        // Call schedule_update whenever the time is adjusted in the SimControl
 	        this.sim.div.addEventListener("adjust_time", function (e) {
-	            _this.schedule_update(null);
+	            self.schedule_update(null);
 	        }, false);
-	        this.on_resize(this.get_screen_width(), this.get_screen_height());
+	        this.on_resize(viewport.scale_width(this.w), viewport.scale_height(this.h));
 	    }
+	    ;
 	    /**
 	     * Receive new line data from the server
 	     */
@@ -69145,6 +68910,7 @@ var Nengo =
 	        this.data_store.push([time, msg]);
 	        this.schedule_update(null);
 	    };
+	    ;
 	    /**
 	     * Redraw the lines and axis due to changed data
 	     */
@@ -69155,8 +68921,9 @@ var Nengo =
 	        if (data === undefined) {
 	            data = "";
 	        }
-	        utils.safe_set_text(this.pdiv, data);
+	        this.pdiv.innerHTML = data;
 	    };
+	    ;
 	    /**
 	     * Adjust the graph layout due to changed size
 	     */
@@ -69172,24 +68939,25 @@ var Nengo =
 	        this.label.style.width = width;
 	        this.update();
 	    };
+	    ;
 	    return HTMLView;
-	}(component_1.Component));
+	}(component_1.default));
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = HTMLView;
 
 
 /***/ },
-/* 111 */
+/* 106 */
 /*!**********************************************************************!*\
   !*** ./~/expose-loader?Image!./nengo_gui/static/components/image.ts ***!
   \**********************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["Image"] = __webpack_require__(/*! -!./~/ts-loader!./nengo_gui/static/components/image.ts */ 112);
+	/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["Image"] = __webpack_require__(/*! -!./~/ts-loader!./nengo_gui/static/components/image.ts */ 107);
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 112 */
+/* 107 */
 /*!************************************************************!*\
   !*** ./~/ts-loader!./nengo_gui/static/components/image.ts ***!
   \************************************************************/
@@ -69213,33 +68981,34 @@ var Nengo =
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var d3 = __webpack_require__(/*! d3 */ 66);
-	var datastore_1 = __webpack_require__(/*! ../datastore */ 88);
-	var component_1 = __webpack_require__(/*! ./component */ 68);
+	var datastore_1 = __webpack_require__(/*! ../datastore */ 70);
+	var viewport = __webpack_require__(/*! ../viewport */ 67);
+	var component_1 = __webpack_require__(/*! ./component */ 71);
 	var Image = (function (_super) {
 	    __extends(Image, _super);
-	    function Image(parent, viewport, sim, args) {
-	        var _this = this;
-	        _super.call(this, parent, viewport, args);
-	        this.sim = sim;
-	        this.display_time = args.display_time;
-	        this.pixels_x = args.pixels_x;
-	        this.pixels_y = args.pixels_y;
-	        this.n_pixels = this.pixels_x * this.pixels_y;
+	    function Image(parent, sim, args) {
+	        _super.call(this, parent, args);
+	        var self = this;
+	        self.sim = sim;
+	        self.display_time = args.display_time;
+	        self.pixels_x = args.pixels_x;
+	        self.pixels_y = args.pixels_y;
+	        self.n_pixels = self.pixels_x * self.pixels_y;
 	        // For storing the accumulated data
-	        this.data_store = new datastore_1.DataStore(this.n_pixels, this.sim, 0);
+	        self.data_store = new datastore_1.DataStore(self.n_pixels, self.sim, 0);
 	        // Draw the plot as an SVG
-	        this.svg = d3.select(this.div).append("svg")
+	        self.svg = d3.select(self.div).append("svg")
 	            .attr("width", "100%")
 	            .attr("height", "100%")
 	            .attr("style", [
 	            "padding-top:", "2em",
 	        ].join(""));
 	        // Call schedule_update whenever the time is adjusted in the SimControl
-	        this.sim.div.addEventListener("adjust_time", function (e) {
-	            _this.schedule_update(null);
+	        self.sim.div.addEventListener("adjust_time", function (e) {
+	            self.schedule_update(null);
 	        }, false);
 	        // Create the image
-	        this.image = this.svg.append("image")
+	        self.image = self.svg.append("image")
 	            .attr("x", 0)
 	            .attr("y", 0)
 	            .attr("width", "100%")
@@ -69249,11 +69018,12 @@ var Nengo =
 	            "image-rendering: -moz-crisp-edges;",
 	            "image-rendering: pixelated;",
 	        ].join(""));
-	        this.canvas = document.createElement("CANVAS");
-	        this.canvas.width = this.pixels_x;
-	        this.canvas.height = this.pixels_y;
-	        this.on_resize(this.get_screen_width(), this.get_screen_height());
+	        self.canvas = document.createElement("CANVAS");
+	        self.canvas.width = self.pixels_x;
+	        self.canvas.height = self.pixels_y;
+	        this.on_resize(viewport.scale_width(this.w), viewport.scale_height(this.h));
 	    }
+	    ;
 	    /**
 	     * Receive new line data from the server
 	     */
@@ -69268,63 +69038,68 @@ var Nengo =
 	        }
 	        this.schedule_update(event);
 	    };
+	    ;
 	    /**
 	     * Redraw the lines and axis due to changed data
 	     */
 	    Image.prototype.update = function () {
+	        var self = this;
 	        // Let the data store clear out old values
-	        this.data_store.update();
-	        var data = this.data_store.get_last_data();
-	        var ctx = this.canvas.getContext("2d");
-	        var imgData = ctx.getImageData(0, 0, this.pixels_x, this.pixels_y);
-	        for (var i = 0; i < this.n_pixels; i++) {
+	        self.data_store.update();
+	        var data = self.data_store.get_last_data();
+	        var ctx = self.canvas.getContext("2d");
+	        var imgData = ctx.getImageData(0, 0, self.pixels_x, self.pixels_y);
+	        for (var i = 0; i < self.n_pixels; i++) {
 	            imgData.data[4 * i + 0] = data[i];
 	            imgData.data[4 * i + 1] = data[i];
 	            imgData.data[4 * i + 2] = data[i];
 	            imgData.data[4 * i + 3] = 255;
 	        }
 	        ctx.putImageData(imgData, 0, 0);
-	        var dataURL = this.canvas.toDataURL("image/png");
-	        this.image.attr("xlink:href", dataURL);
+	        var dataURL = self.canvas.toDataURL("image/png");
+	        self.image.attr("xlink:href", dataURL);
 	    };
+	    ;
 	    /**
 	     * Adjust the graph layout due to changed size
 	     */
 	    Image.prototype.on_resize = function (width, height) {
-	        if (width < this.min_width) {
-	            width = this.min_width;
+	        var self = this;
+	        if (width < self.min_width) {
+	            width = self.min_width;
 	        }
-	        if (height < this.min_height) {
-	            height = this.min_height;
+	        if (height < self.min_height) {
+	            height = self.min_height;
 	        }
-	        this.svg
+	        self.svg
 	            .attr("width", width)
 	            .attr("height", height);
-	        this.update();
-	        this.label.style.width = width;
-	        this.width = width;
-	        this.height = height;
-	        this.div.style.width = width;
-	        this.div.style.height = height;
+	        self.update();
+	        self.label.style.width = width;
+	        self.width = width;
+	        self.height = height;
+	        self.div.style.width = width;
+	        self.div.style.height = height;
 	    };
+	    ;
 	    return Image;
-	}(component_1.Component));
+	}(component_1.default));
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Image;
 
 
 /***/ },
-/* 113 */
+/* 108 */
 /*!**************************************************************************!*\
   !*** ./~/expose-loader?Pointer!./nengo_gui/static/components/pointer.ts ***!
   \**************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["Pointer"] = __webpack_require__(/*! -!./~/ts-loader!./nengo_gui/static/components/pointer.ts */ 114);
+	/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["Pointer"] = __webpack_require__(/*! -!./~/ts-loader!./nengo_gui/static/components/pointer.ts */ 109);
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 114 */
+/* 109 */
 /*!**************************************************************!*\
   !*** ./~/ts-loader!./nengo_gui/static/components/pointer.ts ***!
   \**************************************************************/
@@ -69349,15 +69124,16 @@ var Nengo =
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var $ = __webpack_require__(/*! jquery */ 12);
-	var datastore_1 = __webpack_require__(/*! ../datastore */ 88);
+	var datastore_1 = __webpack_require__(/*! ../datastore */ 70);
 	var utils = __webpack_require__(/*! ../utils */ 65);
-	var component_1 = __webpack_require__(/*! ./component */ 68);
-	__webpack_require__(/*! ./pointer.css */ 115);
+	var viewport = __webpack_require__(/*! ../viewport */ 67);
+	var component_1 = __webpack_require__(/*! ./component */ 71);
+	__webpack_require__(/*! ./pointer.css */ 110);
 	var Pointer = (function (_super) {
 	    __extends(Pointer, _super);
-	    function Pointer(parent, viewport, sim, args) {
-	        var _this = this;
-	        _super.call(this, parent, viewport, args);
+	    function Pointer(parent, sim, args) {
+	        _super.call(this, parent, args);
+	        var self = this;
 	        this.sim = sim;
 	        this.pointer_status = false;
 	        this.pdiv = document.createElement("div");
@@ -69372,64 +69148,68 @@ var Nengo =
 	        this.data_store = new datastore_1.DataStore(1, this.sim, 0);
 	        // Call schedule_update whenever the time is adjusted in the SimControl
 	        this.sim.div.addEventListener("adjust_time", function (e) {
-	            _this.schedule_update(null);
+	            self.schedule_update(null);
 	        }, false);
 	        // Call reset whenever the simulation is reset
 	        this.sim.div.addEventListener("sim_reset", function (e) {
-	            _this.reset(null);
+	            self.reset(null);
 	        }, false);
-	        this.on_resize(this.get_screen_width(), this.get_screen_height());
+	        this.on_resize(viewport.scale_width(this.w), viewport.scale_height(this.h));
 	        this.fixed_value = "";
 	        this.div.addEventListener("mouseup", function (event) {
 	            // For some reason "tap" doesn't seem to work here while the
 	            // simulation is running, so I'm doing the timing myself
 	            var now = new Date().getTime() / 1000;
-	            if (now - _this.mouse_down_time > 0.1) {
+	            if (now - self.mouse_down_time > 0.1) {
 	                return;
 	            }
 	            if (event.button === 0) {
-	                if (_this.menu.visible) {
-	                    _this.menu.hide();
+	                if (self.menu.visible) {
+	                    self.menu.hide();
 	                }
 	                else {
-	                    _this.menu.show(event.clientX, event.clientY, _this.generate_menu());
+	                    self.menu.show(event.clientX, event.clientY, self.generate_menu());
 	                }
 	            }
 	        });
 	        this.div.addEventListener("mousedown", function (event) {
-	            _this.mouse_down_time = new Date().getTime() / 1000;
+	            self.mouse_down_time = new Date().getTime() / 1000;
 	        });
 	    }
+	    ;
 	    Pointer.prototype.generate_menu = function () {
-	        var _this = this;
+	        var self = this;
 	        var items = [];
 	        items.push(["Set value...", function () {
-	                _this.set_value();
+	                self.set_value();
 	            }]);
 	        if (this.show_pairs) {
 	            items.push(["Hide pairs", function () {
-	                    _this.set_show_pairs(false);
+	                    self.set_show_pairs(false);
 	                }]);
 	        }
 	        else {
 	            items.push(["Show pairs", function () {
-	                    _this.set_show_pairs(true);
+	                    self.set_show_pairs(true);
 	                }]);
 	        }
 	        // Add the parent's menu items to this
-	        return $.merge(items, _super.prototype.generate_menu.call(this));
+	        // TODO: is this really the best way to call the parent's generate_menu()?
+	        return $.merge(items, component_1.default.prototype.generate_menu.call(this));
 	    };
+	    ;
 	    Pointer.prototype.set_show_pairs = function (value) {
 	        if (this.show_pairs !== value) {
 	            this.show_pairs = value;
 	            this.save_layout();
 	        }
 	    };
+	    ;
 	    Pointer.prototype.set_value = function () {
-	        var _this = this;
-	        this.sim.modal.title("Enter a Semantic Pointer value...");
-	        this.sim.modal.single_input_body("Pointer", "New value");
-	        this.sim.modal.footer("ok_cancel", function (e) {
+	        var self = this;
+	        self.sim.modal.title("Enter a Semantic Pointer value...");
+	        self.sim.modal.single_input_body("Pointer", "New value");
+	        self.sim.modal.footer("ok_cancel", function (e) {
 	            var value = $("#singleInput").val();
 	            var modal = $("#myModalForm").data("bs.validator");
 	            modal.validate();
@@ -69439,8 +69219,8 @@ var Nengo =
 	            if ((value === null) || (value === "")) {
 	                value = ":empty:";
 	            }
-	            _this.fixed_value = value;
-	            _this.ws.send(value);
+	            self.fixed_value = value;
+	            self.ws.send(value);
 	            $("#OK").attr("data-dismiss", "modal");
 	        });
 	        $("#myModalForm").validator({
@@ -69450,8 +69230,8 @@ var Nengo =
 	                    if (ptr === null) {
 	                        ptr = "";
 	                    }
-	                    _this.ws.send(":check only:" + ptr);
-	                    return _this.pointer_status;
+	                    self.ws.send(":check only:" + ptr);
+	                    return self.pointer_status;
 	                },
 	            },
 	        });
@@ -69461,8 +69241,9 @@ var Nengo =
 	            "convolution), and ~ (pseudo-inverse). E.g., " +
 	            "(A+~(B*C)*2)*0.5 would be a valid semantic pointer " +
 	            "expression.");
-	        this.sim.modal.show();
+	        self.sim.modal.show();
 	    };
+	    ;
 	    /**
 	     * Receive new line data from the server.
 	     */
@@ -69481,11 +69262,11 @@ var Nengo =
 	        this.data_store.push([time, items]);
 	        this.schedule_update(null);
 	    };
+	    ;
 	    /**
 	     * Redraw the lines and axis due to changed data.
 	     */
 	    Pointer.prototype.update = function () {
-	        var _this = this;
 	        // Let the data store clear out old values
 	        this.data_store.update();
 	        var data = this.data_store.get_last_data()[0];
@@ -69500,11 +69281,11 @@ var Nengo =
 	        var total_size = 0;
 	        var items = [];
 	        // Display the text in proportion to similarity
-	        data.forEach(function (datum) {
-	            var size = parseFloat(datum.substring(0, 4));
+	        for (var i = 0; i < data.length; i++) {
+	            var size = parseFloat(data[i].substring(0, 4));
 	            var span = document.createElement("span");
-	            utils.safe_set_text(span, datum.substring(4));
-	            _this.pdiv.appendChild(span);
+	            span.innerHTML = data[i].substring(4);
+	            this.pdiv.appendChild(span);
 	            total_size += size;
 	            var c = Math.floor(255 - 255 * size);
 	            // TODO: Use clip
@@ -69516,13 +69297,14 @@ var Nengo =
 	            }
 	            span.style.color = "rgb(" + c + "," + c + "," + c + ")";
 	            items.push(span);
-	        });
+	        }
 	        var scale = this.height / total_size * 0.6;
-	        data.forEach(function (datum, i) {
-	            var size = parseFloat(datum.substring(0, 4));
+	        for (var i = 0; i < data.length; i++) {
+	            var size = parseFloat(data[i].substring(0, 4));
 	            items[i].style.fontSize = "" + (size * scale) + "px";
-	        });
+	        }
 	    };
+	    ;
 	    /**
 	     * Adjust the graph layout due to changed size.
 	     */
@@ -69540,27 +69322,31 @@ var Nengo =
 	        this.label.style.width = width;
 	        this.update();
 	    };
+	    ;
 	    Pointer.prototype.layout_info = function () {
-	        var info = component_1.Component.prototype.layout_info.call(this);
+	        var info = component_1.default.prototype.layout_info.call(this);
 	        info.show_pairs = this.show_pairs;
 	        return info;
 	    };
+	    ;
 	    Pointer.prototype.update_layout = function (config) {
 	        this.show_pairs = config.show_pairs;
-	        component_1.Component.prototype.update_layout.call(this, config);
+	        component_1.default.prototype.update_layout.call(this, config);
 	    };
+	    ;
 	    Pointer.prototype.reset = function (event) {
 	        this.data_store.reset();
 	        this.schedule_update(event);
 	    };
+	    ;
 	    return Pointer;
-	}(component_1.Component));
+	}(component_1.default));
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Pointer;
 
 
 /***/ },
-/* 115 */
+/* 110 */
 /*!*************************************************!*\
   !*** ./nengo_gui/static/components/pointer.css ***!
   \*************************************************/
@@ -69569,7 +69355,7 @@ var Nengo =
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../../~/css-loader!./pointer.css */ 116);
+	var content = __webpack_require__(/*! !./../../../~/css-loader!./pointer.css */ 111);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 10)(content, {});
@@ -69589,7 +69375,7 @@ var Nengo =
 	}
 
 /***/ },
-/* 116 */
+/* 111 */
 /*!****************************************************************!*\
   !*** ./~/css-loader!./nengo_gui/static/components/pointer.css ***!
   \****************************************************************/
@@ -69606,17 +69392,17 @@ var Nengo =
 
 
 /***/ },
-/* 117 */
+/* 112 */
 /*!************************************************************************!*\
   !*** ./~/expose-loader?Raster!./nengo_gui/static/components/raster.ts ***!
   \************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["Raster"] = __webpack_require__(/*! -!./~/ts-loader!./nengo_gui/static/components/raster.ts */ 118);
+	/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["Raster"] = __webpack_require__(/*! -!./~/ts-loader!./nengo_gui/static/components/raster.ts */ 113);
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 118 */
+/* 113 */
 /*!*************************************************************!*\
   !*** ./~/ts-loader!./nengo_gui/static/components/raster.ts ***!
   \*************************************************************/
@@ -69643,16 +69429,17 @@ var Nengo =
 	};
 	var d3 = __webpack_require__(/*! d3 */ 66);
 	var $ = __webpack_require__(/*! jquery */ 12);
-	var datastore_1 = __webpack_require__(/*! ../datastore */ 88);
+	var datastore_1 = __webpack_require__(/*! ../datastore */ 70);
 	var utils = __webpack_require__(/*! ../utils */ 65);
-	var component_1 = __webpack_require__(/*! ./component */ 68);
-	__webpack_require__(/*! ./raster.css */ 119);
-	var time_axes_1 = __webpack_require__(/*! ./time_axes */ 89);
+	var viewport = __webpack_require__(/*! ../viewport */ 67);
+	var component_1 = __webpack_require__(/*! ./component */ 71);
+	__webpack_require__(/*! ./raster.css */ 114);
+	var time_axes_1 = __webpack_require__(/*! ./time_axes */ 72);
 	var Raster = (function (_super) {
 	    __extends(Raster, _super);
-	    function Raster(parent, viewport, sim, args) {
-	        var _this = this;
-	        _super.call(this, parent, viewport, args);
+	    function Raster(parent, sim, args) {
+	        _super.call(this, parent, args);
+	        var self = this;
 	        this.n_neurons = args.n_neurons || 1;
 	        this.sim = sim;
 	        // For storing the accumulated data
@@ -69661,19 +69448,19 @@ var Nengo =
 	        this.axes2d.scale_y.domain([0, args.n_neurons]);
 	        // Call schedule_update whenever the time is adjusted in the SimControl
 	        this.sim.div.addEventListener("adjust_time", function (e) {
-	            _this.schedule_update(null);
+	            self.schedule_update(null);
 	        }, false);
 	        // Call reset whenever the simulation is reset
 	        this.sim.div.addEventListener("sim_reset", function (e) {
-	            _this.reset(null);
+	            self.reset(null);
 	        }, false);
 	        // Create the lines on the plots
 	        d3.svg.line()
 	            .x(function (d, i) {
-	            return _this.axes2d.scale_x(_this.data_store.times[i]);
+	            return self.axes2d.scale_x(this.data_store.times[i]);
 	        })
 	            .y(function (d) {
-	            return _this.axes2d.scale_y(d);
+	            return self.axes2d.scale_y(d);
 	        });
 	        this.path = this.axes2d.svg.append("g")
 	            .selectAll("path")
@@ -69682,10 +69469,11 @@ var Nengo =
 	            .attr("class", "line")
 	            .style("stroke", utils.make_colors(1));
 	        this.update();
-	        this.on_resize(this.get_screen_width(), this.get_screen_height());
+	        this.on_resize(viewport.scale_width(this.w), viewport.scale_height(this.h));
 	        this.axes2d.axis_y.tickValues([0, args.n_neurons]);
 	        this.axes2d.fit_ticks(this);
 	    }
+	    ;
 	    /**
 	     * Receive new line data from the server.
 	     */
@@ -69695,17 +69483,18 @@ var Nengo =
 	        this.data_store.push([time[0], data]);
 	        this.schedule_update(event);
 	    };
+	    ;
 	    Raster.prototype.set_n_neurons = function (n_neurons) {
 	        this.n_neurons = n_neurons;
 	        this.axes2d.scale_y.domain([0, n_neurons]);
 	        this.axes2d.axis_y.tickValues([0, n_neurons]);
 	        this.ws.send("n_neurons:" + n_neurons);
 	    };
+	    ;
 	    /**
 	     * Redraw the lines and axis due to changed data.
 	     */
 	    Raster.prototype.update = function () {
-	        var _this = this;
 	        // Let the data store clear out old values
 	        this.data_store.update();
 	        // Determine visible range from the SimControl
@@ -69715,16 +69504,17 @@ var Nengo =
 	        // Update the lines
 	        var shown_data = this.data_store.get_shown_data();
 	        var path = [];
-	        shown_data[0].forEach(function (data, i) {
-	            var t = _this.axes2d.scale_x(_this.data_store.times[_this.data_store.first_shown_index + i]);
-	            data.forEach(function (y) {
-	                var y1 = _this.axes2d.scale_y(y);
-	                var y2 = _this.axes2d.scale_y(y + 1);
+	        for (var i = 0; i < shown_data[0].length; i++) {
+	            var t = this.axes2d.scale_x(this.data_store.times[this.data_store.first_shown_index + i]);
+	            for (var j = 0; j < shown_data[0][i].length; j++) {
+	                var y1 = this.axes2d.scale_y(shown_data[0][i][j]);
+	                var y2 = this.axes2d.scale_y(shown_data[0][i][j] + 1);
 	                path.push("M " + t + " " + y1 + "V" + y2);
-	            });
-	        });
+	            }
+	        }
 	        this.path.attr("d", path.join(""));
 	    };
+	    ;
 	    /**
 	     * Adjust the graph layout due to changed size.
 	     */
@@ -69743,23 +69533,26 @@ var Nengo =
 	        this.div.style.width = width;
 	        this.div.style.height = height;
 	    };
+	    ;
 	    Raster.prototype.reset = function (event) {
 	        this.data_store.reset();
 	        this.schedule_update(event);
 	    };
+	    ;
 	    Raster.prototype.generate_menu = function () {
-	        var _this = this;
+	        var self = this;
 	        var items = [["Set # neurons...", function () {
-	                    _this.set_neuron_count();
+	                    self.set_neuron_count();
 	                }]];
-	        return $.merge(items, _super.prototype.generate_menu.call(this));
+	        return $.merge(items, component_1.default.prototype.generate_menu.call(this));
 	    };
+	    ;
 	    Raster.prototype.set_neuron_count = function () {
-	        var _this = this;
+	        var self = this;
 	        var count = this.n_neurons;
-	        this.sim.modal.title("Set number of neurons...");
-	        this.sim.modal.single_input_body(count, "Number of neurons");
-	        this.sim.modal.footer("ok_cancel", function (e) {
+	        self.sim.modal.title("Set number of neurons...");
+	        self.sim.modal.single_input_body(count, "Number of neurons");
+	        self.sim.modal.footer("ok_cancel", function (e) {
 	            var new_count = $("#singleInput").val();
 	            var modal = $("#myModalForm").data("bs.validator");
 	            modal.validate();
@@ -69768,8 +69561,8 @@ var Nengo =
 	            }
 	            if (new_count !== null) {
 	                new_count = parseInt(new_count, 10);
-	                _this.set_n_neurons(new_count);
-	                _this.axes2d.fit_ticks(_this);
+	                self.set_n_neurons(new_count);
+	                self.axes2d.fit_ticks(self);
 	            }
 	            $("#OK").attr("data-dismiss", "modal");
 	        });
@@ -69790,20 +69583,21 @@ var Nengo =
 	            },
 	        });
 	        $("#singleInput").attr("data-error", "Input should be a positive integer");
-	        this.sim.modal.show();
+	        self.sim.modal.show();
 	        $("#OK").on("click", function () {
-	            var div = $(_this.div);
-	            _this.on_resize(div.width(), div.height());
+	            var div = $(self.div);
+	            self.on_resize(div.width(), div.height());
 	        });
 	    };
+	    ;
 	    return Raster;
-	}(component_1.Component));
+	}(component_1.default));
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Raster;
 
 
 /***/ },
-/* 119 */
+/* 114 */
 /*!************************************************!*\
   !*** ./nengo_gui/static/components/raster.css ***!
   \************************************************/
@@ -69812,7 +69606,7 @@ var Nengo =
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../../~/css-loader!./raster.css */ 120);
+	var content = __webpack_require__(/*! !./../../../~/css-loader!./raster.css */ 115);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 10)(content, {});
@@ -69832,7 +69626,7 @@ var Nengo =
 	}
 
 /***/ },
-/* 120 */
+/* 115 */
 /*!***************************************************************!*\
   !*** ./~/css-loader!./nengo_gui/static/components/raster.css ***!
   \***************************************************************/
@@ -69849,17 +69643,17 @@ var Nengo =
 
 
 /***/ },
-/* 121 */
+/* 116 */
 /*!************************************************************************!*\
   !*** ./~/expose-loader?Slider!./nengo_gui/static/components/slider.ts ***!
   \************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["Slider"] = __webpack_require__(/*! -!./~/ts-loader!./nengo_gui/static/components/slider.ts */ 122);
+	/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["Slider"] = __webpack_require__(/*! -!./~/ts-loader!./nengo_gui/static/components/slider.ts */ 117);
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 122 */
+/* 117 */
 /*!*************************************************************!*\
   !*** ./~/ts-loader!./nengo_gui/static/components/slider.ts ***!
   \*************************************************************/
@@ -69885,16 +69679,17 @@ var Nengo =
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var $ = __webpack_require__(/*! jquery */ 12);
-	var datastore_1 = __webpack_require__(/*! ../datastore */ 88);
+	var datastore_1 = __webpack_require__(/*! ../datastore */ 70);
 	var menu = __webpack_require__(/*! ../menu */ 62);
-	var component_1 = __webpack_require__(/*! ./component */ 68);
-	__webpack_require__(/*! ./slider.css */ 123);
-	var slidercontrol_1 = __webpack_require__(/*! ./slidercontrol */ 125);
+	var viewport = __webpack_require__(/*! ../viewport */ 67);
+	var component_1 = __webpack_require__(/*! ./component */ 71);
+	__webpack_require__(/*! ./slider.css */ 118);
+	var slidercontrol_1 = __webpack_require__(/*! ./slidercontrol */ 120);
 	var Slider = (function (_super) {
 	    __extends(Slider, _super);
-	    function Slider(parent, viewport, sim, args) {
-	        var _this = this;
-	        _super.call(this, parent, viewport, args);
+	    function Slider(parent, sim, args) {
+	        _super.call(this, parent, args);
+	        var self = this;
 	        this.sim = sim;
 	        // Check if user is filling in a number into a slider
 	        this.filling_slider_value = false;
@@ -69927,27 +69722,28 @@ var Nengo =
 	            slider.fixed = false;
 	            slider.on("change", function (event) {
 	                event.target.fixed = true;
-	                _this.send_value(event.target.index, event.value);
+	                self.send_value(event.target.index, event.value);
 	            }).on("changestart", function (event) {
 	                menu.hide_any();
-	                _this.sliders.forEach(function (slider) {
-	                    if (slider !== event.target) {
-	                        slider.deactivate_type_mode();
+	                for (var i_1 = 0; i_1 < self.sliders.length; i_1++) {
+	                    if (self.sliders[i_1] !== event.target) {
+	                        self.sliders[i_1].deactivate_type_mode();
 	                    }
-	                });
+	                }
 	            });
 	            this.group.appendChild(slider.container);
 	            this.sliders.push(slider);
 	        }
 	        // Call schedule_update whenever the time is adjusted in the SimControl
 	        this.sim.div.addEventListener("adjust_time", function (e) {
-	            _this.schedule_update(e);
+	            self.schedule_update(e);
 	        }, false);
 	        this.sim.div.addEventListener("sim_reset", function (e) {
-	            _this.on_sim_reset(e);
+	            self.on_sim_reset(e);
 	        }, false);
-	        this.on_resize(this.get_screen_width(), this.get_screen_height());
+	        this.on_resize(viewport.scale_width(this.w), viewport.scale_height(this.h));
 	    }
+	    ;
 	    Slider.prototype.set_axes_geometry = function (width, height) {
 	        this.width = width;
 	        this.height = height;
@@ -69956,6 +69752,7 @@ var Nengo =
 	        this.ax_top = 1.75 * scale;
 	        this.slider_height = this.height - this.ax_top;
 	    };
+	    ;
 	    Slider.prototype.send_value = function (slider_index, value) {
 	        console.assert(typeof slider_index === "number");
 	        console.assert(typeof value === "number");
@@ -69967,34 +69764,35 @@ var Nengo =
 	        }
 	        this.sim.time_slider.jump_to_end();
 	    };
+	    ;
 	    Slider.prototype.on_sim_reset = function (event) {
-	        var _this = this;
 	        // Release slider position and reset it
-	        this.sliders.forEach(function (slider, i) {
-	            _this.notify("" + i + ",reset");
-	            slider.display_value(_this.start_value[i]);
-	            slider.fixed = false;
-	        });
+	        for (var i = 0; i < this.sliders.length; i++) {
+	            this.notify("" + i + ",reset");
+	            this.sliders[i].display_value(this.start_value[i]);
+	            this.sliders[i].fixed = false;
+	        }
 	    };
+	    ;
 	    /**
 	     * Receive new line data from the server.
 	     */
 	    Slider.prototype.on_message = function (event) {
-	        var _this = this;
 	        var data = new Float32Array(event.data);
 	        if (this.data_store === null) {
 	            this.data_store = new datastore_1.DataStore(this.sliders.length, this.sim, 0);
 	        }
 	        this.reset_value = [];
-	        this.sliders.forEach(function (slider, i) {
-	            _this.reset_value.push(data[i + 1]);
-	            if (slider.fixed) {
-	                data[i + 1] = slider.value;
+	        for (var i = 0; i < this.sliders.length; i++) {
+	            this.reset_value.push(data[i + 1]);
+	            if (this.sliders[i].fixed) {
+	                data[i + 1] = this.sliders[i].value;
 	            }
-	        });
+	        }
 	        this.data_store.push(data);
 	        this.schedule_update(event);
 	    };
+	    ;
 	    /**
 	     * Update visual display based when component is resized.
 	     */
@@ -70010,60 +69808,65 @@ var Nengo =
 	        this.set_axes_geometry(width, height);
 	        this.group.style.height = height - this.ax_top - 2 * this.border_size;
 	        this.group.style.marginTop = this.ax_top;
-	        this.sliders.forEach(function (slider) {
-	            slider.on_resize();
-	        });
+	        for (var i = 0; i < this.sliders.length; i++) {
+	            this.sliders[i].on_resize();
+	        }
 	        this.label.style.width = this.width;
 	        this.div.style.width = this.width;
 	        this.div.style.height = this.height;
 	    };
+	    ;
 	    Slider.prototype.generate_menu = function () {
-	        var _this = this;
+	        var self = this;
 	        var items = [
 	            ["Set range...", function () {
-	                    _this.set_range();
+	                    self.set_range();
 	                }],
 	            ["Set value...", function () {
-	                    _this.user_value();
+	                    self.user_value();
 	                }],
 	            ["Reset value", function () {
-	                    _this.user_reset_value();
+	                    self.user_reset_value();
 	                }],
 	        ];
 	        // Add the parent's menu items to this
-	        return $.merge(items, _super.prototype.generate_menu.call(this));
+	        // TODO: is this really the best way to call the parent's generate_menu()?
+	        return $.merge(items, component_1.default.prototype.generate_menu.call(this));
 	    };
+	    ;
 	    /**
 	     * Report an event back to the server.
 	     */
 	    Slider.prototype.notify = function (info) {
-	        var _this = this;
+	        var self = this;
 	        this.notify_msgs.push(info);
 	        // Only send one message at a time
 	        // TODO: find a better way to figure out when it's safe to send
 	        // another message, rather than just waiting 1ms....
 	        if (this.notify_msgs.length === 1) {
 	            window.setTimeout(function () {
-	                _this.send_notify_msg();
+	                self.send_notify_msg();
 	            }, 50);
 	        }
 	    };
+	    ;
 	    /**
 	     * Send exactly one message back to server.
 	     *
 	     * Also schedule the next message to be sent, if any.
 	     */
 	    Slider.prototype.send_notify_msg = function () {
-	        var _this = this;
+	        var self = this;
 	        var msg = this.notify_msgs[0];
 	        this.ws.send(msg);
 	        if (this.notify_msgs.length > 1) {
 	            window.setTimeout(function () {
-	                _this.send_notify_msg();
+	                self.send_notify_msg();
 	            }, 50);
 	        }
 	        this.notify_msgs.splice(0, 1);
 	    };
+	    ;
 	    Slider.prototype.update = function () {
 	        // Let the data store clear out old values
 	        if (this.data_store !== null) {
@@ -70076,43 +69879,43 @@ var Nengo =
 	            }
 	        }
 	    };
+	    ;
 	    Slider.prototype.user_value = function () {
-	        var _this = this;
+	        var self = this;
 	        // First build the prompt string
 	        var prompt_string = "";
-	        // TODO: replace with join
-	        this.sliders.forEach(function (slider, i) {
-	            prompt_string = prompt_string + slider.value.toFixed(2);
-	            if (i !== _this.sliders.length - 1) {
+	        for (var i = 0; i < this.sliders.length; i++) {
+	            prompt_string = prompt_string + this.sliders[i].value.toFixed(2);
+	            if (i !== this.sliders.length - 1) {
 	                prompt_string = prompt_string + ", ";
 	            }
-	        });
-	        this.sim.modal.title("Set slider value(s)...");
-	        this.sim.modal.single_input_body(prompt_string, "New value(s)");
-	        this.sim.modal.footer("ok_cancel", function (e) {
+	        }
+	        self.sim.modal.title("Set slider value(s)...");
+	        self.sim.modal.single_input_body(prompt_string, "New value(s)");
+	        self.sim.modal.footer("ok_cancel", function (e) {
 	            var new_value = $("#singleInput").val();
 	            var modal = $("#myModalForm").data("bs.validator");
 	            modal.validate();
 	            if (modal.hasErrors() || modal.isIncomplete()) {
 	                return;
 	            }
-	            _this.immediate_notify = false;
+	            self.immediate_notify = false;
 	            if (new_value !== null) {
 	                new_value = new_value.split(",");
 	                // Update the sliders one at a time
-	                _this.sliders.forEach(function (slider, i) {
-	                    slider.fixed = true;
-	                    slider.set_value(parseFloat(new_value[i]));
-	                });
+	                for (var i = 0; i < self.sliders.length; i++) {
+	                    self.sliders[i].fixed = true;
+	                    self.sliders[i].set_value(parseFloat(new_value[i]));
+	                }
 	            }
-	            _this.immediate_notify = true;
+	            self.immediate_notify = true;
 	            $("#OK").attr("data-dismiss", "modal");
 	        });
 	        $("#myModalForm").validator({
 	            custom: {
 	                my_validator: function ($item) {
 	                    var nums = $item.val().split(",");
-	                    if (nums.length !== _this.sliders.length) {
+	                    if (nums.length !== self.sliders.length) {
 	                        return false;
 	                    }
 	                    for (var i = 0; i < nums.length; i++) {
@@ -70126,22 +69929,23 @@ var Nengo =
 	        });
 	        $("#singleInput").attr("data-error", "Input should be one " +
 	            "comma-separated numerical value for each slider.");
-	        this.sim.modal.show();
+	        self.sim.modal.show();
 	    };
+	    ;
 	    Slider.prototype.user_reset_value = function () {
-	        var _this = this;
-	        this.sliders.forEach(function (slider, i) {
-	            _this.notify("" + i + ",reset");
-	            slider.set_value(_this.reset_value[i]);
-	            slider.fixed = false;
-	        });
+	        for (var i = 0; i < this.sliders.length; i++) {
+	            this.notify("" + i + ",reset");
+	            this.sliders[i].set_value(this.reset_value[i]);
+	            this.sliders[i].fixed = false;
+	        }
 	    };
+	    ;
 	    Slider.prototype.set_range = function () {
-	        var _this = this;
 	        var range = this.sliders[0].scale.domain();
-	        this.sim.modal.title("Set slider range...");
-	        this.sim.modal.single_input_body([range[1], range[0]], "New range");
-	        this.sim.modal.footer("ok_cancel", function (e) {
+	        var self = this;
+	        self.sim.modal.title("Set slider range...");
+	        self.sim.modal.single_input_body([range[1], range[0]], "New range");
+	        self.sim.modal.footer("ok_cancel", function (e) {
 	            var new_range = $("#singleInput").val();
 	            var modal = $("#myModalForm").data("bs.validator");
 	            modal.validate();
@@ -70150,12 +69954,12 @@ var Nengo =
 	            }
 	            if (new_range !== null) {
 	                new_range = new_range.split(",");
-	                var min_1 = parseFloat(new_range[0]);
-	                var max_1 = parseFloat(new_range[1]);
-	                _this.sliders.forEach(function (slider) {
-	                    slider.set_range(min_1, max_1);
-	                });
-	                _this.save_layout();
+	                var min = parseFloat(new_range[0]);
+	                var max = parseFloat(new_range[1]);
+	                for (var i = 0; i < self.sliders.length; i++) {
+	                    self.sliders[i].set_range(min, max);
+	                }
+	                self.save_layout();
 	            }
 	            $("#OK").attr("data-dismiss", "modal");
 	        });
@@ -70176,29 +69980,32 @@ var Nengo =
 	        });
 	        $("#singleInput").attr("data-error", "Input should be in the " +
 	            "form '<min>,<max>'.");
-	        this.sim.modal.show();
+	        self.sim.modal.show();
 	    };
+	    ;
 	    Slider.prototype.layout_info = function () {
-	        var info = component_1.Component.prototype.layout_info.call(this);
+	        var info = component_1.default.prototype.layout_info.call(this);
 	        info.min_value = this.sliders[0].scale.domain()[1];
 	        info.max_value = this.sliders[0].scale.domain()[0];
 	        return info;
 	    };
+	    ;
 	    Slider.prototype.update_layout = function (config) {
-	        // FIXME: this has to be backwards to work. Find out why.
+	        // FIXME: this has to be backwards to work. Something fishy must be going on
 	        for (var i = 0; i < this.sliders.length; i++) {
 	            this.sliders[i].set_range(config.min_value, config.max_value);
 	        }
-	        component_1.Component.prototype.update_layout.call(this, config);
+	        component_1.default.prototype.update_layout.call(this, config);
 	    };
+	    ;
 	    return Slider;
-	}(component_1.Component));
+	}(component_1.default));
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Slider;
 
 
 /***/ },
-/* 123 */
+/* 118 */
 /*!************************************************!*\
   !*** ./nengo_gui/static/components/slider.css ***!
   \************************************************/
@@ -70207,7 +70014,7 @@ var Nengo =
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../../~/css-loader!./slider.css */ 124);
+	var content = __webpack_require__(/*! !./../../../~/css-loader!./slider.css */ 119);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 10)(content, {});
@@ -70227,7 +70034,7 @@ var Nengo =
 	}
 
 /***/ },
-/* 124 */
+/* 119 */
 /*!***************************************************************!*\
   !*** ./~/css-loader!./nengo_gui/static/components/slider.css ***!
   \***************************************************************/
@@ -70244,7 +70051,7 @@ var Nengo =
 
 
 /***/ },
-/* 125 */
+/* 120 */
 /*!******************************************************!*\
   !*** ./nengo_gui/static/components/slidercontrol.ts ***!
   \******************************************************/
@@ -70438,17 +70245,17 @@ var Nengo =
 
 
 /***/ },
-/* 126 */
+/* 121 */
 /*!***************************************************************************************!*\
   !*** ./~/expose-loader?SpaSimilarity!./nengo_gui/static/components/spa_similarity.ts ***!
   \***************************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["SpaSimilarity"] = __webpack_require__(/*! -!./~/ts-loader!./nengo_gui/static/components/spa_similarity.ts */ 127);
+	/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["SpaSimilarity"] = __webpack_require__(/*! -!./~/ts-loader!./nengo_gui/static/components/spa_similarity.ts */ 122);
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 127 */
+/* 122 */
 /*!*********************************************************************!*\
   !*** ./~/ts-loader!./nengo_gui/static/components/spa_similarity.ts ***!
   \*********************************************************************/
@@ -70471,23 +70278,23 @@ var Nengo =
 	};
 	var d3 = __webpack_require__(/*! d3 */ 66);
 	var $ = __webpack_require__(/*! jquery */ 12);
-	var datastore_1 = __webpack_require__(/*! ../datastore */ 88);
+	var datastore_1 = __webpack_require__(/*! ../datastore */ 70);
 	var utils = __webpack_require__(/*! ../utils */ 65);
-	var component_1 = __webpack_require__(/*! ./component */ 68);
-	__webpack_require__(/*! ./spa_similarity.css */ 128);
-	var value_1 = __webpack_require__(/*! ./value */ 87);
+	var component_1 = __webpack_require__(/*! ./component */ 71);
+	__webpack_require__(/*! ./spa_similarity.css */ 123);
+	var value_1 = __webpack_require__(/*! ./value */ 69);
 	var SpaSimilarity = (function (_super) {
 	    __extends(SpaSimilarity, _super);
-	    function SpaSimilarity(parent, viewport, sim, args) {
-	        var _this = this;
-	        _super.call(this, parent, viewport, sim, args);
+	    function SpaSimilarity(parent, sim, args) {
+	        _super.call(this, parent, sim, args);
 	        this.synapse = args.synapse;
 	        this.data_store =
 	            new datastore_1.GrowableDataStore(this.n_lines, this.sim, this.synapse);
 	        this.show_pairs = false;
+	        var self = this;
 	        this.colors = utils.make_colors(6);
 	        this.color_func = function (d, i) {
-	            return _this.colors[i % 6];
+	            return self.colors[i % 6];
 	        };
 	        this.line.defined(function (d) {
 	            return !isNaN(d);
@@ -70499,6 +70306,7 @@ var Nengo =
 	        this.div.appendChild(this.legend);
 	        this.legend_svg = utils.draw_legend(this.legend, args.pointer_labels, this.color_func, this.uid);
 	    }
+	    ;
 	    SpaSimilarity.prototype.reset_legend_and_data = function (new_labels) {
 	        // Clear the database and create a new one since dimensions have changed
 	        this.data_store =
@@ -70517,6 +70325,7 @@ var Nengo =
 	        }
 	        this.update();
 	    };
+	    ;
 	    SpaSimilarity.prototype.data_msg = function (push_data) {
 	        var data_dims = push_data.length - 1;
 	        // TODO: Move this check inside datastore?
@@ -70527,10 +70336,11 @@ var Nengo =
 	        this.data_store.push(push_data);
 	        this.schedule_update(null);
 	    };
+	    ;
 	    SpaSimilarity.prototype.update_legend = function (new_labels) {
-	        var _this = this;
+	        var self = this;
 	        this.legend_labels = this.legend_labels.concat(new_labels);
-	        // Expand height of the svg, where 20ish is the height of the font
+	        // Expand the height of the svg, where 20-ish is the height of the font
 	        this.legend_svg.attr("height", 20 * this.legend_labels.length);
 	        // Data join
 	        var recs = this.legend_svg.selectAll("rect")
@@ -70555,8 +70365,8 @@ var Nengo =
 	            return i * 20 + 9;
 	        })
 	            .attr("class", "legend-label")
-	            .text(function (d, i) {
-	            return _this.legend_labels[i];
+	            .html(function (d, i) {
+	            return self.legend_labels[i];
 	        });
 	        // Expand the width of the svg of the longest string
 	        var label_list = $("#legend" + this.uid + " .legend-label").toArray();
@@ -70578,6 +70388,7 @@ var Nengo =
 	            .attr("text-anchor", "end")
 	            .attr("class", "val");
 	    };
+	    ;
 	    /**
 	     * Handle websocket messages.
 	     *
@@ -70592,6 +70403,7 @@ var Nengo =
 	        var func_name = data.shift();
 	        this[func_name](data);
 	    };
+	    ;
 	    /**
 	     * Redraw the lines and axis due to changed data.
 	     */
@@ -70603,30 +70415,31 @@ var Nengo =
 	        var t2 = t1 + this.sim.time_slider.shown_time;
 	        this.axes2d.set_time_range(t1, t2);
 	        // Update the lines
+	        var self = this;
 	        var shown_data = this.data_store.get_shown_data();
 	        // Data join
 	        this.path = this.axes2d.svg.selectAll(".line").data(shown_data);
 	        // Update
-	        this.path.attr("d", this.line);
+	        this.path.attr("d", self.line);
 	        // Enter to append remaining lines
 	        this.path.enter()
 	            .append("path")
 	            .attr("class", "line")
 	            .style("stroke", this.color_func)
-	            .attr("d", this.line);
+	            .attr("d", self.line);
 	        // Remove any lines that aren't needed anymore
 	        this.path.exit().remove();
 	        // Update the legend text
 	        if (this.legend_svg && shown_data[0].length !== 0) {
 	            // Get the most recent similarity
 	            var latest_simi_1 = [];
-	            shown_data.forEach(function (item) {
-	                latest_simi_1.push(item[item.length - 1]);
-	            });
+	            for (var i = 0; i < shown_data.length; i++) {
+	                latest_simi_1.push(shown_data[i][shown_data[i].length - 1]);
+	            }
 	            // Update the text in the legend
 	            var texts = this.legend_svg.selectAll(".val")
 	                .data(this.legend_labels);
-	            texts.text(function (d, i) {
+	            texts.html(function (d, i) {
 	                var sign = "";
 	                if (latest_simi_1[i] < 0) {
 	                    sign = "&minus;";
@@ -70635,26 +70448,28 @@ var Nengo =
 	            });
 	        }
 	    };
+	    ;
 	    SpaSimilarity.prototype.generate_menu = function () {
-	        var _this = this;
+	        var self = this;
 	        var items = [
 	            ["Set range...", function () {
-	                    _this.set_range();
+	                    self.set_range();
 	                }],
 	        ];
 	        if (this.show_pairs) {
 	            items.push(["Hide pairs", function () {
-	                    _this.set_show_pairs(false);
+	                    self.set_show_pairs(false);
 	                }]);
 	        }
 	        else {
 	            items.push(["Show pairs", function () {
-	                    _this.set_show_pairs(true);
+	                    self.set_show_pairs(true);
 	                }]);
 	        }
 	        // Add the parent's menu items to this
-	        return $.merge(items, component_1.Component.prototype.generate_menu.call(this));
+	        return $.merge(items, component_1.default.prototype.generate_menu.call(this));
 	    };
+	    ;
 	    SpaSimilarity.prototype.set_show_pairs = function (value) {
 	        if (this.show_pairs !== value) {
 	            this.show_pairs = value;
@@ -70662,22 +70477,26 @@ var Nengo =
 	            this.ws.send(value);
 	        }
 	    };
+	    ;
 	    SpaSimilarity.prototype.layout_info = function () {
-	        var info = component_1.Component.prototype.layout_info.call(this);
+	        var info = component_1.default.prototype.layout_info.call(this);
 	        info.show_pairs = this.show_pairs;
 	        info.min_value = this.axes2d.scale_y.domain()[0];
 	        info.max_value = this.axes2d.scale_y.domain()[1];
 	        return info;
 	    };
+	    ;
 	    SpaSimilarity.prototype.update_layout = function (config) {
 	        this.update_range(config.min_value, config.max_value);
 	        this.show_pairs = config.show_pairs;
-	        component_1.Component.prototype.update_layout.call(this, config);
+	        component_1.default.prototype.update_layout.call(this, config);
 	    };
+	    ;
 	    SpaSimilarity.prototype.reset = function () {
 	        // Ask for a legend update
 	        this.ws.send("reset_legend");
 	    };
+	    ;
 	    return SpaSimilarity;
 	}(value_1.default));
 	Object.defineProperty(exports, "__esModule", { value: true });
@@ -70685,7 +70504,7 @@ var Nengo =
 
 
 /***/ },
-/* 128 */
+/* 123 */
 /*!********************************************************!*\
   !*** ./nengo_gui/static/components/spa_similarity.css ***!
   \********************************************************/
@@ -70694,7 +70513,7 @@ var Nengo =
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../../~/css-loader!./spa_similarity.css */ 129);
+	var content = __webpack_require__(/*! !./../../../~/css-loader!./spa_similarity.css */ 124);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 10)(content, {});
@@ -70714,7 +70533,7 @@ var Nengo =
 	}
 
 /***/ },
-/* 129 */
+/* 124 */
 /*!***********************************************************************!*\
   !*** ./~/css-loader!./nengo_gui/static/components/spa_similarity.css ***!
   \***********************************************************************/
@@ -70731,27 +70550,424 @@ var Nengo =
 
 
 /***/ },
-/* 130 */
+/* 125 */
 /*!**********************************************************************!*\
   !*** ./~/expose-loader?Value!./nengo_gui/static/components/value.ts ***!
   \**********************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["Value"] = __webpack_require__(/*! -!./~/ts-loader!./nengo_gui/static/components/value.ts */ 87);
+	/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["Value"] = __webpack_require__(/*! -!./~/ts-loader!./nengo_gui/static/components/value.ts */ 69);
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 131 */
+/* 126 */
 /*!**************************************************************************!*\
   !*** ./~/expose-loader?XYValue!./nengo_gui/static/components/xyvalue.ts ***!
   \**************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["XYValue"] = __webpack_require__(/*! -!./~/ts-loader!./nengo_gui/static/components/xyvalue.ts */ 93);
+	/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["XYValue"] = __webpack_require__(/*! -!./~/ts-loader!./nengo_gui/static/components/xyvalue.ts */ 127);
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 132 */
+/* 127 */
+/*!**************************************************************!*\
+  !*** ./~/ts-loader!./nengo_gui/static/components/xyvalue.ts ***!
+  \**************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Line graph showing decoded values over time.
+	 *
+	 * @constructor
+	 * @param {DOMElement} parent - the exylement to add this component to
+	 * @param {SimControl} sim - the simulation controller
+	 * @param {dict} args - A set of constructor arguments (see Component)
+	 * @param {int} args.n_lines - number of decoded values
+	 * @param {float} args.min_value - minimum value on x-axis and y-axis
+	 * @param {float} args.max_value - maximum value on x-axis and y-axis
+	 * @param {SimControl} args.sim - the simulation controller
+	 *
+	 * XYValue constructor is called by python server when a user requests a plot
+	 * or when the config file is making graphs. Server request is handled in
+	 * netgraph.js {.on_message} function.
+	 */
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var d3 = __webpack_require__(/*! d3 */ 66);
+	var $ = __webpack_require__(/*! jquery */ 12);
+	var datastore_1 = __webpack_require__(/*! ../datastore */ 70);
+	var utils = __webpack_require__(/*! ../utils */ 65);
+	var viewport = __webpack_require__(/*! ../viewport */ 67);
+	var component_1 = __webpack_require__(/*! ./component */ 71);
+	var xy_axes_1 = __webpack_require__(/*! ./xy_axes */ 128);
+	__webpack_require__(/*! ./xyvalue.css */ 129);
+	var XYValue = (function (_super) {
+	    __extends(XYValue, _super);
+	    function XYValue(parent, sim, args) {
+	        _super.call(this, parent, args);
+	        var self = this;
+	        this.n_lines = args.n_lines || 1;
+	        this.sim = sim;
+	        // For storing the accumulated data
+	        this.data_store = new datastore_1.DataStore(this.n_lines, this.sim, 0);
+	        this.axes2d = new xy_axes_1.default(this.div, args);
+	        // The two indices of the multi-dimensional data to display
+	        this.index_x = args.index_x;
+	        this.index_y = args.index_y;
+	        // Call schedule_update whenever the time is adjusted in the SimControl
+	        this.sim.div.addEventListener("adjust_time", function (e) {
+	            self.schedule_update(e);
+	        }, false);
+	        // Call reset whenever the simulation is reset
+	        this.sim.div.addEventListener("sim_reset", function (e) {
+	            self.reset(e);
+	        }, false);
+	        // Create the lines on the plots
+	        d3.svg.line()
+	            .x(function (d, i) {
+	            return self.axes2d
+	                .scale_x(self.data_store.data[this.index_x][i]);
+	        }).y(function (d) {
+	            return self.axes2d.scale_y(d);
+	        });
+	        this.path = this.axes2d.svg.append("g")
+	            .selectAll("path")
+	            .data([this.data_store.data[this.index_y]]);
+	        this.path.enter().append("path")
+	            .attr("class", "line")
+	            .style("stroke", utils.make_colors(1));
+	        // Create a circle to track the most recent data
+	        this.recent_circle = this.axes2d.svg.append("circle")
+	            .attr("r", this.get_circle_radius())
+	            .attr("cx", this.axes2d.scale_x(0))
+	            .attr("cy", this.axes2d.scale_y(0))
+	            .style("fill", utils.make_colors(1)[0])
+	            .style("fill-opacity", 0);
+	        this.invalid_dims = false;
+	        this.axes2d.fit_ticks(this);
+	        this.on_resize(viewport.scale_width(this.w), viewport.scale_height(this.h));
+	    }
+	    ;
+	    /**
+	     * Receive new line data from the server.
+	     */
+	    XYValue.prototype.on_message = function (event) {
+	        var data = new Float32Array(event.data);
+	        this.data_store.push(data);
+	        this.schedule_update(event);
+	    };
+	    ;
+	    /**
+	     * Redraw the lines and axis due to changed data.
+	     */
+	    XYValue.prototype.update = function () {
+	        var self = this;
+	        // Let the data store clear out old values
+	        this.data_store.update();
+	        // Update the lines if there is data with valid dimensions
+	        if (self.index_x < self.n_lines && self.index_y < self.n_lines) {
+	            var shown_data_1 = this.data_store.get_shown_data();
+	            // Update the lines
+	            var line = d3.svg.line()
+	                .x(function (d, i) {
+	                return self.axes2d.scale_x(shown_data_1[self.index_x][i]);
+	            }).y(function (d) {
+	                return self.axes2d.scale_y(d);
+	            });
+	            this.path.data([shown_data_1[this.index_y]])
+	                .attr("d", line);
+	            var last_index = shown_data_1[self.index_x].length - 1;
+	            if (last_index >= 0) {
+	                // Update the circle if there is valid data
+	                this.recent_circle
+	                    .attr("cx", self.axes2d.scale_x(shown_data_1[self.index_x][last_index]))
+	                    .attr("cy", self.axes2d.scale_y(shown_data_1[self.index_y][last_index]))
+	                    .style("fill-opacity", 0.5);
+	            }
+	            // If switching from invalids dimensions to valid dimensions, remove
+	            // the label
+	            if (this.invalid_dims === true) {
+	                this.div.removeChild(this.warning_text);
+	                this.invalid_dims = false;
+	            }
+	        }
+	        else if (this.invalid_dims === false) {
+	            this.invalid_dims = true;
+	            // Create the HTML text element
+	            this.warning_text = document.createElement("div");
+	            this.div.appendChild(this.warning_text);
+	            this.warning_text.className = "warning-text";
+	            this.warning_text.innerHTML = "Change<br>Dimension<br>Indices";
+	        }
+	    };
+	    ;
+	    /**
+	     * Adjust the graph layout due to changed size
+	     */
+	    XYValue.prototype.on_resize = function (width, height) {
+	        this.axes2d.on_resize(width, height);
+	        this.update();
+	        this.label.style.width = width;
+	        this.width = width;
+	        this.height = height;
+	        this.div.style.width = width;
+	        this.div.style.height = height;
+	        this.recent_circle.attr("r", this.get_circle_radius());
+	    };
+	    ;
+	    XYValue.prototype.get_circle_radius = function () {
+	        return Math.min(this.width, this.height) / 30;
+	    };
+	    ;
+	    XYValue.prototype.generate_menu = function () {
+	        var self = this;
+	        var items = [
+	            ["Set range...", function () {
+	                    self.set_range();
+	                }],
+	            ["Set X, Y indices...", function () {
+	                    self.set_indices();
+	                }],
+	        ];
+	        // Add the parent's menu items to this
+	        return $.merge(items, component_1.default.prototype.generate_menu.call(this));
+	    };
+	    ;
+	    XYValue.prototype.layout_info = function () {
+	        var info = component_1.default.prototype.layout_info.call(this);
+	        info.min_value = this.axes2d.scale_y.domain()[0];
+	        info.max_value = this.axes2d.scale_y.domain()[1];
+	        info.index_x = this.index_x;
+	        info.index_y = this.index_y;
+	        return info;
+	    };
+	    ;
+	    XYValue.prototype.update_layout = function (config) {
+	        this.update_indices(config.index_x, config.index_y);
+	        this.update_range(config.min_value, config.max_value);
+	        component_1.default.prototype.update_layout.call(this, config);
+	    };
+	    ;
+	    XYValue.prototype.set_range = function () {
+	        var range = this.axes2d.scale_y.domain();
+	        var self = this;
+	        self.sim.modal.title("Set graph range...");
+	        self.sim.modal.single_input_body(range, "New range");
+	        self.sim.modal.footer("ok_cancel", function (e) {
+	            var new_range = $("#singleInput").val();
+	            var modal = $("#myModalForm").data("bs.validator");
+	            modal.validate();
+	            if (modal.hasErrors() || modal.isIncomplete()) {
+	                return;
+	            }
+	            if (new_range !== null) {
+	                new_range = new_range.split(",");
+	                var min = parseFloat(new_range[0]);
+	                var max = parseFloat(new_range[1]);
+	                self.update_range(min, max);
+	                self.update();
+	                self.save_layout();
+	            }
+	            $("#OK").attr("data-dismiss", "modal");
+	        });
+	        $("#myModalForm").validator({
+	            custom: {
+	                my_validator: function ($item) {
+	                    var nums = $item.val().split(",");
+	                    var valid = false;
+	                    if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
+	                        // Two numbers, 1st less than 2nd.
+	                        // The axes must intersect at 0.
+	                        var ordered = Number(nums[0]) < Number(nums[1]);
+	                        var zeroed = Number(nums[0]) * Number(nums[1]) <= 0;
+	                        if (ordered && zeroed) {
+	                            valid = true;
+	                        }
+	                    }
+	                    return (nums.length === 2 && valid);
+	                },
+	            },
+	        });
+	        $("#singleInput").attr("data-error", "Input should be in the form " +
+	            "'<min>,<max>' and the axes must cross at zero.");
+	        self.sim.modal.show();
+	    };
+	    ;
+	    XYValue.prototype.update_range = function (min, max) {
+	        this.axes2d.min_val = min;
+	        this.axes2d.max_val = max;
+	        this.axes2d.scale_x.domain([min, max]);
+	        this.axes2d.scale_y.domain([min, max]);
+	        this.axes2d.axis_x.tickValues([min, max]);
+	        this.axes2d.axis_y.tickValues([min, max]);
+	        this.axes2d.axis_y_g.call(this.axes2d.axis_y);
+	        this.axes2d.axis_x_g.call(this.axes2d.axis_x);
+	        this.on_resize(viewport.scale_width(this.w), viewport.scale_height(this.h));
+	    };
+	    ;
+	    XYValue.prototype.set_indices = function () {
+	        var self = this;
+	        self.sim.modal.title("Set X and Y indices...");
+	        self.sim.modal.single_input_body([this.index_x, this.index_y], "New indices");
+	        self.sim.modal.footer("ok_cancel", function (e) {
+	            var new_indices = $("#singleInput").val();
+	            var modal = $("#myModalForm").data("bs.validator");
+	            modal.validate();
+	            if (modal.hasErrors() || modal.isIncomplete()) {
+	                return;
+	            }
+	            if (new_indices !== null) {
+	                new_indices = new_indices.split(",");
+	                self.update_indices(parseInt(new_indices[0], 10), parseInt(new_indices[1], 10));
+	                self.save_layout();
+	            }
+	            $("#OK").attr("data-dismiss", "modal");
+	        });
+	        $("#myModalForm").validator({
+	            custom: {
+	                my_validator: function ($item) {
+	                    var nums = $item.val().split(",").map(Number);
+	                    return ((parseInt(nums[0], 10) === nums[0]) &&
+	                        (parseInt(nums[1], 10) === nums[1]) &&
+	                        (nums.length === 2) &&
+	                        (Number(nums[1]) < self.n_lines &&
+	                            Number(nums[1]) >= 0) &&
+	                        (Number(nums[0]) < self.n_lines &&
+	                            Number(nums[0]) >= 0));
+	                },
+	            },
+	        });
+	        $("#singleInput").attr("data-error", "Input should be two positive " +
+	            "integers in the form '<dimension 1>,<dimension 2>'. " +
+	            "Dimensions are zero indexed.");
+	        self.sim.modal.show();
+	    };
+	    ;
+	    XYValue.prototype.update_indices = function (index_x, index_y) {
+	        this.index_x = index_x;
+	        this.index_y = index_y;
+	        this.update();
+	    };
+	    ;
+	    XYValue.prototype.reset = function (event) {
+	        this.data_store.reset();
+	        this.schedule_update(event);
+	    };
+	    ;
+	    return XYValue;
+	}(component_1.default));
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = XYValue;
+
+
+/***/ },
+/* 128 */
+/*!************************************************!*\
+  !*** ./nengo_gui/static/components/xy_axes.ts ***!
+  \************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Basic 2d axes set.
+	 *
+	 * @constructor
+	 * @param {DOMElement} parent - the element to add this component to
+	 * @param {dict} args
+	 * @param {float} args.width - the width of the axes (in pixels)
+	 * @param {float} args.height - the height of the axes (in pixels)
+	 * @param {float} args.min_value - minimum value on y-axis
+	 * @param {float} args.max_value - maximum value on y-axis
+	 */
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var _2d_axes_1 = __webpack_require__(/*! ./2d_axes */ 73);
+	var XYAxes = (function (_super) {
+	    __extends(XYAxes, _super);
+	    function XYAxes(parent, args) {
+	        _super.call(this, parent, args);
+	        this.scale_x.domain([args.min_value, args.max_value]);
+	        this.axis_x.tickValues([args.min_value, args.max_value]);
+	        this.axis_x.ticks(this.axis_y.ticks()[0]);
+	        this.min_val = args.min_value;
+	        this.max_val = args.max_value;
+	    }
+	    /**
+	     * Adjust the graph layout due to changed size.
+	     */
+	    XYAxes.prototype.on_resize = function (width, height) {
+	        _2d_axes_1.default.prototype.on_resize.call(this, width, height);
+	        var x_offset = this.ax_bottom - this.min_val /
+	            (this.max_val - this.min_val) * (this.ax_top - this.ax_bottom);
+	        var y_offset = this.ax_left - this.min_val /
+	            (this.max_val - this.min_val) * (this.ax_right - this.ax_left);
+	        this.axis_x_g.attr("transform", "translate(0," + x_offset + ")");
+	        this.axis_x_g.call(this.axis_x);
+	        this.axis_y_g.attr("transform", "translate(" + y_offset + ", 0)");
+	        this.axis_y_g.call(this.axis_y);
+	    };
+	    return XYAxes;
+	}(_2d_axes_1.default));
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = XYAxes;
+
+
+/***/ },
+/* 129 */
+/*!*************************************************!*\
+  !*** ./nengo_gui/static/components/xyvalue.css ***!
+  \*************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+	
+	// load the styles
+	var content = __webpack_require__(/*! !./../../../~/css-loader!./xyvalue.css */ 130);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 10)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./xyvalue.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./xyvalue.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 130 */
+/*!****************************************************************!*\
+  !*** ./~/css-loader!./nengo_gui/static/components/xyvalue.css ***!
+  \****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(/*! ./../../../~/css-loader/lib/css-base.js */ 4)();
+	// imports
+	
+	
+	// module
+	exports.push([module.id, ".warning-text {\n    color:#a94442;\n    position: absolute;\n    text-align: center;\n    margin-left: 20%;\n    margin-right: auto;\n    width:60%;\n    top:37%;\n    display:box;\n    box-align:center;\n    box-pack:center;\n    border: 1px dashed #a94442;\n    background-color: white;\n}\n", ""]);
+	
+	// exports
+
+
+/***/ },
+/* 131 */
 /*!***********************************************************!*\
   !*** ./~/expose-loader?utils!./nengo_gui/static/utils.ts ***!
   \***********************************************************/

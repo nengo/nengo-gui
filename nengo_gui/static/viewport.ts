@@ -1,59 +1,90 @@
-/**
- * Keep track of the viewable area of the screen.
- */
-
 import * as $ from "jquery";
 
-import { all_components } from "./components/component";
+import * as all_components from "./components/all_components";
 
-export default class Viewport {
-    height;
-    netgraph;
-    scale;
-    width;
-    x;
-    y;
+let scale = 1.0;
+let x = 0;
+let y = 0;
+let height = 0;
+let width = 0;
+let $main;
+let netgraph;
 
-    constructor(netgraph) {
-        this.netgraph = netgraph;
+export function set_netgraph(new_netgraph) {
+    netgraph = new_netgraph;
+    $main = $("#main");
 
-        this.x = 0;
-        this.y = 0;
-        this.scale = 1.0;
+    width = $main.width();
+    height = $main.height();
+    window.addEventListener("resize", on_resize);
+};
 
-        this.width = $("#main").width();
-        this.height = $("#main").height();
-        window.addEventListener("resize", () => {
-            this.on_resize(null);
-        });
+export function set_position(new_x, new_y) {
+    x = new_x;
+    y = new_y;
+    redraw();
+}
+
+export function set_scale(new_scale) {
+    scale = new_scale;
+    redraw();
+}
+
+export function redraw() {
+    all_components.on_resize(scale * width * 2, height * scale * 2);
+    all_components.redraw();
+};
+
+export function on_resize() {
+    const old_width = width;
+    const old_height = height;
+
+    width = $main.width();
+    height = $main.height();
+
+    if (netgraph.aspect_resize) {
+        all_components.rescale(old_width / width, old_height / height);
     }
 
-    redraw_all(event) {
-        all_components.forEach(c => {
-            c.on_resize(
-                c.w * this.scale * this.width * 2,
-                c.h * this.scale * this.height * 2);
-            c.redraw_size();
-            c.redraw_pos();
-        });
-     }
+    redraw();
+};
 
-    on_resize(event) {
-        const ow = this.width;
-        const oh = this.height;
+export function from_screen_x(screen_x): number {
+    return screen_x / (width * scale);
+}
 
-        this.width = $("#main").width();
-        this.height = $("#main").height();
+export function shift_x(component_x): number {
+    return component_x + x;
+}
 
-        all_components.forEach(c => {
-            if (this.netgraph.aspect_resize) {
-                c.w = c.w * ow / this.width;
-                c.h = c.h * oh / this.height;
-            }
-            c.on_resize(c.w * this.scale * this.width * 2,
-                        c.h * this.scale * this.height * 2);
-            c.redraw_size();
-            c.redraw_pos();
-        });
-    }
+export function to_screen_x(component_x): number {
+    return shift_x(component_x) *  width * scale;
+}
+
+export function from_screen_y(screen_y): number {
+    return screen_y / (height * scale);
+}
+
+export function shift_y(component_y): number {
+    return component_y + y;
+}
+
+export function to_screen_y(component_y): number {
+    return shift_y(component_y) *  height * scale;
+}
+
+export function scale_width(component_width): number {
+    return component_width * width * scale * 2;
+}
+
+export function scale_height(component_height): number {
+    return component_height * height * scale * 2;
+}
+
+export function unscale_width(screen_width): number {
+    return screen_width / (width * scale) / 2;
+}
+
+export function unscale_height(screen_height): number {
+    return screen_height / (height * scale) / 2;
 }

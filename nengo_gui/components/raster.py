@@ -61,7 +61,7 @@ class Raster(Component):
         info = dict(uid=id(self), label=self.label,
                     max_neurons=self.max_neurons)
         json = self.javascript_config(info)
-        return 'new Raster.default(nengo.main, nengo.viewport, nengo.sim, %s);' % json
+        return 'new Raster.default(nengo.main, nengo.sim, %s);' % json
 
     def code_python_args(self, uids):
         return [uids[self.obj.ensemble]]

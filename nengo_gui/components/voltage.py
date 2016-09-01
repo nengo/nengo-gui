@@ -56,7 +56,7 @@ class Voltage(Component):
         info = dict(uid=id(self), label=self.label,
                     n_lines=self.n_neurons, synapse=0)
         json = self.javascript_config(info)
-        return 'new Value.default(nengo.main, nengo.viewport, nengo.sim, %s);' % json
+        return 'new Value.default(nengo.main, nengo.sim, %s);' % json
 
     def code_python_args(self, uids):
         return [uids[self.obj.ensemble]]

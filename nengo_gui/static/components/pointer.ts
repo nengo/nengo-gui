@@ -15,7 +15,8 @@ import * as $ from "jquery";
 
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
-import { Component } from "./component";
+import * as viewport from "../viewport";
+import Component from "./component";
 import "./pointer.css";
 
 export default class Pointer extends Component {
@@ -27,8 +28,9 @@ export default class Pointer extends Component {
     show_pairs;
     sim;
 
-    constructor(parent, viewport, sim, args) {
-        super(parent, viewport, args);
+    constructor(parent, sim, args) {
+        super(parent, args);
+        const self = this;
 
         this.sim = sim;
         this.pointer_status = false;
@@ -47,71 +49,75 @@ export default class Pointer extends Component {
         this.data_store = new DataStore(1, this.sim, 0);
 
         // Call schedule_update whenever the time is adjusted in the SimControl
-        this.sim.div.addEventListener("adjust_time", e => {
-            this.schedule_update(null);
+        this.sim.div.addEventListener("adjust_time", function(e) {
+            self.schedule_update(null);
         }, false);
 
         // Call reset whenever the simulation is reset
-        this.sim.div.addEventListener("sim_reset", e => {
-            this.reset(null);
+        this.sim.div.addEventListener("sim_reset", function(e) {
+            self.reset(null);
         }, false);
 
-        this.on_resize(this.get_screen_width(), this.get_screen_height());
+        this.on_resize(
+            viewport.scale_width(this.w), viewport.scale_height(this.h));
 
         this.fixed_value = "";
 
-        this.div.addEventListener("mouseup", event => {
+        this.div.addEventListener("mouseup", function(event) {
             // For some reason "tap" doesn't seem to work here while the
             // simulation is running, so I'm doing the timing myself
             const now = new Date().getTime() / 1000;
-            if (now - this.mouse_down_time > 0.1) {
+            if (now - self.mouse_down_time > 0.1) {
                 return;
             }
             if (event.button === 0) {
-                if (this.menu.visible) {
-                    this.menu.hide();
+                if (self.menu.visible) {
+                    self.menu.hide();
                 } else {
-                    this.menu.show(event.clientX, event.clientY,
-                                   this.generate_menu());
+                    self.menu.show(event.clientX, event.clientY,
+                                   self.generate_menu());
                 }
             }
         });
 
-        this.div.addEventListener("mousedown", event => {
-            this.mouse_down_time = new Date().getTime() / 1000;
+        this.div.addEventListener("mousedown", function(event) {
+            self.mouse_down_time = new Date().getTime() / 1000;
         });
-    }
+    };
 
     generate_menu() {
+        const self = this;
         const items = [];
-        items.push(["Set value...", () => {
-            this.set_value();
+        items.push(["Set value...", function() {
+            self.set_value();
         }]);
         if (this.show_pairs) {
-            items.push(["Hide pairs", () => {
-                this.set_show_pairs(false);
+            items.push(["Hide pairs", function() {
+                self.set_show_pairs(false);
             }]);
         } else {
-            items.push(["Show pairs", () => {
-                this.set_show_pairs(true);
+            items.push(["Show pairs", function() {
+                self.set_show_pairs(true);
             }]);
         }
 
         // Add the parent's menu items to this
-        return $.merge(items, super.generate_menu());
-    }
+        // TODO: is this really the best way to call the parent's generate_menu()?
+        return $.merge(items, Component.prototype.generate_menu.call(this));
+    };
 
     set_show_pairs(value) {
         if (this.show_pairs !== value) {
             this.show_pairs = value;
             this.save_layout();
         }
-    }
+    };
 
     set_value() {
-        this.sim.modal.title("Enter a Semantic Pointer value...");
-        this.sim.modal.single_input_body("Pointer", "New value");
-        this.sim.modal.footer("ok_cancel", e => {
+        const self = this;
+        self.sim.modal.title("Enter a Semantic Pointer value...");
+        self.sim.modal.single_input_body("Pointer", "New value");
+        self.sim.modal.footer("ok_cancel", function(e) {
             let value = $("#singleInput").val();
             const modal = $("#myModalForm").data("bs.validator");
 
@@ -122,19 +128,19 @@ export default class Pointer extends Component {
             if ((value === null) || (value === "")) {
                 value = ":empty:";
             }
-            this.fixed_value = value;
-            this.ws.send(value);
+            self.fixed_value = value;
+            self.ws.send(value);
             $("#OK").attr("data-dismiss", "modal");
         });
         $("#myModalForm").validator({
             custom: {
-                my_validator: $item => {
+                my_validator: function($item) {
                     let ptr = $item.val();
                     if (ptr === null) {
                         ptr = "";
                     }
-                    this.ws.send(":check only:" + ptr);
-                    return this.pointer_status;
+                    self.ws.send(":check only:" + ptr);
+                    return self.pointer_status;
                 },
             },
         });
@@ -148,8 +154,8 @@ export default class Pointer extends Component {
                 "(A+~(B*C)*2)*0.5 would be a valid semantic pointer " +
                 "expression.");
 
-        this.sim.modal.show();
-    }
+        self.sim.modal.show();
+    };
 
     /**
      * Receive new line data from the server.
@@ -170,7 +176,7 @@ export default class Pointer extends Component {
         const items = data[1].split(";");
         this.data_store.push([time, items]);
         this.schedule_update(null);
-    }
+    };
 
     /**
      * Redraw the lines and axis due to changed data.
@@ -195,10 +201,10 @@ export default class Pointer extends Component {
         const items = [];
 
         // Display the text in proportion to similarity
-        data.forEach(datum => {
-            const size = parseFloat(datum.substring(0, 4));
+        for (let i = 0; i < data.length; i++) {
+            const size = parseFloat(data[i].substring(0, 4));
             const span = document.createElement("span");
-            utils.safe_set_text(span, datum.substring(4));
+            span.innerHTML = data[i].substring(4);
             this.pdiv.appendChild(span);
             total_size += size;
             let c = Math.floor(255 - 255 * size);
@@ -211,15 +217,15 @@ export default class Pointer extends Component {
             }
             span.style.color = "rgb(" + c + "," + c + "," + c + ")";
             items.push(span);
-        });
+        }
 
         const scale = this.height / total_size * 0.6;
 
-        data.forEach((datum, i) => {
-            const size = parseFloat(datum.substring(0, 4));
+        for (let i = 0; i < data.length; i++) {
+            const size = parseFloat(data[i].substring(0, 4));
             items[i].style.fontSize = "" + (size * scale) + "px";
-        });
-    }
+        }
+    };
 
     /**
      * Adjust the graph layout due to changed size.
@@ -240,21 +246,21 @@ export default class Pointer extends Component {
         this.label.style.width = width;
 
         this.update();
-    }
+    };
 
     layout_info() {
         const info = Component.prototype.layout_info.call(this);
         info.show_pairs = this.show_pairs;
         return info;
-    }
+    };
 
     update_layout(config) {
         this.show_pairs = config.show_pairs;
         Component.prototype.update_layout.call(this, config);
-    }
+    };
 
     reset(event) {
         this.data_store.reset();
         this.schedule_update(event);
-    }
+    };
 }

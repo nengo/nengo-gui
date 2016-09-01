@@ -1,3 +1,11 @@
+import * as interact from "interact.js";
+import * as $ from "jquery";
+
+import * as menu from "../menu";
+import * as utils from "../utils";
+import * as viewport from "../viewport";
+import * as all_components from "./all_components";
+
 /**
  * Base class for interactive visualization
  * Components (value/raster/XY plots, sliders, etc...) will inherit from
@@ -17,22 +25,7 @@
  * class prototypes (ie. Slider, Value).
  *
  */
-
-import * as interact from "interact.js";
-import * as $ from "jquery";
-
-import * as menu from "../menu";
-import * as utils from "../utils";
-
-export var all_components = [];
-
-export function save_all_layouts() {
-    all_components.forEach(component => {
-        component.save_layout();
-    });
-}
-
-export class Component {
+export default class Component {
     div;
     h;
     height;
@@ -44,16 +37,13 @@ export class Component {
     parent;
     pending_update;
     uid;
-    viewport;
     w;
     width;
     ws;
     x;
     y;
 
-    constructor(parent, viewport, args) {
-        this.viewport = viewport;
-
+    constructor(parent, args) {
         // Create the div for the component and position it
         this.div = document.createElement("div");
 
@@ -105,10 +95,8 @@ export class Component {
                     this.save_layout();
                 },
                 onmove: event => {
-                    this.x = this.x + event.dx /
-                        (this.viewport.width * this.viewport.scale);
-                    this.y = this.y + event.dy /
-                        (this.viewport.height * this.viewport.scale);
+                    this.x += viewport.from_screen_x(event.dx);
+                    this.y += viewport.from_screen_y(event.dy);
                     this.redraw_pos();
                 },
                 onstart: () => {
@@ -125,24 +113,20 @@ export class Component {
                 menu.hide_any();
             })
             .on("resizemove", event => {
-                const newWidth = event.rect.width;
-                const newHeight = event.rect.height;
-                const dx = event.deltaRect.left;
-                const dy = event.deltaRect.top;
-                const dz = event.deltaRect.right;
-                const da = event.deltaRect.bottom;
+                const new_width = event.rect.width;
+                const new_height = event.rect.height;
+                const dleft = event.deltaRect.left;
+                const dtop = event.deltaRect.top;
+                const dright = event.deltaRect.right;
+                const dbottom = event.deltaRect.bottom;
 
-                this.x += (dx + dz) / 2 /
-                    (this.viewport.width * this.viewport.scale);
-                this.y += (dy + da) / 2 /
-                    (this.viewport.height * this.viewport.scale);
+                this.x += viewport.from_screen_x((dleft + dright) / 2);
+                this.y += viewport.from_screen_y((dtop + dbottom) / 2);
 
-                this.w = newWidth /
-                    (this.viewport.width * this.viewport.scale) / 2;
-                this.h = newHeight /
-                    (this.viewport.height * this.viewport.scale) / 2;
+                this.w = viewport.unscale_width(new_width);
+                this.h = viewport.unscale_height(new_height);
 
-                this.on_resize(newWidth, newHeight);
+                this.on_resize(new_width, new_height);
                 this.redraw_size();
                 this.redraw_pos();
             })
@@ -194,7 +178,7 @@ export class Component {
             return false;
         });
 
-        all_components.push(this);
+        all_components.add(this);
     }
 
     /**
@@ -239,8 +223,7 @@ export class Component {
             }
         }
         this.parent.removeChild(this.div);
-        const index = all_components.indexOf(this);
-        all_components.splice(index, 1);
+        all_components.remove(this);
     }
 
     /**
@@ -261,7 +244,7 @@ export class Component {
     }
 
     /**
-     * Do any visual updating needed due to changes in the underlying data.
+     * Do any visual updates needed due to changes in the underlying data.
      */
     update(event) {
         // Subclasses should implement this.
@@ -304,7 +287,8 @@ export class Component {
 
         this.redraw_size();
         this.redraw_pos();
-        this.on_resize(this.get_screen_width(), this.get_screen_height());
+        this.on_resize(
+            viewport.scale_width(this.w), viewport.scale_height(this.h));
 
         if (config.label_visible === true) {
             this.show_label(null);
@@ -314,26 +298,15 @@ export class Component {
     }
 
     redraw_size() {
-        const vpscale = this.viewport.scale * 2;
-        this.width = this.viewport.width * this.w * vpscale;
-        this.height = this.viewport.height * this.h * vpscale;
+        this.width = viewport.scale_width(this.w);
+        this.height = viewport.scale_height(this.h);
         this.div.style.width = this.width;
         this.div.style.height = this.height;
     }
 
     redraw_pos() {
-        const x = (this.x + this.viewport.x - this.w) *
-            this.viewport.width * this.viewport.scale;
-        const y = (this.y + this.viewport.y - this.h) *
-            this.viewport.height * this.viewport.scale;
+        const x = viewport.to_screen_x(this.x - this.w);
+        const y = viewport.to_screen_y(this.y - this.h);
         utils.set_transform(this.div, x, y);
-    }
-
-    get_screen_width() {
-        return this.viewport.width * this.w * this.viewport.scale * 2;
-    }
-
-    get_screen_height() {
-        return this.viewport.height * this.h * this.viewport.scale * 2;
     }
 }

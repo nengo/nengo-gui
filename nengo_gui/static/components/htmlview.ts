@@ -10,15 +10,17 @@
 
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
-import { Component } from "./component";
+import * as viewport from "../viewport";
+import Component from "./component";
 
 export default class HTMLView extends Component {
     data_store;
     pdiv;
     sim;
 
-    constructor(parent, viewport, sim, args) {
-        super(parent, viewport, args);
+    constructor(parent, sim, args) {
+        super(parent, args);
+        const self = this;
 
         this.sim = sim;
 
@@ -34,12 +36,13 @@ export default class HTMLView extends Component {
         this.data_store = new DataStore(1, this.sim, 0);
 
         // Call schedule_update whenever the time is adjusted in the SimControl
-        this.sim.div.addEventListener("adjust_time", e => {
-            this.schedule_update(null);
+        this.sim.div.addEventListener("adjust_time", function(e) {
+            self.schedule_update(null);
         }, false);
 
-        this.on_resize(this.get_screen_width(), this.get_screen_height());
-    }
+        this.on_resize(
+            viewport.scale_width(this.w), viewport.scale_height(this.h));
+    };
 
     /**
      * Receive new line data from the server
@@ -52,7 +55,7 @@ export default class HTMLView extends Component {
 
         this.data_store.push([time, msg]);
         this.schedule_update(null);
-    }
+    };
 
     /**
      * Redraw the lines and axis due to changed data
@@ -67,8 +70,9 @@ export default class HTMLView extends Component {
             data = "";
         }
 
-        utils.safe_set_text(this.pdiv, data);
-    }
+        this.pdiv.innerHTML = data;
+
+    };
 
     /**
      * Adjust the graph layout due to changed size
@@ -86,5 +90,5 @@ export default class HTMLView extends Component {
         this.label.style.width = width;
 
         this.update();
-    }
+    };
 }
