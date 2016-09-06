@@ -32,8 +32,6 @@ export default class SliderControl {
     value;
 
     constructor(min, max) {
-        const self = this;
-
         this.min = min;
         this.max = max;
 
@@ -57,15 +55,15 @@ export default class SliderControl {
         this.guideline.style.width = "0.5em";
         this.guideline.style.height = "100%";
         this.guideline.style.margin = "auto";
-        $(this.guideline).on("mousedown", function(event) {
-            self.set_value(self.value);
+        $(this.guideline).on("mousedown", event => {
+            this.set_value(this.value);
         });
         this.container.appendChild(this.guideline);
 
         this.handle = document.createElement("div");
         this.handle.classList.add("btn");
         this.handle.classList.add("btn-default");
-        this.handle.innerHTML = "n/a";
+        utils.safe_set_text(this.handle, "n/a");
         this.handle.style.position = "absolute";
         this.handle.style.height = "1.5em";
         this.handle.style.marginTop = "0.75em";
@@ -80,42 +78,42 @@ export default class SliderControl {
         this.container.appendChild(this.handle);
 
         interact(this.handle).draggable({
-            onend: function(event) {
-                self.dispatch("changeend", {"target": this});
+            onend: event => {
+                this.dispatch("changeend", {"target": this});
             },
-            onmove: function(event) {
-                self._drag_y += event.dy;
+            onmove: event => {
+                this._drag_y += event.dy;
 
-                self.scale.range([0, self.guideline.clientHeight]);
-                self.set_value(self.scale.invert(self._drag_y));
+                this.scale.range([0, this.guideline.clientHeight]);
+                this.set_value(this.scale.invert(this._drag_y));
             },
-            onstart: function() {
-                self.dispatch("changestart", {"target": this});
-                self.deactivate_type_mode(null);
-                self._drag_y = self.get_handle_pos();
+            onstart: () => {
+                this.dispatch("changestart", {"target": this});
+                this.deactivate_type_mode(null);
+                this._drag_y = this.get_handle_pos();
             },
         });
 
-        interact(this.handle).on("tap", function(event) {
-            self.activate_type_mode();
+        interact(this.handle).on("tap", event => {
+            this.activate_type_mode();
             event.stopPropagation();
-        }).on("keydown", function(event) {
-            self.handle_keypress(event);
+        }).on("keydown", event => {
+            this.handle_keypress(event);
         });
 
         this.listeners = {};
-    };
+    }
 
-    on(type, fn) {
-        this.listeners[type] = fn;
+    on(ltype, fn) {
+        this.listeners[ltype] = fn;
         return this;
-    };
+    }
 
-    dispatch(type, ev) {
-        if (type in this.listeners) {
-            this.listeners[type].call(this, ev);
+    dispatch(ltype, ev) {
+        if (ltype in this.listeners) {
+            this.listeners[ltype].call(this, ev);
         }
-    };
+    }
 
     set_range(min, max) {
         this.min = min;
@@ -123,7 +121,7 @@ export default class SliderControl {
         this.scale.domain([max, min]);
         this.set_value(this.value);
         this.on_resize();
-    };
+    }
 
     display_value(value) {
         if (value < this.min) {
@@ -137,26 +135,26 @@ export default class SliderControl {
 
         this.update_handle_pos(value);
         this.update_value_text(value);
-    };
+    }
 
     set_value(value) {
         this.display_value(value);
         this.dispatch("change", {"target": this, "value": this.value});
-    };
+    }
 
     activate_type_mode() {
         if (this.type_mode) {
             return;
         }
 
-        const self = this;
-
         this.dispatch("changestart", {"target": this});
 
         this.type_mode = true;
 
-        this.handle.innerHTML =
-            "<input id='value_in_field' style='border:0; outline:0;'></input>";
+        $(this.handle).empty().append(
+            "<input id='value_in_field' style='border:0; outline:0;'></input>"
+        );
+
         const elem = this.handle.querySelector("#value_in_field");
         elem.value = this.format_value(this.value);
         elem.focus();
@@ -164,16 +162,16 @@ export default class SliderControl {
         elem.style.width = "100%";
         elem.style.textAlign = "center";
         elem.style.backgroundColor = "transparent";
-        $(elem).on("input", function(event) {
+        $(elem).on("input", event => {
             if (utils.is_num(elem.value)) {
-                self.handle.style.backgroundColor = "";
+                this.handle.style.backgroundColor = "";
             } else {
-                self.handle.style.backgroundColor = "salmon";
+                this.handle.style.backgroundColor = "salmon";
             }
-        }).on("blur", function(event) {
-            self.deactivate_type_mode(null);
+        }).on("blur", event => {
+            this.deactivate_type_mode(null);
         });
-    };
+    }
 
     deactivate_type_mode(event) {
         if (!this.type_mode) {
@@ -186,8 +184,8 @@ export default class SliderControl {
 
         $(this.handle).off("keydown");
         this.handle.style.backgroundColor = "";
-        this.handle.innerHTML = this.format_value(this.value);
-    };
+        utils.safe_set_text(this.handle, this.format_value(this.value));
+    }
 
     handle_keypress(event) {
         if (!this.type_mode) {
@@ -207,27 +205,26 @@ export default class SliderControl {
         } else if (key === esc_keycode) {
             this.deactivate_type_mode(null);
         }
-    };
+    }
 
     update_handle_pos(value) {
         this.handle.style.top = this.scale(value) + this.border_width;
-    };
+    }
 
     get_handle_pos() {
         return parseFloat(this.handle.style.top) - this.border_width;
-    };
+    }
 
     update_value_text(value) {
-        this.handle.innerHTML = this.format_value(value);
-    };
+        utils.safe_set_text(this.handle, this.format_value(value));
+    }
 
     format_value(value) {
         return value.toFixed(2);
-    };
+    }
 
     on_resize() {
         this.scale.range([0, this.guideline.clientHeight]);
         this.update_handle_pos(this.value);
-    };
-
+    }
 }

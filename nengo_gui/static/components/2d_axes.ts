@@ -68,7 +68,7 @@ export default class Axes2D {
         this.axis_y_g = this.svg.append("g")
             .attr("class", "axis axis_y unselectable")
             .call(this.axis_y);
-    };
+    }
 
     set_axes_geometry(width, height) {
         const scale = parseFloat($("#main").css("font-size"));
@@ -81,7 +81,7 @@ export default class Axes2D {
 
         this.tick_size = 0.4 * scale;
         this.tick_padding = 0.2 * scale;
-    };
+    }
 
     /**
      * Adjust the graph layout due to changed size
@@ -110,11 +110,10 @@ export default class Axes2D {
         this.axis_x_g.call(this.axis_x);
         this.axis_y_g.attr("transform", "translate(" + this.ax_left + ", 0)");
         this.axis_y_g.call(this.axis_y);
-    };
+    }
 
     fit_ticks(parent) {
-        const self = this;
-        setTimeout(function() {
+        setTimeout(() => {
             const ticks = $(parent.div).find(".tick");
             let max_w = 0;
             for (let i = 0; i < ticks.length; i++) {
@@ -123,9 +122,10 @@ export default class Axes2D {
                     max_w = w;
                 }
             }
-            self.max_y_width = max_w;
-            self.set_axes_geometry(parent.width, parent.height); // TODO: parent?
-            self.on_resize(parent.width, parent.height);
+            this.max_y_width = max_w;
+            // TODO: parent?
+            this.set_axes_geometry(parent.width, parent.height);
+            this.on_resize(parent.width, parent.height);
         }, 1);
-    };
+    }
 }

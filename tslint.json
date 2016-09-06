@@ -1,9 +1,64 @@
 {
   "extends": "tslint:latest",
+  "rulesDirectory": [
+    "node_modules/tslint-microsoft-contrib",
+    "node_modules/tslint-eslint-rules/dist/rules"
+  ],
   "rules": {
+
     "interface-name": [true, "never-prefix"],
     "max-line-length": [true, 80],
     "member-access": false,
-    "variable-name": [true, "ban-keywords"]
+    "no-namespace": false,
+    "variable-name": [true, "ban-keywords"],
+
+    "array-bracket-spacing": [true, "never"],
+    "block-spacing": true,
+    "brace-style": [true, "1tbs"],
+    "no-constant-condition": true,
+    "no-control-regex": true,
+    "no-debugger": true,
+    "no-empty-character-class": true,
+    "no-extra-boolean-cast": true,
+    "no-extra-semi": true,
+    "no-inner-declarations": [true, "both"],
+    "no-invalid-regexp": true,
+    "no-irregular-whitespace": true,
+    "no-regex-spaces": true,
+    "no-sparse-arrays": true,
+    "no-unexpected-multiline": true,
+    "valid-typeof": true,
+
+    "no-banned-terms": true,
+    "no-delete-expression": true,
+    "no-disable-auto-sanitization": true,
+    "no-document-domain": true,
+    "no-document-write": true,
+    "no-empty-interfaces": true,
+    "no-exec-script": true,
+    "no-for-in": true,
+    "no-function-constructor-with-string-args": true,
+    "no-function-expression": true,
+    "no-http-string": true,
+    "no-inner-html": true,
+    "no-multiline-string": true,
+    "no-octal-literal": true,
+    "no-reserved-keywords": true,
+    "no-single-line-block-comment": true,
+    "no-stateless-class": true,
+    "no-string-based-set-immediate": true,
+    "no-string-based-set-interval": true,
+    "no-string-based-set-timeout": true,
+    "no-typeof-undefined": true,
+    "no-unnecessary-bind": true,
+    "no-unnecessary-field-initialization": true,
+    "no-unnecessary-local-variable": true,
+    "no-unnecessary-override": true,
+    "no-with-statement": true,
+    "no-var-self": true,
+    "prefer-array-literal": true,
+    "prefer-const": true,
+    "use-named-parameter": true
+
   }
 }

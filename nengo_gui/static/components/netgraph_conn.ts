@@ -93,7 +93,7 @@ export default class NetGraphConnection {
         this.remove_line();
         this.recurrent = recurrent;
         this.create_line();
-    };
+    }
 
     create_line() {
         if (this.recurrent) {
@@ -126,7 +126,7 @@ export default class NetGraphConnection {
             }
             this.g.appendChild(this.marker);
         }
-    };
+    }
 
     remove_line() {
         if (this.recurrent) {
@@ -140,7 +140,7 @@ export default class NetGraphConnection {
             this.line = undefined;
             this.marker = undefined;
         }
-    };
+    }
 
     /**
      * Set the item connecting from.
@@ -159,7 +159,7 @@ export default class NetGraphConnection {
             // Add myself to pre's output connections list
             this.pre.conn_out.push(this);
         }
-    };
+    }
 
     /**
      * Set the item connecting to.
@@ -178,7 +178,7 @@ export default class NetGraphConnection {
             // Add myself to post's input connections list
             this.post.conn_in.push(this);
         }
-    };
+    }
 
     /**
      * Determine the best available item to connect from.
@@ -194,7 +194,7 @@ export default class NetGraphConnection {
             }
         }
         return null;
-    };
+    }
 
     /**
      * Determine the best available item to connect to.
@@ -210,7 +210,7 @@ export default class NetGraphConnection {
             }
         }
         return null;
-    };
+    }
 
     set_pres(pres) {
         this.pres = pres;
@@ -219,7 +219,7 @@ export default class NetGraphConnection {
         if (!this.minimap) {
             this.mini_conn.set_pres(pres);
         }
-    };
+    }
 
     set_posts(posts) {
         this.posts = posts;
@@ -228,7 +228,7 @@ export default class NetGraphConnection {
         if (!this.minimap) {
             this.mini_conn.set_posts(posts);
         }
-    };
+    }
 
     /**
      * Remove this connection.
@@ -266,7 +266,7 @@ export default class NetGraphConnection {
         if (!this.minimap) {
             this.mini_conn.remove();
         }
-    };
+    }
 
     /**
      * Redraw the connection.
@@ -301,10 +301,10 @@ export default class NetGraphConnection {
 
                 if (this.minimap === false) {
                     this.recurrent_ellipse.setAttribute(
-                        "style", "stroke-width:" + 2 / scale_value + ";");
+                        "stroke-width", 2 / scale_value);
                 } else {
                     this.recurrent_ellipse.setAttribute(
-                        "style", "stroke-width:" + 1 / scale_value + ";");
+                        "stroke-width", 1 / scale_value);
                 }
 
                 const ex = pre_pos[0] - scale_value * 17.5;
@@ -347,7 +347,8 @@ export default class NetGraphConnection {
             if (post_to_pre_angle < -Math.PI) {
                 post_to_pre_angle += 2 * Math.PI;
             }
-            const post_length = this.intersect_length(post_to_pre_angle, a2, w2, h2);
+            const post_length =
+                this.intersect_length(post_to_pre_angle, a2, w2, h2);
 
             let mx = (pre_pos[0] + pre_length[0]) * 0.4 +
                 (post_pos[0] + post_length[0]) * 0.6;
@@ -376,7 +377,7 @@ export default class NetGraphConnection {
         if (!this.minimap && this.ng.mm_display) {
             this.mini_conn.redraw();
         }
-    };
+    }
 
     /**
      * Determine the length of an intersection line through a rectangle.
@@ -410,5 +411,5 @@ export default class NetGraphConnection {
         }
 
         return [x, y];
-    };
+    }
 }

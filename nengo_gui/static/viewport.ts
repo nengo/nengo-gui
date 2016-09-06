@@ -1,3 +1,7 @@
+/**
+ * Keep track of the viewable area of the screen.
+ */
+
 import * as $ from "jquery";
 
 import { all_components } from "./components/component";
@@ -11,7 +15,6 @@ export default class Viewport {
     y;
 
     constructor(netgraph) {
-        const self = this;
         this.netgraph = netgraph;
 
         this.x = 0;
@@ -20,21 +23,20 @@ export default class Viewport {
 
         this.width = $("#main").width();
         this.height = $("#main").height();
-        window.addEventListener("resize", function() {
-            self.on_resize(null);
+        window.addEventListener("resize", () => {
+            this.on_resize(null);
         });
-    };
+    }
 
     redraw_all(event) {
-        for (let i = 0; i < all_components.length; i++) {
-            let c = all_components[i];
+        all_components.forEach(c => {
             c.on_resize(
                 c.w * this.scale * this.width * 2,
                 c.h * this.scale * this.height * 2);
             c.redraw_size();
             c.redraw_pos();
-        }
-    };
+        });
+     }
 
     on_resize(event) {
         const ow = this.width;
@@ -43,8 +45,7 @@ export default class Viewport {
         this.width = $("#main").width();
         this.height = $("#main").height();
 
-        for (let i = 0; i < all_components.length; i++) {
-            const c = all_components[i];
+        all_components.forEach(c => {
             if (this.netgraph.aspect_resize) {
                 c.w = c.w * ow / this.width;
                 c.h = c.h * oh / this.height;
@@ -53,6 +54,6 @@ export default class Viewport {
                         c.h * this.scale * this.height * 2);
             c.redraw_size();
             c.redraw_pos();
-        }
-    };
+        });
+    }
 }

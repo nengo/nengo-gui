@@ -22,7 +22,6 @@ export default class Modal {
     toolbar;
 
     constructor($div, editor, sim) {
-        const self = this;
         this.$div = $div;
         this.$title = this.$div.find(".modal-title").first();
         this.$footer = this.$div.find(".modal-footer").first();
@@ -36,57 +35,58 @@ export default class Modal {
         this.sim_was_running = false;
 
         // This listener is triggered when the modal is closed
-        this.$div.on("hidden.bs.modal", function() {
-            if (self.sim_was_running) {
-                self.sim.play();
+        this.$div.on("hidden.bs.modal", () => {
+            if (this.sim_was_running) {
+                this.sim.play();
             }
-            self.hotkeys.set_active(true);
+            this.hotkeys.set_active(true);
         });
-    };
+    }
 
     show() {
         this.hotkeys.set_active(false);
         this.sim_was_running = !this.sim.paused;
         this.$div.modal("show");
         this.sim.pause();
-    };
+    }
 
     title(title) {
         this.$title.text(title);
-    };
+    }
 
-    footer(type, ok_function, cancel_function) {
-        const self = this;
+    footer(ftype, ok_function, cancel_function=null) { // tslint:disable-line
         this.$footer.empty();
 
-        if (type === "close") {
-            this.$footer.append("<button type='button' class='btn btn-default'" +
-                                " data-dismiss='modal'>Close</button>");
-        } else if (type === "ok_cancel") {
-            const $footerBtn = $("<div class='form-group'/>").appendTo(this.$footer);
+        if (ftype === "close") {
+            this.$footer.append(
+                "<button type='button' class='btn btn-default'" +
+                    " data-dismiss='modal'>Close</button>");
+        } else if (ftype === "ok_cancel") {
+            const $footerBtn = $("<div class='form-group'/>")
+                .appendTo(this.$footer);
             $footerBtn.append("<button id='cancel-button' type='button' " +
                               "class='btn btn-default'>Cancel</button>");
             $footerBtn.append("<button id='OK' type='submit' " +
                               "class='btn btn-primary'>OK</button>");
             $("#OK").on("click", ok_function);
-            if (typeof cancel_function !== "undefined") {
+            if (cancel_function !== null) {
                 $("#cancel-button").on("click", cancel_function);
             } else {
-                $("#cancel-button").on("click", function() {
+                $("#cancel-button").on("click", () => {
                     $("#cancel-button").attr("data-dismiss", "modal");
                 });
             }
-        } else if (type === "confirm_reset") {
+        } else if (ftype === "confirm_reset") {
             this.$footer.append("<button type='button' " +
                                 "id='confirm_reset_button' " +
                                 "class='btn btn-primary'>Reset</button>");
             this.$footer.append("<button type='button' " +
                                 "class='btn btn-default' " +
                                 "data-dismiss='modal'>Close</button>");
-            $("#confirm_reset_button").on("click", function() {
-                self.toolbar.reset_model_layout();
+            $("#confirm_reset_button").on("click", () => {
+                this.toolbar.reset_model_layout();
             });
-        } else if (type === "confirm_savepdf") {
+        } else if (ftype === "confirm_savepdf") {
             this.$footer.append(
                 "<button type='button' " +
                     "id='confirm_savepdf_button' class='btn btn-primary' " +
@@ -94,7 +94,7 @@ export default class Modal {
             this.$footer.append("<button type='button' " +
                                 "class='btn btn-default' " +
                                 "data-dismiss='modal'>Close</button>");
-            $("#confirm_savepdf_button").on("click", function() {
+            $("#confirm_savepdf_button").on("click", () => {
                 const svg = $("#main svg")[0];
 
                 // Serialize SVG as XML
@@ -111,7 +111,7 @@ export default class Modal {
                 filename = filename.split(".")[0];
 
                 // Initiate download
-                let link = document.createElement("a");
+                const link = document.createElement("a");
                 // Experimental future feature; uncomment when finalized.
                 // link.download = filename + ".svg";
                 link.href = svg_uri;
@@ -121,7 +121,7 @@ export default class Modal {
                 link.click();
                 document.body.removeChild(link);
             });
-        } else if (type === "confirm_savecsv") {
+        } else if (ftype === "confirm_savecsv") {
             this.$footer.append(
                 "<button type='button' " +
                     "id='confirm_savecsv_button' class='btn btn-primary' " +
@@ -129,7 +129,7 @@ export default class Modal {
             this.$footer.append("<button type='button' " +
                                 "class='btn btn-default' " +
                                 "data-dismiss='modal'>Close</button>");
-            $("#confirm_savecsv_button").on("click", function() {
+            $("#confirm_savecsv_button").on("click", () => {
 
                 const csv = data_to_csv(all_components);
                 // Extract filename from the path
@@ -137,9 +137,10 @@ export default class Modal {
                 let filename = path.split("/").pop();
                 filename = filename.split(".")[0];
 
-                const uri = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+                const uri =
+                    "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
 
-                let link = document.createElement("a");
+                const link = document.createElement("a");
                 link.href = uri;
                 link.style.visibility = "hidden";
                 // Experimental future feature; uncomment when finalized.
@@ -150,35 +151,34 @@ export default class Modal {
                 document.body.removeChild(link);
             });
 
-        } else if (type === "refresh") {
+        } else if (ftype === "refresh") {
             this.$footer.append("<button type='button' " +
                                 "id='refresh_button' " +
                                 "class='btn btn-primary'>Refresh</button>");
-            $("#refresh_button").on("click", function() {
+            $("#refresh_button").on("click", () => {
                 location.reload();
             });
         } else {
-            console.warn("Modal footer type " + type + " not recognized.");
+            console.warn("Modal footer type " + ftype + " not recognized.");
         }
-    };
+    }
 
     clear_body() {
         this.$body.empty();
         this.$div.find(".modal-dialog").removeClass("modal-sm");
         this.$div.off("shown.bs.modal");
-    };
+    }
 
-    text_body(text, type) {
-        if (typeof type === "undefined") { type = "info"; }
-
+    text_body(text, mtype="info") { // tslint:disable-line
         this.clear_body();
-        const $alert = $("<div class='alert alert-" + type + "' role='alert'/>")
+        const $alert =
+            $("<div class='alert alert-" + mtype + "' role='alert'/>")
             .appendTo(this.$body);
         const $p = $("<p/>").appendTo($alert);
         $p.append("<span class='glyphicon glyphicon-exclamation-sign' " +
                   "aria-hidden='true'></span>");
         $p.append(document.createTextNode(text));
-    };
+    }
 
     help_body() {
         this.clear_body();
@@ -218,10 +218,15 @@ export default class Modal {
                      "<td align='right'>?</td></tr>");
         $body.append("</table>");
         $body.appendTo(this.$body);
-    };
+    }
 
     /**
      * Sets up the tabs for Info modals.
+     *
+     * @param {object} tabinfo - Info about each tab; specifically
+     * @param {string} tabinfo.id - Tab ID
+     * @param {string} tabinfo.title - Tab title
+     * @returns {object} tabdivs - Divs associated with each tab ID
      */
     tabbed_body(tabinfo) {
         this.clear_body();
@@ -229,30 +234,27 @@ export default class Modal {
         const $tab_ul = $("<ul class='nav nav-tabs'/>").appendTo(this.$body);
         const $content = $("<div class='tab-content'/>").appendTo(this.$body);
 
-        for (let i = 0; i < tabinfo.length; i++) {
+        tabinfo.forEach((tab, i) => {
             // <li> for the tab label
             const $tab_li = $("<li/>").appendTo($tab_ul);
-            $tab_li.append("<a href='#" + tabinfo[i].id +
-                           "' data-toggle='tab'>" +
-                           tabinfo[i].title + "</a>");
+            $tab_li.append("<a href='#" + tab.id + "' data-toggle='tab'>" +
+                           tab.title + "</a>");
 
             // <div> for the tab content
-            tabdivs[tabinfo[i].id] = $(
-                "<div class='tab-pane' id='" + tabinfo[i].id + "'/>")
+            tabdivs[tab.id] = $("<div class='tab-pane' id='" + tab.id + "'/>")
                 .appendTo($content);
             if (i === 0) {
                 $tab_li.addClass("active");
-                tabdivs[tabinfo[i].id].addClass("active");
+                tabdivs[tab.id].addClass("active");
             }
-        }
+        });
         return tabdivs;
-    };
+    }
 
     /**
      * Sets up the body for main configuration.
      */
     main_config() {
-        const self = this;
         this.clear_body();
 
         const $form = $("<form class='form-horizontal' id" +
@@ -324,33 +326,34 @@ export default class Modal {
           "</div>" +
           "</div>").appendTo($form);
 
-        this.$div.on("shown.bs.modal", function() {
+        this.$div.on("shown.bs.modal", () => {
             $("#config-fontsize").focus();
         });
         $("#zoom-fonts").prop("checked", this.netgraph.zoom_fonts);
-        $("#zoom-fonts").change(function() {
-            self.netgraph.zoom_fonts = $("#zoom-fonts").prop("checked");
+        $("#zoom-fonts").change(() => {
+            this.netgraph.zoom_fonts = $("#zoom-fonts").prop("checked");
         });
 
         $("#aspect-resize").prop("checked", this.netgraph.aspect_resize);
-        $("#aspect-resize").change(function() {
-            self.netgraph.aspect_resize = $("#aspect-resize").prop("checked");
+        $("#aspect-resize").change(() => {
+            this.netgraph.aspect_resize = $("#aspect-resize").prop("checked");
         });
 
         $("#transparent-nets").prop("checked", this.netgraph.transparent_nets);
-        $("#transparent-nets").change(function() {
-            self.netgraph.transparent_nets = $("#transparent-nets").prop("checked");
+        $("#transparent-nets").change(() => {
+            this.netgraph.transparent_nets =
+                $("#transparent-nets").prop("checked");
         });
 
-        $("#sync-editor").prop("checked", self.editor.auto_update);
-        $("#sync-editor").change(function() {
-            self.editor.auto_update = $("#sync-editor").prop("checked");
-            self.editor.update_trigger = $("#sync-editor").prop("checked");
+        $("#sync-editor").prop("checked", this.editor.auto_update);
+        $("#sync-editor").change(() => {
+            this.editor.auto_update = $("#sync-editor").prop("checked");
+            this.editor.update_trigger = $("#sync-editor").prop("checked");
         });
 
         $("#config-fontsize").val(this.netgraph.font_size);
-        $("#config-fontsize").bind("keyup input", function() {
-            self.netgraph.font_size = parseInt($("#config-fontsize").val(), 10);
+        $("#config-fontsize").bind("keyup input", () => {
+            this.netgraph.font_size = parseInt($("#config-fontsize").val(), 10);
         });
         $("#config-fontsize").attr("data-my_validator", "custom");
 
@@ -359,20 +362,20 @@ export default class Modal {
             sd = "";
         }
         $("#config-scriptdir").val(sd);
-        $("#config-scriptdir").bind("keyup input", function() {
+        $("#config-scriptdir").bind("keyup input", () => {
             let newsd = $("#config-scriptdir").val();
             if (!newsd) {
                 newsd = ".";
             }
-            self.config.scriptdir = newsd;
+            this.config.scriptdir = newsd;
         });
 
-        $("#config-backend").change(function() {
-            self.sim.set_backend($("#config-backend").val());
+        $("#config-backend").change(() => {
+            this.sim.set_backend($("#config-backend").val());
         });
 
         // Allow the enter key to submit
-        const submit = function(event) {
+        const submit = event => {
             if (event.which === 13) {
                 event.preventDefault();
                 $("#OK").click();
@@ -380,10 +383,13 @@ export default class Modal {
         };
         $("#config-fontsize").keypress(submit);
         $("#config-scriptdir").keypress(submit);
-    };
+    }
 
     /**
      * Sets up the body for standard input forms.
+     *
+     * @param {string} start_values - Initial values to show first
+     * @param {string} label - Label associated with the input
      */
     single_input_body(start_values, label) {
         this.clear_body();
@@ -391,20 +397,20 @@ export default class Modal {
         const $form = $("<form class='form-horizontal' id ='myModalForm'/>")
             .appendTo(this.$body);
         const $ctrlg = $("<div class='form-group'/>").appendTo($form);
-        $ctrlg.append("<label class='control-label' for='singleInput'>" + label +
-                      "</label>");
+        $ctrlg.append("<label class='control-label' for='singleInput'>" +
+                      label + "</label>");
         const $ctrls = $("<div class='controls'/>").appendTo($ctrlg);
         $ctrls.append("<input id='singleInput' type='text' placeholder='" +
                       start_values + "'/>");
         $("<div class='help-block with-errors'/>").appendTo($ctrls);
-        this.$div.on("shown.bs.modal", function() {
+        this.$div.on("shown.bs.modal", () => {
             $("#singleInput").focus();
         });
 
         // Add custom validator
         $("#singleInput").attr("data-my_validator", "custom");
 
-        $(".controls").on("keydown", "#singleInput", function(event) {
+        $(".controls").on("keydown", "#singleInput", event => {
             // Allow the enter key to submit
             if (event.which === 13) {
                 event.preventDefault();
@@ -432,86 +438,105 @@ export default class Modal {
                     if (cur_index === values.length - 1) {
                         post = "";
                     }
-                    // If the last character is a comma or there are no characters,
-                    // fill in the next default value
-                    if (cur_val.length === 0 || cur_val.trim().slice(-1) === ",") {
+                    // If the last character is a comma or there are no
+                    // characters, fill in the next default value
+                    if (cur_val.length === 0
+                            || cur_val.trim().slice(-1) === ",") {
                         $("#singleInput").val(
                             $("#singleInput").val() + pre +
                                 values[cur_index].trim() + post);
                         event.preventDefault();
                     } else {
                         if (cur_index < values.length) {
-                            $("#singleInput").val($("#singleInput").val() + ", ");
+                            $("#singleInput").val(
+                                $("#singleInput").val() + ", "
+                            );
                             event.preventDefault();
                         }
                     }
                 }
             }
         });
-    };
+    }
 
     ensemble_body(uid, params, plots, conninfo) {
-        const tabs = this.tabbed_body([
+        const tabs: any = this.tabbed_body([
             {id: "params", title: "Parameters"},
             {id: "plots", title: "Plots"},
-            {id: "connections", title: "Connections"}]);
-        this.render_params(tabs["params"], params, tooltips.Ens); // tslint:disable-line
-        this.render_plots(tabs["plots"], plots); // tslint:disable-line
-        this.render_connections(tabs["connections"], uid, conninfo); // tslint:disable-line
-    };
+            {id: "connections", title: "Connections"},
+        ]);
+        this.render_params(tabs.params, params, tooltips.Ens);
+        this.render_plots(tabs.plots, plots);
+        this.render_connections(tabs.connections, uid, conninfo);
+    }
 
     node_body(uid, params, plots, conninfo) {
-        const tabs = this.tabbed_body([{id: "params", title: "Parameters"},
-                                     {id: "plots", title: "Plots"},
-                                     {id: "connections", title: "Connections"}]);
-        this.render_params(tabs["params"], params, tooltips.Node); // tslint:disable-line
-        this.render_plots(tabs["plots"], plots); // tslint:disable-line
-        this.render_connections(tabs["connections"], uid, conninfo); // tslint:disable-line
-    };
+        const tabs: any = this.tabbed_body([
+            {id: "params", title: "Parameters"},
+            {id: "plots", title: "Plots"},
+            {id: "connections", title: "Connections"},
+        ]);
+        this.render_params(tabs.params, params, tooltips.Node);
+        this.render_plots(tabs.plots, plots);
+        this.render_connections(tabs.connections, uid, conninfo);
+    }
 
     net_body(uid, stats, conninfo) {
-        const tabs = this.tabbed_body([{id: "stats", title: "Statistics"},
-                                       {id: "connections", title: "Connections"}]);
-        this.render_stats(tabs["stats"], stats); // tslint:disable-line
-        this.render_connections(tabs["connections"], uid, conninfo); // tslint:disable-line
-    };
+        const tabs: any = this.tabbed_body([
+            {id: "stats", title: "Statistics"},
+            {id: "connections", title: "Connections"},
+        ]);
+        this.render_stats(tabs.stats, stats);
+        this.render_connections(tabs.connections, uid, conninfo);
+    }
 
     /**
      * Renders information about the parameters of an object.
+     *
+     * @param {object} $parent - Parent element to append to.
+     * @param {[string, string][]} params - Information about params
+     * @param {object} strings - String resource object
      */
     render_params($parent, params, strings) {
         const $plist = $("<dl class='dl-horizontal'/>").appendTo($parent);
-        for (let i = 0; i < params.length; i++) {
+        params.forEach(param => {
             const $dt = $("<dt/>").appendTo($plist);
-            $dt.text(params[i][0]);
+            $dt.text(param[0]);
 
             const $dd = $("<dd/>").appendTo($plist);
-            $dd.text(params[i][1]);
-            tooltips.popover($dt, params[i][0], strings[params[i][0]]);
-        }
-    };
+            $dd.text(param[1]);
+            tooltips.popover($dt, param[0], strings[param[0]]);
+        });
+    }
 
     /**
      * Renders information about some statistics of an object.
+     *
+     * @param {object} $parent - Parent element to append to.
+     * @param {object} stats - Object statistics
      */
     render_stats($parent, stats) {
-        for (let i = 0; i < stats.length; i++) {
-            $parent.append("<h3>" + stats[i].title + "</h3>");
-            const $stable = $("<table class='table table-condensed table-hover'/>")
+        stats.forEach(stat => {
+            $parent.append("<h3>" + stat.title + "</h3>");
+            const $stable =
+                $("<table class='table table-condensed table-hover'/>")
                 .appendTo($parent);
 
-            for (let j = 0; j < stats[i].stats.length; j++) {
+            stat.stats.forEach(statstat => {
                 const $tr = $("<tr/>").appendTo($stable);
                 const $desc = $("<td class='col-md-8'/>").appendTo($tr);
-                $desc.text(stats[i].stats[j][0]);
+                $desc.text(statstat[0]);
                 const $val = $("<td class='col-md-4'/>").appendTo($tr);
-                $val.text(stats[i].stats[j][1]);
-            }
-        }
-    };
+                $val.text(statstat[1]);
+            });
+        });
+    }
 
     /**
      * Renders information about plots related to an object.
+     *
+     * @param {object} $parent - Parent element to append to.
+     * @param {object} plots - Object plots
      */
     render_plots($parent, plots) {
         // This indicates an error (usually no sim running)
@@ -523,14 +548,17 @@ export default class Modal {
             $err.append("<span class='sr-only'>Error:</span>");
             $err.append(document.createTextNode(plots));
         } else {
-            for (let i = 0; i < plots.length; i++) {
-                this.render_plot($parent, plots[i]);
-            }
+            plots.forEach(plot => {
+                this.render_plot($parent, plot);
+            });
         }
-    };
+    }
 
     /**
      * Renders information about a single plot.
+     *
+     * @param {object} $parent - Parent element to append to.
+     * @param {object} plotinfo - Object plot info
      */
     render_plot($parent, plotinfo) {
         $parent.append("<h4>" + plotinfo.title + "</h4>");
@@ -539,13 +567,14 @@ export default class Modal {
             const $warn = $("<div class='alert alert-warning' role='alert'/>")
                 .appendTo($parent);
 
-            for (let i = 0; i < plotinfo.warnings.length; i++) {
+            plotinfo.warnings.forEach(warning => {
                 const $p = $("<p/>").appendTo($warn);
-                $p.append("<span class='glyphicon glyphicon-exclamation-sign' " +
-                          "aria-hidden='true'></span>");
+                $p.append(
+                    "<span class='glyphicon glyphicon-exclamation-sign' " +
+                        "aria-hidden='true'></span>");
                 $p.append("<span class='sr-only'>Warning:</span>");
-                $p.append(document.createTextNode(plotinfo.warnings[i]));
-            }
+                $p.append(document.createTextNode(warning));
+            });
         }
 
         if (plotinfo.plot === "multiline") {
@@ -559,14 +588,16 @@ export default class Modal {
             console.warn("Plot type " + plotinfo.plot +
                          " not understood, or not implemented yet.");
         }
-    };
+    }
 
     /**
-     * Static multiline plot with shared x-axis
+     * Static multiline plot with shared x-axis.
      *
      * @param {string} selector - Where the svg will be added
-     * @param {float[]} x - The shared x-axis
-     * @param {float[][]} ys - The y data for each line
+     * @param {number[]} x - The shared x-axis
+     * @param {number[][]} ys - The y data for each line
+     * @param {string} x_label - Label for x-axis
+     * @param {string} y_label - Label for y-axis
      */
     multiline_plot(selector, x, ys: number[][], x_label, y_label) {
 
@@ -581,9 +612,9 @@ export default class Modal {
             .domain([x[0], x[x.length - 1]])
             .range([margin.left, w - margin.right]);
         const scale_y = d3.scale.linear()
-            .domain([d3.min(ys, function(y) {
+            .domain([d3.min(ys, y => {
                 return d3.min(y);
-            }) - 0.01, d3.max(ys, function(y) {
+            }) - 0.01, d3.max(ys, y => {
                 return d3.max(y);
             }) + 0.01])
             .range([h + margin.top, margin.top]);
@@ -636,9 +667,9 @@ export default class Modal {
         const colors = utils.make_colors(ys.length);
 
         const line = d3.svg.line<number>()
-            .x(function(d, i) {
+            .x((d, i) => {
                 return scale_x(x[i]);
-            }).y(function(d) {
+            }).y(d => {
                 return scale_y(d);
             });
 
@@ -649,13 +680,17 @@ export default class Modal {
             .append("path")
             .attr("d", line)
             .attr("class", "line")
-            .style("stroke", function(d, i) {
+            .style("stroke", (d, i) => {
                 return colors[i];
             });
-    };
+    }
 
     /**
      * Renders information about connections related to an object.
+     *
+     * @param {object} $parent - Parent element to append to.
+     * @param {string} uid - Object uid
+     * @param {object} conninfo - Information about connections
      */
     render_connections($parent, uid, conninfo) {
         const ngi = this.netgraph.svg_objects[uid];
@@ -663,10 +698,11 @@ export default class Modal {
         if (conn_in_objs.length > 0) {
             $parent.append("<h3>Incoming Connections</h3>");
 
-            const $conn_in_table = $("<table class='table table-condensed'><tr>" +
-                                   "<th class='conn-objs'>Object</th>" +
-                                   "<th class='conn-funcs'>Function</th>" +
-                                   "<th class='conn-fan'>Fan In</th></tr>")
+            const $conn_in_table =
+                $("<table class='table table-condensed'><tr>" +
+                  "<th class='conn-objs'>Object</th>" +
+                  "<th class='conn-funcs'>Function</th>" +
+                  "<th class='conn-fan'>Fan In</th></tr>")
                 .appendTo($parent);
             tooltips.popover($conn_in_table.find(".conn-objs").first(),
                              "'Pre' object",
@@ -692,9 +728,9 @@ export default class Modal {
 
             this.make_connections_table_row(
                 $conn_in_table, conninfo, conn_in_objs,
-                function(conn_obj) {
+                conn_obj => {
                     return conn_obj.pre;
-                }, function(conn_obj) {
+                }, conn_obj => {
                     return conn_obj.pres;
                 });
         }
@@ -706,10 +742,11 @@ export default class Modal {
             }
             $parent.append("<h3>Outgoing Connections</h3>");
 
-            const $conn_out_table = $("<table class='table table-condensed'><tr>" +
-                                    "<th class='conn-objs'>Object</th>" +
-                                    "<th class='conn-funcs'>Function</th>" +
-                                    "<th class='conn-fan'>Fan Out</th></tr>")
+            const $conn_out_table =
+                $("<table class='table table-condensed'><tr>" +
+                  "<th class='conn-objs'>Object</th>" +
+                  "<th class='conn-funcs'>Function</th>" +
+                  "<th class='conn-fan'>Fan Out</th></tr>")
                 .appendTo($parent);
 
             tooltips.popover($conn_out_table.find(".conn-objs").first(),
@@ -736,10 +773,10 @@ export default class Modal {
 
             this.make_connections_table_row(
                 $conn_out_table, conninfo, conn_out_objs,
-                function(conn_obj) {
+                conn_obj => {
                     return conn_obj.post;
                 },
-                function(conn_obj) {
+                conn_obj => {
                     return conn_obj.posts;
                 });
         }
@@ -751,7 +788,7 @@ export default class Modal {
             $p.append("<span class='glyphicon glyphicon-exclamation-sign' " +
                       "aria-hidden='true'></span>");
             $p.append("<span class='sr-only'>Warning:</span>");
-            if (ngi.type === "net" && ngi.expanded) {
+            if (ngi.itemtype === "net" && ngi.expanded) {
                 $p.append(document.createTextNode(
                     "Network is expanded. Please see individual objects " +
                         "for connection info."));
@@ -760,16 +797,16 @@ export default class Modal {
                     "No connections to or from this object."));
             }
         }
-    };
+    }
 
     /**
      * Generates one row in the connections table in the connections tab.
      */
     make_connections_table_row(
         $table, conninfo, conn_objs, get_conn_other, get_conn_conn_uid_list) {
-        for (let i = 0; i < conn_objs.length; i++) {
-            // Get a handle to the object that the current object is connected to
-            const conn_other = get_conn_other(conn_objs[i]);
+        conn_objs.forEach(conn_obj => {
+            // Get a handle to the connected object
+            const conn_other = get_conn_other(conn_obj);
 
             // Make a row in the table
             const $tr = $("<tr/>").appendTo($table);
@@ -780,22 +817,22 @@ export default class Modal {
             this.make_conn_path_dropdown_list(
                 $objs_td,
                 conn_other.uid,
-                conninfo.obj_type[String(conn_objs[i].uid)],
-                get_conn_conn_uid_list(conn_objs[i]));
+                conninfo.obj_type[String(conn_obj.uid)],
+                get_conn_conn_uid_list(conn_obj));
 
             // Make the functions column
             const $func_td = $("<td/>").appendTo($tr);
-            $func_td.text(conninfo.func[String(conn_objs[i].uid)]);
+            $func_td.text(conninfo.func[String(conn_obj.uid)]);
 
             // Make the fan data column
             const $fan_td = $("<td>" +
-                            conninfo.fan[String(conn_objs[i].uid)] + "</td>")
+                            conninfo.fan[String(conn_obj.uid)] + "</td>")
                 .appendTo($tr);
-            if (conninfo.obj_type[String(conn_objs[i].uid)] === "passthrough") {
+            if (conninfo.obj_type[String(conn_obj.uid)] === "passthrough") {
                 tooltips.tooltip($fan_td, tooltips.Conn.fan_passthrough);
             }
-        }
-    };
+        });
+    }
 
     /**
      * Generates the connection path dropdown list for the connections tab.
@@ -804,9 +841,10 @@ export default class Modal {
         $container, others_uid, obj_type, conn_uid_list) {
         if (conn_uid_list.length > 1) {
             // Add expand control and the tooltip to the <dd> object
-            const $lg_header = $("<a data-toggle='collapse' href='#pathlist" +
-                               String(conn_uid_list[0]).replace(/[\.\[\]]/g, "_") +
-                               "' aria-expanded='false'/>").appendTo($container);
+            const $lg_header =
+                $("<a data-toggle='collapse' href='#pathlist" +
+                  String(conn_uid_list[0]).replace(/[\.\[\]]/g, "_") +
+                  "' aria-expanded='false'/>").appendTo($container);
 
             // Make the "expand down" tooltip
             tooltips.tooltip($lg_header, tooltips.Conn.expand, "right");
@@ -819,8 +857,9 @@ export default class Modal {
                           .appendTo($container));
 
             // Add the root "Model" item to the drop down list
-            $path_list.append("<li class='list-group-item shaded'>" +
-                              "<span class='glyphicon glyphicon-home'/>Model</a>");
+            $path_list.append(
+                "<li class='list-group-item shaded'>" +
+                    "<span class='glyphicon glyphicon-home'/>Model</a>");
 
             // Populate the list-group
             let shaded_option = "shaded";
@@ -828,17 +867,17 @@ export default class Modal {
             let path_item: string;
             for (let p = conn_uid_list.length - 1; p >= 0; p--) {
                 if (conn_uid_list[p] in this.netgraph.svg_objects) {
-                    // If the uid is in netgraph.svg_objects, use the obj's label
+                    // If the uid is in netgraph.svg_objects, use the obj label
                     path_item = this.netgraph.svg_objects[conn_uid_list[p]]
                         .label.innerHTML;
                 } else {
-                    // Otherwise, use the object's uid (with brackets to indicate
-                    // that the UI is unsure of the exact label)
+                    // Otherwise, use the object's uid (with brackets to
+                    // indicate that the UI is unsure of the exact label)
                     path_item = "(" + String(conn_uid_list[p]) + ")";
                 }
 
                 if (others_uid === conn_uid_list[p]) {
-                    // Toggle the shading option when others_uid has been reached
+                    // Toggle the shading option once we reach others_uid
                     shaded_option = "";
                 }
 
@@ -862,17 +901,16 @@ export default class Modal {
                     }
                 }
 
-                $path_list.append("<li class='list-group-item " + shaded_option +
-                                  "'><span class='" + endpoint_icon + "'/>" +
-                                  path_item + "</li>");
+                $path_list.append("<li class='list-group-item " +
+                                  shaded_option + "'><span class='" +
+                                  endpoint_icon + "'/>" + path_item + "</li>");
             }
         }
-    };
-
+    }
 }
 
 // Change the global defaults of the modal validator
-$( document ).ready(function() {
+$(document).ready(() => {
     const $validator = $.fn.validator.Constructor.DEFAULTS;
     // Change the delay before showing errors
     $validator.delay = 5000;

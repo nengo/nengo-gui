@@ -32,17 +32,17 @@ export default class TimeAxes extends Axes2D {
             .attr("class", "graph_text unselectable")[0][0];
 
         if (this.display_time === false) {
-            this.axis_time_start.style.display = "none";
-            this.axis_time_end.style.display = "none";
+            this.axis_time_start.setAttribute("display", "none");
+            this.axis_time_end.setAttribute("display", "none");
         }
-    };
+    }
 
     set_time_range(start, end) {
         this.scale_x.domain([start, end]);
         this.axis_time_start.textContent = start.toFixed(3);
         this.axis_time_end.textContent = end.toFixed(3);
         this.axis_x_g.call(this.axis_x);
-    };
+    }
 
     on_resize(width, height) {
         Axes2D.prototype.on_resize.call(this, width, height);
@@ -52,15 +52,14 @@ export default class TimeAxes extends Axes2D {
         const text_offset = 1.2 * scale;
 
         if (width < suppression_width || this.display_time === false) {
-            this.axis_time_start.style.display = "none";
+            this.axis_time_start.setAttribute("display", "none");
         } else {
-            this.axis_time_start.style.display = "block";
+            this.axis_time_start.setAttribute("display", "block");
         }
 
-        this.axis_time_start.setAttribute("y", this.ax_bottom + text_offset);
         this.axis_time_start.setAttribute("x", this.ax_left - text_offset);
-        this.axis_time_end.setAttribute("y", this.ax_bottom + text_offset);
+        this.axis_time_start.setAttribute("y", this.ax_bottom + text_offset);
         this.axis_time_end.setAttribute("x", this.ax_right - text_offset);
-    };
-
+        this.axis_time_end.setAttribute("y", this.ax_bottom + text_offset);
+    }
 }

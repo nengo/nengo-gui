@@ -41,8 +41,6 @@ export default class Editor {
     ws;
 
     constructor(uid, netgraph) {
-        const self = this;
-
         this.netgraph = netgraph;
         this.config = this.netgraph.config;
         this.viewport = this.netgraph.viewport;
@@ -54,8 +52,8 @@ export default class Editor {
         this.max_width = $(window).width() - 100;
 
         this.ws = utils.create_websocket(uid);
-        this.ws.onmessage = function(event) {
-            self.on_message(event);
+        this.ws.onmessage = event => {
+            this.on_message(event);
         };
 
         this.current_code = "";
@@ -86,38 +84,38 @@ export default class Editor {
         this.auto_update = true;
 
         // Setup the button to toggle the code editor
-        $("#Toggle_ace").on("click", function() {
-            self.toggle_shown();
+        $("#Toggle_ace").on("click", () => {
+            this.toggle_shown();
         });
-        $("#Save_file").on("click", function() {
-            self.save_file();
+        $("#Save_file").on("click", () => {
+            this.save_file();
         });
-        $("#Font_increase").on("click", function() {
-            self.font_size += 1;
+        $("#Font_increase").on("click", () => {
+            this.font_size += 1;
         });
-        $("#Font_decrease").on("click", function() {
-            self.font_size -= 1;
+        $("#Font_decrease").on("click", () => {
+            this.font_size -= 1;
         });
 
         this.schedule_updates();
 
         Object.defineProperty(this, "width", {
-            get: function() {
-                return self.config.editor_width;
+            get: () => {
+                return this.config.editor_width;
             },
-            set: function(val) {
+            set: val => {
                 val = Math.max(Math.min(val, this.max_width), this.min_width);
                 $("#rightpane").width(val);
-                self.config.editor_width = val;
+                this.config.editor_width = val;
             },
         });
 
         Object.defineProperty(this, "hidden", {
-            get: function() {
-                return self.config.hide_editor;
+            get: () => {
+                return this.config.hide_editor;
             },
-            set: function(val) {
-                self.config.hide_editor = val;
+            set: val => {
+                this.config.hide_editor = val;
                 if (val) {
                     this.hide_editor();
                 } else {
@@ -127,24 +125,24 @@ export default class Editor {
         });
 
         Object.defineProperty(this, "font_size", {
-            get: function() {
-                return self.config.editor_font_size;
+            get: () => {
+                return this.config.editor_font_size;
             },
-            set: function(val) {
+            set: val => {
                 val = Math.max(val, 6);
                 this.editor.setFontSize(val);
-                self.config.editor_font_size = val;
+                this.config.editor_font_size = val;
             },
         });
 
         // Automatically update the model based on the text
         Object.defineProperty(this, "auto_update", {
-            get: function() {
-                return self.config.auto_update;
+            get: () => {
+                return this.config.auto_update;
             },
-            set: function(val) {
+            set: val => {
                 this.update_trigger = val;
-                self.config.auto_update = val;
+                this.config.auto_update = val;
             },
         });
 
@@ -154,49 +152,51 @@ export default class Editor {
         this.auto_update = this.config.auto_update;
         this.redraw();
 
-        $(window).on("resize", function() {
-            self.on_resize();
+        $(window).on("resize", () => {
+            this.on_resize();
         });
         interact("#editor")
             .resizable({
                 edges: { bottom: false, left: true, right: false, top: false },
-            }).on("resizemove", function(event) {
-                self.width -= event.deltaRect.left;
-                self.redraw();
+            }).on("resizemove", event => {
+                this.width -= event.deltaRect.left;
+                this.redraw();
             });
 
         interact("#console")
             .resizable({
                 edges: { bottom: false, left: true, right: false, top: true },
-            }).on("resizemove", function(event) {
+            }).on("resizemove", event => {
                 const max = $("#rightpane").height() - 40;
                 const min = 20;
 
-                self.console_height -= event.deltaRect.top;
+                this.console_height -= event.deltaRect.top;
 
-                self.console_height = utils.clip(self.console_height, min, max);
-                $("#console").height(self.console_height);
+                this.console_height = utils.clip(this.console_height, min, max);
+                $("#console").height(this.console_height);
 
-                self.width -= event.deltaRect.left;
-                self.redraw();
-            }).on("resizeend", function(event) {
-                self.config.console_height = self.console_height;
+                this.width -= event.deltaRect.left;
+                this.redraw();
+            }).on("resizeend", event => {
+                this.config.console_height = this.console_height;
             });
-    };
+    }
 
     /**
      * Send changes to the code to server every 100ms.
      */
     schedule_updates() {
-        const self = this;
-        setInterval(function() {
-            const editor_code = self.editor.getValue();
-            if (editor_code !== self.current_code) {
-                if (self.update_trigger) {
-                    self.update_trigger = self.auto_update;
-                    self.ws.send(JSON.stringify({code: editor_code, save: false}));
-                    self.current_code = editor_code;
-                    self.enable_save();
+        setInterval(() => {
+            const editor_code = this.editor.getValue();
+            if (editor_code !== this.current_code) {
+                if (this.update_trigger) {
+                    this.update_trigger = this.auto_update;
+                    this.ws.send(JSON.stringify({
+                        code: editor_code,
+                        save: false,
+                    }));
+                    this.current_code = editor_code;
+                    this.enable_save();
                     $("#Sync_editor_button").addClass("disabled");
                 } else {
                     // Visual indication that the code is different
@@ -205,7 +205,7 @@ export default class Editor {
                 }
             }
         }, 100);
-    };
+    }
 
     save_file() {
         if (!($("#Save_file").hasClass("disabled"))) {
@@ -213,15 +213,15 @@ export default class Editor {
             this.ws.send(JSON.stringify({code: editor_code, save: true}));
             this.disable_save();
         }
-    };
+    }
 
     enable_save() {
         $("#Save_file").removeClass("disabled");
-    };
+    }
 
     disable_save() {
         $("#Save_file").addClass("disabled");
-    };
+    }
 
     on_message(event) {
         const msg = JSON.parse(event.data);
@@ -242,9 +242,10 @@ export default class Editor {
             this.console.scrollTop = this.console.scrollHeight;
         } else if (msg.filename !== undefined) {
             if (msg.valid) {
-                $("#filename")[0].innerHTML = msg.filename;
+                utils.safe_set_text($("#filename")[0], msg.filename);
                 // Update the URL so reload and bookmarks work as expected
-                history.pushState({}, msg.filename, "/?filename=" + msg.filename);
+                history.pushState(
+                    {}, msg.filename, "/?filename=" + msg.filename);
             } else {
                 alert(msg.error);
             }
@@ -264,7 +265,7 @@ export default class Editor {
         } else {
             console.warn("Unhandled message: " + msg);
         }
-    };
+    }
 
     on_resize() {
         this.max_width = $(window).width() - 100;
@@ -272,19 +273,19 @@ export default class Editor {
             this.width = this.max_width;
         }
         this.redraw();
-    };
+    }
 
     show_editor() {
         const editor = document.getElementById("rightpane");
         editor.style.display = "flex";
         this.redraw();
-    };
+    }
 
     hide_editor() {
         const editor = document.getElementById("rightpane");
         editor.style.display = "none";
         this.redraw();
-    };
+    }
 
     toggle_shown() {
         if (this.hidden) {
@@ -293,7 +294,7 @@ export default class Editor {
             this.hidden = true;
         }
         this.redraw();
-    };
+    }
 
     redraw() {
         this.editor.resize();
@@ -301,5 +302,5 @@ export default class Editor {
             this.netgraph.on_resize();
         }
         this.viewport.on_resize();
-    };
+    }
 }

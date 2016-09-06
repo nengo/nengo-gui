@@ -27,10 +27,10 @@ import * as utils from "../utils";
 export var all_components = [];
 
 export function save_all_components() {
-    for (let i = 0; i < all_components.length; i++) {
-        all_components[i].save_layout();
-    }
-};
+    all_components.forEach(component => {
+        component.save_layout();
+    });
+}
 
 export class Component {
     div;
@@ -52,8 +52,6 @@ export class Component {
     y;
 
     constructor(parent, viewport, args) {
-        const self = this;
-
         this.viewport = viewport;
 
         // Create the div for the component and position it
@@ -77,7 +75,8 @@ export class Component {
 
         this.label = document.createElement("div");
         this.label.classList.add("label", "unselectable");
-        this.label.innerHTML = args.label.replace("<", "&lt;").replace(">", "&gt;");
+        utils.safe_set_text(
+            this.label, args.label.replace("<", "&lt;").replace(">", "&gt;"));
         this.label.style.position = "fixed";
         this.label.style.width = args.width;
         this.label.style.height = "2em";
@@ -87,8 +86,8 @@ export class Component {
             this.hide_label(null);
         }
 
-        self.min_width = 2;
-        self.min_height = 2;
+        this.min_width = 2;
+        this.min_height = 2;
 
         // Move element to be drawn on top when clicked on
 
@@ -102,17 +101,17 @@ export class Component {
         interact(this.div)
             .draggable({
                 inertia: true,
-                onend: function(event) {
-                    self.save_layout();
+                onend: event => {
+                    this.save_layout();
                 },
-                onmove: function(event) {
-                    self.x = self.x + event.dx /
-                        (self.viewport.width * self.viewport.scale);
-                    self.y = self.y + event.dy /
-                        (self.viewport.height * self.viewport.scale);
-                    self.redraw_pos();
+                onmove: event => {
+                    this.x = this.x + event.dx /
+                        (this.viewport.width * this.viewport.scale);
+                    this.y = this.y + event.dy /
+                        (this.viewport.height * this.viewport.scale);
+                    this.redraw_pos();
                 },
-                onstart: function() {
+                onstart: () => {
                     menu.hide_any();
                 },
             });
@@ -122,10 +121,10 @@ export class Component {
             .resizable({
                 edges: { bottom: true, left: true, right: true, top: true },
             })
-            .on("resizestart", function(event) {
+            .on("resizestart", event => {
                 menu.hide_any();
             })
-            .on("resizemove", function(event) {
+            .on("resizemove", event => {
                 const newWidth = event.rect.width;
                 const newHeight = event.rect.height;
                 const dx = event.deltaRect.left;
@@ -133,107 +132,105 @@ export class Component {
                 const dz = event.deltaRect.right;
                 const da = event.deltaRect.bottom;
 
-                self.x += (dx + dz) / 2 /
-                    (self.viewport.width * self.viewport.scale);
-                self.y += (dy + da) / 2 /
-                    (self.viewport.height * self.viewport.scale);
+                this.x += (dx + dz) / 2 /
+                    (this.viewport.width * this.viewport.scale);
+                this.y += (dy + da) / 2 /
+                    (this.viewport.height * this.viewport.scale);
 
-                self.w = newWidth /
-                    (self.viewport.width * self.viewport.scale) / 2;
-                self.h = newHeight /
-                    (self.viewport.height * self.viewport.scale) / 2;
+                this.w = newWidth /
+                    (this.viewport.width * this.viewport.scale) / 2;
+                this.h = newHeight /
+                    (this.viewport.height * this.viewport.scale) / 2;
 
-                self.on_resize(newWidth, newHeight);
-                self.redraw_size();
-                self.redraw_pos();
+                this.on_resize(newWidth, newHeight);
+                this.redraw_size();
+                this.redraw_pos();
             })
-            .on("resizeend", function(event) {
-                self.save_layout();
+            .on("resizeend", event => {
+                this.save_layout();
             });
 
         // Open a WebSocket to the server
         this.uid = args.uid;
         if (this.uid !== undefined) {
             this.ws = utils.create_websocket(this.uid);
-            this.ws.onmessage = function(event) {
-                self.on_message(event);
+            this.ws.onmessage = message => {
+                this.on_message(message);
             };
         }
 
         // Flag whether there is a scheduled update that hasn't happened yet
         this.pending_update = false;
 
-        this.menu = new menu.Menu(self.parent);
+        this.menu = new menu.Menu(this.parent);
         interact(this.div)
-            .on("hold", function(event) { // Change to 'tap' for right click
+            .on("hold", event => { // Change to 'tap' for right click
                 if (event.button === 0) {
-                    if (self.menu.visible_any()) {
+                    if (this.menu.visible_any()) {
                         menu.hide_any();
                     } else {
-                        self.menu.show(event.clientX, event.clientY,
-                                       self.generate_menu());
+                        this.menu.show(event.clientX, event.clientY,
+                                       this.generate_menu());
                     }
                     event.stopPropagation();
                 }
             })
-            .on("tap", function(event) { // Get rid of menus when clicking off
+            .on("tap", event => { // Get rid of menus when clicking off
                 if (event.button === 0) {
-                    if (self.menu.visible_any()) {
+                    if (this.menu.visible_any()) {
                         menu.hide_any();
                     }
                 }
             });
-        $(this.div).bind("contextmenu", function(event) {
+        $(this.div).bind("contextmenu", event => {
             event.preventDefault();
             event.stopPropagation();
-            if (self.menu.visible_any()) {
+            if (this.menu.visible_any()) {
                 menu.hide_any();
             } else {
-                self.menu.show(event.clientX, event.clientY, self.generate_menu());
+                this.menu.show(
+                    event.clientX, event.clientY, this.generate_menu());
             }
+            return false;
         });
 
         all_components.push(this);
-    };
+    }
 
     /**
      * Method to be called when Component is resized.
      */
     on_resize(width, height) {
         // Subclasses should implement this.
-    };
+    }
 
     /**
      * Method to be called when Component received a WebSocket message.
      */
     on_message(event) {
         // Subclasses should implement this.
-    };
+    }
 
     generate_menu() {
-        const self = this;
         const items = [];
         if (this.label_visible) {
-            items.push(["Hide label", function() {
-                self.hide_label(null);
-                self.save_layout();
+            items.push(["Hide label", () => {
+                this.hide_label(null);
+                this.save_layout();
             }]);
         } else {
-            items.push(["Show label", function() {
-                self.show_label(null);
-                self.save_layout();
+            items.push(["Show label", () => {
+                this.show_label(null);
+                this.save_layout();
             }]);
         }
-        items.push(["Remove", function() {
-            self.remove(undefined, undefined);
+        items.push(["Remove", () => {
+            this.remove();
         }]);
         return items;
-    };
+    }
 
-    remove(undo_flag, notify_server) {
-        undo_flag = typeof undo_flag !== "undefined" ? undo_flag : false;
-        notify_server = typeof notify_server !== "undefined" ? notify_server : true;
-
+    remove(undo_flag=false, notify_server=true) { // tslint:disable-line
         if (notify_server) {
             if (undo_flag === true) {
                 this.ws.send("remove_undo");
@@ -244,46 +241,45 @@ export class Component {
         this.parent.removeChild(this.div);
         const index = all_components.indexOf(this);
         all_components.splice(index, 1);
-    };
+    }
 
     /**
      * Schedule update() to be called in the near future.
      *
      * If update() is already scheduled, then do nothing. This is meant to limit
-     * how fast update() is called in the case that we are changing the data faster
-     * than whatever processing is needed in update().
+     * how fast update() is called in the case that we are changing the data
+     * faster than whatever processing is needed in update().
      */
     schedule_update(event) {
         if (this.pending_update === false) {
             this.pending_update = true;
-            const self = this;
-            window.setTimeout(function() {
-                self.pending_update = false;
-                self.update(null);
+            window.setTimeout(() => {
+                this.pending_update = false;
+                this.update(null);
             }, 10);
         }
-    };
+    }
 
     /**
-     * Do any visual updating that is needed due to changes in the underlying data.
+     * Do any visual updating needed due to changes in the underlying data.
      */
     update(event) {
         // Subclasses should implement this.
-    };
+    }
 
     hide_label(event) {
         if (this.label_visible) {
             this.label.style.display = "none";
             this.label_visible = false;
         }
-    };
+    }
 
     show_label(event) {
         if (!this.label_visible) {
             this.label.style.display = "inline";
             this.label_visible = true;
         }
-    };
+    }
 
     layout_info() {
         return {
@@ -293,12 +289,12 @@ export class Component {
             "x": this.x,
             "y": this.y,
         };
-    };
+    }
 
     save_layout() {
         const info = this.layout_info();
         this.ws.send("config:" + JSON.stringify(info));
-    };
+    }
 
     update_layout(config) {
         this.w = config.width;
@@ -315,7 +311,7 @@ export class Component {
         } else {
             this.hide_label(null);
         }
-    };
+    }
 
     redraw_size() {
         const vpscale = this.viewport.scale * 2;
@@ -323,7 +319,7 @@ export class Component {
         this.height = this.viewport.height * this.h * vpscale;
         this.div.style.width = this.width;
         this.div.style.height = this.height;
-    };
+    }
 
     redraw_pos() {
         const x = (this.x + this.viewport.x - this.w) *
@@ -331,13 +327,13 @@ export class Component {
         const y = (this.y + this.viewport.y - this.h) *
             this.viewport.height * this.viewport.scale;
         utils.set_transform(this.div, x, y);
-    };
+    }
 
     get_screen_width() {
         return this.viewport.width * this.w * this.viewport.scale * 2;
-    };
+    }
 
     get_screen_height() {
         return this.viewport.height * this.h * this.viewport.scale * 2;
-    };
+    }
 }

@@ -25,7 +25,7 @@ export default class XYAxes extends Axes2D {
 
         this.min_val = args.min_value;
         this.max_val = args.max_value;
-    };
+    }
 
     /**
      * Adjust the graph layout due to changed size.
@@ -42,5 +42,5 @@ export default class XYAxes extends Axes2D {
         this.axis_x_g.call(this.axis_x);
         this.axis_y_g.attr("transform", "translate(" + y_offset + ", 0)");
         this.axis_y_g.call(this.axis_y);
-    };
+    }
 }

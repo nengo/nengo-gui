@@ -23,7 +23,7 @@ export class DataStore {
         for (let i = 0; i < dims; i++) {
             this.data.push([]);
         }
-    };
+    }
 
     /**
      * Add a set of data.
@@ -31,8 +31,6 @@ export class DataStore {
      * @param {array} row - dims+1 data points, with time as the first one
      */
     push(row) {
-        const dims = this.data.length;
-
         // If you get data out of order, wipe out the later data
         if (row[0] < this.times[this.times.length - 1]) {
             let index = 0;
@@ -41,9 +39,10 @@ export class DataStore {
             }
 
             this.times.splice(index, this.times.length);
-            for (let i = 0; i < dims; i++) {
-                this.data[i].splice(index, this.data[i].length);
-            }
+
+            this.data.forEach(dimdata => {
+                dimdata.splice(index, dimdata.length);
+            });
         }
 
         // Compute lowpass filter (value = value*decay + new_value*(1-decay)
@@ -54,17 +53,18 @@ export class DataStore {
         }
 
         // Put filtered values into data array
-        for (let i = 0; i < dims; i++) {
+        for (let i = 0; i < this.data.length; i++) {
             if (decay === 0.0) {
                 this.data[i].push(row[i + 1]);
             } else {
-                this.data[i].push(row[i + 1] * (1 - decay) +
-                                  this.data[i][this.data[i].length - 1] * decay);
+                this.data[i].push(
+                    row[i + 1] * (1 - decay) +
+                        this.data[i][this.data[i].length - 1] * decay);
             }
         }
         // Store the time as well
         this.times.push(row[0]);
-    };
+    }
 
     /**
      * Reset the data storage.
@@ -74,23 +74,23 @@ export class DataStore {
      */
     reset() {
         this.times.splice(0, this.times.length);
-        for (let i = 0; i < this.data.length; i++) {
-            this.data[i].splice(0, this.data[i].length);
-        }
-    };
+        this.data.forEach(dimdata => {
+            dimdata.splice(0, dimdata.length);
+        });
+    }
 
     /**
      * Update the data storage.
      *
-     * This should be call periodically (before visual updates, but not necessarily
-     * after every push()).  Removes old data outside the storage limit set by
-     * the SimControl.
+     * This should be called periodically (before visual updates, but not
+     * necessarily after every push()).  Removes old data outside the storage
+     * limit set by the SimControl.
      */
     update() {
         // Figure out how many extra values we have (values whose time stamp is
         // outside the range to keep)
         let extra = 0;
-        // How much has the most recent time exceeded how much is allowed to be kept
+        // How much has the most recent time exceeded how much is kept?
         const limit = this.sim.time_slider.last_time -
             this.sim.time_slider.kept_time;
         while (this.times[extra] < limit) {
@@ -104,7 +104,7 @@ export class DataStore {
                 this.data[i] = this.data[i].slice(extra);
             }
         }
-    };
+    }
 
     /**
      * Return just the data that is to be shown.
@@ -127,16 +127,16 @@ export class DataStore {
 
         // Return the visible slice of the data
         const shown = [];
-        for (let i = 0; i < this.data.length; i++) {
-            shown.push(this.data[i].slice(index, last_index));
-        }
+        this.data.forEach(dimdata => {
+            shown.push(dimdata.slice(index, last_index));
+        });
         return shown;
-    };
+    }
 
     is_at_end() {
         const ts = this.sim.time_slider;
         return (ts.last_time < ts.first_shown_time + ts.shown_time + 1e-9);
-    };
+    }
 
     get_last_data() {
         // Determine time range
@@ -145,17 +145,18 @@ export class DataStore {
 
         // Find the corresponding index values
         let last_index = 0;
-        while (this.times[last_index] < t2 && last_index < this.times.length - 1) {
+        while (this.times[last_index] < t2
+                   && last_index < this.times.length - 1) {
             last_index += 1;
         }
 
         // Return the visible slice of the data
         const shown = [];
-        for (let i = 0; i < this.data.length; i++) {
-            shown.push(this.data[i][last_index]);
-        }
+        this.data.forEach(dimdata => {
+            shown.push(dimdata[last_index]);
+        });
         return shown;
-    };
+    }
 
 }
 
@@ -206,7 +207,7 @@ export class GrowableDataStore extends DataStore {
         }
 
         return offset;
-    };
+    }
 
     /**
      * Add a set of data.
@@ -235,7 +236,7 @@ export class GrowableDataStore extends DataStore {
         // Compute lowpass filter (value = value*decay + new_value*(1-decay)
         let decay = 0.0;
         if ((this.times.length !== 0) && (this.synapse > 0)) {
-            let dt = row[0] - this.times[this.times.length - 1];
+            const dt = row[0] - this.times[this.times.length - 1];
             decay = Math.exp(-dt / this.synapse);
         }
 
@@ -244,20 +245,21 @@ export class GrowableDataStore extends DataStore {
             if (decay === 0.0 || this.data[i].length === 0) {
                 this.data[i].push(row[i + 1]);
             } else {
-                this.data[i].push(row[i + 1] * (1 - decay) +
-                                  this.data[i][this.data[i].length - 1] * decay);
+                this.data[i].push(
+                    row[i + 1] * (1 - decay) +
+                        this.data[i][this.data[i].length - 1] * decay);
             }
         }
         // Store the time as well
         this.times.push(row[0]);
-    };
+    }
 
     /**
      * Update the data storage.
      *
-     * This should be call periodically (before visual updates, but not necessarily
-     * after every push()).  Removes old data outside the storage limit set by
-     * the SimControl.
+     * This should be call periodically (before visual updates, but not
+     * necessarily after every push()).  Removes old data outside the storage
+     * limit set by the SimControl.
      */
     update() {
         // Figure out how many extra values we have (values whose time stamp is
@@ -279,7 +281,7 @@ export class GrowableDataStore extends DataStore {
                 }
             }
         }
-    };
+    }
 
     /**
      * Return just the data that is to be shown.
@@ -319,7 +321,7 @@ export class GrowableDataStore extends DataStore {
                 }
 
                 shown.push(
-                    Array.apply(null, Array(nan_number)).map(function() {
+                    Array.apply(null, Array(nan_number)).map(() => {
                         return "NaN";
                     }).concat(
                         this.data[i].slice(slice_start, last_index - offset[i])
@@ -333,7 +335,7 @@ export class GrowableDataStore extends DataStore {
         }
 
         return shown;
-    };
+    }
 
     get_last_data() {
         const offset = this.get_offset();
@@ -343,7 +345,8 @@ export class GrowableDataStore extends DataStore {
 
         // Find the corresponding index values
         let last_index = 0;
-        while (this.times[last_index] < t2 && last_index < this.times.length - 1) {
+        while (this.times[last_index] < t2
+                   && last_index < this.times.length - 1) {
             last_index += 1;
         }
 
@@ -355,5 +358,5 @@ export class GrowableDataStore extends DataStore {
             }
         }
         return shown;
-    };
+    }
 }

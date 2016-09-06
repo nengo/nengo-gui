@@ -15,7 +15,7 @@ export default function data_to_csv(data_set) {
     const values = [];
     const csv = [];
 
-    data_set = data_set.filter(function(data) {
+    data_set = data_set.filter(data => {
         return data.constructor === Value || data.constructor === XYValue;
     });
 
@@ -50,7 +50,7 @@ export default function data_to_csv(data_set) {
 
     // Puts the data at each time step into a row in the csv
     for (let x = 0; x < times.length; x++) {
-        let temp_arr = [times[x]];
+        const temp_arr = [times[x]];
         for (let y = 0; y < values.length; y++) {
             for (let z = 0; z < values[y].length; z++) {
                 temp_arr.push(values[y][z][x]);
@@ -60,8 +60,8 @@ export default function data_to_csv(data_set) {
     }
 
     // Turns the array into a CSV string
-    csv.forEach(function(elem, index) {
+    csv.forEach((elem, index) => {
         csv[index] = elem.join(",");
     });
     return csv.join("\n");
-};
+}

@@ -1,3 +1,7 @@
+/**
+ * Entry point into the Nengo application.
+ */
+
 import "bootstrap/dist/css/bootstrap.min.css";
 import "imports?$=jquery,jQuery=jquery!bootstrap";
 import "imports?$=jquery,jQuery=jquery!bootstrap-validator";

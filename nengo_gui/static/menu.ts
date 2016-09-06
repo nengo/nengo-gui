@@ -24,15 +24,13 @@ export function hide_menu_in(div) {
     if (menu !== undefined) {
         menu.hide();
     }
-};
+}
 
 export function hide_any() {
-    for (let k in visible_menus) {
-        if (visible_menus.hasOwnProperty(k)) {
-            hide_menu_in(k);
-        }
-    }
-};
+    Object.keys(visible_menus).forEach(k => {
+        hide_menu_in(k);
+    });
+}
 
 export class Menu {
     actions;
@@ -46,7 +44,7 @@ export class Menu {
         this.div = div; // The parent div
         this.menu_div = null; // The div for the menu itself
         this.actions = {}; // The current action list for the menu
-    };
+    }
 
     /**
      * Show this menu at the given (x,y) location.
@@ -79,32 +77,31 @@ export class Menu {
 
         this.actions = {};
 
-        const self = this;
-        for (let i = 0; i < items.length; i++) {
+        items.forEach(item => {
             // TODO: Fix this stuff up, not sure things are bound correctly
-            const [html, func] = items[i];
+            const [html, func] = item;
             const b = document.createElement("li");
             const a = document.createElement("a");
             a.setAttribute("href", "#");
             a.className = "menu-item";
-            a.innerHTML = html;
+            $(a).append(html);
 
             this.actions[html] = func;
-            $(a).click(function(e) {
+            $(a).click(e => {
                 func();
-                self.hide();
-            }).on("contextmenu", function(e) {
+                this.hide();
+            }).on("contextmenu", e => {
                 e.preventDefault();
                 func();
-                self.hide();
+                this.hide();
             });
             b.appendChild(a);
             this.menu.appendChild(b);
-        }
+        });
         this.visible = true;
         this.check_overflow(x, y);
         visible_menus[this.div] = this;
-    };
+    }
 
     /**
      * Hide this menu.
@@ -115,11 +112,11 @@ export class Menu {
 
         this.menu_div = null;
         delete visible_menus[this.div];
-    };
+    }
 
     visible_any() {
         return visible_menus[this.div] !== undefined;
-    };
+    }
 
     check_overflow(x, y) {
         const corrected_y = y - $("#top_toolbar_div").height();
@@ -136,5 +133,5 @@ export class Menu {
         if (x + w > main_w) {
             this.menu_div.style.left = main_w - w;
         }
-    };
+    }
 }
