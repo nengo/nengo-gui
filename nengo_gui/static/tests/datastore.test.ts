@@ -1,3 +1,7 @@
+/**
+ * Test the DataStore and GrowableDataStore.
+ */
+
 import * as test from "tape";
 
 import { DataStore, GrowableDataStore } from "../datastore";

@@ -1,4 +1,5 @@
 var path = require('path');
+var TypedocPlugin = require('typedoc-webpack-plugin');
 var webpack = require('webpack');
 
 module.exports = {
@@ -29,8 +30,8 @@ module.exports = {
                 test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                 loader: 'file-loader?name=./[hash].[ext]'
             },
-            { test: /\.tsx?$/, loader: 'ts-loader' }
-        ]
+            { test: /\.tsx?$/, loader: 'ts-loader' },
+        ],
     },
     plugins: [
         require('webpack-fail-plugin'),
@@ -38,6 +39,11 @@ module.exports = {
             $: 'jquery',
             jQuery: 'jquery',
             "window.jQuery": 'jquery',
-        })
+        }),
     ]
+}
+
+// Pass in --no-docs to skip building documentation
+if (process.argv.indexOf('--no-docs') === -1) {
+    module.exports.plugins.push(new TypedocPlugin({}));
 }
