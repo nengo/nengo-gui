@@ -20,10 +20,20 @@ class Raster(Component):
 
     def __init__(self, obj):
         super(Raster, self).__init__()
-        self.neuron_type = obj.neuron_type
-        self.obj = obj.neurons
+
+        self.base_obj = obj
+
+        if isinstance(obj, nengo.Node):
+            assert obj.output._nengo_spike_node_
+            self.neuron_type = None
+            self.obj = obj
+            self.max_neurons = obj.size_out
+        else:
+            self.neuron_type = obj.neuron_type
+            self.obj = obj.neurons
+            self.max_neurons = obj.n_neurons
+
         self.data = collections.deque()
-        self.max_neurons = obj.n_neurons
 
         self.conn = None
         self.node = None
@@ -31,17 +41,17 @@ class Raster(Component):
 
     def attach(self, page, config, uid):
         super(Raster, self).attach(page, config, uid)
-        self.label = page.get_label(self.obj.ensemble)
+        self.label = page.get_label(self.base_obj)
 
     def add_nengo_objects(self, page):
         with page.model:
             self.node = nengo.Node(self.gather_data, size_in=self.max_neurons)
-            if is_spiking(self.neuron_type):
+            if self.neuron_type is None or is_spiking(self.neuron_type):
                 self.conn = nengo.Connection(self.obj, self.node, synapse=None)
 
     def remove_nengo_objects(self, page):
         page.model.nodes.remove(self.node)
-        if is_spiking(self.neuron_type):
+        if self.neuron_type is None or is_spiking(self.neuron_type):
             page.model.connections.remove(self.conn)
 
     def gather_data(self, t, x):
@@ -67,7 +77,7 @@ class Raster(Component):
         return "new Nengo.Raster(main, sim, %s);" % json
 
     def code_python_args(self, uids):
-        return [uids[self.obj.ensemble]]
+        return [uids[self.base_obj]]
 
     def message(self, msg):
         if msg.startswith("n_neurons:"):

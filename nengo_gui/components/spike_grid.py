@@ -15,7 +15,12 @@ class SpikeGrid(Component):
         super(SpikeGrid, self).__init__()
         self.obj = obj
         self.data = []
-        self.max_neurons = self.obj.neurons.size_out
+
+        if isinstance(obj, nengo.Node):
+            self.max_neurons = self.obj.size_out
+        else:
+            self.max_neurons = self.obj.neurons.size_out
+
         if n_neurons is None:
             n_neurons = self.max_neurons
         self.n_neurons = n_neurons
@@ -33,8 +38,14 @@ class SpikeGrid(Component):
 
     def add_nengo_objects(self, page):
         with page.model:
-            self.node = nengo.Node(self.gather_data, size_in=self.obj.neurons.size_out)
-            self.conn = nengo.Connection(self.obj.neurons, self.node, synapse=0.01)
+            if isinstance(self.obj, nengo.Node):
+                self.node = nengo.Node(self.gather_data, size_in=self.obj.size_out)
+                self.conn = nengo.Connection(self.obj, self.node, synapse=0.01)
+            else:
+                self.node = nengo.Node(
+                    self.gather_data, size_in=self.obj.neurons.size_out
+                )
+                self.conn = nengo.Connection(self.obj.neurons, self.node, synapse=0.01)
 
     def remove_nengo_objects(self, page):
         page.model.connections.remove(self.conn)
