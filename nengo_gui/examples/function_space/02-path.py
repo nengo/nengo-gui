@@ -39,13 +39,8 @@ with model:
     ens.eval_points = fs.project(ens_dist)
 
     # create a network for input
-    input_net = fs.make_input([1, 0, 0.2])
-    nengo.Connection(input_net.output, ens)
-
-    # create a node to give a plot of the represented function
-    function_plot = fs.make_plot_node(domain, lines=1, n_pts=50)
-
-    nengo.Connection(ens, function_plot, synapse=0.1)
+    stimulus = fs.make_input([1, 0, 0.2])
+    nengo.Connection(stimulus.output, ens)
 
     # a node to specify which part of the function to decode
     x_value = nengo.Node(np.cos)
@@ -72,3 +67,7 @@ with model:
 
     output = nengo.Ensemble(50, 1)
     nengo.Connection(product.output, output, transform=[sv_size*max_basis])
+
+    # create a node to give a plot of the represented function
+    function_plot = fs.make_plot_node(domain, lines=1, n_pts=50)
+    nengo.Connection(ens, function_plot, synapse=0.1)

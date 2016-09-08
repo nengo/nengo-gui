@@ -27,8 +27,8 @@ model = nengo.Network()
 with model:
     # an ensemble to represent the weights over the basis functions
     ens = nengo.Ensemble(n_neurons=500, dimensions=fs.n_basis)
-    # this time we're using separate distributions for the encoders
-    # and the evaluation points. TODO: why?
+    # use separate distributions for the encoders and the evaluation points.
+    # TODO: why?
     ens.encoders = fs.project(
         nengo.dists.Function(gaussian,
                              mean=nengo.dists.Uniform(-1, 1),
@@ -60,9 +60,6 @@ with model:
         stim.label = 'stim%i' % ii
         nengo.Connection(stim.output, ens)
 
-    plot = fs.make_plot_node(domain, lines=2)
-    nengo.Connection(ens, plot[:fs.n_basis], synapse=0.1)
-
     # the function for choosing the most salient stimulus
     def collapse(x):
         # reconstruct the represented function from weights x
@@ -78,4 +75,9 @@ with model:
     # in a recurrent connection, bias the representation towards the
     # max value of the function represented in ens
     nengo.Connection(choice, choice, function=collapse)
+
+    # create a node to give a plot of the represented function
+    plot = fs.make_plot_node(domain, lines=2)
+    nengo.Connection(ens, plot[:fs.n_basis], synapse=0.1)
     nengo.Connection(choice, plot[fs.n_basis:], synapse=0.1)
+

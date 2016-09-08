@@ -39,10 +39,9 @@ with model:
     ens.eval_points = fs.project(ens_dist)
 
     # create a network for input
-    input_net = fs.make_input([1, 0, 0.2])
-    nengo.Connection(input_net.output, ens)
+    stimulus = fs.make_input([1, 0, 0.2])
+    nengo.Connection(stimulus.output, ens)
 
     # create a node to give a plot of the represented function
     plot = fs.make_plot_node(domain=domain, lines=2)
-
     nengo.Connection(ens, plot[:fs.n_basis], synapse=0.1)
