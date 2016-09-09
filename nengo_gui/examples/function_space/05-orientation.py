@@ -59,15 +59,16 @@ with model:
 
     # the function for choosing the most salient stimulus and shifts it
     def collapse(x):
+        speed = x[-1]
+        x = x[:-1]
         # reconstruct the represented function from weights x
-        pts = fs.reconstruct(x[:-1])
+        pts = fs.reconstruct(x)
         # find the max value of the represented function
         peak = np.argmax(pts)
         # create a Gaussian centered at the peak
         data = gaussian(mag=1, sd=0.2, mean=domain[peak])
 
-        shift = int(x[-1]*50)
-        print(shift)
+        shift = int(speed*50)
 
         data = fs.project(np.roll(data, shift))*1.1
         return data
@@ -76,9 +77,6 @@ with model:
 
     speed = nengo.Node([0])
     nengo.Connection(speed, ens[-1])
-
-    spd = nengo.Ensemble(100, 1)
-    nengo.Connection(ens[-1], spd)
 
     # create a node to give a plot of the represented function
     plot = fs.make_plot_node(domain=domain, lines=2, n_pts=50)

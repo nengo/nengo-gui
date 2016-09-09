@@ -43,5 +43,5 @@ with model:
     nengo.Connection(stimulus.output, ens)
 
     # create a node to give a plot of the represented function
-    plot = fs.make_plot_node(domain=domain, lines=2)
+    plot = fs.make_plot_node(domain=domain, lines=1)
     nengo.Connection(ens, plot[:fs.n_basis], synapse=0.1)
