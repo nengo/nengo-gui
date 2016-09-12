@@ -42,7 +42,7 @@ with model:
         weights=[1, 1],
         normalize_weights=True)
     # train over the magnitude in the range 0-1 since no guarantee
-    # input will be height 1
+    # input will be height 1 TODO: better / more accurate explanation
     ens.eval_points = nengo.dists.Combined([
         fs.project(nengo.dists.Function(gaussian,
                                         mean=nengo.dists.Uniform(-1, 1),
@@ -53,8 +53,12 @@ with model:
         weights=[1, 1],
         normalize_weights=True)
 
-    # create a network for input
-    stimulus = fs.make_input([1, 0, 0.2])
+    # create a network for input, which will provide an initial signal,
+    # then go to zero, to let the position integration take over
+    stimulus = fs.make_input(
+        nengo.utils.functions.piecewise({
+            0: [1, 0, 0.2],
+            .2: [0, 0, 0]}))
     nengo.Connection(stimulus.output, ens[:-1])
 
     # the function for choosing the most salient stimulus and shifts it
@@ -67,14 +71,16 @@ with model:
         peak = np.argmax(pts)
         # create a Gaussian centered at the peak
         data = gaussian(mag=1, sd=0.2, mean=domain[peak])
-
+        # TODO: 50 should be replaced with a gain based on the number
+        # of steps in the domain representation, right?
         shift = int(speed*50)
-
+        # multiplied by 1.1 to prevent signal attenuation
         data = fs.project(np.roll(data, shift))*1.1
         return data
 
     nengo.Connection(ens, ens[:-1], synapse=0.1, function=collapse)
 
+    # input the head movement speed
     speed = nengo.Node([0])
     nengo.Connection(speed, ens[-1])
 
