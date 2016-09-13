@@ -20,7 +20,7 @@ fs = nengo.FunctionSpace(
     nengo.dists.Function(
         gaussian,
         mean=nengo.dists.Uniform(-1, 1),
-        sd=nengo.dists.Uniform(0.2, 0.2),
+        sd=0.2,
         mag=1),
     n_basis=10, n_samples=1000)
 

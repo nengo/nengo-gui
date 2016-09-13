@@ -21,13 +21,13 @@ fs = nengo.FunctionSpace(
         mean=nengo.dists.Uniform(-1, 1),
         sd=nengo.dists.Uniform(0.1, 0.7),
         mag=1),
-    n_basis=10)
+    n_basis=10, n_samples=1000)
 
 # create a distribution for generating encoders and eval points
 ens_dist = nengo.dists.Function(
     gaussian,
     mean=nengo.dists.Uniform(-1, 1),
-    sd=0.05,
+    sd=nengo.dists.Uniform(0.2, 0.5),
     mag=1)
 
 model = nengo.Network()
