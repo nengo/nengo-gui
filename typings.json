@@ -12,6 +12,7 @@
     "jqueryfiletree": "github:tbekolay/types-jqueryfiletree/src/filetree.d.ts#24c72ca29dd4f707732e804274e4e34f3b4bcb51",
     "jqueryui": "registry:dt/jqueryui#1.11.0+20160727153854",
     "jsdom": "registry:dt/jsdom#2.0.0+20160316155526",
-    "node": "registry:dt/node#6.0.0+20160906151955"
+    "node": "registry:dt/node#6.0.0+20160906151955",
+    "virtual-dom": "registry:dt/virtual-dom#2.0.1+20160317120654"
   }
 }

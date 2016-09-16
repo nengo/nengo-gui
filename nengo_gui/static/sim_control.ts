@@ -1,23 +1,39 @@
 import * as d3 from "d3";
 import * as interact from "interact.js";
 import * as $ from "jquery";
+import { dom, h } from "maquette";
 
-import Modal from "./modal";
+import { Modal } from "./modal";
 import "./sim_control.css";
 import * as utils from "./utils";
+
+const reset_sim = new Event("reset_sim");
+const adjust_time = new Event("adjust_time");
 
 /**
  * Control panel for a simulation.
  */
-export default class SimControl {
-    div;
+export class SimControl {
+    div: HTMLElement;
     listeners;
     modal;
     pause_button;
     pause_button_icon;
-    paused;
-    pending_update;
-    rate;
+
+    /**
+     * Whether the simulation is paused.
+     */
+    paused: boolean = true;
+
+    /**
+     * Do we have an update() call scheduled?
+     */
+    pending_update: boolean = false;
+
+    /**
+     * The most recent rate information from the simulator.
+     */
+    rate: number = 0.0;
     rate_proportion;
     rate_tr;
     reset_button;
@@ -31,10 +47,20 @@ export default class SimControl {
     speed_throttle_set;
     speed_throttle_x;
     ticks_tr;
-    time;
+
+    /**
+     * The most recent time from the simulator.
+     */
+    time: number = 0.0;
+
     time_scale;
-    time_slider;
-    ws;
+    time_slider: TimeSlider;
+    uid;
+
+    /**
+     * WebSocket to communicate with the server.
+     */
+    ws: WebSocket;
 
     /**
      * SimControl constructor is inserted into HTML file from python and
@@ -46,34 +72,24 @@ export default class SimControl {
      * @param {int} args.id - the id of the server-side SimControl to connect to
      * @param {Editor} editor - the Editor instance
      */
-    constructor(div, args, editor) {
-        if (args.uid[0] === "<") {
-            console.warn("invalid uid for SimControl: " + args.uid);
+    constructor(editor, uid, kept_time, shown_time) {
+        this.uid = uid;
+        if (uid[0] === "<") {
+            console.warn("invalid uid for SimControl: " + uid);
         }
         this.modal = new Modal($(".modal").first(), editor, this);
 
-        div.classList.add("sim_control");
-        this.div = div;
+        this.div = dom.create(h("div.sim_control")).domNode as HTMLElement;
 
         // Respond to resize events
-        this.div.addEventListener("resize", () => {
-            this.on_resize(null);
+        this.div.addEventListener("resize", event => {
+            this.on_resize(event);
         });
-        window.addEventListener("resize", () => {
-            this.on_resize(null);
+        window.addEventListener("resize", event => {
+            this.on_resize(event);
         });
 
-        // The most recent time from the simulator
-        this.time = 0.0;
-        // The most recent rate information from the simulator
-        this.rate = 0.0;
-        // Whether the simulation is paused
-        this.paused = true;
-        // Do we have an update() call scheduled?
-        this.pending_update = false;
-
-        // Create the WebSocket to communicate with the server
-        this.ws = utils.create_websocket(args.uid);
+        this.ws = utils.create_websocket(this.uid);
 
         this.ws.onmessage = event => {
             this.on_message(event);
@@ -85,12 +101,18 @@ export default class SimControl {
         // Create the TimeSlider
         this.time_slider = new TimeSlider({
             height: this.div.clientHeight - 20,
-            kept_time: args.kept_time,
-            shown_time: args.shown_time,
+            kept_time: kept_time,
+            shown_time: shown_time,
             sim: this,
             width: this.div.clientWidth - 300,
             x: 200,
             y: 10,
+        });
+
+        // Listen to TimeSlider events
+        this.time_slider.div.addEventListener("reset_sim", event => {
+            this.reset();
+            this.div.dispatchEvent(reset_sim);
         });
 
         // Get reference to the pause button
@@ -342,37 +364,40 @@ class TimeSlider {
     sim;
     svg;
 
-    constructor(args) {
+    constructor({
+        width: width,
+        height: height,
+        x: x,
+        y: y,
+        kept_time: kept_time,
+        shown_time: shown_time,
+        sim: sim,
+    }) {
         // The SimControl object
-        this.sim = args.sim;
+        this.sim = sim;
 
         // Get reference to the overall div
         this.div = $(".time_slider")[0];
-        utils.set_transform(this.div, args.x, args.y);
+        utils.set_transform(this.div, x, y);
 
         // Create reference to the div indicating currently shown time
         this.shown_div = $(".shown_time")[0];
 
         // How much time to show in normal graphs
-        this.shown_time = args.shown_time || 0.5;
+        this.shown_time = shown_time || 0.5;
         // How much total time to store
-        this.kept_time = args.kept_time || 4.0;
+        this.kept_time = kept_time || 4.0;
         // Most recent time received from simulation
         this.last_time = 0.0;
         // First time shown on graphs
         this.first_shown_time = this.last_time - this.shown_time;
-
-        // Call reset whenever the simulation is reset
-        this.sim.div.addEventListener("sim_reset", () => {
-            this.reset();
-        }, false);
 
         // Scale to convert time to x value (in pixels)
         this.kept_scale = d3.scale.linear();
 
         this.kept_scale.domain([0.0 - this.kept_time, 0.0]);
 
-        this.resize(args.width, args.height);
+        this.resize(width, height);
 
         // Make the shown time draggable and resizable
         interact(this.shown_div)
@@ -390,7 +415,7 @@ class TimeSlider {
                     utils.set_transform(event.target, x, 0);
 
                     // Update any components who need to know the time changed
-                    this.sim.div.dispatchEvent(new Event("adjust_time"));
+                    this.div.dispatchEvent(adjust_time);
                 },
             })
             .resizable({
@@ -420,7 +445,7 @@ class TimeSlider {
                 this.shown_time = tb1 - ta1;
 
                 // Update any components who need to know the time changed
-                this.sim.div.dispatchEvent(new Event("adjust_time"));
+                this.div.dispatchEvent(adjust_time);
             });
 
         // Build the axis to display inside the scroll area
@@ -434,7 +459,7 @@ class TimeSlider {
             .ticks(10);
         this.axis_g = this.svg.append("g")
             .attr("class", "axis")
-            .attr("transform", "translate(0," + (args.height / 2) + ")")
+            .attr("transform", "translate(0," + (height / 2) + ")")
             .call(this.axis);
     }
 
@@ -445,7 +470,7 @@ class TimeSlider {
         utils.set_transform(this.shown_div, x, 0);
 
         // Update any components who need to know the time changed
-        this.sim.div.dispatchEvent(new Event("adjust_time"));
+        this.div.dispatchEvent(adjust_time);
     }
 
     reset() {
@@ -465,7 +490,7 @@ class TimeSlider {
         utils.set_transform(this.shown_div, x, 0);
 
         // Update any components who need to know the time changed
-        this.sim.div.dispatchEvent(new Event("adjust_time"));
+        this.div.dispatchEvent(adjust_time);
     }
 
     /**
@@ -497,7 +522,7 @@ class TimeSlider {
         const delta = time - this.last_time; // Time since last update_time()
 
         if (delta < 0) {
-            this.sim.div.dispatchEvent(new Event("sim_reset"));
+            this.div.dispatchEvent(reset_sim);
             return;
         }
         this.last_time = time;

@@ -4,6 +4,8 @@
 
 import * as test from "tape";
 
+import * as fixtures from "./fixtures";
+
 import { DataStore, GrowableDataStore } from "../datastore";
 
 const sim = {
@@ -15,27 +17,27 @@ const sim = {
     },
 };
 
-test("DataStore accepts data", t => {
+test("DataStore accepts data", assert => {
     const data_store = new DataStore(2, sim, 0);
 
     data_store.push([0.0, 1.1, 1.2]);
     // remember that 0.0 is the time-stamp
-    t.deepEqual(data_store.data, [[1.1], [1.2]]);
-    t.end();
+    assert.deepEqual(data_store.data, [[1.1], [1.2]]);
+    fixtures.teardown(assert);
 });
 
-test("DataStore orders data", t => {
+test("DataStore orders data", assert => {
     const data_store = new DataStore(2, sim, 0);
 
     data_store.push([1.0, 3.1, 3.2]);
     data_store.push([0.5, 2.1, 2.2]);
 
     // newer data received out of order should be discarded
-    t.deepEqual(data_store.data, [[2.1], [2.2]]);
-    t.end();
+    assert.deepEqual(data_store.data, [[2.1], [2.2]]);
+    fixtures.teardown(assert);
 });
 
-test("DataStore filters data", t => {
+test("DataStore filters data", assert => {
     const data_store = new DataStore(2, sim, 0);
 
     data_store.synapse = 0.1;
@@ -48,11 +50,11 @@ test("DataStore filters data", t => {
         }
     }
 
-    t.deepEqual(data_store.data, [[3, 3, 2], [3, 3, 2]]);
-    t.end();
+    assert.deepEqual(data_store.data, [[3, 3, 2], [3, 3, 2]]);
+    fixtures.teardown(assert);
 });
 
-test("DataStore resets data", t => {
+test("DataStore resets data", assert => {
     const data_store = new DataStore(2, sim, 0);
 
     data_store.push([0.5, 2.1, 2.2]);
@@ -60,11 +62,11 @@ test("DataStore resets data", t => {
     data_store.push([1.5, 4.1, 4.2]);
     data_store.reset();
 
-    t.deepEqual(data_store.data, [[], []]);
-    t.end();
+    assert.deepEqual(data_store.data, [[], []]);
+    fixtures.teardown(assert);
 });
 
-test("DataStore throws away old data", t => {
+test("DataStore throws away old data", assert => {
     const data_store = new DataStore(2, sim, 0);
 
     data_store.push([0.5, 2.1, 2.2]);
@@ -75,11 +77,11 @@ test("DataStore throws away old data", t => {
     // keep 2s of data, the oldest entry should be discarded
     data_store.update();
 
-    t.deepEqual(data_store.data, [[3.1, 4.1], [3.2, 4.2]]);
-    t.end();
+    assert.deepEqual(data_store.data, [[3.1, 4.1], [3.2, 4.2]]);
+    fixtures.teardown(assert);
 });
 
-test("DataStore gives the shown data", t => {
+test("DataStore gives the shown data", assert => {
     const data_store = new DataStore(2, sim, 0);
 
     data_store.push([0.5, 2.1, 2.2]);
@@ -89,11 +91,11 @@ test("DataStore gives the shown data", t => {
     data_store.sim.time_slider.first_shown_time = 1.0;
     data_store.sim.time_slider.shown_time = 1.0;
 
-    t.deepEqual(data_store.get_shown_data(), [[3.1, 4.1], [3.2, 4.2]]);
-    t.end();
+    assert.deepEqual(data_store.get_shown_data(), [[3.1, 4.1], [3.2, 4.2]]);
+    fixtures.teardown(assert);
 });
 
-test("DataStore gives the last data", t => {
+test("DataStore gives the last data", assert => {
     const data_store = new DataStore(2, sim, 0);
 
     data_store.push([0.5, 2.1, 2.2]);
@@ -103,33 +105,33 @@ test("DataStore gives the last data", t => {
     data_store.sim.time_slider.first_shown_time = 1.0;
     data_store.sim.time_slider.shown_time = 1.0;
 
-    t.deepEqual(data_store.get_last_data(), [5.1, 5.2]);
-    t.end();
+    assert.deepEqual(data_store.get_last_data(), [5.1, 5.2]);
+    fixtures.teardown(assert);
 });
 
-test("GrowableDataStore accepts data", t => {
+test("GrowableDataStore accepts data", assert => {
     const data_store = new GrowableDataStore(2, sim, 0);
 
     data_store.push([0.0, 1.1, 1.2]);
 
-    t.deepEqual(data_store.data, [[1.1], [1.2]]);
-    t.end();
+    assert.deepEqual(data_store.data, [[1.1], [1.2]]);
+    fixtures.teardown(assert);
 });
 
-test("GrowableDataStore accepts jagged data", t => {
+test("GrowableDataStore accepts jagged data", assert => {
     const data_store = new GrowableDataStore(2, sim, 0);
 
     data_store.push([0.0, 1.1, 1.2]);
     data_store.dims = 3;
-    t.is(data_store.dims, 3);
+    assert.is(data_store.dims, 3);
 
     data_store.push([0.1, 2.1, 2.2, 2.3]);
-    t.is(data_store.dims, 3);
-    t.deepEqual(data_store.data, [[1.1, 2.1], [1.2, 2.2], [2.3]]);
-    t.end();
+    assert.is(data_store.dims, 3);
+    assert.deepEqual(data_store.data, [[1.1, 2.1], [1.2, 2.2], [2.3]]);
+    fixtures.teardown(assert);
 });
 
-test("GrowableDataStore orders data", t => {
+test("GrowableDataStore orders data", assert => {
     const data_store = new GrowableDataStore(2, sim, 0);
 
     data_store.push([0.0, 1.1, 1.2]);
@@ -137,11 +139,11 @@ test("GrowableDataStore orders data", t => {
     data_store.push([0.5, 2.1, 2.2, 2.3]);
     data_store.push([0.1, 3.1, 3.2, 3.3]);
 
-    t.deepEqual(data_store.data, [[1.1, 3.1], [1.2, 3.2], [3.3]]);
-    t.end();
+    assert.deepEqual(data_store.data, [[1.1, 3.1], [1.2, 3.2], [3.3]]);
+    fixtures.teardown(assert);
 });
 
-test("GrowableDataStore filters data", t => {
+test("GrowableDataStore filters data", assert => {
     const data_store = new GrowableDataStore(2, sim, 0);
 
     data_store.synapse = 0.1;
@@ -155,11 +157,11 @@ test("GrowableDataStore filters data", t => {
         }
     }
 
-    t.deepEqual(data_store.data, [[3, 3, 2], [3, 3, 2], [2]]);
-    t.end();
+    assert.deepEqual(data_store.data, [[3, 3, 2], [3, 3, 2], [2]]);
+    fixtures.teardown(assert);
 });
 
-test("GrowableDataStore resets data", t => {
+test("GrowableDataStore resets data", assert => {
     const data_store = new GrowableDataStore(2, sim, 0);
 
     data_store.push([0.5, 2.1, 2.2]);
@@ -168,11 +170,11 @@ test("GrowableDataStore resets data", t => {
     data_store.push([1.5, 4.1, 4.2, 4.3]);
     data_store.reset();
 
-    t.deepEqual(data_store.data, [[], [], []]);
-    t.end();
+    assert.deepEqual(data_store.data, [[], [], []]);
+    fixtures.teardown(assert);
 });
 
-test("GrowableDataStore throws away old data", t => {
+test("GrowableDataStore throws away old data", assert => {
     const data_store = new GrowableDataStore(2, sim, 0);
 
     data_store.push([0.5, 2.1, 2.2]);
@@ -182,19 +184,19 @@ test("GrowableDataStore throws away old data", t => {
     data_store.sim.time_slider.kept_time = 2;
     data_store.sim.time_slider.last_time = 3;
     data_store.update();
-    t.is(data_store.dims, 3);
-    t.deepEqual(data_store.data, [[3.1, 4.1], [3.2, 4.2], [4.3]]);
+    assert.is(data_store.dims, 3);
+    assert.deepEqual(data_store.data, [[3.1, 4.1], [3.2, 4.2], [4.3]]);
 
     data_store.dims = 4;
     data_store.push([1.5, 5.1, 5.2, 5.3, 5.4]);
     data_store.update();
-    t.deepEqual(
+    assert.deepEqual(
         data_store.data,
         [[3.1, 4.1, 5.1], [3.2, 4.2, 5.2], [4.3, 5.3], [5.4]]);
-    t.end();
+    fixtures.teardown(assert);
 });
 
-test("GrowableDataStore gives the shown data", t => {
+test("GrowableDataStore gives the shown data", assert => {
     const data_store = new GrowableDataStore(2, sim, 0);
 
     data_store.push([0.5, 2.1, 2.2]);
@@ -206,12 +208,12 @@ test("GrowableDataStore gives the shown data", t => {
     data_store.sim.time_slider.first_shown_time = 1.0;
     data_store.sim.time_slider.shown_time = 1.0;
 
-    t.deepEqual(data_store.get_shown_data(),
+    assert.deepEqual(data_store.get_shown_data(),
                 [[3.1, 4.1], [3.2, 4.2], ["NaN", 4.3], []]);
-    t.end();
+    fixtures.teardown(assert);
 });
 
-test("GrowableDataStore gives the shown data with more dimensions", t => {
+test("GrowableDataStore gives the shown data with more dimensions", assert => {
     const data_store = new GrowableDataStore(2, sim, 0);
 
     data_store.push([0.5, 2.1, 2.2]);
@@ -224,15 +226,15 @@ test("GrowableDataStore gives the shown data with more dimensions", t => {
     data_store.sim.time_slider.first_shown_time = 1.0;
     data_store.sim.time_slider.shown_time = 1.0;
 
-    t.deepEqual(data_store.get_shown_data(),
-                [[3.1, 4.1, 5.1],
-                 [3.2, 4.2, 5.2],
-                 ["NaN", 4.3, 5.3],
-                 ["NaN", "NaN", 5.4]]);
-    t.end();
+    assert.deepEqual(data_store.get_shown_data(),
+                     [[3.1, 4.1, 5.1],
+                      [3.2, 4.2, 5.2],
+                      ["NaN", 4.3, 5.3],
+                      ["NaN", "NaN", 5.4]]);
+    fixtures.teardown(assert);
 });
 
-test("GrowableDataStore gives the last data", t => {
+test("GrowableDataStore gives the last data", assert => {
     const data_store = new GrowableDataStore(2, sim, 0);
 
     data_store.push([0.5, 2.1, 2.2]);
@@ -243,7 +245,7 @@ test("GrowableDataStore gives the last data", t => {
     data_store.sim.time_slider.first_shown_time = 1.0;
     data_store.sim.time_slider.shown_time = 1.0;
 
-    t.is(data_store.dims, 3);
-    t.deepEqual(data_store.get_last_data(), [5.1, 5.2, 5.3]);
-    t.end();
+    assert.is(data_store.dims, 3);
+    assert.deepEqual(data_store.get_last_data(), [5.1, 5.2, 5.3]);
+    fixtures.teardown(assert);
 });

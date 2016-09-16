@@ -2,17 +2,17 @@ import * as d3 from "d3";
 import * as $ from "jquery";
 
 import * as all_components from "./components/all_components";
-import Hotkeys from "./hotkeys";
+import { config } from "./config";
+import { Hotkeys } from "./hotkeys";
 import "./modal.css";
 import * as tooltips from "./tooltips";
 import * as utils from "./utils";
 
-export default class Modal {
+export class Modal {
     $body;
     $div;
     $footer;
     $title;
-    config;
     editor;
     hotkeys;
     netgraph;
@@ -21,7 +21,6 @@ export default class Modal {
     toolbar;
 
     constructor($div, editor, sim) {
-        const self = this;
         this.$div = $div;
         this.$title = this.$div.find(".modal-title").first();
         this.$footer = this.$div.find(".modal-footer").first();
@@ -29,33 +28,31 @@ export default class Modal {
         this.editor = editor;
         this.sim = sim;
         this.netgraph = this.editor.netgraph;
-        this.config = this.netgraph.config;
         this.hotkeys = new Hotkeys(this.editor, this);
 
         this.sim_was_running = false;
 
         // This listener is triggered when the modal is closed
         this.$div.on("hidden.bs.modal", function() {
-            if (self.sim_was_running) {
-                self.sim.play();
+            if (this.sim_was_running) {
+                this.sim.play();
             }
-            self.hotkeys.set_active(true);
+            this.hotkeys.set_active(true);
         });
-    };
+    }
 
     show() {
         this.hotkeys.set_active(false);
         this.sim_was_running = !this.sim.paused;
         this.$div.modal("show");
         this.sim.pause();
-    };
+    }
 
     title(title) {
         this.$title.text(title);
-    };
+    }
 
     footer(type, ok_function, cancel_function) {
-        const self = this;
         this.$footer.empty();
 
         if (type === "close") {
@@ -85,7 +82,7 @@ export default class Modal {
                                 "class='btn btn-default' " +
                                 "data-dismiss='modal'>Close</button>");
             $("#confirm_reset_button").on("click", function() {
-                self.toolbar.reset_model_layout();
+                this.toolbar.reset_model_layout();
             });
         } else if (type === "confirm_savepdf") {
             this.$footer.append(
@@ -254,7 +251,6 @@ export default class Modal {
      * Sets up the body for main configuration.
      */
     main_config() {
-        const self = this;
         this.clear_body();
 
         const $form = $("<form class='form-horizontal' id" +
@@ -331,33 +327,33 @@ export default class Modal {
         });
         $("#zoom-fonts").prop("checked", this.netgraph.zoom_fonts);
         $("#zoom-fonts").change(function() {
-            self.netgraph.zoom_fonts = $("#zoom-fonts").prop("checked");
+            this.netgraph.zoom_fonts = $("#zoom-fonts").prop("checked");
         });
 
         $("#aspect-resize").prop("checked", this.netgraph.aspect_resize);
         $("#aspect-resize").change(function() {
-            self.netgraph.aspect_resize = $("#aspect-resize").prop("checked");
+            this.netgraph.aspect_resize = $("#aspect-resize").prop("checked");
         });
 
         $("#transparent-nets").prop("checked", this.netgraph.transparent_nets);
         $("#transparent-nets").change(function() {
-            self.netgraph.transparent_nets =
+            this.netgraph.transparent_nets =
                 $("#transparent-nets").prop("checked");
         });
 
-        $("#sync-editor").prop("checked", self.editor.auto_update);
+        $("#sync-editor").prop("checked", this.editor.auto_update);
         $("#sync-editor").change(function() {
-            self.editor.auto_update = $("#sync-editor").prop("checked");
-            self.editor.update_trigger = $("#sync-editor").prop("checked");
+            this.editor.auto_update = $("#sync-editor").prop("checked");
+            this.editor.update_trigger = $("#sync-editor").prop("checked");
         });
 
         $("#config-fontsize").val(this.netgraph.font_size);
         $("#config-fontsize").bind("keyup input", function() {
-            self.netgraph.font_size = parseInt($("#config-fontsize").val(), 10);
+            this.netgraph.font_size = parseInt($("#config-fontsize").val(), 10);
         });
         $("#config-fontsize").attr("data-my_validator", "custom");
 
-        let sd = this.config.scriptdir;
+        let sd = config.scriptdir;
         if (sd === ".") {
             sd = "";
         }
@@ -367,11 +363,11 @@ export default class Modal {
             if (!newsd) {
                 newsd = ".";
             }
-            self.config.scriptdir = newsd;
+            config.scriptdir = newsd;
         });
 
         $("#config-backend").change(function() {
-            self.sim.set_backend($("#config-backend").val());
+            this.sim.set_backend($("#config-backend").val());
         });
 
         // Allow the enter key to submit

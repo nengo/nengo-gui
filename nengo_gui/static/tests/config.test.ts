@@ -1,43 +1,19 @@
 import * as test from "tape";
 
-import Config from "../config";
+import { config } from "../config";
+import * as fixtures from "./fixtures";
 
-test("Config defaults", t => {
-    const config: any = new Config();
-
-    t.equal(config.transparent_nets, false);
-    t.equal(config.aspect_resize, false);
-    t.equal(config.zoom_fonts, false);
-    t.equal(config.font_size, 100);
-    t.equal(config.scriptdir, ".");
-    t.equal(config.hide_editor, false);
-    t.equal(config.editor_width, 580);
-    t.equal(config.editor_font_size, 12);
-    t.equal(config.auto_update, true);
-    t.equal(config.console_height, 100);
-    t.end();
-});
-
-test("Config handles bool", t => {
-    const config: any = new Config();
-
-    config.hide_editor = "sorta true";
-    t.equal(config.hide_editor, false);
-    config.hide_editor =  true;
-    t.equal(config.hide_editor, true);
-    config.hide_editor = "true";
-    t.equal(config.hide_editor, true);
-    t.end();
-});
-
-test("Config handles number", t => {
-    const config: any = new Config();
-
-    config.editor_width = "10";
-    t.equal(config.editor_width, 10);
-    config.editor_width = 100;
-    t.equal(config.editor_width, 100);
-    config.editor_width = "string";
-    t.assert(isNaN(config.editor_width));
-    t.end();
+test("config defaults", assert => {
+    config.restore_defaults();
+    assert.equal(config.transparent_nets, false);
+    assert.equal(config.aspect_resize, false);
+    assert.equal(config.zoom_fonts, false);
+    assert.equal(config.font_size, 100);
+    assert.equal(config.scriptdir, ".");
+    assert.equal(config.hide_editor, false);
+    assert.equal(config.editor_width, 580);
+    assert.equal(config.editor_font_size, 12);
+    assert.equal(config.auto_update, true);
+    assert.equal(config.console_height, 100);
+    fixtures.teardown(assert);
 });

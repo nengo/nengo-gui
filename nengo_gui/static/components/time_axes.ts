@@ -13,7 +13,7 @@ import * as $ from "jquery";
 
 import Axes2D from "./2d_axes";
 
-export default class TimeAxes extends Axes2D {
+export class TimeAxes extends Axes2D {
     axis_time_end;
     axis_time_start;
     display_time;

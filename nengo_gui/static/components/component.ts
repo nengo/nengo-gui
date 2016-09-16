@@ -25,7 +25,7 @@ import * as all_components from "./all_components";
  * class prototypes (ie. Slider, Value).
  *
  */
-export default class Component {
+export class Component {
     div;
     h;
     height;
@@ -233,7 +233,7 @@ export default class Component {
      * how fast update() is called in the case that we are changing the data
      * faster than whatever processing is needed in update().
      */
-    schedule_update(event) {
+    schedule_update() {
         if (this.pending_update === false) {
             this.pending_update = true;
             window.setTimeout(() => {

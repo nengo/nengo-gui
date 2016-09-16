@@ -18,11 +18,11 @@ import * as $ from "jquery";
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
 import * as viewport from "../viewport";
-import Component from "./component";
+import { Component } from "./component";
 import "./raster.css";
-import TimeAxes from "./time_axes";
+import { TimeAxes } from "./time_axes";
 
-export default class Raster extends Component {
+export class Raster extends Component {
     axes2d;
     data_store;
     n_neurons;
@@ -31,7 +31,6 @@ export default class Raster extends Component {
 
     constructor(parent, sim, args) {
         super(parent, args);
-        const self = this;
         this.n_neurons = args.n_neurons || 1;
         this.sim = sim;
 
@@ -42,22 +41,22 @@ export default class Raster extends Component {
         this.axes2d.scale_y.domain([0, args.n_neurons]);
 
         // Call schedule_update whenever the time is adjusted in the SimControl
-        this.sim.div.addEventListener("adjust_time", function(e) {
-            self.schedule_update(null);
-        }, false);
+        this.sim.time_slider.div.addEventListener("adjust_time", e => {
+            this.schedule_update();
+        });
 
         // Call reset whenever the simulation is reset
-        this.sim.div.addEventListener("sim_reset", function(e) {
-            self.reset(null);
-        }, false);
+        this.sim.div.addEventListener("reset_sim", e => {
+            this.reset();
+        });
 
         // Create the lines on the plots
         d3.svg.line()
             .x(function(d, i) {
-                return self.axes2d.scale_x(this.data_store.times[i]);
+                return this.axes2d.scale_x(this.data_store.times[i]);
             })
             .y(function(d) {
-                return self.axes2d.scale_y(d);
+                return this.axes2d.scale_y(d);
             });
 
         this.path = this.axes2d.svg.append("g")
@@ -82,7 +81,7 @@ export default class Raster extends Component {
         const time = new Float32Array(event.data, 0, 1);
         const data = new Int16Array(event.data, 4);
         this.data_store.push([time[0], data]);
-        this.schedule_update(event);
+        this.schedule_update();
     };
 
     set_n_neurons(n_neurons) {
@@ -146,26 +145,24 @@ export default class Raster extends Component {
         this.div.style.height = height;
     };
 
-    reset(event) {
+    reset() {
         this.data_store.reset();
-        this.schedule_update(event);
-    };
+        this.schedule_update();
+    }
 
     generate_menu() {
-        const self = this;
         const items = [["Set # neurons...", function() {
-            self.set_neuron_count();
+            this.set_neuron_count();
         }]];
 
         return $.merge(items, Component.prototype.generate_menu.call(this));
     };
 
     set_neuron_count() {
-        const self = this;
         const count = this.n_neurons;
-        self.sim.modal.title("Set number of neurons...");
-        self.sim.modal.single_input_body(count, "Number of neurons");
-        self.sim.modal.footer("ok_cancel", function(e) {
+        this.sim.modal.title("Set number of neurons...");
+        this.sim.modal.single_input_body(count, "Number of neurons");
+        this.sim.modal.footer("ok_cancel", function(e) {
             let new_count = $("#singleInput").val();
             const modal = $("#myModalForm").data("bs.validator");
             modal.validate();
@@ -174,8 +171,8 @@ export default class Raster extends Component {
             }
             if (new_count !== null) {
                 new_count = parseInt(new_count, 10);
-                self.set_n_neurons(new_count);
-                self.axes2d.fit_ticks(self);
+                this.set_n_neurons(new_count);
+                this.axes2d.fit_ticks(this);
             }
             $("#OK").attr("data-dismiss", "modal");
         });
@@ -199,10 +196,10 @@ export default class Raster extends Component {
         $("#singleInput").attr(
             "data-error", "Input should be a positive integer");
 
-        self.sim.modal.show();
+        this.sim.modal.show();
         $("#OK").on("click", function() {
-            const div = $(self.div);
-            self.on_resize(div.width(), div.height());
+            const div = $(this.div);
+            this.on_resize(div.width(), div.height());
         });
     };
 }

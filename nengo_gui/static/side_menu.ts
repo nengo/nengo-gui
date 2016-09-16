@@ -7,10 +7,10 @@
 
 import * as $ from "jquery";
 
+import { config } from "./config";
 import "./side_menu.css";
 
-export default class SideMenu {
-    config;
+export class SideMenu {
     menu_open;
     menu_width;
     modal;
@@ -24,7 +24,6 @@ export default class SideMenu {
         this.sim = sim;
         this.modal = this.sim.modal;
         this.netgraph = this.modal.netgraph;
-        this.config = this.netgraph.config;
         // Menu initially closed
         this.menu_open = false;
 
@@ -172,8 +171,8 @@ export default class SideMenu {
 
         const fb = $("#filebrowser");
         fb.fileTree({
-            root: this.config.scriptdir,
-            script: "/browse?root=" + this.config.scriptdir,
+            root: config.scriptdir,
+            script: "/browse?root=" + config.scriptdir,
         }, file => {
             window.location.assign("/?filename=" + file);
         });

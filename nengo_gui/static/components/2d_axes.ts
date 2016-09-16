@@ -13,33 +13,31 @@
 import * as d3 from "d3";
 import * as $ from "jquery";
 
-export default class Axes2D {
-    ax_bottom;
-    ax_left;
-    ax_right;
-    ax_top;
-    axis_x;
-    axis_x_g;
-    axis_y;
-    axis_y_g;
-    height;
-    max_y_width;
-    min_height;
-    min_width;
-    scale_x;
-    scale_y;
-    svg;
-    tick_padding;
-    tick_size;
-    width;
+export class Axes2D {
+    ax_bottom: number;
+    ax_left: number;
+    ax_right: number;
+    ax_top: number;
+    axis_x: d3.svg.Axis;
+    axis_x_g: d3.Selection<d3.svg.Axis>;
+    axis_y: d3.svg.Axis;
+    axis_y_g: d3.Selection<d3.svg.Axis>;
+    height: number;
+    max_y_width: number = 100;
+    min_height: number;
+    min_width: number;
+    scale_x: d3.scale.Linear<number, number>;
+    scale_y: d3.scale.Linear<number, number>;
+    svg: d3.Selection<any>;
+    tick_padding: number;
+    tick_size: number;
+    width: number;
 
     constructor(parent, args) {
-        this.max_y_width = 100;
-
         // Draw the plot as an SVG
         this.svg = d3.select(parent).append("svg")
-            .attr("width", "100%")
-            .attr("height", "100%");
+            .attr("height", "100%")
+            .attr("width", "100%");
 
         // Scales for mapping x and y values to pixels
         this.scale_x = d3.scale.linear();
@@ -101,10 +99,10 @@ export default class Axes2D {
         // Adjust positions of x axis on resize
         this.axis_x
             .tickPadding(this.tick_padding)
-            .outerTickSize(this.tick_size, this.tick_size);
+            .outerTickSize(this.tick_size);
         this.axis_y
             .tickPadding(this.tick_padding)
-            .outerTickSize(this.tick_size, this.tick_size);
+            .outerTickSize(this.tick_size);
 
         this.axis_x_g.attr("transform", "translate(0," + this.ax_bottom + ")");
         this.axis_x_g.call(this.axis_x);

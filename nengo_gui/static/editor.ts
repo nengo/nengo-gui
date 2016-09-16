@@ -14,15 +14,15 @@ import "brace/mode/python";
 import * as interact from "interact.js";
 import * as $ from "jquery";
 
+import { config } from "./config";
 import "./editor.css";
 import * as utils from "./utils";
 import * as viewport from "./viewport";
 
 const Range = ace.acequire("ace/range").Range;
 
-export default class Editor {
+export class Editor {
     auto_update;
-    config;
     console;
     console_error;
     console_height;
@@ -41,10 +41,7 @@ export default class Editor {
     ws;
 
     constructor(uid, netgraph) {
-        const self = this;
-
         this.netgraph = netgraph;
-        this.config = this.netgraph.config;
 
         if (uid[0] === "<") {
             console.error("invalid uid for Editor: " + uid);
@@ -54,7 +51,7 @@ export default class Editor {
 
         this.ws = utils.create_websocket(uid);
         this.ws.onmessage = function(event) {
-            self.on_message(event);
+            this.on_message(event);
         };
 
         this.current_code = "";
@@ -69,7 +66,7 @@ export default class Editor {
         this.console = document.createElement("div");
         this.console.id = "console";
         $("#rightpane").append(this.console);
-        this.console_height = this.config.console_height;
+        this.console_height = config.console_height;
         this.console_stdout = document.createElement("pre");
         this.console_error = document.createElement("pre");
         this.console_stdout.id = "console_stdout";
@@ -86,37 +83,37 @@ export default class Editor {
 
         // Setup the button to toggle the code editor
         $("#Toggle_ace").on("click", function() {
-            self.toggle_shown();
+            this.toggle_shown();
         });
         $("#Save_file").on("click", function() {
-            self.save_file();
+            this.save_file();
         });
         $("#Font_increase").on("click", function() {
-            self.font_size += 1;
+            this.font_size += 1;
         });
         $("#Font_decrease").on("click", function() {
-            self.font_size -= 1;
+            this.font_size -= 1;
         });
 
         this.schedule_updates();
 
         Object.defineProperty(this, "width", {
             get: function() {
-                return self.config.editor_width;
+                return config.editor_width;
             },
             set: function(val) {
                 val = Math.max(Math.min(val, this.max_width), this.min_width);
                 $("#rightpane").width(val);
-                self.config.editor_width = val;
+                config.editor_width = val;
             },
         });
 
         Object.defineProperty(this, "hidden", {
             get: function() {
-                return self.config.hide_editor;
+                return config.hide_editor;
             },
             set: function(val) {
-                self.config.hide_editor = val;
+                config.hide_editor = val;
                 if (val) {
                     this.hide_editor();
                 } else {
@@ -127,41 +124,41 @@ export default class Editor {
 
         Object.defineProperty(this, "font_size", {
             get: function() {
-                return self.config.editor_font_size;
+                return config.editor_font_size;
             },
             set: function(val) {
                 val = Math.max(val, 6);
                 this.editor.setFontSize(val);
-                self.config.editor_font_size = val;
+                config.editor_font_size = val;
             },
         });
 
         // Automatically update the model based on the text
         Object.defineProperty(this, "auto_update", {
             get: function() {
-                return self.config.auto_update;
+                return config.auto_update;
             },
             set: function(val) {
                 this.update_trigger = val;
-                self.config.auto_update = val;
+                config.auto_update = val;
             },
         });
 
-        this.width = this.config.editor_width;
-        this.hidden = this.config.hide_editor;
-        this.font_size = this.config.editor_font_size;
-        this.auto_update = this.config.auto_update;
+        this.width = config.editor_width;
+        this.hidden = config.hide_editor;
+        this.font_size = config.editor_font_size;
+        this.auto_update = config.auto_update;
         this.redraw();
 
         $(window).on("resize", function() {
-            self.on_resize();
+            this.on_resize();
         });
         interact("#editor")
             .resizable({
                 edges: { bottom: false, left: true, right: false, top: false },
             }).on("resizemove", function(event) {
-                self.width -= event.deltaRect.left;
-                self.redraw();
+                this.width -= event.deltaRect.left;
+                this.redraw();
             });
 
         interact("#console")
@@ -171,15 +168,15 @@ export default class Editor {
                 const max = $("#rightpane").height() - 40;
                 const min = 20;
 
-                self.console_height -= event.deltaRect.top;
+                this.console_height -= event.deltaRect.top;
 
-                self.console_height = utils.clip(self.console_height, min, max);
-                $("#console").height(self.console_height);
+                this.console_height = utils.clip(this.console_height, min, max);
+                $("#console").height(this.console_height);
 
-                self.width -= event.deltaRect.left;
-                self.redraw();
+                this.width -= event.deltaRect.left;
+                this.redraw();
             }).on("resizeend", function(event) {
-                self.config.console_height = self.console_height;
+                config.console_height = this.console_height;
             });
     };
 
@@ -187,18 +184,17 @@ export default class Editor {
      * Send changes to the code to server every 100ms.
      */
     schedule_updates() {
-        const self = this;
         setInterval(function() {
-            const editor_code = self.editor.getValue();
-            if (editor_code !== self.current_code) {
-                if (self.update_trigger) {
-                    self.update_trigger = self.auto_update;
-                    self.ws.send(JSON.stringify({
+            const editor_code = this.editor.getValue();
+            if (editor_code !== this.current_code) {
+                if (this.update_trigger) {
+                    this.update_trigger = this.auto_update;
+                    this.ws.send(JSON.stringify({
                         code: editor_code,
                         save: false,
                     }));
-                    self.current_code = editor_code;
-                    self.enable_save();
+                    this.current_code = editor_code;
+                    this.enable_save();
                     $("#Sync_editor_button").addClass("disabled");
                 } else {
                     // Visual indication that the code is different

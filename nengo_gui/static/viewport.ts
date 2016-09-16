@@ -10,6 +10,10 @@ let width = 0;
 let $main;
 let netgraph;
 
+class Viewport {
+
+}
+
 export function set_netgraph(new_netgraph) {
     netgraph = new_netgraph;
     $main = $("#main");
@@ -17,7 +21,7 @@ export function set_netgraph(new_netgraph) {
     width = $main.width();
     height = $main.height();
     window.addEventListener("resize", on_resize);
-};
+}
 
 export function set_position(new_x, new_y) {
     x = new_x;
@@ -33,7 +37,7 @@ export function set_scale(new_scale) {
 export function redraw() {
     all_components.on_resize(scale * width * 2, height * scale * 2);
     all_components.redraw();
-};
+}
 
 export function on_resize() {
     const old_width = width;
@@ -47,7 +51,7 @@ export function on_resize() {
     }
 
     redraw();
-};
+}
 
 export function from_screen_x(screen_x): number {
     return screen_x / (width * scale);

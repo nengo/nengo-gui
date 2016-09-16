@@ -11,30 +11,30 @@
 import * as interact from "interact.js";
 import * as $ from "jquery";
 
+import { config } from "./config";
+import { Editor } from "./editor";
 import * as menu from "./menu";
-import "./top_toolbar.css";
+import { Modal } from "./modal";
+import { SimControl } from "./sim_control";
+import "./toolbar.css";
 import * as utils from "./utils";
 
-export default class Toolbar {
-    config;
-    editor;
+export class Toolbar {
+    editor: Editor;
     hotkeys;
     menu;
-    modal;
+    modal: Modal;
     netgraph;
-    sim;
+    sim: SimControl;
     toolbar;
 
-    constructor(filename, sim) {
-        console.assert(typeof filename === "string");
-
+    constructor(filename: string, sim: SimControl) {
         this.sim = sim;
         this.modal = this.sim.modal;
         this.modal.toolbar = this; // TODO: remove this hack
         this.netgraph = this.modal.netgraph;
         this.hotkeys = this.modal.hotkeys;
         this.editor = this.modal.editor;
-        this.config = this.netgraph.config;
 
         $("#Reset_layout_button")[0].addEventListener("click", () => {
             this.modal.title(
@@ -116,7 +116,7 @@ export default class Toolbar {
             aspect_resize: this.netgraph.aspect_resize,
             auto_update: this.editor.auto_update,
             font_size: this.netgraph.font_size,
-            scriptdir: this.config.scriptdir,
+            scriptdir: config.scriptdir,
             transparent_nets: this.netgraph.transparent_nets,
             zoom: this.netgraph.zoom_fonts,
         };
@@ -136,7 +136,7 @@ export default class Toolbar {
             this.netgraph.transparent_nets = original.transparent_nets;
             this.netgraph.aspect_resize = original.aspect_resize;
             this.editor.auto_update = original.auto_update;
-            this.config.scriptdir = original.scriptdir;
+            config.scriptdir = original.scriptdir;
             $("#cancel-button").attr("data-dismiss", "modal");
         });
 

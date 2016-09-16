@@ -10,7 +10,7 @@
  * @param {string[]} info.post - uid to connect to and its parents
  */
 
-export default class NetGraphConnection {
+export class NetGraphConnection {
     g;
     g_conns;
     line;

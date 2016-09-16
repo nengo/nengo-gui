@@ -17,7 +17,7 @@ import * as $ from "jquery";
 import * as menu from "../menu";
 import * as viewport from "../viewport";
 
-export default class NetGraphItem {
+export class NetGraphItem {
     area;
     aspect;
     child_connections;

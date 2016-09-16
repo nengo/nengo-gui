@@ -16,10 +16,10 @@ import * as $ from "jquery";
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
 import * as viewport from "../viewport";
-import Component from "./component";
+import { Component } from "./component";
 import "./pointer.css";
 
-export default class Pointer extends Component {
+export class Pointer extends Component {
     data_store;
     fixed_value;
     mouse_down_time;
@@ -30,7 +30,6 @@ export default class Pointer extends Component {
 
     constructor(parent, sim, args) {
         super(parent, args);
-        const self = this;
 
         this.sim = sim;
         this.pointer_status = false;
@@ -49,14 +48,14 @@ export default class Pointer extends Component {
         this.data_store = new DataStore(1, this.sim, 0);
 
         // Call schedule_update whenever the time is adjusted in the SimControl
-        this.sim.div.addEventListener("adjust_time", function(e) {
-            self.schedule_update(null);
-        }, false);
+        this.sim.time_slider.div.addEventListener("adjust_time", e => {
+            this.schedule_update();
+        });
 
         // Call reset whenever the simulation is reset
-        this.sim.div.addEventListener("sim_reset", function(e) {
-            self.reset(null);
-        }, false);
+        this.sim.div.addEventListener("reset_sim", e => {
+            this.reset();
+        });
 
         this.on_resize(
             viewport.scale_width(this.w), viewport.scale_height(this.h));
@@ -67,37 +66,36 @@ export default class Pointer extends Component {
             // For some reason "tap" doesn't seem to work here while the
             // simulation is running, so I'm doing the timing myself
             const now = new Date().getTime() / 1000;
-            if (now - self.mouse_down_time > 0.1) {
+            if (now - this.mouse_down_time > 0.1) {
                 return;
             }
             if (event.button === 0) {
-                if (self.menu.visible) {
-                    self.menu.hide();
+                if (this.menu.visible) {
+                    this.menu.hide();
                 } else {
-                    self.menu.show(event.clientX, event.clientY,
-                                   self.generate_menu());
+                    this.menu.show(event.clientX, event.clientY,
+                                   this.generate_menu());
                 }
             }
         });
 
         this.div.addEventListener("mousedown", function(event) {
-            self.mouse_down_time = new Date().getTime() / 1000;
+            this.mouse_down_time = new Date().getTime() / 1000;
         });
     };
 
     generate_menu() {
-        const self = this;
         const items = [];
         items.push(["Set value...", function() {
-            self.set_value();
+            this.set_value();
         }]);
         if (this.show_pairs) {
             items.push(["Hide pairs", function() {
-                self.set_show_pairs(false);
+                this.set_show_pairs(false);
             }]);
         } else {
             items.push(["Show pairs", function() {
-                self.set_show_pairs(true);
+                this.set_show_pairs(true);
             }]);
         }
 
@@ -114,10 +112,9 @@ export default class Pointer extends Component {
     };
 
     set_value() {
-        const self = this;
-        self.sim.modal.title("Enter a Semantic Pointer value...");
-        self.sim.modal.single_input_body("Pointer", "New value");
-        self.sim.modal.footer("ok_cancel", function(e) {
+        this.sim.modal.title("Enter a Semantic Pointer value...");
+        this.sim.modal.single_input_body("Pointer", "New value");
+        this.sim.modal.footer("ok_cancel", function(e) {
             let value = $("#singleInput").val();
             const modal = $("#myModalForm").data("bs.validator");
 
@@ -128,8 +125,8 @@ export default class Pointer extends Component {
             if ((value === null) || (value === "")) {
                 value = ":empty:";
             }
-            self.fixed_value = value;
-            self.ws.send(value);
+            this.fixed_value = value;
+            this.ws.send(value);
             $("#OK").attr("data-dismiss", "modal");
         });
         $("#myModalForm").validator({
@@ -139,8 +136,8 @@ export default class Pointer extends Component {
                     if (ptr === null) {
                         ptr = "";
                     }
-                    self.ws.send(":check only:" + ptr);
-                    return self.pointer_status;
+                    this.ws.send(":check only:" + ptr);
+                    return this.pointer_status;
                 },
             },
         });
@@ -154,7 +151,7 @@ export default class Pointer extends Component {
                 "(A+~(B*C)*2)*0.5 would be a valid semantic pointer " +
                 "expression.");
 
-        self.sim.modal.show();
+        this.sim.modal.show();
     };
 
     /**
@@ -175,7 +172,7 @@ export default class Pointer extends Component {
 
         const items = data[1].split(";");
         this.data_store.push([time, items]);
-        this.schedule_update(null);
+        this.schedule_update();
     };
 
     /**
@@ -259,8 +256,8 @@ export default class Pointer extends Component {
         Component.prototype.update_layout.call(this, config);
     };
 
-    reset(event) {
+    reset() {
         this.data_store.reset();
-        this.schedule_update(event);
+        this.schedule_update();
     };
 }

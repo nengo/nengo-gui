@@ -14,9 +14,9 @@ import * as d3 from "d3";
 
 import { DataStore } from "../datastore";
 import * as viewport from "../viewport";
-import Component from "./component";
+import { Component } from "./component";
 
-export default class Image extends Component {
+export class Image extends Component {
     canvas;
     data_store;
     display_time;
@@ -30,18 +30,17 @@ export default class Image extends Component {
     constructor(parent, sim, args) {
         super(parent, args);
 
-        const self = this;
-        self.sim = sim;
-        self.display_time = args.display_time;
-        self.pixels_x = args.pixels_x;
-        self.pixels_y = args.pixels_y;
-        self.n_pixels = self.pixels_x * self.pixels_y;
+        this.sim = sim;
+        this.display_time = args.display_time;
+        this.pixels_x = args.pixels_x;
+        this.pixels_y = args.pixels_y;
+        this.n_pixels = this.pixels_x * this.pixels_y;
 
         // For storing the accumulated data
-        self.data_store = new DataStore(self.n_pixels, self.sim, 0);
+        this.data_store = new DataStore(this.n_pixels, this.sim, 0);
 
         // Draw the plot as an SVG
-        self.svg = d3.select(self.div).append("svg")
+        this.svg = d3.select(this.div).append("svg")
             .attr("width", "100%")
             .attr("height", "100%")
             .attr("style", [
@@ -49,12 +48,12 @@ export default class Image extends Component {
             ].join(""));
 
         // Call schedule_update whenever the time is adjusted in the SimControl
-        self.sim.div.addEventListener("adjust_time", function(e) {
-            self.schedule_update(null);
-        }, false);
+        this.sim.time_slider.div.addEventListener("adjust_time", e => {
+            this.schedule_update();
+        });
 
         // Create the image
-        self.image = self.svg.append("image")
+        this.image = this.svg.append("image")
             .attr("x", 0)
             .attr("y", 0)
             .attr("width", "100%")
@@ -65,9 +64,9 @@ export default class Image extends Component {
                 "image-rendering: pixelated;",
             ].join(""));
 
-        self.canvas = document.createElement("CANVAS");
-        self.canvas.width = self.pixels_x;
-        self.canvas.height = self.pixels_y;
+        this.canvas = document.createElement("CANVAS");
+        this.canvas.width = this.pixels_x;
+        this.canvas.height = this.pixels_y;
 
         this.on_resize(
             viewport.scale_width(this.w), viewport.scale_height(this.h));
@@ -87,56 +86,53 @@ export default class Image extends Component {
             data[0] = time_data[0];
             this.data_store.push(data);
         }
-        this.schedule_update(event);
+        this.schedule_update();
     };
 
     /**
      * Redraw the lines and axis due to changed data
      */
     update() {
-        const self = this;
-
         // Let the data store clear out old values
-        self.data_store.update();
+        this.data_store.update();
 
-        const data = self.data_store.get_last_data();
-        const ctx = self.canvas.getContext("2d");
-        const imgData = ctx.getImageData(0, 0, self.pixels_x, self.pixels_y);
-        for (let i = 0; i < self.n_pixels; i++) {
+        const data = this.data_store.get_last_data();
+        const ctx = this.canvas.getContext("2d");
+        const imgData = ctx.getImageData(0, 0, this.pixels_x, this.pixels_y);
+        for (let i = 0; i < this.n_pixels; i++) {
             imgData.data[4 * i + 0] = data[i];
             imgData.data[4 * i + 1] = data[i];
             imgData.data[4 * i + 2] = data[i];
             imgData.data[4 * i + 3] = 255;
         }
         ctx.putImageData(imgData, 0, 0);
-        const dataURL = self.canvas.toDataURL("image/png");
+        const dataURL = this.canvas.toDataURL("image/png");
 
-        self.image.attr("xlink:href", dataURL);
+        this.image.attr("xlink:href", dataURL);
     };
 
     /**
      * Adjust the graph layout due to changed size
      */
     on_resize(width, height) {
-        const self = this;
-        if (width < self.min_width) {
-            width = self.min_width;
+        if (width < this.min_width) {
+            width = this.min_width;
         }
-        if (height < self.min_height) {
-            height = self.min_height;
+        if (height < this.min_height) {
+            height = this.min_height;
         }
 
-        self.svg
+        this.svg
             .attr("width", width)
             .attr("height", height);
 
-        self.update();
+        this.update();
 
-        self.label.style.width = width;
+        this.label.style.width = width;
 
-        self.width = width;
-        self.height = height;
-        self.div.style.width = width;
-        self.div.style.height = height;
+        this.width = width;
+        this.height = height;
+        this.div.style.width = width;
+        this.div.style.height = height;
     };
 }

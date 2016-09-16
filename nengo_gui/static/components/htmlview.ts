@@ -11,16 +11,15 @@
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
 import * as viewport from "../viewport";
-import Component from "./component";
+import { Component } from "./component";
 
-export default class HTMLView extends Component {
+export class HTMLView extends Component {
     data_store;
     pdiv;
     sim;
 
     constructor(parent, sim, args) {
         super(parent, args);
-        const self = this;
 
         this.sim = sim;
 
@@ -36,9 +35,9 @@ export default class HTMLView extends Component {
         this.data_store = new DataStore(1, this.sim, 0);
 
         // Call schedule_update whenever the time is adjusted in the SimControl
-        this.sim.div.addEventListener("adjust_time", function(e) {
-            self.schedule_update(null);
-        }, false);
+        this.sim.time_slider.div.addEventListener("adjust_time", e => {
+            this.schedule_update();
+        });
 
         this.on_resize(
             viewport.scale_width(this.w), viewport.scale_height(this.h));

@@ -12,7 +12,7 @@
 
 import Axes2D from "./2d_axes";
 
-export default class XYAxes extends Axes2D {
+export class XYAxes extends Axes2D {
     max_val;
     min_val;
 

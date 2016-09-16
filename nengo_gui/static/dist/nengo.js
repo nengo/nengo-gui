@@ -28554,20 +28554,19 @@ var Nengo =
 	     * Handler for resizing the full SVG.
 	     */
 	    NetGraph.prototype.on_resize = function (event) {
+	        var _this = this;
 	        var width = $(this.svg).width();
 	        var height = $(this.svg).height();
 	        if (this.aspect_resize) {
-	            for (var key in this.svg_objects) {
-	                if (this.svg_objects.hasOwnProperty(key)) {
-	                    var item = this.svg_objects[key];
-	                    if (item.depth === 1) {
-	                        var new_width = item.get_screen_width() / this.scale;
-	                        var new_height = item.get_screen_height() / this.scale;
-	                        item.width = new_width / (2 * width);
-	                        item.height = new_height / (2 * height);
-	                    }
+	            Object.keys(this.svg_objects).forEach(function (key) {
+	                var item = _this.svg_objects[key];
+	                if (item.depth === 1) {
+	                    var new_width = viewport.scale_width(item.w) / _this.scale;
+	                    var new_height = viewport.scale_height(item.h) / _this.scale;
+	                    item.width = new_width / (2 * width);
+	                    item.height = new_height / (2 * height);
 	                }
-	            }
+	            });
 	        }
 	        this.width = width;
 	        this.height = height;

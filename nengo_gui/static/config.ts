@@ -5,77 +5,149 @@
  * it only implements what Config uses. The values set in this object will
  * only exist for the current session and will not persist across sessions.
  */
-class MockLocalStorage {
-    items: any;
+class MockLocalStorage implements Storage {
 
-    constructor() {
+    [key: string]: any;
+    items: {[key: string]: string} = {};
+
+    get length(): number {
+        return Object.keys(this.items).length;
+    }
+
+    clear() {
         this.items = {};
     }
 
-    getItem(key: string) {
-        return this.items[key];
+    getItem(name: string): string {
+        return this.items[name];
     }
 
-    removeItem(key: string) {
-        delete this.items[key];
+    key(index: number) {
+        return Object.keys(this.items)[index];
     }
 
-    setItem(key: string, val: any) {
-        this.items[key] = String(val);
+    removeItem(name: string): void {
+        delete this.items[name];
+    }
+
+    setItem(name: string, val: any): void {
+        this.items[name] = String(val);
     }
 }
 
-/* tslint:disable:no-typeof-undefined */
-
-export default class Config {
-    localStorage;
+class Config {
+    storage: Storage;
 
     constructor() {
         if (typeof localStorage === "undefined" || localStorage === null) {
-            this.localStorage = new MockLocalStorage();
+            this.storage = new MockLocalStorage();
         } else {
-            this.localStorage = localStorage;
+            this.storage = localStorage;
         }
+    }
 
-        const define_option = (key, default_val) => {
-            const typ = typeof(default_val);
-            Object.defineProperty(this, key, {
-                enumerable: true,
-                get: () => {
-                    const val =
-                        this.localStorage.getItem("ng." + key) || default_val;
-                    if (typ === "boolean") {
-                        return val === "true" || val === true;
-                    } else if (typ === "number") {
-                        return Number(val);
-                    } else {
-                        return val;
-                    }
-                },
-                set: val => {
-                    return this.localStorage.setItem("ng." + key, val);
-                },
-            });
-        };
+    get aspect_resize(): boolean {
+        return this.get_bool("aspect_resize", false);
+    }
 
-        // General options accessible through Configuration Options
-        define_option("transparent_nets", false);
-        define_option("aspect_resize", false);
-        define_option("zoom_fonts", false);
-        define_option("font_size", 100);
-        define_option("scriptdir", ".");
+    set aspect_resize(val: boolean) {
+        this.set_any("aspect_resize", val);
+    }
 
-        // Editor options
-        define_option("hide_editor", false);
-        define_option("editor_width", 580);
-        define_option("editor_font_size", 12);
-        define_option("auto_update", true);
-        define_option("console_height", 100);
+    get auto_update(): boolean {
+        return this.get_bool("auto_update", true);
+    }
+
+    set auto_update(val: boolean) {
+        this.set_any("auto_update", val);
+    }
+
+    get console_height(): number {
+        return this.get_number("console_height", 100);
+    }
+
+    set console_height(val: number) {
+        this.set_any("console_height", val);
+    }
+
+    get editor_font_size(): number {
+        return this.get_number("editor_font_size", 12);
+    }
+
+    set editor_font_size(val: number) {
+        this.set_any("editor_font_size", val);
+    }
+
+    get editor_width(): number {
+        return this.get_number("editor_width", 580);
+    }
+
+    set editor_width(val: number) {
+        this.set_any("editor_width", val);
+    }
+
+    get font_size(): number {
+        return this.get_number("font_size", 100);
+    }
+
+    set font_size(val: number) {
+        this.set_any("font_size", val);
+    }
+
+    get hide_editor(): boolean {
+        return this.get_bool("hide_editor", false);
+    }
+
+    set hide_editor(val: boolean) {
+        this.set_any("hide_editor", val);
+    }
+
+    get scriptdir(): string {
+        return this.get_string("scriptdir", ".");
+    }
+
+    set scriptdir(val: string) {
+        this.set_any("scriptdir", val);
+    }
+
+    get transparent_nets(): boolean {
+        return this.get_bool("transparent_nets", false);
+    }
+
+    set transparent_nets(val: boolean) {
+        this.set_any("transparent_nets", val);
+    }
+
+    get zoom_fonts(): boolean {
+        return this.get_bool("zoom_fonts", false);
+    }
+
+    set zoom_fonts(val: boolean) {
+        this.set_any("zoom_fonts", val);
     }
 
     restore_defaults() {
         Object.keys(this).forEach(option => {
-            this.localStorage.removeItem("ng." + option);
+            this.storage.removeItem("ng." + option);
         });
     }
+
+    private get_bool(key: string, default_val: boolean = null) {
+        const val = this.get_string(key) || default_val;
+        return val === "true" || val === true;
+    }
+
+    private get_number(key: string, default_val: number = null) {
+        return Number(this.get_string(key) || default_val);
+    }
+
+    private get_string(key: string, default_val: string = null) {
+        return this.storage.getItem("ng." + key) || default_val;
+    }
+
+    private set_any(key: string, val: any) {
+        this.storage.setItem("ng." + key, val);
+    }
 }
+
+export const config = new Config();

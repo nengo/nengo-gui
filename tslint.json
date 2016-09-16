@@ -49,7 +49,6 @@
     "no-string-based-set-immediate": true,
     "no-string-based-set-interval": true,
     "no-string-based-set-timeout": true,
-    "no-typeof-undefined": true,
     "no-unnecessary-bind": true,
     "no-unnecessary-field-initialization": true,
     "no-unnecessary-local-variable": true,

@@ -17,7 +17,7 @@ import Component from "./component";
 import "./spa_similarity.css";
 import Value from "./value";
 
-export default class SpaSimilarity extends Value {
+export class SpaSimilarity extends Value {
     legend_svg;
     synapse;
     show_pairs;

@@ -17,11 +17,11 @@ import * as $ from "jquery";
 import { DataStore } from "../datastore";
 import * as menu from "../menu";
 import * as viewport from "../viewport";
-import Component from "./component";
+import { Component } from "./component";
 import "./slider.css";
-import SliderControl from "./slidercontrol";
+import { SliderControl } from "./slidercontrol";
 
-export default class Slider extends Component {
+export class Slider extends Component {
     ax_top;
     border_size;
     data_store;
@@ -38,7 +38,6 @@ export default class Slider extends Component {
 
     constructor(parent, sim, args) {
         super(parent, args);
-        const self = this;
         this.sim = sim;
 
         // Check if user is filling in a number into a slider
@@ -80,12 +79,12 @@ export default class Slider extends Component {
 
             slider.on("change", function(event) {
                 event.target.fixed = true;
-                self.send_value(event.target.index, event.value);
+                this.send_value(event.target.index, event.value);
             }).on("changestart", function(event) {
                 menu.hide_any();
-                for (let i = 0; i < self.sliders.length; i++) {
-                    if (self.sliders[i] !== event.target) {
-                        self.sliders[i].deactivate_type_mode();
+                for (let i = 0; i < this.sliders.length; i++) {
+                    if (this.sliders[i] !== event.target) {
+                        this.sliders[i].deactivate_type_mode();
                     }
                 }
             });
@@ -95,13 +94,13 @@ export default class Slider extends Component {
         }
 
         // Call schedule_update whenever the time is adjusted in the SimControl
-        this.sim.div.addEventListener("adjust_time", function(e) {
-            self.schedule_update(e);
-        }, false);
+        this.sim.time_slider.div.addEventListener("adjust_time", e => {
+            this.schedule_update();
+        });
 
-        this.sim.div.addEventListener("sim_reset", function(e) {
-            self.on_sim_reset(e);
-        }, false);
+        this.sim.div.addEventListener("reset_sim", e => {
+            this.on_reset_sim();
+        });
 
         this.on_resize(
             viewport.scale_width(this.w), viewport.scale_height(this.h));
@@ -128,7 +127,7 @@ export default class Slider extends Component {
         this.sim.time_slider.jump_to_end();
     };
 
-    on_sim_reset(event) {
+    on_reset_sim() {
         // Release slider position and reset it
         for (let i = 0; i < this.sliders.length; i++) {
             this.notify("" + i + ",reset");
@@ -187,16 +186,15 @@ export default class Slider extends Component {
     };
 
     generate_menu() {
-        const self = this;
         const items = [
             ["Set range...", function() {
-                self.set_range();
+                this.set_range();
             }],
             ["Set value...", function() {
-                self.user_value();
+                this.user_value();
             }],
             ["Reset value", function() {
-                self.user_reset_value();
+                this.user_reset_value();
             }],
         ];
 
@@ -209,7 +207,6 @@ export default class Slider extends Component {
      * Report an event back to the server.
      */
     notify(info) {
-        const self = this;
         this.notify_msgs.push(info);
 
         // Only send one message at a time
@@ -217,7 +214,7 @@ export default class Slider extends Component {
         // another message, rather than just waiting 1ms....
         if (this.notify_msgs.length === 1) {
             window.setTimeout(function() {
-                self.send_notify_msg();
+                this.send_notify_msg();
             }, 50);
         }
     };
@@ -228,12 +225,11 @@ export default class Slider extends Component {
      * Also schedule the next message to be sent, if any.
      */
     send_notify_msg() {
-        const self = this;
         const msg = this.notify_msgs[0];
         this.ws.send(msg);
         if (this.notify_msgs.length > 1) {
             window.setTimeout(function() {
-                self.send_notify_msg();
+                this.send_notify_msg();
             }, 50);
         }
         this.notify_msgs.splice(0, 1);
@@ -255,8 +251,6 @@ export default class Slider extends Component {
     };
 
     user_value() {
-        const self = this;
-
         // First build the prompt string
         let prompt_string = "";
         for (let i = 0; i < this.sliders.length; i++) {
@@ -265,9 +259,9 @@ export default class Slider extends Component {
                 prompt_string = prompt_string + ", ";
             }
         }
-        self.sim.modal.title("Set slider value(s)...");
-        self.sim.modal.single_input_body(prompt_string, "New value(s)");
-        self.sim.modal.footer("ok_cancel", function(e) {
+        this.sim.modal.title("Set slider value(s)...");
+        this.sim.modal.single_input_body(prompt_string, "New value(s)");
+        this.sim.modal.footer("ok_cancel", function(e) {
             let new_value = $("#singleInput").val();
             const modal = $("#myModalForm").data("bs.validator");
 
@@ -275,16 +269,16 @@ export default class Slider extends Component {
             if (modal.hasErrors() || modal.isIncomplete()) {
                 return;
             }
-            self.immediate_notify = false;
+            this.immediate_notify = false;
             if (new_value !== null) {
                 new_value = new_value.split(",");
                 // Update the sliders one at a time
-                for (let i = 0; i < self.sliders.length; i++) {
-                    self.sliders[i].fixed = true;
-                    self.sliders[i].set_value(parseFloat(new_value[i]));
+                for (let i = 0; i < this.sliders.length; i++) {
+                    this.sliders[i].fixed = true;
+                    this.sliders[i].set_value(parseFloat(new_value[i]));
                 }
             }
-            self.immediate_notify = true;
+            this.immediate_notify = true;
             $("#OK").attr("data-dismiss", "modal");
         });
 
@@ -292,7 +286,7 @@ export default class Slider extends Component {
             custom: {
                 my_validator: function($item) {
                     const nums = $item.val().split(",");
-                    if (nums.length !== self.sliders.length) {
+                    if (nums.length !== this.sliders.length) {
                         return false;
                     }
                     for (let i = 0; i < nums.length; i++) {
@@ -307,7 +301,7 @@ export default class Slider extends Component {
 
         $("#singleInput").attr("data-error", "Input should be one " +
                                "comma-separated numerical value for each slider.");
-        self.sim.modal.show();
+        this.sim.modal.show();
     };
 
     user_reset_value() {
@@ -321,10 +315,9 @@ export default class Slider extends Component {
 
     set_range() {
         const range = this.sliders[0].scale.domain();
-        const self = this;
-        self.sim.modal.title("Set slider range...");
-        self.sim.modal.single_input_body([range[1], range[0]], "New range");
-        self.sim.modal.footer("ok_cancel", function(e) {
+        this.sim.modal.title("Set slider range...");
+        this.sim.modal.single_input_body([range[1], range[0]], "New range");
+        this.sim.modal.footer("ok_cancel", function(e) {
             let new_range = $("#singleInput").val();
             const modal = $("#myModalForm").data("bs.validator");
 
@@ -336,10 +329,10 @@ export default class Slider extends Component {
                 new_range = new_range.split(",");
                 const min = parseFloat(new_range[0]);
                 const max = parseFloat(new_range[1]);
-                for (let i = 0; i < self.sliders.length; i++) {
-                    self.sliders[i].set_range(min, max);
+                for (let i = 0; i < this.sliders.length; i++) {
+                    this.sliders[i].set_range(min, max);
                 }
-                self.save_layout();
+                this.save_layout();
             }
             $("#OK").attr("data-dismiss", "modal");
         });
@@ -361,7 +354,7 @@ export default class Slider extends Component {
 
         $("#singleInput").attr("data-error", "Input should be in the " +
                                "form '<min>,<max>'.");
-        self.sim.modal.show();
+        this.sim.modal.show();
     };
 
     layout_info() {

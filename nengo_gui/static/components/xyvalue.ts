@@ -21,11 +21,11 @@ import * as $ from "jquery";
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
 import * as viewport from "../viewport";
-import Component from "./component";
-import XYAxes from "./xy_axes";
+import { Component } from "./component";
+import { XYAxes } from "./xy_axes";
 import "./xyvalue.css";
 
-export default class XYValue extends Component {
+export class XYValue extends Component {
     axes2d;
     data_store;
     index_x;
@@ -39,7 +39,6 @@ export default class XYValue extends Component {
 
     constructor(parent, sim, args) {
         super(parent, args);
-        const self = this;
 
         this.n_lines = args.n_lines || 1;
         this.sim = sim;
@@ -54,22 +53,22 @@ export default class XYValue extends Component {
         this.index_y = args.index_y;
 
         // Call schedule_update whenever the time is adjusted in the SimControl
-        this.sim.div.addEventListener("adjust_time", function(e) {
-            self.schedule_update(e);
-        }, false);
+        this.sim.time_slider.div.addEventListener("adjust_time", e => {
+            this.schedule_update();
+        });
 
         // Call reset whenever the simulation is reset
-        this.sim.div.addEventListener("sim_reset", function(e) {
-            self.reset(e);
-        }, false);
+        this.sim.div.addEventListener("reset_sim", e => {
+            this.reset();
+        });
 
         // Create the lines on the plots
         d3.svg.line()
             .x(function(d, i) {
-                return self.axes2d
-                    .scale_x(self.data_store.data[this.index_x][i]);
+                return this.axes2d
+                    .scale_x(this.data_store.data[this.index_x][i]);
             }).y(function(d) {
-                return self.axes2d.scale_y(d);
+                return this.axes2d.scale_y(d);
             });
         this.path = this.axes2d.svg.append("g")
             .selectAll("path")
@@ -99,41 +98,39 @@ export default class XYValue extends Component {
     on_message(event) {
         const data = new Float32Array(event.data);
         this.data_store.push(data);
-        this.schedule_update(event);
+        this.schedule_update();
     };
 
     /**
      * Redraw the lines and axis due to changed data.
      */
     update() {
-        const self = this;
-
         // Let the data store clear out old values
         this.data_store.update();
 
         // Update the lines if there is data with valid dimensions
-        if (self.index_x < self.n_lines && self.index_y < self.n_lines) {
+        if (this.index_x < this.n_lines && this.index_y < this.n_lines) {
             const shown_data = this.data_store.get_shown_data();
 
             // Update the lines
             const line = d3.svg.line()
                 .x(function(d, i) {
-                    return self.axes2d.scale_x(shown_data[self.index_x][i]);
+                    return this.axes2d.scale_x(shown_data[this.index_x][i]);
                 }).y(function(d) {
-                    return self.axes2d.scale_y(d);
+                    return this.axes2d.scale_y(d);
                 });
             this.path.data([shown_data[this.index_y]])
                 .attr("d", line);
 
-            const last_index = shown_data[self.index_x].length - 1;
+            const last_index = shown_data[this.index_x].length - 1;
 
             if (last_index >= 0) {
                 // Update the circle if there is valid data
                 this.recent_circle
-                    .attr("cx", self.axes2d.scale_x(
-                        shown_data[self.index_x][last_index]))
-                    .attr("cy", self.axes2d.scale_y(
-                        shown_data[self.index_y][last_index]))
+                    .attr("cx", this.axes2d.scale_x(
+                        shown_data[this.index_x][last_index]))
+                    .attr("cy", this.axes2d.scale_y(
+                        shown_data[this.index_y][last_index]))
                     .style("fill-opacity", 0.5);
             }
 
@@ -176,13 +173,13 @@ export default class XYValue extends Component {
     };
 
     generate_menu() {
-        const self = this;
+        const this = this;
         const items = [
             ["Set range...", function() {
-                self.set_range();
+                this.set_range();
             }],
             ["Set X, Y indices...", function() {
-                self.set_indices();
+                this.set_indices();
             }],
         ];
 
@@ -207,10 +204,9 @@ export default class XYValue extends Component {
 
     set_range() {
         const range = this.axes2d.scale_y.domain();
-        const self = this;
-        self.sim.modal.title("Set graph range...");
-        self.sim.modal.single_input_body(range, "New range");
-        self.sim.modal.footer("ok_cancel", function(e) {
+        this.sim.modal.title("Set graph range...");
+        this.sim.modal.single_input_body(range, "New range");
+        this.sim.modal.footer("ok_cancel", function(e) {
             let new_range = $("#singleInput").val();
             const modal = $("#myModalForm").data("bs.validator");
 
@@ -222,9 +218,9 @@ export default class XYValue extends Component {
                 new_range = new_range.split(",");
                 const min = parseFloat(new_range[0]);
                 const max = parseFloat(new_range[1]);
-                self.update_range(min, max);
-                self.update();
-                self.save_layout();
+                this.update_range(min, max);
+                this.update();
+                this.save_layout();
             }
             $("#OK").attr("data-dismiss", "modal");
         });
@@ -250,7 +246,7 @@ export default class XYValue extends Component {
         $("#singleInput").attr(
             "data-error", "Input should be in the form " +
                 "'<min>,<max>' and the axes must cross at zero.");
-        self.sim.modal.show();
+        this.sim.modal.show();
     };
 
     update_range(min, max) {
@@ -267,11 +263,10 @@ export default class XYValue extends Component {
     };
 
     set_indices() {
-        const self = this;
-        self.sim.modal.title("Set X and Y indices...");
-        self.sim.modal.single_input_body(
+        this.sim.modal.title("Set X and Y indices...");
+        this.sim.modal.single_input_body(
             [this.index_x, this.index_y], "New indices");
-        self.sim.modal.footer("ok_cancel", function(e) {
+        this.sim.modal.footer("ok_cancel", function(e) {
             let new_indices = $("#singleInput").val();
             const modal = $("#myModalForm").data("bs.validator");
 
@@ -281,9 +276,9 @@ export default class XYValue extends Component {
             }
             if (new_indices !== null) {
                 new_indices = new_indices.split(",");
-                self.update_indices(parseInt(new_indices[0], 10),
+                this.update_indices(parseInt(new_indices[0], 10),
                                     parseInt(new_indices[1], 10));
-                self.save_layout();
+                this.save_layout();
             }
             $("#OK").attr("data-dismiss", "modal");
         });
@@ -294,9 +289,9 @@ export default class XYValue extends Component {
                     return ((parseInt(nums[0], 10) === nums[0]) &&
                             (parseInt(nums[1], 10) === nums[1]) &&
                             (nums.length === 2) &&
-                            (Number(nums[1]) < self.n_lines &&
+                            (Number(nums[1]) < this.n_lines &&
                              Number(nums[1]) >= 0) &&
-                            (Number(nums[0]) < self.n_lines &&
+                            (Number(nums[0]) < this.n_lines &&
                              Number(nums[0]) >= 0));
                 },
             },
@@ -307,7 +302,7 @@ export default class XYValue extends Component {
                 "integers in the form '<dimension 1>,<dimension 2>'. " +
                 "Dimensions are zero indexed.");
 
-        self.sim.modal.show();
+        this.sim.modal.show();
     };
 
     update_indices(index_x, index_y) {
@@ -316,9 +311,9 @@ export default class XYValue extends Component {
         this.update();
     };
 
-    reset(event) {
+    reset() {
         this.data_store.reset();
-        this.schedule_update(event);
+        this.schedule_update();
     };
 
 }

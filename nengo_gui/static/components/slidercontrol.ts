@@ -16,7 +16,7 @@ import * as $ from "jquery";
 
 import * as utils from "../utils";
 
-export default class SliderControl {
+export class SliderControl {
     _drag_y;
     border_width;
     container;

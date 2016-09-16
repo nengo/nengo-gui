@@ -12,12 +12,11 @@ import "jqueryfiletree/dist/jQueryFileTree.min.css";
 import "./favicon.ico";
 import "./nengo.css";
 
-import NetGraph from "./components/netgraph";
-import Config from "./config";
-import Editor from "./editor";
-import SideMenu from "./side_menu";
-import SimControl from "./sim_control";
-import Toolbar from "./top_toolbar";
+import { Editor } from "./editor";
+import { NetGraph } from "./netgraph/netgraph";
+import { SideMenu } from "./side_menu";
+import { SimControl } from "./sim_control";
+import { Toolbar } from "./toolbar";
 
 // TODO: put all of this in an ajax call to Python. To get:
 // editor uid (uid)
@@ -25,8 +24,7 @@ import Toolbar from "./top_toolbar";
 // simcontrol config/args (simconfig) -- shown_time, uid, kept_time
 // filename
 
-export default class Nengo {
-    config;
+export class Nengo {
     control;
     editor;
     hotkeys;
@@ -41,9 +39,7 @@ export default class Nengo {
         this.main = document.getElementById("main");
         this.control = document.getElementById("control");
 
-        this.config = new Config();
-
-        this.netgraph = new NetGraph(this.main, this.config, netgraphargs);
+        this.netgraph = new NetGraph(this.main, netgraphargs);
         this.editor = new Editor(editoruid, this.netgraph);
         this.sim = new SimControl(this.control, simargs, this.editor);
         this.sidemenu = new SideMenu(this.sim);
@@ -54,6 +50,16 @@ export default class Nengo {
 
         document.title = filename;
     }
+}
+
+$(document).ready(() => {
+
+
+    body = document.getElementById("body");
+    body.removeChild(document.getElementById("loading-div"));
+    %(main_components)s
+    nengo = new Nengo.default(simargs, filename, editoruid, netgraphargs);
+    %(components)s
 }
 
 // Exposing components for server
