@@ -13,7 +13,7 @@ import * as $ from "jquery";
  * @param {number} high - High end of range.
  * @returns {number} The clipped result.
  */
-export function clip(x, low, high) {
+export function clip(x: number, low: number, high: number) {
     if (x < low) {
         x = low;
     }
@@ -29,16 +29,15 @@ export function clip(x, low, high) {
  * @param {string} uid - The uid for the WebSocket.
  * @returns {WebSocket} The created WebSocket.
  */
-export function create_websocket(uid) {
-    const parser = document.createElement("a");
-    parser.href = document.URL;
+export function create_websocket(uid: string): WebSocket {
+    const hostname = window.location.hostname;
     let ws_proto;
     if (window.location.protocol === "https:") {
         ws_proto = "wss:";
     } else {
         ws_proto = "ws:";
     }
-    const ws_url = ws_proto + "//" + parser.host + "/viz_component?uid=" + uid;
+    const ws_url = ws_proto + "//" + hostname + "/viz_component?uid=" + uid;
     const ws = new WebSocket(ws_url);
     ws.binaryType = "arraybuffer";
     return ws;
@@ -151,31 +150,3 @@ export var next_zindex = (() => {
         return max_zindex;
     };
 })();
-
-/**
- * Safely sets the content of an element to the given text.
- *
- * This should be used instead of `element.innerHTML = text`.
- *
- * @param {HTMLElement} element - The element to set.
- * @param {string} text - The text to set on the element.
- */
-export function safe_set_text(element, text) {
-    // First remove all children
-    while (element.firstChild) {
-        element.removeChild(element.firstChild);
-    }
-    element.appendChild(document.createTextNode(text));
-}
-
-/**
- * Set the transform of an element.
- *
- * @param {HTMLElement} element - The HTML element to set.
- * @param {number} x - Shift on the x-axis.
- * @param {number} y - Shift on the y-axis.
- */
-export function set_transform(element, x, y) {
-    element.style.webkitTransform =
-        element.style.transform = "translate(" + x + "px, " + y + "px)";
-}

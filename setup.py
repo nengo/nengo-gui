@@ -42,6 +42,7 @@ setup(
         'console_scripts': [
             'nengo_gui = nengo_gui:old_main',
             'nengo = nengo_gui:main',
+            'nengo-debug = nengo_gui.debug:debug',
         ]
     },
     install_requires=[

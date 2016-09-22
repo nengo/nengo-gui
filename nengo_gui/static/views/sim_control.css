@@ -1,0 +1,144 @@
+.sim-control {
+    background-color: #eee;
+    box-shadow: 0 -2px 4px 0 #999;
+    -webkit-flex: 0 0 auto;
+    flex: 0 0 auto;
+    height: 80px;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    z-index: 99999999;
+}
+
+.time-slider {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+    position: fixed;
+}
+
+.time-slider .shown-time {
+    background: #d9edf7;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    padding-left: 1px;
+    padding-right: 1px;
+    position: absolute;
+}
+
+.time-slider .shown-time div {
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    height: 100%;
+    padding-left: 1px;
+    padding-right: 1px;
+}
+
+.time-slider svg .axis path {
+    fill: none;
+    stroke: #333;
+    stroke-width: 1px;
+}
+
+.time-slider svg .axis .tick {
+    font-family: sans-serif;
+    font-size: 12px;
+}
+
+.sim-control button:hover {
+    color: #eee !important;
+    background: #666 !important;
+}
+
+.sim-control button {
+    background-color: #eee !important;
+    border-radius: 0;
+    border-width: 0;
+    height: 60px;
+    margin: -20px 15px 0 15px;
+    position: fixed;
+    width: 60px;
+}
+
+.sim-control button span {
+    font-size: 30px;
+}
+
+.sim-control button .pause-button:disabled,
+.sim-control button .pause-button:disabled:hover {
+    background: #eee !important;
+    color: #666 !important;
+}
+
+@-moz-keyframes spin {
+    from {
+        -moz-transform: rotate(0deg);
+    }
+    to {
+        -moz-transform: rotate(360deg);
+    }
+}
+
+@-webkit-keyframes spin {
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.glyphicon-spin {
+    -moz-animation: spin 2s infinite linear;
+    -webkit-animation: spin 2s infinite linear;
+    animation: spin 2s infinite linear;
+}
+
+.time-table {
+    display: inline-block;
+    margin-top: 10px;
+    margin-left: 10px;
+    width: 130px;
+    overflow: hidden;
+    cursor: default;
+}
+
+.metrics-container {
+    width: auto !important;
+}
+
+.metrics-container td,
+.metrics-container th {
+    border: none !important;
+    padding: 0.2em !important;
+}
+
+.speed-throttle {
+    height: 10px;
+    width: 110px;
+}
+
+.speed-throttle .guideline {
+    height: 0.25em;
+    margin: auto;
+    width: 100%;
+}
+
+.speed-throttle .btn {
+    border-color: #666;
+    height: 0.8em;
+    padding: 0.1em 0;
+    position: absolute;
+    transform: translate(50%, -75%);
+    width: 0.8em;
+}

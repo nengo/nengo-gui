@@ -10,7 +10,9 @@
     "max-line-length": [true, 80],
     "member-access": false,
     "no-namespace": false,
-    "variable-name": [true, "ban-keywords"],
+    "variable-name": [
+      true, "ban-keywords", "check-format", "allow-leading-underscore"
+    ],
 
     "array-bracket-spacing": [true, "never"],
     "block-spacing": true,

@@ -1,0 +1,10 @@
+.debug {
+    height: 90%;
+    width: 100%;
+}
+
+.debug-controls {
+    border: 1px solid black;
+    height: 10%;
+    width: 100%;
+}

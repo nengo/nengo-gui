@@ -4,8 +4,8 @@ import * as $ from "jquery";
 import { dom, h } from "maquette";
 
 import { Modal } from "./modal";
-import "./sim_control.css";
 import * as utils from "./utils";
+import { SimControlView } from "./views/sim_control";
 
 const reset_sim = new Event("reset_sim");
 const adjust_time = new Event("adjust_time");
@@ -15,15 +15,7 @@ const adjust_time = new Event("adjust_time");
  */
 export class SimControl {
     div: HTMLElement;
-    listeners;
     modal;
-    pause_button;
-    pause_button_icon;
-
-    /**
-     * Whether the simulation is paused.
-     */
-    paused: boolean = true;
 
     /**
      * Do we have an update() call scheduled?
@@ -35,17 +27,9 @@ export class SimControl {
      */
     rate: number = 0.0;
     rate_proportion;
-    rate_tr;
     reset_button;
-    rotation;
-    rotation_interval;
-    simulator_options;
-    speed_throttle;
-    speed_throttle_changed;
-    speed_throttle_guideline;
-    speed_throttle_handle;
-    speed_throttle_set;
-    speed_throttle_x;
+    simulator_options: string = "";
+    speed_throttle: SpeedThrottle;
     ticks_tr;
 
     /**
@@ -57,10 +41,13 @@ export class SimControl {
     time_slider: TimeSlider;
     uid;
 
+    view: SimControlView;
+
     /**
      * WebSocket to communicate with the server.
      */
     ws: WebSocket;
+    private _status: string = "paused";
 
     /**
      * SimControl constructor is inserted into HTML file from python and
@@ -77,109 +64,96 @@ export class SimControl {
         if (uid[0] === "<") {
             console.warn("invalid uid for SimControl: " + uid);
         }
-        this.modal = new Modal($(".modal").first(), editor, this);
 
-        this.div = dom.create(h("div.sim_control")).domNode as HTMLElement;
-
-        // Respond to resize events
-        this.div.addEventListener("resize", event => {
-            this.on_resize(event);
-        });
-        window.addEventListener("resize", event => {
-            this.on_resize(event);
-        });
-
+        this.view = new SimControlView("sim-control");
+        this.div = this.view.root;
         this.ws = utils.create_websocket(this.uid);
-
-        this.ws.onmessage = event => {
-            this.on_message(event);
-        };
-        this.ws.onclose = event => {
-            this.disconnected();
-        };
-
-        // Create the TimeSlider
         this.time_slider = new TimeSlider({
             height: this.div.clientHeight - 20,
             kept_time: kept_time,
             shown_time: shown_time,
-            sim: this,
             width: this.div.clientWidth - 300,
-            x: 200,
-            y: 10,
+        });
+        this.speed_throttle = new SpeedThrottle(this.view);
+
+        this.modal = new Modal($(".modal").first(), editor, this);
+
+        document.body.appendChild(this.div);
+
+        // Add event listeners
+        this.div.addEventListener("resize", event => {
+            this.on_resize(event);
         });
 
-        // Listen to TimeSlider events
-        this.time_slider.div.addEventListener("reset_sim", event => {
-            this.reset();
-            this.div.dispatchEvent(reset_sim);
+        window.addEventListener("resize", event => {
+            this.on_resize(event);
         });
 
-        // Get reference to the pause button
-        this.pause_button = $("#pause_button")[0];
-        this.pause_button.onclick = event => {
-            this.on_pause_click(null);
+        this.view.pause.onclick = event => {
+            if (this.paused) {
+                this.play();
+            } else {
+                this.pause();
+            }
         };
-        this.pause_button.onkeydown = event => {
+
+        this.view.pause.onkeydown = event => {
             const key = event.key || String.fromCharCode(event.keyCode);
             if (key === " ") {
                 event.stopPropagation();
             }
         };
-        utils.set_transform(this.pause_button, this.div.clientWidth - 100, 30);
 
-        this.pause_button_icon = $("#pause_button_icon")[0];
-
-        // Get reference to the reset button
-        this.reset_button = $("#reset_button")[0];
-        this.reset_button.onclick = event => {
+        this.view.reset.onclick = event => {
             this.reset();
         };
-        utils.set_transform(this.reset_button, 110, 30);
 
-        // Create the speed and rate update sliders
-        this.rate_tr = $("#rate_tr")[0];
-        this.ticks_tr = $("#ticks_tr")[0];
 
-        this.speed_throttle_set = false;
-        this.speed_throttle_changed = false;
-        this.speed_throttle = $("#speed_throttle")[0];
+        this.ws.onmessage = event => {
+            this.on_message(event);
+        };
 
-        this.speed_throttle_guideline = document.createElement("div");
-        this.speed_throttle_guideline.classList.add("guideline");
-        this.speed_throttle.appendChild(this.speed_throttle_guideline);
+        this.ws.onclose = event => {
+            this.disconnected();
+        };
 
-        this.speed_throttle_handle = document.createElement("div");
-        this.speed_throttle_handle.classList.add("btn");
-        this.speed_throttle_handle.classList.add("btn-default");
-        utils.safe_set_text(this.speed_throttle_handle, "");
-        this.speed_throttle.appendChild(this.speed_throttle_handle);
-
-        this.time_scale = d3.scale.linear();
-        this.time_scale.clamp(true);
-        this.time_scale.domain([0, 1.0]);
-        this.time_scale.range([0, 110.0]); // Width in pixels of slider
-        this.speed_throttle_handle.style.left = this.time_scale(1.0);
-
-        interact(this.speed_throttle_handle)
-            .draggable({
-                onmove: event => {
-                    this.speed_throttle_changed = true;
-                    this.speed_throttle_x += event.dx;
-                    const pixel_value = this.time_scale(
-                        this.time_scale.invert(this.speed_throttle_x));
-                    this.speed_throttle_handle.style.left = pixel_value;
-                },
-                onstart: event => {
-                    this.speed_throttle_x = parseFloat(
-                        this.speed_throttle_handle.style.left);
-                    this.speed_throttle_set = true;
-                },
-            });
-
-        this.simulator_options = "";
+        this.time_slider.div.addEventListener("reset_sim", event => {
+            this.reset();
+            this.div.dispatchEvent(reset_sim);
+        });
 
         this.update();
+    }
+
+    get paused(): boolean {
+        return this._status === "paused";
+    }
+
+    get status(): string {
+        return this._status;
+    }
+
+    set status(new_status: string) {
+        this._status = new_status.trim();
+
+        let spin = false;
+        let icon = "cog";
+
+        if (this._status === "building") {
+            spin = true;
+        } else if (this._status === "paused") {
+            icon = "play";
+        } else if (this._status === "running") {
+            icon = "pause";
+        } else if (this._status === "build_error") {
+            icon = "remove";
+        } else {
+            console.warn(
+                "sim_control does not understand status '" + this._status + "'"
+            );
+        }
+        this.view.pause_icon = icon;
+        this.view.spin_pause = spin;
     }
 
     /**
@@ -189,16 +163,24 @@ export class SimControl {
      */
     on_message(event) {
         if (typeof event.data === "string") {
-            if (event.data.substring(0, 7) === "status:") {
-                this.set_status(event.data.substring(7));
-            } else if (event.data.substring(0, 6) === "config") {
-                eval(event.data.substring(6, event.data.length)); // tslint:disable-line
-            } else if (event.data.substring(0, 5) === "sims:") {
-                this.simulator_options =
-                    event.data.substring(5, event.data.length);
+            if (event.data.slice(0, 7) === "status:") {
+                this.status = event.data.slice(7);
+            } else if (event.data.slice(0, 5) === "sims:") {
+                this.simulator_options = event.data.slice(5);
+            } else if (event.data.slice(0, 6) === "config") {
+                eval(event.data.slice(6)); // tslint:disable-line
+            } else {
+                console.warn(
+                    "sim_control does not understand '" + event.data + "'"
+                );
             }
         } else {
             const data = new Float32Array(event.data);
+            this.time = data[0];
+            this.speed_throttle.update({
+                rate: data[1],
+                proportion: data[2],
+            });
             this.time = data[0];
             this.rate = data[1];
             this.rate_proportion = data[2];
@@ -231,52 +213,6 @@ export class SimControl {
         this.ws.send("backend:" + backend);
     }
 
-    set_status(status) {
-        let icon;
-        status = status.trim();
-        if (status === "building") {
-            icon = "glyphicon-cog";
-            this.start_rotating_cog();
-            this.paused = false;
-        } else if (status === "paused") {
-            icon = "glyphicon-play";
-            this.stop_rotating_cog();
-            this.paused = true;
-        } else if (status === "running") {
-            icon = "glyphicon-pause";
-            this.stop_rotating_cog();
-            this.paused = false;
-        } else if (status === "build_error") {
-            icon = "glyphicon-remove";
-            this.stop_rotating_cog();
-            this.paused = false;
-        } else {
-            icon = "glyphicon-cog";
-            this.stop_rotating_cog();
-            console.warn("unknown status: " + status);
-            this.paused = false;
-        }
-        this.pause_button_icon.className = "glyphicon " + icon;
-    }
-
-    start_rotating_cog() {
-        this.rotation = 0;
-        this.rotation_interval = window.setInterval(() => {
-            this.pause_button_icon.style.transform =
-                "rotate(" + this.rotation + "deg)";
-            this.rotation += 2;
-        }, 10);
-        this.pause_button.setAttribute("disabled", "true");
-        $("#pause_button").addClass("play-pause-button-cog");
-    }
-
-    stop_rotating_cog() {
-        this.pause_button.removeAttribute("disabled");
-        $("#pause_button").removeClass("play-pause-button-cog");
-        window.clearInterval(this.rotation_interval);
-        this.pause_button_icon.style.transform = "";
-    }
-
     /**
      * Make sure update() will be called in the next 10ms.
      */
@@ -289,48 +225,17 @@ export class SimControl {
         }
     }
 
-    /**
-     * Add to list of functions to be called when SimControl options change.
-     *
-     * @param {Function} func - Listener for SimControl option changes.
-     */
-    register_listener(func) {
-        this.listeners.push(func);
-    }
-
-    /**
-     * Update the visual display.
-     */
-    update() {
-        this.pending_update = false;
-
-        this.ticks_tr.innerHTML = // tslint:disable-line
-            "<th>Time</th><td>" + this.time.toFixed(3) + "</td>";
-        this.rate_tr.innerHTML = // tslint:disable-line
-            "<th>Speed</th><td>" + this.rate.toFixed(2) + "x</td>";
-
-        this.time_slider.update_times(this.time);
-    }
-
     pause() {
         if (!this.paused) {
             this.ws.send("pause");
+            // TODO: show cog?
         }
-        this.paused = true;
     }
 
     play() {
         if (this.paused) {
             this.ws.send("continue");
-            this.paused = false;
-        }
-    }
-
-    on_pause_click(event) {
-        if (this.paused) {
-            this.play();
-        } else {
-            this.pause();
+            // TODO: show cog?
         }
     }
 
@@ -349,55 +254,123 @@ export class SimControl {
         utils.set_transform(this.reset_button, 110, 30);
     }
 
+    /**
+     * Update the visual display.
+     */
+    update() {
+        this.pending_update = false;
+
+        this.ticks_tr.innerHTML = // tslint:disable-line
+            "<th>Time</th><td>" + this.time.toFixed(3) + "</td>";
+        this.rate_tr.innerHTML = // tslint:disable-line
+            "<th>Speed</th><td>" + this.rate.toFixed(2) + "x</td>";
+
+        this.time_slider.update_times(this.time);
+    }
+}
+
+class SpeedThrottle {
+    changed: boolean = false;
+    manual: boolean = false;
+    time_scale: d3.scale.Linear<number, number>;
+    view: SimControlView;
+    x: number;
+
+    constructor(view: SimControlView) {
+        this.view = view;
+        this.time_scale = d3.scale.linear()
+            .clamp(true)
+            .domain([0, 1.0])
+            .range([0, this.view.throttle.clientWidth]);
+        this.view.throttle_handle.style.left = String(this.time_scale(1.0));
+
+        interact(this.view.throttle_handle)
+            .draggable({
+                onmove: event => {
+                    this.changed = true;
+                    this.x += event.dx;
+                    const pixel_value = this.time_scale(
+                        this.time_scale.invert(this.speed_throttle_x));
+                    this.view.throttle_handle.style.left = pixel_value;
+                },
+                onstart: event => {
+                    this.x = Number(this.view.throttle_handle.style.left);
+                    this.manual = true;
+                },
+            });
+
+    }
+
+    update({time: time, rate: rate, proportion: proportion}) {
+
+    }
+
+
 }
 
 class TimeSlider {
     axis;
     axis_g;
-    div;
-    first_shown_time;
-    kept_scale;
-    kept_time;
-    last_time;
+    div: HTMLElement;
+    first_shown_time: number;
+
+    /**
+     * Scale to convert time to x value (in pixels)
+     */
+    kept_scale: d3.scale.Linear<number, number>;
+
+    /**
+     * How much total time to store
+     */
+    kept_time: number;
+
+    /**
+     * Most recent time received from simulation
+     */
+    last_time: number = 0.0;
+
     shown_div;
-    shown_time;
-    sim;
+
+    /**
+     * How much time to show in normal graphs
+     */
+    shown_time: number;
     svg;
+    view: SimControlView;
 
     constructor({
         width: width,
         height: height,
-        x: x,
-        y: y,
-        kept_time: kept_time,
-        shown_time: shown_time,
-        sim: sim,
+        kept_time: kept_time = 4.0,
+        shown_time: shown_time = 0.5,
+        view: view,
     }) {
-        // The SimControl object
-        this.sim = sim;
-
         // Get reference to the overall div
-        this.div = $(".time_slider")[0];
-        utils.set_transform(this.div, x, y);
+        this.view = view;
+        this.div = this.view.time_slider;
 
-        // Create reference to the div indicating currently shown time
-        this.shown_div = $(".shown_time")[0];
-
-        // How much time to show in normal graphs
-        this.shown_time = shown_time || 0.5;
-        // How much total time to store
-        this.kept_time = kept_time || 4.0;
-        // Most recent time received from simulation
-        this.last_time = 0.0;
-        // First time shown on graphs
+        this.shown_time = shown_time;
+        this.kept_time = kept_time;
         this.first_shown_time = this.last_time - this.shown_time;
 
-        // Scale to convert time to x value (in pixels)
-        this.kept_scale = d3.scale.linear();
-
-        this.kept_scale.domain([0.0 - this.kept_time, 0.0]);
+        this.kept_scale = d3.scale.linear()
+            .domain([0.0 - this.kept_time, 0.0]);
 
         this.resize(width, height);
+
+        // Build the axis to display inside the scroll area
+        this.svg = d3.select(this.div).append("svg")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("style", "pointer-events: none; position: absolute;");
+        this.axis = d3.svg.axis()
+            .scale(this.kept_scale)
+            .orient("bottom")
+            .ticks(10);
+        this.axis_g = this.svg.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0," + (height / 2) + ")")
+            .call(this.axis);
 
         // Make the shown time draggable and resizable
         interact(this.shown_div)
@@ -408,11 +381,12 @@ class TimeSlider {
                     const new_time = utils.clip(
                         this.kept_scale.invert(x),
                         this.last_time - this.kept_time,
-                        this.last_time - this.shown_time);
+                        this.last_time - this.shown_time
+                    );
 
                     this.first_shown_time = new_time;
                     x = this.kept_scale(new_time);
-                    utils.set_transform(event.target, x, 0);
+                    utils.set_transform(this.shown_div, x, 0);
 
                     // Update any components who need to know the time changed
                     this.div.dispatchEvent(adjust_time);
@@ -447,20 +421,6 @@ class TimeSlider {
                 // Update any components who need to know the time changed
                 this.div.dispatchEvent(adjust_time);
             });
-
-        // Build the axis to display inside the scroll area
-        this.svg = d3.select(this.div).append("svg")
-            .attr("width", "100%")
-            .attr("height", "100%")
-            .attr("style", "pointer-events: none; position: absolute;");
-        this.axis = d3.svg.axis()
-            .scale(this.kept_scale)
-            .orient("bottom")
-            .ticks(10);
-        this.axis_g = this.svg.append("g")
-            .attr("class", "axis")
-            .attr("transform", "translate(0," + (height / 2) + ")")
-            .call(this.axis);
     }
 
     jump_to_end() {
