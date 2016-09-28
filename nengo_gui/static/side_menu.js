@@ -14,14 +14,31 @@ Nengo.SideMenu = function() {
 
     self.menu_width = document.getElementsByClassName("sidenav-container")[0]
                               .offsetWidth;
-
     // Gathers all the menu tabs from the HTML for the Event Handlers
     self.tabs = $(".tab-content");
+    self.current_tab = -1;
 
     self.top_buttons = ['#Open_file_button', '#Component_menu', '#Config_menu'];
     self.initialize_button_handlers();
+    self.width = $(".sidenav-container").width();
+    self.height = $("#vmiddle").height();
 
     //----EVENT HANDLERS----
+
+    interact('.sidenav-container')
+        .resizable({
+            edges: { left: false, right: true, bottom: false, top: false}
+        })
+        .on('resizemove', function (event) {
+            if(self.width > 200 || event.deltaRect.right > 0){
+                self.width += event.deltaRect.right;
+
+                $(".sidenav-container").width(self.width);
+
+                $(self.tabs[self.current_tab]).width(self.width);
+            }
+            Nengo.netgraph.on_resize();
+        });
 
     // file_browser
     $('#Open_file_button')[0].addEventListener('click', function() {
@@ -89,12 +106,13 @@ Nengo.SideMenu.prototype.toggle_side_nav = function() {
     if (self.menu_open === false) {
         trans_val = "0";
         self.menu_open = true;
+        element.style.display = "flex";
     } else {
-        trans_val = String(-self.menu_width);
+        trans_val = String(-self.width);
         self.menu_open = false;
+        element.style.display = "none";
     }
-
-    element.style.transform = "translate(" + trans_val + "px)";
+    Nengo.netgraph.on_resize();
 };
 
 Nengo.SideMenu.prototype.show_side_nav = function() {
@@ -114,6 +132,9 @@ Nengo.SideMenu.prototype.hide_side_nav = function() {
 Nengo.SideMenu.prototype.menu_tab_click = function(it, pos_num, close_if_selected) {
     var self = this;
     var trans_func = function() {
+
+        self.current_tab = pos_num;
+
         if ($(it).hasClass('deactivated')) {
             return;
         }
@@ -123,7 +144,14 @@ Nengo.SideMenu.prototype.menu_tab_click = function(it, pos_num, close_if_selecte
         } else {
             self.show_side_nav();
             var element = document.getElementById("Menu_content");
-            var trans_val = String(-self.menu_width * pos_num);
+            $(self.tabs[self.current_tab]).width(self.width);
+            $(".sidenav-container").width(self.width);
+
+            var trans_width = 0;
+            for(var x = 0; x < pos_num; x++){
+                trans_width += $(self.tabs[x]).width();
+            }
+            var trans_val = String(-trans_width);
             element.style.transform = "translate(" + trans_val + "px)";
             self.focus_reset();
             $(it).addClass("selected");
@@ -141,6 +169,7 @@ Nengo.SideMenu.prototype.focus_reset = function() {
 
 /** This lets you browse the files available on the server */
 Nengo.SideMenu.prototype.file_browser = function() {
+    var self = this;
     sim.ws.send('browse');
 
     fb = $('#filebrowser');
@@ -152,7 +181,7 @@ Nengo.SideMenu.prototype.file_browser = function() {
             window.location.assign('/?filename=' + file);
         }
     );
-
+    $("#filebrowser").height(self.height-5);
 };
 
 /** Export the layout to the SVG in Downloads folder **/

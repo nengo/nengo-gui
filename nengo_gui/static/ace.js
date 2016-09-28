@@ -32,7 +32,8 @@ Nengo.Ace = function (uid, args) {
     var code_div = document.createElement('div')
     code_div.id = 'editor'
     $('#rightpane').append(code_div);
-    this.editor = ace.edit('editor')
+    this.editor = ace.edit('editor');
+    this.editor.$blockScrolling = Infinity;
     this.editor.getSession().setMode("ace/mode/python");
     this.editor.gotoLine(1);
     this.marker = null;

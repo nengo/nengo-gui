@@ -25,117 +25,6 @@
 
     <body id="body" onload="onload();">
         <!-- Contains all sidenav html -->
-        <div class="sidenav-container">
-
-            <!-- holds all the sidenav content -->
-            <div id="Menu_content">
-
-                <!-- tab-content hold the content for their correpsonding sidenav tab -->
-                <!-- The first tab-content holds the content for the first menu tab -->
-                <div class="tab-content">
-                    <div id="filebrowser"></div>
-                </div>
-
-                <div class="tab-content">
-                    <!-- accordion containers allow use of accordions in particular divs -->
-                    <!-- must be uniquely id'd by number -->
-                    <div class="accordion-container" id="accordion-container1">
-
-                        <div class="accordion-toggle">
-                            <p class="title">Basic</p>
-                            <p class="icon">
-                                <span class="glyphicon glyphicon-chevron-down"></span>
-                            </p>
-                        </div>
-                        <!-- accordion-content holds content for accordion above it -->
-                        <!-- the default class makes it initially hidden, removing it makes it shown -->
-                        <div id="drag_drop_menu" class="accordion-content default">
-                            <div>
-                                <p>Ensemble</p>
-                                <div id="Ensemble" class="ui-widget-content draggable">
-                                    <svg width="150" height="150">
-                                        <g transform="translate(75,75) scale(4)" style="fill:rgb(204,204,204);stroke-width:0.1;stroke:black">
-                                            <circle cx="-12.407" cy="-7.231" r="4.843" />
-                                            <circle cx="-1.064" cy="0.123" r="4.843" />
-                                            <circle cx="3.7619999999999996" cy="12.81" r="4.843" />
-                                            <circle cx="12.454" cy="-0.521" r="4.843" />
-                                            <circle cx="-11.603" cy="8.663" r="4.843" />
-                                            <circle cx="2.644" cy="-12.908" r="4.843" />
-                                        </g>
-                                    </svg>
-                                </div>
-
-                                <p>Node</p>
-                                <div id="Node" class="ui-widget-content draggable">
-                                    <svg width="150" height="150">
-                                        <g transform="translate(75,75) scale(1)" style="fill:rgb(204,204,204);stroke-width:0.5;stroke:black">
-                                            <rect transform="translate(-59, -48)" width="110" height="110" rx="9.595074226286059" ry="9.595074226286059"></rect>
-                                        </g>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="accordion-toggle">
-                            <p class="title">Network</p>
-                            <p class="icon">
-                                <span class="glyphicon glyphicon-chevron-down"></span>
-                            </p>
-                        </div>
-                        <div class="accordion-content"></div>
-
-                        <div class="accordion-toggle">
-                            <p class="title">SPA</p>
-                            <p class="icon">
-                                <span class="glyphicon glyphicon-chevron-down"></span>
-                            </p>
-                        </div>
-                        <div class="accordion-content"></div>
-
-                    </div>
-                </div>
-                <div class="tab-content">
-                    <div class="accordion-container" id="accordion-container2">
-                        <!-- side-menu-item creates a menu item for non accordion content -->
-                        <div id='Config_button' class="side-menu-item">
-                            <p class="title">Configure Settings</p>
-                            <p class="icon">
-                                <span class='glyphicon glyphicon-cog'></span>
-                            </p>
-                        </div>
-
-                        <div class="accordion-toggle">
-                            <p class="title">Download</p>
-                            <p class="icon">
-                                <span class="glyphicon glyphicon-chevron-down"></span>
-                            </p>
-                        </div>
-                        <div class="accordion-content">
-                            <div class="side-menu-item indent" id="Download_button">
-                                <p class="title">Download Simulation Data</p>
-                                <p class="icon">
-                                    <span class="glyphicon glyphicon-signal"></span>
-                                </p>
-                            </div>
-                            <div class="side-menu-item indent" id='Pdf_button'>
-                                <p class="title">Export layout as SVG</p>
-                                <p class="icon">
-                                    <span class="glyphicon glyphicon-picture"></span>
-                                </p>
-                            </div>
-                        </div>
-
-                        <div id='Minimap_button' class="side-menu-item">
-                            <p class="title">Minimap</p>
-                            <p class="icon">
-                                <span class='glyphicon glyphicon-credit-card'></span>
-                            </p>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        </div>
         <div id="top_toolbar_div">
             <ul id='toolbar_object' class="nav nav-pills">
                 <li id='Open_file_button' role="presentation">
@@ -180,6 +69,122 @@
             </ul>
         </div>
         <div id="vmiddle">
+        <div class="sidenav-container">
+
+            <!-- holds all the sidenav content -->
+            <div id="Menu_content">
+
+                <!-- tab-content hold the content for their correpsonding sidenav tab -->
+                <!-- The first tab-content holds the content for the first menu tab -->
+                <div class="tab-content">
+                    <div id="filebrowser"></div>
+                </div>
+
+                <div class="tab-content">
+                    <!-- accordion containers allow use of accordions in particular divs -->
+                    <!-- must be uniquely id'd by number -->
+                    <!-- <div class="accordion-container" id="accordion-container1"> -->
+
+                        <!-- <div class="accordion-toggle">
+                            <p class="title">Basic</p>
+                            <p class="icon">
+                                <span class="glyphicon glyphicon-chevron-down"></span>
+                            </p>
+                        </div> -->
+                        <!-- accordion-content holds content for accordion above it -->
+                        <!-- the default class makes it initially hidden, removing it makes it shown -->
+                        <!-- <div class="accordion-content default drag_drop_menu"> -->
+                            <div id="mode_list">
+                                <div id="Ensemble" class="mode off">
+
+                                    <svg viewbox = "0 0 150 150">
+                                        <g transform="translate(75,75) scale(2)">
+                                            <circle cx="-12.407" cy="-7.231" r="4.843" />
+                                            <circle cx="-1.064" cy="0.123" r="4.843" />
+                                            <circle cx="3.7619999999999996" cy="12.81" r="4.843" />
+                                            <circle cx="12.454" cy="-0.521" r="4.843" />
+                                            <circle cx="-11.603" cy="8.663" r="4.843" />
+                                            <circle cx="2.644" cy="-12.908" r="4.843" />
+                                        </g>
+                                    </svg>
+                                    <p>Ensemble</p>
+                                </div>
+
+                                <div id="Node" class="mode off">
+                                    <svg viewbox = "0 0 150 150">
+                                        <g transform="translate(20,20) scale(1)" style="stroke-width:0.5;stroke:black">
+                                            <rect width="110" height="110" rx="9.595074226286059" ry="9.595074226286059"></rect>
+                                        </g>
+                                    </svg>
+                                    <p>Node</p>
+                                </div>
+
+                                <div id="Network" class="mode off">
+
+                                    <svg viewbox = "0 0 150 150">
+                                        <g transform="translate(10,10) scale(1)" style="stroke-width:0.5;stroke:black">
+                                            <rect width="130" height="130"></rect>
+                                        </g>
+                                    </svg>
+                                    <p>Network</p>
+                                </div>
+                                
+                                <div id="Connection" class="mode off">
+
+                                    <svg viewbox = "0 0 150 150">
+                                        <g transform="translate(75,75) scale(4)" style="stroke-width:0.1;stroke:black">
+                                            <line x1="-12.5" y1="0" x2="12.5" y2="0" style="stroke-width:0.6"/>
+                                            <polygon points="-0.5,-1 -0.5,1 2.5,0" style="stroke-width:1" />
+                                            <circle cx="-12.5" cy="0" r="1" />
+                                            <circle cx="12.5" cy="0" r="1" />
+                                        </g>
+                                    </svg>
+                                    <p>Connection</p>
+                                </div>
+                            </div>
+                        </div>
+                <div class="tab-content">
+                    <div class="accordion-container" id="accordion-container2">
+                        <!-- side-menu-item creates a menu item for non accordion content -->
+                        <div id='Config_button' class="side-menu-item">
+                            <p class="title">Configure Settings</p>
+                            <p class="icon">
+                                <span class='glyphicon glyphicon-cog'></span>
+                            </p>
+                        </div>
+
+                        <div class="accordion-toggle">
+                            <p class="title">Download</p>
+                            <p class="icon">
+                                <span class="glyphicon glyphicon-chevron-down"></span>
+                            </p>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="side-menu-item indent" id="Download_button">
+                                <p class="title">Download Simulation Data</p>
+                                <p class="icon">
+                                    <span class="glyphicon glyphicon-signal"></span>
+                                </p>
+                            </div>
+                            <div class="side-menu-item indent" id='Pdf_button'>
+                                <p class="title">Export layout as SVG</p>
+                                <p class="icon">
+                                    <span class="glyphicon glyphicon-picture"></span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div id='Minimap_button' class="side-menu-item">
+                            <p class="title">Minimap</p>
+                            <p class="icon">
+                                <span class='glyphicon glyphicon-credit-card'></span>
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
           <div id="main" class="droppable"></div>
           <div id="rightpane"></div>
         </div>
