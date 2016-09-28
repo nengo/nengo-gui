@@ -17,7 +17,6 @@ g.net rect{
 .netgraph g text {
     text-anchor: middle;
     dominant-baseline: text-before-edge;
-    cursor: default !important;
     }
 
 .netgraph g text:active {
@@ -62,4 +61,3 @@ rect.view{
     text-anchor: middle;
     dominant-baseline: text-before-edge;
 }
-

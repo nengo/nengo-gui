@@ -20,6 +20,7 @@ Nengo.NetGraph = function(parent, args) {
     // This is used by the drag-and-drop system to ensure that the newly
     // created items appear at the position they were dropped at.
     this.override_positions = {};
+    this.override_sizes = {}
 
     var scale = 1.0;
     Object.defineProperty(this, 'scale', {
@@ -104,7 +105,7 @@ Nengo.NetGraph = function(parent, args) {
     this.mm_min_y = 0;
     this.mm_max_y = 0;
 
-    this.mm_scale = .1;
+    this.mm_scale = 0.1;
 
     this.in_zoom_delay = false;
 
@@ -379,6 +380,7 @@ Nengo.NetGraph.prototype.on_message = function(event) {
             item = this.svg_conns[data.uid];
         }
         delete this.override_positions[data.uid];
+        delete this.override_sizes[data.uid];
         item.remove();
 
     } else if (data.type === 'reconnect') {
@@ -455,6 +457,8 @@ Nengo.NetGraph.prototype.create_object = function(info) {
     if(this.override_positions.hasOwnProperty(info.uid)){
         info.pos[0] = this.override_positions[info.uid][0];
         info.pos[1] = this.override_positions[info.uid][1];
+        info.size[0] = this.override_sizes[info.uid][0];
+        info.size[1] = this.override_sizes[info.uid][1];
     }
     var item = new Nengo.NetGraphItem(this, info, false, item_mini);
     this.svg_objects[info.uid] = item;
