@@ -1,18 +1,56 @@
-#drag_drop_menu{
-  padding-top: 10px;
-  padding-left: 50px;
+.drag_drop_menu{
   height:100%;
   background: #ddd;
   color:inherit;
+  overflow: hidden;
 }
 
-.draggable {
-  width: 150px;
-  height: 150px;
-  z-index: 200;
-  margin-bottom: 10px;
+.off svg{
+    cursor: pointer;
+    background: inherit;
+    fill: rgb(180,180,180);
+}
+.on svg{
+    cursor: pointer;
+    background: #AAA;
+    fill: #DDD;
 }
 
-.draggable:hover {
+
+#mode_list{
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    color: inherit;
+    padding: 30px;
+    z-index: 99999;
+    overflow-y: scroll;
+}
+
+.mode{
+    position: relative;
+    float: left;
+    left: 15%;
+    width: 70%;
+    text-align: center;
+    -webkit-user-select: none; /* Chrome/Safari */
+    -moz-user-select: none; /* Firefox */
+}
+.off > svg:hover{
   cursor: pointer;
+  background-color: #BBB;
+  fill: #DDD;
+}
+
+.node_effect_good:hover > rect:nth-child(2){
+    fill: #00FF00 !important;
+}
+
+.node_effect_bad:hover > rect:nth-child(2){
+    fill: #FF0000 !important;
+}
+
+.ens_effect_good:hover > .ensemble{
+    fill: #00FF00 !important;
 }
