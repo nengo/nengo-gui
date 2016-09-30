@@ -425,6 +425,7 @@ Nengo.Modal.prototype.net_body = function(uid, stats, conninfo) {
  * Renders information about the parameters of an object.
  */
 Nengo.Modal.prototype.render_params = function($parent, params, tooltips) {
+    console.log(params);
     var $plist = $('<dl class="dl-horizontal"/>').appendTo($parent);
     for (var i = 0; i < params.length; i++) {
         var $dt = $('<dt/>').appendTo($plist);
@@ -442,6 +443,7 @@ Nengo.Modal.prototype.render_params = function($parent, params, tooltips) {
  * Renders information about some statistics of an object.
  */
 Nengo.Modal.prototype.render_stats = function($parent, stats) {
+
     for (var i = 0; i < stats.length; i++) {
         $parent.append('<h3>' + stats[i].title + '</h3>')
         var $stable = $('<table class="table table-condensed table-hover"/>')
@@ -790,6 +792,28 @@ Nengo.Modal.prototype.make_conn_path_dropdown_list = function($container, others
                               path_item + '</li>');
         }
     }
+}
+
+Nengo.Modal.prototype.component_config = function(uid){
+  this.clear_body();
+  var component = Nengo.netgraph.svg_objects[uid];
+  var name_switch = {"ens":"Ensemble","node":"Node"};
+  console.log(uid);
+  this.title(name_switch[component.type]+" "+uid+"'s properties.'");
+  var $form = $('<form class="form-horizontal" id ' +
+      '="myModalForm"/>').appendTo(this.$body);
+  $('<div class="form-group" id="config_component">' +
+      '<label for="config-dimension" class="control-label">' +
+          'Number of Dimensions</label>' +
+      '<div class="input-group col-xs-2">' +
+        '<input type="number" min="1" step="1" ' +
+          'maxlength="3" class="form-control" id="config-dimension"' +
+              ' data-error="Invalid number of dimensions"' +
+              ' required>' +
+        '<span class="input-group-addon">#</span>' +
+      '</div>' +
+  '</div>').appendTo($form);
+  $("#config-dimension").val(component.dimensions);
 }
 
 Nengo.modal = new Nengo.Modal($('.modal').first());

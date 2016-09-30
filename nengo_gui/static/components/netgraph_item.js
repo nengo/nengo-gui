@@ -413,6 +413,7 @@ Nengo.NetGraphItem.prototype.generate_menu = function () {
         items.push(['Semantic pointer plot',
             function() {self.create_graph('SpaSimilarity', self.sp_targets[0]);}]);
     }
+    items.push(['Delete Component',function(){Nengo.vpl.delete_component(self.uid)}]);
     // TODO: Enable input and output value plots for basal ganglia network
     items.push(['Details ...', function() {self.create_modal();}]);
     return items;
