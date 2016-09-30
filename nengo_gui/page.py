@@ -452,7 +452,7 @@ class Page(object):
             try:
                 with exec_env:
                     dt = 0.001
-                    if self.backend == 'nengo_brainstorm_pp':
+                    if self.settings.backend == 'nengo_brainstorm_pp':
                         dt = 1e-4
                     self.sim = backend.Simulator(self.model, dt=dt)
             except:
