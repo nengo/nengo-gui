@@ -1,5 +1,5 @@
-import Component from "./component";
-import Value from "./value";
+import { Component } from "./component";
+import { Value } from "./value";
 
 const uids: string[] = [];
 const components: Component[] = [];
@@ -22,34 +22,34 @@ export function remove(component: Component): void {
     }
 }
 
-export function by_uid(uid: string): Component {
+export function byUID(uid: string): Component {
     return components[uids.indexOf(uid)];
 }
 
-export function on_resize(width_scale: number, height_scale: number): void {
+export function onresize(widthScale: number, heightScale: number): void {
     components.forEach(component => {
-        component.on_resize(
-            component.width * width_scale, component.height * height_scale);
+        component.onresize(
+            component.width * widthScale, component.height * heightScale);
     });
 }
 
 export function redraw() {
     components.forEach(component => {
-        component.redraw_size();
-        component.redraw_pos();
+        component.redrawSize();
+        component.redrawPos();
     });
 }
 
-export function rescale(width_scale, height_scale) {
+export function rescale(widthScale, heightScale) {
     components.forEach(component => {
-        component.w *= width_scale;
-        component.h *= height_scale;
+        component.w *= widthScale;
+        component.h *= heightScale;
     });
 }
 
-export function save_layouts(): void {
+export function saveLayouts(): void {
     components.forEach(component => {
-        component.save_layout();
+        component.saveLayout();
     });
 }
 
@@ -60,18 +60,18 @@ export function save_layouts(): void {
  * and only for the amount of time kept in the simulation, which is
  * managed by the DataStore.
  */
-export function to_csv(): string {
+export function toCSV(): string {
 
     const data = [];
     const csv = [];
 
     // Extract all the data from the value components
     for (let i = 0; i < values.length; i++) {
-        data.push(values[i].data_store.data);
+        data.push(values[i].dataStore.data);
     }
 
     // Grabs all the time steps
-    const times = values[0].data_store.times;
+    const times = values[0].dataStore.times;
 
     // Headers for the csv file
     csv.push(["Graph Name"]);
@@ -93,13 +93,13 @@ export function to_csv(): string {
 
     // Puts the data at each time step into a row in the csv
     for (let i = 0; i < times.length; i++) {
-        const temp_arr = [times[i]];
+        const tempArr = [times[i]];
         for (let j = 0; j < data.length; j++) {
             for (let k = 0; k < data[j].length; k++) {
-                temp_arr.push(data[j][k][i]);
+                tempArr.push(data[j][k][i]);
             }
         }
-        csv.push(temp_arr);
+        csv.push(tempArr);
     }
 
     // Turns the array into a CSV string

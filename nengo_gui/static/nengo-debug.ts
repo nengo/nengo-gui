@@ -8,20 +8,21 @@ import "imports?$=jquery,jQuery=jquery!bootstrap-validator";
 import "imports?$=jquery,jQuery=jquery!jquery-ui";
 import "imports?$=jquery,jQuery=jquery!jqueryfiletree/src/jQueryFileTree";
 import "jqueryfiletree/dist/jQueryFileTree.min.css";
+import * as d3 from "d3";
 
 import "./favicon.ico";
 import "./nengo.css";
 
 // import { Editor } from "./editor";
 // import { NetGraph } from "./netgraph/netgraph";
-// import { SideMenu } from "./side_menu";
-// import { SimControl } from "./sim_control";
+// import { SideMenu } from "./side-menu";
+// import { SimControl } from "./sim-control";
 // import { Toolbar } from "./toolbar";
 
 // TODO: put all of this in an ajax call to Python. To get:
 // editor uid (uid)
 // netgraph uid
-// simcontrol config/args (simconfig) -- shown_time, uid, kept_time
+// simcontrol config/args (simconfig) -- shownTime, uid, keptTime
 // filename
 
 // export class Nengo {
@@ -66,13 +67,13 @@ import "./nengo.css";
 // import "expose?Pointer!./components/pointer";
 // import "expose?Raster!./components/raster";
 // import "expose?Slider!./components/slider";
-// import "expose?SpaSimilarity!./components/spa_similarity";
+// import "expose?SpaSimilarity!./components/spa-similarity";
 // import "expose?Value!./components/value";
 // import "expose?XYValue!./components/xyvalue";
 // import "expose?utils!./utils";
 
 import { DebugView } from "./views/debug";
-import { SimControlView } from "./views/sim_control.ts";
+import { SimControlView } from "./views/sim-control.ts";
 // import { first } from "./views/views";
 
 export class NengoDebug {

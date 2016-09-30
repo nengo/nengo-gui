@@ -17,8 +17,8 @@ import * as $ from "jquery";
 import * as utils from "../utils";
 
 export class SliderControl {
-    _drag_y;
-    border_width;
+    _dragY;
+    borderWidth;
     container;
     fixed;
     guideline;
@@ -28,7 +28,7 @@ export class SliderControl {
     max;
     min;
     scale;
-    type_mode;
+    typeMode;
     value;
 
     constructor(min, max) {
@@ -36,9 +36,9 @@ export class SliderControl {
         this.max = max;
 
         this.value = 0;
-        this.type_mode = false;
+        this.typeMode = false;
 
-        this.border_width = 1;
+        this.borderWidth = 1;
 
         this.scale = d3.scale.linear();
         this.scale.domain([max, min]);
@@ -56,25 +56,25 @@ export class SliderControl {
         this.guideline.style.height = "100%";
         this.guideline.style.margin = "auto";
         $(this.guideline).on("mousedown", event => {
-            this.set_value(this.value);
+            this.setValue(this.value);
         });
         this.container.appendChild(this.guideline);
 
         this.handle = document.createElement("div");
         this.handle.classList.add("btn");
         this.handle.classList.add("btn-default");
-        utils.safe_set_text(this.handle, "n/a");
+        // utils.safeSetText(this.handle, "n/a");
         this.handle.style.position = "absolute";
         this.handle.style.height = "1.5em";
         this.handle.style.marginTop = "0.75em";
         this.handle.style.width = "95%";
         this.handle.style.fontSize = "inherit";
         this.handle.style.padding = "0.1em 0";
-        this.handle.style.borderWidth = this.border_width + "px";
+        this.handle.style.borderWidth = this.borderWidth + "px";
         this.handle.style.borderColor = "#666";
         this.handle.style.left = "2.5%";
         this.handle.style.transform = "translate(0, -50%)";
-        this.update_handle_pos(0);
+        this.updateHandlePos(0);
         this.container.appendChild(this.handle);
 
         interact(this.handle).draggable({
@@ -82,23 +82,23 @@ export class SliderControl {
                 this.dispatch("changeend", {"target": this});
             },
             onmove: event => {
-                this._drag_y += event.dy;
+                this._dragY += event.dy;
 
                 this.scale.range([0, this.guideline.clientHeight]);
-                this.set_value(this.scale.invert(this._drag_y));
+                this.setValue(this.scale.invert(this._dragY));
             },
             onstart: () => {
                 this.dispatch("changestart", {"target": this});
-                this.deactivate_type_mode(null);
-                this._drag_y = this.get_handle_pos();
+                this.deactivateTypeMode(null);
+                this._dragY = this.getHandlePos();
             },
         });
 
         interact(this.handle).on("tap", event => {
-            this.activate_type_mode();
+            this.activateTypeMode();
             event.stopPropagation();
         }).on("keydown", event => {
-            this.handle_keypress(event);
+            this.handleKeypress(event);
         });
 
         this.listeners = {};
@@ -115,15 +115,15 @@ export class SliderControl {
         }
     }
 
-    set_range(min, max) {
+    setRange(min, max) {
         this.min = min;
         this.max = max;
         this.scale.domain([max, min]);
-        this.set_value(this.value);
-        this.on_resize();
+        this.setValue(this.value);
+        this.onResize();
     }
 
-    display_value(value) {
+    displayValue(value) {
         if (value < this.min) {
             value = this.min;
         }
@@ -133,98 +133,98 @@ export class SliderControl {
 
         this.value = value;
 
-        this.update_handle_pos(value);
-        this.update_value_text(value);
+        this.updateHandlePos(value);
+        this.updateValueText(value);
     }
 
-    set_value(value) {
-        this.display_value(value);
+    setValue(value) {
+        this.displayValue(value);
         this.dispatch("change", {"target": this, "value": this.value});
     }
 
-    activate_type_mode() {
-        if (this.type_mode) {
+    activateTypeMode() {
+        if (this.typeMode) {
             return;
         }
 
         this.dispatch("changestart", {"target": this});
 
-        this.type_mode = true;
+        this.typeMode = true;
 
         $(this.handle).empty().append(
-            "<input id='value_in_field' style='border:0; outline:0;'></input>"
+            "<input id='valueInField' style='border:0; outline:0;'></input>"
         );
 
-        const elem = this.handle.querySelector("#value_in_field");
-        elem.value = this.format_value(this.value);
+        const elem = this.handle.querySelector("#valueInField");
+        elem.value = this.formatValue(this.value);
         elem.focus();
         elem.select();
         elem.style.width = "100%";
         elem.style.textAlign = "center";
         elem.style.backgroundColor = "transparent";
         $(elem).on("input", event => {
-            if (utils.is_num(elem.value)) {
+            if (utils.isNum(elem.value)) {
                 this.handle.style.backgroundColor = "";
             } else {
                 this.handle.style.backgroundColor = "salmon";
             }
         }).on("blur", event => {
-            this.deactivate_type_mode(null);
+            this.deactivateTypeMode(null);
         });
     }
 
-    deactivate_type_mode(event) {
-        if (!this.type_mode) {
+    deactivateTypeMode(event) {
+        if (!this.typeMode) {
             return;
         }
 
         this.dispatch("changeend", {"target": this});
 
-        this.type_mode = false;
+        this.typeMode = false;
 
         $(this.handle).off("keydown");
         this.handle.style.backgroundColor = "";
-        utils.safe_set_text(this.handle, this.format_value(this.value));
+        // utils.safeSetText(this.handle, this.formatValue(this.value));
     }
 
-    handle_keypress(event) {
-        if (!this.type_mode) {
+    handleKeypress(event) {
+        if (!this.typeMode) {
             return;
         }
 
-        const enter_keycode = 13;
-        const esc_keycode = 27;
+        const enterKeycode = 13;
+        const escKeycode = 27;
         const key = event.which;
 
-        if (key === enter_keycode) {
-            const input = this.handle.querySelector("#value_in_field").value;
-            if (utils.is_num(input)) {
-                this.deactivate_type_mode(null);
-                this.set_value(parseFloat(input));
+        if (key === enterKeycode) {
+            const input = this.handle.querySelector("#valueInField").value;
+            if (utils.isNum(input)) {
+                this.deactivateTypeMode(null);
+                this.setValue(parseFloat(input));
             }
-        } else if (key === esc_keycode) {
-            this.deactivate_type_mode(null);
+        } else if (key === escKeycode) {
+            this.deactivateTypeMode(null);
         }
     }
 
-    update_handle_pos(value) {
-        this.handle.style.top = this.scale(value) + this.border_width;
+    updateHandlePos(value) {
+        this.handle.style.top = this.scale(value) + this.borderWidth;
     }
 
-    get_handle_pos() {
-        return parseFloat(this.handle.style.top) - this.border_width;
+    getHandlePos() {
+        return parseFloat(this.handle.style.top) - this.borderWidth;
     }
 
-    update_value_text(value) {
-        utils.safe_set_text(this.handle, this.format_value(value));
+    updateValueText(value) {
+        // utils.safeSetText(this.handle, this.formatValue(value));
     }
 
-    format_value(value) {
+    formatValue(value) {
         return value.toFixed(2);
     }
 
-    on_resize() {
+    onResize() {
         this.scale.range([0, this.guideline.clientHeight]);
-        this.update_handle_pos(this.value);
+        this.updateHandlePos(this.value);
     }
 }

@@ -14,21 +14,21 @@ import * as utils from "./utils";
  *
  * The key is the div the menu is in.
  */
-export var visible_menus = {};
+export var visibleMenus = {};
 
 /**
  * Hide any menu that is displayed in the given div
  */
-export function hide_menu_in(div) {
-    const menu = visible_menus[div];
+export function hideMenuIn(div) {
+    const menu = visibleMenus[div];
     if (menu !== undefined) {
         menu.hide();
     }
 }
 
-export function hide_any() {
-    Object.keys(visible_menus).forEach(k => {
-        hide_menu_in(k);
+export function hideAny() {
+    Object.keys(visibleMenus).forEach(k => {
+        hideMenuIn(k);
     });
 }
 
@@ -36,13 +36,13 @@ export class Menu {
     actions;
     div;
     menu;
-    menu_div;
+    menuDiv;
     visible;
 
     constructor(div) {
         this.visible = false; // Whether it's currently visible
         this.div = div; // The parent div
-        this.menu_div = null; // The div for the menu itself
+        this.menuDiv = null; // The div for the menu itself
         this.actions = {}; // The current action list for the menu
     }
 
@@ -53,18 +53,18 @@ export class Menu {
      * Called by a listener from netgraph.js
      */
     show(x, y, items) {
-        hide_menu_in(this.div);
+        hideMenuIn(this.div);
 
         if (items.length === 0) {
             return;
         }
 
         // TODO: move this to the constructor
-        this.menu_div = document.createElement("div");
-        this.menu_div.style.position = "fixed";
-        this.menu_div.style.left = x;
-        this.menu_div.style.top = y;
-        this.menu_div.style.zIndex = utils.next_zindex();
+        this.menuDiv = document.createElement("div");
+        this.menuDiv.style.position = "fixed";
+        this.menuDiv.style.left = x;
+        this.menuDiv.style.top = y;
+        this.menuDiv.style.zIndex = utils.nextZindex();
 
         this.menu = document.createElement("ul");
         this.menu.className = "dropdown-menu";
@@ -72,8 +72,8 @@ export class Menu {
         this.menu.style.display = "block";
         this.menu.role = "menu";
 
-        this.menu_div.appendChild(this.menu);
-        this.div.appendChild(this.menu_div);
+        this.menuDiv.appendChild(this.menu);
+        this.div.appendChild(this.menuDiv);
 
         this.actions = {};
 
@@ -99,39 +99,39 @@ export class Menu {
             this.menu.appendChild(b);
         });
         this.visible = true;
-        this.check_overflow(x, y);
-        visible_menus[this.div] = this;
+        this.checkOverflow(x, y);
+        visibleMenus[this.div] = this;
     }
 
     /**
      * Hide this menu.
      */
     hide() {
-        this.div.removeChild(this.menu_div);
+        this.div.removeChild(this.menuDiv);
         this.visible = false;
 
-        this.menu_div = null;
-        delete visible_menus[this.div];
+        this.menuDiv = null;
+        delete visibleMenus[this.div];
     }
 
-    visible_any() {
-        return visible_menus[this.div] !== undefined;
+    visibleAny() {
+        return visibleMenus[this.div] !== undefined;
     }
 
-    check_overflow(x, y) {
-        const corrected_y = y - $("#top_toolbar_div").height();
+    checkOverflow(x, y) {
+        const correctedY = y - $("#top_toolbar_div").height();
         const h = $(this.menu).outerHeight();
         const w = $(this.menu).outerWidth();
 
-        const main_h = $("#main").height();
-        const main_w = $("#main").width();
+        const mainH = $("#main").height();
+        const mainW = $("#main").width();
 
-        if (corrected_y + h > main_h) {
-            this.menu_div.style.top = y - h;
+        if (correctedY + h > mainH) {
+            this.menuDiv.style.top = y - h;
         }
 
-        if (x + w > main_w) {
-            this.menu_div.style.left = main_w - w;
+        if (x + w > mainW) {
+            this.menuDiv.style.left = mainW - w;
         }
     }
 }

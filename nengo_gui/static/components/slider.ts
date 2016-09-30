@@ -22,69 +22,69 @@ import "./slider.css";
 import { SliderControl } from "./slidercontrol";
 
 export class Slider extends Component {
-    ax_top;
-    border_size;
-    data_store;
-    filling_slider_value;
+    axTop;
+    borderSize;
+    dataStore;
+    fillingSliderValue;
     group;
-    immediate_notify;
-    n_sliders;
-    notify_msgs;
-    reset_value;
+    immediateNotify;
+    nSliders;
+    notifyMsgs;
+    resetValue;
     sim;
-    slider_height;
+    sliderHeight;
     sliders;
-    start_value;
+    startValue;
 
     constructor(parent, sim, args) {
         super(parent, args);
         this.sim = sim;
 
         // Check if user is filling in a number into a slider
-        this.filling_slider_value = false;
-        this.n_sliders = args.n_sliders;
+        this.fillingSliderValue = false;
+        this.nSliders = args.nSliders;
 
-        this.data_store = null;
+        this.dataStore = null;
 
-        this.notify_msgs = [];
+        this.notifyMsgs = [];
         // TODO: get rid of the immediate parameter once the websocket delay
         //       fix is merged in (#160)
-        this.immediate_notify = true;
+        this.immediateNotify = true;
 
-        this.set_axes_geometry(this.width, this.height);
+        this.setAxesGeometry(this.width, this.height);
 
-        this.min_height = 40;
+        this.minHeight = 40;
 
         this.group = document.createElement("div");
-        this.group.style.height = this.slider_height;
-        this.group.style.marginTop = this.ax_top;
+        this.group.style.height = this.sliderHeight;
+        this.group.style.marginTop = this.axTop;
         this.group.style.whiteSpace = "nowrap";
         this.group.position = "relative";
         this.div.appendChild(this.group);
 
         // Make the sliders
         // The value to use when releasing from user control
-        this.reset_value = args.start_value;
+        this.resetValue = args.startValue;
         // The value to use when restarting the simulation from beginning
-        this.start_value = args.start_value;
+        this.startValue = args.startValue;
 
         this.sliders = [];
-        for (let i = 0; i < args.n_sliders; i++) {
+        for (let i = 0; i < args.nSliders; i++) {
             // Creating a SliderControl object for every slider handle required
-            const slider = new SliderControl(args.min_value, args.max_value);
-            slider.container.style.width = (100 / args.n_sliders) + "%";
-            slider.display_value(args.start_value[i]);
+            const slider = new SliderControl(args.minValue, args.maxValue);
+            slider.container.style.width = (100 / args.nSliders) + "%";
+            // slider.displayValue(args.startValue[i]);
             slider.index = i;
             slider.fixed = false;
 
             slider.on("change", function(event) {
                 event.target.fixed = true;
-                this.send_value(event.target.index, event.value);
+                this.sendValue(event.target.index, event.value);
             }).on("changestart", function(event) {
-                menu.hide_any();
+                menu.hideAny();
                 for (let i = 0; i < this.sliders.length; i++) {
                     if (this.sliders[i] !== event.target) {
-                        this.sliders[i].deactivate_type_mode();
+                        this.sliders[i].deactivateTypeMode();
                     }
                 }
             });
@@ -93,198 +93,198 @@ export class Slider extends Component {
             this.sliders.push(slider);
         }
 
-        // Call schedule_update whenever the time is adjusted in the SimControl
-        this.sim.time_slider.div.addEventListener("adjust_time", e => {
-            this.schedule_update();
+        // Call scheduleUpdate whenever the time is adjusted in the SimControl
+        this.sim.timeSlider.div.addEventListener("adjustTime", e => {
+            this.scheduleUpdate();
         });
 
-        this.sim.div.addEventListener("reset_sim", e => {
-            this.on_reset_sim();
+        this.sim.div.addEventListener("resetSim", e => {
+            this.onResetSim();
         });
 
-        this.on_resize(
-            viewport.scale_width(this.w), viewport.scale_height(this.h));
-    };
+        this.onResize(
+            viewport.scaleWidth(this.w), viewport.scaleHeight(this.h));
+    }
 
-    set_axes_geometry(width, height) {
+    setAxesGeometry(width, height) {
         this.width = width;
         this.height = height;
         const scale = parseFloat($("#main").css("font-size"));
-        this.border_size = 1;
-        this.ax_top = 1.75 * scale;
-        this.slider_height = this.height - this.ax_top;
-    };
+        this.borderSize = 1;
+        this.axTop = 1.75 * scale;
+        this.sliderHeight = this.height - this.axTop;
+    }
 
-    send_value(slider_index, value) {
-        console.assert(typeof slider_index === "number");
+    sendValue(sliderIndex, value) {
+        console.assert(typeof sliderIndex === "number");
         console.assert(typeof value === "number");
 
-        if (this.immediate_notify) {
-            this.ws.send(slider_index + "," + value);
+        if (this.immediateNotify) {
+            this.ws.send(sliderIndex + "," + value);
         } else {
-            this.notify(slider_index + "," + value);
+            this.notify(sliderIndex + "," + value);
         }
-        this.sim.time_slider.jump_to_end();
-    };
+        this.sim.timeSlider.jumpToEnd();
+    }
 
-    on_reset_sim() {
+    onResetSim() {
         // Release slider position and reset it
         for (let i = 0; i < this.sliders.length; i++) {
             this.notify("" + i + ",reset");
-            this.sliders[i].display_value(this.start_value[i]);
+            this.sliders[i].displayValue(this.startValue[i]);
             this.sliders[i].fixed = false;
         }
-    };
+    }
 
     /**
      * Receive new line data from the server.
      */
-    on_message(event) {
+    onMessage(event) {
         const data = new Float32Array(event.data);
-        if (this.data_store === null) {
-            this.data_store = new DataStore(this.sliders.length, this.sim, 0);
+        if (this.dataStore === null) {
+            this.dataStore = new DataStore(this.sliders.length, this.sim, 0);
         }
-        this.reset_value = [];
+        this.resetValue = [];
         for (let i = 0; i < this.sliders.length; i++) {
-            this.reset_value.push(data[i + 1]);
+            this.resetValue.push(data[i + 1]);
 
             if (this.sliders[i].fixed) {
                 data[i + 1] = this.sliders[i].value;
             }
         }
-        this.data_store.push(data);
+        this.dataStore.push(data);
 
-        this.schedule_update(event);
-    };
+        // this.scheduleUpdate(event);
+    }
 
     /**
      * Update visual display based when component is resized.
      */
-    on_resize(width, height) {
+    onResize(width, height) {
         console.assert(typeof width === "number");
         console.assert(typeof height === "number");
 
-        if (width < this.min_width) {
-            width = this.min_width;
+        if (width < this.minWidth) {
+            width = this.minWidth;
         }
-        if (height < this.min_height) {
-            height = this.min_height;
+        if (height < this.minHeight) {
+            height = this.minHeight;
         }
 
-        this.set_axes_geometry(width, height);
+        this.setAxesGeometry(width, height);
 
-        this.group.style.height = height - this.ax_top - 2 * this.border_size;
-        this.group.style.marginTop = this.ax_top;
+        this.group.style.height = height - this.axTop - 2 * this.borderSize;
+        this.group.style.marginTop = this.axTop;
 
         for (let i = 0; i < this.sliders.length; i++) {
-            this.sliders[i].on_resize();
+            this.sliders[i].onResize();
         }
 
         this.label.style.width = this.width;
         this.div.style.width = this.width;
         this.div.style.height = this.height;
-    };
+    }
 
-    generate_menu() {
+    generateMenu() {
         const items = [
             ["Set range...", function() {
-                this.set_range();
+                this.setRange();
             }],
             ["Set value...", function() {
-                this.user_value();
+                this.userValue();
             }],
             ["Reset value", function() {
-                this.user_reset_value();
+                this.userResetValue();
             }],
         ];
 
         // Add the parent's menu items to this
-        // TODO: is this really the best way to call the parent's generate_menu()?
-        return $.merge(items, Component.prototype.generate_menu.call(this));
-    };
+        // TODO: is this really the best way to call the parent's generateMenu()?
+        return $.merge(items, Component.prototype.generateMenu.call(this));
+    }
 
     /**
      * Report an event back to the server.
      */
     notify(info) {
-        this.notify_msgs.push(info);
+        this.notifyMsgs.push(info);
 
         // Only send one message at a time
         // TODO: find a better way to figure out when it's safe to send
         // another message, rather than just waiting 1ms....
-        if (this.notify_msgs.length === 1) {
+        if (this.notifyMsgs.length === 1) {
             window.setTimeout(function() {
-                this.send_notify_msg();
+                this.sendNotifyMsg();
             }, 50);
         }
-    };
+    }
 
     /**
      * Send exactly one message back to server.
      *
      * Also schedule the next message to be sent, if any.
      */
-    send_notify_msg() {
-        const msg = this.notify_msgs[0];
+    sendNotifyMsg() {
+        const msg = this.notifyMsgs[0];
         this.ws.send(msg);
-        if (this.notify_msgs.length > 1) {
+        if (this.notifyMsgs.length > 1) {
             window.setTimeout(function() {
-                this.send_notify_msg();
+                this.sendNotifyMsg();
             }, 50);
         }
-        this.notify_msgs.splice(0, 1);
-    };
+        this.notifyMsgs.splice(0, 1);
+    }
 
     update() {
         // Let the data store clear out old values
-        if (this.data_store !== null) {
-            this.data_store.update();
+        if (this.dataStore !== null) {
+            this.dataStore.update();
 
-            const data = this.data_store.get_last_data();
+            const data = this.dataStore.getLastData();
 
             for (let i = 0; i < this.sliders.length; i++) {
-                if (!this.data_store.is_at_end() || !this.sliders[i].fixed) {
-                    this.sliders[i].display_value(data[i]);
+                if (!this.dataStore.isAtEnd() || !this.sliders[i].fixed) {
+                    this.sliders[i].displayValue(data[i]);
                 }
             }
         }
-    };
+    }
 
-    user_value() {
+    userValue() {
         // First build the prompt string
-        let prompt_string = "";
+        let promptString = "";
         for (let i = 0; i < this.sliders.length; i++) {
-            prompt_string = prompt_string + this.sliders[i].value.toFixed(2);
+            promptString = promptString + this.sliders[i].value.toFixed(2);
             if (i !== this.sliders.length - 1) {
-                prompt_string = prompt_string + ", ";
+                promptString = promptString + ", ";
             }
         }
         this.sim.modal.title("Set slider value(s)...");
-        this.sim.modal.single_input_body(prompt_string, "New value(s)");
-        this.sim.modal.footer("ok_cancel", function(e) {
-            let new_value = $("#singleInput").val();
+        this.sim.modal.singleInputBody(promptString, "New value(s)");
+        this.sim.modal.footer("okCancel", function(e) {
+            let newValue = $("#singleInput").val();
             const modal = $("#myModalForm").data("bs.validator");
 
             modal.validate();
             if (modal.hasErrors() || modal.isIncomplete()) {
                 return;
             }
-            this.immediate_notify = false;
-            if (new_value !== null) {
-                new_value = new_value.split(",");
+            this.immediateNotify = false;
+            if (newValue !== null) {
+                newValue = newValue.split(",");
                 // Update the sliders one at a time
                 for (let i = 0; i < this.sliders.length; i++) {
                     this.sliders[i].fixed = true;
-                    this.sliders[i].set_value(parseFloat(new_value[i]));
+                    this.sliders[i].setValue(parseFloat(newValue[i]));
                 }
             }
-            this.immediate_notify = true;
+            this.immediateNotify = true;
             $("#OK").attr("data-dismiss", "modal");
         });
 
         $("#myModalForm").validator({
             custom: {
-                my_validator: function($item) {
+                myValidator: function($item) {
                     const nums = $item.val().split(",");
                     if (nums.length !== this.sliders.length) {
                         return false;
@@ -302,43 +302,43 @@ export class Slider extends Component {
         $("#singleInput").attr("data-error", "Input should be one " +
                                "comma-separated numerical value for each slider.");
         this.sim.modal.show();
-    };
+    }
 
-    user_reset_value() {
+    userResetValue() {
         for (let i = 0; i < this.sliders.length; i++) {
             this.notify("" + i + ",reset");
 
-            this.sliders[i].set_value(this.reset_value[i]);
+            this.sliders[i].setValue(this.resetValue[i]);
             this.sliders[i].fixed = false;
         }
-    };
+    }
 
-    set_range() {
+    setRange() {
         const range = this.sliders[0].scale.domain();
         this.sim.modal.title("Set slider range...");
-        this.sim.modal.single_input_body([range[1], range[0]], "New range");
-        this.sim.modal.footer("ok_cancel", function(e) {
-            let new_range = $("#singleInput").val();
+        this.sim.modal.singleInputBody([range[1], range[0]], "New range");
+        this.sim.modal.footer("okCancel", function(e) {
+            let newRange = $("#singleInput").val();
             const modal = $("#myModalForm").data("bs.validator");
 
             modal.validate();
             if (modal.hasErrors() || modal.isIncomplete()) {
                 return;
             }
-            if (new_range !== null) {
-                new_range = new_range.split(",");
-                const min = parseFloat(new_range[0]);
-                const max = parseFloat(new_range[1]);
+            if (newRange !== null) {
+                newRange = newRange.split(",");
+                const min = parseFloat(newRange[0]);
+                const max = parseFloat(newRange[1]);
                 for (let i = 0; i < this.sliders.length; i++) {
-                    this.sliders[i].set_range(min, max);
+                    this.sliders[i].setRange(min, max);
                 }
-                this.save_layout();
+                this.saveLayout();
             }
             $("#OK").attr("data-dismiss", "modal");
         });
         $("#myModalForm").validator({
             custom: {
-                my_validator: function($item) {
+                myValidator: function($item) {
                     const nums = $item.val().split(",");
                     let valid = false;
                     if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
@@ -355,20 +355,20 @@ export class Slider extends Component {
         $("#singleInput").attr("data-error", "Input should be in the " +
                                "form '<min>,<max>'.");
         this.sim.modal.show();
-    };
+    }
 
-    layout_info() {
-        const info = Component.prototype.layout_info.call(this);
-        info.min_value = this.sliders[0].scale.domain()[1];
-        info.max_value = this.sliders[0].scale.domain()[0];
+    layoutInfo() {
+        const info = Component.prototype.layoutInfo.call(this);
+        info.minValue = this.sliders[0].scale.domain()[1];
+        info.maxValue = this.sliders[0].scale.domain()[0];
         return info;
-    };
+    }
 
-    update_layout(config) {
+    updateLayout(config) {
         // FIXME: this has to be backwards to work. Something fishy must be going on
         for (let i = 0; i < this.sliders.length; i++) {
-            this.sliders[i].set_range(config.min_value, config.max_value);
+            this.sliders[i].setRange(config.minValue, config.maxValue);
         }
-        Component.prototype.update_layout.call(this, config);
-    };
+        Component.prototype.updateLayout.call(this, config);
+    }
 }

@@ -2,30 +2,30 @@
  * Test the Axes2D class.
  */
 
-import * as test from "tape";
 import { dom, h } from "maquette";
+import * as test from "tape";
 
 import * as fixtures from "../../tests/fixtures";
 
-import Axes2D from "../2d_axes";
+import { Axes2D } from "../2d-axes";
 
-function axes_node() {
+function axesNode() {
     return h("div", [h("svg", {height: "100%", width: "100%"}, [
-        x_axis(),
-        y_axis(),
+        xAxis(),
+        yAxis(),
     ])]);
 }
 
-function x_axis() {
-    return h("g.axis.axis_x.unselectable", [
-        x_tick(0.0),
-        x_tick(0.5),
-        x_tick(1.0),
+function xAxis() {
+    return h("g.axis.axisX.unselectable", [
+        xTick(0.0),
+        xTick(0.5),
+        xTick(1.0),
         h("path.domain", {d: "M0,6V0H1V6" }),
     ]);
 }
 
-function x_tick(x) {
+function xTick(x) {
     return h("g.tick", {
         styles: {opacity: "1"},
         transform: "translate(" + x + ",0)",
@@ -40,15 +40,15 @@ function x_tick(x) {
     ]);
 }
 
-function y_axis() {
-    return h("g.axis.axis_y.unselectable", [
-        y_tick(0.0),
-        y_tick(1.0),
+function yAxis() {
+    return h("g.axis.axisY.unselectable", [
+        yTick(0.0),
+        yTick(1.0),
         h("path.domain", {d: "M-6,0H0V1H-6"}),
     ]);
 }
 
-function y_tick(y) {
+function yTick(y) {
     return h("g.tick", {
         style: "opacity: 1;",
         transform: "translate(0," + y + ")",
@@ -63,29 +63,29 @@ function y_tick(y) {
     ]);
 }
 
-test("Axes2D.set_axes_geometry", assert => {
+test("Axes2D.setAxesGeometry", assert => {
     const document = new fixtures.Document(assert);
     const div = document.document.createElement("div");
 
     const axes = new Axes2D(div, {
         "height": 100,
-        "max_value": 1,
-        "min_value": 0,
+        "maxValue": 1,
+        "minValue": 0,
         "width": 100,
     });
 
-    // assert.equal(div.innerHTML, dom.create(axes_node()).domNode.innerHTML);
-    assert.ok(div.isEqualNode(dom.create(axes_node()).domNode));
+    // assert.equal(div.innerHTML, dom.create(axesNode()).domNode.innerHTML);
+    assert.ok(div.isEqualNode(dom.create(axesNode()).domNode));
     assert.equal(axes.width, 100);
     assert.equal(axes.height, 100);
-    assert.equal(axes.ax_left, 100);
-    assert.equal(axes.ax_right, 0);
-    assert.equal(axes.ax_bottom, 0);
-    assert.equal(axes.ax_top, 0);
-    assert.equal(axes.tick_size, 0);
-    assert.equal(axes.tick_padding, 0);
+    assert.equal(axes.axLeft, 100);
+    assert.equal(axes.axRight, 0);
+    assert.equal(axes.axBottom, 0);
+    assert.equal(axes.axTop, 0);
+    assert.equal(axes.tickSize, 0);
+    assert.equal(axes.tickPadding, 0);
 
-    axes.set_axes_geometry(50, 50);
+    axes.setAxesGeometry(50, 50);
 
     assert.equal(div.innerHTML, "");
 

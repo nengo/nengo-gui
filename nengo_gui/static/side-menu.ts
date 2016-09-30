@@ -8,60 +8,60 @@
 import * as $ from "jquery";
 
 import { config } from "./config";
-import "./side_menu.css";
+import "./side-menu.css";
 
 export class SideMenu {
-    menu_open;
-    menu_width;
+    menuOpen;
+    menuWidth;
     modal;
     netgraph;
     sim;
     tabs;
-    top_buttons;
+    topButtons;
 
     constructor (sim) {
-        let file_browser_open = false;
+        let fileBrowserOpen = false;
         this.sim = sim;
         this.modal = this.sim.modal;
         this.netgraph = this.modal.netgraph;
         // Menu initially closed
-        this.menu_open = false;
+        this.menuOpen = false;
 
-        this.menu_width = (<HTMLElement> document.getElementById("sidenav"))
+        this.menuWidth = (<HTMLElement> document.getElementById("sidenav"))
             .offsetWidth;
 
         // Gathers all the menu tabs from the HTML for the Event Handlers
         this.tabs = $(".tab-content");
 
-        this.top_buttons = ["#Open_file_button", "#Config_menu"];
-        this.initialize_button_handlers();
+        this.topButtons = ["#Open_file_button", "#Config_menu"];
+        this.initializeButtonHandlers();
 
         // ----EVENT HANDLERS----
 
-        // file_browser
+        // file browser
         $("#Open_file_button")[0].addEventListener("click", () => {
-            if (!$(this).hasClass("deactivated") && !file_browser_open) {
-                file_browser_open = true;
-                this.file_browser();
+            if (!$(this).hasClass("deactivated") && !fileBrowserOpen) {
+                fileBrowserOpen = true;
+                this.fileBrowser();
             }
         });
 
         // Modal Handlers
         $("#Pdf_button")[0].addEventListener("click", () => {
-            this.pdf_modal();
+            this.pdfModal();
         });
         $("#Download_button")[0].addEventListener("click", () => {
-            this.csv_modal();
+            this.csvModal();
         });
         $("#Minimap_button")[0].addEventListener("click", () => {
             this.netgraph.toggleMiniMap();
         });
 
         // Handles Accordions
-        const accord_num =
+        const accordNum =
             document.getElementsByClassName("accordion-container").length + 1;
 
-        for (let x = 1; x < accord_num; x++) {
+        for (let x = 1; x < accordNum; x++) {
             $("#accordion-container" + String(x))
                 .find(".accordion-toggle")
                 .click(function() {
@@ -75,53 +75,53 @@ export class SideMenu {
         }
 
         $(window).on("resize", () => {
-            this.on_resize();
+            this.onresize();
         });
-        this.on_resize();
+        this.onresize();
     }
 
-    on_resize() {
+    onresize() {
         $("#filebrowser").height($("#sidenav").height());
     }
 
     /**
      * Finds all menu tabs and creates handlers.
      */
-    initialize_button_handlers() {
+    initializeButtonHandlers() {
         // Handles Menu tab switching
-        for (let x = 0; x < this.top_buttons.length; x++) {
-            $(this.top_buttons[x]).click(
-                this.menu_tab_click(
-                    this.top_buttons[x], x, true
+        for (let x = 0; x < this.topButtons.length; x++) {
+            $(this.topButtons[x]).click(
+                this.menuTabClick(
+                    this.topButtons[x], x, true
                 )
             );
         }
     }
 
-    toggle_side_nav() {
+    toggleSideNav() {
         const element = document.getElementById("sidenav");
-        let trans_val = "";
+        let transVal = "";
 
-        if (this.menu_open === false) {
-            trans_val = "0";
-            this.menu_open = true;
+        if (this.menuOpen === false) {
+            transVal = "0";
+            this.menuOpen = true;
         } else {
-            trans_val = String(-this.menu_width);
-            this.menu_open = false;
+            transVal = String(-this.menuWidth);
+            this.menuOpen = false;
         }
 
-        element.style.transform = "translate(" + trans_val + "px)";
+        element.style.transform = "translate(" + transVal + "px)";
     }
 
-    show_side_nav() {
-        if (!this.menu_open) {
-            this.toggle_side_nav();
+    showSideNav() {
+        if (!this.menuOpen) {
+            this.toggleSideNav();
         }
     }
 
-    hide_side_nav() {
-        if (this.menu_open) {
-            this.toggle_side_nav();
+    hideSideNav() {
+        if (this.menuOpen) {
+            this.toggleSideNav();
         }
     }
 
@@ -129,26 +129,26 @@ export class SideMenu {
      * Determines which tab should be in view when clicked.
      *
      * @param {HTMLElement|string} it - The element
-     * @param {number} pos_num - Which tab it corresponds to
-     * @param {boolean} close_if_selected - Whether to close the tab
+     * @param {number} posNum - Which tab it corresponds to
+     * @param {boolean} closeIfSelected - Whether to close the tab
      * @returns {function} Function to call on tab click
      */
-    menu_tab_click(it, pos_num, close_if_selected) {
+    menuTabClick(it, posNum, closeIfSelected) {
         return () => {
             if ($(it).hasClass("deactivated")) {
                 return;
             }
-            if (close_if_selected
-                    && this.menu_open
+            if (closeIfSelected
+                    && this.menuOpen
                     && $(it).hasClass("selected")) {
-                this.hide_side_nav();
-                this.focus_reset();
+                this.hideSideNav();
+                this.focusReset();
             } else {
-                this.show_side_nav();
-                const element = document.getElementById("Menu_content");
-                const trans_val = String(-this.menu_width * pos_num);
-                element.style.transform = "translate(" + trans_val + "px)";
-                this.focus_reset();
+                this.showSideNav();
+                const element = document.getElementById("MenuContent");
+                const transVal = String(-this.menuWidth * posNum);
+                element.style.transform = "translate(" + transVal + "px)";
+                this.focusReset();
                 $(it).addClass("selected");
             }
         };
@@ -157,8 +157,8 @@ export class SideMenu {
     /**
      * Deselects all menu tabs.
      */
-    focus_reset() {
-        this.top_buttons.forEach(button => {
+    focusReset() {
+        this.topButtons.forEach(button => {
             $(button).removeClass("selected");
         });
     }
@@ -166,7 +166,7 @@ export class SideMenu {
     /**
      * This lets you browse the files available on the server.
      */
-    file_browser() {
+    fileBrowser() {
         this.sim.ws.send("browse");
 
         const fb = $("#filebrowser");
@@ -181,20 +181,20 @@ export class SideMenu {
     /**
      * Export the layout to the SVG in Downloads folder.
      */
-    pdf_modal() {
+    pdfModal() {
         this.modal.title("Export the layout to SVG");
-        this.modal.text_body("Do you want to save the file?", "info");
-        this.modal.footer("confirm_savepdf");
+        this.modal.textBody("Do you want to save the file?", "info");
+        this.modal.footer("confirmSavepdf");
         this.modal.show();
     }
 
     /**
      * Export the graph data to the CSV in Downloads folder.
      */
-    csv_modal() {
+    csvModal() {
         this.modal.title("Export the graph data to CSV");
-        this.modal.text_body("Do you want to save the file?", "info");
-        this.modal.footer("confirm_savecsv");
+        this.modal.textBody("Do you want to save the file?", "info");
+        this.modal.footer("confirmSavecsv");
         this.modal.show();
     }
 

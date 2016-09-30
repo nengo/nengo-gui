@@ -12,10 +12,10 @@
 
 export class NetGraphConnection {
     g;
-    g_conns;
+    gConns;
     line;
     marker;
-    mini_conn;
+    miniConn;
     minimap;
     ng;
     objects;
@@ -25,11 +25,11 @@ export class NetGraphConnection {
     pre;
     pres;
     recurrent;
-    recurrent_ellipse;
+    recurrentEllipse;
     removed;
     uid;
 
-    constructor(ng, info, minimap, mini_conn) {
+    constructor(ng, info, minimap, miniConn) {
         this.ng = ng;
         this.uid = info.uid;
 
@@ -41,13 +41,13 @@ export class NetGraphConnection {
         this.post = null;
 
         this.minimap = minimap;
-        this.mini_conn = mini_conn;
+        this.miniConn = miniConn;
         if (!minimap) {
-            this.g_conns = ng.g_conns;
-            this.objects = ng.svg_objects;
+            this.gConns = ng.gConns;
+            this.objects = ng.svgObjects;
         } else {
-            this.g_conns = ng.g_conns_mini;
-            this.objects = ng.minimap_objects;
+            this.gConns = ng.gConnsMini;
+            this.objects = ng.minimapObjects;
         }
 
         // The uids for the pre and post items in the connection.
@@ -63,8 +63,8 @@ export class NetGraphConnection {
         this.recurrent = this.pres[0] === this.posts[0];
 
         // Figure out the best available items to connect to
-        this.set_pre(this.find_pre());
-        this.set_post(this.find_post());
+        this.setPre(this.findPre());
+        this.setPost(this.findPost());
 
         // Determine parent and add to parent's children list
         if (info.parent === null) {
@@ -72,40 +72,40 @@ export class NetGraphConnection {
         } else {
             this.parent = this.objects[info.parent];
             if (!minimap) {
-                this.parent.child_connections.push(this);
+                this.parent.childConnections.push(this);
             }
         }
 
         // Create the line and its arrowhead marker
         this.g = ng.createSVGElement("g");
 
-        this.create_line();
+        this.createLine();
 
         this.redraw();
 
-        this.g_conns.appendChild(this.g);
+        this.gConns.appendChild(this.g);
     }
 
-    set_recurrent(recurrent) {
+    setRecurrent(recurrent) {
         if (this.recurrent === recurrent) {
             return;
         }
-        this.remove_line();
+        this.removeLine();
         this.recurrent = recurrent;
-        this.create_line();
+        this.createLine();
     }
 
-    create_line() {
+    createLine() {
         if (this.recurrent) {
-            this.recurrent_ellipse = this.ng.createSVGElement("path");
-            this.recurrent_ellipse.setAttribute(
+            this.recurrentEllipse = this.ng.createSVGElement("path");
+            this.recurrentEllipse.setAttribute(
                 "d",
                 "M6.451,28.748C2.448,26.041,0,22.413,0,18.425C0, " +
                     "10.051,10.801,3.262,24.125,3.262 " +
                     "S48.25,10.051,48.25,18.425c0," +
                     "6.453-6.412,11.964-15.45,14.153");
-            this.recurrent_ellipse.setAttribute("class", "recur");
-            this.g.appendChild(this.recurrent_ellipse);
+            this.recurrentEllipse.setAttribute("class", "recur");
+            this.g.appendChild(this.recurrentEllipse);
 
             this.marker = this.ng.createSVGElement("path");
             this.g.appendChild(this.marker);
@@ -128,11 +128,11 @@ export class NetGraphConnection {
         }
     }
 
-    remove_line() {
+    removeLine() {
         if (this.recurrent) {
-            this.g.removeChild(this.recurrent_ellipse);
+            this.g.removeChild(this.recurrentEllipse);
             this.g.removeChild(this.marker);
-            this.recurrent_ellipse = undefined;
+            this.recurrentEllipse = undefined;
             this.marker = undefined;
         } else {
             this.g.removeChild(this.line);
@@ -145,52 +145,52 @@ export class NetGraphConnection {
     /**
      * Set the item connecting from.
      */
-    set_pre(pre) {
+    setPre(pre) {
         if (this.pre !== null) {
             // If we're currently connected, disconnect
-            const index = this.pre.conn_out.indexOf(this);
+            const index = this.pre.connOut.indexOf(this);
             if (index === -1) {
-                console.warn("error removing in set_pre");
+                console.warn("error removing in setPre");
             }
-            this.pre.conn_out.splice(index, 1);
+            this.pre.connOut.splice(index, 1);
         }
         this.pre = pre;
         if (this.pre !== null) {
             // Add myself to pre's output connections list
-            this.pre.conn_out.push(this);
+            this.pre.connOut.push(this);
         }
     }
 
     /**
      * Set the item connecting to.
      */
-    set_post(post) {
+    setPost(post) {
         if (this.post !== null) {
             // If we're currently connected, disconnect
-            const index = this.post.conn_in.indexOf(this);
+            const index = this.post.connIn.indexOf(this);
             if (index === -1) {
-                console.warn("error removing in set_pre");
+                console.warn("error removing in setPre");
             }
-            this.post.conn_in.splice(index, 1);
+            this.post.connIn.splice(index, 1);
         }
         this.post = post;
         if (this.post !== null) {
             // Add myself to post's input connections list
-            this.post.conn_in.push(this);
+            this.post.connIn.push(this);
         }
     }
 
     /**
      * Determine the best available item to connect from.
      */
-    find_pre() {
+    findPre() {
         for (let i = 0; i < this.pres.length; i++) {
             const pre = this.objects[this.pres[i]];
             if (pre !== undefined) {
                 return pre;
             } else {
                 // Register to be notified if a better match occurs
-                this.ng.register_conn(this, this.pres[i]);
+                this.ng.registerConn(this, this.pres[i]);
             }
         }
         return null;
@@ -199,34 +199,34 @@ export class NetGraphConnection {
     /**
      * Determine the best available item to connect to.
      */
-    find_post() {
+    findPost() {
         for (let i = 0; i < this.posts.length; i++) {
             const post = this.objects[this.posts[i]];
             if (post !== undefined) {
                 return post;
             } else {
                 // Register to be notified if a better match occurs
-                this.ng.register_conn(this, this.posts[i]);
+                this.ng.registerConn(this, this.posts[i]);
             }
         }
         return null;
     }
 
-    set_pres(pres) {
+    setPres(pres) {
         this.pres = pres;
-        this.set_pre(this.find_pre());
+        this.setPre(this.findPre());
 
         if (!this.minimap) {
-            this.mini_conn.set_pres(pres);
+            this.miniConn.setPres(pres);
         }
     }
 
-    set_posts(posts) {
+    setPosts(posts) {
         this.posts = posts;
-        this.set_post(this.find_post());
+        this.setPost(this.findPost());
 
         if (!this.minimap) {
-            this.mini_conn.set_posts(posts);
+            this.miniConn.setPosts(posts);
         }
     }
 
@@ -235,36 +235,36 @@ export class NetGraphConnection {
      */
     remove() {
         if (!this.minimap && this.parent !== null) {
-            const index = this.parent.child_connections.indexOf(this);
+            const index = this.parent.childConnections.indexOf(this);
             if (index === -1) {
                 console.warn("error removing in remove");
             }
-            this.parent.child_connections.splice(index, 1);
+            this.parent.childConnections.splice(index, 1);
         }
 
         if (this.pre != null) {
-            const index = this.pre.conn_out.indexOf(this);
+            const index = this.pre.connOut.indexOf(this);
             if (index === -1) {
-                console.warn("error removing from conn_out");
+                console.warn("error removing from connOut");
             }
-            this.pre.conn_out.splice(index, 1);
+            this.pre.connOut.splice(index, 1);
         }
 
         if (this.post != null) {
-            const index = this.post.conn_in.indexOf(this);
+            const index = this.post.connIn.indexOf(this);
             if (index === -1) {
-                console.warn("error removing from conn_in");
+                console.warn("error removing from connIn");
             }
-            this.post.conn_in.splice(index, 1);
+            this.post.connIn.splice(index, 1);
         }
 
-        this.g_conns.removeChild(this.g);
+        this.gConns.removeChild(this.g);
         this.removed = true;
 
-        delete this.ng.svg_conns[this.uid];
+        delete this.ng.svgConns[this.uid];
 
         if (!this.minimap) {
-            this.mini_conn.remove();
+            this.miniConn.remove();
         }
     }
 
@@ -284,89 +284,89 @@ export class NetGraphConnection {
             }
             this.marker.setAttribute("visibility", "visible");
         }
-        const pre_pos = this.pre.get_screen_location();
+        const prePos = this.pre.getScreenLocation();
 
         if (this.recurrent) {
             const item = this.objects[this.pres[0]];
             if (item === undefined) {
                 this.marker.setAttribute("visibility", "hidden");
-                this.recurrent_ellipse.setAttribute("visibility", "hidden");
+                this.recurrentEllipse.setAttribute("visibility", "hidden");
             } else {
                 this.marker.setAttribute("visibility", "visible");
-                this.recurrent_ellipse.setAttribute("visibility", "visible");
-                const height = item.get_displayed_size()[1];
+                this.recurrentEllipse.setAttribute("visibility", "visible");
+                const height = item.getDisplayedSize()[1];
 
                 const scale = item.shape.getAttribute("transform");
-                const scale_value = parseFloat(scale.split(/[()]+/)[1]);
+                const scaleValue = parseFloat(scale.split(/[()]+/)[1]);
 
                 if (this.minimap === false) {
-                    this.recurrent_ellipse.setAttribute(
-                        "stroke-width", 2 / scale_value);
+                    this.recurrentEllipse.setAttribute(
+                        "stroke-width", 2 / scaleValue);
                 } else {
-                    this.recurrent_ellipse.setAttribute(
-                        "stroke-width", 1 / scale_value);
+                    this.recurrentEllipse.setAttribute(
+                        "stroke-width", 1 / scaleValue);
                 }
 
-                const ex = pre_pos[0] - scale_value * 17.5;
-                const ey = pre_pos[1] - height - scale_value * 36;
+                const ex = prePos[0] - scaleValue * 17.5;
+                const ey = prePos[1] - height - scaleValue * 36;
 
-                this.recurrent_ellipse.setAttribute(
+                this.recurrentEllipse.setAttribute(
                     "transform", "translate(" + ex + "," + ey + ")" + scale);
 
-                const mx = pre_pos[0] - 1;
+                const mx = prePos[0] - 1;
                 let my;
                 if (this.minimap === false) {
-                    my = pre_pos[1] - height - scale_value * 32.15 - 5;
+                    my = prePos[1] - height - scaleValue * 32.15 - 5;
                 } else {
-                    my = pre_pos[1] - height - scale_value * 32 - 2;
+                    my = prePos[1] - height - scaleValue * 32 - 2;
                 }
                 this.marker.setAttribute(
                     "transform", "translate(" + mx + "," + my + ")");
             }
         } else {
-            const post_pos = this.post.get_screen_location();
-            this.line.setAttribute("x1", pre_pos[0]);
-            this.line.setAttribute("y1", pre_pos[1]);
-            this.line.setAttribute("x2", post_pos[0]);
-            this.line.setAttribute("y2", post_pos[1]);
+            const postPos = this.post.getScreenLocation();
+            this.line.setAttribute("x1", prePos[0]);
+            this.line.setAttribute("y1", prePos[1]);
+            this.line.setAttribute("x2", postPos[0]);
+            this.line.setAttribute("y2", postPos[1]);
 
             // Angle between objects
             let angle = Math.atan2(
-                post_pos[1] - pre_pos[1], post_pos[0] - pre_pos[0]);
+                postPos[1] - prePos[1], postPos[0] - prePos[0]);
 
-            const w1 = this.pre.get_screen_width();
-            const h1 = this.pre.get_screen_height();
-            const w2 = this.post.get_screen_width();
-            const h2 = this.post.get_screen_height();
+            const w1 = this.pre.getScreenWidth();
+            const h1 = this.pre.getScreenHeight();
+            const w2 = this.post.getScreenWidth();
+            const h2 = this.post.getScreenHeight();
 
             const a1 = Math.atan2(h1, w1);
             const a2 = Math.atan2(h2, w2);
 
-            const pre_length = this.intersect_length(angle, a1, w1, h1);
-            let post_to_pre_angle = angle - Math.PI;
-            if (post_to_pre_angle < -Math.PI) {
-                post_to_pre_angle += 2 * Math.PI;
+            const preLength = this.intersectLength(angle, a1, w1, h1);
+            let postToPreAngle = angle - Math.PI;
+            if (postToPreAngle < -Math.PI) {
+                postToPreAngle += 2 * Math.PI;
             }
-            const post_length =
-                this.intersect_length(post_to_pre_angle, a2, w2, h2);
+            const postLength =
+                this.intersectLength(postToPreAngle, a2, w2, h2);
 
-            let mx = (pre_pos[0] + pre_length[0]) * 0.4 +
-                (post_pos[0] + post_length[0]) * 0.6;
-            let my = (pre_pos[1] + pre_length[1]) * 0.4 +
-                (post_pos[1] + post_length[1]) * 0.6;
+            let mx = (prePos[0] + preLength[0]) * 0.4 +
+                (postPos[0] + postLength[0]) * 0.6;
+            let my = (prePos[1] + preLength[1]) * 0.4 +
+                (postPos[1] + postLength[1]) * 0.6;
 
             // Check to make sure the marker doesn't go past either endpoint
-            const vec1 = [post_pos[0] - pre_pos[0], post_pos[1] - pre_pos[1]];
-            const vec2 = [mx - pre_pos[0], my - pre_pos[1]];
-            const dot_prod = (vec1[0] * vec2[0] + vec1[1] * vec2[1]) /
+            const vec1 = [postPos[0] - prePos[0], postPos[1] - prePos[1]];
+            const vec2 = [mx - prePos[0], my - prePos[1]];
+            const dotProd = (vec1[0] * vec2[0] + vec1[1] * vec2[1]) /
                 (vec1[0] * vec1[0] + vec1[1] * vec1[1]);
 
-            if (dot_prod < 0) {
-                mx = pre_pos[0];
-                my = pre_pos[1];
-            } else if (dot_prod > 1) {
-                mx = post_pos[0];
-                my = post_pos[1];
+            if (dotProd < 0) {
+                mx = prePos[0];
+                my = prePos[1];
+            } else if (dotProd > 1) {
+                mx = postPos[0];
+                my = postPos[1];
             }
             angle = 180 / Math.PI * angle;
             this.marker.setAttribute(
@@ -374,8 +374,8 @@ export class NetGraphConnection {
                     " rotate(" + angle + ")");
         }
 
-        if (!this.minimap && this.ng.mm_display) {
-            this.mini_conn.redraw();
+        if (!this.minimap && this.ng.mmDisplay) {
+            this.miniConn.redraw();
         }
     }
 
@@ -386,7 +386,7 @@ export class NetGraphConnection {
      * @param {number} alpha - the angle between zero and the top right corner
      *                         of the object
      */
-    intersect_length(
+    intersectLength(
         theta, alpha, width, height) {
         const beta = 2 * (Math.PI / 2 - alpha); // Angle between top corners
         let x;

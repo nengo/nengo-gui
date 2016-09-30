@@ -7,7 +7,7 @@
 import { Editor } from "./editor";
 import { Modal } from "./modal";
 import { NetGraph } from "./netgraph/netgraph";
-import { SimControl } from "./sim_control"
+import { SimControl } from "./sim-control"
 
 export class Hotkeys {
     active: boolean = true;

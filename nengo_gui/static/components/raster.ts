@@ -20,120 +20,120 @@ import * as utils from "../utils";
 import * as viewport from "../viewport";
 import { Component } from "./component";
 import "./raster.css";
-import { TimeAxes } from "./time_axes";
+import { TimeAxes } from "./time-axes";
 
 export class Raster extends Component {
     axes2d;
-    data_store;
-    n_neurons;
+    dataStore;
+    nNeurons;
     path;
     sim;
 
     constructor(parent, sim, args) {
         super(parent, args);
-        this.n_neurons = args.n_neurons || 1;
+        this.nNeurons = args.nNeurons || 1;
         this.sim = sim;
 
         // For storing the accumulated data
-        this.data_store = new DataStore(1, this.sim, 0);
+        this.dataStore = new DataStore(1, this.sim, 0);
 
         this.axes2d = new TimeAxes(this.div, args);
-        this.axes2d.scale_y.domain([0, args.n_neurons]);
+        this.axes2d.scaleY.domain([0, args.nNeurons]);
 
-        // Call schedule_update whenever the time is adjusted in the SimControl
-        this.sim.time_slider.div.addEventListener("adjust_time", e => {
-            this.schedule_update();
+        // Call scheduleUpdate whenever the time is adjusted in the SimControl
+        this.sim.timeSlider.div.addEventListener("adjustTime", e => {
+            this.scheduleUpdate();
         });
 
         // Call reset whenever the simulation is reset
-        this.sim.div.addEventListener("reset_sim", e => {
+        this.sim.div.addEventListener("resetSim", e => {
             this.reset();
         });
 
         // Create the lines on the plots
         d3.svg.line()
             .x(function(d, i) {
-                return this.axes2d.scale_x(this.data_store.times[i]);
+                return this.axes2d.scaleX(this.dataStore.times[i]);
             })
             .y(function(d) {
-                return this.axes2d.scale_y(d);
+                return this.axes2d.scaleY(d);
             });
 
         this.path = this.axes2d.svg.append("g")
             .selectAll("path")
-            .data(this.data_store.data);
+            .data(this.dataStore.data);
 
         this.path.enter().append("path")
             .attr("class", "line")
-            .style("stroke", utils.make_colors(1));
+            .style("stroke", utils.makeColors(1));
 
         this.update();
-        this.on_resize(
-            viewport.scale_width(this.w), viewport.scale_height(this.h));
-        this.axes2d.axis_y.tickValues([0, args.n_neurons]);
-        this.axes2d.fit_ticks(this);
-    };
+        this.onResize(
+            viewport.scaleWidth(this.w), viewport.scaleHeight(this.h));
+        this.axes2d.axisY.tickValues([0, args.nNeurons]);
+        this.axes2d.fitTicks(this);
+    }
 
     /**
      * Receive new line data from the server.
      */
-    on_message(event) {
+    onMessage(event) {
         const time = new Float32Array(event.data, 0, 1);
         const data = new Int16Array(event.data, 4);
-        this.data_store.push([time[0], data]);
-        this.schedule_update();
-    };
+        this.dataStore.push([time[0], data]);
+        this.scheduleUpdate();
+    }
 
-    set_n_neurons(n_neurons) {
-        this.n_neurons = n_neurons;
-        this.axes2d.scale_y.domain([0, n_neurons]);
-        this.axes2d.axis_y.tickValues([0, n_neurons]);
-        this.ws.send("n_neurons:" + n_neurons);
-    };
+    setN_neurons(nNeurons) {
+        this.nNeurons = nNeurons;
+        this.axes2d.scaleY.domain([0, nNeurons]);
+        this.axes2d.axisY.tickValues([0, nNeurons]);
+        this.ws.send("nNeurons:" + nNeurons);
+    }
 
     /**
      * Redraw the lines and axis due to changed data.
      */
     update() {
         // Let the data store clear out old values
-        this.data_store.update();
+        this.dataStore.update();
 
         // Determine visible range from the SimControl
-        const t1 = this.sim.time_slider.first_shown_time;
-        const t2 = t1 + this.sim.time_slider.shown_time;
+        const t1 = this.sim.timeSlider.firstShownTime;
+        const t2 = t1 + this.sim.timeSlider.shownTime;
 
-        this.axes2d.set_time_range(t1, t2);
+        this.axes2d.setTimeRange(t1, t2);
 
         // Update the lines
-        const shown_data = this.data_store.get_shown_data();
+        const shownData = this.dataStore.getShownData();
 
         const path = [];
-        for (let i = 0; i < shown_data[0].length; i++) {
-            const t = this.axes2d.scale_x(
-                this.data_store.times[
-                    this.data_store.first_shown_index + i]);
+        for (let i = 0; i < shownData[0].length; i++) {
+            const t = this.axes2d.scaleX(
+                this.dataStore.times[
+                    this.dataStore.firstShownIndex + i]);
 
-            for (let j = 0; j < shown_data[0][i].length; j++) {
-                const y1 = this.axes2d.scale_y(shown_data[0][i][j]);
-                const y2 = this.axes2d.scale_y(shown_data[0][i][j] + 1);
+            for (let j = 0; j < shownData[0][i].length; j++) {
+                const y1 = this.axes2d.scaleY(shownData[0][i][j]);
+                const y2 = this.axes2d.scaleY(shownData[0][i][j] + 1);
                 path.push("M " + t + " " + y1 + "V" + y2);
             }
         }
         this.path.attr("d", path.join(""));
-    };
+    }
 
     /**
      * Adjust the graph layout due to changed size.
      */
-    on_resize(width, height) {
-        if (width < this.min_width) {
-            width = this.min_width;
+    onResize(width, height) {
+        if (width < this.minWidth) {
+            width = this.minWidth;
         }
-        if (height < this.min_height) {
-            height = this.min_height;
+        if (height < this.minHeight) {
+            height = this.minHeight;
         }
 
-        this.axes2d.on_resize(width, height);
+        this.axes2d.onResize(width, height);
 
         this.update();
 
@@ -143,42 +143,42 @@ export class Raster extends Component {
         this.height = height;
         this.div.style.width = width;
         this.div.style.height = height;
-    };
-
-    reset() {
-        this.data_store.reset();
-        this.schedule_update();
     }
 
-    generate_menu() {
+    reset() {
+        this.dataStore.reset();
+        this.scheduleUpdate();
+    }
+
+    generateMenu() {
         const items = [["Set # neurons...", function() {
-            this.set_neuron_count();
+            this.setNeuronCount();
         }]];
 
-        return $.merge(items, Component.prototype.generate_menu.call(this));
-    };
+        return $.merge(items, Component.prototype.generateMenu.call(this));
+    }
 
-    set_neuron_count() {
-        const count = this.n_neurons;
+    setNeuronCount() {
+        const count = this.nNeurons;
         this.sim.modal.title("Set number of neurons...");
-        this.sim.modal.single_input_body(count, "Number of neurons");
-        this.sim.modal.footer("ok_cancel", function(e) {
-            let new_count = $("#singleInput").val();
+        this.sim.modal.singleInputBody(count, "Number of neurons");
+        this.sim.modal.footer("okCancel", function(e) {
+            let newCount = $("#singleInput").val();
             const modal = $("#myModalForm").data("bs.validator");
             modal.validate();
             if (modal.hasErrors() || modal.isIncomplete()) {
                 return;
             }
-            if (new_count !== null) {
-                new_count = parseInt(new_count, 10);
-                this.set_n_neurons(new_count);
-                this.axes2d.fit_ticks(this);
+            if (newCount !== null) {
+                newCount = parseInt(newCount, 10);
+                this.setN_neurons(newCount);
+                this.axes2d.fitTicks(this);
             }
             $("#OK").attr("data-dismiss", "modal");
         });
         $("#myModalForm").validator({
             custom: {
-                my_validator: function($item) {
+                myValidator: function($item) {
                     let num = $item.val();
                     let valid = false;
                     if ($.isNumeric(num)) {
@@ -199,7 +199,7 @@ export class Raster extends Component {
         this.sim.modal.show();
         $("#OK").on("click", function() {
             const div = $(this.div);
-            this.on_resize(div.width(), div.height());
+            this.onResize(div.width(), div.height());
         });
-    };
+    }
 }

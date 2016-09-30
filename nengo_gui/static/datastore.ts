@@ -10,7 +10,7 @@
 
 export class DataStore {
     data;
-    first_shown_index;
+    firstShownIndex;
     sim;
     synapse;
     times;
@@ -45,7 +45,7 @@ export class DataStore {
             });
         }
 
-        // Compute lowpass filter (value = value*decay + new_value*(1-decay)
+        // Compute lowpass filter (value = value*decay + newValue*(1-decay)
         let decay = 0.0;
         if ((this.times.length !== 0) && (this.synapse > 0)) {
             const dt = row[0] - this.times[this.times.length - 1];
@@ -91,8 +91,8 @@ export class DataStore {
         // outside the range to keep)
         let extra = 0;
         // How much has the most recent time exceeded how much is kept?
-        const limit = this.sim.time_slider.last_time -
-            this.sim.time_slider.kept_time;
+        const limit = this.sim.timeSlider.lastTime -
+            this.sim.timeSlider.keptTime;
         while (this.times[extra] < limit) {
             extra += 1;
         }
@@ -109,51 +109,51 @@ export class DataStore {
     /**
      * Return just the data that is to be shown.
      */
-    get_shown_data() {
+    getShownData() {
         // Determine time range
-        const t1 = this.sim.time_slider.first_shown_time;
-        const t2 = t1 + this.sim.time_slider.shown_time;
+        const t1 = this.sim.timeSlider.firstShownTime;
+        const t2 = t1 + this.sim.timeSlider.shownTime;
 
         // Find the corresponding index values
         let index = 0;
         while (this.times[index] < t1) {
             index += 1;
         }
-        let last_index = index;
-        while (this.times[last_index] < t2 && last_index < this.times.length) {
-            last_index += 1;
+        let lastIndex = index;
+        while (this.times[lastIndex] < t2 && lastIndex < this.times.length) {
+            lastIndex += 1;
         }
-        this.first_shown_index = index;
+        this.firstShownIndex = index;
 
         // Return the visible slice of the data
         const shown = [];
         this.data.forEach(dimdata => {
-            shown.push(dimdata.slice(index, last_index));
+            shown.push(dimdata.slice(index, lastIndex));
         });
         return shown;
     }
 
-    is_at_end() {
-        const ts = this.sim.time_slider;
-        return (ts.last_time < ts.first_shown_time + ts.shown_time + 1e-9);
+    isAtEnd() {
+        const ts = this.sim.timeSlider;
+        return (ts.lastTime < ts.firstShownTime + ts.shownTime + 1e-9);
     }
 
-    get_last_data() {
+    getLastData() {
         // Determine time range
-        const t1 = this.sim.time_slider.first_shown_time;
-        const t2 = t1 + this.sim.time_slider.shown_time;
+        const t1 = this.sim.timeSlider.firstShownTime;
+        const t2 = t1 + this.sim.timeSlider.shownTime;
 
         // Find the corresponding index values
-        let last_index = 0;
-        while (this.times[last_index] < t2
-                   && last_index < this.times.length - 1) {
-            last_index += 1;
+        let lastIndex = 0;
+        while (this.times[lastIndex] < t2
+                   && lastIndex < this.times.length - 1) {
+            lastIndex += 1;
         }
 
         // Return the visible slice of the data
         const shown = [];
         this.data.forEach(dimdata => {
-            shown.push(dimdata[last_index]);
+            shown.push(dimdata[lastIndex]);
         });
         return shown;
     }
@@ -182,20 +182,20 @@ export class GrowableDataStore extends DataStore {
         return this._dims;
     }
 
-    set dims(dim_val) {
+    set dims(dimVal) {
         // Throw a bunch of errors if bad things happen.
         // Assuming you can only grow dims and not shrink them...
-        if (this._dims < dim_val) {
-            for (let i = 0; i < dim_val - this._dims; i++) {
+        if (this._dims < dimVal) {
+            for (let i = 0; i < dimVal - this._dims; i++) {
                 this.data.push([]);
             }
-        } else if (this._dims > dim_val) {
+        } else if (this._dims > dimVal) {
             throw "can't decrease size of datastore";
         }
-        this._dims = dim_val;
+        this._dims = dimVal;
     }
 
-    get_offset() {
+    getOffset() {
         const offset = [0];
 
         for (let i = 1; i < this._dims; i++) {
@@ -216,7 +216,7 @@ export class GrowableDataStore extends DataStore {
      */
     push(row) {
         // Get the offsets
-        const offset = this.get_offset();
+        const offset = this.getOffset();
 
         // If you get data out of order, wipe out the later data
         if (row[0] < this.times[this.times.length - 1]) {
@@ -233,7 +233,7 @@ export class GrowableDataStore extends DataStore {
             }
         }
 
-        // Compute lowpass filter (value = value*decay + new_value*(1-decay)
+        // Compute lowpass filter (value = value*decay + newValue*(1-decay)
         let decay = 0.0;
         if ((this.times.length !== 0) && (this.synapse > 0)) {
             const dt = row[0] - this.times[this.times.length - 1];
@@ -264,10 +264,10 @@ export class GrowableDataStore extends DataStore {
     update() {
         // Figure out how many extra values we have (values whose time stamp is
         // outside the range to keep)
-        const offset = this.get_offset();
+        const offset = this.getOffset();
         let extra = 0;
-        const limit = this.sim.time_slider.last_time -
-            this.sim.time_slider.kept_time;
+        const limit = this.sim.timeSlider.lastTime -
+            this.sim.timeSlider.keptTime;
         while (this.times[extra] < limit) {
             extra += 1;
         }
@@ -286,11 +286,11 @@ export class GrowableDataStore extends DataStore {
     /**
      * Return just the data that is to be shown.
      */
-    get_shown_data() {
-        const offset = this.get_offset();
+    getShownData() {
+        const offset = this.getOffset();
         // Determine time range
-        const t1 = this.sim.time_slider.first_shown_time;
-        const t2 = t1 + this.sim.time_slider.shown_time;
+        const t1 = this.sim.timeSlider.firstShownTime;
+        const t2 = t1 + this.sim.timeSlider.shownTime;
 
         // Find the corresponding index values
         let index = 0;
@@ -298,38 +298,38 @@ export class GrowableDataStore extends DataStore {
             index += 1;
         }
         // Logically, you should start the search for the
-        let last_index = index;
-        while (this.times[last_index] < t2 && last_index < this.times.length) {
-            last_index += 1;
+        let lastIndex = index;
+        while (this.times[lastIndex] < t2 && lastIndex < this.times.length) {
+            lastIndex += 1;
         }
-        this.first_shown_index = index;
+        this.firstShownIndex = index;
 
         // Return the visible slice of the data
         const shown = [];
         for (let i = 0; i < this._dims; i++) {
-            let nan_number;
-            let slice_start;
+            let nanNumber;
+            let sliceStart;
 
-            if (last_index > offset[i] && offset[i] !== 0) {
+            if (lastIndex > offset[i] && offset[i] !== 0) {
 
                 if (index < offset[i]) {
-                    nan_number = offset[i] - index;
-                    slice_start = 0;
+                    nanNumber = offset[i] - index;
+                    sliceStart = 0;
                 } else {
-                    nan_number = 0;
-                    slice_start = index - offset[i];
+                    nanNumber = 0;
+                    sliceStart = index - offset[i];
                 }
 
                 shown.push(
-                    Array.apply(null, Array(nan_number)).map(() => {
+                    Array.apply(null, Array(nanNumber)).map(() => {
                         return "NaN";
                     }).concat(
-                        this.data[i].slice(slice_start, last_index - offset[i])
+                        this.data[i].slice(sliceStart, lastIndex - offset[i])
                     ));
 
             } else {
 
-                shown.push(this.data[i].slice(index, last_index));
+                shown.push(this.data[i].slice(index, lastIndex));
 
             }
         }
@@ -337,24 +337,24 @@ export class GrowableDataStore extends DataStore {
         return shown;
     }
 
-    get_last_data() {
-        const offset = this.get_offset();
+    getLastData() {
+        const offset = this.getOffset();
         // Determine time range
-        const t1 = this.sim.time_slider.first_shown_time;
-        const t2 = t1 + this.sim.time_slider.shown_time;
+        const t1 = this.sim.timeSlider.firstShownTime;
+        const t2 = t1 + this.sim.timeSlider.shownTime;
 
         // Find the corresponding index values
-        let last_index = 0;
-        while (this.times[last_index] < t2
-                   && last_index < this.times.length - 1) {
-            last_index += 1;
+        let lastIndex = 0;
+        while (this.times[lastIndex] < t2
+                   && lastIndex < this.times.length - 1) {
+            lastIndex += 1;
         }
 
         // Return the visible slice of the data
         const shown = [];
         for (let i = 0; i < this._dims; i++) {
-            if (last_index - offset[i] >= 0) {
-                shown.push(this.data[i][last_index - offset[i]]);
+            if (lastIndex - offset[i] >= 0) {
+                shown.push(this.data[i][lastIndex - offset[i]]);
             }
         }
         return shown;

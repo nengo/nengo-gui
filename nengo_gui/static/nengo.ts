@@ -39,9 +39,9 @@ export class Nengo {
         this.main = document.getElementById("main");
         this.control = document.getElementById("control");
 
-        this.netgraph = new NetGraph(this.main, netgraphargs);
+        this.netgraph = new NetGraph("uid");
         this.editor = new Editor(editoruid, this.netgraph);
-        this.sim = new SimControl(this.control, simargs, this.editor);
+        this.sim = new SimControl("uid", 4.0, 0.5);
         this.sidemenu = new SideMenu(this.sim);
         this.toolbar = new Toolbar(filename, this.sim);
 
@@ -52,15 +52,13 @@ export class Nengo {
     }
 }
 
-$(document).ready(() => {
-
-
-    body = document.getElementById("body");
-    body.removeChild(document.getElementById("loading-div"));
-    %(main_components)s
-    nengo = new Nengo.default(simargs, filename, editoruid, netgraphargs);
-    %(components)s
-}
+// $(document).ready(() => {
+//     body = document.getElementById("body");
+//     body.removeChild(document.getElementById("loading-div"));
+//     %(main_components)s
+//     nengo = new Nengo.default(simargs, filename, editoruid, netgraphargs);
+//     %(components)s
+// }
 
 // Exposing components for server
 import "expose?HTMLView!./components/htmlview";

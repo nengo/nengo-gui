@@ -4,9 +4,9 @@ function button(
     id: string,
     icon: string,
     title: string,
-    a_classes: string[] = []
+    aClasses: string[] = []
 ): VNode {
-    const classes = ["glyphicon", "glyphicon-" + icon].concat(a_classes);
+    const classes = ["glyphicon", "glyphicon-" + icon].concat(aClasses);
     return h("li#" + id, {role: "presentation"}, [
         h("a." + classes.join("."), {title: title}),
     ]);

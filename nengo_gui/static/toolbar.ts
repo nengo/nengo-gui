@@ -15,7 +15,7 @@ import { config } from "./config";
 import { Editor } from "./editor";
 import * as menu from "./menu";
 import { Modal } from "./modal";
-import { SimControl } from "./sim_control";
+import { SimControl } from "./sim-control";
 import "./toolbar.css";
 import * as utils from "./utils";
 
@@ -40,7 +40,7 @@ export class Toolbar {
             this.modal.title(
                 "Are you sure you wish to reset this layout, removing all " +
                     "the graphs and resetting the position of all items?");
-            this.modal.text_body("This operation cannot be undone!", "danger");
+            this.modal.textBody("This operation cannot be undone!", "danger");
             this.modal.footer("confirm_reset");
             this.modal.show();
         });
@@ -52,19 +52,19 @@ export class Toolbar {
             this.netgraph.notify({undo: "0"});
         });
         $("#Config_button")[0].addEventListener("click", () => {
-            this.config_modal();
+            this.configModal();
         });
         $("#Sync_editor_button")[0].addEventListener("click", () => {
-            this.editor.update_trigger = true;
+            this.editor.updateTrigger = true;
         });
         $("#Help_button")[0].addEventListener("click", () => {
             this.hotkeys.callMenu();
         });
         $("#filename")[0].addEventListener("click", () => {
-            this.save_as();
+            this.saveAs();
         });
 
-        utils.safe_set_text($("#filename")[0], filename);
+        utils.safeSetText($("#filename")[0], filename);
 
         // Update the URL so reload and bookmarks work as expected
         history.pushState({}, filename, "/?filename=" + filename);
@@ -74,17 +74,17 @@ export class Toolbar {
         this.menu = new menu.Menu(this.toolbar);
 
         interact(this.toolbar).on("tap", () => {
-            menu.hide_any();
+            menu.hideAny();
         });
     }
 
     /**
      * Trims the filename and sends it to the server.
      */
-    file_name() {
-        const open_el = <HTMLInputElement> document.getElementById("open_file");
-        console.assert(open_el.hasOwnProperty("value"));
-        let filename = open_el.value;
+    fileName() {
+        const openEl = <HTMLInputElement> document.getElementById("openFile");
+        console.assert(openEl.hasOwnProperty("value"));
+        let filename = openEl.value;
         filename = filename.replace("C:\\fakepath\\", "");
         this.sim.ws.send("open" + filename);
     }
@@ -94,7 +94,7 @@ export class Toolbar {
      *
      * This is done by deleting the config file and reloading the script.
      */
-    reset_model_layout() {
+    resetModelLayout() {
         window.location.assign(
             "/?reset=True&filename=" + $("#filename")[0].innerHTML);
     }
@@ -102,27 +102,27 @@ export class Toolbar {
     /**
      * Launch the config modal.
      *
-     * This is done by calling the server to call config_modal_show with config
+     * This is done by calling the server to call configModalShow with config
      * data.
      */
-    config_modal() {
+    configModal() {
         // Doing it this way in case we need to save options to a file later
         this.sim.ws.send("config");
     }
 
-    config_modal_show() {
+    configModalShow() {
         // Get current state in case user clicks cancel
         const original = {
-            aspect_resize: this.netgraph.aspect_resize,
-            auto_update: this.editor.auto_update,
-            font_size: this.netgraph.font_size,
+            aspectResize: this.netgraph.aspectResize,
+            autoUpdate: this.editor.autoUpdate,
+            fontSize: this.netgraph.fontSize,
             scriptdir: config.scriptdir,
-            transparent_nets: this.netgraph.transparent_nets,
-            zoom: this.netgraph.zoom_fonts,
+            transparentNets: this.netgraph.transparentNets,
+            zoom: this.netgraph.zoomFonts,
         };
 
         this.modal.title("Configure Options");
-        this.modal.main_config();
+        this.modal.mainConfig();
         this.modal.footer("ok_cancel", e => {
             const modal = $("#myModalForm").data("bs.validator");
             modal.validate();
@@ -130,19 +130,19 @@ export class Toolbar {
                 return;
             }
             $("#OK").attr("data-dismiss", "modal");
-        }, () => { // Cancel_function
-            this.netgraph.zoom_fonts = original.zoom;
-            this.netgraph.font_size = original.font_size;
-            this.netgraph.transparent_nets = original.transparent_nets;
-            this.netgraph.aspect_resize = original.aspect_resize;
-            this.editor.auto_update = original.auto_update;
+        }, () => { // CancelFunction
+            this.netgraph.zoomFonts = original.zoom;
+            this.netgraph.fontSize = original.fontSize;
+            this.netgraph.transparentNets = original.transparentNets;
+            this.netgraph.aspectResize = original.aspectResize;
+            this.editor.autoUpdate = original.autoUpdate;
             config.scriptdir = original.scriptdir;
             $("#cancel-button").attr("data-dismiss", "modal");
         });
 
         $("#myModalForm").validator({
             custom: {
-                my_validator: $item => {
+                myValidator: $item => {
                     const num = $item.val();
                     return (num.length <= 3 && num > 20);
                 },
@@ -152,9 +152,9 @@ export class Toolbar {
         this.modal.show();
     }
 
-    save_as() {
+    saveAs() {
         this.modal.title("Save file as");
-        this.modal.clear_body();
+        this.modal.clearBody();
 
         const filename = $("#filename")[0].innerHTML;
 
@@ -165,12 +165,12 @@ export class Toolbar {
           "value='" + filename + "'/>" +
           "</div>").appendTo($form);
 
-        this.modal.footer("ok_cancel", function() {
-            const save_as_filename = $("#save-as-filename").val();
-            if (save_as_filename !== filename) {
-                const editor_code = this.editor.editor.getValue();
+        this.modal.footer("okCancel", function() {
+            const saveAsFilename = $("#save-as-filename").val();
+            if (saveAsFilename !== filename) {
+                const editorCode = this.editor.editor.getValue();
                 this.editor.ws.send(JSON.stringify(
-                    {code: editor_code, save: true, save_as: save_as_filename}
+                    {code: editorCode, save: true, saveAs: saveAsFilename}
                 ));
             }
         });

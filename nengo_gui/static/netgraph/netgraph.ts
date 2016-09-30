@@ -12,9 +12,9 @@
 
 import * as interact from "interact.js";
 import * as $ from "jquery";
-import { dom, h } from "maquette";
+import { dom, h, VNode } from "maquette";
 
-import * as all_components from "../components/all_components";
+import * as allComponents from "../components/all-components";
 import { config } from "../config";
 import * as menu from "../menu";
 import * as utils from "../utils";
@@ -42,28 +42,31 @@ export class NetGraph {
      * value is a list of NetGraphConnections that should be notified
      * when that item appears.
      */
-    collapsed_conns: ConnDict = {};
+    collapsedConns: ConnDict = {};
     div;
-    g_conns;
-    g_conns_mini;
-    g_items;
-    g_items_mini;
-    g_networks;
-    g_networks_mini;
+    gConns;
+    gConnsMini;
+    gItems;
+    gItemsMini;
+    gNetworks;
+    gNetworksMini;
     height;
-    in_zoom_delay;
+    inZoomDelay;
     menu;
     minimap;
-    offset_x = 0; // Global x,y pan offset
-    offset_y = 0; // Global x,y pan offset
-    svg: VNode;
-    svg_conns: ConnDict = {};
-    svg_objects: ItemDict = {};
-    tool_height;
+    offsetX = 0; // Global x,y pan offset
+    offsetY = 0; // Global x,y pan offset
+    svg;
+    svgConns: ConnDict = {};
+    svgObjects: ItemDict = {};
+    toolHeight;
     uid: string;
     view;
     width;
     ws;
+
+    parent;
+    minimapObjects;
     private _scale: number = 1.0;
 
     constructor(uid: string) {
@@ -73,11 +76,11 @@ export class NetGraph {
             console.warn("invalid uid for NetGraph: " + uid);
         }
 
-        this.in_zoom_delay = false;
+        this.inZoomDelay = false;
 
         // this.minimap = new Minimap();
 
-        this.tool_height = $("#toolbar_object").height();
+        this.toolHeight = $("#toolbarObject").height();
 
         // Reading netgraph.css file as text and embedding it within def tags;
         // this is needed for saving the SVG plot to disk.
@@ -90,21 +93,21 @@ export class NetGraph {
         // Three separate layers, so that expanded networks are at the back,
         // then connection lines, and then other items (nodes, ensembles, and
         // collapsed networks) are drawn on top.
-        this.g_networks = h("g");
-        this.g_conns = h("g");
-        this.g_items = h("g");
+        this.gNetworks = h("g");
+        this.gConns = h("g");
+        this.gItems = h("g");
 
         // Create the master SVG element
         this.svg = h("svg.netgraph#netgraph", {
             styles: {width: "100%", height: "100%", position: "absolute"},
             onresize: event => {
-                this.on_resize(event);
+                this.onResize(event);
             },
         }, [
             defs,
-            this.g_networks,
-            this.g_conns,
-            this.g_items,
+            this.gNetworks,
+            this.gConns,
+            this.gItems,
         ]);
 
         // interact(this.svg).styleCursor(false);
@@ -113,17 +116,17 @@ export class NetGraph {
         this.height = $(this.svg).height();
 
         // Connect to server
-        this.ws = utils.create_websocket(uid);
+        this.ws = utils.createWebsocket(uid);
         this.ws.onmessage = event => {
-            this.on_message(event);
+            this.onMessage(event);
         };
 
         // Respond to resize events
         window.addEventListener("resize", event => {
-            this.on_resize(event);
+            this.onResize(event);
         });
 
-        // Dragging the background pans the full area by changing offset_x,Y
+        // Dragging the background pans the full area by changing offsetX,Y
         // Define cursor behaviour for background
         interact(this.svg)
             .on("mousedown", () => {
@@ -145,48 +148,48 @@ export class NetGraph {
             .draggable({
                 onend: event => {
                     // Let the server know what happened
-                    this.notify({act: "pan", x: this.offset_x, y: this.offset_y});
+                    this.notify({act: "pan", x: this.offsetX, y: this.offsetY});
                 },
                 onmove: event => {
-                    this.offset_x += event.dx / this.get_scaled_width();
-                    this.offset_y += event.dy / this.get_scaled_height();
-                    Object.keys(this.svg_objects).forEach(key => {
-                        this.svg_objects[key].redraw_position();
-                        if (this.mm_display) {
-                            this.minimap_objects[key].redraw_position();
-                        }
+                    this.offsetX += event.dx / this.getScaledWidth();
+                    this.offsetY += event.dy / this.getScaledHeight();
+                    Object.keys(this.svgObjects).forEach(key => {
+                        this.svgObjects[key].redrawPosition();
+                        // if (this.mmDisplay) {
+                        //     this.minimapObjects[key].redrawPosition();
+                        // }
                     });
-                    Object.keys(this.svg_conns).forEach(key => {
-                        this.svg_conns[key].redraw();
+                    Object.keys(this.svgConns).forEach(key => {
+                        this.svgConns[key].redraw();
                     });
 
-                    viewport.set_position(this.offset_x, this.offset_y);
+                    viewport.setPosition(this.offsetX, this.offsetY);
 
                     this.scaleMiniMapViewBox();
 
                 },
                 onstart: () => {
-                    menu.hide_any();
+                    menu.hideAny();
                 },
             });
 
         // Scrollwheel on background zooms the full area by changing scale.
-        // Note that offset_x,Y are also changed to zoom into a particular
+        // Note that offsetX,Y are also changed to zoom into a particular
         // point in the space
         interact(document.getElementById("main"))
             .on("click", event => {
-                $(".ace_text-input").blur();
+                $(".aceText-input").blur();
             })
             .on("wheel", event => {
                 event.preventDefault();
 
-                menu.hide_any();
+                menu.hideAny();
                 const x = (event.clientX) / this.width;
-                const y = (event.clientY - this.tool_height) / this.height;
+                const y = (event.clientY - this.toolHeight) / this.height;
                 let delta;
 
                 if (event.deltaMode === 1) {
-                    // DOM_DELTA_LINE
+                    // DOMDELTALINE
                     if (event.deltaY !== 0) {
                         delta = Math.log(1. + Math.abs(event.deltaY)) * 60;
                         if (event.deltaY < 0) {
@@ -196,28 +199,28 @@ export class NetGraph {
                         delta = 0;
                     }
                 } else if (event.deltaMode === 2) {
-                    // DOM_DELTA_PAGE
+                    // DOMDELTAPAGE
                     // No idea what device would generate scrolling by a page
                     delta = 0;
                 } else {
-                    // DOM_DELTA_PIXEL
+                    // DOMDELTAPIXEL
                     delta = event.deltaY;
                 }
 
-                let z_scale = 1. + Math.abs(delta) / 600.;
+                let zScale = 1. + Math.abs(delta) / 600.;
                 if (delta > 0) {
-                    z_scale = 1. / z_scale;
+                    zScale = 1. / zScale;
                 }
 
-                all_components.save_layouts();
+                allComponents.saveLayouts();
 
-                const xx = x / this.scale - this.offset_x;
-                const yy = y / this.scale - this.offset_y;
-                this.offset_x = (this.offset_x + xx) / z_scale - xx;
-                this.offset_y = (this.offset_y + yy) / z_scale - yy;
+                const xx = x / this.scale - this.offsetX;
+                const yy = y / this.scale - this.offsetY;
+                this.offsetX = (this.offsetX + xx) / zScale - xx;
+                this.offsetY = (this.offsetY + yy) / zScale - yy;
 
-                this.scale = z_scale * this.scale;
-                viewport.set_position(this.offset_x, this.offset_y);
+                this.scale = zScale * this.scale;
+                viewport.setPosition(this.offsetX, this.offsetY);
 
                 this.scaleMiniMapViewBox();
 
@@ -227,8 +230,8 @@ export class NetGraph {
                 this.notify({
                     act: "zoom",
                     scale: this.scale,
-                    x: this.offset_x,
-                    y: this.offset_y,
+                    x: this.offsetX,
+                    y: this.offsetY,
                 });
             });
 
@@ -238,58 +241,58 @@ export class NetGraph {
         interact(this.svg)
             .on("hold", event => { // Change to "tap" for right click
                 if (event.button === 0) {
-                    if (this.menu.visible_any()) {
-                        menu.hide_any();
+                    if (this.menu.visibleAny()) {
+                        menu.hideAny();
                     } else {
                         this.menu.show(event.clientX, event.clientY,
-                                       this.generate_menu());
+                                       this.generateMenu());
                     }
                     event.stopPropagation();
                 }
             })
             .on("tap", event => { // Get rid of menus when clicking off
                 if (event.button === 0) {
-                    if (this.menu.visible_any()) {
-                        menu.hide_any();
+                    if (this.menu.visibleAny()) {
+                        menu.hideAny();
                     }
                 }
             });
 
         $(this.svg).bind("contextmenu", event => {
             event.preventDefault();
-            if (this.menu.visible_any()) {
-                menu.hide_any();
+            if (this.menu.visibleAny()) {
+                menu.hideAny();
             } else {
                 this.menu.show(
-                    event.clientX, event.clientY, this.generate_menu());
+                    event.clientX, event.clientY, this.generateMenu());
             }
         });
 
-        this.create_minimap();
-        this.update_fonts();
+        this.createMinimap();
+        this.updateFonts();
     }
 
-    get aspect_resize(): boolean {
-        return config.aspect_resize;
+    get aspectResize(): boolean {
+        return config.aspectResize;
     }
 
-    set aspect_resize(val) {
-        if (val === this.aspect_resize) {
+    set aspectResize(val) {
+        if (val === this.aspectResize) {
             return;
         }
-        config.aspect_resize = val;
+        config.aspectResize = val;
     }
 
-    get font_size(): number {
-        return config.font_size;
+    get fontSize(): number {
+        return config.fontSize;
     }
 
-    set font_size(val: number) {
-        if (val === this.font_size) {
+    set fontSize(val: number) {
+        if (val === this.fontSize) {
             return;
         }
-        config.font_size = val;
-        this.update_fonts();
+        config.fontSize = val;
+        this.updateFonts();
     }
 
     get scale(): number {
@@ -301,75 +304,75 @@ export class NetGraph {
             return;
         }
         this._scale = val;
-        this.update_fonts();
+        this.updateFonts();
         this.redraw();
 
-        viewport.set_scale(this._scale);
+        viewport.setScale(this._scale);
     }
 
-    get transparent_nets(): boolean {
-        return config.transparent_nets;
+    get transparentNets(): boolean {
+        return config.transparentNets;
     }
 
-    set transparent_nets(val: boolean) {
-        if (val === config.transparent_nets) {
+    set transparentNets(val: boolean) {
+        if (val === config.transparentNets) {
             return;
         }
-        config.transparent_nets = val;
-        Object.keys(this.svg_objects).forEach(key => {
-            const ngi = this.svg_objects[key];
-            ngi.compute_fill();
+        config.transparentNets = val;
+        Object.keys(this.svgObjects).forEach(key => {
+            const ngi = this.svgObjects[key];
+            ngi.computeFill();
             if (ngi.type === "net" && ngi.expanded) {
                 ngi.shape.style["fill-opacity"] = val ? 0.0 : 1.0;
             }
         });
     }
 
-    get zoom_fonts(): boolean {
-        return config.zoom_fonts;
+    get zoomFonts(): boolean {
+        return config.zoomFonts;
     }
 
-    set zoom_fonts(val: boolean) {
-        if (val === config.zoom_fonts) {
+    set zoomFonts(val: boolean) {
+        if (val === config.zoomFonts) {
             return;
         }
-        config.zoom_fonts = val;
-        this.update_fonts();
+        config.zoomFonts = val;
+        this.updateFonts();
     }
 
-    generate_menu() {
+    generateMenu() {
         return [["Auto-layout", () => {
-            this.notify({act: "feedforward_layout", uid: null});
+            this.notify({act: "feedforwardLayout", uid: null});
         }]];
     }
 
     /**
      * Event handler for received WebSocket messages
      */
-    on_message(event) {
+    onMessage(event) {
         const data = JSON.parse(event.data);
         let item;
 
         if (data.type === "net") {
-            this.create_object(data);
+            this.createObject(data);
         } else if (data.type === "ens") {
-            this.create_object(data);
+            this.createObject(data);
         } else if (data.type === "node") {
-            this.create_object(data);
+            this.createObject(data);
         } else if (data.type === "conn") {
-            this.create_connection(data);
+            this.createConnection(data);
         } else if (data.type === "pan") {
-            this.set_offset(data.pan[0], data.pan[1]);
+            this.setOffset(data.pan[0], data.pan[1]);
         } else if (data.type === "zoom") {
             this.scale = data.zoom;
         } else if (data.type === "expand") {
-            item = this.svg_objects[data.uid];
+            item = this.svgObjects[data.uid];
             item.expand(true, true);
         } else if (data.type === "collapse") {
-            item = this.svg_objects[data.uid];
+            item = this.svgObjects[data.uid];
             item.collapse(true, true);
-        } else if (data.type === "pos_size") {
-            item = this.svg_objects[data.uid];
+        } else if (data.type === "posSize") {
+            item = this.svgObjects[data.uid];
             item.x = data.pos[0];
             item.y = data.pos[1];
             item.width = data.size[0];
@@ -381,32 +384,32 @@ export class NetGraph {
 
         } else if (data.type === "config") {
             // Anything about the config of a component has changed
-            const component = all_components.by_uid(data.uid);
-            component.update_layout(data.config);
+            const component = allComponents.byUID(data.uid);
+            component.updateLayout(data.config);
         } else if (data.type === "js") {
             eval(data.code); // tslint:disable-line
         } else if (data.type === "rename") {
-            item = this.svg_objects[data.uid];
-            item.set_label(data.name);
+            item = this.svgObjects[data.uid];
+            item.setLabel(data.name);
 
         } else if (data.type === "remove") {
-            item = this.svg_objects[data.uid];
+            item = this.svgObjects[data.uid];
             if (item === undefined) {
-                item = this.svg_conns[data.uid];
+                item = this.svgConns[data.uid];
             }
 
             item.remove();
 
         } else if (data.type === "reconnect") {
-            const conn = this.svg_conns[data.uid];
-            conn.set_pres(data.pres);
-            conn.set_posts(data.posts);
-            conn.set_recurrent(data.pres[0] === data.posts[0]);
+            const conn = this.svgConns[data.uid];
+            conn.setPres(data.pres);
+            conn.setPosts(data.posts);
+            conn.setRecurrent(data.pres[0] === data.posts[0]);
             conn.redraw();
 
-        } else if (data.type === "delete_graph") {
-            const component = all_components.by_uid(data.uid);
-            component.remove(true, data.notify_server);
+        } else if (data.type === "deleteGraph") {
+            const component = allComponents.byUID(data.uid);
+            component.remove(true, data.notifyServer);
         } else {
             console.warn("invalid message:" + data);
         }
@@ -422,20 +425,20 @@ export class NetGraph {
     /**
      * Pan the screen (and redraw accordingly)
      */
-    set_offset(x, y) {
-        this.offset_x = x;
-        this.offset_y = y;
+    setOffset(x, y) {
+        this.offsetX = x;
+        this.offsetY = y;
         this.redraw();
 
-        viewport.set_position(x, y);
+        viewport.setPosition(x, y);
     }
 
-    update_fonts() {
-        if (this.zoom_fonts) {
+    updateFonts() {
+        if (this.zoomFonts) {
             $("#main").css("font-size",
-                           3 * this.scale * this.font_size / 100 + "em");
+                           3 * this.scale * this.fontSize / 100 + "em");
         } else {
-            $("#main").css("font-size", this.font_size / 100 + "em");
+            $("#main").css("font-size", this.fontSize / 100 + "em");
         }
     }
 
@@ -443,11 +446,11 @@ export class NetGraph {
      * Redraw all elements
      */
     redraw() {
-        Object.keys(this.svg_objects).forEach(key => {
-            this.svg_objects[key].redraw();
+        Object.keys(this.svgObjects).forEach(key => {
+            this.svgObjects[key].redraw();
         });
-        Object.keys(this.svg_conns).forEach(key => {
-            this.svg_conns[key].redraw();
+        Object.keys(this.svgConns).forEach(key => {
+            this.svgConns[key].redraw();
         });
     }
 
@@ -464,15 +467,15 @@ export class NetGraph {
      * If an existing NetGraphConnection is looking for this item, it will be
      * notified
      */
-    create_object(info) {
-        const item_mini = new NetGraphItem(this, info, true, null);
-        this.minimap_objects[info.uid] = item_mini;
+    createObject(info) {
+        const itemMini = new NetGraphItem(this, info, true, null);
+        this.minimapObjects[info.uid] = itemMini;
 
-        const item = new NetGraphItem(this, info, false, item_mini);
-        this.svg_objects[info.uid] = item;
+        const item = new NetGraphItem(this, info, false, itemMini);
+        this.svgObjects[info.uid] = item;
 
-        this.detect_collapsed_conns(item.uid);
-        this.detect_collapsed_conns(item_mini.uid);
+        this.detectCollapsedConns(item.uid);
+        this.detectCollapsedConns(itemMini.uid);
 
         this.scaleMiniMap();
     }
@@ -480,38 +483,38 @@ export class NetGraph {
     /**
      * Create a new NetGraphConnection.
      */
-    create_connection(info) {
-        const conn_mini = new NetGraphConnection(this, info, true, null);
-        this.minimap_conns[info.uid] = conn_mini;
+    createConnection(info) {
+        const connMini = new NetGraphConnection(this, info, true, null);
+        // this.minimapConns[info.uid] = connMini;
 
-        const conn = new NetGraphConnection(this, info, false, conn_mini);
-        this.svg_conns[info.uid] = conn;
+        const conn = new NetGraphConnection(this, info, false, connMini);
+        this.svgConns[info.uid] = conn;
     }
 
     /**
      * Handler for resizing the full SVG.
      */
-    on_resize(event) {
+    onResize(event) {
         const width = $(this.svg).width();
         const height = $(this.svg).height();
 
-        if (this.aspect_resize) {
-            Object.keys(this.svg_objects).forEach(key => {
-                const item = this.svg_objects[key];
+        if (this.aspectResize) {
+            Object.keys(this.svgObjects).forEach(key => {
+                const item = this.svgObjects[key];
                 if (item.depth === 1) {
-                    const new_width = viewport.scale_width(item.w) / this.scale;
-                    const new_height =
-                        viewport.scale_height(item.h) / this.scale;
-                    item.width = new_width / (2 * width);
-                    item.height = new_height / (2 * height);
+                    const newWidth = viewport.scaleWidth(item.width) / this.scale;
+                    const newHeight =
+                        viewport.scaleHeight(item.height) / this.scale;
+                    item.width = newWidth / (2 * width);
+                    item.height = newHeight / (2 * height);
                 }
             });
         }
 
         this.width = width;
         this.height = height;
-        this.mm_width = $(this.minimap).width();
-        this.mm_height = $(this.minimap).height();
+        // this.mmWidth = $(this.minimap).width();
+        // this.mmHeight = $(this.minimap).height();
 
         this.redraw();
     }
@@ -519,22 +522,22 @@ export class NetGraph {
     /**
      * Return the pixel width of the SVG times the current scale factor.
      */
-    get_scaled_width() {
+    getScaledWidth() {
         return this.width * this.scale;
     }
 
     /**
      * Return the pixel height of the SVG times the current scale factor.
      */
-    get_scaled_height() {
+    getScaledHeight() {
         return this.height * this.scale;
     }
 
     /**
      * Expand or collapse a network.
      */
-    toggle_network(uid) {
-        const item = this.svg_objects[uid];
+    toggleNetwork(uid) {
+        const item = this.svgObjects[uid];
         if (item.expanded) {
             item.collapse(true);
         } else {
@@ -546,156 +549,156 @@ export class NetGraph {
      * Register a NetGraphConnection with a target item that it is looking for.
      *
      * This is a NetGraphItem that does not exist yet, because it is inside a
-     * collapsed network. When it does appear, NetGraph.detect_collapsed will
+     * collapsed network. When it does appear, NetGraph.detectCollapsed will
      * handle notifying the NetGraphConnection.
      */
-    register_conn(conn, target) {
-        if (this.collapsed_conns[target] === undefined) {
-            this.collapsed_conns[target] = [conn];
-        } else {
-            const index = this.collapsed_conns[target].indexOf(conn);
-            if (index === -1) {
-                this.collapsed_conns[target].push(conn);
-            }
-        }
+    registerConn(conn, target) {
+        // if (this.collapsedConns[target] === undefined) {
+        //     this.collapsedConns[target] = [conn];
+        // } else {
+        //     const index = this.collapsedConns[target].indexOf(conn);
+        //     if (index === -1) {
+        //         this.collapsedConns[target].push(conn);
+        //     }
+        // }
     }
 
     /**
-     * Manage collapsed_conns dictionary.
+     * Manage collapsedConns dictionary.
      *
      * If a NetGraphConnection is looking for an item with a particular uid,
      * but that item does not exist yet (due to it being inside a collapsed
-     * network), then it is added to the collapsed_conns dictionary. When
+     * network), then it is added to the collapsedConns dictionary. When
      * an item is created, this function is used to see if any
      * NetGraphConnections are waiting for it, and notifies them.
      */
-    detect_collapsed_conns(uid) {
-        const conns = this.collapsed_conns[uid];
-        if (conns !== undefined) {
-            delete this.collapsed_conns[uid];
-            for (let i = 0; i < conns.length; i++) {
-                const conn = conns[i];
-                // Make sure the NetGraphConnection hasn't been removed since
-                // it started listening.
-                if (!conn.removed) {
-                    conn.set_pre(conn.find_pre());
-                    conn.set_post(conn.find_post());
-                    conn.redraw();
-                }
-            }
-        }
+    detectCollapsedConns(uid) {
+        // const conns = this.collapsedConns[uid];
+        // if (conns !== undefined) {
+        //     delete this.collapsedConns[uid];
+        //     for (let i = 0; i < conns.length; i++) {
+        //         const conn = conns[i];
+        //         // Make sure the NetGraphConnection hasn't been removed since
+        //         // it started listening.
+        //         if (!conn.removed) {
+        //             conn.setPre(conn.findPre());
+        //             conn.setPost(conn.findPost());
+        //             conn.redraw();
+        //         }
+        //     }
+        // }
     }
 
     /**
      * Create a minimap.
      */
-    create_minimap() {
-        this.minimap_div = document.createElement("div");
-        this.minimap_div.className = "minimap";
-        this.parent.appendChild(this.minimap_div);
+    createMinimap() {
+        // this.minimapDiv = document.createElement("div");
+        // this.minimapDiv.className = "minimap";
+        // this.parent.appendChild(this.minimapDiv);
 
         this.minimap = this.createSVGElement("svg");
         this.minimap.classList.add("minimap");
         this.minimap.id = "minimap";
-        this.minimap_div.appendChild(this.minimap);
+        // this.minimapDiv.appendChild(this.minimap);
 
         // Box to show current view
         this.view = this.createSVGElement("rect");
         this.view.classList.add("view");
         this.minimap.appendChild(this.view);
 
-        this.g_networks_mini = this.createSVGElement("g");
-        this.g_conns_mini = this.createSVGElement("g");
-        this.g_items_mini = this.createSVGElement("g");
+        this.gNetworksMini = this.createSVGElement("g");
+        this.gConnsMini = this.createSVGElement("g");
+        this.gItemsMini = this.createSVGElement("g");
         // Order these are appended is important for layering
-        this.minimap.appendChild(this.g_networks_mini);
-        this.minimap.appendChild(this.g_conns_mini);
-        this.minimap.appendChild(this.g_items_mini);
+        this.minimap.appendChild(this.gNetworksMini);
+        this.minimap.appendChild(this.gConnsMini);
+        this.minimap.appendChild(this.gItemsMini);
 
-        this.mm_width = $(this.minimap).width();
-        this.mm_height = $(this.minimap).height();
+        // this.mmWidth = $(this.minimap).width();
+        // this.mmHeight = $(this.minimap).height();
 
         // Default display minimap
-        this.mm_display = true;
+        // this.mmDisplay = true;
         this.toggleMiniMap();
     }
 
     toggleMiniMap() {
-        if (this.mm_display === true) {
-            $(".minimap")[0].style.visibility = "hidden";
-            this.g_conns_mini.style.opacity = 0;
-            this.mm_display = false;
-        } else {
-            $(".minimap")[0].style.visibility = "visible";
-            this.g_conns_mini.style.opacity = 1;
-            this.mm_display = true ;
-            this.scaleMiniMap();
-        }
+        // if (this.mmDisplay === true) {
+        //     $(".minimap")[0].style.visibility = "hidden";
+        //     this.gConnsMini.style.opacity = 0;
+        //     this.mmDisplay = false;
+        // } else {
+        //     $(".minimap")[0].style.visibility = "visible";
+        //     this.gConnsMini.style.opacity = 1;
+        //     this.mmDisplay = true ;
+        //     this.scaleMiniMap();
+        // }
     }
 
     /**
      * Calculate the minimap position offsets and scaling.
      */
     scaleMiniMap() {
-        if (!this.mm_display) {
-            return;
-        }
+        // if (!this.mmDisplay) {
+        //     return;
+        // }
 
-        const keys = Object.keys(this.svg_objects);
-        if (keys.length === 0) {
-            return;
-        }
+        // const keys = Object.keys(this.svgObjects);
+        // if (keys.length === 0) {
+        //     return;
+        // }
 
-        // TODO: Could also store the items at the four min max values
-        // and only compare against those, or check against all items
-        // in the lists when they move. Might be important for larger
-        // networks.
-        let first_item = true;
-        Object.keys(this.svg_objects).forEach(key => {
-            const item = this.svg_objects[key];
-            // Ignore anything inside a subnetwork
-            if (item.depth > 1) {
-                return;
-            }
+        // // TODO: Could also store the items at the four min max values
+        // // and only compare against those, or check against all items
+        // // in the lists when they move. Might be important for larger
+        // // networks.
+        // let firstItem = true;
+        // Object.keys(this.svgObjects).forEach(key => {
+        //     const item = this.svgObjects[key];
+        //     // Ignore anything inside a subnetwork
+        //     if (item.depth > 1) {
+        //         return;
+        //     }
 
-            const minmax_xy = item.getMinMaxXY();
-            if (first_item === true) {
-                this.mm_min_x = minmax_xy[0];
-                this.mm_max_x = minmax_xy[1];
-                this.mm_min_y = minmax_xy[2];
-                this.mm_max_y = minmax_xy[3];
-                first_item = false;
-                return;
-            }
+        //     const minmaxXy = item.getMinMaxXY();
+        //     if (firstItem === true) {
+        //         this.mmMinX = minmaxXy[0];
+        //         this.mmMaxX = minmaxXy[1];
+        //         this.mmMinY = minmaxXy[2];
+        //         this.mmMaxY = minmaxXy[3];
+        //         firstItem = false;
+        //         return;
+        //     }
 
-            if (this.mm_min_x > minmax_xy[0]) {
-                this.mm_min_x = minmax_xy[0];
-            }
-            if (this.mm_max_x < minmax_xy[1]) {
-                this.mm_max_x = minmax_xy[1];
-            }
-            if (this.mm_min_y > minmax_xy[2]) {
-                this.mm_min_y = minmax_xy[2];
-            }
-            if (this.mm_max_y < minmax_xy[3]) {
-                this.mm_max_y = minmax_xy[3];
-            }
-        });
+        //     if (this.mmMinX > minmaxXy[0]) {
+        //         this.mmMinX = minmaxXy[0];
+        //     }
+        //     if (this.mmMaxX < minmaxXy[1]) {
+        //         this.mmMaxX = minmaxXy[1];
+        //     }
+        //     if (this.mmMinY > minmaxXy[2]) {
+        //         this.mmMinY = minmaxXy[2];
+        //     }
+        //     if (this.mmMaxY < minmaxXy[3]) {
+        //         this.mmMaxY = minmaxXy[3];
+        //     }
+        // });
 
-        this.mm_scale = 1 / Math.max(this.mm_max_x - this.mm_min_x,
-                                     this.mm_max_y - this.mm_min_y);
+        // this.mmScale = 1 / Math.max(this.mmMaxX - this.mmMinX,
+        //                              this.mmMaxY - this.mmMinY);
 
-        // Give a bit of a border
-        this.mm_min_x -= this.mm_scale * .05;
-        this.mm_max_x += this.mm_scale * .05;
-        this.mm_min_y -= this.mm_scale * .05;
-        this.mm_max_y += this.mm_scale * .05;
-        // TODO: there is a better way to do this than recalculate
-        this.mm_scale = 1 / Math.max(this.mm_max_x - this.mm_min_x,
-                                     this.mm_max_y - this.mm_min_y);
+        // // Give a bit of a border
+        // this.mmMinX -= this.mmScale * .05;
+        // this.mmMaxX += this.mmScale * .05;
+        // this.mmMinY -= this.mmScale * .05;
+        // this.mmMaxY += this.mmScale * .05;
+        // // TODO: there is a better way to do this than recalculate
+        // this.mmScale = 1 / Math.max(this.mmMaxX - this.mmMinX,
+        //                              this.mmMaxY - this.mmMinY);
 
-        this.redraw();
-        this.scaleMiniMapViewBox();
+        // this.redraw();
+        // this.scaleMiniMapViewBox();
     }
 
     /**
@@ -705,27 +708,27 @@ export class NetGraph {
      * main viewport and scale the viewbox to reflect that.
      */
     scaleMiniMapViewBox() {
-        if (!this.mm_display) {
-            return;
-        }
+        // if (!this.mmDisplay) {
+        //     return;
+        // }
 
-        const mm_w = this.mm_width;
-        const mm_h = this.mm_height;
+        // const mmW = this.mmWidth;
+        // const mmH = this.mmHeight;
 
-        const w = mm_w * this.mm_scale;
-        const h = mm_h * this.mm_scale;
+        // const w = mmW * this.mmScale;
+        // const h = mmH * this.mmScale;
 
-        const disp_w = (this.mm_max_x - this.mm_min_x) * w;
-        const disp_h = (this.mm_max_y - this.mm_min_y) * h;
+        // const dispW = (this.mmMaxX - this.mmMinX) * w;
+        // const dispH = (this.mmMaxY - this.mmMinY) * h;
 
-        const view_offset_x = -(this.mm_min_x + this.offset_x) *
-            w + (mm_w - disp_w) / 2.;
-        const view_offset_y = -(this.mm_min_y + this.offset_y) *
-            h + (mm_h - disp_h) / 2.;
+        // const viewOffsetX = -(this.mmMinX + this.offsetX) *
+        //     w + (mmW - dispW) / 2.;
+        // const viewOffsetY = -(this.mmMinY + this.offsetY) *
+        //     h + (mmH - dispH) / 2.;
 
-        this.view.setAttributeNS(null, "x", view_offset_x);
-        this.view.setAttributeNS(null, "y", view_offset_y);
-        this.view.setAttribute("width", w / this.scale);
-        this.view.setAttribute("height", h / this.scale);
+        // this.view.setAttributeNS(null, "x", viewOffsetX);
+        // this.view.setAttributeNS(null, "y", viewOffsetY);
+        // this.view.setAttribute("width", w / this.scale);
+        // this.view.setAttribute("height", h / this.scale);
     }
 }

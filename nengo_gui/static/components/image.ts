@@ -18,12 +18,12 @@ import { Component } from "./component";
 
 export class Image extends Component {
     canvas;
-    data_store;
-    display_time;
+    dataStore;
+    displayTime;
     image;
-    n_pixels;
-    pixels_x;
-    pixels_y;
+    nPixels;
+    pixelsX;
+    pixelsY;
     sim;
     svg;
 
@@ -31,13 +31,13 @@ export class Image extends Component {
         super(parent, args);
 
         this.sim = sim;
-        this.display_time = args.display_time;
-        this.pixels_x = args.pixels_x;
-        this.pixels_y = args.pixels_y;
-        this.n_pixels = this.pixels_x * this.pixels_y;
+        this.displayTime = args.displayTime;
+        this.pixelsX = args.pixelsX;
+        this.pixelsY = args.pixelsY;
+        this.nPixels = this.pixelsX * this.pixelsY;
 
         // For storing the accumulated data
-        this.data_store = new DataStore(this.n_pixels, this.sim, 0);
+        this.dataStore = new DataStore(this.nPixels, this.sim, 0);
 
         // Draw the plot as an SVG
         this.svg = d3.select(this.div).append("svg")
@@ -48,8 +48,8 @@ export class Image extends Component {
             ].join(""));
 
         // Call schedule_update whenever the time is adjusted in the SimControl
-        this.sim.time_slider.div.addEventListener("adjust_time", e => {
-            this.schedule_update();
+        this.sim.timeSlider.div.addEventListener("adjustTime", e => {
+            this.scheduleUpdate();
         });
 
         // Create the image
@@ -65,41 +65,41 @@ export class Image extends Component {
             ].join(""));
 
         this.canvas = document.createElement("CANVAS");
-        this.canvas.width = this.pixels_x;
-        this.canvas.height = this.pixels_y;
+        this.canvas.width = this.pixelsX;
+        this.canvas.height = this.pixelsY;
 
-        this.on_resize(
-            viewport.scale_width(this.w), viewport.scale_height(this.h));
+        this.onResize(
+            viewport.scaleWidth(this.w), viewport.scaleHeight(this.h));
 
-    };
+    }
 
     /**
      * Receive new line data from the server
      */
-    on_message(event) {
+    onMessage(event) {
         let data = new Uint8Array(event.data);
-        const msg_size = this.n_pixels + 4;
+        const msgSize = this.nPixels + 4;
 
-        for (let i = 0; i < data.length; i += msg_size) {
-            const time_data = new Float32Array(event.data.slice(i, i + 4));
-            data = Array.prototype.slice.call(data, i + 3, i + msg_size);
-            data[0] = time_data[0];
-            this.data_store.push(data);
+        for (let i = 0; i < data.length; i += msgSize) {
+            const timeData = new Float32Array(event.data.slice(i, i + 4));
+            data = Array.prototype.slice.call(data, i + 3, i + msgSize);
+            data[0] = timeData[0];
+            this.dataStore.push(data);
         }
-        this.schedule_update();
-    };
+        this.scheduleUpdate();
+    }
 
     /**
      * Redraw the lines and axis due to changed data
      */
     update() {
         // Let the data store clear out old values
-        this.data_store.update();
+        this.dataStore.update();
 
-        const data = this.data_store.get_last_data();
+        const data = this.dataStore.getLastData();
         const ctx = this.canvas.getContext("2d");
-        const imgData = ctx.getImageData(0, 0, this.pixels_x, this.pixels_y);
-        for (let i = 0; i < this.n_pixels; i++) {
+        const imgData = ctx.getImageData(0, 0, this.pixelsX, this.pixelsY);
+        for (let i = 0; i < this.nPixels; i++) {
             imgData.data[4 * i + 0] = data[i];
             imgData.data[4 * i + 1] = data[i];
             imgData.data[4 * i + 2] = data[i];
@@ -109,17 +109,17 @@ export class Image extends Component {
         const dataURL = this.canvas.toDataURL("image/png");
 
         this.image.attr("xlink:href", dataURL);
-    };
+    }
 
     /**
      * Adjust the graph layout due to changed size
      */
-    on_resize(width, height) {
-        if (width < this.min_width) {
-            width = this.min_width;
+    onResize(width, height) {
+        if (width < this.minWidth) {
+            width = this.minWidth;
         }
-        if (height < this.min_height) {
-            height = this.min_height;
+        if (height < this.minHeight) {
+            height = this.minHeight;
         }
 
         this.svg
@@ -134,5 +134,5 @@ export class Image extends Component {
         this.height = height;
         this.div.style.width = width;
         this.div.style.height = height;
-    };
+    }
 }

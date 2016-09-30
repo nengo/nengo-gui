@@ -1,6 +1,6 @@
 import * as $ from "jquery";
 
-import * as all_components from "./components/all_components";
+import * as allComponents from "./components/all-components";
 
 let scale = 1.0;
 let x = 0;
@@ -10,85 +10,81 @@ let width = 0;
 let $main;
 let netgraph;
 
-class Viewport {
-
-}
-
-export function set_netgraph(new_netgraph) {
-    netgraph = new_netgraph;
+export function setNetgraph(newNetgraph) {
+    netgraph = newNetgraph;
     $main = $("#main");
 
     width = $main.width();
     height = $main.height();
-    window.addEventListener("resize", on_resize);
+    window.addEventListener("resize", onresize);
 }
 
-export function set_position(new_x, new_y) {
-    x = new_x;
-    y = new_y;
+export function setPosition(newX, newY) {
+    x = newX;
+    y = newY;
     redraw();
 }
 
-export function set_scale(new_scale) {
-    scale = new_scale;
+export function setScale(newScale) {
+    scale = newScale;
     redraw();
 }
 
 export function redraw() {
-    all_components.on_resize(scale * width * 2, height * scale * 2);
-    all_components.redraw();
+    allComponents.onresize(scale * width * 2, height * scale * 2);
+    allComponents.redraw();
 }
 
-export function on_resize() {
-    const old_width = width;
-    const old_height = height;
+export function onresize() {
+    const oldWidth = width;
+    const oldHeight = height;
 
     width = $main.width();
     height = $main.height();
 
     if (netgraph.aspect_resize) {
-        all_components.rescale(old_width / width, old_height / height);
+        allComponents.rescale(oldWidth / width, oldHeight / height);
     }
 
     redraw();
 }
 
-export function from_screen_x(screen_x): number {
-    return screen_x / (width * scale);
+export function fromScreenX(screenX): number {
+    return screenX / (width * scale);
 }
 
-export function shift_x(component_x): number {
-    return component_x + x;
+export function shiftX(componentX): number {
+    return componentX + x;
 }
 
-export function to_screen_x(component_x): number {
-    return shift_x(component_x) *  width * scale;
+export function toScreenX(componentX): number {
+    return shiftX(componentX) *  width * scale;
 }
 
-export function from_screen_y(screen_y): number {
-    return screen_y / (height * scale);
+export function fromScreenY(screenY): number {
+    return screenY / (height * scale);
 }
 
-export function shift_y(component_y): number {
-    return component_y + y;
+export function shiftY(componentY): number {
+    return componentY + y;
 }
 
-export function to_screen_y(component_y): number {
-    return shift_y(component_y) *  height * scale;
+export function toScreenY(componentY): number {
+    return shiftY(componentY) *  height * scale;
 }
 
-export function scale_width(component_width): number {
-    return component_width * width * scale * 2;
+export function scaleWidth(componentWidth): number {
+    return componentWidth * width * scale * 2;
 }
 
-export function scale_height(component_height): number {
-    return component_height * height * scale * 2;
+export function scaleHeight(componentHeight): number {
+    return componentHeight * height * scale * 2;
 }
 
-export function unscale_width(screen_width): number {
-    return screen_width / (width * scale) / 2;
+export function unscaleWidth(screenWidth): number {
+    return screenWidth / (width * scale) / 2;
 }
 
-export function unscale_height(screen_height): number {
-    return screen_height / (height * scale) / 2;
+export function unscaleHeight(screenHeight): number {
+    return screenHeight / (height * scale) / 2;
 }

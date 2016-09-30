@@ -1,6 +1,6 @@
 import { VNode, dom, h } from "maquette";
 
-class VMiddle {
+export class ModalView {
     node: VNode;
     root: HTMLElement;
 

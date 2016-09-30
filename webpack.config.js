@@ -19,7 +19,7 @@ module.exports = {
     },
     module: {
         loaders: [
-            { test: /\.css$/, loader: 'style-loader!css-loader' },
+            { test: /\.css$/, loader: 'style-loader!css-loader!postcss-loader' },
             { test: /\.ico$/, loader: 'file-loader?name=[name].[ext]' },
             { test: /\.(png|jpg|gif)$/, loader: 'url-loader?limit=8192' },
             {
@@ -40,7 +40,21 @@ module.exports = {
             jQuery: 'jquery',
             "window.jQuery": 'jquery',
         }),
-    ]
+    ],
+    postcss: function() {
+        return [
+            require('postcss-import')({ // Must be first
+                path: ['./nengo_gui/static'],
+            }),
+            require('postcss-color-function'),
+            require('postcss-color-gray'),
+            require('postcss-custom-properties'),
+            require('postcss-nested-props'), // Must be before postcss-nested
+            require('postcss-nested'),
+            require('postcss-atroot'),
+            require('autoprefixer'),
+        ];
+    }
 }
 
 // Pass in --no-docs to skip building documentation

@@ -29,16 +29,16 @@ export function clip(x: number, low: number, high: number) {
  * @param {string} uid - The uid for the WebSocket.
  * @returns {WebSocket} The created WebSocket.
  */
-export function create_websocket(uid: string): WebSocket {
+export function createWebsocket(uid: string): WebSocket {
     const hostname = window.location.hostname;
-    let ws_proto;
+    let wsProto;
     if (window.location.protocol === "https:") {
-        ws_proto = "wss:";
+        wsProto = "wss:";
     } else {
-        ws_proto = "ws:";
+        wsProto = "ws:";
     }
-    const ws_url = ws_proto + "//" + hostname + "/viz_component?uid=" + uid;
-    const ws = new WebSocket(ws_url);
+    const wsUrl = wsProto + "//" + hostname + "/viz_component?uid=" + uid;
+    const ws = new WebSocket(wsUrl);
     ws.binaryType = "arraybuffer";
     return ws;
 }
@@ -59,19 +59,19 @@ export function disable_editor() {
  * @param {string} uid - uid associated with the Value component.
  * @returns {SVGElement} The created SVG element.
  */
-export function draw_legend(parent, labels, color_func, uid) {
+export function draw_legend(parent, labels, colorFunc, uid) {
     // "20" is around the size of the font
-    const legend_svg = d3.select(parent)
+    const legendSVG = d3.select(parent)
         .append("svg")
         .attr("width", 150)
         .attr("height", 20 * labels.length)
         .attr("id", "legend" + uid);
 
     if (labels.length === 0) {
-        return legend_svg;
+        return legendSVG;
     }
 
-    legend_svg.selectAll("rect")
+    legendSVG.selectAll("rect")
         .data(labels)
         .enter()
         .append("rect")
@@ -81,9 +81,9 @@ export function draw_legend(parent, labels, color_func, uid) {
         }).attr("class", "legend-label")
         .attr("width", 10)
         .attr("height", 10)
-        .style("fill", color_func);
+        .style("fill", colorFunc);
 
-    legend_svg.selectAll("text")
+    legendSVG.selectAll("text")
         .data(labels)
         .enter()
         .append("text")
@@ -96,15 +96,14 @@ export function draw_legend(parent, labels, color_func, uid) {
         });
 
     // Expand the width of the svg to the length of the longest string
-    const label_list = $("#legend" + uid + " .legend-label").toArray();
-    const longest_label = Math.max.apply(Math, label_list.map(o => {
+    const labelList = $("#legend" + uid + " .legend-label").toArray();
+    const longestLabel = Math.max.apply(Math, labelList.map(o => {
         return o.getBBox().width;
     }));
     // "50" is for the similarity measure that is around three characters wide
-    const svg_right_edge = longest_label + 50;
-    legend_svg.attr("width", svg_right_edge);
+    legendSVG.attr("width", longestLabel + 50);
 
-    return legend_svg;
+    return legendSVG;
 }
 
 /**
@@ -113,7 +112,7 @@ export function draw_legend(parent, labels, color_func, uid) {
  * @param {string} value - The string to check.
  * @returns {boolean} Whether the value is a number.
  */
-export function is_num(value) {
+export function isNum(value) {
     return !(isNaN(value)) && !(value.trim() === "");
 }
 
@@ -122,17 +121,17 @@ export function is_num(value) {
  *
  * Colors are defined using a color blind-friendly palette.
  *
- * @param {number} n_colors - Number of colors to generate.
+ * @param {number} nColors - Number of colors to generate.
  * @returns {String[]} Array of hex color strings.
  */
-export function make_colors(n_colors) {
+export function makeColors(nColors) {
     // Color blind palette with blue, green, red, magenta, yellow, cyan
     const palette = [
         "#1c73b3", "#039f74", "#d65e00", "#cd79a7", "#f0e542", "#56b4ea",
     ];
     const colors = [];
 
-    for (let i = 0; i < n_colors; i++) {
+    for (let i = 0; i < nColors; i++) {
         colors.push(palette[i % palette.length]);
     }
     return colors;
@@ -143,10 +142,139 @@ export function make_colors(n_colors) {
  *
  * @returns {number} Next unique z-index.
  */
-export var next_zindex = (() => {
-    let max_zindex = 0;
+export var nextZindex = (() => {
+    let maxZindex = 0;
     return () => {
-        max_zindex += 1;
-        return max_zindex;
+        maxZindex += 1;
+        return maxZindex;
     };
 })();
+
+/**
+ * Return a throttled version of a function.
+ *
+ * Returns a function, that, when invoked, will only be triggered at most once
+ * during a given window of time. Normally, the throttled function will run
+ * as much as it can, without ever going more than once per `wait` duration;
+ * but if you'd like to disable the execution on the leading edge, pass
+ * `{leading: false}`. To disable execution on the trailing edge, ditto.
+ *
+ * This function is implemented identically in lodash and underscore,
+ * and is copied here under the terms of their MIT licenses.
+ *
+ * See http://drupalmotion.com/article/debounce-and-throttle-visual-explanation
+ * for a nice explanation and visualization.
+ */
+export function throttle(
+    func: Function,
+    wait: number,
+    leading: boolean = true,
+    trailing: boolean = true
+) {
+    let timeout;
+    let context;
+    let args;
+    let result;
+    let previous = 0;
+
+    const later = () => {
+        previous = leading ? Date.now() : 0;
+        timeout = null;
+        result = func.apply(context, args);
+        if (!timeout) {
+            context = args = null;
+        }
+    };
+
+    const throttled: any = function() {
+        const now = Date.now();
+        if (!previous && !leading) {
+            previous = now;
+        }
+        const remaining = wait - (now - previous);
+        context = this;
+        args = arguments;
+        if (remaining <= 0 || remaining > wait) {
+            if (timeout) {
+                clearTimeout(timeout);
+                timeout = null;
+            }
+            previous = now;
+            result = func.apply(context, args);
+            if (!timeout) {
+                context = args = null;
+            }
+        } else if (!timeout && trailing) {
+            timeout = setTimeout(later, remaining);
+        }
+        return result;
+    };
+
+    throttled.cancel = () => {
+        clearTimeout(timeout);
+        previous = 0;
+        timeout = context = args = null;
+    };
+
+    return throttled;
+}
+
+export function delay(func: Function, wait: number, ...args) {
+    return setTimeout(() => {
+        return func.apply(null, args);
+    }, wait);
+}
+
+/**
+ * Return a debounced version of a function.
+ *
+ * Returns a function, that, as long as it continues to be invoked, will not
+ * be triggered. The function will be called after it stops being called for
+ * N milliseconds. If `immediate` is passed, trigger the function on the
+ * leading edge, instead of the trailing.
+ *
+ * This function is implemented identically in lodash and underscore,
+ * and is copied here under the terms of their MIT licenses.
+ *
+ * See http://drupalmotion.com/article/debounce-and-throttle-visual-explanation
+ * for a nice explanation and visualization.
+ */
+export function debounce(
+    func: Function,
+    wait: number,
+    immediate: boolean = false
+) {
+    let timeout;
+    let result;
+
+    const later = (context, args) => {
+        timeout = null;
+        if (args) {
+            result = func.apply(context, args);
+        }
+    };
+
+    const debounced: any = function(...args) {
+        if (timeout) {
+            clearTimeout(timeout);
+        }
+        if (immediate) {
+            const callNow = !timeout;
+            timeout = setTimeout(later, wait);
+            if (callNow) {
+                result = func.apply(this, args);
+            }
+        } else {
+            timeout = delay(later, wait, this, args);
+        }
+
+        return result;
+    };
+
+    debounced.cancel = () => {
+        clearTimeout(timeout);
+        timeout = null;
+    };
+
+    return debounced;
+}

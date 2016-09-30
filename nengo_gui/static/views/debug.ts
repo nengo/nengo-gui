@@ -1,7 +1,7 @@
-import { VNode, dom, h } from "maquette";
+import { dom, h } from "maquette";
 
 import "./debug.css";
-// import { first, set_transform } from "./views";
+// import { first, setTransform } from "./views";
 
 export class DebugView {
     evalButton: HTMLElement;

@@ -1,10 +1,10 @@
 import { VNode, dom, h } from "maquette";
 
-function p_title(text: string): VNode {
+function pTitle(text: string): VNode {
     return h("p.title", [text]);
 }
 
-function p_icon(glyphicon: string): VNode {
+function pIcon(glyphicon: string): VNode {
     return h("p.icon", [
         h("span.glyphicon.glyphicon-" + glyphicon),
     ]);
@@ -24,26 +24,26 @@ class SideNav {
                     h("div.tab-content", [
                         h("div.accordion-container#accordion-container1", [
                             h("div.side-menu-item#Config_button", [
-                                p_title("Configure Settings"),
-                                p_icon("cog"),
+                                pTitle("Configure Settings"),
+                                pIcon("cog"),
                             ]),
                             h("div.accordion-toggle", [
-                                p_title("Download"),
-                                p_icon("chevron-down"),
+                                pTitle("Download"),
+                                pIcon("chevron-down"),
                             ]),
                             h("div.accordion-content", [
                                 h("div.side-menu-item.indent#Download_button", [
-                                    p_title("Download Simulation Data"),
-                                    p_icon("signal"),
+                                    pTitle("Download Simulation Data"),
+                                    pIcon("signal"),
                                 ]),
                                 h("div.side-menu-item.indent#Pdf_button", [
-                                    p_title("Export layout as SVG"),
-                                    p_icon("picture"),
+                                    pTitle("Export layout as SVG"),
+                                    pIcon("picture"),
                                 ]),
                             ]),
                             h("div.side-menu-item#Minimap_button", [
-                                p_title("Minimap"),
-                                p_icon("credit-card"),
+                                pTitle("Minimap"),
+                                pIcon("credit-card"),
                             ]),
                         ]),
                     ]),

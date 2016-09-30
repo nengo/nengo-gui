@@ -4,7 +4,7 @@ import * as $ from "jquery";
 import * as menu from "../menu";
 import * as utils from "../utils";
 import * as viewport from "../viewport";
-import * as all_components from "./all_components";
+import * as allComponents from "./all-components";
 
 /**
  * Base class for interactive visualization
@@ -30,12 +30,12 @@ export class Component {
     h;
     height;
     label;
-    label_visible;
+    labelVisible;
     menu;
-    min_height;
-    min_width;
+    minHeight;
+    minWidth;
     parent;
-    pending_update;
+    pendingUpdate;
     uid;
     w;
     width;
@@ -55,8 +55,8 @@ export class Component {
         this.w = args.width;
         this.h = args.height;
 
-        this.redraw_size();
-        this.redraw_pos();
+        this.redrawSize();
+        this.redrawPos();
 
         this.div.style.position = "absolute";
         this.div.classList.add("graph");
@@ -65,24 +65,24 @@ export class Component {
 
         this.label = document.createElement("div");
         this.label.classList.add("label", "unselectable");
-        utils.safe_set_text(
-            this.label, args.label.replace("<", "&lt;").replace(">", "&gt;"));
+        // utils.safeSetText(
+        //     this.label, args.label.replace("<", "&lt;").replace(">", "&gt;"));
         this.label.style.position = "fixed";
         this.label.style.width = args.width;
         this.label.style.height = "2em";
-        this.label_visible = true;
+        this.labelVisible = true;
         this.div.appendChild(this.label);
-        if (args.label_visible === false) {
-            this.hide_label(null);
+        if (args.labelVisible === false) {
+            this.hideLabel(null);
         }
 
-        this.min_width = 2;
-        this.min_height = 2;
+        this.minWidth = 2;
+        this.minHeight = 2;
 
         // Move element to be drawn on top when clicked on
 
         this.div.onmousedown = function() {
-            this.style.zIndex = utils.next_zindex();
+            this.style.zIndex = utils.nextZindex();
         };
 
         this.div.ontouchstart = this.div.onmousedown;
@@ -92,15 +92,15 @@ export class Component {
             .draggable({
                 inertia: true,
                 onend: event => {
-                    this.save_layout();
+                    this.saveLayout();
                 },
                 onmove: event => {
-                    this.x += viewport.from_screen_x(event.dx);
-                    this.y += viewport.from_screen_y(event.dy);
-                    this.redraw_pos();
+                    this.x += viewport.fromScreenX(event.dx);
+                    this.y += viewport.fromScreenY(event.dy);
+                    this.redrawPos();
                 },
                 onstart: () => {
-                    menu.hide_any();
+                    menu.hideAny();
                 },
             });
 
@@ -110,102 +110,102 @@ export class Component {
                 edges: { bottom: true, left: true, right: true, top: true },
             })
             .on("resizestart", event => {
-                menu.hide_any();
+                menu.hideAny();
             })
             .on("resizemove", event => {
-                const new_width = event.rect.width;
-                const new_height = event.rect.height;
+                const newWidth = event.rect.width;
+                const newHeight = event.rect.height;
                 const dleft = event.deltaRect.left;
                 const dtop = event.deltaRect.top;
                 const dright = event.deltaRect.right;
                 const dbottom = event.deltaRect.bottom;
 
-                this.x += viewport.from_screen_x((dleft + dright) / 2);
-                this.y += viewport.from_screen_y((dtop + dbottom) / 2);
+                this.x += viewport.fromScreenX((dleft + dright) / 2);
+                this.y += viewport.fromScreenY((dtop + dbottom) / 2);
 
-                this.w = viewport.unscale_width(new_width);
-                this.h = viewport.unscale_height(new_height);
+                this.w = viewport.unscaleWidth(newWidth);
+                this.h = viewport.unscaleHeight(newHeight);
 
-                this.on_resize(new_width, new_height);
-                this.redraw_size();
-                this.redraw_pos();
+                this.onResize(newWidth, newHeight);
+                this.redrawSize();
+                this.redrawPos();
             })
             .on("resizeend", event => {
-                this.save_layout();
+                this.saveLayout();
             });
 
         // Open a WebSocket to the server
         this.uid = args.uid;
         if (this.uid !== undefined) {
-            this.ws = utils.create_websocket(this.uid);
+            this.ws = utils.createWebsocket(this.uid);
             this.ws.onmessage = message => {
-                this.on_message(message);
+                this.onMessage(message);
             };
         }
 
         // Flag whether there is a scheduled update that hasn't happened yet
-        this.pending_update = false;
+        this.pendingUpdate = false;
 
         this.menu = new menu.Menu(this.parent);
         interact(this.div)
             .on("hold", event => { // Change to 'tap' for right click
                 if (event.button === 0) {
-                    if (this.menu.visible_any()) {
-                        menu.hide_any();
+                    if (this.menu.visibleAny()) {
+                        menu.hideAny();
                     } else {
                         this.menu.show(event.clientX, event.clientY,
-                                       this.generate_menu());
+                                       this.generateMenu());
                     }
                     event.stopPropagation();
                 }
             })
             .on("tap", event => { // Get rid of menus when clicking off
                 if (event.button === 0) {
-                    if (this.menu.visible_any()) {
-                        menu.hide_any();
+                    if (this.menu.visibleAny()) {
+                        menu.hideAny();
                     }
                 }
             });
         $(this.div).bind("contextmenu", event => {
             event.preventDefault();
             event.stopPropagation();
-            if (this.menu.visible_any()) {
-                menu.hide_any();
+            if (this.menu.visibleAny()) {
+                menu.hideAny();
             } else {
                 this.menu.show(
-                    event.clientX, event.clientY, this.generate_menu());
+                    event.clientX, event.clientY, this.generateMenu());
             }
             return false;
         });
 
-        all_components.add(this);
+        allComponents.add(this);
     }
 
     /**
      * Method to be called when Component is resized.
      */
-    on_resize(width, height) {
+    onResize(width, height) {
         // Subclasses should implement this.
     }
 
     /**
      * Method to be called when Component received a WebSocket message.
      */
-    on_message(event) {
+    onMessage(event) {
         // Subclasses should implement this.
     }
 
-    generate_menu() {
+    generateMenu() {
         const items = [];
-        if (this.label_visible) {
+        if (this.labelVisible) {
             items.push(["Hide label", () => {
-                this.hide_label(null);
-                this.save_layout();
+                this.hideLabel(null);
+                this.saveLayout();
             }]);
         } else {
             items.push(["Show label", () => {
-                this.show_label(null);
-                this.save_layout();
+                this.showLabel(null);
+                this.saveLayout();
             }]);
         }
         items.push(["Remove", () => {
@@ -214,16 +214,16 @@ export class Component {
         return items;
     }
 
-    remove(undo_flag=false, notify_server=true) { // tslint:disable-line
-        if (notify_server) {
-            if (undo_flag === true) {
-                this.ws.send("remove_undo");
+    remove(undoFlag=false, notifyServer=true) { // tslint:disable-line
+        if (notifyServer) {
+            if (undoFlag === true) {
+                this.ws.send("removeUndo");
             } else {
                 this.ws.send("remove");
             }
         }
         this.parent.removeChild(this.div);
-        all_components.remove(this);
+        allComponents.remove(this);
     }
 
     /**
@@ -233,11 +233,11 @@ export class Component {
      * how fast update() is called in the case that we are changing the data
      * faster than whatever processing is needed in update().
      */
-    schedule_update() {
-        if (this.pending_update === false) {
-            this.pending_update = true;
+    scheduleUpdate() {
+        if (this.pendingUpdate === false) {
+            this.pendingUpdate = true;
             window.setTimeout(() => {
-                this.pending_update = false;
+                this.pendingUpdate = false;
                 this.update(null);
             }, 10);
         }
@@ -250,63 +250,63 @@ export class Component {
         // Subclasses should implement this.
     }
 
-    hide_label(event) {
-        if (this.label_visible) {
+    hideLabel(event) {
+        if (this.labelVisible) {
             this.label.style.display = "none";
-            this.label_visible = false;
+            this.labelVisible = false;
         }
     }
 
-    show_label(event) {
-        if (!this.label_visible) {
+    showLabel(event) {
+        if (!this.labelVisible) {
             this.label.style.display = "inline";
-            this.label_visible = true;
+            this.labelVisible = true;
         }
     }
 
-    layout_info() {
+    layoutInfo() {
         return {
             "height": this.h,
-            "label_visible": this.label_visible,
+            "labelVisible": this.labelVisible,
             "width": this.w,
             "x": this.x,
             "y": this.y,
         };
     }
 
-    save_layout() {
-        const info = this.layout_info();
+    saveLayout() {
+        const info = this.layoutInfo();
         this.ws.send("config:" + JSON.stringify(info));
     }
 
-    update_layout(config) {
+    updateLayout(config) {
         this.w = config.width;
         this.h = config.height;
         this.x = config.x;
         this.y = config.y;
 
-        this.redraw_size();
-        this.redraw_pos();
-        this.on_resize(
-            viewport.scale_width(this.w), viewport.scale_height(this.h));
+        this.redrawSize();
+        this.redrawPos();
+        this.onResize(
+            viewport.scaleWidth(this.w), viewport.scaleHeight(this.h));
 
-        if (config.label_visible === true) {
-            this.show_label(null);
+        if (config.labelVisible === true) {
+            this.showLabel(null);
         } else {
-            this.hide_label(null);
+            this.hideLabel(null);
         }
     }
 
-    redraw_size() {
-        this.width = viewport.scale_width(this.w);
-        this.height = viewport.scale_height(this.h);
+    redrawSize() {
+        this.width = viewport.scaleWidth(this.w);
+        this.height = viewport.scaleHeight(this.h);
         this.div.style.width = this.width;
         this.div.style.height = this.height;
     }
 
-    redraw_pos() {
-        const x = viewport.to_screen_x(this.x - this.w);
-        const y = viewport.to_screen_y(this.y - this.h);
-        utils.set_transform(this.div, x, y);
+    redrawPos() {
+        const x = viewport.toScreenX(this.x - this.w);
+        const y = viewport.toScreenY(this.y - this.h);
+        // utils.setTransform(this.div, x, y);
     }
 }

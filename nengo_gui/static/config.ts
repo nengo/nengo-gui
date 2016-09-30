@@ -46,106 +46,106 @@ class Config {
         }
     }
 
-    get aspect_resize(): boolean {
-        return this.get_bool("aspect_resize", false);
+    get aspectResize(): boolean {
+        return this.getBool("aspectResize", false);
     }
 
-    set aspect_resize(val: boolean) {
-        this.set_any("aspect_resize", val);
+    set aspectResize(val: boolean) {
+        this.setAny("aspectResize", val);
     }
 
-    get auto_update(): boolean {
-        return this.get_bool("auto_update", true);
+    get autoUpdate(): boolean {
+        return this.getBool("autoUpdate", true);
     }
 
-    set auto_update(val: boolean) {
-        this.set_any("auto_update", val);
+    set autoUpdate(val: boolean) {
+        this.setAny("autoUpdate", val);
     }
 
-    get console_height(): number {
-        return this.get_number("console_height", 100);
+    get consoleHeight(): number {
+        return this.getNumber("consoleHeight", 100);
     }
 
-    set console_height(val: number) {
-        this.set_any("console_height", val);
+    set consoleHeight(val: number) {
+        this.setAny("consoleHeight", val);
     }
 
-    get editor_font_size(): number {
-        return this.get_number("editor_font_size", 12);
+    get editorFontSize(): number {
+        return this.getNumber("editorFontSize", 12);
     }
 
-    set editor_font_size(val: number) {
-        this.set_any("editor_font_size", val);
+    set editorFontSize(val: number) {
+        this.setAny("editorFontSize", val);
     }
 
-    get editor_width(): number {
-        return this.get_number("editor_width", 580);
+    get editorWidth(): number {
+        return this.getNumber("editorWidth", 580);
     }
 
-    set editor_width(val: number) {
-        this.set_any("editor_width", val);
+    set editorWidth(val: number) {
+        this.setAny("editorWidth", val);
     }
 
-    get font_size(): number {
-        return this.get_number("font_size", 100);
+    get fontSize(): number {
+        return this.getNumber("fontSize", 100);
     }
 
-    set font_size(val: number) {
-        this.set_any("font_size", val);
+    set fontSize(val: number) {
+        this.setAny("fontSize", val);
     }
 
-    get hide_editor(): boolean {
-        return this.get_bool("hide_editor", false);
+    get hideEditor(): boolean {
+        return this.getBool("hideEditor", false);
     }
 
-    set hide_editor(val: boolean) {
-        this.set_any("hide_editor", val);
+    set hideEditor(val: boolean) {
+        this.setAny("hideEditor", val);
     }
 
     get scriptdir(): string {
-        return this.get_string("scriptdir", ".");
+        return this.getString("scriptdir", ".");
     }
 
     set scriptdir(val: string) {
-        this.set_any("scriptdir", val);
+        this.setAny("scriptdir", val);
     }
 
-    get transparent_nets(): boolean {
-        return this.get_bool("transparent_nets", false);
+    get transparentNets(): boolean {
+        return this.getBool("transparentNets", false);
     }
 
-    set transparent_nets(val: boolean) {
-        this.set_any("transparent_nets", val);
+    set transparentNets(val: boolean) {
+        this.setAny("transparentNets", val);
     }
 
-    get zoom_fonts(): boolean {
-        return this.get_bool("zoom_fonts", false);
+    get zoomFonts(): boolean {
+        return this.getBool("zoomFonts", false);
     }
 
-    set zoom_fonts(val: boolean) {
-        this.set_any("zoom_fonts", val);
+    set zoomFonts(val: boolean) {
+        this.setAny("zoomFonts", val);
     }
 
-    restore_defaults() {
+    restoreDefaults() {
         Object.keys(this).forEach(option => {
             this.storage.removeItem("ng." + option);
         });
     }
 
-    private get_bool(key: string, default_val: boolean = null) {
-        const val = this.get_string(key) || default_val;
+    private getBool(key: string, defaultVal: boolean = null) {
+        const val = this.getString(key) || defaultVal;
         return val === "true" || val === true;
     }
 
-    private get_number(key: string, default_val: number = null) {
-        return Number(this.get_string(key) || default_val);
+    private getNumber(key: string, defaultVal: number = null) {
+        return Number(this.getString(key) || defaultVal);
     }
 
-    private get_string(key: string, default_val: string = null) {
-        return this.storage.getItem("ng." + key) || default_val;
+    private getString(key: string, defaultVal: string = null) {
+        return this.storage.getItem("ng." + key) || defaultVal;
     }
 
-    private set_any(key: string, val: any) {
+    private setAny(key: string, val: any) {
         this.storage.setItem("ng." + key, val);
     }
 }
