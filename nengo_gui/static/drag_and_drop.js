@@ -65,7 +65,7 @@ Nengo.VPL.prototype.create_component = function(type){
 
     $(document).mousedown(function(event) {
         if(event.button == 0){}else{return;}
-        
+
         cur_obj = $($(event.target).parent()[0]);
         obj_class = cur_obj.attr('class');
         obj_name = cur_obj.attr('data-id');
@@ -549,7 +549,7 @@ Nengo.VPL.prototype.config_component = function(uid){
                 self.add_connection(conn_in[x].pre.uid,conn_in[x].post.uid);
             }
             for(var x = 0; x < conn_out.length; x++){
-                self.add_connection(conn_out[x].post.uid,conn_out[x].pre.uid);
+                self.add_connection(conn_out[x].pre.uid,conn_out[x].post.uid);
             }
             $('#OK').attr('data-dismiss', 'modal');
         },
