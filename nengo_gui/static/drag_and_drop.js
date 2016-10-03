@@ -2,7 +2,6 @@ Nengo.VPL = function(){
   var self = this;
   //Setting Click handlers for toggle buttons
   $("#mode_list").height($(document).height()*0.85);
-
   $(document).keyup(function(e) {
     if (e.keyCode === 27) self.unselct_component();   // esc
   });
@@ -125,11 +124,14 @@ Nengo.VPL.prototype.create_component = function(type){
                         obj_prop.size = self.compute_size(type,{"parent_network":event.parent_network,
                         "component_size":final_size});
                         obj_prop.parent_network = event.parent_network;
-
+                        console.log(obj_prop);
                         var comp_name = self.add_component(type,obj_prop);
                         var checkExist = setInterval(function() {
                            if (ng.svg_objects[comp_name] != null) {
-                              self.toggle_item_drag(false)
+                              self.toggle_item_drag(false);
+                              ng.notify({act:"pos_size", uid:comp_name, x:final_pos[0],
+                                        y:final_pos[1], width: final_size[0],
+                                        height: final_size[1]});
                               clearInterval(checkExist);
                            }
                         }, 100); // check every 100ms
@@ -225,7 +227,7 @@ Nengo.VPL.prototype.create_connection = function(){
                     if(objects.uids.length == 2) {
                         /** Completes Connection, adds appropriate
                         *   code to editor and resets line. */
-                        self.add_connection(objects);
+                        self.add_connection(objects.uids[0],objects.uids[1]);
                         objects = {};
                         objects.uids = [];
                         objects.classes = [];
@@ -267,24 +269,24 @@ Nengo.VPL.prototype.unselct_component = function(type){
     }
 }
 
-Nengo.VPL.prototype.add_connection = function(objects){
+Nengo.VPL.prototype.add_connection = function(obj1,obj2){
     var ng = Nengo.netgraph;
-    var item1 = ng.svg_objects[objects.uids[0]];
-    var item2 = ng.svg_objects[objects.uids[1]];
+    var item1 = ng.svg_objects[obj1];
+    var item2 = ng.svg_objects[obj2];
     var dim_out = item1.dimensions;
     var dim_in = 0;
 
-    if(objects.classes[1] == "node" && item2.passthrough == null){
+    if(item2.type == "node" && item2.passthrough == null){
         dim_in = 0;
     } else{
         dim_in = item2.dimensions;
     }
 
-    var component_code = "nengo.Connection("+objects.uids[0]+", "+objects.uids[1]+")\n";
+    var component_code = "nengo.Connection("+obj1+", "+obj2+")\n";
     if (dim_out > dim_in){
-        component_code = "nengo.Connection("+objects.uids[0]+"[:"+dim_in+"], "+objects.uids[1]+")\n";
+        component_code = "nengo.Connection("+obj1+"[:"+dim_in+"], "+obj2+")\n";
     } else if (dim_out < dim_in) {
-        component_code = "nengo.Connection("+objects.uids[0]+", "+objects.uids[1]+"[:"+dim_out+"])\n";
+        component_code = "nengo.Connection("+obj1+", "+obj2+"[:"+dim_out+"])\n";
     }
 
     if(dim_in != 0){
@@ -326,7 +328,7 @@ Nengo.VPL.prototype.add_component = function(type, info) {
     component_code = component_name + code_str;
     ng.override_sizes[component_name] = info.size;
     ng.override_positions[component_name] = info.pos;
-
+    console.log(info.size+" "+info.pos);
     if(info.parent_network == "" || info.parent_network == "cursor.Network"){
         editor.gotoLine(last_line);
         editor.insert(tab + component_code);
@@ -467,45 +469,77 @@ Nengo.VPL.prototype.toggle_item_drag = function(toggle){
 }
 
 Nengo.VPL.prototype.delete_component = function(uid){
-  var editor = ace.edit("editor");
-  var re = new RegExp("(?:[^\.])"+uid);
-  var component = Nengo.netgraph.svg_objects[uid];
-  var start_with,end_with,net_children;
-  var self = this;
-  if(component.type == "net"){
-    var net_children = component.children;
-    for(var x = 0; x < net_children.length; x++){
-      this.delete_component(net_children[x].uid);
-    }
-    start_with = editor.find("with "+uid);
-    if(start_with != null){start_with = start_with.start.row};
-    end_with = editor.find("pass");
-    if(end_with != null){end_with = end_with.start.row};
-    if(start_with != null && end_with != null){
-      for(var x = start_with; x < end_with; x++){
-        editor.removeLines(x);
-      }
+    var editor = ace.edit("editor");
+    var re = new RegExp("(?:[^\.])"+uid+"\\s*=");
+    var component = Nengo.netgraph.svg_objects[uid];
+    var start_with,end_with,net_children;
+    var self = this;
+
+    this.delete_connections(uid);
+    var code_line = editor.find(re);
+    console.log(re);
+    while(code_line != null){
+        editor.removeLines(code_line.start.row);
+        code_line = editor.find(re);
     }
 
-  }
+    if(component.type == "net"){
+        var net_children = component.children;
+        for(var x = 0; x < net_children.length; x++){
+          this.delete_component(net_children[x].uid);
+        }
 
-  var code_line = editor.find(re);
-  while(code_line != null){
-    editor.removeLines(code_line.start.row);
-    code_line = editor.find(re);
-  }
+        start_with = editor.find("with "+uid);
+        if(start_with != null){
+            editor.removeLines(start_with.start.row);
+            end_with = editor.find("pass");
+            editor.removeLines(end_with.start.row);
+        }
+    }
+}
 
+Nengo.VPL.prototype.delete_connections = function(uid){
+    var editor = ace.edit("editor");
+    var re = new RegExp("nengo\.Connection\s*.*(?:[^\.])"+uid)
+    var code_line = editor.find(re);
+    while(code_line){
+        editor.removeLines(code_line.start.row);
+        code_line = editor.find(re);
+    }
 }
 
 Nengo.VPL.prototype.config_component = function(uid){
-  var self = this;
-  Nengo.modal.component_config(uid);
-  Nengo.modal.show();
-  Nengo.modal.footer('ok_cancel', function(e) {
-    $('#OK').attr('data-dismiss', 'modal');
-  },function () {
-    $('#cancel-button').attr('data-dismiss', 'modal');
-  });
+    var self = this;
+    var editor = ace.edit("editor");
+    var re = new RegExp("(?:[^\.])"+uid+"\\s*=");
+    var code_line = editor.find(re);
+    var component = Nengo.netgraph.svg_objects[uid];
+    Nengo.modal.component_config(uid);
+    Nengo.modal.show();
+    Nengo.modal.footer('ok_cancel',
+        function(e) {
+            var n_number = $("#config-neuron-number").val();
+            var dim_number = $("#config-dimension").val();
+            var Range = require("ace/range").Range;
+            Nengo.netgraph.svg_objects[uid].n_neurons = n_number;
+            Nengo.netgraph.svg_objects[uid].dimensions = dim_number;
+            editor.session.replace(new Range(code_line.start.row, 0, code_line.start.row, Number.MAX_VALUE),
+            "    "+uid+" = nengo.Ensemble(n_neurons="+n_number+",dimensions="+dim_number+")");
+            self.delete_connections(uid);
+            var conn_in = component.conn_in;
+            var conn_out = component.conn_out;
+            for(var x = 0; x < conn_in.length; x++){
+                self.add_connection(conn_in[x].pre.uid,conn_in[x].post.uid);
+            }
+            for(var x = 0; x < conn_out.length; x++){
+                self.add_connection(conn_out[x].post.uid,conn_out[x].pre.uid);
+            }
+            $('#OK').attr('data-dismiss', 'modal');
+        },
+        function () {
+            $('#cancel-button').attr('data-dismiss', 'modal');
+        }
+    );
 }
 
 $(document).ready(function(){
