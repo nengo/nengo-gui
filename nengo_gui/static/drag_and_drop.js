@@ -6,19 +6,19 @@ Nengo.VPL = function(){
     if (e.keyCode === 27) self.unselct_component();   // esc
   });
 
-  $("#Node").on('click',function(){
+  $("#Node > svg").on('click',function(){
       self.component_toggle('Node');
   });
 
-  $("#Ensemble").on('click',function(){
+  $("#Ensemble > svg").on('click',function(){
       self.component_toggle('Ensemble');
   });
 
-  $("#Network").on('click',function(){
+  $("#Network > svg").on('click',function(){
       self.component_toggle('Network');
   });
 
-  $("#Connection").on('click',function(){
+  $("#Connection > svg").on('click',function(){
       self.component_toggle('Connection');
   });
 }
@@ -64,11 +64,19 @@ Nengo.VPL.prototype.create_component = function(type){
     self.toggle_item_drag(false);
 
     $(document).mousedown(function(event) {
+        if(event.button == 0){}else{return;}
+        
         cur_obj = $($(event.target).parent()[0]);
         obj_class = cur_obj.attr('class');
         obj_name = cur_obj.attr('data-id');
 
         /** Creates cursor shape. */
+        if (event.pageX - $("#main").offset().left < 0 ||
+            event.pageX - $("#main").offset().left > $("#main").width() - 80 ||
+            event.pageY - $("#main").offset().top < 0 ||
+            event.pageY - $("#main").offset().top > $("#main").height() - 80) {
+                return;
+        }
         var cursor_start = self.compute_position(event);
         var cursor_width, cursor_height, cursor_end, final_pos, final_size;
         var mousemoved = false;
@@ -164,6 +172,9 @@ Nengo.VPL.prototype.create_connection = function(){
 
     /** On click and not drag. */
     $('#netgraph').on('mousedown', function (event) {
+        if(event.button == 2){
+            return;
+        }
         $('#netgraph').on('mouseup mousemove', function(evt) {
             if (evt.type === 'mouseup') {
                     cur_obj = $($(event.target).parent()[0]);
@@ -521,10 +532,16 @@ Nengo.VPL.prototype.config_component = function(uid){
             var n_number = $("#config-neuron-number").val();
             var dim_number = $("#config-dimension").val();
             var Range = require("ace/range").Range;
+            var tab = "    ";
+            var tabs;
             Nengo.netgraph.svg_objects[uid].n_neurons = n_number;
             Nengo.netgraph.svg_objects[uid].dimensions = dim_number;
+
+            if(component.parent == null){tabs = tab;}
+            else{tabs = tab+tab;}
+
             editor.session.replace(new Range(code_line.start.row, 0, code_line.start.row, Number.MAX_VALUE),
-            "    "+uid+" = nengo.Ensemble(n_neurons="+n_number+",dimensions="+dim_number+")");
+            tabs+uid+" = nengo.Ensemble(n_neurons="+n_number+",dimensions="+dim_number+")");
             self.delete_connections(uid);
             var conn_in = component.conn_in;
             var conn_out = component.conn_out;

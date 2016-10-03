@@ -12,7 +12,6 @@
  */
 Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
     var self = this;
-
     this.ng = ng;
     this.type = info.type;
     this.uid = info.uid;
@@ -22,6 +21,9 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
     this.fixed_width = null;
     this.fixed_height = null;
     this.dimensions = info.dimensions;
+    if(info.type == 'ens'){
+        this.n_neurons = info.n_neurons;
+    }
     this.minimap = minimap;
     this.html_node = info.html;
     if (minimap == false) {
@@ -394,6 +396,7 @@ Nengo.NetGraphItem.prototype.generate_menu = function () {
         items.push(['Spikes', function() {self.create_graph('Raster');}]);
         items.push(['Voltages', function() {self.create_graph('Voltage');}]);
         items.push(['Firing pattern', function() {self.create_graph('SpikeGrid');}]);
+        items.push(['Configure',function(){Nengo.vpl.config_component(self.uid)}]);
     }
     if (this.type == 'node') {
         items.push(['Slider', function() {self.create_graph('Slider');}]);
