@@ -19,11 +19,56 @@
         <link href="static/lib/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
         <link href="static/lib/js/jqueryFileTree/jqueryFileTree.css" rel="stylesheet" type="text/css">
         <link href="static/side_menu.css" rel="stylesheet" type="text/css" />
+        <link href="static/drag_and_drop.css" rel="stylesheet" type="text/css" />
     </head>
     <!-- body needs an ID to fix cursor in Firefox -->
 
     <body id="body" onload="onload();">
         <!-- Contains all sidenav html -->
+        <div id="top_toolbar_div">
+            <ul id='toolbar_object' class="nav nav-pills">
+                <li id='Open_file_button' role="presentation">
+                    <a title='Open file' class='glyphicon glyphicon-folder-open'> </a>
+                </li>
+                <li id='Component_menu' role="presentation">
+                    <a title='Components' class='glyphicon glyphicon-th'> </a>
+                </li>
+                <li id='Config_menu' role="presentation">
+                    <a title='Utilities' class='glyphicon glyphicon-wrench'> </a>
+                </li>
+                <li id='Reset_layout_button' role="presentation">
+                    <a title='Reset model layout' class='glyphicon glyphicon-trash'> </a>
+                </li>
+                <li id='Undo_last_button' role="presentation">
+                    <a title='Undo last' class='glyphicon glyphicon-share-alt reversed'> </a>
+                </li>
+                <li id='Redo_last_button' role="presentation">
+                    <a title='Redo last' class='glyphicon glyphicon-share-alt'> </a>
+                </li>
+                <li id='Help_button' role="presentation">
+                    <a title='List of hotkeys' class='glyphicon glyphicon-question-sign'> </a>
+                </li>
+                <li id='Toggle_ace' role="presentation">
+                    <a title='Open code editor' class='glyphicon glyphicon-list-alt'> </a>
+                </li>
+                <li id='Font_decrease' role="presentation">
+                    <a title='Decrease font size' class='glyphicon glyphicon-zoom-out'> </a>
+                </li>
+                <li id='Font_increase' role="presentation">
+                    <a title='Increase font size' class='glyphicon glyphicon-zoom-in'> </a>
+                </li>
+                <li id='Save_file' class='disabled' role="presentation">
+                    <a title='Save file' class='glyphicon glyphicon-floppy-save'> </a>
+                </li>
+                <li id='Sync_editor_button' class='disabled' role="presentation">
+                    <a title='Sync diagram with editor' class='glyphicon glyphicon-circle-arrow-left'> </a>
+                </li>
+                <li role="presentation">
+                    <div id='filename'></div>
+                </li>
+            </ul>
+        </div>
+        <div id="vmiddle">
         <div class="sidenav-container">
 
             <!-- holds all the sidenav content -->
@@ -36,7 +81,70 @@
                 </div>
 
                 <div class="tab-content">
-                    <div class="accordion-container" id="accordion-container1">
+                    <!-- accordion containers allow use of accordions in particular divs -->
+                    <!-- must be uniquely id'd by number -->
+                    <!-- <div class="accordion-container" id="accordion-container1"> -->
+
+                        <!-- <div class="accordion-toggle">
+                            <p class="title">Basic</p>
+                            <p class="icon">
+                                <span class="glyphicon glyphicon-chevron-down"></span>
+                            </p>
+                        </div> -->
+                        <!-- accordion-content holds content for accordion above it -->
+                        <!-- the default class makes it initially hidden, removing it makes it shown -->
+                        <!-- <div class="accordion-content default drag_drop_menu"> -->
+                            <div id="mode_list">
+                                <div id="Ensemble" class="mode off">
+
+                                    <svg viewbox = "0 0 150 150">
+                                        <g transform="translate(75,75) scale(2)">
+                                            <circle cx="-12.407" cy="-7.231" r="4.843" />
+                                            <circle cx="-1.064" cy="0.123" r="4.843" />
+                                            <circle cx="3.7619999999999996" cy="12.81" r="4.843" />
+                                            <circle cx="12.454" cy="-0.521" r="4.843" />
+                                            <circle cx="-11.603" cy="8.663" r="4.843" />
+                                            <circle cx="2.644" cy="-12.908" r="4.843" />
+                                        </g>
+                                    </svg>
+                                    <p>Ensemble</p>
+                                </div>
+
+                                <div id="Node" class="mode off">
+                                    <svg viewbox = "0 0 150 150">
+                                        <g transform="translate(20,20) scale(1)" style="stroke-width:0.5;stroke:black">
+                                            <rect width="110" height="110" rx="9.595074226286059" ry="9.595074226286059"></rect>
+                                        </g>
+                                    </svg>
+                                    <p>Node</p>
+                                </div>
+
+                                <div id="Network" class="mode off">
+
+                                    <svg viewbox = "0 0 150 150">
+                                        <g transform="translate(10,10) scale(1)" style="stroke-width:0.5;stroke:black">
+                                            <rect width="130" height="130"></rect>
+                                        </g>
+                                    </svg>
+                                    <p>Network</p>
+                                </div>
+
+                                <div id="Connection" class="mode off">
+
+                                    <svg viewbox = "0 0 150 150">
+                                        <g transform="translate(75,75) scale(4)" style="stroke-width:0.1;stroke:black">
+                                            <line x1="-12.5" y1="0" x2="12.5" y2="0" style="stroke-width:0.6"/>
+                                            <polygon points="-0.5,-1 -0.5,1 2.5,0" style="stroke-width:1" />
+                                            <circle cx="-12.5" cy="0" r="1" />
+                                            <circle cx="12.5" cy="0" r="1" />
+                                        </g>
+                                    </svg>
+                                    <p>Connection</p>
+                                </div>
+                            </div>
+                        </div>
+                <div class="tab-content">
+                    <div class="accordion-container">
                         <!-- side-menu-item creates a menu item for non accordion content -->
                         <div id='Config_button' class="side-menu-item">
                             <p class="title">Configure Settings</p>
@@ -77,47 +185,6 @@
                 </div>
             </div>
         </div>
-        <div id="top_toolbar_div">
-            <ul id='toolbar_object' class="nav nav-pills">
-                <li id='Open_file_button' role="presentation">
-                    <a title='Open file' class='glyphicon glyphicon-folder-open'> </a>
-                </li>
-                <li id='Config_menu' role="presentation">
-                    <a title='Utilities' class='glyphicon glyphicon-wrench'> </a>
-                </li>
-                <li id='Reset_layout_button' role="presentation">
-                    <a title='Reset model layout' class='glyphicon glyphicon-trash'> </a>
-                </li>
-                <li id='Undo_last_button' role="presentation">
-                    <a title='Undo last' class='glyphicon glyphicon-share-alt reversed'> </a>
-                </li>
-                <li id='Redo_last_button' role="presentation">
-                    <a title='Redo last' class='glyphicon glyphicon-share-alt'> </a>
-                </li>
-                <li id='Help_button' role="presentation">
-                    <a title='List of hotkeys' class='glyphicon glyphicon-question-sign'> </a>
-                </li>
-                <li id='Toggle_ace' role="presentation">
-                    <a title='Open code editor' class='glyphicon glyphicon-list-alt'> </a>
-                </li>
-                <li id='Font_decrease' role="presentation">
-                    <a title='Decrease font size' class='glyphicon glyphicon-zoom-out'> </a>
-                </li>
-                <li id='Font_increase' role="presentation">
-                    <a title='Increase font size' class='glyphicon glyphicon-zoom-in'> </a>
-                </li>
-                <li id='Save_file' class='disabled' role="presentation">
-                    <a title='Save file' class='glyphicon glyphicon-floppy-save'> </a>
-                </li>
-                <li id='Sync_editor_button' class='disabled' role="presentation">
-                    <a title='Sync diagram with editor' class='glyphicon glyphicon-circle-arrow-left'> </a>
-                </li>
-                <li role="presentation">
-                    <div id='filename'></div>
-                </li>
-            </ul>
-        </div>
-        <div id="vmiddle">
           <div id="main" class="droppable"></div>
           <div id="rightpane"></div>
         </div>
@@ -204,6 +271,7 @@
         <script src="static/hotkeys.js"></script>
         <script src="static/ace.js"></script>
         <script src="static/data_to_csv.js"></script>
+        <script src="static/drag_and_drop.js"></script>
     </body>
 
 </html>
