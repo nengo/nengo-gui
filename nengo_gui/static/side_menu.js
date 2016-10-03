@@ -63,19 +63,15 @@ Nengo.SideMenu = function() {
     var accord_num = document.getElementsByClassName('accordion-container')
                              .length + 1;
 
-    for (var x = 1; x < accord_num; x++) {
-        $('#accordion-container' + String(x))
-            .find('.accordion-toggle')
-            .click(function() {
+    $('.accordion-container').find('.accordion-toggle').click(function() {
 
-                // Expand or collapse this panel
-                $(this).next().slideToggle();
+        // Expand or collapse this panel
+        $(this).next().slideToggle();
 
-                // Hide the other panels
-                $(".accordion-content").not($(this).next()).slideUp();
-
-            });
-    }
+        // Hide the other panels
+        $(".accordion-content").not($(this).next()).slideUp();
+        
+    });
 
     $(window).on('resize', function() {self.on_resize();});
     self.on_resize();

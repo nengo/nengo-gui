@@ -94,7 +94,7 @@
   float:right;
   font-size: 14px;
 }
-.accordion-content {display: none; border: 1px solid black}
+.accordion-content {display: none}
 
 .accordion-content.default {display: block;}
 
