@@ -21,18 +21,18 @@ gauss = nengo.dists.Function(gaussian,
                              mag=nengo.dists.Uniform(-1, 1))
 
 # build the function space, generate the basis functions
-fs = nengo.FunctionSpace(gauss, n_basis=20)
+fs = nengo.FunctionSpace(gauss, n_basis=15)
 
 model = nengo.Network()
 with model:
     # an ensemble representing the first function
-    ens1 = nengo.Ensemble(n_neurons=1000, dimensions=fs.n_basis)
+    ens1 = nengo.Ensemble(n_neurons=2000, dimensions=fs.n_basis)
     # set encoders and evaluation points to be in a range that gets used
     ens1.encoders = fs.project(gauss)
     ens1.eval_points = fs.project(gauss)
 
     # an ensemble representing the second function
-    ens2 = nengo.Ensemble(n_neurons=1000, dimensions=fs.n_basis)
+    ens2 = nengo.Ensemble(n_neurons=2000, dimensions=fs.n_basis)
     # set encoders and evaluation points to be in a range that gets used
     ens2.encoders = fs.project(gauss)
     ens2.eval_points = fs.project(gauss)
@@ -45,17 +45,19 @@ with model:
     stimulus2 = fs.make_input([1, 0, 0.2])
     nengo.Connection(stimulus2.output, ens2)
 
-    n_neurons = 5000
+    n_neurons = 1500
     # create a population for calculating the dot product
     ens3 = nengo.Ensemble(n_neurons=n_neurons, dimensions=fs.n_basis*2)
     # this population has twice as many weights represented, stack samples
     ens3.encoders = np.hstack([fs.project(gauss).sample(n_neurons),
                                fs.project(gauss).sample(n_neurons)])
+    ens3.encoders = ens3.encoders / np.linalg.norm(ens3.encoders)
     # 5000 chosen here somewhat arbitrarily as larger
     # than default number of samples for eval_points
     ens3.eval_points = np.vstack([
         np.hstack([fs.project(gauss).sample(5000),
                    fs.project(gauss).sample(5000)])])
+    ens3.eval_points = ens3.eval_points / np.linalg.norm(ens3.encoders)
     nengo.Connection(ens1, ens3[:fs.n_basis])
     nengo.Connection(ens2, ens3[fs.n_basis:])
 
@@ -74,7 +76,8 @@ with model:
         q = q/norm_q if norm_q != 0 else q
         return np.dot(p, q)
 
-    nengo.Connection(ens3, dot_product_output, function=dotproduct)
+    nengo.Connection(ens3, dot_product_output,
+                     function=dotproduct, synapse=.01)
 
     # create a node to give a plot of the represented function
     plot = fs.make_plot_node(domain=domain, lines=2)

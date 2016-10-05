@@ -26,7 +26,7 @@ fs = nengo.FunctionSpace(
 model = nengo.Network()
 with model:
     # create an ensemble to represent the weights over the basis functions
-    ens = nengo.Ensemble(n_neurons=500, dimensions=fs.n_basis)
+    ens = nengo.Ensemble(n_neurons=1000, dimensions=fs.n_basis)
     # set encoders and evaluation points to be in a range that gets used
     ens.encoders = fs.project(
         nengo.dists.Function(gaussian,
@@ -46,7 +46,7 @@ with model:
     # a node to specify which part of the function to decode
     x_value = nengo.Node(lambda t: np.sin(5*t))
     # and a network for performing the weighted summation of basis functions
-    product = nengo.networks.Product(n_neurons=100, dimensions=fs.n_basis)
+    product = nengo.networks.Product(n_neurons=200, dimensions=fs.n_basis)
 
     # get the size of each of the singular values scaled by the average
     # magnitude of weights for data calculated from provided distribution
