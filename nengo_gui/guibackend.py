@@ -211,7 +211,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
 
     @RequireAuthentication('/login')
     def ws_default(self):
-        """Handles ws://host:port/viz_component with a websocket"""
+        """Handles ws://host:port/component with a websocket"""
         # figure out what component is being connected to
 
         gui = self.server

@@ -47,15 +47,15 @@ class Config(nengo.Config):
 
             if isinstance(obj, (nengo.Ensemble, nengo.Node, nengo.Network)):
                 if self[obj].pos is not None:
-                    lines.append('_viz_config[%s].pos=%s' % (uid,
+                    lines.append('_gui_config[%s].pos=%s' % (uid,
                                                              self[obj].pos))
                 if self[obj].size is not None:
-                    lines.append('_viz_config[%s].size=%s' % (uid,
+                    lines.append('_gui_config[%s].size=%s' % (uid,
                                                               self[obj].size))
                 if isinstance(obj, nengo.Network):
-                    lines.append('_viz_config[%s].expanded=%s'
+                    lines.append('_gui_config[%s].expanded=%s'
                                  % (uid, self[obj].expanded))
-                    lines.append('_viz_config[%s].has_layout=%s'
+                    lines.append('_gui_config[%s].has_layout=%s'
                                  % (uid, self[obj].has_layout))
 
             elif isinstance(obj, nengo_gui.components.component.Component):
@@ -75,9 +75,9 @@ class Config(nengo.Config):
                         raise ValueError("Cannot save %s to config, recovery "
                                          "failed. Only "
                                          "values that can be recovered after "
-                                         "being entered into the config file " 
+                                         "being entered into the config file "
                                          "can be saved." % (val))
 
-                    lines.append('_viz_config[%s].%s = %s' % (uid, k, val))
+                    lines.append('_gui_config[%s].%s = %s' % (uid, k, val))
 
         return '\n'.join(lines)

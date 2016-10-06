@@ -18,26 +18,23 @@ import { config } from "./config";
 import "./editor.css";
 import * as utils from "./utils";
 import * as viewport from "./viewport";
+import { Connection } from "./websocket";
 
 const Range = ace.acequire("ace/range").Range;
 
 export class Editor {
-    autoUpdate;
     console;
     consoleError;
     consoleHeight;
     consoleStdout;
     currentCode;
     editor;
-    fontSize;
-    hidden;
     marker;
     maxWidth;
     minWidth;
     netgraph;
     saveDisabled;
     updateTrigger;
-    width;
     ws;
 
     constructor(uid, netgraph) {
@@ -49,7 +46,7 @@ export class Editor {
         this.minWidth = 50;
         this.maxWidth = $(window).width() - 100;
 
-        this.ws = utils.createWebsocket(uid);
+        this.ws = new Connection(uid); // TODO: , "editor");
         this.ws.onmessage = function(event) {
             this.onmessage(event);
         };
@@ -97,53 +94,6 @@ export class Editor {
 
         this.scheduleUpdates();
 
-        Object.defineProperty(this, "width", {
-            get: function() {
-                return config.editorWidth;
-            },
-            set: function(val) {
-                val = Math.max(Math.min(val, this.maxWidth), this.minWidth);
-                $("#rightpane").width(val);
-                config.editorWidth = val;
-            },
-        });
-
-        Object.defineProperty(this, "hidden", {
-            get: function() {
-                return config.hideEditor;
-            },
-            set: function(val) {
-                config.hideEditor = val;
-                if (val) {
-                    this.hideEditor();
-                } else {
-                    this.showEditor();
-                }
-            },
-        });
-
-        Object.defineProperty(this, "fontSize", {
-            get: function() {
-                return config.editorFontSize;
-            },
-            set: function(val) {
-                val = Math.max(val, 6);
-                this.editor.setFontSize(val);
-                config.editorFontSize = val;
-            },
-        });
-
-        // Automatically update the model based on the text
-        Object.defineProperty(this, "autoUpdate", {
-            get: function() {
-                return config.autoUpdate;
-            },
-            set: function(val) {
-                this.updateTrigger = val;
-                config.autoUpdate = val;
-            },
-        });
-
         this.width = config.editorWidth;
         this.hidden = config.hideEditor;
         this.fontSize = config.editorFontSize;
@@ -178,6 +128,48 @@ export class Editor {
             }).on("resizeend", function(event) {
                 config.consoleHeight = this.consoleHeight;
             });
+    }
+
+    get width(): number {
+        return config.editorWidth;
+    }
+
+    set width(val: number) {
+        val = Math.max(Math.min(val, this.maxWidth), this.minWidth);
+        $("#rightpane").width(val);
+        config.editorWidth = val;
+    }
+
+    get hidden(): boolean {
+        return config.hideEditor;
+    }
+
+    set hidden(val: boolean) {
+        config.hideEditor = val;
+        if (val) {
+            this.hideEditor();
+        } else {
+            this.showEditor();
+        }
+    }
+
+    get fontSize(): number {
+        return config.editorFontSize;
+    }
+
+    set fontSize(val: number) {
+        val = Math.max(val, 6);
+        this.editor.setFontSize(val);
+        config.editorFontSize = val;
+    }
+
+    get autoUpdate(): boolean {
+        return config.autoUpdate;
+    }
+
+    set autoUpdate(val: boolean) {
+        this.updateTrigger = val;
+        config.autoUpdate = val;
     }
 
     /**

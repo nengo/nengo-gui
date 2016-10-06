@@ -23,26 +23,6 @@ export function clip(x: number, low: number, high: number) {
     return x;
 }
 
-/**
- * Create a WebSocket connection to the given uid.
- *
- * @param {string} uid - The uid for the WebSocket.
- * @returns {WebSocket} The created WebSocket.
- */
-export function createWebsocket(uid: string): WebSocket {
-    const hostname = window.location.hostname;
-    let wsProto;
-    if (window.location.protocol === "https:") {
-        wsProto = "wss:";
-    } else {
-        wsProto = "ws:";
-    }
-    const wsUrl = wsProto + "//" + hostname + "/viz_component?uid=" + uid;
-    const ws = new WebSocket(wsUrl);
-    ws.binaryType = "arraybuffer";
-    return ws;
-}
-
 export function disable_editor() {
     $("#Toggle_ace").css("display", "none");
     $("#Save_file").css("display", "none");
@@ -116,6 +96,18 @@ export function isNum(value) {
     return !(isNaN(value)) && !(value.trim() === "");
 }
 
+export function now() {
+    if (window.performance && window.performance.now) {
+        return window.performance.now();
+    }
+
+    if (Date.now) {
+        return Date.now();
+    }
+
+    return new Date().getTime();
+}
+
 /**
  * Generate a color sequence of a given length.
  *
@@ -168,8 +160,7 @@ export var nextZindex = (() => {
 export function throttle(
     func: Function,
     wait: number,
-    leading: boolean = true,
-    trailing: boolean = true
+    {leading: leading = true, trailing: trailing = true} = {}
 ) {
     let timeout;
     let context;
@@ -178,7 +169,7 @@ export function throttle(
     let previous = 0;
 
     const later = () => {
-        previous = leading ? Date.now() : 0;
+        previous = leading ? now() : 0;
         timeout = null;
         result = func.apply(context, args);
         if (!timeout) {
@@ -187,11 +178,11 @@ export function throttle(
     };
 
     const throttled: any = function() {
-        const now = Date.now();
+        const current = now();
         if (!previous && !leading) {
-            previous = now;
+            previous = current;
         }
-        const remaining = wait - (now - previous);
+        const remaining = wait - (current - previous);
         context = this;
         args = arguments;
         if (remaining <= 0 || remaining > wait) {
@@ -199,7 +190,7 @@ export function throttle(
                 clearTimeout(timeout);
                 timeout = null;
             }
-            previous = now;
+            previous = current;
             result = func.apply(context, args);
             if (!timeout) {
                 context = args = null;
@@ -242,7 +233,7 @@ export function delay(func: Function, wait: number, ...args) {
 export function debounce(
     func: Function,
     wait: number,
-    immediate: boolean = false
+    {immediate: immediate = false} = {}
 ) {
     let timeout;
     let result;

@@ -17,8 +17,8 @@ import { dom, h, VNode } from "maquette";
 import * as allComponents from "../components/all-components";
 import { config } from "../config";
 import * as menu from "../menu";
-import * as utils from "../utils";
 import * as viewport from "../viewport";
+import { Connection } from "../websocket";
 import { NetGraphConnection } from "./connection";
 import { Minimap } from "./minimap";
 import { NetGraphItem } from "./item";
@@ -116,7 +116,7 @@ export class NetGraph {
         this.height = $(this.svg).height();
 
         // Connect to server
-        this.ws = utils.createWebsocket(uid);
+        this.ws = new Connection(uid); // TODO: , "netgraph");
         this.ws.onmessage = event => {
             this.onMessage(event);
         };

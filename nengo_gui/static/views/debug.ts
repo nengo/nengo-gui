@@ -1,77 +1,121 @@
-import { dom, h } from "maquette";
+import { VNode, dom, h } from "maquette";
 
 import "./debug.css";
 // import { first, setTransform } from "./views";
 
+function menu(id: string, label: string): VNode {
+    let text = "Add " + label;
+    if (label === "") {
+        text = "Add"; // Remove the trailing space
+    }
+    return h("div.dropup#" + id, [
+        h("button.btn.btn-default.btn-block.dropdown-toggle", {
+            "data-toggle": "dropdown",
+            "type": "button",
+        }, [text, h("span.caret")]),
+        h("ul.dropdown-menu"),
+    ]);
+}
+
+function button(id: string, icon: string, {active: active = false} = {}) {
+    let activeClass = "";
+    if (active) {
+        activeClass = ".active";
+    }
+
+    return h("button.btn.btn-default.btn-block" + activeClass + "#" + id, {
+        "autocomplete": "off",
+        "data-toggle": "button",
+        "type": "button",
+    }, [
+        h("span.glyphicon.glyphicon-" + icon),
+    ]);
+}
+
 export class DebugView {
-    evalButton: HTMLElement;
-    evalInput: HTMLInputElement;
-    console: Element;
-    controls: Element;
-    root: Element;
-    private consoleShown: boolean = false;
-    private controlsRow: Element;
-    private viewMenu: Element;
+    root: HTMLDivElement;
+    debug: HTMLDivElement;
+    log: HTMLButtonElement;
+    outline: HTMLButtonElement;
+    private controls: HTMLDivElement;
+    private menus: {[id: string]: HTMLDivElement};
 
     constructor() {
-        const rootNode = h("div.debug");
-        this.root = dom.create(rootNode).domNode;
-
-        const controlsNode =
-            h("div.debug-controls.container-fluid", [
-                h("div.row", [
-                    h("div.col-sm-1", [
-                        h("div.dropup", [
-                            h("button.btn.btn-default.dropdown-toggle#view", {
-                                "aria-expanded": "false",
-                                "aria-haspopup": "true",
-                                "data-toggle": "dropdown",
-                                "type": "button",
-                            }, ["Add view", h("span.caret")]),
-                            h("ul.dropdown-menu", {"aria-labelledby": "view"}),
-                        ]),
+        const node =
+            h("div", [
+                h("div.debug"),
+                h("div.debug-controls", [
+                    h("div.control-group", [
+                        button("outline", "th"),
+                        button("log", "info-sign", {active: true}),
+                    ]),
+                    h("div.control-group", [
+                        menu("main", ""),
+                        menu("view", "View"),
                     ]),
                 ]),
             ]);
-        this.controls = dom.create(controlsNode).domNode;
-        this.controlsRow = this.controls.querySelector(".row");
-        this.viewMenu = this.controls.querySelector(".dropdown-menu");
+        this.root = dom.create(node).domNode as HTMLDivElement;
+        this.debug = this.root.querySelector(".debug") as HTMLDivElement;
+        this.controls =
+            this.root.querySelector(".debug-controls") as HTMLDivElement;
+        this.outline =
+            this.controls.querySelector("#outline") as HTMLButtonElement;
+        this.log = this.controls.querySelector("#log") as HTMLButtonElement;
+        this.menus = {
+            main: this.controls.querySelector("#main") as HTMLDivElement,
+            view: this.controls.querySelector("#view") as HTMLDivElement,
+        };
+    }
 
-        const consoleNode =
-            h("div.console.col-sm-3", [
+    addControlGroup(label: string) {
+        const controlGroupNode =
+            h("div.control-group.last", [
+                h("div", [
+                    h("p", [h("code", ["obj = new " + label + "(...);"])]),
+                    h("button.btn.btn-xs.btn-default.pull-right#remove", [
+                        "Remove " + label,
+                    ]),
+                ]),
                 h("div.input-group", [
-                    h("input.form-control", {
-                        "placeholder": "view is the current view...",
-                        "type": "text",
-                    }),
+                    h("input.form-control", {"type": "text"}),
                     h("span.input-group-btn", [
-                        h("button.btn.btn-default", {"type": "button"}, [
+                        h("button.btn.btn-default#eval", {"type": "button"}, [
                             "Eval JS",
                         ]),
                     ]),
                 ]),
+                h("div", [
+                    h("p", [
+                        h("code", [h("span.glyphicon.glyphicon-console")]),
+                    ]),
+                    h("p", [h("code#output")]),
+                ]),
             ]);
-        this.console = dom.create(consoleNode).domNode;
-        this.evalInput =
-            this.console.querySelector("input") as HTMLInputElement;
-        this.evalButton = this.console.querySelector("button") as HTMLElement;
+        const root = dom.create(controlGroupNode).domNode as HTMLDivElement;
+        const input = root.querySelector("input");
+        const evalBtn = root.querySelector("#eval") as HTMLButtonElement;
+        const evalOutput = root.querySelector("#output") as HTMLElement;
+        const remove = root.querySelector("#remove") as HTMLButtonElement;
+        this.controls.appendChild(root);
+        return {
+            controlGroupRoot: root,
+            evalBtn: evalBtn,
+            evalOutput: evalOutput,
+            input: input,
+            remove: remove,
+        };
     }
 
-    addView(id: string, label: string) {
-        const node = h("li", [h("a#" + id, {href: "#"}, [label])]);
-        this.viewMenu.appendChild(dom.create(node).domNode);
+    removeControlGroup(root: HTMLDivElement) {
+        this.controls.removeChild(root);
     }
 
-    hideConsole() {
-        if (this.consoleShown) {
-            this.controlsRow.removeChild(this.console);
-        }
-    }
-
-    showConsole() {
-        if (!this.consoleShown) {
-            this.controlsRow.appendChild(this.console);
-        }
+    register(category: string, label: string) {
+        const node = h("li", [h("a", {href: "#"}, [label])]);
+        const root = dom.create(node).domNode;
+        this.menus[category].querySelector(".dropdown-menu").appendChild(root);
+        return root.querySelector("a") as HTMLAnchorElement;
     }
 
     redraw(): void {

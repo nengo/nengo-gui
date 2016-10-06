@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import { VNode, dom, h } from "maquette";
 
 import { ModalView } from "./modal";
-import "./sim_control.css";
+import "./sim-control.css";
 import { getTransform, setTransform } from "./views";
 
 function button(id: string, icon: string): VNode {
@@ -63,7 +63,7 @@ export class SimControlView {
     }
 
     get height(): number {
-        return Number(this.root.clientHeight);
+        return this.root.clientHeight;
     }
 
     set height(val: number) {
@@ -71,7 +71,7 @@ export class SimControlView {
     }
 
     get width(): number {
-        return Number(this.root.clientWidth);
+        return this.root.clientWidth;
     }
 
     set width(val: number) {
@@ -136,8 +136,8 @@ export class SpeedThrottleView {
         this.handle.style.left = String(val) + "px";
     }
 
-    get sliderWidth() {
-        return Number(this.slider.clientWidth);
+    get sliderWidth(): number {
+        return this.slider.clientWidth;
     }
 
     get speed(): number {
@@ -174,60 +174,86 @@ export class SpeedThrottleView {
 
 export class TimeSliderView {
     root: HTMLDivElement;
-    shownTime: HTMLDivElement;
+    shownTime: SVGRectElement;
     private axis: SVGGElement;
     private svg: SVGSVGElement;
 
     constructor() {
+        const [width, height] = [200, 58];
         const node =
             h("div.time-slider", [
-                h("div.shown-time", {styles: {
-                    "transform": "translate(0,0)",
-                }}),
-                h("svg", [
-                    h("g.axis"),
+                h("svg", {
+                    height: "100%",
+                    preserveAspectRatio: "xMinYMin",
+                    viewBox: "0 0 " + width + " " + height,
+                    width: "100%",
+                }, [
+                    h("rect.shown-time", {
+                        height: String(height),
+                        width: String(height),
+                        x: "0",
+                        y: "0",
+                    }),
+                    h("line.shown-time-border#left", {
+                        x1: "0",
+                        x2: "0",
+                        y1: "0",
+                        y2: String(height),
+                    }),
+                    h("line.shown-time-border#right", {
+                        x1: String(height),
+                        x2: String(height),
+                        y1: "0",
+                        y2: String(height),
+                    }),
+                    h("g.axis", {
+                        transform: "translate(0," + (height / 2) + ")",
+                    }),
                 ]),
             ]);
         this.root = dom.create(node).domNode as HTMLDivElement;
 
         this.shownTime =
-            this.root.querySelector(".shown-time") as HTMLDivElement;
+            this.root.querySelector(".shown-time") as SVGRectElement;
         this.svg = this.root.querySelector("svg") as SVGSVGElement;
         this.axis = this.svg.querySelector("g.axis") as SVGGElement;
     }
 
     get height(): number {
-        return Number(this.root.style.height);
+        return this.root.clientHeight;
     }
 
     set height(val: number) {
         this.root.style.height = String(val);
-        // this.shownTime.style.height = String(h);
     }
 
     /**
      * Offset of the shownTime div in pixels.
      */
     get shownOffset(): number {
-        const [x, y] = getTransform(this.shownTime);
-        console.assert(y === 0);
-        return x;
+        return Number(this.shownTime.getAttribute("x"));
     }
 
     set shownOffset(val: number) {
-        setTransform(this.shownTime, val, 0);
+        const left = this.svg.getElementById("left") as SVGLineElement;
+        const right = this.svg.getElementById("right") as SVGLineElement;
+        this.shownTime.setAttribute("x", String(val));
+        left.x1.baseVal.value = val;
+        left.x2.baseVal.value = val;
+        right.x1.baseVal.value = val + this.shownWidth;
+        right.x2.baseVal.value = val + this.shownWidth;
     }
 
     get shownWidth(): number {
-        return Number(this.shownTime.style.width);
+        return this.shownTime.width.baseVal.value;
     }
 
     set shownWidth(val: number) {
-        this.shownTime.style.width = String(val);
+        this.shownTime.setAttribute("width", String(val));
     }
 
     get width(): number {
-        return Number(this.root.style.width);
+        return this.root.clientWidth;
     }
 
     callAxis(axis: d3.svg.Axis): void {

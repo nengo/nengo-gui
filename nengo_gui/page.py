@@ -249,7 +249,7 @@ class Page(object):
         """Load the .cfg file"""
         config = nengo_gui.config.Config()
         self.locals['nengo_gui'] = nengo_gui
-        self.locals['_viz_config'] = config
+        self.locals['_gui_config'] = config
         fname = self.filename_cfg
         if os.path.exists(fname):
             with open(fname) as f:
@@ -263,17 +263,17 @@ class Page(object):
                     logging.debug('error parsing config: %s', line)
 
         # make sure the required Components exist
-        if '_viz_sim_control' not in self.locals:
+        if '_gui_sim_control' not in self.locals:
             c = nengo_gui.components.SimControl()
-            self.locals['_viz_sim_control'] = c
-        if '_viz_net_graph' not in self.locals:
+            self.locals['_gui_sim_control'] = c
+        if '_gui_net_graph' not in self.locals:
             c = nengo_gui.components.NetGraph()
-            self.locals['_viz_net_graph'] = c
+            self.locals['_gui_net_graph'] = c
         # FIXME general editor
-        if '_viz_ace_editor' not in self.locals:
+        if '_gui_ace_editor' not in self.locals:
             c = self.settings.editor_class()
             # c = nengo_gui.components.AceEditor()
-            self.locals['_viz_ace_editor'] = c
+            self.locals['_gui_ace_editor'] = c
 
         if self.model is not None:
             if config[self.model].pos is None:

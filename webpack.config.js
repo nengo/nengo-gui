@@ -46,12 +46,12 @@ module.exports = {
             require('postcss-import')({ // Must be first
                 path: ['./nengo_gui/static'],
             }),
-            require('postcss-color-function'),
-            require('postcss-color-gray'),
-            require('postcss-custom-properties'),
             require('postcss-nested-props'), // Must be before postcss-nested
             require('postcss-nested'),
+            require('postcss-color-function'),
+            require('postcss-color-gray'),
             require('postcss-atroot'),
+            require('postcss-custom-properties'),
             require('autoprefixer'),
         ];
     }

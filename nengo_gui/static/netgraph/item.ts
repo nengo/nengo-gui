@@ -33,7 +33,6 @@ export class NetGraphItem {
     g;
     gItems;
     gNetworks;
-    height;
     htmlNode;
     label;
     labelBelow;
@@ -50,13 +49,12 @@ export class NetGraphItem {
     spTargets;
     type;
     uid;
-    width;
-    x;
-    y;
+    private _height;
+    private _width;
+    private _x;
+    private _y;
 
     constructor(ng, info, minimap, miniItem) {
-        const self = this;
-
         this.ng = ng;
         this.type = info.type;
         this.uid = info.uid;
@@ -77,58 +75,10 @@ export class NetGraphItem {
             this.gItems = this.ng.gItemsMini;
         }
 
-        let width = info.size[0];
-        Object.defineProperty(this, "width", {
-            get: function() {
-                return width;
-            },
-            set: function(val) {
-                width = val;
-
-                if (!this.minimap) {
-                    this.miniItem.width = val;
-                }
-            },
-        });
-        let height = info.size[1];
-        Object.defineProperty(this, "height", {
-            get: function() {
-                return height;
-            },
-            set: function(val) {
-                height = val;
-
-                if (!this.minimap) {
-                    this.miniItem.height = val;
-                }
-            },
-        });
-        let x = info.pos[0];
-        Object.defineProperty(this, "x", {
-            get: function() {
-                return x;
-            },
-            set: function(val) {
-                x = val;
-
-                if (!this.minimap) {
-                    this.miniItem.x = val;
-                }
-            },
-        });
-        let y = info.pos[1];
-        Object.defineProperty(this, "y", {
-            get: function() {
-                return y;
-            },
-            set: function(val) {
-                y = val;
-
-                if (!this.minimap) {
-                    this.miniItem.y = val;
-                }
-            },
-        });
+        this._width = info.size[0];
+        this._height = info.size[1];
+        this._x = info.pos[0];
+        this._y = info.pos[1];
 
         // If this is a network, the children list is the set of NetGraphItems
         // and NetGraphConnections that are inside this network.
@@ -152,7 +102,7 @@ export class NetGraphItem {
             this.parent = null;
             this.depth = 1;
         } else {
-            this.parent = self.ng.svgObjects[info.parent];
+            this.parent = this.ng.svgObjects[info.parent];
             this.depth = this.parent.depth + 1;
             if (!minimap) {
                 this.parent.children.push(this);
@@ -212,19 +162,19 @@ export class NetGraphItem {
             // Dragging an item to change its position
             const uid = this.uid;
             interact(g).draggable({
-                onend: function(event) {
-                    const item = self.ng.svgObjects[uid];
+                onend: event => {
+                    const item = this.ng.svgObjects[uid];
                     item.constrainPosition();
-                    self.ng.notify({
+                    this.ng.notify({
                         act: "pos", uid: uid, x: item.x, y: item.y,
                     });
 
                     item.redraw();
                 },
-                onmove: function(event) {
-                    const item = self.ng.svgObjects[uid];
-                    let w = self.ng.getScaledWidth();
-                    let h = self.ng.getScaledHeight();
+                onmove: event => {
+                    const item = this.ng.svgObjects[uid];
+                    let w = this.ng.getScaledWidth();
+                    let h = this.ng.getScaledHeight();
                     let parent = item.parent;
                     while (parent !== null) {
                         w *= parent.width * 2;
@@ -235,13 +185,13 @@ export class NetGraphItem {
                     item.y += event.dy / h;
                     item.redraw();
 
-                    if (self.depth === 1) {
-                        self.ng.scaleMiniMap();
+                    if (this.depth === 1) {
+                        this.ng.scaleMiniMap();
                     }
                 },
-                onstart: function() {
+                onstart: () => {
                     menu.hideAny();
-                    self.moveToFront();
+                    this.moveToFront();
                 },
             });
 
@@ -255,13 +205,13 @@ export class NetGraphItem {
                     edges: {bottom: true, left: true, right: true, top: true},
                     invert: this.type === "ens" ? "reposition" : "none",
                     margin: 10,
-                }).on("resizestart", function(event) {
+                }).on("resizestart", event => {
                     menu.hideAny();
-                }).on("resizemove", function(event) {
-                    const item = self.ng.svgObjects[uid];
+                }).on("resizemove", event => {
+                    const item = this.ng.svgObjects[uid];
                     const pos = item.getScreenLocation();
-                    let hScale = self.ng.getScaledWidth();
-                    let vScale = self.ng.getScaledHeight();
+                    let hScale = this.ng.getScaledWidth();
+                    let vScale = this.ng.getScaledHeight();
                     let parent = item.parent;
                     while (parent !== null) {
                         hScale = hScale * parent.width * 2;
@@ -269,16 +219,16 @@ export class NetGraphItem {
                         parent = parent.parent;
                     }
 
-                    if (self.aspect !== null) {
-                        self.constrainAspect();
+                    if (this.aspect !== null) {
+                        this.constrainAspect();
 
                         const verticalResize =
                             event.edges.bottom || event.edges.top;
                         const horizontalResize =
                             event.edges.left || event.edges.right;
 
-                        let w = pos[0] - event.clientX + self.ng.offsetX;
-                        let h = pos[1] - event.clientY + self.ng.offsetY;
+                        let w = pos[0] - event.clientX + this.ng.offsetX;
+                        let h = pos[1] - event.clientY + this.ng.offsetY;
 
                         if (event.edges.right) {
                             w *= -1;
@@ -300,13 +250,13 @@ export class NetGraphItem {
                             const p = (screenW * w + screenH * h) / Math.sqrt(
                                 screenW * screenW + screenH * screenH);
                             const norm = Math.sqrt(
-                                self.aspect * self.aspect + 1);
-                            h = p / (self.aspect / norm);
-                            w = p * (self.aspect / norm);
+                                this.aspect * this.aspect + 1);
+                            h = p / (this.aspect / norm);
+                            w = p * (this.aspect / norm);
                         } else if (horizontalResize) {
-                            h = w / self.aspect;
+                            h = w / this.aspect;
                         } else {
-                            w = h * self.aspect;
+                            w = h * this.aspect;
                         }
 
                         item.width = w / hScale;
@@ -325,14 +275,14 @@ export class NetGraphItem {
 
                     item.redraw();
 
-                    if (self.depth === 1) {
-                        self.ng.scaleMiniMap();
+                    if (this.depth === 1) {
+                        this.ng.scaleMiniMap();
                     }
-                }).on("resizeend", function(event) {
-                    const item = self.ng.svgObjects[uid];
+                }).on("resizeend", event => {
+                    const item = this.ng.svgObjects[uid];
                     item.constrainPosition();
                     item.redraw();
-                    self.ng.notify({
+                    this.ng.notify({
                         act: "posSize",
                         height: item.height,
                         uid: uid,
@@ -345,49 +295,49 @@ export class NetGraphItem {
 
             // Determine when to pull up the menu
             interact(this.g)
-                .on("hold", function(event) {
+                .on("hold", event => {
                     // Change to "tap" for right click
                     if (event.button === 0) {
-                        if (self.menu.visibleAny()) {
+                        if (this.menu.visibleAny()) {
                             menu.hideAny();
                         } else {
-                            self.menu.show(event.clientX,
+                            this.menu.show(event.clientX,
                                            event.clientY,
-                                           self.generateMenu());
+                                           this.generateMenu());
                         }
                         event.stopPropagation();
                     }
                 })
-                .on("tap", function(event) {
+                .on("tap", event => {
                     // Get rid of menus when clicking off
                     if (event.button === 0) {
-                        if (self.menu.visibleAny()) {
+                        if (this.menu.visibleAny()) {
                             menu.hideAny();
                         }
                     }
                 })
-                .on("doubletap", function(event) {
+                .on("doubletap", event => {
                     // Get rid of menus when clicking off
                     if (event.button === 0) {
-                        if (self.menu.visibleAny()) {
+                        if (this.menu.visibleAny()) {
                             menu.hideAny();
-                        } else if (self.type === "net") {
-                            if (self.expanded) {
-                                self.collapse(true);
+                        } else if (this.type === "net") {
+                            if (this.expanded) {
+                                this.collapse(true);
                             } else {
-                                self.expand();
+                                this.expand();
                             }
                         }
                     }
                 });
-            $(this.g).bind("contextmenu", function(event) {
+            $(this.g).bind("contextmenu", event => {
                 event.preventDefault();
                 event.stopPropagation();
-                if (self.menu.visibleAny()) {
+                if (this.menu.visibleAny()) {
                     menu.hideAny();
                 } else {
-                    self.menu.show(
-                        event.clientX, event.clientY, self.generateMenu());
+                    this.menu.show(
+                        event.clientX, event.clientY, this.generateMenu());
                 }
             });
 
@@ -399,104 +349,149 @@ export class NetGraphItem {
                 }
             }
         }
-    };
+    }
+
+    get height(): number {
+        return this._height;
+    }
+
+    set height(val: number) {
+        this._height = val;
+
+        if (!this.minimap) {
+            this.miniItem.height = val;
+        }
+    }
+
+    get width(): number {
+        return this._width;
+    }
+
+    set width(val: number) {
+        this._width = val;
+
+        if (!this.minimap) {
+            this.miniItem.width = val;
+        }
+    }
+
+    get x(): number {
+        return this._x;
+    }
+
+    set x(val: number) {
+        this._x = val;
+
+        if (!this.minimap) {
+            this.miniItem.x = val;
+        }
+    }
+
+    get y(): number {
+        return this._y;
+    }
+
+    set y(val: number) {
+        this._y = val;
+
+        if (!this.minimap) {
+            this.miniItem.y = val;
+        }
+    }
 
     setLabel(label) {
         this.label.innerHTML = label;
-    };
+    }
 
     moveToFront() {
         this.g.parentNode.appendChild(this.g);
 
-        for (let item in this.children) {
-            if (this.children.hasOwnProperty(item)) {
-                this.children[item].moveToFront();
-            }
-        }
-    };
+        Object.keys(this.children).forEach(key => {
+            this.children[key].moveToFront();
+        });
+    }
 
     generateMenu() {
-        const self = this;
         const items = [];
         if (this.type === "net") {
             if (this.expanded) {
-                items.push(["Collapse network", function() {
-                    self.collapse(true);
+                items.push(["Collapse network", () => {
+                    this.collapse(true);
                 }]);
-                items.push(["Auto-layout", function() {
-                    self.requestFeedforwardLayout();
+                items.push(["Auto-layout", () => {
+                    this.requestFeedforwardLayout();
                 }]);
             } else {
-                items.push(["Expand network", function() {
-                    self.expand();
+                items.push(["Expand network", () => {
+                    this.expand();
                 }]);
             }
             if (this.defaultOutput && this.spTargets.length === 0) {
-                items.push(["Output Value", function() {
-                    self.createGraph("Value");
+                items.push(["Output Value", () => {
+                    this.createGraph("Value");
                 }]);
             }
         }
         if (this.type === "ens") {
-            items.push(["Value", function() {
-                self.createGraph("Value");
+            items.push(["Value", () => {
+                this.createGraph("Value");
             }]);
             if (this.dimensions > 1) {
-                items.push(["XY-value", function() {
-                    self.createGraph("XYValue");
+                items.push(["XY-value", () => {
+                    this.createGraph("XYValue");
                 }]);
             }
-            items.push(["Spikes", function() {
-                self.createGraph("Raster");
+            items.push(["Spikes", () => {
+                this.createGraph("Raster");
             }]);
-            items.push(["Voltages", function() {
-                self.createGraph("Voltage");
+            items.push(["Voltages", () => {
+                this.createGraph("Voltage");
             }]);
-            items.push(["Firing pattern", function() {
-                self.createGraph("SpikeGrid");
+            items.push(["Firing pattern", () => {
+                this.createGraph("SpikeGrid");
             }]);
         }
         if (this.type === "node") {
-            items.push(["Slider", function() {
-                self.createGraph("Slider");
+            items.push(["Slider", () => {
+                this.createGraph("Slider");
             }]);
             if (this.dimensions > 0) {
-                items.push(["Value", function() {
-                    self.createGraph("Value");
+                items.push(["Value", () => {
+                    this.createGraph("Value");
                 }]);
             }
             if (this.dimensions > 1) {
-                items.push(["XY-value", function() {
-                    self.createGraph("XYValue");
+                items.push(["XY-value", () => {
+                    this.createGraph("XYValue");
                 }]);
             }
             if (this.htmlNode) {
-                items.push(["HTML", function() {
-                    self.createGraph("HTMLView");
+                items.push(["HTML", () => {
+                    this.createGraph("HTMLView");
                 }]);
             }
         }
         if (this.spTargets.length > 0) {
-            items.push(["Semantic pointer cloud", function() {
-                self.createGraph("Pointer", self.spTargets[0]);
+            items.push(["Semantic pointer cloud", () => {
+                this.createGraph("Pointer", this.spTargets[0]);
             }]);
-            items.push(["Semantic pointer plot", function() {
-                self.createGraph("SpaSimilarity", self.spTargets[0]);
+            items.push(["Semantic pointer plot", () => {
+                this.createGraph("SpaSimilarity", this.spTargets[0]);
             }]);
         }
         // TODO: Enable input and output value plots for basal ganglia network
-        items.push(["Details ...", function() {
-            self.createModal();
+        items.push(["Details ...", () => {
+            this.createModal();
         }]);
         return items;
-    };
+    }
 
     createGraph(type, args=null) { // tslint:disable-line
         const w = this.getNestedWidth();
         const h = this.getNestedHeight();
         const pos = this.getScreenLocation();
 
-        let info: any = {
+        const info: any = {
             "act": "createGraph",
             "height": viewport.fromScreenY(100),
             "type": type,
@@ -515,24 +510,24 @@ export class NetGraphItem {
         }
 
         this.ng.notify(info);
-    };
+    }
 
     createModal() {
         this.ng.notify({
             "act": "createModal",
-            "connInUids": this.connIn.map(function(c) {
+            "connInUids": this.connIn.map(c => {
                 return c.uid;
             }),
-            "connOutUids": this.connOut.map(function(c) {
+            "connOutUids": this.connOut.map(c => {
                 return c.uid;
             }),
             "uid": this.uid,
         });
-    };
+    }
 
     requestFeedforwardLayout() {
         this.ng.notify({act: "feedforwardLayout", uid: this.uid});
-    };
+    }
 
     /**
      * Expand a collapsed network.
@@ -567,7 +562,7 @@ export class NetGraphItem {
                 this.ng.notify({act: "expand", uid: this.uid});
             }
         }
-    };
+    }
 
     setLabelBelow(flag) {
         if (flag && !this.labelBelow) {
@@ -577,7 +572,7 @@ export class NetGraphItem {
         } else if (!flag && this.labelBelow) {
             this.label.setAttribute("transform", "");
         }
-    };
+    }
 
     /**
      * Collapse an expanded network.
@@ -616,7 +611,7 @@ export class NetGraphItem {
                 this.ng.notify({act: "collapse", uid: this.uid});
             }
         }
-    };
+    }
 
     /**
      * Determine the fill color based on the depth.
@@ -632,7 +627,7 @@ export class NetGraphItem {
             this.shape.style.stroke =
                 "rgb(" + stroke + "," + stroke + "," + stroke + ")";
         }
-    };
+    }
 
     /**
      * Remove the item from the graph.
@@ -675,11 +670,11 @@ export class NetGraphItem {
         if (!this.minimap) {
             this.miniItem.remove();
         }
-    };
+    }
 
     constrainAspect() {
         this.size = this.getDisplayedSize();
-    };
+    }
 
     getDisplayedSize() {
         if (this.aspect !== null) {
@@ -698,7 +693,7 @@ export class NetGraphItem {
         } else {
             return [this.width, this.height];
         }
-    };
+    }
 
     constrainPosition() {
         this.constrainAspect();
@@ -713,7 +708,7 @@ export class NetGraphItem {
             this.y = Math.min(this.y, 1.0 - this.height);
             this.y = Math.max(this.y, this.height);
         }
-    };
+    }
 
     redrawPosition() {
         const screen = this.getScreenLocation();
@@ -721,21 +716,21 @@ export class NetGraphItem {
         // Update my position
         this.g.setAttribute("transform", "translate(" + screen[0] + ", " +
                             screen[1] + ")");
-    };
+    }
 
     redrawChildren() {
         // Update any children's positions
         for (let i = 0; i < this.children.length; i++) {
             this.children[i].redraw();
         }
-    };
+    }
 
     redrawChildConnections() {
         // Update any children's positions
         for (let i = 0; i < this.childConnections.length; i++) {
             this.childConnections[i].redraw();
         }
-    };
+    }
 
     redrawConnections() {
         // Update any connections into and out of this
@@ -745,7 +740,7 @@ export class NetGraphItem {
         for (let i = 0; i < this.connOut.length; i++) {
             this.connOut[i].redraw();
         }
-    };
+    }
 
     /**
      * Return the width of the item, taking into account parent widths.
@@ -758,7 +753,7 @@ export class NetGraphItem {
             parent = parent.parent;
         }
         return w;
-    };
+    }
 
     /**
      * Return the height of the item, taking into account parent heights.
@@ -771,7 +766,7 @@ export class NetGraphItem {
             parent = parent.parent;
         }
         return h;
-    };
+    }
 
     redrawSize() {
         let screenW = this.getScreenWidth();
@@ -822,7 +817,7 @@ export class NetGraphItem {
             this.label.setAttribute(
                 "transform", "translate(0, " + (screenH / 2) + ")");
         }
-    };
+    }
 
     getScreenWidth() {
         if (this.minimap && !this.ng.mmDisplay) {
@@ -848,7 +843,7 @@ export class NetGraphItem {
         }
 
         return screenW * 2;
-    };
+    }
 
     getScreenHeight() {
         if (this.minimap && !this.ng.mmDisplay) {
@@ -874,7 +869,7 @@ export class NetGraphItem {
         }
 
         return screenH * 2;
-    };
+    }
 
     /**
      * Force a redraw of the item.
@@ -889,7 +884,7 @@ export class NetGraphItem {
         if (!this.minimap && this.ng.mmDisplay) {
             this.miniItem.redraw();
         }
-    };
+    }
 
     /**
      * Determine the pixel location of the centre of the item.
@@ -948,7 +943,7 @@ export class NetGraphItem {
 
         return [this.x * ww + dx + offsetX,
                 this.y * hh + dy + offsetY];
-    };
+    }
 
     /**
      * Function for drawing ensemble svg.
@@ -986,18 +981,16 @@ export class NetGraphItem {
         shape.appendChild(circle);
 
         return shape;
-    };
+    }
 
     /**
      * Helper function for setting attributes.
      */
     setAttributes(el, attrs) {
-        for (let key in attrs) {
-            if (attrs.hasOwnProperty(key)) {
-                el.setAttribute(key, attrs[key]);
-            }
-        }
-    };
+        Object.keys(attrs).forEach(key => {
+            el.setAttribute(key, attrs[key]);
+        });
+    }
 
     getMinMaxXY() {
         const minX = this.x - this.width;
@@ -1005,5 +998,5 @@ export class NetGraphItem {
         const minY = this.y - this.height;
         const maxY = this.y + this.height;
         return [minX, maxX, minY, maxY];
-    };
+    }
 }

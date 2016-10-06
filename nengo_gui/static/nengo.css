@@ -3,49 +3,37 @@ html {
 }
 
 body {
-    margin: 0px;
-    height: 100%;
-    width: 100%;
     cursor: inherit;
-    display: -webkit-flex;
     display: flex;
-    -webkit-flex-direction: column;
     flex-direction: column;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+    margin: 0;
+    height: 100%;
     user-select: none;
+    width: 100%;
 }
 
-
-#main {
-    background: white;
-    -webkit-flex: 0 0 auto;
-    flex: 1 1 auto;
-    position: relative;
-    overflow: hidden;
-}
+/* #main {
+   background: white;
+   flex: 1 1 auto;
+   overflow: hidden;
+   position: relative;
+   } */
 
 #vmiddle {
-    position: relative;
-    -webkit-flex: 1 1 auto;
-    flex: 1 1 auto;
-    display: -webkit-flex;
     display: flex;
-    -webkit-flex-direction: row;
+    flex: 1 1 auto;
     flex-direction: row;
+    position: relative;
 }
 
 div.minimap {
     background: white;
     border: 2px solid #787878;
     height: 15%;
-    width: 15%;
     left: 84.5%;
-    top: 82.5%;
     position: absolute;
+    top: 82.5%;
+    width: 15%;
     z-index: 99999999;
 }
 
@@ -55,53 +43,57 @@ div.minimap {
 
 .line {
     fill: none;
-    stroke: black;
-    stroke-width: 1.5px;
+    stroke: black {
+        width: 1.5px;
+    }
 }
 
 .graph {
     background-color:rgba(255,0,0,0);
     border: 1px solid rgba(255,0,0,0);
-}
 
-.graph:hover {
-    border: 1px solid #888888;
-}
+    &:hover {
+        border: 1px solid #888888;
+    }
 
-.graph text {
-    cursor: default;
-}
+    text {
+        cursor: default;
 
-.graph text:active {
-    cursor: move;
-}
+        &:active {
+            cursor: move;
+        }
+    }
 
-.graph .line {
-    fill: none;
-    stroke: black;
-    stroke-width: 1.5px;
-}
+    .line {
+        fill: none;
+        stroke: black {
+            width: 1.5px;
+        }
+    }
 
-.graph svg .axis path {
-    stroke: black;
-    stroke-width: 1px;
-    fill: none;
-}
+    svg .axis path {
+        stroke: black;
+        stroke-width: 1px;
+        fill: none;
+    }
 
-.graph text.graph_text {
-    font-size: .8em;
-    pointer-events: none;
-}
+    text.graph_text {
+        font-size: .8em;
+        pointer-events: none;
+    }
 
-.graph .axis text {
-    font-size: .8em;
-    pointer-events: none;
-}
+    .axis text {
+        font-size: .8em;
+        pointer-events: none;
+    }
 
-.graph .label {
-    font-size: 1em;
-    font-family: sans-serif;
-    font-weight: normal;
-    color: black;
-    pointer-events: none;
+    .label {
+        font: {
+            size: 1em;
+            family: sans-serif;
+            weight: normal;
+        }
+        color: black;
+        pointer-events: none;
+    }
 }

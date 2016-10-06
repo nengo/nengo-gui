@@ -14,8 +14,8 @@ import "./nengo.css";
 
 import { Editor } from "./editor";
 import { NetGraph } from "./netgraph/netgraph";
-import { SideMenu } from "./side_menu";
-import { SimControl } from "./sim_control";
+import { SideMenu } from "./side-menu";
+import { SimControl } from "./sim-control";
 import { Toolbar } from "./toolbar";
 
 // TODO: put all of this in an ajax call to Python. To get:

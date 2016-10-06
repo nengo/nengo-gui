@@ -1,43 +1,37 @@
 #rightpane {
-    -webkit-flex: 0 0 auto;
-    flex: 0 0 auto;
-
-    display: -webkit-flex;
     display: flex;
-    -webkit-flex-direction: column;
-    flex-direction: column;
+    flex: 0 0 auto {
+        direction: column;
+    }
 }
 
 #editor {
-    border-left:5px solid #606060;
+    border-left: 5px solid #606060;
     flex: 1 1 auto;
 }
 
 #console {
-    border-top:5px solid #606060;
-    border-left:5px solid #606060;
-    padding: 0.5em;
-    border-radius: 0px;
-    overflow: auto;
     background: white;
-    -webkit-flex: 0 0 auto;
-    flex: 0 0 auto;
-    -webkit-user-select: text;
-    -khtml-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
-    user-select: text;
+    border: {
+        top: 5px solid #606060;
+        left: 5px solid #606060;
+        radius: 0px;
+    }
     display: block;
-}
+    flex: 0 0 auto;
+    overflow: auto;
+    padding: 0.5em;
+    user-select: text;
 
-#console pre {
-    padding: 0px;
-    margin: 0px;
-    background: none;
-    border: 0px;
-    /* Use same font-family as Ace editor */
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
-    white-space: pre-wrap;
+    pre {
+        background: none;
+        border: 0;
+        /* Use same font-family as Ace editor */
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+        margin: 0;
+        padding: 0;
+        white-space: pre-wrap;
+    }
 }
 
 #console_stdout {

@@ -9,6 +9,7 @@ import "imports?$=jquery,jQuery=jquery!jquery-ui";
 import "imports?$=jquery,jQuery=jquery!jqueryfiletree/src/jQueryFileTree";
 import "jqueryfiletree/dist/jQueryFileTree.min.css";
 import * as d3 from "d3";
+import * as interact from "interact.js";
 
 import "./favicon.ico";
 import "./nengo.css";
@@ -16,7 +17,7 @@ import "./nengo.css";
 // import { Editor } from "./editor";
 // import { NetGraph } from "./netgraph/netgraph";
 // import { SideMenu } from "./side-menu";
-// import { SimControl } from "./sim-control";
+import { SimControl } from "./sim-control";
 // import { Toolbar } from "./toolbar";
 
 // TODO: put all of this in an ajax call to Python. To get:
@@ -73,46 +74,167 @@ import "./nengo.css";
 // import "expose?utils!./utils";
 
 import { DebugView } from "./views/debug";
-import { SimControlView } from "./views/sim-control.ts";
+import { SimControlView } from "./views/sim-control";
 // import { first } from "./views/views";
+
+// import * as utils from "./utils";
 
 export class NengoDebug {
     view: DebugView = new DebugView();
 
     constructor() {
         document.body.appendChild(this.view.root);
-        document.body.appendChild(this.view.controls);
+
+        this.view.outline.onclick = () => {
+            const stylesheet = document.styleSheets[0] as CSSStyleSheet;
+            const rule = stylesheet.cssRules[0];
+            const ruleText = ".debug * { outline: red solid 1px; }";
+            const active = rule.cssText === ruleText;
+
+            if (active) {
+                stylesheet.deleteRule(0);
+            } else {
+                stylesheet.insertRule(ruleText, 0);
+            }
+        };
+        this.view.log.onclick = () => {
+            MockWebSocket.verbose = !MockWebSocket.verbose;
+        };
     }
 
-    addView(view: any, id: string, label: string) {
-        this.view.addView(id, label);
-        const anchor = document.getElementById(id);
-        anchor.onclick = () => {
-            this.view.root.appendChild(view.root);
-            view.redraw();
-            this.view.showConsole();
+    attachControlGroup(obj: any, root: HTMLDivElement, label: string) {
+        const {
+            controlGroupRoot,
+            evalBtn,
+            evalOutput,
+            input,
+            remove,
+        } = this.view.addControlGroup(label);
+        const evalView = () => {
+            const js: string = input.value;
+            if (js !== "") {
+                const out = eval(js); // tslint:disable-line
+                input.value = "";
+                evalOutput.textContent = out;
+            }
+        };
+        evalBtn.onclick = () => {
+            evalView();
+        };
 
-            const evalView = () => {
-                const js: string = this.view.evalInput.value;
-                if (js !== "") {
-                    eval(js); // tslint:disable-line
-                    this.view.evalInput.value = "";
-                }
-            };
-            this.view.evalButton.onclick = () => {
+        // TODO: hijack console.log
+        // stackoverflow.com/questions/11403107/
+
+        input.onkeypress = event => {
+            if (event.key.toLowerCase() === "enter") {
                 evalView();
-            };
-            this.view.evalInput.onkeypress = event => {
-                if (event.key.toLowerCase() === "enter") {
-                    evalView();
-                    return false;
-                }
-            };
+                return false;
+            }
+        };
+        remove.onclick = event => {
+            this.view.debug.removeChild(root);
+            this.view.removeControlGroup(controlGroupRoot);
+        };
+    }
+
+    register(category: string, label: string, callback: (() => any)) {
+        let clickable;
+        clickable = this.view.register(category, label);
+
+        clickable.onclick = () => {
+            const obj = callback();
+            let root: HTMLDivElement;
+            if (category === "main") {
+                root = obj.view.root;
+            } else if (category === "view") {
+                root = obj.root;
+            }
+            this.view.debug.appendChild(root);
+            this.attachControlGroup(obj, root, label);
         };
     }
 }
 
-$(document).ready(() => {
+/* tslint:disable:no-console */
+
+class MockWebSocket implements WebSocket {
+    static verbose: boolean = true;
+
+    binaryType: string = "blob";
+    bufferedAmount: number = 0;
+    extensions: string = "";
+    protocols: any;
+    onclose: any = null;
+    onerror: any = null;
+    onmessage: any = null;
+    onopen: any = null;
+    protocol: string = "";
+    readyState: number = WebSocket.OPEN;
+    url: string;
+
+    CLOSED = WebSocket.CLOSED;
+    CLOSING = WebSocket.CLOSING;
+    CONNECTING = WebSocket.CONNECTING;
+    OPEN = WebSocket.OPEN;
+
+    constructor(url: string, protocols: any = null) {
+        this.url = url;
+        this.protocols = protocols;
+
+        if (MockWebSocket.verbose) {
+            console.log("ws: Made WebSocket to " + this.url);
+            if (protocols !== null) {
+                console.log("ws: protocols = " + this.protocols);
+            }
+        }
+    }
+
+    addEventListener() {
+        // This method left intentionally blank.
+    }
+    removeEventListener() {
+        // This method left intentionally blank.
+    }
+    dispatchEvent() {
+        return false;
+    }
+
+    close(code: number = null, reason: string = null) {
+        if (MockWebSocket.verbose) {
+            console.log(
+                "ws: closing (code=" + code + ", reason=" + reason + ")"
+            );
+        }
+    }
+
+    send(message: string) {
+        if (MockWebSocket.verbose) {
+            console.log("ws: sending '" + message + "'");
+        }
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
     const nengo = new NengoDebug();
-    nengo.addView(new SimControlView(), "sim-control", "SimControl");
+    nengo.register("view", "SimControlView", () => {
+        return new SimControlView();
+    });
+    nengo.register("main", "SimControl", () => {
+        const simcontrol = new SimControl("uid", 4.0, 0.5);
+        // Monkey patches for debugging
+        simcontrol.ws = new MockWebSocket(simcontrol.ws.url);
+        interact(".shown-time")
+            .draggable({
+                onmove: event => {
+                    console.log("here");
+                },
+            })
+            .resizable({
+                edges: {bottom: false, left: true, right: true, top: false},
+            })
+            .on("resizemove", event => {
+                console.log("Here");
+            });
+        return simcontrol;
+    });
 });

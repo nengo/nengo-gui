@@ -1,32 +1,43 @@
 .netgraph {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
 
-.ensemble{
-    stroke-width:1;
+    .ensemble {
+        stroke-width: 1;
     }
 
-g.node rect{
-    stroke-width:1;
+    g.node rect {
+        stroke-width: 1;
     }
 
-g.net rect{
-    stroke-width:1;
+    g.net rect{
+        stroke-width: 1;
     }
 
-.netgraph g text {
-    text-anchor: middle;
-    dominant-baseline: text-before-edge;
-    cursor: default !important;
+    g text {
+        cursor: default !important;
+        dominant-baseline: text-before-edge;
+        text-anchor: middle;
     }
 
-.netgraph g text:active {
-    cursor: move;
-}
+    g text:active {
+        cursor: move;
+    }
 
-.netgraph line {
-    stroke: black;
-    stroke-width: 2px;
+    line {
+        stroke: black {
+            width: 2px;
+        }
+    }
+
+    g.passthrough ellipse {
+        fill: black;
+        stroke-width: 0px;
+    }
+
+    g.passthrough text {
+        dominant-baseline: text-before-edge;
+        text-anchor: middle;
+    }
 }
 
 .minimap {
@@ -35,11 +46,12 @@ g.net rect{
     opacity: 0.85;
     position: 'relative';
     width: 100%;
-}
 
-.minimap line {
-    stroke: black;
-    stroke-width: 1px;
+    .minimap line {
+        stroke: black {
+            width: 1px;
+        }
+    }
 }
 
 rect.view{
@@ -48,18 +60,8 @@ rect.view{
 }
 
 .recur {
-    stroke: black;
-    stroke-width: 2px;
     fill: none;
+    stroke: black {
+        width: 2px;
+    }
 }
-
-.netgraph g.passthrough ellipse {
-    stroke-width: 0px;
-    fill: black;
-}
-
-.netgraph g.passthrough text {
-    text-anchor: middle;
-    dominant-baseline: text-before-edge;
-}
-

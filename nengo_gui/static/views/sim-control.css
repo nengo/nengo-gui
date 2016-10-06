@@ -46,10 +46,10 @@
     .pause-button {
         order: 4;
 
-        :disabled,
-        :disabled:hover {
-            background: var(--light) !important;
-            color: var(--dark) !important;
+        &:disabled,
+        &:disabled:hover {
+            background: var(--light);
+            color: var(--dark);
         }
     }
 
@@ -134,14 +134,12 @@
         order: 3;
 
         .shown-time {
-            background: var(--shown-color);
-            border: {
-                left: 1px solid var(--accent);
-                right: 1px solid var(--accent);
-            }
-            padding: {
-                left: 1px;
-                right: 1px;
+            fill: var(--shown-color);
+        }
+
+        .shown-time-border {
+            stroke: var(--accent) {
+                width: 1;
             }
         }
 

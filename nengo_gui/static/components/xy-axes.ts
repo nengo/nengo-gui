@@ -10,37 +10,37 @@
  * @param {float} args.max_value - maximum value on y-axis
  */
 
-import Axes2D from "./2d_axes";
+import Axes2D from "./2d-axes";
 
 export class XYAxes extends Axes2D {
-    max_val;
-    min_val;
+    maxVal;
+    minVal;
 
     constructor(parent, args) {
         super(parent, args);
 
-        this.scale_x.domain([args.min_value, args.max_value]);
-        this.axis_x.tickValues([args.min_value, args.max_value]);
-        this.axis_x.ticks(this.axis_y.ticks()[0]);
+        this.scaleX.domain([args.minValue, args.maxValue]);
+        this.axisX.tickValues([args.minValue, args.maxValue]);
+        this.axisX.ticks(this.axisY.ticks()[0]);
 
-        this.min_val = args.min_value;
-        this.max_val = args.max_value;
+        this.minVal = args.minValue;
+        this.maxVal = args.maxValue;
     }
 
     /**
      * Adjust the graph layout due to changed size.
      */
-    on_resize(width, height) {
-        Axes2D.prototype.on_resize.call(this, width, height);
+    onResize(width, height) {
+        Axes2D.prototype.onResize.call(this, width, height);
 
-        const x_offset = this.ax_bottom - this.min_val /
-            (this.max_val - this.min_val) * (this.ax_top - this.ax_bottom);
-        const y_offset = this.ax_left - this.min_val /
-            (this.max_val - this.min_val) * (this.ax_right - this.ax_left);
+        const xOffset = this.axBottom - this.minVal /
+            (this.maxVal - this.minVal) * (this.axTop - this.axBottom);
+        const yOffset = this.axLeft - this.minVal /
+            (this.maxVal - this.minVal) * (this.axRight - this.axLeft);
 
-        this.axis_x_g.attr("transform", "translate(0," + x_offset + ")");
-        this.axis_x_g.call(this.axis_x);
-        this.axis_y_g.attr("transform", "translate(" + y_offset + ", 0)");
-        this.axis_y_g.call(this.axis_y);
+        this.axisX_g.attr("transform", "translate(0," + xOffset + ")");
+        this.axisX_g.call(this.axisX);
+        this.axisY_g.attr("transform", "translate(" + yOffset + ", 0)");
+        this.axisY_g.call(this.axisY);
     }
 }

@@ -1,12 +1,13 @@
 .graph .line {
     fill: none;
-    stroke: black;
-    stroke-width: 1.5px;
+    stroke: black {
+        width: 1.5px;
+    }
 }
 
 .legend {
-    padding: 5px;
-    font: 10px sans-serif;
-    position: absolute;
     display: inline;
+    font: 10px sans-serif;
+    padding: 5px;
+    position: absolute;
 }

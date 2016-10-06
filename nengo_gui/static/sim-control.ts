@@ -7,7 +7,8 @@ import { Modal } from "./modal";
 import * as utils from "./utils";
 import {
     SimControlView, SpeedThrottleView, TimeSliderView,
-} from "./views/sim_control";
+} from "./views/sim-control";
+import { Connection, FastConnection } from "./websocket";
 
 const resetSim = new Event("resetSim");
 const adjustTime = new Event("adjustTime");
@@ -16,11 +17,6 @@ const adjustTime = new Event("adjustTime");
  * Control panel for a simulation.
  */
 export class SimControl {
-    /**
-     * Do we have an update() call scheduled?
-     */
-    pendingUpdate: boolean = false;
-
     simulatorOptions: string = "";
     speedThrottle: SpeedThrottle;
 
@@ -36,12 +32,13 @@ export class SimControl {
     /**
      * WebSocket to communicate with the server.
      */
-    ws: WebSocket;
+    ws: FastConnection;
     private _status: string = "paused";
 
     /**
      * SimControl constructor is inserted into HTML file from python and
      * is called when the page is first loaded
+
      *
      * @constructor
      * @param {HTMLElement} div - the element for the control
@@ -56,7 +53,7 @@ export class SimControl {
 
         this.view = new SimControlView("sim-control-" + this.uid);
         document.body.appendChild(this.view.root);
-        this.ws = utils.createWebsocket(this.uid);
+        this.ws = new FastConnection(this.uid); // TODO: , "simcontrol");
 
         this.timeSlider = new TimeSlider({
             keptTime: keptTime,
@@ -86,14 +83,21 @@ export class SimControl {
             this.reset();
         };
 
-        this.ws.onmessage = event => {
-            this.onmessage(event);
-        };
+        this.ws.bind
 
-        this.ws.onclose = event => {
-            this.disconnected();
-        };
-        this.update();
+    /**
+     * Event handler for received WebSocket messages.
+     *
+     * @param {MessageEvent} event - The MessageEvent
+     */
+    // onmessage(event) {
+    //     } else {
+    //         const data = new Float32Array(event.data);
+    //         this.speedThrottle.time = data[0];
+    //         this.speedThrottle.speed = data[1];
+    //         this.speedThrottle.proportion = data[2];
+    //     }
+    // }
     }
 
     get paused(): boolean {
@@ -120,43 +124,38 @@ export class SimControl {
             icon = "remove";
         } else {
             console.warn(
-                "simControl does not understand status '" + this._status + "'"
+                "SimControl does not understand status '" + this._status + "'"
             );
         }
         this.view.pauseIcon = icon;
         this.view.spinPause = spin;
     }
 
-    /**
-     * Event handler for received WebSocket messages.
-     *
-     * @param {MessageEvent} event - The MessageEvent
-     */
-    onmessage(event) {
-        if (typeof event.data === "string") {
-            if (event.data.slice(0, 7) === "status:") {
-                this.status = event.data.slice(7);
-            } else if (event.data.slice(0, 5) === "sims:") {
-                this.simulatorOptions = event.data.slice(5);
-            } else if (event.data.slice(0, 6) === "config") {
-                // TODO: no, bad
-                eval(event.data.slice(6)); // tslint:disable-line
-            } else {
-                console.warn(
-                    "simControl does not understand '" + event.data + "'"
-                );
-            }
-        } else {
-            const data = new Float32Array(event.data);
-            this.speedThrottle.time = data[0];
-            this.speedThrottle.speed = data[1];
-            this.speedThrottle.proportion = data[2];
-            this.scheduleUpdate();
-        }
+    attach(conn: Connection) {
+        conn.bind("open", event => {
+            this.update();
+        });
+
+        conn.bind("close", event => {
+            this.disconnected();
+        });
+
+        conn.bind("simcontrol.status", ({status: status}) => {
+            this.status = status;
+        });
+
+        conn.bind("simcontrol.simulator", ({simulator: simulator}) => {
+            this.simulatorOptions = simulator;
+        });
+
+        conn.bind("simcontrol.config", ({js: js}) => {
+            // TODO: nooooo
+            eval(js);
+        });
     }
 
     disconnected() {
-        $("#main").css("background-color", "#a94442");
+        // $("#main").css("background-color", "#a94442");
         // this.modal.title("Nengo has stopped running");
         // this.modal.text_body("To continue working with your model, re-run " +
         //                      "nengo and click Refresh.", "danger");
@@ -166,18 +165,6 @@ export class SimControl {
 
     setBackend(backend) {
         this.ws.send("backend:" + backend);
-    }
-
-    /**
-     * Make sure update() will be called in the next 10ms.
-     */
-    scheduleUpdate() {
-        if (this.pendingUpdate === false) {
-            this.pendingUpdate = true;
-            window.setTimeout(() => {
-                this.update();
-            }, 10);
-        }
     }
 
     pause() {
@@ -206,9 +193,8 @@ export class SimControl {
      * Update the visual display.
      */
     update() {
-        this.pendingUpdate = false;
         this.ws.send("target_scale:" + this.speedThrottle.x);
-        this.timeSlider.updateTimes(this.time);
+        this.timeSlider.addTime(this.time);
     }
 }
 
@@ -315,22 +301,19 @@ class TimeSlider {
         this.shownTime = shownTime;
         this.keptTime = keptTime;
         this.firstShownTime = this.lastTime - this.shownTime;
-
         this.keptScale = d3.scale.linear()
             .domain([0.0 - this.keptTime, 0.0]);
-
-        // Build the axis to display inside the scroll area
         this.sliderAxis = d3.svg.axis()
             .scale(this.keptScale)
             .orient("bottom")
             .ticks(10);
-
-        this.view.callAxis(this.sliderAxis);
+        this.onresize();
 
         // Make the shown time draggable and resizable
         interact(this.view.shownTime)
             .draggable({
                 onmove: event => {
+                    console.log("here");
                     // Determine where we have been dragged to in time
                     let x = this.keptScale(this.firstShownTime) + event.dx;
                     this.firstShownTime = utils.clip(
@@ -350,24 +333,30 @@ class TimeSlider {
             .on("resizemove", event => {
                 const xmin = this.keptScale(this.lastTime - this.keptTime);
                 const xmax = this.keptScale(this.lastTime);
-                const xa0 = this.keptScale(this.firstShownTime);
-                const xb0 =
+                const xleft = this.keptScale(this.firstShownTime);
+                const xright =
                     this.keptScale(this.firstShownTime + this.shownTime);
-                let xa1 = xa0 + event.deltaRect.left;
-                let xb1 = xb0 + event.deltaRect.right;
 
-                xa1 = utils.clip(xa1, xmin, xb0 - TimeSlider.minWidth);
-                xb1 = utils.clip(xb1, xa0 + TimeSlider.minWidth, xmax);
+                const xnewleft = utils.clip(
+                    xleft + event.deltaRect.left,
+                    xmin,
+                    xright - TimeSlider.minWidth
+                );
+                const xnewright = utils.clip(
+                    xright + event.deltaRect.right,
+                    xleft + TimeSlider.minWidth,
+                    xmax
+                );
 
                 // Set slider width and position
-                this.view.shownOffset = xa1;
-                this.view.shownWidth = xb1 - xa1;
+                this.view.shownOffset = xnewleft;
+                this.view.shownWidth = xnewright - xnewleft;
 
                 // Update times
-                const ta1 = this.keptScale.invert(xa1);
-                const tb1 = this.keptScale.invert(xb1);
-                this.firstShownTime = ta1;
-                this.shownTime = tb1 - ta1;
+                const tfirst = this.keptScale.invert(xnewleft);
+                const tlast = this.keptScale.invert(xnewright);
+                this.firstShownTime = tfirst;
+                this.shownTime = tlast - tfirst;
 
                 // Update any components who need to know the time changed
                 this.view.root.dispatchEvent(adjustTime);
@@ -379,8 +368,31 @@ class TimeSlider {
         });
 
         window.onresize = event => {
-            this.onresize();
+            // 66 ms throttle = 15 FPS update
+            utils.throttle(this.onresize, 66);
+        };
+    }
+
+    /**
+     * Update the axis given a new time point from the simulator.
+     *
+     * @param {number} time - The new time point
+     */
+    addTime(time) {
+        const delta = time - this.lastTime; // Time since last update_time()
+
+        if (delta < 0) {
+            this.view.root.dispatchEvent(resetSim);
+            return;
         }
+        this.lastTime = time;
+        this.firstShownTime = this.firstShownTime + delta;
+
+        // Update the limits on the time axis
+        this.keptScale.domain([time - this.keptTime, time]);
+
+        // Update the time axis display
+        this.view.callAxis(this.sliderAxis);
     }
 
     jumpToEnd() {
@@ -388,6 +400,20 @@ class TimeSlider {
         this.view.shownOffset = this.keptScale(this.firstShownTime);
         // Update any components who need to know the time changed
         this.view.root.dispatchEvent(adjustTime);
+    }
+
+    /**
+     * Adjust size and location of parts based on overall size.
+     *
+     * @param {number} width - Width to resize to.
+     * @param {number} height - Height to resize to.
+     */
+    onresize() {
+        const width = this.view.width;
+        this.view.shownWidth = width * this.shownTime / this.keptTime;
+        this.keptScale.range([0, width]);
+        this.view.shownOffset = this.keptScale(this.firstShownTime);
+        this.view.callAxis(this.sliderAxis);
     }
 
     reset() {
@@ -404,45 +430,4 @@ class TimeSlider {
         this.view.root.dispatchEvent(adjustTime);
     }
 
-    /**
-     * Adjust size and location of parts based on overall size.
-     *
-     * @param {number} width - Width to resize to.
-     * @param {number} height - Height to resize to.
-     */
-    onresize() {
-
-
-        this.view.shownWidth = width * this.shownTime / this.keptTime;
-
-        this.keptScale.range([0, width]);
-
-        utils.set_transform(this.shown_div,
-                            this.keptScale(this.firstShownTime), 0);
-
-
-        this.view.callAxis(this.sliderAxis);
-    }
-
-    /**
-     * Update the axis given a new time point from the simulator.
-     *
-     * @param {number} time - The new time point
-     */
-    updateTimes(time) {
-        const delta = time - this.lastTime; // Time since last update_time()
-
-        if (delta < 0) {
-            this.view.root.dispatchEvent(resetSim);
-            return;
-        }
-        this.lastTime = time;
-        this.firstShownTime = this.firstShownTime + delta;
-
-        // Update the limits on the time axis
-        this.keptScale.domain([time - this.keptTime, time]);
-
-        // Update the time axis display
-        this.axis_g.call(this.axis);
-    }
 }

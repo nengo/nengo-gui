@@ -4,6 +4,7 @@ import * as $ from "jquery";
 import * as menu from "../menu";
 import * as utils from "../utils";
 import * as viewport from "../viewport";
+import { Connection } from "../websocket";
 import * as allComponents from "./all-components";
 
 /**
@@ -137,7 +138,7 @@ export class Component {
         // Open a WebSocket to the server
         this.uid = args.uid;
         if (this.uid !== undefined) {
-            this.ws = utils.createWebsocket(this.uid);
+            this.ws = new Connection(this.uid, "component");
             this.ws.onmessage = message => {
                 this.onMessage(message);
             };
