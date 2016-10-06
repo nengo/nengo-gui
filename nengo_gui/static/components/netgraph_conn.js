@@ -57,6 +57,18 @@ Nengo.NetGraphConnection = function(ng, info, minimap, mini_conn) {
 
     /** create the line and its arrowhead marker */
     this.g = ng.createSVGElement('g');
+    this.menu = new Nengo.Menu(this.ng.parent);
+    var self = this;
+    $(this.g).bind('contextmenu', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (self.menu.visible_any()) {
+                self.menu.hide_any();
+            } else {
+                self.menu.show(event.clientX, event.clientY,
+                            self.generate_menu());
+        }
+    });
 
     this.create_line();
 
@@ -190,7 +202,7 @@ Nengo.NetGraphConnection.prototype.find_post = function() {
 Nengo.NetGraphConnection.prototype.set_pres = function(pres) {
     this.pres = pres;
     this.set_pre(this.find_pre());
-    
+
     if (!this.minimap) {
     	this.mini_conn.set_pres(pres);
     }
@@ -198,7 +210,7 @@ Nengo.NetGraphConnection.prototype.set_pres = function(pres) {
 Nengo.NetGraphConnection.prototype.set_posts = function(posts) {
     this.posts = posts;
     this.set_post(this.find_post());
-    
+
     if (!this.minimap) {
     	this.mini_conn.set_posts(posts);
     }
@@ -236,7 +248,7 @@ Nengo.NetGraphConnection.prototype.remove = function() {
     this.removed = true;
 
     delete this.ng.svg_conns[this.uid];
-    
+
     if (!this.minimap) {
     	this.mini_conn.remove();
     }
@@ -341,7 +353,7 @@ Nengo.NetGraphConnection.prototype.redraw = function() {
         this.marker.setAttribute('transform',
                           'translate(' + mx + ',' + my + ') rotate('+ angle +')');
     }
-    
+
     if (!this.minimap && this.ng.mm_display) {
     	this.mini_conn.redraw();
     }
@@ -371,4 +383,11 @@ Nengo.NetGraphConnection.prototype.intersect_length = function(theta, alpha, wid
     }
 
     return [x,y];
+}
+
+Nengo.NetGraphConnection.prototype.generate_menu = function(){
+    var self = this;
+    var items = [];
+    items.push(['Delete Connection',function(){Nengo.vpl.delete_connection(self.pre.uid,self.post.uid)}]);
+    return items;
 }
