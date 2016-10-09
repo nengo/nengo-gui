@@ -116,7 +116,7 @@ export class NetGraph {
         this.height = $(this.svg).height();
 
         // Connect to server
-        this.ws = new Connection(uid); // TODO: , "netgraph");
+        // this.ws = new Connection(uid); // TODO: , "netgraph");
         this.ws.onmessage = event => {
             this.onMessage(event);
         };

@@ -174,48 +174,58 @@ export class SpeedThrottleView {
 
 export class TimeSliderView {
     root: HTMLDivElement;
-    shownTime: SVGRectElement;
+    shownTimeHandle: HTMLDivElement;
     private axis: SVGGElement;
+    private shownTime: SVGGElement;
     private svg: SVGSVGElement;
 
     constructor() {
         const [width, height] = [200, 58];
         const node =
             h("div.time-slider", [
+                h("div.shown-time-handle", {styles: {
+                    height: height + "px",
+                    width: height + "px",
+                }}),
                 h("svg", {
                     height: "100%",
                     preserveAspectRatio: "xMinYMin",
                     viewBox: "0 0 " + width + " " + height,
                     width: "100%",
                 }, [
-                    h("rect.shown-time", {
-                        height: String(height),
-                        width: String(height),
-                        x: "0",
-                        y: "0",
-                    }),
-                    h("line.shown-time-border#left", {
-                        x1: "0",
-                        x2: "0",
-                        y1: "0",
-                        y2: String(height),
-                    }),
-                    h("line.shown-time-border#right", {
-                        x1: String(height),
-                        x2: String(height),
-                        y1: "0",
-                        y2: String(height),
-                    }),
+                    h("g.shown-time", {
+                        transform: "translate(0,0)",
+                    }, [
+                        h("rect", {
+                            height: String(height),
+                            width: String(height),
+                            x: "0",
+                            y: "0",
+                        }),
+                        h("line.shown-time-border#left", {
+                            x1: "0",
+                            x2: "0",
+                            y1: "0",
+                            y2: String(height),
+                        }),
+                        h("line.shown-time-border#right", {
+                            x1: String(height),
+                            x2: String(height),
+                            y1: "0",
+                            y2: String(height),
+                        }),
+                    ]),
                     h("g.axis", {
                         transform: "translate(0," + (height / 2) + ")",
                     }),
                 ]),
             ]);
         this.root = dom.create(node).domNode as HTMLDivElement;
+        this.shownTimeHandle =
+            this.root.querySelector(".shown-time-handle") as HTMLDivElement;
 
-        this.shownTime =
-            this.root.querySelector(".shown-time") as SVGRectElement;
         this.svg = this.root.querySelector("svg") as SVGSVGElement;
+        this.shownTime = this.svg.querySelector("g.shown-time") as SVGGElement;
         this.axis = this.svg.querySelector("g.axis") as SVGGElement;
     }
 
@@ -228,28 +238,39 @@ export class TimeSliderView {
     }
 
     /**
-     * Offset of the shownTime div in pixels.
+     * Offset of the shownTime rect in pixels.
      */
     get shownOffset(): number {
-        return Number(this.shownTime.getAttribute("x"));
+        const [x, y] = getTransform(this.shownTimeHandle);
+        console.assert(y === 0);
+        return x;
     }
 
     set shownOffset(val: number) {
-        const left = this.svg.getElementById("left") as SVGLineElement;
-        const right = this.svg.getElementById("right") as SVGLineElement;
-        this.shownTime.setAttribute("x", String(val));
-        left.x1.baseVal.value = val;
-        left.x2.baseVal.value = val;
-        right.x1.baseVal.value = val + this.shownWidth;
-        right.x2.baseVal.value = val + this.shownWidth;
+        setTransform(this.shownTime, val, 0);
+        setTransform(this.shownTimeHandle, val, 0);
     }
 
     get shownWidth(): number {
-        return this.shownTime.width.baseVal.value;
+        const rect = this.svg.querySelector("rect") as SVGRectElement;
+        return rect.width.baseVal.value;
     }
 
     set shownWidth(val: number) {
-        this.shownTime.setAttribute("width", String(val));
+        const rect = this.svg.querySelector("rect") as SVGRectElement;
+        const right = this.svg.getElementById("right") as SVGLineElement;
+        rect.width.baseVal.value = val;
+        right.x1.baseVal.value = val;
+        right.x2.baseVal.value = val;
+        this.shownTimeHandle.style.width = val + "px";
+    }
+
+    get svgLeft(): number {
+        return this.svg.getBoundingClientRect().left;
+    }
+
+    get svgWidth(): number {
+        return this.svg.getBoundingClientRect().width;
     }
 
     get width(): number {

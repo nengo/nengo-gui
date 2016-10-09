@@ -17,6 +17,7 @@ import { NetGraph } from "./netgraph/netgraph";
 import { SideMenu } from "./side-menu";
 import { SimControl } from "./sim-control";
 import { Toolbar } from "./toolbar";
+import { WSConnection } from "./websocket";
 
 // TODO: put all of this in an ajax call to Python. To get:
 // editor uid (uid)
@@ -34,14 +35,17 @@ export class Nengo {
     sidemenu;
     sim;
     toolbar;
+    private ws: WSConnection;
 
     constructor(simargs, filename, editoruid, netgraphargs) {
         this.main = document.getElementById("main");
         this.control = document.getElementById("control");
+        this.ws = new WSConnection("main");
 
         this.netgraph = new NetGraph("uid");
         this.editor = new Editor(editoruid, this.netgraph);
         this.sim = new SimControl("uid", 4.0, 0.5);
+        this.sim.attach(this.ws);
         this.sidemenu = new SideMenu(this.sim);
         this.toolbar = new Toolbar(filename, this.sim);
 

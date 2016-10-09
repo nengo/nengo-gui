@@ -8,7 +8,7 @@ import * as utils from "./utils";
 import {
     SimControlView, SpeedThrottleView, TimeSliderView,
 } from "./views/sim-control";
-import { Connection, FastConnection } from "./websocket";
+import { FastWSConnection, Connection } from "./websocket";
 
 const resetSim = new Event("resetSim");
 const adjustTime = new Event("adjustTime");
@@ -32,8 +32,9 @@ export class SimControl {
     /**
      * WebSocket to communicate with the server.
      */
-    ws: FastConnection;
+    ws: FastWSConnection;
     private _status: string = "paused";
+    private attached: Connection[] = [];
 
     /**
      * SimControl constructor is inserted into HTML file from python and
@@ -53,7 +54,7 @@ export class SimControl {
 
         this.view = new SimControlView("sim-control-" + this.uid);
         document.body.appendChild(this.view.root);
-        this.ws = new FastConnection(this.uid); // TODO: , "simcontrol");
+        this.ws = new FastWSConnection(this.uid); // TODO: , "simcontrol");
 
         this.timeSlider = new TimeSlider({
             keptTime: keptTime,
@@ -83,7 +84,7 @@ export class SimControl {
             this.reset();
         };
 
-        this.ws.bind
+        // this.ws.bind
 
     /**
      * Event handler for received WebSocket messages.
@@ -152,6 +153,8 @@ export class SimControl {
             // TODO: nooooo
             eval(js);
         });
+
+        this.attached.push(conn);
     }
 
     disconnected() {
@@ -163,21 +166,31 @@ export class SimControl {
         // this.modal.show();
     }
 
-    setBackend(backend) {
-        this.ws.send("backend:" + backend);
+    setBackend(backend: string) {
+        this.attached.forEach(conn => {
+            conn.send("simcontrol.set_backend", {backend: backend});
+        });
     }
 
     pause() {
         if (!this.paused) {
-            this.ws.send("pause");
-            // this.status = "paused";
+            this.attached.forEach(conn => {
+                conn.send("simcontrol.pause");
+            });
+            // Once paused, simcontrol.status will be set by the server
+        } else {
+            console.warn("Simulation not running");
         }
     }
 
     play() {
         if (this.paused) {
-            this.ws.send("continue");
-            // this.status = "running";
+            this.attached.forEach(conn => {
+                conn.send("simcontrol.play");
+            });
+            // Once played, simcontrol.status will be set by the server
+        } else {
+            console.warn("Simulation already playing");
         }
     }
 
@@ -186,14 +199,18 @@ export class SimControl {
      */
     reset() {
         this.status = "paused";
-        this.ws.send("reset");
+        this.attached.forEach(conn => {
+            conn.send("simcontrol.reset");
+        });
     }
 
     /**
      * Update the visual display.
      */
     update() {
-        this.ws.send("target_scale:" + this.speedThrottle.x);
+        this.attached.forEach(conn => {
+            conn.send("simcontrol.target_scale", {x: this.speedThrottle.x});
+        });
         this.timeSlider.addTime(this.time);
     }
 }
@@ -259,6 +276,11 @@ class SpeedThrottle {
 }
 
 class TimeSlider {
+    /**
+     * Minimum width of the shownTime box, in pixels.
+     */
+    static minWidth: number = 45;
+
     firstShownTime: number;
 
     /**
@@ -287,11 +309,6 @@ class TimeSlider {
 
     view: TimeSliderView;
 
-    /**
-     * Minimum width of the shownTime box, in pixels.
-     */
-    static minWidth: number = 45;
-
     constructor({
         keptTime: keptTime = 4.0,
         shownTime: shownTime = 0.5,
@@ -310,10 +327,16 @@ class TimeSlider {
         this.onresize();
 
         // Make the shown time draggable and resizable
-        interact(this.view.shownTime)
+        const inBounds = event => {
+            const relativeX = event.pageX - this.view.svgLeft;
+            return relativeX >= 0 && relativeX <= this.view.svgWidth;
+        };
+        interact(this.view.shownTimeHandle)
             .draggable({
                 onmove: event => {
-                    console.log("here");
+                    if (!inBounds(event)) {
+                        return;
+                    }
                     // Determine where we have been dragged to in time
                     let x = this.keptScale(this.firstShownTime) + event.dx;
                     this.firstShownTime = utils.clip(
@@ -331,6 +354,9 @@ class TimeSlider {
                 edges: {bottom: false, left: true, right: true, top: false},
             })
             .on("resizemove", event => {
+                if (!inBounds(event)) {
+                    return;
+                }
                 const xmin = this.keptScale(this.lastTime - this.keptTime);
                 const xmax = this.keptScale(this.lastTime);
                 const xleft = this.keptScale(this.firstShownTime);
@@ -367,10 +393,10 @@ class TimeSlider {
             this.view.root.dispatchEvent(resetSim);
         });
 
-        window.onresize = event => {
-            // 66 ms throttle = 15 FPS update
-            utils.throttle(this.onresize, 66);
-        };
+        // 66 ms throttle = 15 FPS update
+        window.addEventListener("resize", utils.throttle(() => {
+            this.onresize();
+        }, 66));
     }
 
     /**

@@ -9,7 +9,14 @@ function getURL(uid: string, typename: string = "component"): string {
     return wsProto + "//" + hostname + "/" + typename + "?uid=" + uid;
 }
 
-type Callback = (kwargs: any) => any;
+export interface Connection {
+    typename: string;
+    uid: string;
+
+    bind(name: string, callback: (any) => any): Connection;
+    dispatch(name: string, kwargs?: any): Connection;
+    send(name: string, kwargs?: any): Connection;
+}
 
 /**
  * Create a WebSocket connection to the given uid.
@@ -21,26 +28,32 @@ type Callback = (kwargs: any) => any;
  * @param {string} uid - The uid for the WebSocket.
  * @returns {WebSocket} The created WebSocket.
  */
-export class Connection extends WebSocket {
-    private callbacks: {[name: string]: Callback[]};
+export class WSConnection implements Connection {
+    typename: string;
+    uid: string;
+
+    private callbacks: {[name: string]: ((any) => any)[]};
+    private ws: WebSocket;
 
     constructor(uid: string, typename: string = "component") {
-        super(getURL(uid, typename));
-        this.onmessage = (event: MessageEvent) => {
+        this.uid = uid;
+        this.typename = typename;
+        this.ws = new WebSocket(getURL(uid, typename));
+        this.ws.onmessage = (event: MessageEvent) => {
             const json = JSON.parse(event.data);
             this.dispatch(json[0], json[1]);
         };
 
-        this.onclose = () => {
+        this.ws.onclose = () => {
             this.dispatch("close");
         };
 
-        this.onopen = () => {
+        this.ws.onopen = () => {
             this.dispatch("open");
         };
     }
 
-    bind(name: string, callback: Callback) {
+    bind(name: string, callback: (any) => any): WSConnection {
         if (!(name in this.callbacks)) {
             this.callbacks[name] = [];
         }
@@ -48,10 +61,10 @@ export class Connection extends WebSocket {
         return this;
     }
 
-    dispatch(name: string, data: any = {}) {
+    dispatch(name: string, kwargs: any = {}): WSConnection {
         if (name in this.callbacks) {
             this.callbacks[name].forEach(callback => {
-                callback(data);
+                callback(kwargs);
             });
         } else {
             console.warn("Nothing bound for '" + name + "'");
@@ -59,11 +72,15 @@ export class Connection extends WebSocket {
         return this;
     }
 
-    send(name: string, kwargs: any = {}) {
+    send(name: string, kwargs: any = {}): WSConnection {
         const payload = JSON.stringify([name, kwargs]);
-        super.send(payload);
+        this.ws.send(payload);
         return this;
     }
+}
+
+export interface FastConnection {
+    // Nothing yet...
 }
 
 /**
@@ -75,7 +92,7 @@ export class Connection extends WebSocket {
  * @param {string} uid - The uid for the WebSocket.
  * @returns {WebSocket} The created WebSocket.
  */
-export class FastConnection extends WebSocket {
+export class FastWSConnection implements FastConnection {
 
     // function to parse out / organize / structure data; e.g
     // new Float32Array(event.data)
@@ -83,12 +100,20 @@ export class FastConnection extends WebSocket {
     // function that will be called with the spread out results of parsed out data
     // (time, speed, proportion => this. ....
 
+    typename: string;
+    uid: string;
+
+    private ws: WebSocket;
+
     constructor(uid: string, typename: string = "component") {
-        super(getURL(uid, typename));
-        this.binaryType = "arraybuffer";
-        this.onmessage = (event: MessageEvent) => {
+        this.uid = uid;
+        this.typename = typename;
+
+        this.ws = new WebSocket(getURL(uid, typename));
+        this.ws.binaryType = "arraybuffer";
+        this.ws.onmessage = (event: MessageEvent) => {
             const json = JSON.parse(event.data);
-            this.dispatch(json[0], json[1]);
+            // this.dispatch(json[0], json[1]);
         };
     }
 }

@@ -19,6 +19,7 @@ import "./nengo.css";
 // import { SideMenu } from "./side-menu";
 import { SimControl } from "./sim-control";
 // import { Toolbar } from "./toolbar";
+import { Connection } from "./websocket";
 
 // TODO: put all of this in an ajax call to Python. To get:
 // editor uid (uid)
@@ -98,7 +99,7 @@ export class NengoDebug {
             }
         };
         this.view.log.onclick = () => {
-            MockWebSocket.verbose = !MockWebSocket.verbose;
+            MockConnection.verbose = !MockConnection.verbose;
         };
     }
 
@@ -157,60 +158,31 @@ export class NengoDebug {
 
 /* tslint:disable:no-console */
 
-class MockWebSocket implements WebSocket {
+class MockConnection implements Connection {
     static verbose: boolean = true;
 
-    binaryType: string = "blob";
-    bufferedAmount: number = 0;
-    extensions: string = "";
-    protocols: any;
-    onclose: any = null;
-    onerror: any = null;
-    onmessage: any = null;
-    onopen: any = null;
-    protocol: string = "";
-    readyState: number = WebSocket.OPEN;
-    url: string;
+    typename: string = "mock";
+    uid: string = "mock";
 
-    CLOSED = WebSocket.CLOSED;
-    CLOSING = WebSocket.CLOSING;
-    CONNECTING = WebSocket.CONNECTING;
-    OPEN = WebSocket.OPEN;
-
-    constructor(url: string, protocols: any = null) {
-        this.url = url;
-        this.protocols = protocols;
-
-        if (MockWebSocket.verbose) {
-            console.log("ws: Made WebSocket to " + this.url);
-            if (protocols !== null) {
-                console.log("ws: protocols = " + this.protocols);
-            }
+    bind(name: string, callback: (kwargs: any) => any): MockConnection {
+        if (MockConnection.verbose) {
+            console.log("binding " + name);
         }
+        return this;
     }
 
-    addEventListener() {
-        // This method left intentionally blank.
-    }
-    removeEventListener() {
-        // This method left intentionally blank.
-    }
-    dispatchEvent() {
-        return false;
-    }
-
-    close(code: number = null, reason: string = null) {
-        if (MockWebSocket.verbose) {
-            console.log(
-                "ws: closing (code=" + code + ", reason=" + reason + ")"
-            );
+    dispatch(name: string, kwargs: any = {}): MockConnection {
+        if (MockConnection.verbose) {
+            console.log("dispatch " + name + "(" + Object.keys(kwargs) + ")");
         }
+        return this;
     }
 
-    send(message: string) {
-        if (MockWebSocket.verbose) {
-            console.log("ws: sending '" + message + "'");
+    send(name: string, kwargs: any = {}): MockConnection {
+        if (MockConnection.verbose) {
+            console.log("send " + name + "(" + Object.keys(kwargs) + ")");
         }
+        return this;
     }
 }
 
@@ -222,19 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
     nengo.register("main", "SimControl", () => {
         const simcontrol = new SimControl("uid", 4.0, 0.5);
         // Monkey patches for debugging
-        simcontrol.ws = new MockWebSocket(simcontrol.ws.url);
-        interact(".shown-time")
-            .draggable({
-                onmove: event => {
-                    console.log("here");
-                },
-            })
-            .resizable({
-                edges: {bottom: false, left: true, right: true, top: false},
-            })
-            .on("resizemove", event => {
-                console.log("Here");
-            });
+        simcontrol.attach(new MockConnection());
         return simcontrol;
     });
 });

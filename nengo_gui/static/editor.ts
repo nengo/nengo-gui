@@ -18,7 +18,7 @@ import { config } from "./config";
 import "./editor.css";
 import * as utils from "./utils";
 import * as viewport from "./viewport";
-import { Connection } from "./websocket";
+import { WSConnection } from "./websocket";
 
 const Range = ace.acequire("ace/range").Range;
 
@@ -46,7 +46,7 @@ export class Editor {
         this.minWidth = 50;
         this.maxWidth = $(window).width() - 100;
 
-        this.ws = new Connection(uid); // TODO: , "editor");
+        this.ws = new WSConnection(uid); // TODO: , "editor");
         this.ws.onmessage = function(event) {
             this.onmessage(event);
         };

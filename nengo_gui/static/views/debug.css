@@ -52,6 +52,7 @@
 
         &.last {
             border-right: none;
+            min-width: 380px;
         }
     }
 }

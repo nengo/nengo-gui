@@ -19,6 +19,7 @@
     }
     height: 80px;
     justify-content: space-around;
+    min-width: 480px;
     overflow: hidden;
     width: 100%;
     z-index: 99999999;
@@ -143,9 +144,13 @@
             }
         }
 
+        .shown-time-handle {
+            position: absolute;
+        }
+
         svg {
-            pointer-events: none;
             flex-grow: 1;
+            pointer-events: none;
 
             .axis {
                 path {
