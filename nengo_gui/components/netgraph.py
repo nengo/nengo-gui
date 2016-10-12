@@ -543,6 +543,9 @@ class NetGraph(Component):
 
         info['sp_targets'] = (
             nengo_gui.components.spa_plot.SpaPlot.applicable_targets(obj))
+
+        # the line number information is injected via nengo_gui.exec_env
+        info['line_number'] = obj._line_number
         return info
 
     def send_pan_and_zoom(self, client):

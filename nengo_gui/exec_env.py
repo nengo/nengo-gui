@@ -6,6 +6,8 @@ import traceback
 import sys
 from nengo.utils.compat import StringIO
 
+import nengo
+
 
 # list of Simulators to check for
 known_modules = ['nengo', 'nengo_ocl', 'nengo_distilled',
@@ -43,6 +45,22 @@ def make_dummy(cls):
                 raise StartedSimulatorException()
             super(DummySimulator, self).__init__(*args, **kwargs)
     return DummySimulator
+
+
+# create a wrapper class for NengoObjects that records the line number
+# they were created on
+def make_line_number_class(cls):
+    class LineNumberClass(cls):
+        _original_class = cls
+        def __init__(self, *args, **kwargs):
+            for fn, ln, func, line in reversed(traceback.extract_stack()):
+                if fn == compiled_filename:
+                    self._line_number = ln
+                    break
+            else:
+                self._line_number = None
+            super(LineNumberClass, self).__init__(*args, **kwargs)
+    return LineNumberClass
 
 
 # thread local storage for storing whether we are executing a script
@@ -110,6 +128,12 @@ class ExecutionEnvironment(object):
                 self.simulators[mod] = mod.Simulator
                 mod.Simulator = make_dummy(mod.Simulator)
 
+        # install wrapper classes to keep track of creation line numbers
+        for name in ['Node', 'Network', 'Connection', 'Ensemble']:
+            setattr(nengo, name,
+                    make_line_number_class(getattr(nengo, name)))
+
+
     def __exit__(self, exc_type, exc_value, traceback):
         for mod, cls in self.simulators.items():
             mod.Simulator = cls
@@ -121,3 +145,8 @@ class ExecutionEnvironment(object):
             if self.added_directory is not None:
                 sys.path.remove(self.added_directory)
                 self.added_directory = None
+
+        # remove line number wrapper classes
+        for name in ['Node', 'Network', 'Connection', 'Ensemble']:
+            setattr(nengo, name,
+                    getattr(nengo, name)._original_class)
