@@ -13,7 +13,7 @@ export interface Connection {
     typename: string;
     uid: string;
 
-    bind(name: string, callback: (any) => any): Connection;
+    bind(name: string, callback: (kwargs: any) => any): Connection;
     dispatch(name: string, kwargs?: any): Connection;
     send(name: string, kwargs?: any): Connection;
 }
@@ -32,7 +32,7 @@ export class WSConnection implements Connection {
     typename: string;
     uid: string;
 
-    private callbacks: {[name: string]: ((any) => any)[]};
+    private callbacks: {[name: string]: ((kwargs: any) => any)[]};
     private ws: WebSocket;
 
     constructor(uid: string, typename: string = "component") {
@@ -93,27 +93,23 @@ export interface FastConnection {
  * @returns {WebSocket} The created WebSocket.
  */
 export class FastWSConnection implements FastConnection {
-
-    // function to parse out / organize / structure data; e.g
-    // new Float32Array(event.data)
-
-    // function that will be called with the spread out results of parsed out data
-    // (time, speed, proportion => this. ....
-
-    typename: string;
+    static typename: string = "fast";
     uid: string;
-
     private ws: WebSocket;
 
-    constructor(uid: string, typename: string = "component") {
+    constructor(
+        uid: string,
+        destructure: (data: ArrayBuffer) => any[],
+        step: (...args: any[]) => void,
+    ) {
         this.uid = uid;
-        this.typename = typename;
 
-        this.ws = new WebSocket(getURL(uid, typename));
+        this.ws = new WebSocket(getURL(uid, FastWSConnection.typename));
         this.ws.binaryType = "arraybuffer";
         this.ws.onmessage = (event: MessageEvent) => {
-            const json = JSON.parse(event.data);
-            // this.dispatch(json[0], json[1]);
+            console.assert(typeof event.data === "ArrayBuffer");
+            const structure = destructure(event.data);
+            step(...structure);
         };
     }
 }

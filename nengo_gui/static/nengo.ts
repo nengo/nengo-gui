@@ -28,6 +28,7 @@ import { WSConnection } from "./websocket";
 export class Nengo {
     control;
     editor;
+    filename: string;
     hotkeys;
     main;
     modal;
@@ -38,6 +39,8 @@ export class Nengo {
     private ws: WSConnection;
 
     constructor(simargs, filename, editoruid, netgraphargs) {
+        this.filename = filename;
+
         this.main = document.getElementById("main");
         this.control = document.getElementById("control");
         this.ws = new WSConnection("main");
@@ -52,17 +55,30 @@ export class Nengo {
         this.modal = this.sim.modal;
         this.hotkeys = this.modal.hotkeys;
 
-        document.title = filename;
+    }
+
+    ondomload() {
+        document.title = this.filename;
+
+        document.body.appendChild(this.sim.view.root);
+
+        // In case anything needs to be adjusted
+        window.dispatchEvent(new Event("resize"));
+
+        // body = document.getElementById("body");
+        // body.removeChild(document.getElementById("loading-div"));
+        // %(main_components)s
+        // nengo = new Nengo.default(simargs, filename, editoruid, netgraphargs);
+        // %(components)s
     }
 }
 
-// $(document).ready(() => {
-//     body = document.getElementById("body");
-//     body.removeChild(document.getElementById("loading-div"));
-//     %(main_components)s
-//     nengo = new Nengo.default(simargs, filename, editoruid, netgraphargs);
-//     %(components)s
-// }
+
+// Most initialization can be done before DOM content is loaded
+const nengo = new Nengo(null, null, null, null);
+document.addEventListener("DOMContentLoaded", () => {
+    nengo.ondomload();
+});
 
 // Exposing components for server
 import "expose?HTMLView!./components/htmlview";

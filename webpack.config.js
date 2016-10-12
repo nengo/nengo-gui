@@ -1,4 +1,3 @@
-var path = require('path');
 var TypedocPlugin = require('typedoc-webpack-plugin');
 var webpack = require('webpack');
 
@@ -10,7 +9,6 @@ module.exports = {
     output: {
         path: './nengo_gui/static/dist',
         filename: 'nengo.js',
-        libraryTarget: 'var',
         library: 'Nengo',
         publicPath: '/static/dist/' // Fixes issue finding emitted files
     },
@@ -30,6 +28,7 @@ module.exports = {
                 test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                 loader: 'file-loader?name=./[hash].[ext]'
             },
+            { test: /\.json$/, loader: 'json-loader' },
             { test: /\.tsx?$/, loader: 'ts-loader' },
         ],
     },

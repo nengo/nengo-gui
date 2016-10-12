@@ -152,6 +152,7 @@ export class NengoDebug {
             }
             this.view.debug.appendChild(root);
             this.attachControlGroup(obj, root, label);
+            window.dispatchEvent(new Event("resize"));
         };
     }
 }

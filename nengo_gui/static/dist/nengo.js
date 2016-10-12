@@ -185,6 +185,7 @@ var Nengo =
 	            }
 	            _this.view.debug.appendChild(root);
 	            _this.attachControlGroup(obj, root, label);
+	            window.dispatchEvent(new Event("resize"));
 	        };
 	    };
 	    return NengoDebug;
@@ -28227,22 +28228,18 @@ var Nengo =
 	 */
 	var SimControl = (function () {
 	    /**
-	     * SimControl constructor is inserted into HTML file from python and
-	     * is called when the page is first loaded
-
+	     * Groups elements that control a simulation.
 	     *
-	     * @constructor
-	     * @param {HTMLElement} div - the element for the control
-	     * @param {dict} args - A set of constructor arguments, including:
-	     * @param {int} args.id - the id of the server-side SimControl to connect to
+	     * Specifically, the SimControl contains a speed throttle, a reset button,
+	     * a time slider, and a play/pause button.
+	     *
+	     * @param uid - Unique identifier.
+	     * @param keptTime - How much time the time slider should keep.
+	     * @param shownTime - How much time the time slider should show.
 	     */
 	    function SimControl(uid, keptTime, shownTime) {
 	        var _this = this;
 	        this.simulatorOptions = "";
-	        /**
-	         * The most recent time from the simulator.
-	         */
-	        this.time = 0.0;
 	        this._status = "paused";
 	        this.attached = [];
 	        this.uid = uid;
@@ -28250,8 +28247,6 @@ var Nengo =
 	            console.warn("invalid uid for SimControl: " + uid);
 	        }
 	        this.view = new sim_control_1.SimControlView("sim-control-" + this.uid);
-	        document.body.appendChild(this.view.root);
-	        this.ws = new websocket_1.FastWSConnection(this.uid); // TODO: , "simcontrol");
 	        this.timeSlider = new TimeSlider({
 	            keptTime: keptTime,
 	            shownTime: shownTime,
@@ -28276,20 +28271,15 @@ var Nengo =
 	        this.view.reset.onclick = function (event) {
 	            _this.reset();
 	        };
-	        // this.ws.bind
-	        /**
-	         * Event handler for received WebSocket messages.
-	         *
-	         * @param {MessageEvent} event - The MessageEvent
-	         */
-	        // onmessage(event) {
-	        //     } else {
-	        //         const data = new Float32Array(event.data);
-	        //         this.speedThrottle.time = data[0];
-	        //         this.speedThrottle.speed = data[1];
-	        //         this.speedThrottle.proportion = data[2];
-	        //     }
-	        // }
+	        this.ws = new websocket_1.FastWSConnection(this.uid, function (data) {
+	            // time, speed, proportion
+	            return [data[0], data[1], data[2]];
+	        }, function (time, speed, proportion) {
+	            _this.timeSlider.addTime(time);
+	            _this.speedThrottle.time = time;
+	            _this.speedThrottle.speed = speed;
+	            _this.speedThrottle.proportion = proportion;
+	        });
 	    }
 	    Object.defineProperty(SimControl.prototype, "paused", {
 	        get: function () {
@@ -28327,11 +28317,18 @@ var Nengo =
 	        enumerable: true,
 	        configurable: true
 	    });
+	    Object.defineProperty(SimControl.prototype, "time", {
+	        get: function () {
+	            return this.speedThrottle.time;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
 	    SimControl.prototype.attach = function (conn) {
 	        var _this = this;
-	        conn.bind("open", function (event) {
-	            _this.update();
-	        });
+	        // conn.bind("open", event => {
+	        //     this.update();
+	        // });
 	        conn.bind("close", function (event) {
 	            _this.disconnected();
 	        });
@@ -28391,16 +28388,6 @@ var Nengo =
 	        this.attached.forEach(function (conn) {
 	            conn.send("simcontrol.reset");
 	        });
-	    };
-	    /**
-	     * Update the visual display.
-	     */
-	    SimControl.prototype.update = function () {
-	        var _this = this;
-	        this.attached.forEach(function (conn) {
-	            conn.send("simcontrol.target_scale", { x: _this.speedThrottle.x });
-	        });
-	        this.timeSlider.addTime(this.time);
 	    };
 	    return SimControl;
 	}());
@@ -28462,6 +28449,7 @@ var Nengo =
 	    };
 	    return SpeedThrottle;
 	}());
+	exports.SpeedThrottle = SpeedThrottle;
 	var TimeSlider = (function () {
 	    function TimeSlider(_a) {
 	        var _this = this;
@@ -28469,83 +28457,77 @@ var Nengo =
 	        /**
 	         * Most recent time received from simulation.
 	         */
-	        this.lastTime = 0.0;
+	        this.currentTime = 0.0;
+	        this.keptTime = keptTime;
 	        this.view = view;
 	        this.shownTime = shownTime;
-	        this.keptTime = keptTime;
-	        this.firstShownTime = this.lastTime - this.shownTime;
+	        this.firstShownTime = this.currentTime - this.shownTime;
 	        this.keptScale = d3.scale.linear()
 	            .domain([0.0 - this.keptTime, 0.0]);
 	        this.sliderAxis = d3.svg.axis()
 	            .scale(this.keptScale)
 	            .orient("bottom")
 	            .ticks(10);
-	        this.onresize();
 	        // Make the shown time draggable and resizable
 	        var inBounds = function (event) {
 	            var relativeX = event.pageX - _this.view.svgLeft;
 	            return relativeX >= 0 && relativeX <= _this.view.svgWidth;
 	        };
 	        interact(this.view.shownTimeHandle)
-	            .draggable({
-	            onmove: function (event) {
-	                if (!inBounds(event)) {
-	                    return;
+	            .draggable({ onmove: function (event) {
+	                if (inBounds(event)) {
+	                    _this.moveShown(_this.toTime(_this.firstShownPixel + event.dx));
 	                }
-	                // Determine where we have been dragged to in time
-	                var x = _this.keptScale(_this.firstShownTime) + event.dx;
-	                _this.firstShownTime = utils.clip(_this.keptScale.invert(x), _this.lastTime - _this.keptTime, _this.lastTime - _this.shownTime);
-	                x = _this.keptScale(_this.firstShownTime);
-	                _this.view.shownOffset = x;
-	                // Update any components who need to know the time changed
-	                _this.view.root.dispatchEvent(adjustTime);
-	            },
-	        })
+	            } })
 	            .resizable({
 	            edges: { bottom: false, left: true, right: true, top: false },
 	        })
 	            .on("resizemove", function (event) {
-	            if (!inBounds(event)) {
-	                return;
+	            if (inBounds(event)) {
+	                var rect = event.deltaRect;
+	                var start = _this.toTime(_this.firstShownPixel + rect.left);
+	                var end = _this.toTime(_this.firstShownPixel + _this.view.shownWidth + rect.right);
+	                _this.resizeShown(start, end);
 	            }
-	            var xmin = _this.keptScale(_this.lastTime - _this.keptTime);
-	            var xmax = _this.keptScale(_this.lastTime);
-	            var xleft = _this.keptScale(_this.firstShownTime);
-	            var xright = _this.keptScale(_this.firstShownTime + _this.shownTime);
-	            var xnewleft = utils.clip(xleft + event.deltaRect.left, xmin, xright - TimeSlider.minWidth);
-	            var xnewright = utils.clip(xright + event.deltaRect.right, xleft + TimeSlider.minWidth, xmax);
-	            // Set slider width and position
-	            _this.view.shownOffset = xnewleft;
-	            _this.view.shownWidth = xnewright - xnewleft;
-	            // Update times
-	            var tfirst = _this.keptScale.invert(xnewleft);
-	            var tlast = _this.keptScale.invert(xnewright);
-	            _this.firstShownTime = tfirst;
-	            _this.shownTime = tlast - tfirst;
-	            // Update any components who need to know the time changed
-	            _this.view.root.dispatchEvent(adjustTime);
 	        });
 	        this.view.root.addEventListener("resetSim", function (event) {
 	            _this.reset();
-	            _this.view.root.dispatchEvent(resetSim);
 	        });
 	        // 66 ms throttle = 15 FPS update
 	        window.addEventListener("resize", utils.throttle(function () {
-	            _this.onresize();
+	            var width = _this.view.width;
+	            _this.view.shownWidth = width * _this.shownTime / _this.keptTime;
+	            _this.keptScale.range([0, width]);
+	            _this.view.shownOffset = _this.firstShownPixel;
+	            _this.view.callAxis(_this.sliderAxis);
 	        }, 66));
 	    }
+	    Object.defineProperty(TimeSlider.prototype, "firstShownPixel", {
+	        get: function () {
+	            return this.toPixel(this.firstShownTime);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(TimeSlider.prototype, "firstTime", {
+	        get: function () {
+	            return this.keptScale.domain()[0];
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
 	    /**
 	     * Update the axis given a new time point from the simulator.
 	     *
 	     * @param {number} time - The new time point
 	     */
 	    TimeSlider.prototype.addTime = function (time) {
-	        var delta = time - this.lastTime; // Time since last update_time()
+	        var delta = time - this.currentTime; // Time since last addTime()
 	        if (delta < 0) {
 	            this.view.root.dispatchEvent(resetSim);
 	            return;
 	        }
-	        this.lastTime = time;
+	        this.currentTime = time;
 	        this.firstShownTime = this.firstShownTime + delta;
 	        // Update the limits on the time axis
 	        this.keptScale.domain([time - this.keptTime, time]);
@@ -28553,42 +28535,47 @@ var Nengo =
 	        this.view.callAxis(this.sliderAxis);
 	    };
 	    TimeSlider.prototype.jumpToEnd = function () {
-	        this.firstShownTime = this.lastTime - this.shownTime;
-	        this.view.shownOffset = this.keptScale(this.firstShownTime);
-	        // Update any components who need to know the time changed
+	        this.moveShown(this.currentTime - this.shownTime);
+	    };
+	    TimeSlider.prototype.moveShown = function (time) {
+	        this.firstShownTime = utils.clip(time, this.firstTime, this.currentTime - this.shownTime);
+	        this.view.shownOffset = this.firstShownPixel;
 	        this.view.root.dispatchEvent(adjustTime);
 	    };
-	    /**
-	     * Adjust size and location of parts based on overall size.
-	     *
-	     * @param {number} width - Width to resize to.
-	     * @param {number} height - Height to resize to.
-	     */
-	    TimeSlider.prototype.onresize = function () {
-	        var width = this.view.width;
-	        this.view.shownWidth = width * this.shownTime / this.keptTime;
-	        this.keptScale.range([0, width]);
-	        this.view.shownOffset = this.keptScale(this.firstShownTime);
-	        this.view.callAxis(this.sliderAxis);
+	    TimeSlider.prototype.resizeShown = function (startTime, endTime) {
+	        startTime = utils.clip(startTime, this.firstTime, this.toTime(this.toPixel(this.firstShownTime + this.shownTime)
+	            - TimeSlider.minPixelWidth));
+	        endTime = utils.clip(endTime, this.toTime(this.toPixel(startTime) + TimeSlider.minPixelWidth), this.currentTime);
+	        // Update times
+	        this.firstShownTime = startTime;
+	        this.shownTime = endTime - startTime;
+	        // Adjust width
+	        this.view.shownWidth = this.toPixel(endTime) - this.toPixel(startTime);
+	        // Adjust offset
+	        this.moveShown(this.firstShownTime);
 	    };
 	    TimeSlider.prototype.reset = function () {
-	        this.lastTime = 0.0;
-	        this.firstShownTime = this.lastTime - this.shownTime;
+	        this.currentTime = 0.0;
+	        this.jumpToEnd();
 	        // Update the limits on the time axis
 	        this.keptScale.domain([
-	            this.lastTime - this.keptTime, this.lastTime,
+	            this.currentTime - this.keptTime, this.currentTime,
 	        ]);
 	        this.view.callAxis(this.sliderAxis);
-	        this.view.shownOffset = this.keptScale(this.firstShownTime);
-	        // Update any components who need to know the time changed
-	        this.view.root.dispatchEvent(adjustTime);
+	    };
+	    TimeSlider.prototype.toPixel = function (time) {
+	        return this.keptScale(time);
+	    };
+	    TimeSlider.prototype.toTime = function (pixel) {
+	        return this.keptScale.invert(pixel);
 	    };
 	    /**
-	     * Minimum width of the shownTime box, in pixels.
+	     * Minimum width of the shownTime box in pixels.
 	     */
-	    TimeSlider.minWidth = 45;
+	    TimeSlider.minPixelWidth = 45;
 	    return TimeSlider;
 	}());
+	exports.TimeSlider = TimeSlider;
 
 
 /***/ },
@@ -45495,7 +45482,7 @@ var Nengo =
 
 
 	// module
-	exports.push([module.id, ".guideline {\n    background-color: #ddd;\n    border:  1px solid #888;\n    border-radius: 4px;\n    z-index: -1;\n}\n\ninput#value_in_field {\n    cursor: text !important;\n}\n\n.sim-control {\n    align-items: stretch;\n    background-color: rgb(238, 238, 238);\n    box-shadow: 0 -2px 4px 0 rgb(153, 153, 153);\n    display: flex;\n    flex-grow: 0;\n    flex-shrink: 0;\n    flex-basis: auto;\n    height: 80px;\n    justify-content: space-around;\n    min-width: 480px;\n    overflow: hidden;\n    width: 100%;\n    z-index: 99999999;\n}\n\n.sim-control button {\n    background-color: rgb(238, 238, 238);\n    border-radius: 0;\n    border-width: 0;\n    margin: 10px 5px;\n    width: 60px;\n}\n\n.sim-control button:hover {\n    color: rgb(238, 238, 238);\n    background: rgb(102, 102, 102);\n}\n\n.sim-control button span {\n    font-size: 30px;\n}\n\n.sim-control .pause-button {\n    order: 4;\n}\n\n.sim-control .pause-button:disabled,\n        .sim-control .pause-button:disabled:hover {\n    background: rgb(238, 238, 238);\n    color: rgb(102, 102, 102);\n}\n\n@keyframes spin {\n\n    from {\n        transform: rotate(0deg);\n    }\n\n    to {\n        transform: rotate(360deg);\n    }\n}\n\n.sim-control .glyphicon-spin {\n    animation: spin 2s infinite linear\n}\n\n.sim-control .reset-button {\n    order: 2;\n}\n\n.sim-control .speed-throttle {\n    cursor: default;\n    display: inline-block;\n    font-size: medium;\n    margin-top: 10px;\n    margin-left: 10px;\n    margin-right: 5px;\n    order: 1;\n    overflow: hidden;\n    width: 130px;\n}\n\n.sim-control .speed-throttle .slider {\n    height: 10px;\n}\n\n.sim-control .speed-throttle .slider .guideline {\n    height: 0.25em;\n    margin: auto;\n    width: 100%;\n}\n\n.sim-control .speed-throttle .slider .handle {\n    border-color: rgb(102, 102, 102);\n    height: 0.8em;\n    left: 0;\n    padding: 0.1em 0;\n    position: absolute;\n    transform: translate(50%, -75%);\n    width: 0.8em;\n}\n\n.sim-control .speed-throttle td, .sim-control .speed-throttle th {\n    border: none;\n}\n\n.sim-control .speed-throttle th {\n    padding: 0.2em;\n}\n\n.sim-control .speed-throttle td {\n    padding: 0.2em 0;\n}\n\n.sim-control .speed-throttle td.digits {\n    text-align: right;\n    width: 100%;\n}\n\n.sim-control .time-slider {\n    background: white;\n    border: 1px solid rgb(204, 204, 204);\n    border-radius: 4px;\n    display: flex;\n    flex-grow: 1;\n    margin: 10px 5px;\n    order: 3;\n}\n\n.sim-control .time-slider .shown-time {\n    fill: #d9edf7;\n}\n\n.sim-control .time-slider .shown-time-border {\n    stroke:  rgb(204, 204, 204);\n    stroke-width: 1\n}\n\n.sim-control .time-slider .shown-time-handle {\n    position: absolute;\n}\n\n.sim-control .time-slider svg {\n    flex-grow: 1;\n    pointer-events: none;\n}\n\n.sim-control .time-slider svg .axis path {\n    fill: none;\n    stroke: #333;\n    stroke-width: 1px;\n}\n\n.sim-control .time-slider svg .axis .tick {\n    font-family: sans-serif;\n    font-size: 12px;\n}\n", ""]);
+	exports.push([module.id, ".guideline {\n    background-color: #ddd;\n    border:  1px solid #888;\n    border-radius: 4px;\n    z-index: -1;\n}\n\ninput#value_in_field {\n    cursor: text !important;\n}\n\n.sim-control {\n    align-items: stretch;\n    background-color: rgb(238, 238, 238);\n    box-shadow: 0 -2px 4px 0 rgb(153, 153, 153);\n    display: flex;\n    flex-grow: 0;\n    flex-shrink: 0;\n    flex-basis: auto;\n    height: 80px;\n    justify-content: space-around;\n    min-width: 600px;\n    overflow: hidden;\n    width: 100%;\n    z-index: 99999999;\n}\n\n.sim-control button {\n    background-color: rgb(238, 238, 238);\n    border-radius: 0;\n    border-width: 0;\n    margin: 10px 5px;\n    width: 60px;\n}\n\n.sim-control button:hover {\n    color: rgb(238, 238, 238);\n    background: rgb(102, 102, 102);\n}\n\n.sim-control button span {\n    font-size: 30px;\n}\n\n.sim-control .pause-button {\n    order: 4;\n}\n\n.sim-control .pause-button:disabled,\n        .sim-control .pause-button:disabled:hover {\n    background: rgb(238, 238, 238);\n    color: rgb(102, 102, 102);\n}\n\n@keyframes spin {\n\n    from {\n        transform: rotate(0deg);\n    }\n\n    to {\n        transform: rotate(360deg);\n    }\n}\n\n.sim-control .glyphicon-spin {\n    animation: spin 2s infinite linear\n}\n\n.sim-control .reset-button {\n    order: 2;\n}\n\n.sim-control .speed-throttle {\n    cursor: default;\n    display: inline-block;\n    font-size: medium;\n    margin-top: 10px;\n    margin-left: 10px;\n    margin-right: 5px;\n    order: 1;\n    overflow: hidden;\n    width: 130px;\n}\n\n.sim-control .speed-throttle .slider {\n    height: 10px;\n}\n\n.sim-control .speed-throttle .slider .guideline {\n    height: 0.25em;\n    margin: auto;\n    width: 100%;\n}\n\n.sim-control .speed-throttle .slider .handle {\n    border-color: rgb(102, 102, 102);\n    height: 0.8em;\n    left: 0;\n    padding: 0.1em 0;\n    position: absolute;\n    transform: translate(50%, -75%);\n    width: 0.8em;\n}\n\n.sim-control .speed-throttle td, .sim-control .speed-throttle th {\n    border: none;\n}\n\n.sim-control .speed-throttle th {\n    padding: 0.2em;\n}\n\n.sim-control .speed-throttle td {\n    padding: 0.2em 0;\n}\n\n.sim-control .speed-throttle td.digits {\n    text-align: right;\n    width: 100%;\n}\n\n.sim-control .time-slider {\n    background: white;\n    border: 1px solid rgb(204, 204, 204);\n    border-radius: 4px;\n    display: flex;\n    flex-grow: 1;\n    margin: 10px 5px;\n    order: 3;\n}\n\n.sim-control .time-slider .shown-time {\n    fill: #d9edf7;\n}\n\n.sim-control .time-slider .shown-time-border {\n    stroke:  rgb(204, 204, 204);\n    stroke-width: 1\n}\n\n.sim-control .time-slider .shown-time-handle {\n    position: absolute;\n}\n\n.sim-control .time-slider svg {\n    flex-grow: 1;\n    pointer-events: none;\n}\n\n.sim-control .time-slider svg .axis path {\n    fill: none;\n    stroke: #333;\n    stroke-width: 1px;\n}\n\n.sim-control .time-slider svg .axis .tick {\n    font-family: sans-serif;\n    font-size: 12px;\n}\n", ""]);
 
 	// exports
 
@@ -45658,17 +45645,17 @@ var Nengo =
 	 * @returns {WebSocket} The created WebSocket.
 	 */
 	var FastWSConnection = (function () {
-	    function FastWSConnection(uid, typename) {
-	        if (typename === void 0) { typename = "component"; }
+	    function FastWSConnection(uid, destructure, step) {
 	        this.uid = uid;
-	        this.typename = typename;
-	        this.ws = new WebSocket(getURL(uid, typename));
+	        this.ws = new WebSocket(getURL(uid, FastWSConnection.typename));
 	        this.ws.binaryType = "arraybuffer";
 	        this.ws.onmessage = function (event) {
-	            var json = JSON.parse(event.data);
-	            // this.dispatch(json[0], json[1]);
+	            console.assert(typeof event.data === "ArrayBuffer");
+	            var structure = destructure(event.data);
+	            step.apply(void 0, structure);
 	        };
 	    }
+	    FastWSConnection.typename = "fast";
 	    return FastWSConnection;
 	}());
 	exports.FastWSConnection = FastWSConnection;

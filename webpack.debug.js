@@ -2,6 +2,8 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = require('./webpack.config');
 
+module.exports.debug = true;
+module.exports.devtool = 'source-map';
 module.exports.entry = ['./nengo_gui/static/nengo-debug.ts'];
 module.exports.output.pathinfo = true;
 module.exports.output.publicPath = "/";

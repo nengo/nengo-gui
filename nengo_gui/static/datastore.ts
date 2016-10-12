@@ -7,17 +7,18 @@
  * @param {SimControl} sim - the simulation controller
  * @param {float} synapse - the filter to apply to the data
  */
+import { TimeSlider } from "./sim-control";
 
 export class DataStore {
     data;
     firstShownIndex;
-    sim;
+    timeSlider;
     synapse;
     times;
 
-    constructor(dims, sim, synapse) {
+    constructor(dims, timeSlider, synapse) {
         this.synapse = synapse; // TODO: get from SimControl
-        this.sim = sim;
+        this.timeSlider = timeSlider;
         this.times = [];
         this.data = [];
         for (let i = 0; i < dims; i++) {
@@ -91,8 +92,7 @@ export class DataStore {
         // outside the range to keep)
         let extra = 0;
         // How much has the most recent time exceeded how much is kept?
-        const limit = this.sim.timeSlider.lastTime -
-            this.sim.timeSlider.keptTime;
+        const limit = this.timeSlider.currentTime - this.timeSlider.keptTime;
         while (this.times[extra] < limit) {
             extra += 1;
         }
@@ -111,8 +111,8 @@ export class DataStore {
      */
     getShownData() {
         // Determine time range
-        const t1 = this.sim.timeSlider.firstShownTime;
-        const t2 = t1 + this.sim.timeSlider.shownTime;
+        const t1 = this.timeSlider.firstShownTime;
+        const t2 = t1 + this.timeSlider.shownTime;
 
         // Find the corresponding index values
         let index = 0;
@@ -134,14 +134,14 @@ export class DataStore {
     }
 
     isAtEnd() {
-        const ts = this.sim.timeSlider;
-        return (ts.lastTime < ts.firstShownTime + ts.shownTime + 1e-9);
+        const ts = this.timeSlider;
+        return (ts.currentTime < ts.firstShownTime + ts.shownTime + 1e-9);
     }
 
     getLastData() {
         // Determine time range
-        const t1 = this.sim.timeSlider.firstShownTime;
-        const t2 = t1 + this.sim.timeSlider.shownTime;
+        const t1 = this.timeSlider.firstShownTime;
+        const t2 = t1 + this.timeSlider.shownTime;
 
         // Find the corresponding index values
         let lastIndex = 0;
@@ -266,8 +266,7 @@ export class GrowableDataStore extends DataStore {
         // outside the range to keep)
         const offset = this.getOffset();
         let extra = 0;
-        const limit = this.sim.timeSlider.lastTime -
-            this.sim.timeSlider.keptTime;
+        const limit = this.timeSlider.currentTime - this.timeSlider.keptTime;
         while (this.times[extra] < limit) {
             extra += 1;
         }
@@ -289,8 +288,8 @@ export class GrowableDataStore extends DataStore {
     getShownData() {
         const offset = this.getOffset();
         // Determine time range
-        const t1 = this.sim.timeSlider.firstShownTime;
-        const t2 = t1 + this.sim.timeSlider.shownTime;
+        const t1 = this.timeSlider.firstShownTime;
+        const t2 = t1 + this.timeSlider.shownTime;
 
         // Find the corresponding index values
         let index = 0;
@@ -340,8 +339,8 @@ export class GrowableDataStore extends DataStore {
     getLastData() {
         const offset = this.getOffset();
         // Determine time range
-        const t1 = this.sim.timeSlider.firstShownTime;
-        const t2 = t1 + this.sim.timeSlider.shownTime;
+        const t1 = this.timeSlider.firstShownTime;
+        const t2 = t1 + this.timeSlider.shownTime;
 
         // Find the corresponding index values
         let lastIndex = 0;
