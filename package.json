@@ -24,7 +24,7 @@
   "stylelint": {
     "extends": "stylelint-config-standard"
   },
-  "devDependencies": {
+  "dependencies": {
     "@types/bootstrap": "^3.3.32",
     "@types/d3": "^3.5.36",
     "@types/jquery": "^2.0.33",

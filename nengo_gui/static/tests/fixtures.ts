@@ -34,6 +34,11 @@ function setDOMGlobals(document) {
     ["navigator", "Element", "Event"].forEach(key => {
         global[key] = global["window"][key];
     });
+    // We use the following types
+    ["HTMLElement", "SVGElement"].forEach(key => {
+        global[key] = () => {};
+    });
+
 }
 setDOMGlobals(jsdom.jsdom(page));
 

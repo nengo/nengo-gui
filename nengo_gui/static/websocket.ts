@@ -14,6 +14,7 @@ export interface Connection {
     uid: string;
 
     bind(name: string, callback: (kwargs: any) => any): Connection;
+    isBound(name: string): boolean;
     dispatch(name: string, kwargs?: any): Connection;
     send(name: string, kwargs?: any): Connection;
 }
@@ -61,6 +62,10 @@ export class WSConnection implements Connection {
         return this;
     }
 
+    isBound(name: string) {
+        return name in this.callbacks;
+    }
+
     dispatch(name: string, kwargs: any = {}): WSConnection {
         if (name in this.callbacks) {
             this.callbacks[name].forEach(callback => {
@@ -75,6 +80,45 @@ export class WSConnection implements Connection {
     send(name: string, kwargs: any = {}): WSConnection {
         const payload = JSON.stringify([name, kwargs]);
         this.ws.send(payload);
+        return this;
+    }
+}
+
+export class MockConnection implements Connection {
+    static verbose: boolean = true;
+
+    lastSentName: string;
+    lastSent: any;
+    typename: string = "mock";
+    uid: string = "mock";
+
+    private bound: string[] = [];
+
+    bind(name: string, callback: (kwargs: any) => any): MockConnection {
+        if (MockConnection.verbose) {
+            console.log("binding " + name);
+        }
+        this.bound.push(name);
+        return this;
+    }
+
+    isBound(name: string) {
+        return this.bound.indexOf(name) !== -1;
+    }
+
+    dispatch(name: string, kwargs: any = {}): MockConnection {
+        if (MockConnection.verbose) {
+            console.log("dispatch " + name + "(" + Object.keys(kwargs) + ")");
+        }
+        return this;
+    }
+
+    send(name: string, kwargs: any = {}): MockConnection {
+        if (MockConnection.verbose) {
+            console.log("send " + name + "(" + Object.keys(kwargs) + ")");
+        }
+        this.lastSentName = name;
+        this.lastSent = kwargs;
         return this;
     }
 }

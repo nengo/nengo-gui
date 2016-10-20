@@ -19,7 +19,7 @@ import "./nengo.css";
 // import { SideMenu } from "./side-menu";
 import { SimControl } from "./sim-control";
 // import { Toolbar } from "./toolbar";
-import { Connection } from "./websocket";
+import { MockConnection } from "./websocket";
 
 // TODO: put all of this in an ajax call to Python. To get:
 // editor uid (uid)
@@ -158,34 +158,6 @@ export class NengoDebug {
 }
 
 /* tslint:disable:no-console */
-
-class MockConnection implements Connection {
-    static verbose: boolean = true;
-
-    typename: string = "mock";
-    uid: string = "mock";
-
-    bind(name: string, callback: (kwargs: any) => any): MockConnection {
-        if (MockConnection.verbose) {
-            console.log("binding " + name);
-        }
-        return this;
-    }
-
-    dispatch(name: string, kwargs: any = {}): MockConnection {
-        if (MockConnection.verbose) {
-            console.log("dispatch " + name + "(" + Object.keys(kwargs) + ")");
-        }
-        return this;
-    }
-
-    send(name: string, kwargs: any = {}): MockConnection {
-        if (MockConnection.verbose) {
-            console.log("send " + name + "(" + Object.keys(kwargs) + ")");
-        }
-        return this;
-    }
-}
 
 document.addEventListener("DOMContentLoaded", () => {
     const nengo = new NengoDebug();

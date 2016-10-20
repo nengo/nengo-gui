@@ -71,7 +71,7 @@ export class SimControl {
         };
 
         this.view.reset.onclick = event => {
-            this.reset();
+            this.timeSlider.reset();
         };
 
         this.ws = new FastWSConnection(
@@ -255,10 +255,6 @@ export class SpeedThrottle {
         this.view.sliderPosition = this.timeScale(
             this.timeScale.invert(val)
         );
-    }
-
-    redraw() {
-        this.view.sliderPosition = this.timeScale(this.proportion);
     }
 }
 

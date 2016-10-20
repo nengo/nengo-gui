@@ -77,13 +77,6 @@ export class SimControlView {
     set width(val: number) {
         this.root.style.width = String(val);
     }
-
-    redraw(): void {
-        // setTransform(this.pause, this.width - 100, 30);
-        // setTransform(this.reset, 110, 30);
-        // this.speedThrottle.redraw();
-        // this.timeSlider.redraw();
-    }
 }
 
 export class SpeedThrottleView {
@@ -165,10 +158,6 @@ export class SpeedThrottleView {
     set time(val: number) {
         this._time.children[1].textContent = val.toFixed(0);
         this._time.children[3].textContent = (val % 1).toFixed(3).slice(2);
-    }
-
-    redraw(): void {
-        // empty
     }
 }
 
