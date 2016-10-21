@@ -1,24 +1,31 @@
 Nengo.VPL = function(){
-  var self = this;
-  $("#mode_list").height($(document).height()*0.85);
-  $(document).keyup(function(e) {
-    if (e.keyCode === 27) self.unselct_component();   // esc
-  });
+    var self = this;
+    $("#mode_list").height($(document).height()*0.85);
+    $(document).keyup(function(e) {
+        if (e.keyCode === 27) self.unselect_component("Pointer");   // esc
+    });
 
+    self.contextmenu = null;
     //Setting Click handlers for toggle buttons
-    $("#Node > svg").on('click',function(){
+    $("#Delete").on('click',function(){
+        self.component_toggle('Delete');
+    })
+    $("#Pointer").on('click',function(){
+        self.unselect_component("Pointer");
+    })
+    $("#Node").on('click',function(){
         self.component_toggle('Node');
     });
 
-    $("#Ensemble > svg").on('click',function(){
+    $("#Ensemble").on('click',function(){
         self.component_toggle('Ensemble');
     });
 
-    $("#Network > svg").on('click',function(){
+    $("#Network").on('click',function(){
         self.component_toggle('Network');
     });
 
-    $("#Connection > svg").on('click',function(){
+    $("#Connection").on('click',function(){
         self.component_toggle('Connection');
     });
 }
@@ -30,10 +37,10 @@ Nengo.VPL.prototype.component_toggle = function(type) {
 
     /** Activates and deactivates modes, accordingly */
     if($("#"+type).attr('class') == 'mode off'){
-        self.unselct_component();
+        self.unselect_component();
         $("#"+type).attr('class','mode on');
     } else{
-        self.unselct_component();
+        self.unselect_component("Pointer");
         return;
     }
 
@@ -42,13 +49,20 @@ Nengo.VPL.prototype.component_toggle = function(type) {
         var cur_obj = "";
         var obj_class = "";
         var obj_name = "";
+        var element = document.getElementById('main');
+        /** Adds green border and deactivates click and drag events. */
+        element.style['box-shadow'] = "inset 0 0 30px #00FF00";
+        self.toggle_item_drag(false);
 
-        if(type != 'Connection'){
-            $('#netgraph').css('cursor','crosshair','important');
+        if(type != 'Connection' && type != "Delete"){
+            $('#netgraph').css('cursor','crosshair');
             self.create_component(type);
         } else if(type == 'Connection'){
-            $('#netgraph').css('cursor','cell','important');
+            $('#netgraph').css('cursor','cell');
             self.create_connection();
+        } else if(type == 'Delete'){
+            $('#netgraph').css('cursor','pointer');
+            self.delete_mode();
         }
     }
 }
@@ -63,18 +77,12 @@ Nengo.VPL.prototype.create_component = function(type){
     var name_convert = {"Node":"node","Ensemble":"ens","Network":"net"}
     var element = document.getElementById('main');
 
-    /** Adds green border and deactivates click and drag events. */
-    element.style['box-shadow'] = "inset 0 0 30px #00FF00";
-    self.toggle_item_drag(false);
-
     $(document).mousedown(function(event) {
         /** Cancels/deactivates click event if it is a right click. */
-        if(event.button == 0){}
-        else if(event.button == 2){
-            self.unselct_component();
+        if(event.button == 2){
+            self.unselect_component("Pointer");
             return;
         }
-        else{return;}
 
         cur_obj = $($(event.target).parent()[0]);
         obj_class = cur_obj.attr('class');
@@ -168,121 +176,158 @@ Nengo.VPL.prototype.create_component = function(type){
 }
 
 Nengo.VPL.prototype.create_connection = function(){
+    var self = this;
     var cur_obj = "";
     var obj_class = "";
     var obj_name = "";
-    var self = this;
     var ng = Nengo.netgraph;
+    var mousemove = false;
     /** Creates dashed line to signify potential connection. */
+    self.delete_dashed_line();
     self.create_dash_line();
 
     var objects = {};
     objects.uids = [];
     objects.classes = [];
-    $('.node').attr('class','node node_effect_good');
-    $('.ens').attr('class','ens ens_effect_good');
 
+    self.show_connectable(true,true);
     /** On main click and not drag. */
-    $('#netgraph').on('mousedown', function (event) {
+    $(document).mousedown(function(event) {
         if(event.button == 2){
+            self.unselect_component("Pointer");
             return;
         }
-        $('#netgraph').on('mouseup mousemove', function(evt) {
-            if (evt.type === 'mouseup') {
-                    cur_obj = $($(event.target).parent()[0]);
-                    obj_class = cur_obj.attr('class').split(" ")[0];
-                    obj_name = cur_obj.attr('data-id');
+        cur_obj = $($(event.target).parent()[0]);
+        if(cur_obj.attr('class') != null){
+            obj_class = cur_obj.attr('class').split(" ")[0];
+        }
+        obj_name = cur_obj.attr('data-id');
+        var rel_pos = [];
+        var obj_pos;
+        var over_obj_pos;
 
-                    /** Adds first part of potential connection if
-                    *   it is an ensemble or node. */
-                    if(obj_class != null && (obj_class == 'ens' ||
-                        obj_class == 'node')){
-                            objects.uids.push(obj_name);
-                            objects.classes.push(obj_class);
+        /** Adds first part of potential connection if
+        *   it is an ensemble or node. */
+        if(obj_class != null && (obj_class == 'ens' ||
+            obj_class == 'node')){
+                objects.uids.push(obj_name);
+                objects.classes.push(obj_class);
+        }
+        if(objects.uids.length == 0){
+            return;
+        } else{
+            self.show_connectable(true,false);
+        }
+        $(document).mousemove(function(evt) {
+            mousemove = true;
+            /** After the first component is selected. */
+            rel_pos = [];
+            obj_pos = [];
+            over_obj_pos = [];
+            var over_obj_svg;
+            var over_obj_name;
+            var over_obj_class;
 
-                    }
-                    /** Cancels connection if misclicked. */
-                    else if (objects.uids.length == 1){
-                        self.unselct_component();
-                        return;
-                    }
-
-                    if(objects.uids.length == 1){
-                        $('.node').attr('class','node node_effect_bad');
-                    }
-
-                    /** After the first component is selected. */
-                    if(objects.uids.length == 1){
-                        var obj_pos;
-                        var over_obj_pos;
-                        var over_obj_svg;
-                        var over_obj_name;
-                        var over_obj_class;
-                        var rel_pos = [];
-                        $("#main").on('mousemove',function(event){
-                            /** Updates cursor connection line's
-                            *   position. */
-                            obj_pos = ng.svg_objects[objects.uids[0]].get_screen_location();
-                            over_obj_svg = $($(event.target).parent()[0]);
-                            over_obj_name = over_obj_svg.attr('data-id');
-
-                            if(over_obj_svg.attr('class') != null){
-                                over_obj_class = over_obj_svg.attr('class').split(" ")[0];
-                            }
-
-                            $(".temp_line").attr('x1',obj_pos[0]);
-                            $(".temp_line").attr('y1',obj_pos[1]);
-                            if(over_obj_class != null && (over_obj_class == 'ens'||
-                                over_obj_class == 'node')){
-                                rel_pos = [];
-                                over_obj_pos = ng.svg_objects[over_obj_name].get_screen_location();
-
-                                rel_pos[0] = over_obj_pos[0]-0.07*(over_obj_pos[0]-obj_pos[0]);
-                                rel_pos[1] = over_obj_pos[1]-0.07*(over_obj_pos[1]-obj_pos[1]);
-
-                                $(".temp_line").attr('x2',(rel_pos[0]));
-                                $(".temp_line").attr('y2',(rel_pos[1]));
-
-                            }else{
-                                $(".temp_line").attr('x2',(event.pageX-$(this).offset().left));
-                                $(".temp_line").attr('y2',((event.pageY-$(this).offset().top)));
-                            }
-                        });
-                    }
-                    if(objects.uids.length == 2) {
-                        /** Completes Connection, adds appropriate
-                        *   code to editor and resets line. */
-                        self.add_connection(objects.uids[0],objects.uids[1]);
-                        objects = {};
-                        objects.uids = [];
-                        objects.classes = [];
-                        $("#main").unbind('mousemove');
-                        $(".temp_group").remove();
-                        $('.node').attr('class','node node_effect_good');
-                        $('.ens').attr('class','ens ens_effect_good');
-                        self.create_dash_line();
-                    }
+            /** Updates cursor connection line's
+            *   position. */
+            var page_offset = $("#main").offset();
+            obj_pos = ng.svg_objects[objects.uids[0]].get_screen_location();
+            over_obj_svg = $($(evt.target).parent()[0]);
+            over_obj_name = over_obj_svg.attr('data-id');
+            if(over_obj_svg.attr('class') != null){
+                over_obj_class = over_obj_svg.attr('class').split(" ")[0];
             }
-            $('#netgraph').off('mouseup mousemove');
+
+            $(".temp_line").attr('x1',obj_pos[0]);
+            $(".temp_line").attr('y1',obj_pos[1]);
+            if(over_obj_class != null && (over_obj_class == 'ens'||
+                over_obj_class == 'node')){
+                rel_pos = [];
+                over_obj_pos = ng.svg_objects[over_obj_name].get_screen_location();
+
+                rel_pos[0] = over_obj_pos[0]-0.07*(over_obj_pos[0]-obj_pos[0]);
+                rel_pos[1] = over_obj_pos[1]-0.07*(over_obj_pos[1]-obj_pos[1]);
+
+                $(".temp_line").attr('x2',(rel_pos[0]));
+                $(".temp_line").attr('y2',(rel_pos[1]));
+
+            }else{
+                rel_pos[0] = evt.pageX-page_offset.left;
+                rel_pos[1] = evt.pageY-page_offset.top;
+                $(".temp_line").attr('x2',rel_pos[0]);
+                $(".temp_line").attr('y2',rel_pos[1]);
+            }
+        });
+        $(document).one('mouseup', function(evt) {
+            /** Completes Connection, adds appropriate
+            *   code to editor and resets line. */
+            cur_obj = $($(evt.target).parent()[0]);
+            obj_class = cur_obj.attr('class').split(" ")[0];
+            obj_name = cur_obj.attr('data-id');
+
+            /** Adds first part of potential connection if
+            *   it is an ensemble or node. */
+            if(rel_pos != false){
+                if(obj_class != null && (obj_class == 'ens' ||
+                    obj_class == 'node')){
+                        objects.uids.push(obj_name);
+                        objects.classes.push(obj_class);
+                }
+                if(objects.uids.length == 2){
+                    self.add_connection(objects.uids[0],objects.uids[1]);
+                }
+            }
+            objects = {};
+            objects.uids = [];
+            objects.classes = [];
+            self.delete_dashed_line();
+            self.create_dash_line();
+            self.show_connectable(true,true);
+            $(document).unbind('mousemove mouseup');
         });
     });
 }
 
+Nengo.VPL.prototype.delete_mode = function(){
+    var self = this;
+    var cur_obj = "";
+    var obj_class = "";
+    var obj_name = "";
+    $(document).mousemove(function(event) {
+        if(event.button == 2){
+            self.unselect_component("Pointer");
+            return;
+        }
+        cur_obj = $($(event.target).parent()[0]);
+        if(cur_obj.attr('class') != null){
+            obj_class = cur_obj.attr('class').split(" ")[0];
+        }
+        obj_name = cur_obj.attr('data-id');
+        if(obj_name != null){
+            $("#netgraph").css('cursor','pointer');
+        }else{
+            $("#netgraph").css('cursor','');
+        }
+        $(document).click(function(evt){
+            if(obj_name != null){
+                self.delete_component(obj_name);
+            }
+        });
+    });
+}
 /** Deactivates the various styling and event handlers activated by the
 *   component toggle. */
-Nengo.VPL.prototype.unselct_component = function(type){
+Nengo.VPL.prototype.unselect_component = function(default_mode){
     var ng = Nengo.netgraph;
     this.toggle_item_drag(true);
-
     $(".mode").attr('class','mode off');
     $('#netgraph').css('cursor','');
-    $('.node').attr('class','node');
-    $('.ens').attr('class','ens');
-    $('#netgraph').unbind('mousedown');
-    $('#netgraph').unbind('click');
-    $(".temp_group").remove();
-    $("#main").unbind('mousemove');
-    $(document).unbind('mousedown');
+    if(default_mode == "Pointer"){
+        $("#"+default_mode).attr('class','mode on');
+    }
+    this.show_connectable(false,false);
+    this.delete_dashed_line();
+    $(document).unbind('mousedown mousemove mouseup click');
     var element = document.getElementById('main');
     element.style['box-shadow'] = "";
 }
@@ -445,6 +490,33 @@ Nengo.VPL.prototype.open_name = function(name) {
     return name + num;
 }
 
+Nengo.VPL.prototype.show_connectable = function(toggle,allowed_connect){
+    var node_style;
+    if(toggle == false){
+        $(".node").attr("class","node");
+        $(".ens").attr("class","ens");
+        $(".node").unbind("mouseover mouseout");
+        $(".ens").unbind("mouseover mouseout");
+        return;
+    }
+    else{
+        if(allowed_connect == true){
+            node_style = 'node node_effect_good';
+        } else{
+            node_style = 'node node_effect_bad';
+        }
+        $(".node").mouseover(function(){
+            $(this).attr('class',node_style);
+        }).mouseout(function(){
+            $(this).attr('class','node');
+        })
+        $(".ens").mouseover(function(){
+            $(this).attr('class','ens ens_effect_good');
+        }).mouseout(function(){
+            $(this).attr('class','ens');
+        });
+    }
+}
 
 Nengo.VPL.prototype.create_dash_line = function(){
     var svg = d3.select('#netgraph');
@@ -471,8 +543,26 @@ Nengo.VPL.prototype.create_dash_line = function(){
 
 }
 
+Nengo.VPL.prototype.delete_dashed_line = function(){
+    if($(".temp_group") != null){
+        $(".temp_group").remove();
+    }
+}
+
 /** Activates/deactivates drag/resize events. */
 Nengo.VPL.prototype.toggle_item_drag = function(toggle){
+    var self = this;
+    if(self.contextmenu == null && jQuery._data($("#netgraph")[0],"events")['contextmenu'] != null){
+        self.contextmenu = jQuery._data( $("#netgraph")[0], "events" )['contextmenu'][0].handler
+    }
+    if(toggle){
+        setTimeout(function(){
+            $("#netgraph").bind("contextmenu",self.contextmenu);
+        },100);
+    } else{
+        $("#netgraph").bind("contextmenu",function(event){
+            event.preventDefault()});
+    }
     interact($("#netgraph")[0]).draggable({
         enabled: toggle  // explicitly disable dragging
     });

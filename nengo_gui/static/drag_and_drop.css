@@ -3,17 +3,22 @@
   background: #ddd;
   color:inherit;
   overflow: hidden;
+
 }
 
-.off svg{
+.off{
     cursor: pointer;
     background: inherit;
     fill: rgb(180,180,180);
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.2s;
 }
-.on svg{
+.on{
     cursor: pointer;
-    background: #AAA;
+    background-color: #BBB;
     fill: #DDD;
+    color: #000;
+    box-shadow: inset 0 0 5px #666;
 }
 
 
@@ -23,34 +28,54 @@
     left: 0;
     width: 100%;
     color: inherit;
-    padding: 30px;
     z-index: 99999;
-    overflow-y: scroll;
+    padding-left: 20px;
 }
 
 .mode{
     position: relative;
     float: left;
-    left: 15%;
-    width: 70%;
-    text-align: center;
+    border-radius: 5px;
+    width: 110px;
+    height: 90px;
+    margin: 10px;
+    border: 1px solid black;
     -webkit-user-select: none; /* Chrome/Safari */
     -moz-user-select: none; /* Firefox */
 }
-.off > svg:hover{
-  cursor: pointer;
-  background-color: #BBB;
-  fill: #DDD;
+.mode > div{
+    text-align: center;
+    position: relative;
+    margin: 0 auto;
+    width: 100%;
+    height: 100%;
+}
+.mode > div >svg{
+    width: 60%;
 }
 
-.node_effect_good:hover > rect:nth-child(2){
-    fill: #00FF00 !important;
+.mode > div > p{
+    position: absolute;
+    bottom: -5px;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+}
+.off:hover{
+    background-color: #BBB;
+    fill: #DDD;
+    color: #000;
 }
 
-.node_effect_bad:hover > rect:nth-child(2){
-    fill: #FF0000 !important;
+.node_effect_good > rect:nth-child(2){
+    fill: #5DFC0A !important;
 }
 
-.ens_effect_good:hover > .ensemble{
-    fill: #00FF00 !important;
+.node_effect_bad > rect:nth-child(2){
+    fill: #FD0000 !important;
+}
+
+.ens_effect_good > .ensemble{
+    fill: #5DFC0A !important;
 }

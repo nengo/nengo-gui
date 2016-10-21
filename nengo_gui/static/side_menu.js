@@ -22,7 +22,7 @@ Nengo.SideMenu = function() {
     self.initialize_button_handlers();
     self.width = $(".sidenav-container").width();
     self.height = $("#vmiddle").height();
-
+    self.minWidth = 180;
     //----EVENT HANDLERS----
 
     interact('.sidenav-container')
@@ -30,7 +30,7 @@ Nengo.SideMenu = function() {
             edges: { left: false, right: true, bottom: false, top: false}
         })
         .on('resizemove', function (event) {
-            if(self.width > 200 || event.deltaRect.right > 0){
+            if(self.width > self.minWidth || event.deltaRect.right > 0){
                 self.width += event.deltaRect.right;
 
                 $(".sidenav-container").width(self.width);
