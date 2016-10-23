@@ -24,8 +24,6 @@ class Raster(Component):
         self.node = None
         self.chosen = None
 
-
-
     def attach(self, page, config, uid):
         super(Raster, self).attach(page, config, uid)
         self.label = page.get_label(self.obj.ensemble)
@@ -51,7 +49,7 @@ class Raster(Component):
     def compute_chosen_neurons(self):
         n_neurons = self.page.config[self].n_neurons
         n_neurons = min(n_neurons, self.max_neurons)
-        self.chosen = np.linspace(0, self.max_neurons-1, 
+        self.chosen = np.linspace(0, self.max_neurons-1,
                                   n_neurons).astype(int)
 
     def update_client(self, client):
@@ -63,7 +61,7 @@ class Raster(Component):
         info = dict(uid=id(self), label=self.label,
                     max_neurons=self.max_neurons)
         json = self.javascript_config(info)
-        return 'new Nengo.Raster(main, sim, %s);' % json
+        return 'new Raster.default(nengo.main, nengo.sim, %s);' % json
 
     def code_python_args(self, uids):
         return [uids[self.obj.ensemble]]

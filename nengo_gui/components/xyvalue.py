@@ -7,8 +7,7 @@ from nengo_gui.components.component import Component
 
 
 class XYValue(Component):
-    """Represents (at least) two dimensional values as co-ordinates on an
-    x-y plot."""
+    """Represents two values as co-ordinates on an x-y plot."""
 
     config_defaults = dict(max_value=1, min_value=-1, index_x=0, index_y=1,
                            **Component.config_defaults)
@@ -47,7 +46,7 @@ class XYValue(Component):
     def javascript(self):
         info = dict(uid=id(self), n_lines=self.n_lines, label=self.label)
         json = self.javascript_config(info)
-        return 'new Nengo.XYValue(main, sim, %s);' % json
+        return 'new XYValue.default(nengo.main, nengo.sim, %s);' % json
 
     def code_python_args(self, uids):
         return [uids[self.obj]]

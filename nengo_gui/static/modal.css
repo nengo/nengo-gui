@@ -1,28 +1,105 @@
-.modal-body .tab-pane {
-    margin: 20px;
-}
+.modal-body {
 
-.modal-body input {
-    cursor: text !important;
-}
+    .tab-pane {
+        margin: 20px;
+    }
 
-.modal-body .tab-pane .dt-connections {
-    margin-top: 20px;
-}
+    input {
+        cursor: text !important;
+    }
 
-.modal-body .axis path,
-.modal-body .axis line {
-    fill: none;
-    stroke: #000;
-    shape-rendering: crispEdges;
-}
+    .tab-pane .dt-connections {
+        margin-top: 20px;
+    }
 
-.modal-body .form-group {
-    text-indent: 20px;
-}
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
 
-.modal-body .with-errors {
-    font-size: .8em;
+    .form-group {
+        text-indent: 20px;
+    }
+
+    .with-errors {
+        font-size: .8em;
+    }
+
+    .tab-pane {
+
+        .list-group-item {
+            padding: 5px 10px;
+        }
+
+        .list-group-item.shaded {
+            color: #aaaaaa;
+        }
+
+        > h3 {
+            font: {
+                size: 1.3em;
+                weight: bold;
+            }
+        }
+
+        th {
+            font-size: 1em;
+            font-weight: bold;
+            border: 0px;
+            background-color: #dddddd;
+        }
+
+        td {
+            font-size: 0.9em;
+            border: 0px;
+        }
+    }
+
+    table {
+        .conn-objs {
+            width: 30%;
+        }
+
+        .conn-funcs {
+            width: 50%;
+        }
+
+        .conn-fan {
+            width: 20%;
+        }
+
+        ul > li > .glyphicon {
+            padding-right: 8px;
+        }
+
+        th .glyphicon {
+            padding-left: 8px;
+        }
+    }
+
+    .tooltip-inner {
+        max-width: 350px;
+        text-align: left;
+        white-space: pre-wrap;
+    }
+
+    .popover {
+        max-width: 350px;
+    }
+
+    .popover-title,
+    .popover-content {
+        font-size: 0.9em;
+        padding: 5px 10px;
+        text-align: left;
+        white-space: pre-wrap;
+    }
+
+    .popover-title {
+        line-height: 1.2;
+    }
 }
 
 div.modal-backdrop {
@@ -33,80 +110,13 @@ div.modal-backdrop {
     padding-right: 5px;
 }
 
-.modal-body .tab-pane .list-group-item {
-    padding: 5px 10px;
-}
-
-.modal-body .tab-pane .list-group-item.shaded {
-    color: #aaaaaa;
-}
-
-.modal-body .tab-pane > h3 {
-    font-size: 1.3em;
-    font-weight: bold;
-}
-
-.modal-body .tab-pane th {
-    font-size: 1em;
-    font-weight: bold;
-    border: 0px;
-    background-color: #dddddd;
-}
-
-.modal-body .tab-pane td {
-    font-size: 0.9em;
-    border: 0px;
-}
-
-.modal-body table .conn-objs {
-    width: 30%;
-}
-
-.modal-body table .conn-funcs {
-    width: 50%;
-}
-
-.modal-body table .conn-fan {
-    width: 20%;
-}
-
-.modal-body table ul > li > .glyphicon,
-.modal-body table ul > li > .glyphicon {
-    padding-right: 8px;
-}
-
-.modal-body th .glyphicon {
-    padding-left: 8px;
-}
-
-.modal-body .tooltip-inner {
-    white-space: pre-wrap;
-    text-align: left;
-    max-width: 350px;
-}
-
-.modal-body .popover {
-    max-width: 350px;
-}
-
-.modal-body .popover-title,
-.modal-body .popover-content {
-    white-space: pre-wrap;
-    text-align: left;
-    font-size: 0.9em;
-    padding: 5px 10px;
-}
-
-.modal-body .popover-title {
-    line-height: 1.2;
-}
-
 div.modal {
     z-index: 100000001;
     cursor: default !important;
 }
 
-#config-fontsize.form-control, #config-scriptdir.form-control {
+#config-fontsize.form-control,
+#config-scriptdir.form-control {
     padding: 6px 6px;
     height: 35px;
 }
@@ -115,22 +125,25 @@ div.modal {
     text-indent:0px;
 }
 
-#myModalForm .form-group {
-    margin-bottom: 0px;
-}
+#myModalForm {
+    .form-group {
+        margin-bottom: 0px;
+    }
 
-#myModalForm .checkbox {
-    padding-top: 0px;
-    text-indent: 10px;
-}
+    checkbox {
+        padding-top: 0px;
+        text-indent: 10px;
+    }
 
-#myModalForm .form-group select, #myModalForm .form-group input[type=text]  {
-    width: calc(100% - 40px);
-    margin-left: 20px;
+    .form-group select,
+    .form-group input[type=text]  {
+        margin-left: 20px;
+        width: calc(100% - 40px);
+    }
 }
 
 .input-group.col-xs-2 {
-    left:20px;
+    left: 20px;
 }
 
 .modal-dialog.modal-sm td {

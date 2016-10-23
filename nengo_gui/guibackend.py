@@ -151,18 +151,19 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
     def browse(self):
         r = [b'<ul class="jqueryFileTree" style="display: none;">']
         d = unquote(self.db['dir'])
+        root = self.db['root'] if 'root' in self.db else '.'
         ex_tag = '//examples//'
-        ex_html = b'<em>built-in examples</em>'
-        if d == '.':
+        ex_html = b'built-in examples'
+        if d == root:
             r.append(b'<li class="directory collapsed examples_dir">'
                      b'<a href="#" rel="' + ex_tag.encode('utf-8') + b'">' +
                      ex_html + b'</a></li>')
-            path = '.'
+            path = root
         elif d.startswith(ex_tag):
             path = os.path.join(nengo_gui.__path__[0],
                                 'examples', d[len(ex_tag):])
         else:
-            path = os.path.join('.', d)
+            path = os.path.join(root, d)
 
         for f in sorted(os.listdir(path)):
             ff = os.path.join(path, f).encode('utf-8')
@@ -171,7 +172,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
                 r.append(b'<li class="directory collapsed">'
                          b'<a href="#" rel="' + ff + b'/">' + f + b'</a></li>')
             else:
-                e = os.path.splitext(f)[1][1:] # get .ext and remove dot
+                e = os.path.splitext(f)[1][1:]  # get .ext and remove dot
                 if e == 'py':
                     e = e.encode('utf-8')
                     f = f.encode('utf-8')
@@ -196,8 +197,12 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
             html = html.decode("utf-8")
 
         # fill in the javascript needed and return the complete page
-        components = page.create_javascript()
-        data = (html % dict(components=components)).encode('utf-8')
+        main_components, components = page.create_javascript()
+
+        data = html % dict(
+            main_components=main_components, components=components)
+        data = data.encode('utf-8')
+
         return server.HttpResponse(data)
 
     def serve_favicon(self):
@@ -206,7 +211,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
 
     @RequireAuthentication('/login')
     def ws_default(self):
-        """Handles ws://host:port/viz_component with a websocket"""
+        """Handles ws://host:port/component with a websocket"""
         # figure out what component is being connected to
 
         gui = self.server

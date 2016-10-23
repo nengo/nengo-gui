@@ -2,12 +2,11 @@
 
 import json
 
-import numpy as np
-
 import nengo
 
 from .static_plots import tuning_curve_plot, response_curve_plot
 from .static_plots import node_output_plot
+
 
 def infomodal(ng, uid, **args):
     obj = ng.uids[uid]
@@ -20,14 +19,18 @@ def infomodal(ng, uid, **args):
     else:
         raise NotImplementedError()
 
+
 def add_modal_title_js(title_text):
-    return 'Nengo.modal.title("%s");' % (title_text)
+    return 'nengo.modal.title("%s");' % (title_text)
+
 
 def add_modal_footer_js(footer_text):
-    return 'Nengo.modal.footer("%s");' % (footer_text)
+    return 'nengo.modal.footer("%s");' % (footer_text)
+
 
 def show_modal_js():
-    return 'Nengo.modal.show();'
+    return 'nengo.modal.show();'
+
 
 def ensemble_infomodal(ng, uid, conn_in_uids, conn_out_uids):
     ens = ng.uids[uid]
@@ -47,12 +50,13 @@ def ensemble_infomodal(ng, uid, conn_in_uids, conn_out_uids):
 
     conninfo = conn_infomodal(ng, uid, conn_in_uids, conn_out_uids)
 
-    js = ['Nengo.modal.title("Details for \'%s\'");' % ng.page.get_label(ens)]
-    js.append('Nengo.modal.footer("close");')
-    js.append('Nengo.modal.ensemble_body("%s", %s, %s, %s);' % (
+    js = ['nengo.modal.title("Details for \'%s\'");' % ng.page.get_label(ens)]
+    js.append('nengo.modal.footer("close");')
+    js.append('nengo.modal.ensemble_body("%s", %s, %s, %s);' % (
         uid, json.dumps(params), json.dumps(plots), json.dumps(conninfo)))
-    js.append('Nengo.modal.show();')
+    js.append('nengo.modal.show();')
     return '\n'.join(js)
+
 
 def node_infomodal(ng, uid, conn_in_uids, conn_out_uids):
     node = ng.uids[uid]
@@ -67,7 +71,7 @@ def node_infomodal(ng, uid, conn_in_uids, conn_out_uids):
     js = [add_modal_title_js("Details for \'%s\'" % (
         ng.page.get_label(node)))]
     js.append(add_modal_footer_js('close'))
-    js.append('Nengo.modal.node_body("%s", %s, %s, %s);' % (
+    js.append('nengo.modal.node_body("%s", %s, %s, %s);' % (
         uid, json.dumps(params), json.dumps(plots), json.dumps(conninfo)))
     js.append(show_modal_js())
     return '\n'.join(js)
@@ -142,7 +146,7 @@ def net_infomodal(ng, uid, conn_in_uids, conn_out_uids):
     js = [add_modal_title_js("Details for \'%s\'") % (
         ng.page.get_label(net))]
     js.append(add_modal_footer_js('close'))
-    js.append('Nengo.modal.net_body("%s", %s, %s);' % (
+    js.append('nengo.modal.net_body("%s", %s, %s);' % (
         uid, json.dumps(stats), json.dumps(conninfo)))
     js.append(show_modal_js())
     return '\n'.join(js)

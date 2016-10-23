@@ -62,3 +62,15 @@ target/
 # Vagrant
 .vagrant
 Vagrantfile
+
+# Node JS
+node_modules/
+
+# jsDoc
+out/
+
+# TypeScript
+typings/
+
+# JS files associated with tests
+**/tests/*.js

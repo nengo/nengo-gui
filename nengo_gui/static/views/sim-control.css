@@ -1,0 +1,169 @@
+@import "components/slider.css";
+
+:root {
+    --accent: gray(80%);
+    --light: gray(93.3%);
+    --dark: gray(40%);
+    --shown-color: #d9edf7;
+}
+
+.sim-control {
+    align-items: stretch;
+    background-color: var(--light);
+    box-shadow: 0 -2px 4px 0 gray(60%);
+    display: flex;
+    flex: {
+        grow: 0;
+        shrink: 0;
+        basis: auto;
+    }
+    height: 80px;
+    justify-content: space-around;
+    min-width: 600px;
+    overflow: hidden;
+    width: 100%;
+    z-index: 99999999;
+
+    button {
+        background-color: var(--light);
+        border: {
+            radius: 0;
+            width: 0;
+        }
+        margin: 10px 5px;
+        width: 60px;
+
+        &:hover {
+            color: var(--light);
+            background: var(--dark);
+        }
+
+        span {
+            font-size: 30px;
+        }
+
+    }
+
+    .pause-button {
+        order: 4;
+
+        &:disabled,
+        &:disabled:hover {
+            background: var(--light);
+            color: var(--dark);
+        }
+    }
+
+    .glyphicon-spin {
+        animation: spin 2s infinite linear;
+
+        @at-root {
+            @keyframes spin {
+                from {
+                    transform: rotate(0deg);
+                }
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+        }
+    }
+
+    .reset-button {
+        order: 2;
+    }
+
+    .speed-throttle {
+        cursor: default;
+        display: inline-block;
+        font-size: medium;
+        margin: {
+            top: 10px;
+            left: 10px;
+            right: 5px;
+        }
+        order: 1;
+        overflow: hidden;
+        width: 130px;
+
+        .slider {
+            height: 10px;
+
+            .guideline {
+                height: 0.25em;
+                margin: auto;
+                width: 100%;
+            }
+
+            .handle {
+                border-color: var(--dark);
+                height: 0.8em;
+                left: 0;
+                padding: 0.1em 0;
+                position: absolute;
+                transform: translate(50%, -75%);
+                width: 0.8em;
+            }
+
+        }
+
+        td, th {
+            border: none;
+        }
+
+        th {
+            padding: 0.2em;
+        }
+
+        td {
+            padding: 0.2em 0;
+
+            &.digits {
+                text-align: right;
+                width: 100%;
+            }
+        }
+    }
+
+    .time-slider {
+        background: white;
+        border: 1px solid var(--accent);
+        border-radius: 4px;
+        display: flex;
+        flex-grow: 1;
+        margin: 10px 5px;
+        order: 3;
+
+        .shown-time {
+            fill: var(--shown-color);
+        }
+
+        .shown-time-border {
+            stroke: var(--accent) {
+                width: 1;
+            }
+        }
+
+        .shown-time-handle {
+            position: absolute;
+        }
+
+        svg {
+            flex-grow: 1;
+            pointer-events: none;
+
+            .axis {
+                path {
+                    fill: none;
+                    stroke: #333;
+                    stroke-width: 1px;
+                }
+
+                .tick {
+                    font-family: sans-serif;
+                    font-size: 12px;
+                }
+            }
+        }
+    }
+}

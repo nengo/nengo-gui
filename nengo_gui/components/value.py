@@ -82,9 +82,8 @@ class Value(Component):
         # generate the javascript that will create the client-side object
         info = dict(uid=id(self), label=self.label,
                     n_lines=self.n_lines)
-
         json = self.javascript_config(info)
-        return 'new Nengo.Value(main, sim, %s);' % json
+        return 'new Value.default(nengo.main, nengo.sim, %s);' % json
 
     def code_python_args(self, uids):
         # generate the list of strings for the .cfg file to save this Component

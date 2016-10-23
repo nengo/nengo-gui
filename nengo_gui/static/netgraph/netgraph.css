@@ -1,0 +1,67 @@
+.netgraph {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+    .ensemble {
+        stroke-width: 1;
+    }
+
+    g.node rect {
+        stroke-width: 1;
+    }
+
+    g.net rect{
+        stroke-width: 1;
+    }
+
+    g text {
+        cursor: default !important;
+        dominant-baseline: text-before-edge;
+        text-anchor: middle;
+    }
+
+    g text:active {
+        cursor: move;
+    }
+
+    line {
+        stroke: black {
+            width: 2px;
+        }
+    }
+
+    g.passthrough ellipse {
+        fill: black;
+        stroke-width: 0px;
+    }
+
+    g.passthrough text {
+        dominant-baseline: text-before-edge;
+        text-anchor: middle;
+    }
+}
+
+.minimap {
+    border-radius: 10px/60px;
+    height: 100%;
+    opacity: 0.85;
+    position: 'relative';
+    width: 100%;
+
+    .minimap line {
+        stroke: black {
+            width: 1px;
+        }
+    }
+}
+
+rect.view{
+    fill: #d9edf7;
+    stroke: #ccc;
+}
+
+.recur {
+    fill: none;
+    stroke: black {
+        width: 2px;
+    }
+}

@@ -1,0 +1,156 @@
+.sidenav-container {
+    background-color: #eee;
+    border-right: 1px solid #4D4D4D;
+    color: #333;
+    font: {
+        family: arial;
+        size: 0;
+    }
+    height: calc(100% - 120px);
+    left: 0;
+    overflow: {
+        x: hidden;
+        y: hidden;
+    }
+    position: fixed;
+    top: 34px;
+    transform: translate(-250px);
+    transition: 0.5s;
+    width: 250px;
+    z-index: 9999;
+
+    .tab-content{
+        color: inherit;
+        font-size: 15px;
+        float: left;
+        height: 100%;
+        margin-right: 0;
+        top: 0px;
+        width: 250px;
+    }
+
+    #Menu_content{
+        margin: 0px;
+        padding: 0px;
+        position: absolute;
+        width: 2000px;
+    }
+
+    a {
+        color: inherit;
+        display: block;
+        font-size: 15px;
+        transition: 0.3s
+    }
+}
+
+.side-menu-item,
+.accordion-toggle {
+    background: none;
+    border: {
+        bottom: solid #999 1px;
+        top: solid #999 1px;
+    }
+    color: inherit;
+    cursor: pointer;
+    height: 40px;
+    margin-bottom: -1px;
+    width: 100%;
+}
+
+.side-menu-item:hover,
+.accordion-toggle:hover {
+    background: #666;
+    color: #eee;
+}
+
+.side-menu-item .title,
+.accordion-toggle .title{
+    padding-left: 8px;
+    padding-top: 8px;
+    float:left;
+    font-size: 14px;
+}
+
+.side-menu-item.indent {
+    background: #ddd;
+    border: 0px;
+    padding-top: 1px;
+
+    &:hover {
+        background: #666;
+    }
+
+    .title{
+        float:left;
+        font-size: 14px;
+        padding: {
+            left: 23px;
+            top: 8px;
+        }
+    }
+}
+
+.side-menu-item .icon,
+.accordion-toggle .icon {
+    float:right;
+    font-size: 14px;
+    padding: {
+        right: 8px;
+        top: 12px;
+    }
+}
+
+.accordion-content {
+    display: none;
+}
+
+.accordion-content.default {
+    display: block;
+}
+
+#filebrowser {
+    background-color: None;
+    border: {
+        bottom-right-radius: 4px;
+        top: solid #999 1px;
+    }
+    color: inherit;
+    cursor: pointer !important;
+    height: 0px;
+    left: 0;
+    overflow: auto;
+    padding: 0.2em;
+    position: relative;
+    top: 0;
+    width: 250px;
+    z-index: 99999;
+}
+
+#filebrowser {
+    a {
+        color: inherit;
+
+        &:hover {
+            background: #666;
+            color: #eee;
+        }
+    }
+
+    li.examples_dir {
+        background-color: #ddd;
+
+        > a {
+            font-style: italic;
+        }
+    }
+}
+
+@media screen and (max-height: 450px) {
+    .sidenav {
+        padding-top: 15px;
+    }
+    .sidenav a {
+        font-size: 18px;
+    }
+}

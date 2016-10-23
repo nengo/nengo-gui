@@ -1,9 +1,9 @@
-.guideline{
+.guideline {
     background-color: #ddd;
+    border: 1px solid #888 {
+        radius: 4px;
+    }
     z-index: -1;
-    
-    border: 1px solid #888;
-    border-radius: 4px;
 }
 
 input#value_in_field {

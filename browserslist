@@ -1,0 +1,5 @@
+# Browsers that Nengo GUI supports
+Chrome >= 50
+Firefox >= 45
+Safari >= 9
+# Should test with Microsoft Edge, IE, Opera

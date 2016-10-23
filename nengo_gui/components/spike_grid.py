@@ -7,7 +7,7 @@ from nengo_gui.components.component import Component
 
 class SpikeGrid(Component):
     """Represents an ensemble of neurons as squares in a grid.
-    
+
     The color of the squares corresponds to the neuron spiking.
     """
 
@@ -68,7 +68,7 @@ class SpikeGrid(Component):
         info = dict(uid=id(self), label=self.label,
                     pixels_x=self.pixels_x, pixels_y=self.pixels_y)
         json = self.javascript_config(info)
-        return 'new Nengo.Image(main, sim, %s);' % json
+        return 'new Image.default(nengo.main, nengo.sim, %s);' % json
 
     def code_python_args(self, uids):
         args = [uids[self.obj]]

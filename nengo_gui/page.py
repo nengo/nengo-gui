@@ -2,7 +2,6 @@ import importlib
 import json
 import logging
 import os
-import socket
 import threading
 import time
 import traceback
@@ -51,37 +50,39 @@ class Page(object):
         self.gui = gui
         self.settings = settings
 
-        self.code = None     # the code for the model
-        self.model = None    # the nengo.Network
-        self.locals = None   # the locals() dictionary after executing
-        self.last_good_locals = None # the locals dict for the last time
-                                     # this script was run without errors
-        self.error = None    # any error message generated
-        self.stdout = ''     # text sent to stdout during execution
+        self.code = None  # the code for the model
+        self.model = None  # the nengo.Network
+        self.locals = None  # the locals() dictionary after executing
+        # the locals dict for the last time this script was run without errors
+        self.last_good_locals = None
 
-        self.changed = False   # has the model been changed?
+        self.error = None  # any error message generated
+        self.stdout = ''  # text sent to stdout during execution
+
+        self.changed = False  # has the model been changed?
         self.finished = False  # should this Page be shut down
-        self._sim = None       # the current nengo.Simulator
-        self.rebuild = False   # should the model be rebuilt
+        self._sim = None  # the current nengo.Simulator
+        self.rebuild = False  # should the model be rebuilt
         self.sims_to_close = []  # list of sims that should be closed
 
-        self.code = None       # the source code currently displayed
-        self.error = None      # any execute or build error
-        self.stdout = ''       # text printed during execute+build
+        self.code = None  # the source code currently displayed
+        self.error = None  # any execute or build error
+        self.stdout = ''  # text printed during execute+build
 
         self.undo_stack = []
         self.redo_stack = []
 
         # placeholders for attributes that will be created by self.load()
-        self.name_finder = None    # NameFinder from nengo objects to text
-        self.default_labels = None # dict of names to use for unlabelled objs
-        self.config = None         # nengo_gui.Config for storing layout
-        self.components = None     # list of Components
-        self.uid_prefix_counter = None # used for generating uids for components
+        self.name_finder = None  # NameFinder from nengo objects to text
+        self.default_labels = None  # dict of names to use for unlabelled objs
+        self.config = None  # nengo_gui.Config for storing layout
+        self.components = None  # list of Components
+        # used for generating uids for components
+        self.uid_prefix_counter = None
         self.component_uids = None  # mapping from Components to text
 
         self.config_save_needed = False
-        self.config_save_time = None   # time of last config file save
+        self.config_save_time = None  # time of last config file save
         self.config_save_period = 2.0  # minimum time between saves
 
         self.lock = threading.Lock()
@@ -178,7 +179,7 @@ class Page(object):
 
     def create_components(self):
         """Generate the actual Components from the Templates"""
-        #TODO: change the name of this
+        # TODO: change the name of this
         self.components = []
         self.component_uids = {}
         for name, obj in self.locals.items():
@@ -248,7 +249,7 @@ class Page(object):
         """Load the .cfg file"""
         config = nengo_gui.config.Config()
         self.locals['nengo_gui'] = nengo_gui
-        self.locals['_viz_config'] = config
+        self.locals['_gui_config'] = config
         fname = self.filename_cfg
         if os.path.exists(fname):
             with open(fname) as f:
@@ -258,21 +259,21 @@ class Page(object):
                     exec(line, self.locals)
                 except Exception:
                     # FIXME
-                    #if self.gui.interactive:
+                    # if self.gui.interactive:
                     logging.debug('error parsing config: %s', line)
 
         # make sure the required Components exist
-        if '_viz_sim_control' not in self.locals:
+        if '_gui_sim_control' not in self.locals:
             c = nengo_gui.components.SimControl()
-            self.locals['_viz_sim_control'] = c
-        if '_viz_net_graph' not in self.locals:
+            self.locals['_gui_sim_control'] = c
+        if '_gui_net_graph' not in self.locals:
             c = nengo_gui.components.NetGraph()
-            self.locals['_viz_net_graph'] = c
+            self.locals['_gui_net_graph'] = c
         # FIXME general editor
-        if '_viz_ace_editor' not in self.locals:
+        if '_gui_ace_editor' not in self.locals:
             c = self.settings.editor_class()
             # c = nengo_gui.components.AceEditor()
-            self.locals['_viz_ace_editor'] = c
+            self.locals['_gui_ace_editor'] = c
 
         if self.model is not None:
             if config[self.model].pos is None:
@@ -322,19 +323,18 @@ class Page(object):
 
     def create_javascript(self):
         """Generate the javascript for the current model and layout."""
-        if self.filename is not None:
-            fn = json.dumps(self.filename)
-            webpage_title_js = ';document.title = %s;' % fn
-        else:
-            webpage_title_js = ''
-
         assert isinstance(self.components[0], nengo_gui.components.SimControl)
+        main = (nengo_gui.components.NetGraph,
+                nengo_gui.components.SimControl,
+                nengo_gui.components.AceEditor)
 
-        component_js = '\n'.join([c.javascript() for c in self.components])
-        component_js += webpage_title_js
+        main_js = '\n'.join([c.javascript() for c in self.components
+                             if isinstance(c, main)])
+        component_js = '\n'.join([c.javascript() for c in self.components
+                                  if not isinstance(c, main)])
         if not self.gui.model_context.writeable:
             component_js += "$('#Open_file_button').addClass('deactivated');"
-        return component_js
+        return main_js, component_js
 
     def get_label(self, obj, default_labels=None):
         """Return a readable label for an object.
@@ -416,15 +416,12 @@ class Page(object):
         self.components.remove(component)
 
     def config_change(self, component, new_cfg, old_cfg):
-        act = nengo_gui.user_action.ConfigAction(self,
-                                                       component=component,
-                                                       new_cfg=new_cfg,
-                                                       old_cfg=old_cfg)
+        act = nengo_gui.user_action.ConfigAction(
+            self, component=component, new_cfg=new_cfg, old_cfg=old_cfg)
         self.undo_stack.append([act])
 
     def remove_graph(self, component):
-        act = nengo_gui.user_action.RemoveGraph(self.net_graph,
-                                                      component)
+        act = nengo_gui.user_action.RemoveGraph(self.net_graph, component)
         self.undo_stack.append([act])
 
     def build(self):

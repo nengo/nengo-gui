@@ -67,7 +67,8 @@ class Pointer(SpaPlot):
                                np.array(vocab.key_pairs)[over_threshold])
             matches = itertools.chain(matches, pair_matches)
 
-        text = ';'.join(['%0.2f%s' % ( min(sim, 9.99), key) for sim, key in matches])
+        text = ';'.join(
+            ['%0.2f%s' % (min(sim, 9.99), key) for sim, key in matches])
 
         # msg sent as a string due to variable size of pointer names
         msg = '%g %s' % (t, text)
@@ -86,7 +87,7 @@ class Pointer(SpaPlot):
     def javascript(self):
         info = dict(uid=id(self), label=self.label)
         json = self.javascript_config(info)
-        return 'new Nengo.Pointer(main, sim, %s);' % json
+        return 'new Pointer.default(nengo.main, nengo.sim, %s);' % json
 
     def code_python_args(self, uids):
         return [uids[self.obj], 'target=%r' % self.target]

@@ -1,4 +1,6 @@
 {
+    "excludeFiles": ["nengo_gui/static/dist/**"],
+
     "requireCurlyBraces": [
         "if",
         "else",
@@ -11,9 +13,19 @@
     "requireOperatorBeforeLineBreak": true,
     "maximumLineLength": {
       "value": 80,
-      "allExcept": ["comments", "regex"]
+      "allExcept": ["regex"]
     },
     "validateIndentation": 4,
+
+    "requireCapitalizedComments": true,
+    "requireSpaceAfterLineComment": true,
+    "disallowMultipleSpaces": true,
+    "requireKeywordsOnNewLine": [
+        "do", "for", "while",
+        "switch", "case",
+        "try", "catch", "finally",
+        "return"
+    ],
 
     "disallowMultipleLineStrings": true,
     "disallowMixedSpacesAndTabs": true,
@@ -33,15 +45,25 @@
       "try",
       "catch"
     ],
+    "requireSpaceAfterComma": {
+        "allExcept": ["trailing"]
+    },
     "requireSpaceBeforeBinaryOperators": [
         "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=",
         "&=", "|=", "^=", "+=",
 
-        "+", "-", "*", "/", "%", "<<", ">>", ">>>", "&",
+        "+", "-", "%", "<<", ">>", ">>>", "&",
         "|", "^", "&&", "||", "===", "==", ">=",
         "<=", "<", ">", "!=", "!=="
     ],
-    "requireSpaceAfterBinaryOperators": true,
+    "requireSpaceAfterBinaryOperators": [
+        "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=",
+        "&=", "|=", "^=", "+=",
+
+        "+", "-", "%", "<<", ">>", ">>>", "&",
+        "|", "^", "&&", "||", "===", "==", ">=",
+        "<=", "<", ">", "!=", "!=="
+    ],
     "requireSpacesInConditionalExpression": true,
     "requireSpaceBeforeBlockStatements": true,
     "requireSpacesInForStatement": true,

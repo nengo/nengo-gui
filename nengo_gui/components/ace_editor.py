@@ -44,13 +44,13 @@ class AceEditor(Editor):
                 else:
                     short_msg = error['trace']
             client.write_text(json.dumps({'error': error,
-                                     'short_msg': short_msg,
-                                     'stdout': stdout}))
+                                          'short_msg': short_msg,
+                                          'stdout': stdout}))
             self.last_error = error
             self.last_stdout = stdout
 
     def javascript(self):
-        return 'Nengo.ace = new Nengo.Ace("%s", {})' % (id(self),)
+        return 'var editoruid = "%s";' % id(self)
 
     def message(self, msg):
         data = json.loads(msg)
