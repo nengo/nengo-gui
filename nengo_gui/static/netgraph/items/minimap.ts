@@ -1,7 +1,7 @@
-import NetGraphItem as NetGraphItem from "../netgraph.ts";
+import { NetGraphItem } from "../netgraph.ts";
 
 export class MinimapItem extends NetGraphItem {
-    constructor() {
+    constructor(miniItem) {
         super();
         this.gNetworks = this.ng.gNetworksMini;
         this.gItems = this.ng.gItemsMini;
