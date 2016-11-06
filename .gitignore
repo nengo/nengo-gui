@@ -71,6 +71,8 @@ out/
 
 # TypeScript
 typings/
+nengo_gui/static/**/*.js
+nengo_gui/static/**/*.js.map
 
 # JS files associated with tests
 **/tests/*.js

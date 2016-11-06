@@ -11,7 +11,6 @@
  */
 
 import * as interact from "interact.js";
-import * as $ from "jquery";
 import { dom, h, VNode } from "maquette";
 
 import * as allComponents from "../components/all-components";
@@ -44,6 +43,7 @@ export class NetGraph {
      * when that item appears.
      */
     collapsedConns: ConnDict = {};
+    root;
     div;
     gConns;
     gConnsMini;
@@ -60,14 +60,14 @@ export class NetGraph {
     svg;
     svgConns: ConnDict = {};
     svgObjects: ItemDict = {};
-    toolHeight;
     uid: string;
     view;
     width;
-    ws;
-
     parent;
     minimapObjects;
+
+    private attached: Connection[] = [];
+
     private _scale: number = 1.0;
 
     constructor(uid: string) {
@@ -81,10 +81,10 @@ export class NetGraph {
 
         // this.minimap = new Minimap();
 
-        this.toolHeight = $("#toolbarObject").height();
-
         // Reading netgraph.css file as text and embedding it within def tags;
         // this is needed for saving the SVG plot to disk.
+        // wtf... http://stackoverflow.com/q/13381503/1079075
+        // TODO: Fix this
         const css = require("!!css-loader!./netgraph.css").toString();
 
         const defs = h("defs", [h(
@@ -100,7 +100,7 @@ export class NetGraph {
 
         // Create the master SVG element
         this.svg = h("svg.netgraph#netgraph", {
-            styles: {width: "100%", height: "100%", position: "absolute"},
+            styles: {height: "100%", position: "absolute", width: "100%"},
             onresize: event => {
                 this.onResize(event);
             },
@@ -113,14 +113,8 @@ export class NetGraph {
 
         // interact(this.svg).styleCursor(false);
 
-        this.width = $(this.svg).width();
-        this.height = $(this.svg).height();
-
-        // Connect to server
-        // this.ws = new Connection(uid); // TODO: , "netgraph");
-        this.ws.onmessage = event => {
-            this.onMessage(event);
-        };
+        this.width = this.svg.getBoundingClientRect().width;
+        this.height = this.svg.getBoundingClientRect().height;
 
         // Respond to resize events
         window.addEventListener("resize", event => {
@@ -149,7 +143,10 @@ export class NetGraph {
             .draggable({
                 onend: event => {
                     // Let the server know what happened
-                    this.notify({act: "pan", x: this.offsetX, y: this.offsetY});
+                    this.attached.forEach(conn => {
+                        conn.send("netgraph.pan",
+                            {x: this.offsetX, y: this.offsetY});
+                    });
                 },
                 onmove: event => {
                     this.offsetX += event.dx / this.getScaledWidth();
@@ -179,14 +176,15 @@ export class NetGraph {
         // point in the space
         interact(document.getElementById("main"))
             .on("click", event => {
-                $(".aceText-input").blur();
+                document.querySelector(".aceText-input")
+                    .dispatchEvent(new Event("blur"));
             })
             .on("wheel", event => {
                 event.preventDefault();
 
                 Menu.hideAll();
                 const x = (event.clientX) / this.width;
-                const y = (event.clientY - this.toolHeight) / this.height;
+                const y = (event.clientY) / this.height;
                 let delta;
 
                 if (event.deltaMode === 1) {
@@ -228,11 +226,9 @@ export class NetGraph {
                 this.redraw();
 
                 // Let the server know what happened
-                this.notify({
-                    act: "zoom",
-                    scale: this.scale,
-                    x: this.offsetX,
-                    y: this.offsetY,
+                this.attached.forEach(conn => {
+                    conn.send("netgraph.zoom",
+                        {scale: this.scale, x: this.offsetX, y: this.offsetY});
                 });
             });
 
@@ -257,7 +253,7 @@ export class NetGraph {
                 }
             });
 
-        $(this.svg).bind("contextmenu", event => {
+        this.svg.addEventListener("contextmenu", event => {
             event.preventDefault();
             if (Menu.anyVisible()) {
                 Menu.hideAll();
@@ -364,17 +360,19 @@ export class NetGraph {
     /**
      * Event handler for received WebSocket messages
      */
+    attach(conn: Connection) {
+        // TODO: How do I make sure this is calling the correct constructor?
+        conn.bind("netGraph.buildObject", ({nengoObject: js}) => {
+            this.createObject(event.data);
+        });
+        this.attached.push(conn);
+    }
+
     onMessage(event) {
         const data = JSON.parse(event.data);
         let item;
 
-        if (data.type === "net") {
-            this.createObject(data);
-        } else if (data.type === "ens") {
-            this.createObject(data);
-        } else if (data.type === "node") {
-            this.createObject(data);
-        } else if (data.type === "conn") {
+        if (data.type === "conn") {
             this.createConnection(data);
         } else if (data.type === "pan") {
             this.setOffset(data.pan[0], data.pan[1]);
@@ -425,16 +423,7 @@ export class NetGraph {
         } else if (data.type === "deleteGraph") {
             const component = allComponents.byUID(data.uid);
             component.remove(true, data.notifyServer);
-        } else {
-            console.warn("invalid message:" + data);
         }
-    }
-
-    /**
-     * Report an event back to the server
-     */
-    notify(info) {
-        this.ws.send(JSON.stringify(info));
     }
 
     /**
@@ -450,10 +439,11 @@ export class NetGraph {
 
     updateFonts() {
         if (this.zoomFonts) {
-            $("#main").css("font-size",
-                           3 * this.scale * this.fontSize / 100 + "em");
+            document.getElementById("main").style.fontSize =
+                           3 * this.scale * this.fontSize / 100 + "em";
         } else {
-            $("#main").css("font-size", this.fontSize / 100 + "em");
+            document.getElementById("#main").style.fontSize =
+                this.fontSize / 100 + "em";
         }
     }
 
@@ -481,19 +471,13 @@ export class NetGraph {
     }
 
     /**
-     * Helper function for correctly creating SVG elements.
-     */
-    createSVGElement(tag) {
-        return document.createElementNS("http://www.w3.org/2000/svg", tag);
-    }
-
-    /**
      * Create a new NetGraphItem.
      *
      * If an existing NetGraphConnection is looking for this item, it will be
      * notified
      */
     createObject(info) {
+        // TODO: this should be actual arguments, not just an object
         const itemMini = new NetGraphItem(this, info, true, null);
         this.minimapObjects[info.uid] = itemMini;
 
@@ -520,15 +504,16 @@ export class NetGraph {
     /**
      * Handler for resizing the full SVG.
      */
-    onResize() {
-        const width = $(this.svg).width();
-        const height = $(this.svg).height();
+    onResize(event) {
+        const width = this.svg.getBoundingClientRect().width;
+        const height = this.svg.getBoundingClientRect().height;
 
         if (this.aspectResize) {
             Object.keys(this.svgObjects).forEach(key => {
                 const item = this.svgObjects[key];
                 if (item.depth === 1) {
-                    const newWidth = viewport.scaleWidth(item.width) / this.scale;
+                    const newWidth =
+                        viewport.scaleWidth(item.width) / this.scale;
                     const newHeight =
                         viewport.scaleHeight(item.height) / this.scale;
                     item.width = newWidth / (2 * width);
@@ -623,19 +608,19 @@ export class NetGraph {
         // this.minimapDiv.className = "minimap";
         // this.parent.appendChild(this.minimapDiv);
 
-        this.minimap = this.createSVGElement("svg");
-        this.minimap.classList.add("minimap");
-        this.minimap.id = "minimap";
+        // this.minimap = h("svg");
+        // this.minimap.classList.add("minimap");
+        // this.minimap.id = "minimap";
         // this.minimapDiv.appendChild(this.minimap);
 
         // Box to show current view
-        this.view = this.createSVGElement("rect");
-        this.view.classList.add("view");
-        this.minimap.appendChild(this.view);
+        // this.view = h("rect");
+        // this.view.classList.add("view");
+        // this.minimap.appendChild(this.view);
 
-        this.gNetworksMini = this.createSVGElement("g");
-        this.gConnsMini = this.createSVGElement("g");
-        this.gItemsMini = this.createSVGElement("g");
+        this.gNetworksMini = h("g");
+        this.gConnsMini = h("g");
+        this.gItemsMini = h("g");
         // Order these are appended is important for layering
         this.minimap.appendChild(this.gNetworksMini);
         this.minimap.appendChild(this.gConnsMini);
