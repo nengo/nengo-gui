@@ -16,17 +16,30 @@ import { dom, h, VNode } from "maquette";
 
 import * as menu from "../../menu";
 import * as viewport from "../../viewport";
+import { NetGraph } from "../netgraph";
 
 // TODO: still have to remove all the `if minimap` stuff
 
-export class NetGraphItem {
+interface NetGraphItemArg {
+    ng: NetGraph;
+
+    width: Number;
+    height: Number;
+
+    posX: Number;
+    posY: Number;
+
+    dimensions: Number;
+    parent: NetGraphItem;
+}
+
+abstract class NetGraphItem {
     area;
     aspect;
     childConnections;
     children;
     connIn;
     connOut;
-    defaultOutput;
     depth;
     dimensions;
     fixedHeight;
@@ -34,43 +47,36 @@ export class NetGraphItem {
     g;
     gItems;
     gNetworks;
-    htmlNode;
     label;
     labelBelow;
     menu;
     minHeight;
     minWidth;
-    miniItem;
-    ng;
-    parent;
+    ng: NetGraph;
+    parent: NetGraphItem;
     shape;
     size;
-    uid;
+    uid: String;
+
     private _height;
     private _width;
     private _x;
     private _y;
 
-    // TODO: If it turns out that we keep passing these arguments,
-    // it means we should make a defined class for them
-    constructor(ng, defaultOutput, width, height, posX, posY,
-                dimensions, html, parent, miniItem) {
+    constructor(ngiArg: NetGraphItemArg) {
 
-        this.ng = ng;
+        this.ng = ngiArg.ng;
 
-        this.defaultOutput = defaultOutput;
-        this._width = width;
-        this._height = height;
-        this._x = posX;
-        this._y = posY;
-        this.dimensions = dimensions;
-        this.htmlNode = html;
+        this._width = ngiArg.width;
+        this._height = ngiArg.height;
+        this._x = ngiArg.posX;
+        this._y = ngiArg.posY;
+        this.dimensions = ngiArg.dimensions;
 
         this.fixedWidth = null;
         this.fixedHeight = null;
         this.gNetworks = this.ng.gNetworks;
         this.gItems = this.ng.gItems;
-        this.miniItem = miniItem;
 
         // If this is a network, the children list is the set of NetGraphItems
         // and NetGraphConnections that are inside this network.
@@ -88,11 +94,11 @@ export class NetGraphItem {
 
         // Determine the parent NetGraphItem (if any) and the nested depth
         // of this item.
-        if (parent === null) {
+        if (ngiArg.parent === null) {
             this.parent = null;
             this.depth = 1;
         } else {
-            this.parent = this.ng.svgObjects[parent];
+            this.parent = this.ng.svgObjects[ngiArg.parent];
             this.depth = this.parent.depth + 1;
             if (!minimap) {
                 this.parent.children.push(this);
@@ -223,47 +229,6 @@ export class NetGraphItem {
         });
     }
 
-    /**
-     * Expand a collapsed network.
-     */
-    expand(rts=true, auto=false) { // tslint:disable-line
-        // Default to true if no parameter is specified
-        rts = typeof rts !== "undefined" ? rts : true;
-        auto = typeof auto !== "undefined" ? auto : false;
-
-        this.g.classList.add("expanded");
-
-        if (!this.expanded) {
-            this.expanded = true;
-            if (this.ng.transparentNets) {
-                this.shape.style["fill-opacity"] = 0.0;
-            }
-            this.gItems.removeChild(this.g);
-            this.gNetworks.appendChild(this.g);
-            if (!this.minimap) {
-                this.miniItem.expand(rts, auto);
-            }
-        } else {
-            console.warn(
-                "expanded a network that was already expanded: " + this);
-        }
-
-        if (rts) {
-            if (auto) {
-                // Update the server, but do not place on the undo stack
-                // TODO: Does this need a uid?
-                // probably?
-                this.attached.forEach(conn => {
-                    conn.send("netgraph.autoExpand");
-                });
-            } else {
-                this.attached.forEach(conn => {
-                    conn.send("netgraph.expand");
-                });
-            }
-        }
-    }
-
     setLabelBelow(flag) {
         if (flag && !this.labelBelow) {
             const screenH = this.getScreenHeight();
@@ -271,45 +236,6 @@ export class NetGraphItem {
                 "transform", "translate(0, " + (screenH / 2) + ")");
         } else if (!flag && this.labelBelow) {
             this.label.setAttribute("transform", "");
-        }
-    }
-
-    /**
-     * Collapse an expanded network.
-     */
-    collapse(reportToServer, auto=false) { // tslint:disable-line
-        this.g.classList.remove("expanded");
-
-        // Remove child NetGraphItems and NetGraphConnections
-        while (this.childConnections.length > 0) {
-            this.childConnections[0].remove();
-        }
-        while (this.children.length > 0) {
-            this.children[0].remove();
-        }
-
-        if (this.expanded) {
-            this.expanded = false;
-            if (this.ng.transparentNets) {
-                this.shape.style["fill-opacity"] = 1.0;
-            }
-            this.gNetworks.removeChild(this.g);
-            this.gItems.appendChild(this.g);
-            if (!this.minimap) {
-                this.miniItem.collapse(reportToServer, auto);
-            }
-        } else {
-            console.warn(
-                "collapsed a network that was already collapsed: " + this);
-        }
-
-        if (reportToServer) {
-            if (auto) {
-                // Update the server, but do not place on the undo stack
-                this.ng.notify({act: "autoCollapse", uid: this.uid});
-            } else {
-                this.ng.notify({act: "collapse", uid: this.uid});
-            }
         }
     }
 

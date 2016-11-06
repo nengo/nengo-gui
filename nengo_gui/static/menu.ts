@@ -26,6 +26,11 @@ export class MenuAction {
     }
 }
 
+interface MenuItem {
+    html: string;
+    callback: () => void;
+}
+
 export class Menu {
     static allShown: Menu[] = [];
 

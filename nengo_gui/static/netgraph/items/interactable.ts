@@ -1,17 +1,28 @@
-import NetGraphItem as NetGraphItem from "../netgraph.ts";
+import { dom, h, VNode } from "maquette";
 
-export class InteractableItem extends NetGraphItem {
-    constructor(uid, minimap) {
+import { NetGraphItem } from "./item.ts";
+import { MenuItem } from "../../menu.ts";
+
+abstract class InteractableItem extends NetGraphItem {
+    minimap;
+    miniItem;
+    uid;
+    gNetworks;
+    gItems;
+
+    constructor(uid, minimap, miniItem) {
         super();
+        // TODO: WTF, do abstract classes not pass on their properities?
+        // this has got to be an error
         this.gNetworks = this.ng.gNetworksMini;
         this.gItems = this.ng.gItemsMini;
 
         const labelText = h("text");
         this.label = labelText;
         this.label.innerHTML = label;
-        const this.uid = uid;
-        // TODO: Figure out how to init this properly
-        const this.minimap = minimap;
+        this.uid = uid;
+        this.minimap = minimap;
+        this.miniItem = miniItem;
         g.appendChild(this.label);
 
         this.uid = uid;
@@ -98,9 +109,7 @@ export class InteractableItem extends NetGraphItem {
     }
 
     // TODO: How do I make sure this is implemented by subclasses?
-    generateMenu() {
-        const items = [];
-    }
+    abstract generateMenu(): MenuItem[];
 
     reshapeSize() {
         super();

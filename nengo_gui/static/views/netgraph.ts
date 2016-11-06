@@ -1,3 +1,3 @@
-/**
- * Created by sean on 24/10/16.
- */
+export class NetGraphView {
+
+}

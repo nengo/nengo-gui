@@ -57,6 +57,7 @@
     "no-unnecessary-override": true,
     "no-with-statement": true,
     "no-var-self": true,
+    "object-literal-sort-keys": false,
     "prefer-array-literal": true,
     "prefer-const": true,
     "use-named-parameter": true

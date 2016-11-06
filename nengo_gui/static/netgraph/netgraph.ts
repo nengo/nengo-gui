@@ -89,8 +89,6 @@ export class NetGraph {
 
         // Reading netgraph.css file as text and embedding it within def tags;
         // this is needed for saving the SVG plot to disk.
-        // wtf... http://stackoverflow.com/q/13381503/1079075
-        // TODO: Fix this
         const css = require("!!css-loader!./netgraph.css").toString();
 
         const defs = h("defs", [h(
@@ -372,8 +370,8 @@ export class NetGraph {
         // TODO: How do I associate types to this whole bind thing?
         // TODO: How do I make sure this is calling the correct constructor?
         // Node-only first so that I can get something I can test
-        conn.bind("netGraph.createNode", ({ngiArg: NetGraphItemArg}) => {
-            this.createNode(ngiArg);
+        conn.bind("netGraph.createNode", ({ngiArg: NetGraphItemArg, html: String}) => {
+            this.createNode(ngiArg, html);
         });
 
         conn.bind("netGraph.createConnection", ({connArg}) => {
@@ -527,9 +525,9 @@ export class NetGraph {
     }
 
     // this will need to be refactored later
-    createNode(ngiArg) {
+    createNode(ngiArg, html) {
         // TODO: fill in the rest of the args
-        const item = new NodeItem(ngiArg);
+        const item = new NodeItem(ngiArg, html);
         this.svgObjects[info.uid] = item;
 
         this.detectCollapsedConns(item.uid);

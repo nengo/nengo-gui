@@ -1,13 +1,16 @@
-import * as menu from "../../menu";
-import InteractableItem as InteractableItem from "./interactable.ts";
+import { dom, h, VNode } from "maquette";
+import * as interact from "interact.js";
 
-export class ResizableItem extends InteractableItem {
+import * as menu from "../../menu";
+import { InteractableItem } from "./interactable.ts";
+
+abstract class ResizableItem extends InteractableItem {
     constructor() {
         super();
 
         interact(this.area).resizable({
                 edges: {bottom: true, left: true, right: true, top: true},
-                invert: this.type === "ens" ? "reposition" : "none",
+                invert: "none",
                 margin: 10,
             }).on("resizestart", event => {
                 menu.hideAny();
@@ -118,15 +121,24 @@ export class ResizableItem extends InteractableItem {
 }
 
 export class NodeItem extends ResizableItem {
-    constructor() {
+    htmlNode;
+
+    constructor(html) {
         super();
         this.shape = h("rect");
+        this.htmlNode = html;
     }
 
     generateMenu() {
-        items.push(["Slider", () => {
-            this.createGraph("Slider");
-        }]);
+        const items = [];
+        // TODO: Holy fuck, how do you even use interfaces
+        // TODO: And why are none of these properties being found
+        items.push(MenuItem = {
+            html: "Slider",
+            callback: () => {
+                this.createGraph("Slider");
+            }
+        });
         if (this.dimensions > 0) {
             items.push(["Value", () => {
                 this.createGraph("Value");
@@ -165,11 +177,12 @@ export class NodeItem extends ResizableItem {
 }
 
 export class NetItem extends ResizableItem {
-    constructor(expanded, spTargets) {
+    constructor(expanded, spTargets, defaultOutput) {
         super();
         this.shape = h("rect");
         this.expanded = expanded;
         this.spTargets = spTargets;
+        this.defaultOutput = defaultOutput;
 
         // If a network is flagged to expand on creation, then expand it
         if (expanded) {
@@ -211,6 +224,86 @@ export class NetItem extends ResizableItem {
         }]);
         return items;
     }
+
+    /**
+     * Expand a collapsed network.
+     */
+    expand(returnToServer=true, auto=false) { // tslint:disable-line
+        // Default to true if no parameter is specified
+        returnToServer = typeof returnToServer !== "undefined" ? returnToServer : true;
+        auto = typeof auto !== "undefined" ? auto : false;
+
+        this.g.classList.add("expanded");
+
+        if (!this.expanded) {
+            this.expanded = true;
+            if (this.ng.transparentNets) {
+                this.shape.style["fill-opacity"] = 0.0;
+            }
+            this.gItems.removeChild(this.g);
+            this.gNetworks.appendChild(this.g);
+            if (!this.minimap) {
+                this.miniItem.expand(returnToServer, auto);
+            }
+        } else {
+            console.warn(
+                "expanded a network that was already expanded: " + this);
+        }
+
+        if (returnToServer) {
+            if (auto) {
+                // Update the server, but do not place on the undo stack
+                // TODO: Does this need a uid?
+                // probably?
+                this.attached.forEach(conn => {
+                    conn.send("netgraph.autoExpand");
+                });
+            } else {
+                this.attached.forEach(conn => {
+                    conn.send("netgraph.expand");
+                });
+            }
+        }
+    }
+
+    /**
+     * Collapse an expanded network.
+     */
+    collapse(reportToServer, auto=false) { // tslint:disable-line
+        this.g.classList.remove("expanded");
+
+        // Remove child NetGraphItems and NetGraphConnections
+        while (this.childConnections.length > 0) {
+            this.childConnections[0].remove();
+        }
+        while (this.children.length > 0) {
+            this.children[0].remove();
+        }
+
+        if (this.expanded) {
+            this.expanded = false;
+            if (this.ng.transparentNets) {
+                this.shape.style["fill-opacity"] = 1.0;
+            }
+            this.gNetworks.removeChild(this.g);
+            this.gItems.appendChild(this.g);
+            if (!this.minimap) {
+                this.miniItem.collapse(reportToServer, auto);
+            }
+        } else {
+            console.warn(
+                "collapsed a network that was already collapsed: " + this);
+        }
+
+        if (reportToServer) {
+            if (auto) {
+                // Update the server, but do not place on the undo stack
+                this.ng.notify({act: "autoCollapse", uid: this.uid});
+            } else {
+                this.ng.notify({act: "collapse", uid: this.uid});
+            }
+        }
+    }
 }
 
 export class EnsembleItem extends ResizableItem {
@@ -220,6 +313,9 @@ export class EnsembleItem extends ResizableItem {
         // TODO: This means it resizes differently and other stuff!
         this.aspect = 1.;
         this.shape = this.ensembleSvg();
+        interact(this.area).resizable({
+            invert: "reposition",
+        });
     }
 
     /**
