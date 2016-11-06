@@ -21,7 +21,12 @@ import * as viewport from "../viewport";
 import { Connection } from "../websocket";
 import { NetGraphConnection } from "./connection";
 import { Minimap } from "./minimap";
-import { NetGraphItem } from "./item";
+
+
+import { NetGraphItem, NetGraphItemArg } from "./items/item.ts";
+import { PassthroughItem } from "./items/interactable.ts";
+import { EnsembleItem, NetItem, NodeItem} from "./items/resizable";
+
 import "./netgraph.css";
 
 interface ItemDict {
@@ -73,6 +78,7 @@ export class NetGraph {
     constructor(uid: string) {
         this.uid = uid;
 
+        // TODO: greatly improve this validation
         if (uid[0] === "<") {
             console.warn("invalid uid for NetGraph: " + uid);
         }
@@ -361,69 +367,99 @@ export class NetGraph {
      * Event handler for received WebSocket messages
      */
     attach(conn: Connection) {
+        // TODO: Am I supposed to group these more logically?
+
+        // TODO: How do I associate types to this whole bind thing?
         // TODO: How do I make sure this is calling the correct constructor?
-        conn.bind("netGraph.buildObject", ({nengoObject: js}) => {
-            this.createObject(event.data);
+        // Node-only first so that I can get something I can test
+        conn.bind("netGraph.createNode", ({ngiArg: NetGraphItemArg}) => {
+            this.createNode(ngiArg);
         });
-        this.attached.push(conn);
-    }
 
-    onMessage(event) {
-        const data = JSON.parse(event.data);
-        let item;
+        conn.bind("netGraph.createConnection", ({connArg}) => {
+            this.createConnection(connArg);
+        });
 
-        if (data.type === "conn") {
-            this.createConnection(data);
-        } else if (data.type === "pan") {
-            this.setOffset(data.pan[0], data.pan[1]);
-        } else if (data.type === "zoom") {
-            this.scale = data.zoom;
-        } else if (data.type === "expand") {
-            item = this.svgObjects[data.uid];
+        // there should probably be a coordinate data type
+        conn.bind("netGraph.pan", ({x: Number, y: Number}) => {
+            this.setOffset(x, y);
+        });
+
+        conn.bind("netGraph.zoom", ({zoom: Number}) => {
+            this.scale = zoom;
+        });
+
+        // TODO: How much error checking are we supposed to do?
+        // Should I check that the uid gives a network or do I just
+        // let it throw an error?
+        conn.bind("netGraph.expand", ({uid: String}) => {
+            item = this.svgObjects[uid];
             item.expand(true, true);
-        } else if (data.type === "collapse") {
+        });
+        conn.bind("netGraph.collapse", ({uid: String}) => {
+            item = this.svgObjects[uid];
+            item.expand(true, true);
+        });
+
+        // Should probably make a shape param too
+        conn.bind("netGraph.posSize", ({uid: String, x: Number, y: Number, width: Number, height: Number}) => {
             item = this.svgObjects[data.uid];
-            item.collapse(true, true);
-        } else if (data.type === "posSize") {
-            item = this.svgObjects[data.uid];
-            item.x = data.pos[0];
-            item.y = data.pos[1];
-            item.width = data.size[0];
-            item.height = data.size[1];
+            item.x = x;
+            item.y = y;
+            item.width = width;
+            item.height = height;
 
             item.redraw();
 
             this.scaleMiniMap();
+        });
 
-        } else if (data.type === "config") {
+        conn.bind("netGraph.config", ({uid: String, config}) => {
             // Anything about the config of a component has changed
-            const component = allComponents.byUID(data.uid);
-            component.updateLayout(data.config);
-        } else if (data.type === "js") {
-            eval(data.code); // tslint:disable-line
-        } else if (data.type === "rename") {
-            item = this.svgObjects[data.uid];
-            item.setLabel(data.name);
+            const component = allComponents.byUID(uid);
+            component.updateLayout(config);
+        });
 
-        } else if (data.type === "remove") {
-            item = this.svgObjects[data.uid];
+        conn.bind("netGraph.config", ({uid: String, config}) => {
+            // Anything about the config of a component has changed
+            const component = allComponents.byUID(uid);
+            component.updateLayout(config);
+        });
+
+        conn.bind("netGraph.js", ({js: js}) => {
+            // TODO: noooooooo
+            eval(js);
+        });
+
+        conn.bind("netGraph.rename", ({uid: String, newName: String}) => {
+            item = this.svgObjects[uid];
+            item.setLabel(newName);
+        });
+
+        conn.bind("netGraph.remove", ({uid: String}) => {
+            // TODO: this feels hacky
+            item = this.svgObjects[uid];
             if (item === undefined) {
-                item = this.svgConns[data.uid];
+                item = this.svgConns[uid];
             }
 
             item.remove();
+        });
 
-        } else if (data.type === "reconnect") {
-            const conn = this.svgConns[data.uid];
-            conn.setPres(data.pres);
-            conn.setPosts(data.posts);
-            conn.setRecurrent(data.pres[0] === data.posts[0]);
+        conn.bind("netGraph.reconnect", ({uid: String, pres: NetGraphItem, post: NetGraphItem}) => {
+            const conn = this.svgConns[uid];
+            conn.setPres(pres);
+            conn.setPosts(posts);
+            conn.setRecurrent(pres[0] === posts[0]);
             conn.redraw();
+        });
 
-        } else if (data.type === "deleteGraph") {
-            const component = allComponents.byUID(data.uid);
-            component.remove(true, data.notifyServer);
-        }
+        conn.bind("netGraph.reconnect", ({uid: String, notifyServer: Boolean}) => {
+            const component = allComponents.byUID(uid);
+            component.remove(true, notifyServer);
+        });
+
+        this.attached.push(conn);
     }
 
     /**
@@ -477,7 +513,7 @@ export class NetGraph {
      * notified
      */
     createObject(info) {
-        // TODO: this should be actual arguments, not just an object
+        // TODO: this should be actual arguments, not just an arbitrary object
         const itemMini = new NetGraphItem(this, info, true, null);
         this.minimapObjects[info.uid] = itemMini;
 
@@ -490,15 +526,22 @@ export class NetGraph {
         this.scaleMiniMap();
     }
 
+    // this will need to be refactored later
+    createNode(ngiArg) {
+        // TODO: fill in the rest of the args
+        const item = new NodeItem(ngiArg);
+        this.svgObjects[info.uid] = item;
+
+        this.detectCollapsedConns(item.uid);
+    }
+
     /**
      * Create a new NetGraphConnection.
      */
     createConnection(info) {
         const connMini = new NetGraphConnection(this, info, true, null);
-        // this.minimapConns[info.uid] = connMini;
-
-        const conn = new NetGraphConnection(this, info, false, connMini);
-        this.svgConns[info.uid] = conn;
+        this.svgConns[info.uid] = new NetGraphConnection(
+            this, info, false, connMini);
     }
 
     /**
