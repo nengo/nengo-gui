@@ -7,20 +7,30 @@
     left: 0px;
 }
 .controls > label{
-    margin-right: 10px !important;
+    margin-right: 15px !important;
 }
 #ens_dimension{
     width: 100px
 }
 
-#radius_val {
-    width: 60px;
-    margin-right: 25px;
+.slider {
+    margin-right: 15px;
 }
 
-#ex1C .slider-selection {
-	background: grey;
+#ensModalForm .form-control {
+    height: 25px !important;
+    width: 40px !important;
+    padding: 2px;
 }
-#ex1C .slider-handle {
+
+.slider-selection {
 	background: #5da3ff;
+}
+
+.slider-track-high {
+	background: #EEE;
+}
+
+.slider-handle {
+	background: #A6A6A6;
 }

@@ -1,6 +1,6 @@
 Nengo.VPLConfig = function(){
     this.$form =  $('<form id="ensModalForm">'+
-    '<div class="form-group">'+
+    '<div class="form-group" id="radius_controls">'+
         '<div class="controls form-inline">'+
             '<label for="ens_dimension">Dimension</label>'+
             '<input type="number" class="form-control" id="ens_dimension" placeholder="1">'+
@@ -8,11 +8,6 @@ Nengo.VPLConfig = function(){
     '</div>'+
     '<div id="graph_container"></div>'+
     '<div class="form-group">'+
-        '<label for="ex1">Radius</label>'+
-        '<div class="controls form-inline">'+
-            '<input type="text" class="form-control" id="radius_val" placeholder="1">'+
-            '<input data-provide="slider" id="ex1"/>'+
-        '</div>'+
     '</div>'+
     '<div class="form-group">'+
     '<label for="ens_model">Neuron Model</label>'+
@@ -23,10 +18,13 @@ Nengo.VPLConfig = function(){
         '</select>'+
     '</div>'+
 '</form>');
+    this.neuron_params = {}
+    this.neuron_params['LIF_default'] = {}
+    this.neuron_params['LIF_custom'] = {}
     this.graph_container = $();
     this.graph_w = 500;
     this.radius = 1;
-    self.radius_slider;
+    this.sliders = {};
 }
 
 Nengo.VPLConfig.prototype.ensemble_modal = function(){
@@ -36,34 +34,52 @@ Nengo.VPLConfig.prototype.ensemble_modal = function(){
     Nengo.modal.show();
     Nengo.modal.title('Edit Ensemble');
     self.$form.appendTo(Nengo.modal.$body);
+    // var tabs = Nengo.modal.tabbed_body([{id: 'params', title: 'Parameters'},
+    //                              {id: 'model', title: 'Model'}]);
     this.graph_container.appendTo(this.$form);
     self.redraw_graph("#graph_container",[1,2,3],[[1,2,3],[4,5,6]],'radius','frequency')
-    self.radius_slider = new Slider('#ex1',{
+    self.create_slider("#radius_controls","ex1","Radius",{
     	min: 0.1,
-        max: 10,
+        max: 2,
         tooltip: "hide",
         value: 1,
         step: 0.1,
-        id: "ex1C"
-    })
-    self.radius_slider.on("slide",function(){
-        $("#radius_val").val($("#ex1").val());
-        self.radius = $("#ex1").val();
-        var x_axis = [];
-        for(var x = 1; x <= 3; x++){
-            x_axis.push((x/3)*self.radius);
-        }
-        self.redraw_graph("#graph_container",x_axis,[[1,2,3],[4,5,6]],'radius','frequency')
-    });
-    $("#radius_val").on("change",function(){
-        var max_val = self.radius_slider.getAttribute("max");
-        var value = parseInt($(this).val(),10);
-        if (value > max_val){
-            self.radius_slider.setAttribute("max",value);
-        }
-        self.radius_slider.setValue(value);
+        id: "ex1C",
     })
 }
+
+Nengo.VPLConfig.prototype.create_slider = function(parent_selector,new_id,label,options){
+    var self = this;
+    var control_group = $('<div class="controls form-inline"></div>')
+        .appendTo($(parent_selector));
+    var label_tag = $('<label for="'+new_id+'">'+label+'</label>')
+        .appendTo($(control_group));
+    var slider_input = $('<input data-provide="slider" id="'+new_id+'"/>')
+        .appendTo($(control_group));
+    var slide_val = $('<input type="text" class="form-control slider-val" id="'+new_id+
+                    '_val" placeholder="1">')
+        .appendTo($(control_group));
+
+
+    self.sliders[new_id] = new Slider('#'+new_id,options);
+    self.sliders[new_id].on("slide",function(){
+        $(slide_val).val(self.sliders[new_id].getValue());
+    });
+    $(slide_val).on("change",function(){
+        var max_val = self.sliders[new_id].getAttribute("max");
+        var value = parseInt($(this).val(),10);
+        if (value > max_val){
+            self.sliders[new_id].setAttribute("max",value);
+        }
+        self.sliders[new_id].setValue(value);
+    })
+    // var x_axis = [];
+    // for(var x = 1; x <= 3; x++){
+    //     x_axis.push((x/3)*self.radius);
+    // }
+    // self.redraw_graph("#graph_container",x_axis,[[1,2,3],[4,5,6]],'radius','frequency')
+}
+
 
 Nengo.VPLConfig.prototype.redraw_graph = function(selector, x, ys, x_label, y_label){
     var self = this;
