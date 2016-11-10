@@ -119,3 +119,26 @@ Nengo.draw_legend = function(parent, labels, color_func, uid) {
 
     return legend_svg;
 };
+
+Nengo.create_filter = function(colors,stdDev,id){
+    var filter = d3.select('#netgraph').append("filter")
+        .attr("id", id)
+        .attr("height", "200%")
+        .attr("width", "200%");
+    filter.append("feGaussianBlur")
+        .attr('in',"SourceGraphic")
+        .attr("stdDeviation", stdDev)
+        .attr("result", "coloredBlur");
+    filter.append('feColorMatrix')
+        .attr('in',"coloredBlur")
+        .attr('type',"matrix")
+        .attr('values',"0 0 0 "+colors[0]+" 0  0 0 0 "+colors[1]+" 0  0 0 0 "+
+            colors[2]+" 0  0 0 0 1.5 0")
+        .attr("result","coloredBlur");
+
+    var feMerge = filter.append("feMerge");
+    feMerge.append("feMergeNode")
+        .attr("in", "coloredBlur")
+    feMerge.append("feMergeNode")
+        .attr("in", "SourceGraphic");
+}

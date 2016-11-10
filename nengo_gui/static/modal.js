@@ -802,15 +802,17 @@ Nengo.Modal.prototype.component_config = function(uid){
   var $form = $('<form class="form-horizontal" id ' +
       '="myModalForm"/>').appendTo(this.$body);
   $('<div class="form-group" id="config_component">' +
+
       '<label for="config-dimension" class="control-label">' +
           'Number of Dimensions</label>' +
-      '<div class="input-group col-xs-2">' +
+      '<div class="input-group col-xs-2 form-inline">' +
         '<input type="number" min="1" step="1" ' +
           'maxlength="3" class="form-control" id="config-dimension"' +
               ' data-error="Invalid number of dimensions"' +
               ' required>' +
         '<span class="input-group-addon">#</span>' +
       '</div>' +
+
       '<label for="config-neuron-number" class="control-label">' +
             'Number of Neurons</label>' +
         '<div class="input-group col-xs-2">' +

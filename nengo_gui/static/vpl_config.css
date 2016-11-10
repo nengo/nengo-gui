@@ -1,0 +1,26 @@
+#graph_container{
+    position: relative;
+    width: 500px;
+    height: 270px;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0px;
+}
+.controls > label{
+    margin-right: 10px !important;
+}
+#ens_dimension{
+    width: 100px
+}
+
+#radius_val {
+    width: 60px;
+    margin-right: 25px;
+}
+
+#ex1C .slider-selection {
+	background: grey;
+}
+#ex1C .slider-handle {
+	background: #5da3ff;
+}

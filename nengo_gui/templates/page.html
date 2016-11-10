@@ -17,9 +17,11 @@
         <link href="static//lib/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
         <link href="static/top_toolbar.css" rel="stylesheet" type="text/css" />
         <link href="static/lib/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+        <link href="static/lib/css/bootstrap-slider.min.css" rel="stylesheet" type="text/css" />
         <link href="static/lib/js/jqueryFileTree/jqueryFileTree.css" rel="stylesheet" type="text/css">
         <link href="static/side_menu.css" rel="stylesheet" type="text/css" />
         <link href="static/drag_and_drop.css" rel="stylesheet" type="text/css" />
+        <link href="static/vpl_config.css" rel="stylesheet" type="text/css" />
     </head>
     <!-- body needs an ID to fix cursor in Firefox -->
 
@@ -82,70 +84,79 @@
 
                 <div class="tab-content">
                     <div id="mode_list">
+                        <div class="mode-group" style="overflow:hidden">
+                            <p>Controls</p>
+                            <div id="Pointer" class="mode on">
+                                <div>
+                                    <span class="glyphicon glyphicon-move">
+                                    </span>
+                                    <p>Move</p>
+                                </div>
+                            </div>
 
-                        <div id="Pointer" class="mode on">
-                            <div>
-                                <span style="font-size:1.5em;top:25px" class="glyphicon glyphicon-hand-up">
-                                </span>
-                                <p>Move/Resize</p>
+                            <div id="Delete" class="mode off">
+                                <div>
+                                    <span class="glyphicon glyphicon-remove">
+                                    </span>
+                                    <p>Remove</p>
+                                </div>
                             </div>
                         </div>
-
-                        <div id="Ensemble" class="mode off">
-                            <div>
-                                <svg viewbox="0 0 150 150">
-                                    <g transform="translate(75,75) scale(1.5)">
-                                        <circle cx="-12.407" cy="-7.231" r="4.843" />
-                                        <circle cx="-1.064" cy="0.123" r="4.843" />
-                                        <circle cx="3.7619999999999996" cy="12.81" r="4.843" />
-                                        <circle cx="12.454" cy="-0.521" r="4.843" />
-                                        <circle cx="-11.603" cy="8.663" r="4.843" />
-                                        <circle cx="2.644" cy="-12.908" r="4.843" />
-                                    </g>
-                                </svg>
-                                <p>Ensemble</p>
+                        <div class="mode-group" style="overflow:hidden">
+                            <p>Components</p>
+                            <div id="Ensemble" class="mode off">
+                                <div>
+                                    <svg viewbox="0 0 150 150">
+                                        <g transform="translate(75,75) scale(2.2)" style="stroke-width:0.5;stroke:black">
+                                            <circle cx="-12.407" cy="-7.231" r="4.843" />
+                                            <circle cx="-1.064" cy="0.123" r="4.843" />
+                                            <circle cx="3.7619999999999996" cy="12.81" r="4.843" />
+                                            <circle cx="12.454" cy="-0.521" r="4.843" />
+                                            <circle cx="-11.603" cy="8.663" r="4.843" />
+                                            <circle cx="2.644" cy="-12.908" r="4.843" />
+                                        </g>
+                                    </svg>
+                                    <p>Ensemble</p>
+                                </div>
                             </div>
-                        </div>
 
-                        <div id="Node" class="mode off">
-                            <div>
-                                <svg viewbox="0 0 150 150">
-                                    <g transform="translate(30,40) scale(1)" style="stroke-width:0.5;stroke:black">
-                                        <rect width="90" height="70" rx="10" ry="10"></rect>
-                                    </g>
-                                </svg>
-                                <p>Node</p>
+                            <div id="Node" class="mode off">
+                                <div>
+                                    <svg viewbox="0 0 150 150">
+                                        <g transform="translate(75,75) scale(0.9)" style="stroke-width:1;stroke:black">
+                                            <rect width="90" height="70" x ="-45" y ="-35" rx="10" ry="10"></rect>
+                                        </g>
+                                    </svg>
+                                    <p>Node</p>
+                                </div>
                             </div>
-                        </div>
 
-                        <div id="Network" class="mode off">
-                            <div>
-                                <svg viewbox="0 0 150 150">
-                                    <g transform="translate(10,10) scale(1)" style="stroke-width:0.5;stroke:black">
-                                        <rect width="130" height="130"></rect>
-                                    </g>
-                                </svg>
-                                <p>Network</p>
+                            <div id="Network" class="mode off">
+                                <div>
+                                    <svg viewbox="0 0 150 150">
+                                        <g transform="translate(75,75) scale(0.7)" style="stroke-width:2;stroke:black">
+                                            <rect x = "-55" y = "-55" width="110" height="110"></rect>
+                                            <line x1="-25" y1="30" x2="30" y2="0"/>
+                                            <line x1="-25" y1="-30" x2="30" y2="0"/>
+                                            <circle cx="-25" cy="-30" r="10" />
+                                            <circle cx="-25" cy="30" r="10" />
+                                            <circle cx="30" cy="0" r="10" />
+                                        </g>
+                                    </svg>
+                                    <p>Network</p>
+                                </div>
                             </div>
-                        </div>
 
-                        <div id="Connection" class="mode off">
-                            <div>
-                                <svg viewbox="0 0 150 150">
-                                    <g transform="translate(75,75) scale(4)" style="stroke-width:0.1;stroke:black">
-                                        <line x1="-12.5" y1="0" x2="12.5" y2="0" style="stroke-width:1.5"/>
-                                        <polygon points="-1,-2 -1,2 5,0" style="stroke-width:1" />
-                                    </g>
-                                </svg>
-                                <p>Connection</p>
-                            </div>
-                        </div>
-
-                        <div id="Delete" class="mode off">
-                            <div>
-                                <span style="font-size:1.5em;top:25px" class="glyphicon glyphicon-remove">
-                                </span>
-                                <p>Remove</p>
+                            <div id="Connection" class="mode off">
+                                <div>
+                                    <svg viewbox="0 0 150 150">
+                                        <g transform="translate(75,75) scale(4)" style="stroke-width:0.1;stroke:black">
+                                            <line x1="-12.5" y1="0" x2="12.5" y2="0" style="stroke-width:1.5"/>
+                                            <polygon points="-1,-2 -1,2 5,0" style="stroke-width:1" />
+                                        </g>
+                                    </svg>
+                                    <p>Connection</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -247,6 +258,7 @@
         <script src="static/lib/js/jquery-ui-1.9.2.min.js"></script>
         <script src="static/lib/js/jqueryFileTree/jqueryFileTree.js" type="text/javascript"></script>
         <script src="static/lib/js/bootstrap.min.js"></script>
+        <script src="static/lib/js/bootstrap-slider.min.js"></script>
         <script src="static/lib/js/validator.js"></script>
         <script src="static/nengo.js"></script>
         <script src="static/config.js"></script>
@@ -278,6 +290,7 @@
         <script src="static/ace.js"></script>
         <script src="static/data_to_csv.js"></script>
         <script src="static/drag_and_drop.js"></script>
+        <script src="static/vpl_config.js"></script>
     </body>
 
 </html>

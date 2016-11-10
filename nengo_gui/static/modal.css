@@ -18,7 +18,6 @@
 }
 
 .modal-body .form-group {
-    text-indent: 20px;
 }
 
 .modal-body .with-errors {
@@ -103,7 +102,6 @@ div.modal-backdrop {
 
 div.modal {
     z-index: 100000001;
-    cursor: default !important;
 }
 
 #config-fontsize.form-control, #config-scriptdir.form-control {

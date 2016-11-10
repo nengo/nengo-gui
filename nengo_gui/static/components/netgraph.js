@@ -163,6 +163,9 @@ Nengo.NetGraph = function(parent, args) {
     defs.appendChild(s);
 
     this.svg.insertBefore(defs, this.svg.firstChild);
+    Nengo.create_filter([1,1,1],2,"drop-shadow");
+    Nengo.create_filter([2,0,0],1,"red-drop-shadow");
+    Nengo.create_filter([0,2,0],1,"green-drop-shadow");
 
     /** connect to server */
     this.ws = Nengo.create_websocket(args.uid);
@@ -309,8 +312,10 @@ Nengo.NetGraph = function(parent, args) {
             if (self.menu.visible_any()) {
                 self.menu.hide_any();
             } else {
-                self.menu.show(event.clientX, event.clientY,
-                               self.generate_menu());
+                if(Nengo.vpl.edit_mode == false){
+                    self.menu.show(event.clientX, event.clientY,
+                                self.generate_menu());
+                }
         }
     });
 
