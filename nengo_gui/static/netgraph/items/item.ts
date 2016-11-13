@@ -20,7 +20,7 @@ import { NetGraph } from "../netgraph";
 
 // TODO: still have to remove all the `if minimap` stuff
 
-interface NetGraphItemArg {
+export interface NetGraphItemArg {
     ng: NetGraph;
 
     width: Number;
@@ -30,10 +30,10 @@ interface NetGraphItemArg {
     posY: Number;
 
     dimensions: Number;
-    parent: NetGraphItem;
+    parent: string;
 }
 
-abstract class NetGraphItem {
+export abstract class NetGraphItem {
     area;
     aspect;
     childConnections;
@@ -53,7 +53,7 @@ abstract class NetGraphItem {
     minHeight;
     minWidth;
     ng: NetGraph;
-    parent: NetGraphItem;
+    parent;
     shape;
     size;
     uid: String;
@@ -109,7 +109,6 @@ abstract class NetGraphItem {
         const g = h("g");
         this.g = g;
         this.gItems.appendChild(g);
-        g.classList.add(this.type);
 
         this.area = h("rect");
         this.area.style.fill = "transparent";

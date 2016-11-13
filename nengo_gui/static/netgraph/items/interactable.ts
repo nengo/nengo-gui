@@ -1,19 +1,21 @@
 import { dom, h, VNode } from "maquette";
 
-import { NetGraphItem } from "./item.ts";
-import { MenuItem } from "../../menu.ts";
+import { NetGraphItem, NetGraphItemArg } from "./item";
+import { MenuItem } from "../../menu";
 
-abstract class InteractableItem extends NetGraphItem {
+export abstract class InteractableItem extends NetGraphItem {
     minimap;
     miniItem;
     uid;
     gNetworks;
     gItems;
 
-    constructor(uid, minimap, miniItem) {
-        super();
+    constructor(agiArg: NetGraphItemArg, uid: string, minimap, miniItem) {
+        super(agiArg);
         // TODO: WTF, do abstract classes not pass on their properities?
         // this has got to be an error
+        // or at least something that starts working once
+        // I fix all the errors in the super-class
         this.gNetworks = this.ng.gNetworksMini;
         this.gItems = this.ng.gItemsMini;
 

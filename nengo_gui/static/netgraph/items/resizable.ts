@@ -1,8 +1,9 @@
 import { dom, h, VNode } from "maquette";
 import * as interact from "interact.js";
 
-import * as menu from "../../menu";
-import { InteractableItem } from "./interactable.ts";
+// import * as menu from "../../menu";
+import { MenuItem } from "../../menu";
+import { InteractableItem } from "./interactable";
 
 abstract class ResizableItem extends InteractableItem {
     constructor() {
@@ -127,6 +128,7 @@ export class NodeItem extends ResizableItem {
         super();
         this.shape = h("rect");
         this.htmlNode = html;
+        this.g.classlist.add("node");
     }
 
     generateMenu() {
@@ -177,6 +179,8 @@ export class NodeItem extends ResizableItem {
 }
 
 export class NetItem extends ResizableItem {
+    expanded: boolean;
+
     constructor(expanded, spTargets, defaultOutput) {
         super();
         this.shape = h("rect");
@@ -189,9 +193,11 @@ export class NetItem extends ResizableItem {
             // Report to server but do not add to the undo stack
             this.expand(true, true);
         }
+        this.g.classlist.add("network")
     }
 
     generateMenu() {
+        const items = [];
         if (this.expanded) {
             items.push(["Collapse network", () => {
                 this.collapse(true);
@@ -316,6 +322,7 @@ export class EnsembleItem extends ResizableItem {
         interact(this.area).resizable({
             invert: "reposition",
         });
+        this.g.classlist("ensemble")
     }
 
     /**
@@ -357,6 +364,7 @@ export class EnsembleItem extends ResizableItem {
     }
 
     generateMenu() {
+        const items = [];
         items.push(["Value", () => {
             this.createGraph("Value");
         }]);
