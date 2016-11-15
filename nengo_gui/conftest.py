@@ -42,7 +42,7 @@ def gui():
 @pytest.yield_fixture(scope="session")
 def driver(gui):
     driver = webdriver.Firefox()
-    driver.get('localhost:{port}/'.format(port=gui.server.server_port))
+    driver.get('http://localhost:{port}/'.format(port=gui.server.server_port))
     driver.maximize_window()
 
     assert driver.title != "Problem loading page"
