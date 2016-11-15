@@ -18,8 +18,6 @@ import * as menu from "../../menu";
 import * as viewport from "../../viewport";
 import { NetGraph } from "../netgraph";
 
-// TODO: still have to remove all the `if minimap` stuff
-
 export interface NetGraphItemArg {
     ng: NetGraph;
 
@@ -56,14 +54,14 @@ export abstract class NetGraphItem {
     parent;
     shape;
     size;
-    uid: String;
+    uid: string;
 
-    private _height;
-    private _width;
-    private _x;
-    private _y;
+    protected _height;
+    protected _width;
+    protected _x;
+    protected _y;
 
-    constructor(ngiArg: NetGraphItemArg) {
+    constructor(ngiArg: NetGraphItemArg, uid:string) {
 
         this.ng = ngiArg.ng;
 
@@ -100,12 +98,10 @@ export abstract class NetGraphItem {
         } else {
             this.parent = this.ng.svgObjects[ngiArg.parent];
             this.depth = this.parent.depth + 1;
-            if (!minimap) {
-                this.parent.children.push(this);
-            }
         }
 
         // Create the SVG group to hold this item
+        // TODO: What's with using `g` and `this.g` interchangeably?
         const g = h("g");
         this.g = g;
         this.gItems.appendChild(g);
@@ -129,10 +125,6 @@ export abstract class NetGraphItem {
 
     set height(val: number) {
         this._height = val;
-
-        if (!this.minimap) {
-            this.miniItem.height = val;
-        }
     }
 
     get width(): number {
@@ -141,10 +133,6 @@ export abstract class NetGraphItem {
 
     set width(val: number) {
         this._width = val;
-
-        if (!this.minimap) {
-            this.miniItem.width = val;
-        }
     }
 
     get x(): number {
@@ -153,10 +141,6 @@ export abstract class NetGraphItem {
 
     set x(val: number) {
         this._x = val;
-
-        if (!this.minimap) {
-            this.miniItem.x = val;
-        }
     }
 
     get y(): number {
@@ -165,10 +149,6 @@ export abstract class NetGraphItem {
 
     set y(val: number) {
         this._y = val;
-
-        if (!this.minimap) {
-            this.miniItem.y = val;
-        }
     }
 
     setLabel(label) {
@@ -250,18 +230,6 @@ export abstract class NetGraphItem {
      * Remove the item from the graph.
      */
     remove() {
-        if (this.expanded) {
-            // Collapse the item, but don't tell the server since that would
-            // update the server's config
-            this.collapse(false);
-        }
-
-        // Remove the item from the parent's children list
-        if (!this.minimap && this.parent !== null) {
-            const index = this.parent.children.indexOf(this);
-            this.parent.children.splice(index, 1);
-        }
-
         delete this.ng.svgObjects[this.uid];
 
         // Update any connections into or out of this item
@@ -282,10 +250,6 @@ export abstract class NetGraphItem {
         this.gItems.removeChild(this.g);
         if (this.depth === 1) {
             this.ng.scaleMiniMap();
-        }
-
-        if (!this.minimap) {
-            this.miniItem.remove();
         }
     }
 
@@ -407,24 +371,15 @@ export abstract class NetGraphItem {
         this.area.setAttribute("height", areaH);
     }
 
-    getScreenWidth() {
-        if (this.minimap && !this.ng.mmDisplay) {
-            return 1;
-        }
+    abstract _getScreenW(): number;
 
+    // TODO: change these to getters and setters?
+    getScreenWidth() {
         if (this.fixedWidth !== null) {
             return this.fixedWidth;
         }
 
-        let w;
-        let screenW;
-        if (!this.minimap) {
-            w = this.ng.width;
-            screenW = this.getNestedWidth() * w * this.ng.scale;
-        } else {
-            w = this.ng.mmWidth;
-            screenW = this.getNestedWidth() * w * this.ng.mmScale;
-        }
+        let screenW = this._getScreenW();
 
         if (screenW < this.minWidth) {
             screenW = this.minWidth;
@@ -433,24 +388,14 @@ export abstract class NetGraphItem {
         return screenW * 2;
     }
 
-    getScreenHeight() {
-        if (this.minimap && !this.ng.mmDisplay) {
-            return 1;
-        }
+    abstract _getScreenH(): number;
 
+    getScreenHeight() {
         if (this.fixedHeight !== null) {
             return this.fixedHeight;
         }
 
-        let h;
-        let screenH;
-        if (this.minimap === false) {
-            h = this.ng.height;
-            screenH = this.getNestedHeight() * h * this.ng.scale;
-        } else {
-            h = this.ng.mmHeight;
-            screenH = this.getNestedHeight() * h * this.ng.mmScale;
-        }
+        let screenH = this._getScreenH();
 
         if (screenH < this.minHeight) {
             screenH = this.minHeight;
@@ -468,11 +413,12 @@ export abstract class NetGraphItem {
         this.redrawChildren();
         this.redrawChildConnections();
         this.redrawConnections();
-
-        if (!this.minimap && this.ng.mmDisplay) {
-            this.miniItem.redraw();
-        }
     }
+
+    // TODO: rename
+    abstract _getPos(): {
+        w: number, h: number, offsetX: number, offsetY: number
+    };
 
     /**
      * Determine the pixel location of the centre of the item.
@@ -480,33 +426,13 @@ export abstract class NetGraphItem {
     getScreenLocation() {
         // FIXME: this should probably use this.ng.getScaledWidth
         // and this.ng.getScaledHeight
-        if (this.minimap && !this.ng.mmDisplay) {
-            return [1, 1];
-        }
 
         let w;
         let h;
         let offsetX;
         let offsetY;
-        if (this.minimap === false) {
-            w = this.ng.width * this.ng.scale;
-            h = this.ng.height * this.ng.scale;
 
-            offsetX = this.ng.offsetX * w;
-            offsetY = this.ng.offsetY * h;
-        } else {
-            const mmW = this.ng.mmWidth;
-            const mmH = this.ng.mmHeight;
-
-            w = mmW * this.ng.mmScale;
-            h = mmH * this.ng.mmScale;
-
-            const dispW = (this.ng.mmMaxX - this.ng.mmMinX) * w;
-            const dispH = (this.ng.mmMaxY - this.ng.mmMinY) * h;
-
-            offsetX = -this.ng.mmMinX * w + (mmW - dispW) / 2.;
-            offsetY = -this.ng.mmMinY * h + (mmH - dispH) / 2.;
-        }
+        w, h, offsetX, offsetX = this._getPos();
 
         let dx = 0;
         let dy = 0;

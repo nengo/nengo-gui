@@ -10,8 +10,8 @@ export abstract class InteractableItem extends NetGraphItem {
     gNetworks;
     gItems;
 
-    constructor(agiArg: NetGraphItemArg, uid: string, minimap, miniItem) {
-        super(agiArg);
+    constructor(ngiArg: NetGraphItemArg, uid: string, miniItem, label) {
+        super(ngiArg, uid);
         // TODO: WTF, do abstract classes not pass on their properities?
         // this has got to be an error
         // or at least something that starts working once
@@ -23,11 +23,15 @@ export abstract class InteractableItem extends NetGraphItem {
         this.label = labelText;
         this.label.innerHTML = label;
         this.uid = uid;
-        this.minimap = minimap;
         this.miniItem = miniItem;
         g.appendChild(this.label);
 
         this.uid = uid;
+
+        if (ngiArg.parent !== null) {
+            this.parent.children.push(this);
+        }
+
         interact(g).draggable({
             onend: event => {
                 const item = this.ng.svgObjects[uid];
@@ -113,10 +117,70 @@ export abstract class InteractableItem extends NetGraphItem {
     // TODO: How do I make sure this is implemented by subclasses?
     abstract generateMenu(): MenuItem[];
 
+    // TODO: there doesn't seem to be a way to `super` call a setter
+    set height(val: number) {
+        this._height = val;
+        this.miniItem.height = val;
+    }
+
+    set width(val: number) {
+        this._width = val;
+        this.miniItem.width = val;
+    }
+
+    set x(val: number) {
+        this._x = val;
+        this.miniItem.x = val;
+    }
+
+    set y(val: number) {
+        this._y = val;
+        this.miniItem.y = val;
+    }
+
+    remove() {
+        // Remove the item from the parent's children list
+        if (this.parent !== null) {
+            const index = this.parent.children.indexOf(this);
+            this.parent.children.splice(index, 1);
+        }
+
+        super.remove();
+
+        this.miniItem.remove();
+    }
+
+    // TODO: This might have been over-refactored
+    // what was this supposed to do in the first place?
     reshapeSize() {
-        super();
+        super.reshapeSize();
         this.label.setAttribute(
                 "transform", "translate(0, " + (screenH / 2) + ")");
+    }
+
+    _getScreenW() {
+        return this.getNestedWidth() * this.ng.width * this.ng.scale;
+    }
+
+    _getScreenH() {
+        return this.getNestedHeight() * this.ng.height * this.ng.scale;
+    }
+
+    redraw() {
+        super.redraw();
+        if (this.ng.mmDisplay) {
+            this.miniItem.redraw();
+        }
+    }
+
+    _getPost() {
+        const w = this.ng.width * this.ng.scale;
+        const h = this.ng.height * this.ng.scale;
+
+        const offsetX = this.ng.offsetX * w;
+        const offsetY = this.ng.offsetY * h;
+
+        return {w, h, offsetX, offsetY};
     }
 }
 
@@ -125,6 +189,8 @@ export class PassthroughItem extends InteractableItem {
         super();
         this.shape = h("ellipse");
         // TODO: WTF can this be avoided?
+        // I have to make a sepcific minimap subclass for this...
+        // or something better?
         if (this.minimap === false) {
             this.fixedWidth = 10;
             this.fixedHeight = 10;
@@ -136,7 +202,7 @@ export class PassthroughItem extends InteractableItem {
     }
 
     reshapeSize() {
-        super();
+        super.reshapeSize();
         this.shape.setAttribute("rx", screenW / 2);
         this.shape.setAttribute("ry", screenH / 2);
     }

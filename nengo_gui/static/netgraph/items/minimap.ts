@@ -1,9 +1,51 @@
-import { NetGraphItem } from "../netgraph.ts";
+import { NetGraphItem } from "./item";
 
 export class MinimapItem extends NetGraphItem {
-    constructor(miniItem) {
-        super();
+    constructor(ngiArg, uid) {
+        super(ngiArg, uid);
         this.gNetworks = this.ng.gNetworksMini;
         this.gItems = this.ng.gItemsMini;
+    }
+
+    _getPos() {
+        const mmW = this.ng.mmWidth;
+        const mmH = this.ng.mmHeight;
+
+        const w = mmW * this.ng.mmScale;
+        const h = mmH * this.ng.mmScale;
+
+        const dispW = (this.ng.mmMaxX - this.ng.mmMinX) * w;
+        const dispH = (this.ng.mmMaxY - this.ng.mmMinY) * h;
+
+        const offsetX = -this.ng.mmMinX * w + (mmW - dispW) / 2.;
+        const offsetY = -this.ng.mmMinY * h + (mmH - dispH) / 2.;
+    }
+
+    _getScreenW() {
+        return this.getNestedWidth() * this.ng.mmWidth * this.ng.mmScale;
+    }
+
+    getScreenWidth() {
+        if (!this.ng.mmDisplay) {
+            return 1;
+        }
+        super.getScreenWidth();
+    }
+
+    _getScreenH() {
+        return this.getNestedHeight() * this.ng.mmHeight * this.ng.mmScale;
+    }
+
+    getScreenHeight() {
+        if (!this.ng.mmDisplay) {
+            return 1;
+        }
+        super.getScreenHeight();
+    }
+
+    getScreenLocation() {
+        if (!this.ng.mmDisplay) {
+            return [1, 1];
+        }
     }
 }

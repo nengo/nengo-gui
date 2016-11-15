@@ -23,8 +23,8 @@ import { NetGraphConnection } from "./connection";
 import { Minimap } from "./minimap";
 
 
-import { NetGraphItem, NetGraphItemArg } from "./items/item.ts";
-import { PassthroughItem } from "./items/interactable.ts";
+import { NetGraphItem, NetGraphItemArg } from "./items/item";
+import { PassthroughItem } from "./items/interactable";
 import { EnsembleItem, NetItem, NodeItem} from "./items/resizable";
 
 import "./netgraph.css";
@@ -36,6 +36,23 @@ interface ItemDict {
 interface ConnDict {
     [uid: string]: NetGraphConnection;
 }
+
+interface Uid {
+    uid: string;
+}
+
+interface Pos {
+    x: number;
+    y: number;
+}
+
+interface Shape {
+    width: number;
+    height: number;
+}
+
+// TODO: figure out an interface for config (maybe a type?)
+// since you can't just use the class
 
 export class NetGraph {
 
@@ -79,6 +96,7 @@ export class NetGraph {
         this.uid = uid;
 
         // TODO: greatly improve this validation
+        // where is uid defined?
         if (uid[0] === "<") {
             console.warn("invalid uid for NetGraph: " + uid);
         }
@@ -318,17 +336,6 @@ export class NetGraph {
         viewport.setScale(this._scale);
     }
 
-    get transparentNets(): boolean {
-        return config.transparentNets;
-    }
-
-    set transparentNets(val: boolean) {
-        if (val === config.transparentNets) {
-            return;
-        }
-        config.transparentNets = val;
-    }
-
     get zoomFonts(): boolean {
         return config.zoomFonts;
     }
@@ -365,12 +372,11 @@ export class NetGraph {
      * Event handler for received WebSocket messages
      */
     attach(conn: Connection) {
-        // TODO: Am I supposed to group these more logically?
 
-        // TODO: How do I associate types to this whole bind thing?
-        // TODO: How do I make sure this is calling the correct constructor?
+        // TODO: bind a connetion for each object
         // Node-only first so that I can get something I can test
-        conn.bind("netGraph.createNode", ({ngiArg: NetGraphItemArg, html: String}) => {
+        conn.bind("netGraph.createNode",
+        ({ngiArg, html}: {ngiArg: NetGraphItemArg, html: string}) => {
             this.createNode(ngiArg, html);
         });
 
@@ -379,46 +385,48 @@ export class NetGraph {
         });
 
         // there should probably be a coordinate data type
-        conn.bind("netGraph.pan", ({x: Number, y: Number}) => {
-            this.setOffset(x, y);
+        conn.bind("netGraph.pan", ({x, y}: Pos) => {
+            this.setOffset({x, y});
         });
 
-        conn.bind("netGraph.zoom", ({zoom: Number}) => {
+        conn.bind("netGraph.zoom", ({zoom}: {zoom: number}) => {
             this.scale = zoom;
         });
 
         // TODO: How much error checking are we supposed to do?
         // Should I check that the uid gives a network or do I just
         // let it throw an error?
-        conn.bind("netGraph.expand", ({uid: String}) => {
-            item = this.svgObjects[uid];
+        // Or should I make a seperate list of interactables
+        conn.bind("netGraph.expand", ({uid}: Uid) => {
+            const item = this.svgObjects[uid];
             item.expand(true, true);
         });
-        conn.bind("netGraph.collapse", ({uid: String}) => {
-            item = this.svgObjects[uid];
+        conn.bind("netGraph.collapse", ({uid}: Uid) => {
+            const item = this.svgObjects[uid];
             item.expand(true, true);
         });
 
         // Should probably make a shape param too
-        conn.bind("netGraph.posSize", ({uid: String, x: Number, y: Number, width: Number, height: Number}) => {
-            item = this.svgObjects[data.uid];
-            item.x = x;
-            item.y = y;
-            item.width = width;
-            item.height = height;
+        conn.bind("netGraph.posSize", (
+            {uid, x, y, width, height}: Uid & Pos & Shape) => {
+                const item = this.svgObjects[uid];
+                item.x = x;
+                item.y = y;
+                item.width = width;
+                item.height = height;
 
-            item.redraw();
+                item.redraw();
 
-            this.scaleMiniMap();
+                this.scaleMiniMap();
         });
 
-        conn.bind("netGraph.config", ({uid: String, config}) => {
+        conn.bind("netGraph.config", ({uid, config}: Uid & {config: any}) => {
             // Anything about the config of a component has changed
             const component = allComponents.byUID(uid);
             component.updateLayout(config);
         });
 
-        conn.bind("netGraph.config", ({uid: String, config}) => {
+        conn.bind("netGraph.config", ({uid, config}: Uid & {config: any}) => {
             // Anything about the config of a component has changed
             const component = allComponents.byUID(uid);
             component.updateLayout(config);
@@ -429,14 +437,16 @@ export class NetGraph {
             eval(js);
         });
 
-        conn.bind("netGraph.rename", ({uid: String, newName: String}) => {
-            item = this.svgObjects[uid];
-            item.setLabel(newName);
+        conn.bind("netGraph.rename", (
+            {uid, newName}: Uid & {newName: string}) => {
+                const item = this.svgObjects[uid];
+                item.setLabel(newName);
         });
 
-        conn.bind("netGraph.remove", ({uid: String}) => {
+        conn.bind("netGraph.remove", ({uid}) => {
             // TODO: this feels hacky
-            item = this.svgObjects[uid];
+            // (which is why TypeScript is complaining)
+            let item = this.svgObjects[uid];
             if (item === undefined) {
                 item = this.svgConns[uid];
             }
@@ -444,15 +454,17 @@ export class NetGraph {
             item.remove();
         });
 
-        conn.bind("netGraph.reconnect", ({uid: String, pres: NetGraphItem, post: NetGraphItem}) => {
-            const conn = this.svgConns[uid];
-            conn.setPres(pres);
-            conn.setPosts(posts);
-            conn.setRecurrent(pres[0] === posts[0]);
-            conn.redraw();
+        conn.bind("netGraph.reconnect",
+            ({uid, pres, posts}: Uid & any & any) => {
+                const netConn = this.svgConns[uid];
+                netConn.setPres(pres);
+                netConn.setPosts(posts);
+                netConn.setRecurrent(pres[0] === posts[0]);
+                netConn.redraw();
         });
 
-        conn.bind("netGraph.reconnect", ({uid: String, notifyServer: Boolean}) => {
+        conn.bind("netGraph.reconnect",
+        ({uid, notifyServer}: Uid & any) => {
             const component = allComponents.byUID(uid);
             component.remove(true, notifyServer);
         });
@@ -463,7 +475,8 @@ export class NetGraph {
     /**
      * Pan the screen (and redraw accordingly)
      */
-    setOffset(x, y) {
+    // TODO: Figure out how to use the Pos interface here
+    setOffset({x, y}: Pos) {
         this.offsetX = x;
         this.offsetY = y;
         this.redraw();
@@ -510,19 +523,19 @@ export class NetGraph {
      * If an existing NetGraphConnection is looking for this item, it will be
      * notified
      */
-    createObject(info) {
-        // TODO: this should be actual arguments, not just an arbitrary object
-        const itemMini = new NetGraphItem(this, info, true, null);
-        this.minimapObjects[info.uid] = itemMini;
+    // createObject(info) {
+    //     // TODO: this should be actual arguments, not just an arbitrary object
+    //     const itemMini = new NetGraphItem(this, info, true, null);
+    //     this.minimapObjects[info.uid] = itemMini;
 
-        const item = new NetGraphItem(this, info, false, itemMini);
-        this.svgObjects[info.uid] = item;
+    //     const item = new NetGraphItem(this, info, false, itemMini);
+    //     this.svgObjects[info.uid] = item;
 
-        this.detectCollapsedConns(item.uid);
-        this.detectCollapsedConns(itemMini.uid);
+    //     this.detectCollapsedConns(item.uid);
+    //     this.detectCollapsedConns(itemMini.uid);
 
-        this.scaleMiniMap();
-    }
+    //     this.scaleMiniMap();
+    // }
 
     // this will need to be refactored later
     createNode(ngiArg, html) {
@@ -588,7 +601,7 @@ export class NetGraph {
     /**
      * Expand or collapse a network.
      */
-    toggleNetwork(uid) {
+    toggleNetwork({uid}: Uid) {
         const item = this.svgObjects[uid];
         if (item.expanded) {
             item.collapse(true);

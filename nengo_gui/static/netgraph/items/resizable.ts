@@ -102,7 +102,7 @@ abstract class ResizableItem extends InteractableItem {
     }
 
     redrawSize() {
-        super();
+        super.redrawSize();
         this.shape.setAttribute(
             "transform",
             "translate(-" + (screenW / 2) + ", -" + (screenH / 2) + ")");
@@ -111,7 +111,7 @@ abstract class ResizableItem extends InteractableItem {
     }
 
     computerFill() {
-        super();
+        super.computeFill();
         const fill = Math.round(255 * Math.pow(0.8, depth));
         this.shape.style.fill =
             "rgb(" + fill + "," + fill + "," + fill + ")";
@@ -164,7 +164,7 @@ export class NodeItem extends ResizableItem {
     }
 
     redrawSize() {
-        super();
+        super.redrawSize();
         this.shape.setAttribute(
             "transform",
             "translate(-" + (screenW / 2) + ", -" + (screenH / 2) + ")");
@@ -194,6 +194,15 @@ export class NetItem extends ResizableItem {
             this.expand(true, true);
         }
         this.g.classlist.add("network")
+    }
+
+    remove() {
+        super.remove();
+        if (this.expanded) {
+            // Collapse the item, but don't tell the server since that would
+            // update the server's config
+            this.collapse(false);
+        }
     }
 
     generateMenu() {
@@ -309,6 +318,24 @@ export class NetItem extends ResizableItem {
                 this.ng.notify({act: "collapse", uid: this.uid});
             }
         }
+    }
+
+    get transparentNets(): boolean {
+        return config.transparentNets;
+    }
+
+    set transparentNets(val: boolean) {
+        if (val === config.transparentNets) {
+            return;
+        }
+        config.transparentNets = val;
+        Object.keys(this.svgObjects).forEach(key => {
+            const ngi = this.svgObjects[key];
+            ngi.computeFill();
+            if (ngi.type === "net" && ngi.expanded) {
+                ngi.shape.style["fill-opacity"] = val ? 0.0 : 1.0;
+            }
+        });
     }
 }
 
