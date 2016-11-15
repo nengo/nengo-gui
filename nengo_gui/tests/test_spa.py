@@ -52,6 +52,7 @@ with model:
     model.cortical = spa.Cortical(actions)
 """
         tt.reset_page(driver)
+        time.sleep(0.2)
         tt.update_editor(driver, test_file)
         tt.mouse_scroll(driver, 200)
 
