@@ -1,10 +1,14 @@
 language: c
 sudo: false
 
+addons:
+  # 2.x Selenium WebDriver only works for Firefox <= 47.0.1
+  firefox: "47.0.1"
+
 env:
   global:
     - CONDA_DEPS="numpy pytest"
-    - PIP_DEPS="selenium pyimgur"
+    - PIP_DEPS="'selenium<3' pyimgur"
 
 matrix:
   include:
