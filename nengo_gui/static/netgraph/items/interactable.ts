@@ -9,6 +9,8 @@ export abstract class InteractableItem extends NetGraphItem {
     uid;
     gNetworks;
     gItems;
+    label: VNode;
+    labelBelow: boolean;
 
     constructor(ngiArg: NetGraphItemArg, uid: string, miniItem, label) {
         super(ngiArg, uid);
@@ -19,12 +21,10 @@ export abstract class InteractableItem extends NetGraphItem {
         this.gNetworks = this.ng.gNetworksMini;
         this.gItems = this.ng.gItemsMini;
 
-        const labelText = h("text");
-        this.label = labelText;
-        this.label.innerHTML = label;
+        this.label = h("text", {innerHTML: label, transform: ""});
         this.uid = uid;
         this.miniItem = miniItem;
-        g.appendChild(this.label);
+        this.g.children.push(this.label);
 
         this.uid = uid;
 
@@ -32,7 +32,8 @@ export abstract class InteractableItem extends NetGraphItem {
             this.parent.children.push(this);
         }
 
-        interact(g).draggable({
+        // TODO: this needs a div
+        interact(this.g).draggable({
             onend: event => {
                 const item = this.ng.svgObjects[uid];
                 item.constrainPosition();
@@ -61,7 +62,7 @@ export abstract class InteractableItem extends NetGraphItem {
                 }
             },
             onstart: () => {
-                menu.hideAny();
+                this.menu.hideAny();
                 this.moveToFront();
             },
         });
@@ -71,7 +72,7 @@ export abstract class InteractableItem extends NetGraphItem {
                 // Change to "tap" for right click
                 if (event.button === 0) {
                     if (this.menu.visibleAny()) {
-                        menu.hideAny();
+                        this.menu.hideAny();
                     } else {
                         this.menu.show(event.clientX,
                                        event.clientY,
@@ -84,7 +85,7 @@ export abstract class InteractableItem extends NetGraphItem {
                 // Get rid of menus when clicking off
                 if (event.button === 0) {
                     if (this.menu.visibleAny()) {
-                        menu.hideAny();
+                        this.menu.hideAny();
                     }
                 }
             })
@@ -92,26 +93,21 @@ export abstract class InteractableItem extends NetGraphItem {
                 // Get rid of menus when clicking off
                 if (event.button === 0) {
                     if (this.menu.visibleAny()) {
-                        menu.hideAny();
-                    } else if (this.type === "net") {
-                        if (this.expanded) {
-                            this.collapse(true);
-                        } else {
-                            this.expand();
-                        }
+                        this.menu.hideAny();
                     }
                 }
             });
-        this.g.addEventListener("contextmenu", event => {
-            event.preventDefault();
-            event.stopPropagation();
-            if (this.menu.visibleAny()) {
-                menu.hideAny();
-            } else {
-                this.menu.show(
-                    event.clientX, event.clientY, this.generateMenu());
-            }
-        });
+        this.g = h("g",
+            {contextmenu: event => {
+                event.preventDefault();
+                event.stopPropagation();
+                if (this.menu.visibleAny()) {
+                    this.menu.hideAny();
+                } else {
+                    this.menu.show(
+                        event.clientX, event.clientY, this.generateMenu());
+                }
+            }});
     }
 
     // TODO: How do I make sure this is implemented by subclasses?
@@ -154,8 +150,9 @@ export abstract class InteractableItem extends NetGraphItem {
     // what was this supposed to do in the first place?
     reshapeSize() {
         super.reshapeSize();
-        this.label.setAttribute(
-                "transform", "translate(0, " + (screenH / 2) + ")");
+        this.label = h("text", {
+            transform: "translate(0, " + (screenH / 2) + ")",
+        });
     }
 
     _getScreenW() {
@@ -181,6 +178,22 @@ export abstract class InteractableItem extends NetGraphItem {
         const offsetY = this.ng.offsetY * h;
 
         return {w, h, offsetX, offsetY};
+    }
+
+    setLabel(label) {
+        this.label= h("text", {innerHTML: label});
+    }
+
+    // TODO: what is the expected functionality of this thing?
+    setLabelBelow(flag) {
+        if (flag && !this.labelBelow) {
+            const screenH = this.getScreenHeight();
+            this.label = h("text", {
+                transform: "translate(0, " + (screenH / 2) + ")",
+            });
+        } else if (!flag && this.labelBelow) {
+            this.label = h("text", {transform: ""});
+        }
     }
 }
 

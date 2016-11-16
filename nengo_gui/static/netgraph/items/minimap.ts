@@ -1,5 +1,7 @@
 import { NetGraphItem } from "./item";
 
+// TODO: This is probably still going to need a type parameter so that
+// it draws the correct icon using the correct view
 export class MinimapItem extends NetGraphItem {
     constructor(ngiArg, uid) {
         super(ngiArg, uid);
@@ -19,6 +21,8 @@ export class MinimapItem extends NetGraphItem {
 
         const offsetX = -this.ng.mmMinX * w + (mmW - dispW) / 2.;
         const offsetY = -this.ng.mmMinY * h + (mmH - dispH) / 2.;
+
+        return {w, h, offsetX, offsetY};
     }
 
     _getScreenW() {

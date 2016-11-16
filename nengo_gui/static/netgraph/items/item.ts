@@ -11,7 +11,6 @@
  * @param {string|null} info.parent - a NetGraphItem with .type=="net"
  */
 
-import * as interact from "interact.js";
 import { dom, h, VNode } from "maquette";
 
 import * as menu from "../../menu";
@@ -21,37 +20,35 @@ import { NetGraph } from "../netgraph";
 export interface NetGraphItemArg {
     ng: NetGraph;
 
-    width: Number;
-    height: Number;
+    width: number;
+    height: number;
 
-    posX: Number;
-    posY: Number;
+    posX: number;
+    posY: number;
 
-    dimensions: Number;
+    dimensions: number;
     parent: string;
 }
 
 export abstract class NetGraphItem {
-    area;
+    area: VNode;
     aspect;
     childConnections;
     children;
     connIn;
     connOut;
-    depth;
-    dimensions;
+    depth: number;
+    dimensions: number;
     fixedHeight;
     fixedWidth;
-    g;
+    g: VNode;
     gItems;
     gNetworks;
-    label;
-    labelBelow;
     menu;
     minHeight;
     minWidth;
     ng: NetGraph;
-    parent;
+    parent: NetGraphItem;
     shape;
     size;
     uid: string;
@@ -61,7 +58,7 @@ export abstract class NetGraphItem {
     protected _x;
     protected _y;
 
-    constructor(ngiArg: NetGraphItemArg, uid:string) {
+    constructor(ngiArg: NetGraphItemArg, uid: string) {
 
         this.ng = ngiArg.ng;
 
@@ -101,20 +98,17 @@ export abstract class NetGraphItem {
         }
 
         // Create the SVG group to hold this item
-        // TODO: What's with using `g` and `this.g` interchangeably?
-        const g = h("g");
-        this.g = g;
-        this.gItems.appendChild(g);
+        this.g = h("g");
+        this.gItems.appendChild(this.g);
 
-        this.area = h("rect");
-        this.area.style.fill = "transparent";
+        this.area = h("rect", {style: "fill:transparent"});
 
         this.menu = new menu.Menu(this.ng.parent);
 
         this.computeFill();
 
-        g.appendChild(this.shape);
-        g.appendChild(this.area);
+        this.g.children.push(this.shape);
+        this.g.children.push(this.area);
 
         this.redraw();
     }
@@ -151,11 +145,8 @@ export abstract class NetGraphItem {
         this._y = val;
     }
 
-    setLabel(label) {
-        this.label.innerHTML = label;
-    }
-
     moveToFront() {
+        // TODO: maquette doesn't seem to implement parentNode?
         this.g.parentNode.appendChild(this.g);
 
         Object.keys(this.children).forEach(key => {
@@ -208,15 +199,7 @@ export abstract class NetGraphItem {
         });
     }
 
-    setLabelBelow(flag) {
-        if (flag && !this.labelBelow) {
-            const screenH = this.getScreenHeight();
-            this.label.setAttribute(
-                "transform", "translate(0, " + (screenH / 2) + ")");
-        } else if (!flag && this.labelBelow) {
-            this.label.setAttribute("transform", "");
-        }
-    }
+
 
     /**
      * Determine the fill color based on the depth.
@@ -295,8 +278,9 @@ export abstract class NetGraphItem {
         const screen = this.getScreenLocation();
 
         // Update my position
-        this.g.setAttribute("transform", "translate(" + screen[0] + ", " +
-                            screen[1] + ")");
+        this.g = h("g", {
+            transform: "translate(" + screen[0] + ", " + screen[1] + ")",
+        });
     }
 
     redrawChildren() {
@@ -364,11 +348,12 @@ export abstract class NetGraphItem {
         // The circle pattern isn't perfectly square, so make its area smaller
         const areaW = screenW;
         const areaH = screenH;
-        this.area.setAttribute(
-            "transform",
-            "translate(-" + (areaW / 2) + ", -" + (areaH / 2) + ")");
-        this.area.setAttribute("width", areaW);
-        this.area.setAttribute("height", areaH);
+        this.area = h("rect", {
+            style: "fill:transparent",
+            transform: "translate(-" + (areaW / 2) + ", -" + (areaH / 2) + ")",
+            width: areaW,
+            height: areaH,
+        });
     }
 
     abstract _getScreenW(): number;

@@ -14,9 +14,9 @@ abstract class ResizableItem extends InteractableItem {
                 invert: "none",
                 margin: 10,
             }).on("resizestart", event => {
-                menu.hideAny();
+                this.menu.hideAny();
             }).on("resizemove", event => {
-                const item = this.ng.svgObjects[uid];
+                const item = this.ng.svgObjects[this.uid];
                 const pos = item.getScreenLocation();
                 let hScale = this.ng.getScaledWidth();
                 let vScale = this.ng.getScaledHeight();
@@ -87,13 +87,13 @@ abstract class ResizableItem extends InteractableItem {
                     this.ng.scaleMiniMap();
                 }
             }).on("resizeend", event => {
-                const item = this.ng.svgObjects[uid];
+                const item = this.ng.svgObjects[this.uid];
                 item.constrainPosition();
                 item.redraw();
                 this.ng.notify({
                     act: "posSize",
                     height: item.height,
-                    uid: uid,
+                    uid: this.uid,
                     width: item.width,
                     x: item.x,
                     y: item.y,
@@ -180,6 +180,8 @@ export class NodeItem extends ResizableItem {
 
 export class NetItem extends ResizableItem {
     expanded: boolean;
+    spTargets;
+    defaultOutput;
 
     constructor(expanded, spTargets, defaultOutput) {
         super();
@@ -193,6 +195,22 @@ export class NetItem extends ResizableItem {
             // Report to server but do not add to the undo stack
             this.expand(true, true);
         }
+
+        interact(this.g)
+            .on("doubletap", event => {
+                // Get rid of menus when clicking off
+                if (event.button === 0) {
+                    if (this.menu.visibleAny()) {
+                        this.menu.hideAny();
+                    } else {
+                        if (this.expanded) {
+                            this.collapse(true);
+                        } else {
+                            this.expand();
+                        }
+                    }
+                }
+            });
         this.g.classlist.add("network")
     }
 
@@ -245,7 +263,9 @@ export class NetItem extends ResizableItem {
      */
     expand(returnToServer=true, auto=false) { // tslint:disable-line
         // Default to true if no parameter is specified
-        returnToServer = typeof returnToServer !== "undefined" ? returnToServer : true;
+        if (typeof returnToServer !== "undefined") {
+            returnToServer = true;
+        }
         auto = typeof auto !== "undefined" ? auto : false;
 
         this.g.classList.add("expanded");
@@ -340,6 +360,8 @@ export class NetItem extends ResizableItem {
 }
 
 export class EnsembleItem extends ResizableItem {
+    shape: VNode;
+
     constructor() {
         super();
 
@@ -356,36 +378,25 @@ export class EnsembleItem extends ResizableItem {
      * Function for drawing ensemble svg.
      */
     ensembleSvg() {
-        const shape = h("g");
-        shape.setAttribute("class", "ensemble");
+        const shape = h("g", {class: "ensemble"});
 
         const dx = -1.25;
         const dy = 0.25;
 
-        let circle = h("circle");
-        this.setAttributes(
-            circle, {cx: -11.157 + dx, cy: -7.481 + dy, r: "4.843"});
-        shape.appendChild(circle);
-        circle = h("circle");
-        this.setAttributes(
-            circle, {cx: 0.186 + dx, cy: -0.127 + dy, r: "4.843"});
-        shape.appendChild(circle);
-        circle = h("circle");
-        this.setAttributes(
-            circle, {cx: 5.012 + dx, cy: 12.56 + dy, r: "4.843"});
-        shape.appendChild(circle);
-        circle = h("circle");
-        this.setAttributes(
-            circle, {cx: 13.704 + dx, cy: -0.771 + dy, r: "4.843"});
-        shape.appendChild(circle);
-        circle = h("circle");
-        this.setAttributes(
-            circle, {cx: -10.353 + dx, cy: 8.413 + dy, r: "4.843"});
-        shape.appendChild(circle);
-        circle = h("circle");
-        this.setAttributes(
-            circle, {cx: 3.894 + dx, cy: -13.158 + dy, r: "4.843"});
-        shape.appendChild(circle);
+        let circle: VNode;
+
+        circle = h("circle", {cx: -11.157 + dx, cy: -7.481 + dy, r: "4.843"});
+        shape.children.push(circle);
+        circle = h("circle", {cx: 0.186 + dx, cy: -0.127 + dy, r: "4.843"});
+        shape.children.push(circle);
+        circle = h("circle", {cx: 5.012 + dx, cy: 12.56 + dy, r: "4.843"});
+        shape.children.push(circle);
+        circle = h("circle", {cx: 13.704 + dx, cy: -0.771 + dy, r: "4.843"});
+        shape.children.push(circle);
+        circle = h("circle", {cx: -10.353 + dx, cy: 8.413 + dy, r: "4.843"});
+        shape.children.push(circle);
+        circle = h("circle", {cx: 3.894 + dx, cy: -13.158 + dy, r: "4.843"});
+        shape.children.push(circle);
 
         return shape;
     }
@@ -417,14 +428,20 @@ export class EnsembleItem extends ResizableItem {
     }
 
     redrawSize() {
-        super();
+        super.redrawSize();
         const scale = Math.sqrt(screenH * screenH + screenW * screenW) /
             Math.sqrt(2);
         const r = 17.8; // TODO: Don't hardcode the size of the ensemble
-        this.shape.setAttribute(
-            "transform", "scale(" + scale / 2 / r + ")");
-        this.shape.style.setProperty("stroke-width", 20 / scale);
-        areaW = screenW * 0.97;
-        this.area.setAttribute("width", areaW);
+        // TODO: Does this over-write any existing style?
+        this.shape = h("g", {
+            class: "ensemble",
+            transform: "scale(" + scale / 2 / r + ")",
+            style: "stroke-width" + 20 / scale,
+        });
+
+        this.area = h("rect", {
+            style: "fill:transparent",
+            width: screenW * 0.97,
+        });
     }
 }
