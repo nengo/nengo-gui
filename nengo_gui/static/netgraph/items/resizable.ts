@@ -196,6 +196,7 @@ export class NetItem extends ResizableItem {
             this.expand(true, true);
         }
 
+        // TODO: Is this the right way to override an interact method?
         interact(this.g)
             .on("doubletap", event => {
                 // Get rid of menus when clicking off
