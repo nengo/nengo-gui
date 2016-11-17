@@ -6,22 +6,18 @@
     margin-right: auto;
     left: 0px;
 }
-.controls > label{
-    margin-right: 15px !important;
-}
-#ens_dimension{
-    width: 100px
-}
 
-.slider {
-    margin-right: 15px;
-}
-
-#ensModalForm .form-control {
+#ensModalForm input.form-control {
     height: 25px !important;
     width: 40px !important;
     padding: 2px;
+    margin-right: 15px;
 }
+
+#ensModalForm .controls {
+    margin-bottom: 8px;
+}
+
 
 .slider-selection {
 	background: #5da3ff;

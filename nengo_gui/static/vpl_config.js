@@ -1,27 +1,26 @@
 Nengo.VPLConfig = function(){
-    this.$form =  $('<form id="ensModalForm">'+
-    '<div class="form-group" id="radius_controls">'+
-        '<div class="controls form-inline">'+
-            '<label for="ens_dimension">Dimension</label>'+
-            '<input type="number" class="form-control" id="ens_dimension" placeholder="1">'+
-        '</div>'+
-    '</div>'+
-    '<div id="graph_container"></div>'+
-    '<div class="form-group">'+
+    this.$param_form =  $('<form id="ensModalForm">'+
+    '<div class="form-group" id="param_controls">'+
     '</div>'+
     '<div class="form-group">'+
-    '<label for="ens_model">Neuron Model</label>'+
-        '<select class="form-control" id="ens_model">'+
-        '<option>LIF (Default)'+
-        '<option>LIF (Custom)</option>'+
-        '<option>AdaptiveLIF</option>'+
-        '</select>'+
     '</div>'+
 '</form>');
+    this.$model_form = $('<form id="ensModalForm">'+
+        '<div class="form-group">'+
+        '   <label for="ens_model">Neuron Model</label>'+
+            '<select class="form-control" id="ens_model">'+
+                '<option>AdaptiveLIF</option>'+
+                '<option>LIF</option>'+
+            '</select>'+
+        '</div>'+
+        '<div class="form-group" id="model_controls">'+
+        '</div>'+
+    '</form>')
     this.neuron_params = {}
-    this.neuron_params['LIF_default'] = {}
-    this.neuron_params['LIF_custom'] = {}
-    this.graph_container = $();
+    this.neuron_params['LIF'] = {tau_rc: {min:0,max:1,default:0.02,step:0.01},
+                                tau_ref: {min:0,max:0.01,default:0.002,step:0.001},
+                                min_voltage: {min:0,max:10,default:0,step:1}};
+    this.graph_container = $('<div id="graph_container"></div>');
     this.graph_w = 500;
     this.radius = 1;
     this.sliders = {};
@@ -31,43 +30,79 @@ Nengo.VPLConfig.prototype.ensemble_modal = function(){
     var self = this;
 
     Nengo.modal.clear_body();
-    Nengo.modal.show();
-    Nengo.modal.title('Edit Ensemble');
-    self.$form.appendTo(Nengo.modal.$body);
-    // var tabs = Nengo.modal.tabbed_body([{id: 'params', title: 'Parameters'},
-    //                              {id: 'model', title: 'Model'}]);
-    this.graph_container.appendTo(this.$form);
+    Nengo.modal.show()
+    Nengo.modal.title('Edit Ensemble');;
+    var tabs = Nengo.modal.tabbed_body([{id: 'params', title: 'Parameters'},
+                                 {id: 'model', title: 'Neuron Model'}]);
+    this.graph_container.prependTo(".tab-content");
+    self.$param_form.appendTo(tabs.params);
+    self.$model_form.appendTo(tabs.model);
+
+    $("#ens_model").on("change",function(){
+        var optionSelected = $("option:selected", this);
+        var value = this.value;
+
+        for(var item in self.neuron_params[value]){
+            console.log(item);
+            self.create_slider("#model_controls",item,item,{
+                min: self.neuron_params[value][item]['min'],
+                max: self.neuron_params[value][item]['max'],
+                tooltip: "hide",
+                value: self.neuron_params[value][item]['default'],
+                step: self.neuron_params[value][item]['step'],
+            });
+        }
+    });
     self.redraw_graph("#graph_container",[1,2,3],[[1,2,3],[4,5,6]],'radius','frequency')
-    self.create_slider("#radius_controls","ex1","Radius",{
+    self.create_slider("#param_controls","ens_dimension","Dimension",{
+    	min: 1,
+        max: 10,
+        tooltip: "hide",
+        value: 1,
+        step: 1,
+        id: "ens_dimensionC",
+    });
+    self.create_slider("#param_controls","ex1","Radius",{
     	min: 0.1,
         max: 2,
         tooltip: "hide",
         value: 1,
         step: 0.1,
         id: "ex1C",
-    })
+    });
+    self.create_slider("#param_controls","neuron_num","Neuron #",{
+        min: 1,
+        max: 200,
+        tooltip: "hide",
+        value: 50,
+        step: 1,
+        id: "neuron_numC",
+    });
+
+
 }
 
 Nengo.VPLConfig.prototype.create_slider = function(parent_selector,new_id,label,options){
     var self = this;
     var control_group = $('<div class="controls form-inline"></div>')
         .appendTo($(parent_selector));
-    var label_tag = $('<label for="'+new_id+'">'+label+'</label>')
-        .appendTo($(control_group));
-    var slider_input = $('<input data-provide="slider" id="'+new_id+'"/>')
+    var label_tag = $('<label class="col-xs-3" for="'+new_id+'">'+label+'</label>')
         .appendTo($(control_group));
     var slide_val = $('<input type="text" class="form-control slider-val" id="'+new_id+
-                    '_val" placeholder="1">')
+            '_val" placeholder="1">')
+        .appendTo($(control_group));
+    var slider_input = $('<input data-provide="slider" id="'+new_id+'"/>')
         .appendTo($(control_group));
 
 
     self.sliders[new_id] = new Slider('#'+new_id,options);
+    slide_val.val(self.sliders[new_id].getValue());
     self.sliders[new_id].on("slide",function(){
         $(slide_val).val(self.sliders[new_id].getValue());
     });
     $(slide_val).on("change",function(){
         var max_val = self.sliders[new_id].getAttribute("max");
-        var value = parseInt($(this).val(),10);
+        var value = parseFloat($(this).val(),10);
         if (value > max_val){
             self.sliders[new_id].setAttribute("max",value);
         }
@@ -84,7 +119,7 @@ Nengo.VPLConfig.prototype.create_slider = function(parent_selector,new_id,label,
 Nengo.VPLConfig.prototype.redraw_graph = function(selector, x, ys, x_label, y_label){
     var self = this;
     $("#graph_container > svg").remove();
-    self.graph_container.appendTo(this.$form);
+    self.graph_container.prependTo(".tab-content");
     self.multiline_plot(selector, x, ys, x_label, y_label);
 }
 

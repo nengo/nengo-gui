@@ -1,12 +1,12 @@
 Nengo.VPL = function(){
     var self = this;
     self.edit_mode = false;
+
     $("#mode_list").height($(document).height()*0.85);
     $(document).keyup(function(e) {
         if (e.keyCode === 27) self.unselect_component("Pointer");   // esc
     });
 
-    self.contextmenu = null;
     //Setting Click handlers for toggle buttons
     $("#Delete").on('click',function(){
         self.component_toggle('Delete');
@@ -179,7 +179,8 @@ Nengo.VPL.prototype.create_component = function(type){
         });
     });
 }
-
+/** Creates the interaction, click events, and visuals for drawing and creation
+    of connections.*/
 Nengo.VPL.prototype.create_connection = function(){
     var self = this;
     var cur_obj = "";
@@ -295,6 +296,8 @@ Nengo.VPL.prototype.create_connection = function(){
     });
 }
 
+/** Creates the interaction, click events, and visuals for drawing and creation
+    of deleting objects.*/
 Nengo.VPL.prototype.delete_mode = function(){
     var self = this;
     var cur_obj = "";
@@ -493,6 +496,7 @@ Nengo.VPL.prototype.compute_network_size = function (parent_net){
     return parent_size;
 }
 
+/** Finds the next available uid for a type of component */
 Nengo.VPL.prototype.open_name = function(name) {
     var num = 1;
     var editor = ace.edit('editor');
@@ -502,6 +506,7 @@ Nengo.VPL.prototype.open_name = function(name) {
     return name + num;
 }
 
+/** Adds css to show which connections are valid and which aren't */
 Nengo.VPL.prototype.show_connectable = function(toggle,allowed_connect){
     var node_style;
     if(toggle == false){
@@ -619,10 +624,12 @@ Nengo.VPL.prototype.delete_component = function(uid){
     }
 }
 
+/** Deletes all connections to a specific component */
 Nengo.VPL.prototype.delete_connections = function(uid){
     this.delete_connection(uid,"");
 }
 
+/** Deletes a specific connection between two components */
 Nengo.VPL.prototype.delete_connection = function(uid1,uid2){
     var editor = ace.edit("editor");
     var re = new RegExp("nengo\.Connection\s*.*(?:[^\.])"+uid1+".*"+uid2);
@@ -631,21 +638,6 @@ Nengo.VPL.prototype.delete_connection = function(uid1,uid2){
         editor.removeLines(code_line.start.row);
         code_line = editor.find(re);
     }
-}
-
-Nengo.VPL.prototype.config_connection = function(uid1,uid2){
-    var self = this;
-    var editor = ace.edit("editor");
-    Nengo.modal.config_connection_modal();
-    Nengo.modal.show();
-    Nengo.modal.footer('ok_cancel',
-        function(e) {
-            $('#OK').attr('data-dismiss', 'modal');
-        },
-        function () {
-            $('#cancel-button').attr('data-dismiss', 'modal');
-        }
-    );
 }
 
 $(document).ready(function(){

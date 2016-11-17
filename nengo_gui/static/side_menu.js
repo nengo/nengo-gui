@@ -15,7 +15,7 @@ Nengo.SideMenu = function() {
     self.menu_width = document.getElementsByClassName("sidenav-container")[0]
                               .offsetWidth;
     // Gathers all the menu tabs from the HTML for the Event Handlers
-    self.tabs = $(".tab-content");
+    self.tabs = $(".tab-contents");
     self.current_tab = -1;
 
     self.top_buttons = ['#Open_file_button', '#Component_menu', '#Config_menu'];

@@ -794,39 +794,6 @@ Nengo.Modal.prototype.make_conn_path_dropdown_list = function($container, others
     }
 }
 
-Nengo.Modal.prototype.component_config = function(uid){
-  this.clear_body();
-  var component = Nengo.netgraph.svg_objects[uid];
-  var name_switch = {"ens":"Ensemble","node":"Node"};
-  this.title(name_switch[component.type]+" "+uid+"'s properties.'");
-  var $form = $('<form class="form-horizontal" id ' +
-      '="myModalForm"/>').appendTo(this.$body);
-  $('<div class="form-group" id="config_component">' +
-
-      '<label for="config-dimension" class="control-label">' +
-          'Number of Dimensions</label>' +
-      '<div class="input-group col-xs-2 form-inline">' +
-        '<input type="number" min="1" step="1" ' +
-          'maxlength="3" class="form-control" id="config-dimension"' +
-              ' data-error="Invalid number of dimensions"' +
-              ' required>' +
-        '<span class="input-group-addon">#</span>' +
-      '</div>' +
-
-      '<label for="config-neuron-number" class="control-label">' +
-            'Number of Neurons</label>' +
-        '<div class="input-group col-xs-2">' +
-          '<input type="number" min="1" step="1" ' +
-            'maxlength="3" class="form-control" id="config-neuron-number"' +
-                ' data-error="Invalid number of neurons"' +
-                ' required>' +
-          '<span class="input-group-addon">#</span>' +
-        '</div>' +
-  '</div>').appendTo($form);
-  $("#config-dimension").val(component.dimensions);
-  $("#config-neuron-number").val(component.n_neurons);
-}
-
 Nengo.modal = new Nengo.Modal($('.modal').first());
 
 //Change the global defaults of the modal validator
