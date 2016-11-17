@@ -17,6 +17,7 @@ import * as allComponents from "../components/all-components";
 import { config } from "../config";
 import { Menu } from "../menu";
 import { HotkeyManager } from "../hotkeys";
+import { Shape } from "../utils";
 import * as viewport from "../viewport";
 import { Connection } from "../websocket";
 import { NetGraphConnection } from "./connection";
@@ -44,11 +45,6 @@ interface Uid {
 interface Pos {
     x: number;
     y: number;
-}
-
-interface Shape {
-    width: number;
-    height: number;
 }
 
 // TODO: figure out an interface for config (maybe a type?)
@@ -597,6 +593,25 @@ export class NetGraph {
     getScaledHeight() {
         return this.height * this.scale;
     }
+
+    get transparentNets(): boolean {
+        return config.transparentNets;
+    }
+
+    set transparentNets(val: boolean) {
+        if (val === config.transparentNets) {
+            return;
+        }
+        config.transparentNets = val;
+        Object.keys(this.svgObjects).forEach(key => {
+            const ngi = this.svgObjects[key];
+            ngi.computeFill();
+            if (ngi.type === "net" && ngi.expanded) {
+                ngi.shape.style["fill-opacity"] = val ? 0.0 : 1.0;
+            }
+        });
+    }
+
 
     /**
      * Expand or collapse a network.

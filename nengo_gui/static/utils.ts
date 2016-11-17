@@ -23,6 +23,11 @@ export function clip(x: number, low: number, high: number) {
     return x;
 }
 
+export interface Shape {
+    width: number;
+    height: number;
+}
+
 export function disable_editor() {
     $("#Toggle_ace").css("display", "none");
     $("#Save_file").css("display", "none");

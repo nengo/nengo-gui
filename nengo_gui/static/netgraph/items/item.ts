@@ -14,8 +14,10 @@
 import { VNode, dom, h  } from "maquette";
 
 import * as menu from "../../menu";
+import { Shape } from "../../utils";
 import * as viewport from "../../viewport";
 import { NetGraph } from "../netgraph";
+
 
 export interface NetGraphItemArg {
     ng: NetGraph;
@@ -34,15 +36,15 @@ export interface NetGraphItemArg {
 
 export abstract class NetGraphItem {
     area: VNode;
-    aspect;
+    aspect: number;
     childConnections;
     children;
     connIn;
     connOut;
     depth: number;
     dimensions: number;
-    fixedHeight;
-    fixedWidth;
+    fixedHeight: number;
+    fixedWidth: number;
     g: VNode;
     gItems;
     gNetworks;
@@ -51,8 +53,8 @@ export abstract class NetGraphItem {
     minWidth;
     ng: NetGraph;
     parent: NetGraphItem;
-    shape;
-    size;
+    shape: VNode;
+    size: number;
     uid: string;
 
     protected _height;
@@ -202,16 +204,6 @@ export abstract class NetGraphItem {
         });
     }
 
-
-
-    /**
-     * Determine the fill color based on the depth.
-     */
-    // TODO: can you turn this into css so it's calculated automatically?
-    computeFill() {
-        const depth = this.ng.transparentNets ? 1 : this.depth;
-    }
-
     /**
      * Remove the item from the graph.
      */
@@ -336,7 +328,7 @@ export abstract class NetGraphItem {
         return h;
     }
 
-    redrawSize() {
+    redrawSize(): Shape {
         let screenW = this.getScreenWidth();
         let screenH = this.getScreenHeight();
 
@@ -348,7 +340,6 @@ export abstract class NetGraphItem {
             }
         }
 
-        // The circle pattern isn't perfectly square, so make its area smaller
         const areaW = screenW;
         const areaH = screenH;
         this.area = h("rect", {
@@ -357,6 +348,8 @@ export abstract class NetGraphItem {
             width: areaW,
             height: areaH,
         });
+
+        return {height: screenH, width: screenW};
     }
 
     abstract _getScreenW(): number;

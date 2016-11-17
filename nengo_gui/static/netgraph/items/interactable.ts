@@ -1,6 +1,7 @@
 import { VNode, dom, h  } from "maquette";
 
 import { MenuItem } from "../../menu";
+import { Shape } from "../../utils";
 import { NetGraphItem, NetGraphItemArg } from "./item";
 import { MinimapItem } from "./minimap";
 
@@ -150,13 +151,12 @@ export abstract class InteractableItem extends NetGraphItem {
         this.miniItem.remove();
     }
 
-    // TODO: This might have been over-refactored
-    // what was this supposed to do in the first place?
-    reshapeSize() {
-        super.reshapeSize();
+    redrawSize() {
+        const screenD = super.redrawSize();
         this.label = h("text", {
-            transform: "translate(0, " + (screenH / 2) + ")",
+            transform: "translate(0, " + (screenD.height / 2) + ")",
         });
+        return screenD;
     }
 
     _getScreenW() {

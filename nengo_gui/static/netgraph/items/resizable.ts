@@ -4,6 +4,7 @@ import { VNode, dom, h  } from "maquette";
 // import * as menu from "../../menu";
 import { config } from "../../config";
 import { MenuItem } from "../../menu";
+import { Shape } from "../../utils";
 import { InteractableItem, InteractableItemArg } from "./interactable";
 import { NetGraphItemArg } from "./item";
 
@@ -104,22 +105,35 @@ abstract class ResizableItem extends InteractableItem {
     }
 
     redrawSize() {
-        super.redrawSize();
-        this.shape.setAttribute(
-            "transform",
-            "translate(-" + (screenW / 2) + ", -" + (screenH / 2) + ")");
-        this.shape.setAttribute("width", screenW);
-        this.shape.setAttribute("height", screenH);
+        const screenD = super.redrawSize();
+
+        const halfW = screenD.width / 2;
+        const halfH = screenD.height / 2;
+        this.shape = h("g", {
+            transform: "",
+            translate: "(-" + halfW + ", -" + halfH + ")",
+            width: screenD.width,
+            height: screenD.height,
+        });
+
+        return screenD;
     }
 
+    /**
+     * Determine the fill color based on the depth.
+     */
     computeFill() {
-        super.computeFill();
-        const fill = Math.round(255 * Math.pow(0.8, depth));
-        this.shape.style.fill =
-            "rgb(" + fill + "," + fill + "," + fill + ")";
-        const stroke = Math.round(255 * Math.pow(0.8, depth + 2));
-        this.shape.style.stroke =
-            "rgb(" + stroke + "," + stroke + "," + stroke + ")";
+        const depth = this.ng.transparentNets ? 1 : this.depth;
+
+        let rgb = Math.round(255 * Math.pow(0.8, depth));
+        const fill = "rgb(" + rgb + "," + rgb + "," + rgb + ")";
+
+        rgb = Math.round(255 * Math.pow(0.8, depth + 2));
+        const stroke = "rgb(" + rgb + "," + rgb + "," + rgb + ")";
+
+        this.shape = h("g", {
+            style: "fill=" + fill + ", stroke=" + stroke,
+        });
     }
 }
 
@@ -166,17 +180,11 @@ export class NodeItem extends ResizableItem {
     }
 
     redrawSize() {
-        super.redrawSize();
-        this.shape.setAttribute(
-            "transform",
-            "translate(-" + (screenW / 2) + ", -" + (screenH / 2) + ")");
-        this.shape.setAttribute("width", screenW);
-        this.shape.setAttribute("height", screenH);
+        const screenD = super.redrawSize();
 
-        const radius = Math.min(screenW, screenH);
+        const radius = Math.min(screenD.width, screenD.height);
         // TODO: Don't hardcode .1 as the corner radius scale
-        this.shape.setAttribute("rx", radius * .1);
-        this.shape.setAttribute("ry", radius * .1);
+        this.shape = h("g", {rx: radius * .1, ry: radius * .1});
     }
 }
 
@@ -277,7 +285,7 @@ export class NetItem extends ResizableItem {
         if (!this.expanded) {
             this.expanded = true;
             if (this.ng.transparentNets) {
-                this.shape.style["fill-opacity"] = 0.0;
+                this.shape = h("g", {style: "fill-opacity=0.0"});
             }
             this.gItems.removeChild(this.g);
             this.gNetworks.appendChild(this.g);
@@ -322,7 +330,7 @@ export class NetItem extends ResizableItem {
         if (this.expanded) {
             this.expanded = false;
             if (this.ng.transparentNets) {
-                this.shape.style["fill-opacity"] = 1.0;
+                this.shape = h("g", {style: "fill-opacity=1.0"});
             }
             this.gNetworks.removeChild(this.g);
             this.gItems.appendChild(this.g);
@@ -432,11 +440,13 @@ export class EnsembleItem extends ResizableItem {
     }
 
     redrawSize() {
-        super.redrawSize();
-        const scale = Math.sqrt(screenH * screenH + screenW * screenW) /
-            Math.sqrt(2);
+        const screenD = super.redrawSize();
+
+        const width = screenD.width;
+        const height = screenD.height;
+        const scale = Math.sqrt(height * height + width * width) / Math.sqrt(2);
+
         const r = 17.8; // TODO: Don't hardcode the size of the ensemble
-        // TODO: Does this over-write any existing style?
         this.shape = h("g", {
             class: "ensemble",
             transform: "scale(" + scale / 2 / r + ")",
@@ -445,7 +455,7 @@ export class EnsembleItem extends ResizableItem {
 
         this.area = h("rect", {
             style: "fill:transparent",
-            width: screenW * 0.97,
+            width: width * 0.97,
         });
     }
 }
