@@ -3,8 +3,8 @@ import { NetGraphItem } from "./item";
 // TODO: This is probably still going to need a type parameter so that
 // it draws the correct icon using the correct view
 export class MinimapItem extends NetGraphItem {
-    constructor(ngiArg, uid) {
-        super(ngiArg, uid);
+    constructor(ngiArg) {
+        super(ngiArg);
         this.gNetworks = this.ng.gNetworksMini;
         this.gItems = this.ng.gItemsMini;
     }

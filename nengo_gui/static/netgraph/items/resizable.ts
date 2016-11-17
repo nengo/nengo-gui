@@ -1,13 +1,15 @@
-import { dom, h, VNode } from "maquette";
 import * as interact from "interact.js";
+import { VNode, dom, h  } from "maquette";
 
 // import * as menu from "../../menu";
+import { config } from "../../config";
 import { MenuItem } from "../../menu";
-import { InteractableItem } from "./interactable";
+import { InteractableItem, InteractableItemArg } from "./interactable";
+import { NetGraphItemArg } from "./item";
 
 abstract class ResizableItem extends InteractableItem {
-    constructor() {
-        super();
+    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg) {
+        super(ngiArg, interArg);
 
         interact(this.area).resizable({
                 edges: {bottom: true, left: true, right: true, top: true},
@@ -110,7 +112,7 @@ abstract class ResizableItem extends InteractableItem {
         this.shape.setAttribute("height", screenH);
     }
 
-    computerFill() {
+    computeFill() {
         super.computeFill();
         const fill = Math.round(255 * Math.pow(0.8, depth));
         this.shape.style.fill =
@@ -124,8 +126,8 @@ abstract class ResizableItem extends InteractableItem {
 export class NodeItem extends ResizableItem {
     htmlNode;
 
-    constructor(html) {
-        super();
+    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg, html) {
+        super(ngiArg, interArg);
         this.shape = h("rect");
         this.htmlNode = html;
         this.g.classlist.add("node");
@@ -183,8 +185,9 @@ export class NetItem extends ResizableItem {
     spTargets;
     defaultOutput;
 
-    constructor(expanded, spTargets, defaultOutput) {
-        super();
+    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
+                expanded, spTargets, defaultOutput) {
+        super(ngiArg, interArg);
         this.shape = h("rect");
         this.expanded = expanded;
         this.spTargets = spTargets;
@@ -363,8 +366,8 @@ export class NetItem extends ResizableItem {
 export class EnsembleItem extends ResizableItem {
     shape: VNode;
 
-    constructor() {
-        super();
+    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg) {
+        super(ngiArg, interArg);
 
         // TODO: This means it resizes differently and other stuff!
         this.aspect = 1.;

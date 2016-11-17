@@ -11,7 +11,7 @@
  * @param {string|null} info.parent - a NetGraphItem with .type=="net"
  */
 
-import { dom, h, VNode } from "maquette";
+import { VNode, dom, h  } from "maquette";
 
 import * as menu from "../../menu";
 import * as viewport from "../../viewport";
@@ -28,6 +28,8 @@ export interface NetGraphItemArg {
 
     dimensions: number;
     parent: string;
+
+    uid: string;
 }
 
 export abstract class NetGraphItem {
@@ -58,9 +60,10 @@ export abstract class NetGraphItem {
     protected _x;
     protected _y;
 
-    constructor(ngiArg: NetGraphItemArg, uid: string) {
+    constructor(ngiArg: NetGraphItemArg) {
 
         this.ng = ngiArg.ng;
+        this.uid = ngiArg.uid;
 
         this._width = ngiArg.width;
         this._height = ngiArg.height;

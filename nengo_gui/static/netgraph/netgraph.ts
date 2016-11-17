@@ -11,7 +11,7 @@
  */
 
 import * as interact from "interact.js";
-import { dom, h, VNode } from "maquette";
+import { VNode, dom, h  } from "maquette";
 
 import * as allComponents from "../components/all-components";
 import { config } from "../config";
@@ -23,8 +23,8 @@ import { NetGraphConnection } from "./connection";
 import { Minimap } from "./minimap";
 
 
-import { NetGraphItem, NetGraphItemArg } from "./items/item";
 import { PassthroughItem } from "./items/interactable";
+import { NetGraphItem, NetGraphItemArg } from "./items/item";
 import { EnsembleItem, NetItem, NodeItem} from "./items/resizable";
 
 import "./netgraph.css";
@@ -464,9 +464,9 @@ export class NetGraph {
         });
 
         conn.bind("netGraph.reconnect",
-        ({uid, notifyServer}: Uid & any) => {
-            const component = allComponents.byUID(uid);
-            component.remove(true, notifyServer);
+            ({uid, notifyServer}: Uid & any) => {
+                const component = allComponents.byUID(uid);
+                component.remove(true, notifyServer);
         });
 
         this.attached.push(conn);

@@ -1,7 +1,13 @@
-import { dom, h, VNode } from "maquette";
+import { VNode, dom, h  } from "maquette";
 
-import { NetGraphItem, NetGraphItemArg } from "./item";
 import { MenuItem } from "../../menu";
+import { NetGraphItem, NetGraphItemArg } from "./item";
+import { MinimapItem } from "./minimap";
+
+export interface InteractableItemArg {
+    miniItem: MinimapItem;
+    label: string;
+}
 
 export abstract class InteractableItem extends NetGraphItem {
     minimap;
@@ -12,8 +18,8 @@ export abstract class InteractableItem extends NetGraphItem {
     label: VNode;
     labelBelow: boolean;
 
-    constructor(ngiArg: NetGraphItemArg, uid: string, miniItem, label) {
-        super(ngiArg, uid);
+    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg) {
+        super(ngiArg);
         // TODO: WTF, do abstract classes not pass on their properities?
         // this has got to be an error
         // or at least something that starts working once
@@ -21,12 +27,10 @@ export abstract class InteractableItem extends NetGraphItem {
         this.gNetworks = this.ng.gNetworksMini;
         this.gItems = this.ng.gItemsMini;
 
-        this.label = h("text", {innerHTML: label, transform: ""});
-        this.uid = uid;
-        this.miniItem = miniItem;
+        this.label = h("text", {innerHTML: interArg.label, transform: ""});
+        this.miniItem = interArg.miniItem;
         this.g.children.push(this.label);
 
-        this.uid = uid;
 
         if (ngiArg.parent !== null) {
             this.parent.children.push(this);
@@ -35,16 +39,16 @@ export abstract class InteractableItem extends NetGraphItem {
         // TODO: this needs a div
         interact(this.g).draggable({
             onend: event => {
-                const item = this.ng.svgObjects[uid];
+                const item = this.ng.svgObjects[this.uid];
                 item.constrainPosition();
                 this.ng.notify({
-                    act: "pos", uid: uid, x: item.x, y: item.y,
+                    act: "pos", uid: this.uid, x: item.x, y: item.y,
                 });
 
                 item.redraw();
             },
             onmove: event => {
-                const item = this.ng.svgObjects[uid];
+                const item = this.ng.svgObjects[this.uid];
                 let w = this.ng.getScaledWidth();
                 let h = this.ng.getScaledHeight();
                 let parent = item.parent;
@@ -170,7 +174,7 @@ export abstract class InteractableItem extends NetGraphItem {
         }
     }
 
-    _getPost() {
+    _getPos() {
         const w = this.ng.width * this.ng.scale;
         const h = this.ng.height * this.ng.scale;
 
@@ -181,7 +185,7 @@ export abstract class InteractableItem extends NetGraphItem {
     }
 
     setLabel(label) {
-        this.label= h("text", {innerHTML: label});
+        this.label = h("text", {innerHTML: label});
     }
 
     // TODO: what is the expected functionality of this thing?
@@ -198,8 +202,9 @@ export abstract class InteractableItem extends NetGraphItem {
 }
 
 export class PassthroughItem extends InteractableItem {
-    constructor() {
-        super();
+    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg) {
+        super(ngiArg, interArg);
+
         this.shape = h("ellipse");
         // TODO: WTF can this be avoided?
         // I have to make a sepcific minimap subclass for this...
