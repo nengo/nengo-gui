@@ -1,0 +1,2 @@
+Nengo.VPLConfig = function(){
+}
