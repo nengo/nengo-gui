@@ -30,12 +30,11 @@ class HTMLView(Component):
         page.model.nodes.remove(self.node)
 
     def gather_data(self, t, x):
-        self.data.append((t, x))
+        self.data.append((t, self.html_function(t, x)))
 
     def update_client(self, client):
         while len(self.data) > 0:
-            t, x = self.data.popleft()
-            html = self.html_function(t, x)
+            t, html = self.data.popleft()
             out = '%g %s' % (t, html)
             client.write_text(out)
 
