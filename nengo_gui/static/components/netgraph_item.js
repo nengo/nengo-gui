@@ -12,7 +12,6 @@
  */
 Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
     var self = this;
-
     this.ng = ng;
     this.type = info.type;
     this.uid = info.uid;
@@ -22,6 +21,9 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
     this.fixed_width = null;
     this.fixed_height = null;
     this.dimensions = info.dimensions;
+    if(info.line_number != null){
+        this.line_number = info.line_number;
+    }
     if(info.type == 'ens'){
         this.n_neurons = info.n_neurons;
     }
@@ -389,6 +391,7 @@ Nengo.NetGraphItem.prototype.generate_menu = function () {
         }
     }
     if (this.type == 'ens') {
+        items.push(['Edit',function(){Nengo.vpl_config.ensemble_config(self.uid)}]);
         items.push(['Value', function() {self.create_graph('Value');}]);
         if (this.dimensions > 1) {
             items.push(['XY-value', function() {self.create_graph('XYValue');}]);

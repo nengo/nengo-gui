@@ -9,7 +9,7 @@
 
 #ensModalForm input.form-control {
     height: 25px !important;
-    width: 40px !important;
+    width: 60px !important;
     padding: 2px;
     margin-right: 15px;
 }
@@ -18,13 +18,25 @@
     margin-bottom: 8px;
 }
 
+#dimensions_form {
+    padding-bottom: 5px;
+}
 
+#dimensions_val_1 {
+    height: 25px !important;
+    width: 60px !important;
+    padding: 2px;
+}
+
+.slider {
+    margin-right: 15px;
+}
 .slider-selection {
 	background: #5da3ff;
 }
 
-.slider-track-high {
-	background: #EEE;
+.slider-track-high, .slider-track-low{
+	background: #DDD;
 }
 
 .slider-handle {
