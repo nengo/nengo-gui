@@ -1,4 +1,6 @@
-Nengo.VPLConfig.prototype.init_ensemble = function(){
+/** Initiates the ensemble editor, sets parameters and creates the html.
+    This is called before the modal is created */
+Nengo.VPLConfig.prototype.init_ensemble = function(uid){
     this.$param_form =  $('<form id="ensModalForm">'+
         '<div class="form-group" id="param_controls"></div>'+
     '</form>');
@@ -11,21 +13,21 @@ Nengo.VPLConfig.prototype.init_ensemble = function(){
         '<div class="form-group" id="model_controls">'+
         '</div>'+
     '</form>');
+
+    /** An object of the neuron models and their corresponding parameters and settings*/
     this.neuron_model = {};
-    this.neuron_model['LIF'] = {tau_rc: {min:0,max:1,default:0.02,step:0.01},
-                                tau_ref: {min:0,max:0.01,default:0.002,step:0.001},
-                                // min_voltage: {min:0,max:10,default:0,step:1}
+    this.neuron_model['LIF'] = {tau_rc: {min:0.01,max:1,default:0.02,step:0.01},
+                                tau_ref: {min:0.001,max:0.01,default:0.002,step:0.001},
                             };
     this.neuron_model['Sigmoid'] = {
-                            tau_ref: {min:0,max:0.01,default:0.002,step:0.001},
+                            tau_ref: {min:0.001,max:0.01,default:0.002,step:0.001},
                             }
-    this.neuron_dists = {};
-    this.neuron_dists["Uniform"]
+
     this.graph_container = $('<div id="graph_container"></div>');
     this.graph_w = 500;
     this.radius = 1;
     this.inputs = {};
-
+    this.uid = uid;
     for(var n_type in this.neuron_model){
         $('<option>'+n_type+'</option>').appendTo($(this.$model_form).find("#ens_model"));
     }
@@ -33,7 +35,7 @@ Nengo.VPLConfig.prototype.init_ensemble = function(){
 
 Nengo.VPLConfig.prototype.ensemble_modal = function(uid){
     var self = this;
-    self.init_ensemble();
+    self.init_ensemble(uid);
     Nengo.modal.clear_body();
     Nengo.modal.show()
     Nengo.modal.title("Edit "+uid+"'s properties");;
@@ -43,27 +45,12 @@ Nengo.VPLConfig.prototype.ensemble_modal = function(uid){
     self.$param_form.appendTo(tabs.params);
     self.$model_form.appendTo(tabs.model);
 
+    self.create_neuron_model($("#ens_model").val());
     $("#ens_model").on("change",function(){
-        var optionSelected = $("option:selected", this);
-        console.log(optionSelected);
-        $("#model_controls").empty()
-
-        var value = this.value;
-
-        for(var item in self.neuron_model[value]){
-            self.create_input("#model_controls",item,item,"slider",{
-                min: self.neuron_model[value][item]['min'],
-                max: self.neuron_model[value][item]['max'],
-                tooltip: "hide",
-                value: self.neuron_model[value][item]['default'],
-                step: self.neuron_model[value][item]['step'],
-                group: "n_type"
-            });
-        }
-        self.update_input_list();
+        self.create_neuron_model(this.value);
     });
-    self.redraw_graph("#graph_container",[1,2,3],[[1,2,3],[4,5,6]],'radius','frequency')
-    self.create_input("#dim_controls","dimensions","Dimension","number",{
+
+    self.create_input("#dim_controls","dimensions","Dimension","slider",{
     	min: 1,
         max: 10,
         tooltip: "hide",
@@ -77,7 +64,7 @@ Nengo.VPLConfig.prototype.ensemble_modal = function(uid){
         max: 5,
         tooltip: "hide",
         value: 1,
-        step: 0.1,
+        step: 1,
         id: "radiusC",
         group: "basic"
     });
@@ -86,7 +73,7 @@ Nengo.VPLConfig.prototype.ensemble_modal = function(uid){
         max: 200,
         tooltip: "hide",
         value: 50,
-        step: 1,
+        step: 5,
         id: "neuron_numC",
         group: "basic"
     });
@@ -95,7 +82,7 @@ Nengo.VPLConfig.prototype.ensemble_modal = function(uid){
         max: 1,
         tooltip: "hide",
         value: [-1,1],
-        step: 0.01,
+        step: 0.05,
         id: "interceptsC",
         group: "uniform"
     });
@@ -104,17 +91,23 @@ Nengo.VPLConfig.prototype.ensemble_modal = function(uid){
         max: 400,
         tooltip: "hide",
         value: [200,400],
-        step: 1,
+        step: 5,
         id: "max_ratesC",
         group: "uniform"
     });
+    self.generate_graph();
 }
 
+/** parent_selector: a css selector for the parent that the input will be attached to.
+    new_id: the id for the input, attaches the input to this.inputs.
+    label: text for input.
+    type: one of ["number","slider","double_slider"].
+    options: object including settings for input and which group it belongs to */
 Nengo.VPLConfig.prototype.create_input = function(parent_selector,new_id,label,type,options){
     var self = this;
     var slide_vals = []
     self.inputs[new_id] = {}
-    self.inputs[new_id]['group'] = options.group;
+    self.inputs[new_id]['options'] = options;
     self.inputs[new_id]['type'] = type;
     var control_group = $('<div id="'+new_id+"_form"+'"class="controls form-inline"></div>')
         .appendTo($(parent_selector));
@@ -142,13 +135,14 @@ Nengo.VPLConfig.prototype.create_input = function(parent_selector,new_id,label,t
             slide_vals[1] = slide_val_2;
         }
 
-        self.inputs[new_id]['slider'].on("change",function(){
+        self.inputs[new_id]['slider'].on("slideStop",function(){
             if(typeof options.value == "number"){
                 $(slide_vals[0]).val(self.inputs[new_id]['slider'].getValue());
             } else{
                 $(slide_vals[0]).val(self.inputs[new_id]['slider'].getValue()[0]);
                 $(slide_vals[1]).val(self.inputs[new_id]['slider'].getValue()[1]);
             }
+            self.generate_graph();
         });
         for(var x = 0; x <= 1; x++){
             $(slide_vals[x]).on("change",function(){
@@ -163,11 +157,13 @@ Nengo.VPLConfig.prototype.create_input = function(parent_selector,new_id,label,t
                 self.inputs[new_id]['slider'].setValue(slide_vals.map(function(input){
                     return parseFloat($(input).val(),10)
                 }));
-        })
+                self.generate_graph();
+            })
         }
     }
 }
 
+/** Main function that creates modal and handles the data on submit*/
 Nengo.VPLConfig.prototype.ensemble_config = function(uid){
     var self = this;
     var vpl = Nengo.vpl;
@@ -190,7 +186,7 @@ Nengo.VPLConfig.prototype.ensemble_config = function(uid){
             else{tabs = tab+tab;}
 
             editor.session.replace(new Range(component.line_number-1, 0, component.line_number-1
-            , Number.MAX_VALUE), tabs+uid+" = "+code);
+            , Number.MAX_VALUE), tabs+code);
             vpl.delete_connections(uid);
             var conn_in = component.conn_in;
             var conn_out = component.conn_out;
@@ -208,6 +204,8 @@ Nengo.VPLConfig.prototype.ensemble_config = function(uid){
     );
 }
 
+/** Checks if sliders html is attached to the page, if not it deletes the slider
+    from self.inputs */
 Nengo.VPLConfig.prototype.update_input_list = function(){
     var self = this;
     for(var input in self.inputs){
@@ -217,6 +215,8 @@ Nengo.VPLConfig.prototype.update_input_list = function(){
     }
 }
 
+/** Creates an object that has all of the current values from the inputs in the
+    form.*/
 Nengo.VPLConfig.prototype.capture_values = function(){
     var self = this;
     var values = {};
@@ -225,34 +225,97 @@ Nengo.VPLConfig.prototype.capture_values = function(){
     var neuron_values = [];
 
     for(var input in inputs){
-        if(inputs[input].group == "basic"){
-            values[input] = $("#"+input+"_val_1").val();
-        } else if(inputs[input].group == "uniform"){
-            values[input] = "nengo.dists.Uniform("+
-                "low="+$("#"+input+"_val_1").val()+","+
-                "high="+$("#"+input+"_val_2").val()+""+
-                ")"
+        if(inputs[input].options.group == "basic"){
+            var val = $("#"+input+"_val_1").val();
+            // if(inputs[input].options.value != val && (input != "dimensions" || input != "n_neurons")){
+                values[input] = val;
+            // }
+        } else if(inputs[input].options.group == "uniform"){
+            var vals = [$("#"+input+"_val_1").val(),$("#"+input+"_val_2").val()];
+            // if(vals != inputs[input].options.value){
+                values[input] = "Uniform("+
+                    "low="+vals[0]+","+
+                    "high="+vals[1]+""+
+                    ")"
+            // }
         }
-        else if(inputs[input].group == "n_type"){
+        else if(inputs[input].options.group == "n_type"){
             neuron_values.push(input+"="+$("#"+input+"_val_1").val());
         }
     }
-    values["neuron_type"] = "nengo."+neuron_model+"("+neuron_values.join()+")";
+    values["neuron_type"] = neuron_model+"("+neuron_values.join()+")";
     return values;
 }
 
+/** Takes the values from capture_values() and returns the appropriate code for
+    an ensemble.*/
 Nengo.VPLConfig.prototype.generate_code = function(){
     var self = this;
     var vals = self.capture_values();
-    var props = []
-
+    var props = [];
+    var start = "";
+    var inputs = self.inputs;
     for(var item in vals){
-        props.push(item+"="+vals[item]);
+        start = "";
+        if(item == "neuron_type"){
+            start = "nengo."
+        } else if(inputs[item].options.group == "uniform"){
+            start = "nengo.dists."
+        }
+        props.push(item+"="+start+vals[item]);
     }
 
-    return "nengo.Ensemble("+props.join()+")";
+    return self.uid+" = "+"nengo.Ensemble("+props.join(', ')+")";
 }
 
-$(document).ready(function(){
-  Nengo.vpl_config = new Nengo.VPLConfig();
-});
+/** Makes a call to the server to create the appropriate tuning or response curves
+    for the given parameters of the form.*/
+Nengo.VPLConfig.prototype.generate_graph = function(){
+    var self = this;
+    var server_response = $.get( "/generate_curves",
+                {code:this.generate_code(),
+                name:this.uid});
+
+    $.ajax({
+        url: "/generate_curves",
+        type: 'GET',
+        dataType:'text',
+        data:{name:self.uid,code:self.generate_code()},
+        success: function(res) {
+            /* The Response from the server uses single quotes instead of double quotes
+               this has to be switched before json can parse the string */
+            var plot_info = JSON.parse(res.split("'").join('"'));
+            self.redraw_graph("#graph_container",plot_info.x,plot_info.y,
+                                plot_info.x_label,plot_info.y_label,plot_info.title);
+        }
+    });
+}
+
+/** Creates the form inputs for a given type of neuron_model */
+Nengo.VPLConfig.prototype.create_neuron_model = function(neuron_type){
+    var self = this;
+    var value = neuron_type;
+    $("#model_controls").empty()
+
+    for(var item in self.neuron_model[value]){
+        self.create_input("#model_controls",item,item,"slider",{
+            min: self.neuron_model[value][item]['min'],
+            max: self.neuron_model[value][item]['max'],
+            tooltip: "hide",
+            value: self.neuron_model[value][item]['default'],
+            step: self.neuron_model[value][item]['step'],
+            group: "n_type"
+        });
+    }
+    self.update_input_list();
+}
+
+/** Empties container for the graph and replaces it with a new graph */
+Nengo.VPLConfig.prototype.redraw_graph = function(selector, x, ys, x_label, y_label, title){
+    var self = this;
+    $("#graph_container > svg").remove();
+    self.graph_container.prependTo(".modal-body");
+    $("#graph_label").remove();
+    $("<label id='graph_label'><h4>"+title+"</h4></label>").prependTo(".modal-body");
+    self.multiline_plot(selector, x, ys, x_label, y_label);
+}

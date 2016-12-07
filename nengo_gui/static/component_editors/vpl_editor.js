@@ -1,17 +1,8 @@
-Nengo.VPLConfig = function(){
-}
-
-Nengo.VPLConfig.prototype.redraw_graph = function(selector, x, ys, x_label, y_label){
-    var self = this;
-    $("#graph_container > svg").remove();
-    self.graph_container.prependTo(".modal-body");
-    $("<label>Tuning Curves</label>").prependTo(".modal-body");
-    self.multiline_plot(selector, x, ys, x_label, y_label);
-}
+Nengo.VPLConfig = function(){}
 
 Nengo.VPLConfig.prototype.multiline_plot = function(selector, x, ys, x_label, y_label) {
 
-    var margin = {left: 30, top: 0, right: 0, bottom: 30};
+    var margin = {left: 60, top: 0, right: 0, bottom: 30};
     var w = 500 - margin.left - margin.right;
     var h = 220 - margin.bottom - margin.top;
     var graph_w = w + margin.left + margin.right;
@@ -23,7 +14,7 @@ Nengo.VPLConfig.prototype.multiline_plot = function(selector, x, ys, x_label, y_
         .range([margin.left, w - margin.right]);
     var scale_y = d3.scale.linear()
         .domain([d3.min(ys, function(y){ return d3.min(y); }) - 0.01,
-                 d3.max(ys, function(y){ return d3.max(y); }) + 0.01])
+                 d3.max(ys, function(y){ return 500*(1 + Math.floor(d3.max(y)/500)) }) + 0.01])
         .range([h+margin.top, margin.top]);
 
     // Add an SVG element with the desired dimensions and margin.
@@ -97,3 +88,7 @@ Nengo.VPLConfig.prototype.multiline_plot = function(selector, x, ys, x_label, y_
         .attr("class", "line")
         .style("stroke", function(d, i) { return colors[i]; });
 }
+
+$(document).ready(function(){
+      Nengo.vpl_config = new Nengo.VPLConfig();
+});

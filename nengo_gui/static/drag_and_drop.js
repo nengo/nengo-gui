@@ -154,7 +154,6 @@ Nengo.VPL.prototype.create_component = function(type){
                     obj_prop.parent_network = event.parent_network;
 
                     var comp_name = self.add_component(type,obj_prop);
-                    console.log(comp_name);
                     /** Checks every 100ms until the component shows up in
                     *   the netgraph and notifies the server. */
                     var checkExist = setInterval(function() {
@@ -318,8 +317,8 @@ Nengo.VPL.prototype.delete_mode = function(){
         }else{
             $("#netgraph").css('cursor','');
         }
-        $(document).click(function(evt){
-            if(event.button == 2){
+        $(document).one('mouseup',function(evt){
+            if(evt.button == 2){
                 self.unselect_component("Pointer");
                 return;
             }
@@ -342,7 +341,7 @@ Nengo.VPL.prototype.unselect_component = function(default_mode){
     }
     this.show_connectable(false,false);
     this.delete_dashed_line();
-    $(document).unbind('mousedown mousemove mouseup click');
+    $(document).unbind('mousedown mousemove mouseup');
     var element = document.getElementById('main');
     element.style['box-shadow'] = "";
 }

@@ -57,6 +57,7 @@ Nengo.NetGraphConnection = function(ng, info, minimap, mini_conn) {
 
     /** create the line and its arrowhead marker */
     this.g = ng.createSVGElement('g');
+    this.g.setAttribute('data-id',this.uid);
     this.g.classList.add('conn');
     this.menu = new Nengo.Menu(this.ng.parent);
     var self = this;
@@ -389,6 +390,9 @@ Nengo.NetGraphConnection.prototype.intersect_length = function(theta, alpha, wid
 Nengo.NetGraphConnection.prototype.generate_menu = function(){
     var self = this;
     var items = [];
+    items.push(['Edit',function(){
+        Nengo.vpl_config.conn_config(self.uid);
+    }]);
     items.push(['Delete Connection',function(){
         Nengo.vpl.delete_connection(self.pre.uid,self.post.uid);
     }]);

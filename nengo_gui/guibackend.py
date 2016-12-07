@@ -16,11 +16,13 @@ except ImportError:  # Python 2.7
 import ssl
 import time
 
+import nengo
 import nengo_gui
 import nengo_gui.exec_env
 import nengo_gui.page
 from nengo_gui import server
 from nengo_gui.password import checkpw
+from .static_plots import tuning_curve_plot, response_curve_plot
 
 
 logger = logging.getLogger(__name__)
@@ -100,7 +102,30 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         '/static': 'serve_static',
         '/browse': 'browse',
         '/favicon.ico': 'serve_favicon',
+        '/generate_curves': 'generate_curves',
     }
+
+    def generate_curves(self):
+        name = self.query.get("name")[0]
+        code = self.query.get("code")[0]
+        equal_sign_pos = code.find("=")
+        #Replaces the name of the variable with a for consistency reasons
+        new_code = "a"+code[equal_sign_pos:]
+
+        model = nengo.Network(seed=5)
+        exec("with model:{}".format(new_code))
+        dim = a.dimensions
+        data_spacing = 2
+        with nengo.Simulator(model) as sim:
+            if(dim == 1):
+                exec("plot_info = tuning_curve_plot(a, sim)")
+            else:
+                exec("plot_info = response_curve_plot(a, sim)")
+            plot_info['x'] = plot_info['x'][::data_spacing]
+            for num, line in enumerate(plot_info['y']):
+                plot_info['y'][num] = line[::data_spacing]
+
+        return server.HttpResponse(plot_info, "application/json")
 
     def get_expected_origins(self):
         session = self.get_session()

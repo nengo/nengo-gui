@@ -1,0 +1,28 @@
+#editor2{
+    height: 200px;
+}
+
+#dim_graph_container{
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+    width: 350px;
+    height: 150px;
+}
+
+.conn_node{
+    cursor: pointer;
+    fill: #DDD;
+    stroke-width: 2px;
+}
+.active{
+    stroke: #337ab7;
+}
+
+.closed{
+    stroke: #BBB;
+}
+
+.index-input{
+    width: 25px;
+}
