@@ -6,8 +6,14 @@ Nengo.VPLConfig.prototype.init_conn = function(uid){
     this.functions = {}
     this.functions['Identity'] = "";
     this.$conn_form =  $('<form id="connModalForm">'+
-        '<p>Input: <b>'+this.component.pre.uid+'</b></p>'+
-        '<p>Output: <b>'+this.component.post.uid+'</b></p>'+
+        '<p>Input: <button id="pre_conn" type="button" class="btn btn-default">'+
+        '<b>'+this.component.pre.uid+'</b>'+
+        '</button>'+
+        '</p>'+
+        '<p>Output: <button id="post_conn" type="button" class="btn btn-default">'+
+        '<b>'+this.component.post.uid+'</b>'+
+        '</button>'+
+        '</p>'+
         '<p>Select a function</p>'+
         '<select class="form-control" id="function_type">'+
         '</select>'+
@@ -15,7 +21,9 @@ Nengo.VPLConfig.prototype.init_conn = function(uid){
         '<button id="new_func" type="button" class="btn btn-default">Create function</button>'+
         '<br/>'+
         '<div id="editor2"></div>'+
-        '<div class="controls form-inline">'+
+        '<div class="row">'+
+        '<div class="col-md-1"></div>'+
+        '<div class="col-md-3" id="conn_in_index">'+
             '<label for="inputKey">[</label>'+
             '<input type="text" class="index-input">'+
             '<label>:</label>'+
@@ -23,6 +31,9 @@ Nengo.VPLConfig.prototype.init_conn = function(uid){
             '<label>:</label>'+
             '<input type="text" class="index-input">'+
             '<label>]</label>'+
+        '</div>'+
+        '<div class="col-md-4"></div>'+
+        '<div class="col-md-3" id="conn_out_index">'+
             '<label for="inputKey">[</label>'+
             '<input type="text" class="index-input">'+
             '<label>:</label>'+
@@ -30,6 +41,7 @@ Nengo.VPLConfig.prototype.init_conn = function(uid){
             '<label>:</label>'+
             '<input type="text" class="index-input">'+
             '<label>]</label>'+
+        '</div>'+
         '</div>'+
         '<div id="dim_graph_container"></div>'+
     '</form>');
@@ -62,6 +74,45 @@ Nengo.VPLConfig.prototype.conn_config = function(uid){
     self.dimension_graph([1],[1]);
     $("#new_func").click(function(){
         $("#editor2").toggle();
+    });
+    $("#pre_conn").click(function(){
+        $('#OK').attr('data-dismiss', 'modal');
+        self.ensemble_config($(this).text());
+    })
+    $("#post_conn").click(function(){
+        $('#OK').attr('data-dismiss', 'modal');
+        self.ensemble_config($(this).text());
+    })
+    $('.index-input').on('input',function(e){
+        if($(this).data("lastval")!= $(this).val()){
+        $(this).data("lastval",$(this).val());
+           //change action
+           var indicies = [];
+           var list,start,end,jump;
+           var dims = [self.dim_in,self.dim_out];
+           indicies[0] = $("#conn_in_index > input").map(function(item){
+               return parseInt($(this).val());
+           }).get();
+           indicies[1] = $("#conn_out_index > input").map(function(item){
+               return parseInt($(this).val());
+           }).get();
+
+           for(var pos in indicies){
+               list = []
+               start = indicies[pos][0];
+               end = indicies[pos][1];
+               jump = indicies[pos][2];
+               isNaN(start) == true ? (start=0) : (start=start)
+               isNaN(end) == true ? (end=dims[pos]): (end=end)
+               isNaN(jump) ==  true ? (jump=1) : (jump=jump)
+               for(var x = start; x < end; x+= jump){
+                   list.push(x+1);
+               }
+               indicies[pos] = list;
+            //    console.log(indicies);
+           }
+           self.dimension_graph(indicies[0],indicies[1]);
+        };
     });
     Nengo.modal.footer('ok_cancel',
         function(e) {
@@ -99,6 +150,7 @@ Nengo.VPLConfig.prototype.dimension_graph = function(c1,c2){
     var component = self.component;
     var dim1 = self.dim_in;
     var dim2 = self.dim_out;
+
     $("#dim_graph_container").empty();
     $("<center><h3>R<sup>"+c1.length+"</sup> -> R<sup>"+c2.length+"</sup></h3></center>")
         .appendTo($("#dim_graph_container"));
@@ -146,22 +198,23 @@ Nengo.VPLConfig.prototype.dimension_graph = function(c1,c2){
                         .attr("class",class_type_2)
                         .attr("data-num",x);
     }
-    $(".conn_node").one("click",function(){
-        if($(this).attr("class").indexOf("active") != -1){
-            $(this).attr("class",
-                $(this).attr("class").replace("active","closed")
-            );
-        } else{
-            $(this).attr("class",
-                $(this).attr("class").replace("closed","active")
-            );
-        }
-        var conn_in = $(".conn_node.in.active").map(function(){
-            return parseInt($(this).attr("data-num"),10);
-        }).get();
-        var conn_out = $(".conn_node.out.active").map(function(){
-            return parseInt($(this).attr("data-num"),10);
-        }).get();
-        self.dimension_graph(conn_in,conn_out);
-    });
+
+    // $(".conn_node").one("click",function(){
+    //     if($(this).attr("class").indexOf("active") != -1){
+    //         $(this).attr("class",
+    //             $(this).attr("class").replace("active","closed")
+    //         );
+    //     } else{
+    //         $(this).attr("class",
+    //             $(this).attr("class").replace("closed","active")
+    //         );
+    //     }
+    //     var conn_in = $(".conn_node.in.active").map(function(){
+    //         return parseInt($(this).attr("data-num"),10);
+    //     }).get();
+    //     var conn_out = $(".conn_node.out.active").map(function(){
+    //         return parseInt($(this).attr("data-num"),10);
+    //     }).get();
+    //     self.dimension_graph(conn_in,conn_out);
+    // });
 }

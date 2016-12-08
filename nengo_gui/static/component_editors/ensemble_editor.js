@@ -60,7 +60,7 @@ Nengo.VPLConfig.prototype.ensemble_modal = function(uid){
         group: "basic"
     });
     self.create_input("#param_controls","radius","Radius","slider",{
-    	min: 0.1,
+    	min: 1,
         max: 5,
         tooltip: "hide",
         value: 1,
@@ -73,7 +73,7 @@ Nengo.VPLConfig.prototype.ensemble_modal = function(uid){
         max: 200,
         tooltip: "hide",
         value: 50,
-        step: 5,
+        step: 1,
         id: "neuron_numC",
         group: "basic"
     });
@@ -330,6 +330,43 @@ Nengo.VPLConfig.prototype.create_neuron_model = function(neuron_type){
     self.update_input_list();
 }
 
+Nengo.VPLConfig.prototype.set_inputs = function(info){
+    var self = this;
+    var vals;
+    $("#ens_model").val(info["neuron_type"]);
+    for(var item in info){
+        vals = [];
+        if(item != "neuron_type"){
+            console.log(item);
+            console.log(info[item]);
+            console.log();
+            if(item == "neuron_params"){
+                for(var param in info["neuron_params"]){
+                    vals = [info["neuron_params"][param]].map(function(value){
+                        return parseFloat(value,10);
+                    })
+                    $("#"+param+"_val_1").val(vals[0]);
+                    self.inputs[param]["slider"].setValue(vals[0]);
+                }
+            }
+            else if(typeof(info[item]) == "object"){
+                vals = info[item].map(function(value){
+                    return parseFloat(value,10);
+                })
+                $("#"+item+"_val_1").val(vals[0]);
+                $("#"+item+"_val_2").val(vals[1]);
+                self.inputs[item]["slider"].setValue(vals);
+            } else{
+                vals = [info[item]].map(function(value){
+                    return parseFloat(value,10);
+                })
+                $("#"+item+"_val_1").val(vals[0]);
+                self.inputs[item]["slider"].setValue(vals[0]);
+            }
+        }
+    }
+    self.generate_graph();
+}
 /** Empties container for the graph and replaces it with a new graph */
 Nengo.VPLConfig.prototype.redraw_graph = function(selector, x, ys, x_label, y_label, title){
     var self = this;
