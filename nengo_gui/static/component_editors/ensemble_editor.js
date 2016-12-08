@@ -84,7 +84,7 @@ Nengo.VPLConfig.prototype.ensemble_modal = function(uid){
         value: [-1,1],
         step: 0.05,
         id: "interceptsC",
-        group: "uniform"
+        group: "dists"
     });
     self.create_input("#param_controls","max_rates","Max Rates (Hz)","double_slider",{
         min: 0,
@@ -93,7 +93,7 @@ Nengo.VPLConfig.prototype.ensemble_modal = function(uid){
         value: [200,400],
         step: 5,
         id: "max_ratesC",
-        group: "uniform"
+        group: "dists"
     });
     self.generate_graph();
 }
@@ -135,14 +135,13 @@ Nengo.VPLConfig.prototype.create_input = function(parent_selector,new_id,label,t
             slide_vals[1] = slide_val_2;
         }
 
-        self.inputs[new_id]['slider'].on("slideStop",function(){
+        self.inputs[new_id]['slider'].on("slideStop",function(evt){
             if(typeof options.value == "number"){
-                $(slide_vals[0]).val(self.inputs[new_id]['slider'].getValue());
+                $(slide_vals[0]).val(evt).change();
             } else{
-                $(slide_vals[0]).val(self.inputs[new_id]['slider'].getValue()[0]);
-                $(slide_vals[1]).val(self.inputs[new_id]['slider'].getValue()[1]);
+                $(slide_vals[0]).val(evt[0]).change();
+                $(slide_vals[1]).val(evt[1]).change();
             }
-            self.generate_graph();
         });
         for(var x = 0; x <= 1; x++){
             $(slide_vals[x]).on("change",function(){
@@ -222,7 +221,9 @@ Nengo.VPLConfig.prototype.capture_values = function(){
     var values = {};
     var inputs = self.inputs;
     var neuron_model = $("#ens_model").val();
-    var neuron_values = [];
+
+    values["neuron_type"] = neuron_model;
+    values['neuron_params'] = {}
 
     for(var input in inputs){
         if(inputs[input].options.group == "basic"){
@@ -230,20 +231,20 @@ Nengo.VPLConfig.prototype.capture_values = function(){
             // if(inputs[input].options.value != val && (input != "dimensions" || input != "n_neurons")){
                 values[input] = val;
             // }
-        } else if(inputs[input].options.group == "uniform"){
+        } else if(inputs[input].options.group == "dists"){
             var vals = [$("#"+input+"_val_1").val(),$("#"+input+"_val_2").val()];
-            // if(vals != inputs[input].options.value){
-                values[input] = "Uniform("+
-                    "low="+vals[0]+","+
-                    "high="+vals[1]+""+
-                    ")"
-            // }
+            // values[input] = "Uniform("+
+            //     "low="+vals[0]+","+
+            //     "high="+vals[1]+""+
+            //     ")"
+            values[input] = vals;
         }
         else if(inputs[input].options.group == "n_type"){
-            neuron_values.push(input+"="+$("#"+input+"_val_1").val());
+            // neuron_values.push(input+"="+$("#"+input+"_val_1").val());
+            values['neuron_params'][input] = $("#"+input+"_val_1").val();
         }
     }
-    values["neuron_type"] = neuron_model+"("+neuron_values.join()+")";
+    // values["neuron_type"] = neuron_model+"("+neuron_values.join()+")";
     return values;
 }
 
@@ -253,17 +254,31 @@ Nengo.VPLConfig.prototype.generate_code = function(){
     var self = this;
     var vals = self.capture_values();
     var props = [];
-    var start = "";
+    var param_code = "";
     var inputs = self.inputs;
+    var neuron_params = [];
+
     for(var item in vals){
-        start = "";
-        if(item == "neuron_type"){
-            start = "nengo."
-        } else if(inputs[item].options.group == "uniform"){
-            start = "nengo.dists."
+        param_code = "";
+        //Special Case for neuron_params
+        if(item != "neuron_params" && item != "neuron_type"){
+          if(inputs[item].options.group == "dists"){
+              param_code = "nengo.dists."+"Uniform("+
+                  "low="+vals[item][0]+","+
+                  "high="+vals[item][1]+""+
+                  ")"
+          } else {
+            param_code = vals[item];
+          }
+          props.push(item+"="+param_code);
         }
-        props.push(item+"="+start+vals[item]);
     }
+
+    for(var prop in vals['neuron_params']){
+      neuron_params.push(prop+"="+vals['neuron_params'][prop])
+    }
+    param_code = "nengo."+vals['neuron_type']+"("+neuron_params.join()+")";
+    props.push("neuron_type"+"="+param_code)
 
     return self.uid+" = "+"nengo.Ensemble("+props.join(', ')+")";
 }
@@ -291,6 +306,11 @@ Nengo.VPLConfig.prototype.generate_graph = function(){
     });
 }
 
+// Nengo.VPLConfig.prototype.set_form_inputs(values) = function(){
+//     for(inputs in self.inputs){
+//
+//     }
+// }
 /** Creates the form inputs for a given type of neuron_model */
 Nengo.VPLConfig.prototype.create_neuron_model = function(neuron_type){
     var self = this;
