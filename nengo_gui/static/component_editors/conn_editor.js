@@ -24,22 +24,24 @@ Nengo.VPLConfig.prototype.init_conn = function(uid){
         '<div class="row">'+
         '<div class="col-md-1"></div>'+
         '<div class="col-md-3" id="conn_in_index">'+
-            '<label for="inputKey">[</label>'+
-            '<input type="text" class="index-input">'+
+            '<label>Output Dimension</label>'+
+            '<label>[</label>'+
+            '<input type="text" class="index-input" value="0">'+
             '<label>:</label>'+
-            '<input type="text" class="index-input">'+
+            '<input type="text" class="index-input" value="'+this.dim_in+'">'+
             '<label>:</label>'+
-            '<input type="text" class="index-input">'+
+            '<input type="text" class="index-input" value="1">'+
             '<label>]</label>'+
         '</div>'+
         '<div class="col-md-4"></div>'+
         '<div class="col-md-3" id="conn_out_index">'+
-            '<label for="inputKey">[</label>'+
-            '<input type="text" class="index-input">'+
+            '<label>Output Dimension</label>'+
+            '<label>[</label>'+
+            '<input type="text" class="index-input" value="0">'+
             '<label>:</label>'+
-            '<input type="text" class="index-input">'+
+            '<input type="text" class="index-input" value="'+this.dim_out+'">'+
             '<label>:</label>'+
-            '<input type="text" class="index-input">'+
+            '<input type="text" class="index-input" value="1">'+
             '<label>]</label>'+
         '</div>'+
         '</div>'+
@@ -87,33 +89,10 @@ Nengo.VPLConfig.prototype.conn_config = function(uid){
         if($(this).data("lastval")!= $(this).val()){
         $(this).data("lastval",$(this).val());
            //change action
-           var indicies = [];
-           var list,start,end,jump;
-           var dims = [self.dim_in,self.dim_out];
-           indicies[0] = $("#conn_in_index > input").map(function(item){
-               return parseInt($(this).val());
-           }).get();
-           indicies[1] = $("#conn_out_index > input").map(function(item){
-               return parseInt($(this).val());
-           }).get();
-
-           for(var pos in indicies){
-               list = []
-               start = indicies[pos][0];
-               end = indicies[pos][1];
-               jump = indicies[pos][2];
-               isNaN(start) == true ? (start=0) : (start=start)
-               isNaN(end) == true ? (end=dims[pos]): (end=end)
-               isNaN(jump) ==  true ? (jump=1) : (jump=jump)
-               for(var x = start; x < end; x+= jump){
-                   list.push(x+1);
-               }
-               indicies[pos] = list;
-            //    console.log(indicies);
-           }
-           self.dimension_graph(indicies[0],indicies[1]);
+           self.create_slice();
         };
     });
+    self.create_slice();
     Nengo.modal.footer('ok_cancel',
         function(e) {
             // var Range = require("ace/range").Range;
@@ -217,4 +196,33 @@ Nengo.VPLConfig.prototype.dimension_graph = function(c1,c2){
     //     }).get();
     //     self.dimension_graph(conn_in,conn_out);
     // });
+}
+
+Nengo.VPLConfig.prototype.create_slice = function(){
+    var self = this;
+    var indicies = [];
+    var list,start,end,jump;
+    var dims = [self.dim_in,self.dim_out];
+    indicies[0] = $("#conn_in_index > input").map(function(item){
+        return parseInt($(this).val());
+    }).get();
+    indicies[1] = $("#conn_out_index > input").map(function(item){
+        return parseInt($(this).val());
+    }).get();
+
+    for(var pos in indicies){
+        list = []
+        start = indicies[pos][0];
+        end = indicies[pos][1];
+        jump = indicies[pos][2];
+        isNaN(start) == true ? (start=0) : (start=start)
+        isNaN(end) == true ? (end=dims[pos]): (end=end)
+        isNaN(jump) ==  true ? (jump=1) : (jump=jump)
+        for(var x = start; x < end; x+= jump){
+            list.push(x+1);
+        }
+        indicies[pos] = list;
+     //    console.log(indicies);
+    }
+    self.dimension_graph(indicies[0],indicies[1]);
 }
