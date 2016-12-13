@@ -28,7 +28,10 @@ class Pointer(SpaPlot):
         # Looping-in has the advantage of actually changing the
         # neural activity of the population, rather than just changing
         # the output.
-        self.loop_in_whitelist = [spa.Buffer, spa.Memory, spa.State]
+        self.loop_in_whitelist = []
+        for name in ['Buffer', 'Memory', 'State']:
+            if hasattr(spa, name):
+                self.loop_in_whitelist.append(getattr(spa, name))
 
         self.node = None
         self.conn1 = None

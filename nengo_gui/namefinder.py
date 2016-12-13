@@ -26,7 +26,12 @@ class NameFinder(object):
             private = inst_attr.startswith('_')
             in_lists = inst_attr in base_lists + all_lists
             if not private and not in_lists:
-                attr = getattr(net, inst_attr)
+                try:
+                    attr = getattr(net, inst_attr)
+                except Exception:
+                    # if accessing the attribute throws an exception,
+                    #  then we should ignore that attribute
+                    continue
                 if isinstance(attr, list):
                     for i, obj in enumerate(attr):
                         if obj not in self.known_name:
