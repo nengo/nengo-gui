@@ -137,11 +137,13 @@ Nengo.VPLConfig.prototype.create_input = function(parent_selector,new_id,label,t
 
         self.inputs[new_id]['slider'].on("slideStop",function(evt){
             if(typeof options.value == "number"){
-                $(slide_vals[0]).val(evt).change();
+                $(slide_vals[0]).val(evt)
             } else{
-                $(slide_vals[0]).val(evt[0]).change();
-                $(slide_vals[1]).val(evt[1]).change();
+                $(slide_vals[0]).val(evt[0])
+                $(slide_vals[1]).val(evt[1])
             }
+            console.log()
+            self.generate_graph();
         });
         for(var x = 0; x <= 1; x++){
             $(slide_vals[x]).on("change",function(){

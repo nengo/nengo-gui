@@ -26,3 +26,7 @@
 .index-input{
     width: 25px;
 }
+
+#ind_in, #ind_out{
+    height: 50px;
+}

@@ -4,6 +4,7 @@ Nengo.VPLConfig.prototype.init_conn = function(uid){
     this.dim_in = this.component.pre.dimensions;
     this.dim_out = this.component.post.dimensions;
     this.functions = {}
+    this.conn_sliders = {};
     this.functions['Identity'] = "";
     this.$conn_form =  $('<form id="connModalForm">'+
         '<p>Input: <button id="pre_conn" type="button" class="btn btn-default">'+
@@ -21,31 +22,12 @@ Nengo.VPLConfig.prototype.init_conn = function(uid){
         '<button id="new_func" type="button" class="btn btn-default">Create function</button>'+
         '<br/>'+
         '<div id="editor2"></div>'+
-        '<div class="row">'+
-        '<div class="col-md-1"></div>'+
-        '<div class="col-md-3" id="conn_in_index">'+
-            '<label>Output Dimension</label>'+
-            '<label>[</label>'+
-            '<input type="text" class="index-input" value="0">'+
-            '<label>:</label>'+
-            '<input type="text" class="index-input" value="'+this.dim_in+'">'+
-            '<label>:</label>'+
-            '<input type="text" class="index-input" value="1">'+
-            '<label>]</label>'+
+        '<div class="row" style="height:300px">'+
+        '<div class="col-md-1"><div id="index_in_slider"></div></div>'+
+        '<div class="col-md-6"><div id="dim_graph_container"></div></div>'+
+        '<div class="col-md-2"><div id="index_out_slider"></div></div>'+
         '</div>'+
-        '<div class="col-md-4"></div>'+
-        '<div class="col-md-3" id="conn_out_index">'+
-            '<label>Output Dimension</label>'+
-            '<label>[</label>'+
-            '<input type="text" class="index-input" value="0">'+
-            '<label>:</label>'+
-            '<input type="text" class="index-input" value="'+this.dim_out+'">'+
-            '<label>:</label>'+
-            '<input type="text" class="index-input" value="1">'+
-            '<label>]</label>'+
-        '</div>'+
-        '</div>'+
-        '<div id="dim_graph_container"></div>'+
+
     '</form>');
 
     for(var f_type in this.functions){
@@ -61,6 +43,20 @@ Nengo.VPLConfig.prototype.conn_modal = function(uid){
     Nengo.modal.show()
     Nengo.modal.title("Edit "+uid+"'s properties");;
     self.$conn_form.appendTo(Nengo.modal.$body);
+    options_in = {
+        orientation:"vertical",
+        ticks:[1],
+        id:"ind_in"
+    };
+    options_out = {
+        orientation:"vertical",
+        ticks:[1,2,3],
+        id:"ind_out"
+    }
+    self.conn_sliders['in'] = new Slider("#index_in_slider", options_in);
+    self.conn_sliders['out'] = new Slider("#index_out_slider", options_out);
+    $("#ind_in").height((options_in.ticks.length-1)*25 + 10)
+    $("#ind_out").height((options_out.ticks.length-1)*25)
 }
 
 Nengo.VPLConfig.prototype.conn_config = function(uid){
@@ -131,8 +127,9 @@ Nengo.VPLConfig.prototype.dimension_graph = function(c1,c2){
     var dim2 = self.dim_out;
 
     $("#dim_graph_container").empty();
+    // $("#dim_graph_container").parent().empty();
     $("<center><h3>R<sup>"+c1.length+"</sup> -> R<sup>"+c2.length+"</sup></h3></center>")
-        .appendTo($("#dim_graph_container"));
+        .appendTo($("#dim_graph_container").parent());
     var bodySelection = d3.select("#dim_graph_container");
     var graph_w = 350;
     var graph_h = 50+Math.max(dim1,dim2)*15;
