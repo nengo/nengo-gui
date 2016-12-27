@@ -410,9 +410,14 @@ class NetGraph(Component):
                 # These should not use the undo stack
                 getattr(self, 'act_' + action)(**info)
             else:
-                act = nengo_gui.user_action.create_action(action, self, **info)
-                self.page.undo_stack.append([act])
-                del self.page.redo_stack[:]
+                try:
+                    act = nengo_gui.user_action.create_action(action,
+                                                              self, **info)
+                    self.page.undo_stack.append([act])
+                    del self.page.redo_stack[:]
+                except:
+                    print('error processing message', repr(msg))
+                    traceback.print_exc()
         elif undo is not None:
             if undo == '1':
                 self.undo()
