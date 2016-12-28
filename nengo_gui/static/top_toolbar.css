@@ -69,6 +69,11 @@
     background: #eee;
 }
 
+#top_toolbar_div li.in-progress a.glyphicon {
+    color: #ccc;
+    background: #c22;
+}
+
 #global_config_menu {
     background: purple;
     height: 20em;
