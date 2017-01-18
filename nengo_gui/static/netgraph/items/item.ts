@@ -54,7 +54,7 @@ export abstract class NetGraphItem {
     ng: NetGraph;
     parent: NetGraphItem;
     shape: VNode;
-    size: number;
+    size: number[];
     uid: string;
 
     protected _height;
@@ -110,8 +110,6 @@ export abstract class NetGraphItem {
 
         this.menu = new menu.Menu(this.ng.parent);
 
-        this.computeFill();
-
         this.g.children.push(this.shape);
         this.g.children.push(this.area);
 
@@ -159,15 +157,14 @@ export abstract class NetGraphItem {
         });
     }
 
-    createGraph(type, args=null) { // tslint:disable-line
+    createGraph(graphType, args=null) { // tslint:disable-line
         const w = this.getNestedWidth();
         const h = this.getNestedHeight();
         const pos = this.getScreenLocation();
 
         const info: any = {
-            act: "createGraph",
             height: viewport.fromScreenY(100),
-            type: type,
+            type: graphType,
             uid: this.uid,
             width: viewport.fromScreenX(100),
             x: viewport.fromScreenX(pos[0]) - viewport.shiftX(w),
@@ -182,12 +179,11 @@ export abstract class NetGraphItem {
             info.width /= 2;
         }
 
-        this.ng.notify(info);
+        this.ng.notify("createGraph", info);
     }
 
     createModal() {
-        this.ng.notify({
-            act: "createModal",
+        this.ng.notify("createModal", {
             connInUids: this.connIn.map(c => {
                 return c.uid;
             }),
@@ -195,12 +191,6 @@ export abstract class NetGraphItem {
                 return c.uid;
             }),
             uid: this.uid,
-        });
-    }
-
-    requestFeedforwardLayout() {
-        this.attached.forEach(conn => {
-            conn.send("netgraph.feedforwardLayout");
         });
     }
 

@@ -24,14 +24,33 @@ import { NetGraphConnection } from "./connection";
 import { Minimap } from "./minimap";
 
 
-import { PassthroughItem } from "./items/interactable";
+import { PassthroughItem, InteractableItemArg } from "./items/interactable";
 import { NetGraphItem, NetGraphItemArg } from "./items/item";
 import { EnsembleItem, NetItem, NodeItem} from "./items/resizable";
 
 import "./netgraph.css";
 
-interface ItemDict {
-    [uid: string]: NetGraphItem;
+interface NetDict {
+    [uid: string]: NetItem;
+}
+
+interface EnsDict {
+    [uid: string]: EnsembleItem;
+}
+
+interface NodeDict {
+    [uid: string]: NodeItem;
+}
+
+interface PassthroughDict {
+    [uid: string]: PassthroughItem;
+}
+
+export interface SvgObjects {
+    net: NetDict;
+    ens: EnsDict;
+    node: NodeDict;
+    passthrough: PassthroughDict;
 }
 
 interface ConnDict {
@@ -77,7 +96,7 @@ export class NetGraph {
     offsetY = 0; // Global x,y pan offset
     svg;
     svgConns: ConnDict = {};
-    svgObjects: ItemDict = {};
+    svgObjects: SvgObjects = {net: {}, ens: {}, node: {}, passthrough: {}};
     uid: string;
     view;
     width;
@@ -169,11 +188,14 @@ export class NetGraph {
                 onmove: event => {
                     this.offsetX += event.dx / this.getScaledWidth();
                     this.offsetY += event.dy / this.getScaledHeight();
-                    Object.keys(this.svgObjects).forEach(key => {
-                        this.svgObjects[key].redrawPosition();
+
+                    Object.keys(this.svgObjects).forEach(objType => {
+                        Object.keys(this.svgObjects).forEach(key => {
+                            this.svgObjects[objType][key].redrawPosition();
                         // if (this.mmDisplay) {
                         //     this.minimapObjects[key].redrawPosition();
                         // }
+                        });
                     });
                     Object.keys(this.svgConns).forEach(key => {
                         this.svgConns[key].redraw();
@@ -369,11 +391,11 @@ export class NetGraph {
      */
     attach(conn: Connection) {
 
-        // TODO: bind a connetion for each object
+        // TODO: bind a connetion for the creation of each object
         // Node-only first so that I can get something I can test
         conn.bind("netGraph.createNode",
-        ({ngiArg, html}: {ngiArg: NetGraphItemArg, html: string}) => {
-            this.createNode(ngiArg, html);
+        ({ngiArg, interArg, html}: {ngiArg: NetGraphItemArg, interArg: InteractableItemArg, html: string}) => {
+            this.createNode(ngiArg, interArg, html);
         });
 
         conn.bind("netGraph.createConnection", ({connArg}) => {
@@ -394,11 +416,11 @@ export class NetGraph {
         // let it throw an error?
         // Or should I make a seperate list of interactables
         conn.bind("netGraph.expand", ({uid}: Uid) => {
-            const item = this.svgObjects[uid];
+            const item = this.svgObjects.net[uid];
             item.expand(true, true);
         });
         conn.bind("netGraph.collapse", ({uid}: Uid) => {
-            const item = this.svgObjects[uid];
+            const item = this.svgObjects.net[uid];
             item.expand(true, true);
         });
 
@@ -468,6 +490,12 @@ export class NetGraph {
         this.attached.push(conn);
     }
 
+    notify(eventName, eventArg) {
+        this.attached.forEach(conn => {
+            conn.send("netgraph." + eventName,
+                {x: this.offsetX, y: this.offsetY});
+        });
+    }
     /**
      * Pan the screen (and redraw accordingly)
      */
@@ -534,10 +562,10 @@ export class NetGraph {
     // }
 
     // this will need to be refactored later
-    createNode(ngiArg, html) {
+    createNode(ngiArg, interArg, html) {
         // TODO: fill in the rest of the args
-        const item = new NodeItem(ngiArg, html);
-        this.svgObjects[info.uid] = item;
+        const item = new NodeItem(ngiArg, interArg, html);
+        this.svgObjects.node[ngiArg.uid] = item;
 
         this.detectCollapsedConns(item.uid);
     }
@@ -559,16 +587,18 @@ export class NetGraph {
         const height = this.svg.getBoundingClientRect().height;
 
         if (this.aspectResize) {
-            Object.keys(this.svgObjects).forEach(key => {
-                const item = this.svgObjects[key];
-                if (item.depth === 1) {
-                    const newWidth =
-                        viewport.scaleWidth(item.width) / this.scale;
-                    const newHeight =
-                        viewport.scaleHeight(item.height) / this.scale;
-                    item.width = newWidth / (2 * width);
-                    item.height = newHeight / (2 * height);
-                }
+            Object.keys(this.svgObjects).forEach(objType => {
+                Object.keys(this.svgObjects).forEach(key => {
+                    const item = this.svgObjects[key];
+                    if (item.depth === 1) {
+                        const newWidth =
+                            viewport.scaleWidth(item.width) / this.scale;
+                        const newHeight =
+                            viewport.scaleHeight(item.height) / this.scale;
+                        item.width = newWidth / (2 * width);
+                        item.height = newHeight / (2 * height);
+                    }
+                });
             });
         }
 

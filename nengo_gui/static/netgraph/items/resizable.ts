@@ -93,8 +93,7 @@ abstract class ResizableItem extends InteractableItem {
                 const item = this.ng.svgObjects[this.uid];
                 item.constrainPosition();
                 item.redraw();
-                this.ng.notify({
-                    act: "posSize",
+                this.ng.notify("posSize", {
                     height: item.height,
                     uid: this.uid,
                     width: item.width,
@@ -185,6 +184,8 @@ export class NodeItem extends ResizableItem {
         const radius = Math.min(screenD.width, screenD.height);
         // TODO: Don't hardcode .1 as the corner radius scale
         this.shape = h("g", {rx: radius * .1, ry: radius * .1});
+
+        return screenD;
     }
 }
 
@@ -200,6 +201,7 @@ export class NetItem extends ResizableItem {
         this.expanded = expanded;
         this.spTargets = spTargets;
         this.defaultOutput = defaultOutput;
+        this.computeFill();
 
         // If a network is flagged to expand on creation, then expand it
         if (expanded) {
@@ -270,6 +272,10 @@ export class NetItem extends ResizableItem {
         return items;
     }
 
+    requestFeedforwardLayout() {
+        this.ng.notify("feedforwardLayout", {uid: this.uid});
+    }
+
     /**
      * Expand a collapsed network.
      */
@@ -300,15 +306,9 @@ export class NetItem extends ResizableItem {
         if (returnToServer) {
             if (auto) {
                 // Update the server, but do not place on the undo stack
-                // TODO: Does this need a uid?
-                // probably?
-                this.attached.forEach(conn => {
-                    conn.send("netgraph.autoExpand");
-                });
+                this.ng.notify("autoExpand", {uid: this.uid});
             } else {
-                this.attached.forEach(conn => {
-                    conn.send("netgraph.expand");
-                });
+                this.ng.notify("expand", {uid: this.uid});
             }
         }
     }
@@ -345,9 +345,9 @@ export class NetItem extends ResizableItem {
         if (reportToServer) {
             if (auto) {
                 // Update the server, but do not place on the undo stack
-                this.ng.notify({act: "autoCollapse", uid: this.uid});
+                this.ng.notify("autoCollapse", {uid: this.uid});
             } else {
-                this.ng.notify({act: "collapse", uid: this.uid});
+                this.ng.notify("collapse", {uid: this.uid});
             }
         }
     }
@@ -361,10 +361,10 @@ export class NetItem extends ResizableItem {
             return;
         }
         config.transparentNets = val;
-        Object.keys(this.svgObjects).forEach(key => {
-            const ngi = this.svgObjects[key];
+        Object.keys(this.ng.svgObjects.net).forEach(key => {
+            const ngi = this.ng.svgObjects.net[key];
             ngi.computeFill();
-            if (ngi.type === "net" && ngi.expanded) {
+            if (ngi.expanded) {
                 ngi.shape.style["fill-opacity"] = val ? 0.0 : 1.0;
             }
         });
@@ -457,5 +457,7 @@ export class EnsembleItem extends ResizableItem {
             style: "fill:transparent",
             width: width * 0.97,
         });
+
+        return screenD;
     }
 }

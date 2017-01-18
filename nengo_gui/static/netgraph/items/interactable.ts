@@ -42,9 +42,7 @@ export abstract class InteractableItem extends NetGraphItem {
             onend: event => {
                 const item = this.ng.svgObjects[this.uid];
                 item.constrainPosition();
-                this.ng.notify({
-                    act: "pos", uid: this.uid, x: item.x, y: item.y,
-                });
+                this.ng.notify("pos", {uid: this.uid, x: item.x, y: item.y});
 
                 item.redraw();
             },
@@ -219,9 +217,16 @@ export class PassthroughItem extends InteractableItem {
         this.g.classList.add("passthrough");
     }
 
+    // TODO: What type of menu is this thing supposed to generate?
+
     reshapeSize() {
-        super.reshapeSize();
-        this.shape.setAttribute("rx", screenW / 2);
-        this.shape.setAttribute("ry", screenH / 2);
+        const screenD = super.redrawSize();
+
+        this.shape = h("ellipse", {
+            rx: screenD.width / 2,
+            ry: screenD.height / 2,
+        });
+
+        return screenD;
     }
 }
