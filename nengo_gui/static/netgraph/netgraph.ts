@@ -100,7 +100,6 @@ export class NetGraph {
     uid: string;
     view;
     width;
-    parent;
     minimapObjects;
 
     private attached: Connection[] = [];

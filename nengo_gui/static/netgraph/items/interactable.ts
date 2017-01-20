@@ -19,12 +19,10 @@ export abstract class InteractableItem extends NetGraphItem {
     label: VNode;
     labelBelow: boolean;
 
+    root: SVGElement;
+
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg) {
         super(ngiArg);
-        // TODO: WTF, do abstract classes not pass on their properities?
-        // this has got to be an error
-        // or at least something that starts working once
-        // I fix all the errors in the super-class
         this.gNetworks = this.ng.gNetworksMini;
         this.gItems = this.ng.gItemsMini;
 
@@ -37,8 +35,10 @@ export abstract class InteractableItem extends NetGraphItem {
             this.parent.children.push(this);
         }
 
-        // TODO: this needs a div
-        interact(this.g).draggable({
+        // TODO: HOW IS THIS SUPPOSED TO BE DRAWN?
+        this.root = dom.create(this.g).domNode as SVGElement;
+
+        interact(this.root).draggable({
             onend: event => {
                 const item = this.ng.svgObjects[this.uid];
                 item.constrainPosition();
@@ -66,11 +66,10 @@ export abstract class InteractableItem extends NetGraphItem {
             },
             onstart: () => {
                 this.menu.hideAny();
-                this.moveToFront();
             },
         });
         // Determine when to pull up the menu
-        interact(this.g)
+        interact(this.root)
             .on("hold", event => {
                 // Change to "tap" for right click
                 if (event.button === 0) {
@@ -100,17 +99,16 @@ export abstract class InteractableItem extends NetGraphItem {
                     }
                 }
             });
-        this.g = h("g",
-            {contextmenu: event => {
-                event.preventDefault();
-                event.stopPropagation();
-                if (this.menu.visibleAny()) {
-                    this.menu.hideAny();
-                } else {
-                    this.menu.show(
-                        event.clientX, event.clientY, this.generateMenu());
-                }
-            }});
+        this.g = h("g", {contextmenu: event => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (this.menu.visibleAny()) {
+                this.menu.hideAny();
+            } else {
+                this.menu.show(
+                    event.clientX, event.clientY, this.generateMenu());
+            }
+        }});
     }
 
     // TODO: How do I make sure this is implemented by subclasses?
@@ -167,9 +165,9 @@ export abstract class InteractableItem extends NetGraphItem {
 
     redraw() {
         super.redraw();
-        if (this.ng.mmDisplay) {
-            this.miniItem.redraw();
-        }
+        // if (this.ng.mmDisplay) {
+        //     this.miniItem.redraw();
+        // }
     }
 
     _getPos() {
@@ -207,13 +205,15 @@ export class PassthroughItem extends InteractableItem {
         // TODO: WTF can this be avoided?
         // I have to make a sepcific minimap subclass for this...
         // or something better?
-        if (this.minimap === false) {
-            this.fixedWidth = 10;
-            this.fixedHeight = 10;
-        } else {
-            this.fixedWidth = 3;
-            this.fixedHeight = 3;
-        }
+        // if (this.minimap === false) {
+        //     this.fixedWidth = 10;
+        //     this.fixedHeight = 10;
+        // } else {
+        //     this.fixedWidth = 3;
+        //     this.fixedHeight = 3;
+        // }
+        this.fixedWidth = 3;
+        this.fixedHeight = 3;
         this.g.classList.add("passthrough");
     }
 

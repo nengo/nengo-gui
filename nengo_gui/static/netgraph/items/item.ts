@@ -17,6 +17,7 @@ import * as menu from "../../menu";
 import { Shape } from "../../utils";
 import * as viewport from "../../viewport";
 import { NetGraph } from "../netgraph";
+import { NetItem } from "./resizable";
 
 
 export interface NetGraphItemArg {
@@ -52,7 +53,7 @@ export abstract class NetGraphItem {
     minHeight;
     minWidth;
     ng: NetGraph;
-    parent: NetGraphItem;
+    parent: NetItem;
     shape: VNode;
     size: number[];
     uid: string;
@@ -78,11 +79,6 @@ export abstract class NetGraphItem {
         this.gNetworks = this.ng.gNetworks;
         this.gItems = this.ng.gItems;
 
-        // If this is a network, the children list is the set of NetGraphItems
-        // and NetGraphConnections that are inside this network.
-        this.children = [];
-        this.childConnections = [];
-
         // NetGraphConnections leading into and out of this item
         this.connOut = [];
         this.connIn = [];
@@ -98,17 +94,19 @@ export abstract class NetGraphItem {
             this.parent = null;
             this.depth = 1;
         } else {
-            this.parent = this.ng.svgObjects[ngiArg.parent];
+            this.parent = this.ng.svgObjects.net[ngiArg.parent];
             this.depth = this.parent.depth + 1;
         }
 
         // Create the SVG group to hold this item
+        // maybe this should be the root?
         this.g = h("g");
         this.gItems.appendChild(this.g);
 
         this.area = h("rect", {style: "fill:transparent"});
 
-        this.menu = new menu.Menu(this.ng.parent);
+        // TODO: find out where to render the menu
+        //this.menu = new menu.Menu(this.ng.parent);
 
         this.g.children.push(this.shape);
         this.g.children.push(this.area);
@@ -146,15 +144,6 @@ export abstract class NetGraphItem {
 
     set y(val: number) {
         this._y = val;
-    }
-
-    moveToFront() {
-        // TODO: maquette doesn't seem to implement parentNode?
-        this.g.parentNode.appendChild(this.g);
-
-        Object.keys(this.children).forEach(key => {
-            this.children[key].moveToFront();
-        });
     }
 
     createGraph(graphType, args=null) { // tslint:disable-line
@@ -268,20 +257,6 @@ export abstract class NetGraphItem {
         });
     }
 
-    redrawChildren() {
-        // Update any children's positions
-        for (let i = 0; i < this.children.length; i++) {
-            this.children[i].redraw();
-        }
-    }
-
-    redrawChildConnections() {
-        // Update any children's positions
-        for (let i = 0; i < this.childConnections.length; i++) {
-            this.childConnections[i].redraw();
-        }
-    }
-
     redrawConnections() {
         // Update any connections into and out of this
         for (let i = 0; i < this.connIn.length; i++) {
@@ -381,8 +356,6 @@ export abstract class NetGraphItem {
     redraw() {
         this.redrawPosition();
         this.redrawSize();
-        this.redrawChildren();
-        this.redrawChildConnections();
         this.redrawConnections();
     }
 

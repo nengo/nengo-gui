@@ -1,7 +1,6 @@
 import * as interact from "interact.js";
 import { VNode, dom, h  } from "maquette";
 
-// import * as menu from "../../menu";
 import { config } from "../../config";
 import { MenuItem } from "../../menu";
 import { Shape } from "../../utils";
@@ -148,8 +147,7 @@ export class NodeItem extends ResizableItem {
 
     generateMenu() {
         const items = [];
-        // TODO: Holy fuck, how do you even use interfaces
-        // TODO: And why are none of these properties being found
+
         items.push(MenuItem = {
             html: "Slider",
             callback: () => {
@@ -201,6 +199,12 @@ export class NetItem extends ResizableItem {
         this.expanded = expanded;
         this.spTargets = spTargets;
         this.defaultOutput = defaultOutput;
+
+        // Set of NetGraphItems and NetGraphConnections that are inside
+        // this network
+        this.children = [];
+        this.childConnections = [];
+
         this.computeFill();
 
         // If a network is flagged to expand on creation, then expand it
@@ -210,8 +214,7 @@ export class NetItem extends ResizableItem {
         }
 
         // TODO: Is this the right way to override an interact method?
-        interact(this.g)
-            .on("doubletap", event => {
+        interact(this.g).on("doubletap", event => {
                 // Get rid of menus when clicking off
                 if (event.button === 0) {
                     if (this.menu.visibleAny()) {
@@ -225,8 +228,15 @@ export class NetItem extends ResizableItem {
                     }
                 }
             });
+        interact(this.root).draggable({
+            onstart: () => {
+                this.menu.hideAny();
+                this.moveToFront();
+            },
+        });
         this.g.classlist.add("network")
     }
+
 
     remove() {
         super.remove();
@@ -368,6 +378,37 @@ export class NetItem extends ResizableItem {
                 ngi.shape.style["fill-opacity"] = val ? 0.0 : 1.0;
             }
         });
+    }
+
+    moveToFront() {
+        // TODO: maquette doesn't seem to implement parentNode?
+        this.parent.gItems.appendChild(this.g);
+
+        Object.keys(this.children).forEach(key => {
+            this.children[key].moveToFront();
+        });
+    }
+
+    redraw() {
+        this.redrawPosition();
+        this.redrawSize();
+        this.redrawChildren();
+        this.redrawChildConnections();
+        this.redrawConnections();
+    }
+
+    redrawChildren() {
+        // Update any children's positions
+        for (let i = 0; i < this.children.length; i++) {
+            this.children[i].redraw();
+        }
+    }
+
+    redrawChildConnections() {
+        // Update any children's positions
+        for (let i = 0; i < this.childConnections.length; i++) {
+            this.childConnections[i].redraw();
+        }
     }
 }
 
