@@ -21,14 +21,14 @@ import { Shape } from "../utils";
 import * as viewport from "../viewport";
 import { Connection } from "../websocket";
 import { NetGraphConnection } from "./connection";
-import { Minimap } from "./minimap";
+// import { Minimap } from "./minimap";
 
 
-import { PassthroughItem, InteractableItemArg } from "./items/interactable";
+import { InteractableItemArg, PassthroughItem } from "./items/interactable";
 import { NetGraphItem, NetGraphItemArg } from "./items/item";
 import { EnsembleItem, NetItem, NodeItem} from "./items/resizable";
 
-import "./netgraph.css";
+import "./views/netgraph.css";
 
 interface NetDict {
     [uid: string]: NetItem;
@@ -80,8 +80,7 @@ export class NetGraph {
      * when that item appears.
      */
     collapsedConns: ConnDict = {};
-    root;
-    div;
+    root: HTMLElement;
     gConns;
     gConnsMini;
     gItems;
@@ -94,7 +93,7 @@ export class NetGraph {
     minimap;
     offsetX = 0; // Global x,y pan offset
     offsetY = 0; // Global x,y pan offset
-    svg;
+    svg: VNode;
     svgConns: ConnDict = {};
     svgObjects: SvgObjects = {net: {}, ens: {}, node: {}, passthrough: {}};
     uid: string;
@@ -121,7 +120,7 @@ export class NetGraph {
 
         // Reading netgraph.css file as text and embedding it within def tags;
         // this is needed for saving the SVG plot to disk.
-        const css = require("!!css-loader!./netgraph.css").toString();
+        const css = require("!!css-loader!./views/netgraph.css").toString();
 
         const defs = h("defs", [h(
             "style", {type: "text/css"}, ["<![CDATA[\n" + css + "\n]]>"]
@@ -147,10 +146,11 @@ export class NetGraph {
             this.gItems,
         ]);
 
+        this.root = dom.create(this.svg).domNode as HTMLElement;
         // interact(this.svg).styleCursor(false);
 
-        this.width = this.svg.getBoundingClientRect().width;
-        this.height = this.svg.getBoundingClientRect().height;
+        this.width = this.root.getBoundingClientRect().width;
+        this.height = this.root.getBoundingClientRect().height;
 
         // Respond to resize events
         window.addEventListener("resize", event => {
@@ -159,7 +159,7 @@ export class NetGraph {
 
         // Dragging the background pans the full area by changing offsetX,Y
         // Define cursor behaviour for background
-        interact(this.svg)
+        interact(this.root)
             .on("mousedown", () => {
                 const cursor = document.documentElement.getAttribute("style");
                 if (cursor !== null) {
@@ -175,7 +175,7 @@ export class NetGraph {
                     .setAttribute("style", "cursor:default;");
             });
 
-        interact(this.svg)
+        interact(this.root)
             .draggable({
                 onend: event => {
                     // Let the server know what happened
@@ -275,7 +275,7 @@ export class NetGraph {
         this.addMenuItems();
 
         // Determine when to pull up the menu
-        interact(this.svg)
+        interact(this.root)
             .on("hold", event => { // Change to "tap" for right click
                 if (event.button === 0) {
                     if (Menu.anyVisible()) {
@@ -292,7 +292,7 @@ export class NetGraph {
                 }
             });
 
-        this.svg.addEventListener("contextmenu", event => {
+        this.root.addEventListener("contextmenu", event => {
             event.preventDefault();
             if (Menu.anyVisible()) {
                 Menu.hideAll();
@@ -443,12 +443,6 @@ export class NetGraph {
             component.updateLayout(config);
         });
 
-        conn.bind("netGraph.config", ({uid, config}: Uid & {config: any}) => {
-            // Anything about the config of a component has changed
-            const component = allComponents.byUID(uid);
-            component.updateLayout(config);
-        });
-
         conn.bind("netGraph.js", ({js: js}) => {
             // TODO: noooooooo
             eval(js);
@@ -582,8 +576,8 @@ export class NetGraph {
      * Handler for resizing the full SVG.
      */
     onResize(event) {
-        const width = this.svg.getBoundingClientRect().width;
-        const height = this.svg.getBoundingClientRect().height;
+        const width = this.root.getBoundingClientRect().width;
+        const height = this.root.getBoundingClientRect().height;
 
         if (this.aspectResize) {
             Object.keys(this.svgObjects).forEach(objType => {

@@ -26,9 +26,9 @@ export function byUID(uid: string): Component {
     return components[uids.indexOf(uid)];
 }
 
-export function onresize(widthScale: number, heightScale: number): void {
+export function onResize(widthScale: number, heightScale: number): void {
     components.forEach(component => {
-        component.onresize(
+        component.onResize(
             component.width * widthScale, component.height * heightScale);
     });
 }

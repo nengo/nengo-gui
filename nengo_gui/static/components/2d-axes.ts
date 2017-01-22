@@ -11,7 +11,6 @@
  */
 
 import * as d3 from "d3";
-import * as $ from "jquery";
 
 export class Axes2D {
     axBottom: number;
@@ -69,7 +68,8 @@ export class Axes2D {
     }
 
     setAxesGeometry(width, height) {
-        const scale = parseFloat($("#main").css("font-size"));
+        const scale = parseFloat(
+            document.getElementById("main").style["font-size"]);
         this.width = width;
         this.height = height;
         this.axLeft = this.maxYWidth;
@@ -112,7 +112,7 @@ export class Axes2D {
 
     fitTicks(parent) {
         setTimeout(() => {
-            const ticks = $(parent.div).find(".tick");
+            const ticks = parent.div.querySelector(".tick");
             let maxW = 0;
             for (let i = 0; i < ticks.length; i++) {
                 const w = (<any> ticks[i]).getBBox().width;

@@ -218,6 +218,9 @@ export class PassthroughItem extends InteractableItem {
     }
 
     // TODO: What type of menu is this thing supposed to generate?
+    generateMenu() {
+        return [];
+    }
 
     reshapeSize() {
         const screenD = super.redrawSize();

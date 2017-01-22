@@ -9,14 +9,12 @@
  * @param {dict} args - A set of constructor arguments (see Axes2D)
  */
 
-import * as $ from "jquery";
-
 import { Axes2D } from "./2d-axes";
 
 export class TimeAxes extends Axes2D {
     axisTimeEnd;
     axisTimeStart;
-    displayTime;
+    displayTime: boolean;
 
     constructor(parent, args) {
         super(parent, args);
@@ -41,13 +39,14 @@ export class TimeAxes extends Axes2D {
         this.scaleX.domain([start, end]);
         this.axisTimeStart.textContent = start.toFixed(3);
         this.axisTimeEnd.textContent = end.toFixed(3);
-        // this.axisX_g.call(this.axisX);
+        this.axisXG.call(this.axisX);
     }
 
     onResize(width, height) {
         Axes2D.prototype.onResize.call(this, width, height);
 
-        const scale = parseFloat($("#main").css("font-size"));
+        const scale = parseFloat(
+            document.getElementById("main").style["font-size"]);
         const suppressionWidth = 6 * scale;
         const textOffset = 1.2 * scale;
 

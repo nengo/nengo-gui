@@ -1,5 +1,5 @@
 import { NetGraphConnection } from "./connection";
-import { NetGraphItem } from "./item";
+import { NetGraphItem } from "./items/item";
 
 export class Minimap {
     conns: {[uid: string]: NetGraphConnection} = {};
