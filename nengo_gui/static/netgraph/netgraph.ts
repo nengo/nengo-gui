@@ -87,7 +87,7 @@ export class NetGraph {
     gItemsMini;
     gNetworks;
     gNetworksMini;
-    height;
+    height: number;
     inZoomDelay;
     menu: Menu;
     minimap;
@@ -98,7 +98,8 @@ export class NetGraph {
     svgObjects: SvgObjects = {net: {}, ens: {}, node: {}, passthrough: {}};
     uid: string;
     view;
-    width;
+    width: number;
+    transparentNets: boolean;
     minimapObjects;
 
     private attached: Connection[] = [];
@@ -189,7 +190,7 @@ export class NetGraph {
                     this.offsetY += event.dy / this.getScaledHeight();
 
                     Object.keys(this.svgObjects).forEach(objType => {
-                        Object.keys(this.svgObjects).forEach(key => {
+                        Object.keys(this.svgObjects[objType]).forEach(key => {
                             this.svgObjects[objType][key].redrawPosition();
                         // if (this.mmDisplay) {
                         //     this.minimapObjects[key].redrawPosition();
@@ -214,10 +215,10 @@ export class NetGraph {
         // Note that offsetX,Y are also changed to zoom into a particular
         // point in the space
         interact(document.getElementById("main"))
-            .on("click", event => {
-                document.querySelector(".aceText-input")
-                    .dispatchEvent(new Event("blur"));
-            })
+            // .on("click", event => {
+            //     document.querySelector(".aceText-input")
+            //         .dispatchEvent(new Event("blur"));
+            // })
             .on("wheel", event => {
                 event.preventDefault();
 
@@ -301,19 +302,9 @@ export class NetGraph {
             }
         });
 
-        this.createMinimap();
-        this.updateFonts();
-
-        document.addEventListener("nengoConfigChange", (event: CustomEvent) => {
-            const key = event.detail;
-            if (key === "aspectResize") {
-                this.onResize();
-            } else if (key === "fontSize" || key === "zoomFonts") {
-                this.updateFonts();
-            } else if (key === "transparentNets") {
-                this.updateTransparency();
-            }
-        })
+        // this.createMinimap();
+        // I need to figure out how to update the fonts
+        // this.updateFonts();
     }
 
     get aspectResize(): boolean {
@@ -526,8 +517,11 @@ export class NetGraph {
      * Redraw all elements
      */
     redraw() {
-        Object.keys(this.svgObjects).forEach(key => {
-            this.svgObjects[key].redraw();
+        Object.keys(this.svgObjects).forEach(objType => {
+            Object.keys(this.svgObjects[objType]).forEach(key => {
+                    console.log(this.svgObjects[objType][key]);
+                    this.svgObjects[objType][key].redraw();
+            });
         });
         Object.keys(this.svgConns).forEach(key => {
             this.svgConns[key].redraw();
@@ -581,8 +575,8 @@ export class NetGraph {
 
         if (this.aspectResize) {
             Object.keys(this.svgObjects).forEach(objType => {
-                Object.keys(this.svgObjects).forEach(key => {
-                    const item = this.svgObjects[key];
+                Object.keys(this.svgObjects[objType]).forEach(key => {
+                    const item = this.svgObjects[objType][key];
                     if (item.depth === 1) {
                         const newWidth =
                             viewport.scaleWidth(item.width) / this.scale;
@@ -615,24 +609,6 @@ export class NetGraph {
      */
     getScaledHeight() {
         return this.height * this.scale;
-    }
-
-    get transparentNets(): boolean {
-        return config.transparentNets;
-    }
-
-    set transparentNets(val: boolean) {
-        if (val === config.transparentNets) {
-            return;
-        }
-        config.transparentNets = val;
-        Object.keys(this.svgObjects).forEach(key => {
-            const ngi = this.svgObjects[key];
-            ngi.computeFill();
-            if (ngi.type === "net" && ngi.expanded) {
-                ngi.shape.style["fill-opacity"] = val ? 0.0 : 1.0;
-            }
-        });
     }
 
 

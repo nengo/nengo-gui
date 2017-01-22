@@ -116,23 +116,6 @@ abstract class ResizableItem extends InteractableItem {
 
         return screenD;
     }
-
-    /**
-     * Determine the fill color based on the depth.
-     */
-    computeFill() {
-        const depth = this.ng.transparentNets ? 1 : this.depth;
-
-        let rgb = Math.round(255 * Math.pow(0.8, depth));
-        const fill = "rgb(" + rgb + "," + rgb + "," + rgb + ")";
-
-        rgb = Math.round(255 * Math.pow(0.8, depth + 2));
-        const stroke = "rgb(" + rgb + "," + rgb + "," + rgb + ")";
-
-        this.shape = h("g", {
-            style: "fill=" + fill + ", stroke=" + stroke,
-        });
-    }
 }
 
 export class NodeItem extends ResizableItem {
@@ -214,7 +197,7 @@ export class NetItem extends ResizableItem {
         }
 
         // TODO: Is this the right way to override an interact method?
-        interact(this.g).on("doubletap", event => {
+        interact(this.root).on("doubletap", event => {
                 // Get rid of menus when clicking off
                 if (event.button === 0) {
                     if (this.menu.visibleAny()) {
@@ -409,6 +392,23 @@ export class NetItem extends ResizableItem {
         for (let i = 0; i < this.childConnections.length; i++) {
             this.childConnections[i].redraw();
         }
+    }
+
+    /**
+     * Determine the fill color based on the depth.
+     */
+    computeFill() {
+        const depth = this.ng.transparentNets ? 1 : this.depth;
+
+        let rgb = Math.round(255 * Math.pow(0.8, depth));
+        const fill = "rgb(" + rgb + "," + rgb + "," + rgb + ")";
+
+        rgb = Math.round(255 * Math.pow(0.8, depth + 2));
+        const stroke = "rgb(" + rgb + "," + rgb + "," + rgb + ")";
+
+        this.shape = h("g", {
+            style: "fill=" + fill + ", stroke=" + stroke,
+        });
     }
 }
 
