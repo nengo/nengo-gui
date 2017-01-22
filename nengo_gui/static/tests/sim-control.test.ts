@@ -1,7 +1,3 @@
-/**
- * Test the Axes2D class.
- */
-
 // import { dom, h } from "maquette";
 import * as test from "tape";
 

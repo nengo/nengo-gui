@@ -123,9 +123,8 @@ export class NodeItem extends ResizableItem {
 
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg, html) {
         super(ngiArg, interArg);
-        this.shape = h("rect");
+        this.shape = h("rect.node");
         this.htmlNode = html;
-        this.g.classlist.add("node");
     }
 
     generateMenu() {
@@ -178,7 +177,7 @@ export class NetItem extends ResizableItem {
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
                 expanded, spTargets, defaultOutput) {
         super(ngiArg, interArg);
-        this.shape = h("rect");
+        this.shape = h("rect.network");
         this.expanded = expanded;
         this.spTargets = spTargets;
         this.defaultOutput = defaultOutput;
@@ -217,7 +216,6 @@ export class NetItem extends ResizableItem {
                 this.moveToFront();
             },
         });
-        this.g.classlist.add("network")
     }
 
 

@@ -201,7 +201,7 @@ export class PassthroughItem extends InteractableItem {
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg) {
         super(ngiArg, interArg);
 
-        this.shape = h("ellipse");
+        this.shape = h("ellipse.passthrough");
         // TODO: WTF can this be avoided?
         // I have to make a sepcific minimap subclass for this...
         // or something better?
@@ -214,7 +214,6 @@ export class PassthroughItem extends InteractableItem {
         // }
         this.fixedWidth = 3;
         this.fixedHeight = 3;
-        this.g.classList.add("passthrough");
     }
 
     // TODO: What type of menu is this thing supposed to generate?

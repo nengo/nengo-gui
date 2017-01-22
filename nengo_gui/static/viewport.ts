@@ -31,7 +31,7 @@ export function setScale(newScale) {
 }
 
 export function redraw() {
-    allComponents.onresize(scale * width * 2, height * scale * 2);
+    allComponents.onResize(scale * width * 2, height * scale * 2);
     allComponents.redraw();
 }
 

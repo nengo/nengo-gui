@@ -383,9 +383,10 @@ export class NetGraph {
 
         // TODO: bind a connetion for the creation of each object
         // Node-only first so that I can get something I can test
-        conn.bind("netGraph.createNode",
-        ({ngiArg, interArg, html}: {ngiArg: NetGraphItemArg, interArg: InteractableItemArg, html: string}) => {
-            this.createNode(ngiArg, interArg, html);
+        conn.bind("netGraph.createNode", ({ngiArg, interArg, html}: {
+            ngiArg: NetGraphItemArg,
+            interArg: InteractableItemArg, html: string}) => {
+                this.createNode(ngiArg, interArg, html);
         });
 
         conn.bind("netGraph.createConnection", ({connArg}) => {
