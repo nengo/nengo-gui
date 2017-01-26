@@ -12,6 +12,7 @@ import nengo
 import nengo_gui
 import nengo_gui.user_action
 import nengo_gui.config
+import nengo_gui.seed_generation
 
 
 class PageSettings(object):
@@ -434,6 +435,12 @@ class Page(object):
         with self.lock:
             self.building = True
 
+            # set all the seeds so that creating components doesn't affect
+            #  the neural model itself
+            seeds = nengo_gui.seed_generation.define_all_seeds(self.model)
+            for obj, s in seeds.items():
+                obj.seed = s
+
             # modify the model for the various Components
             for c in self.components:
                 c.add_nengo_objects(self)
@@ -455,6 +462,10 @@ class Page(object):
             except:
                 line = nengo_gui.exec_env.determine_line_number()
                 self.error = dict(trace=traceback.format_exc(), line=line)
+
+            # set the defined seeds back to None
+            for obj in seeds:
+                obj.seed = None
 
             self.stdout += exec_env.stdout.getvalue()
 
