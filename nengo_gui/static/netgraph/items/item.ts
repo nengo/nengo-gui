@@ -36,8 +36,6 @@ export interface NetGraphItemArg {
 }
 
 export abstract class NetGraphItem {
-    area: VNode;
-    aspect: number;
     childConnections;
     children;
     connIn;
@@ -99,17 +97,13 @@ export abstract class NetGraphItem {
         }
 
         // Create the SVG group to hold this item
-        // maybe this should be the root?
         this.g = h("g");
         this.gItems.appendChild(this.g);
-
-        this.area = h("rect", {style: "fill:transparent"});
 
         // TODO: find out where to render the menu
         //this.menu = new menu.Menu(this.ng.parent);
 
         this.g.children.push(this.shape);
-        this.g.children.push(this.area);
 
         this.redraw();
     }
@@ -215,22 +209,7 @@ export abstract class NetGraphItem {
     }
 
     getDisplayedSize() {
-        if (this.aspect !== null) {
-            const hScale = this.ng.getScaledWidth();
-            const vScale = this.ng.getScaledHeight();
-            let w = this.getNestedWidth() * hScale;
-            let h = this.getNestedHeight() * vScale;
-
-            if (h * this.aspect < w) {
-                w = h * this.aspect;
-            } else if (w / this.aspect < h) {
-                h = w / this.aspect;
-            }
-
-            return [w / hScale, h / vScale];
-        } else {
-            return [this.width, this.height];
-        }
+        return [this.width, this.height];
     }
 
     constrainPosition() {
@@ -293,30 +272,6 @@ export abstract class NetGraphItem {
         return h;
     }
 
-    redrawSize(): Shape {
-        let screenW = this.getScreenWidth();
-        let screenH = this.getScreenHeight();
-
-        if (this.aspect !== null) {
-            if (screenH * this.aspect < screenW) {
-                screenW = screenH * this.aspect;
-            } else if (screenW / this.aspect < screenH) {
-                screenH = screenW / this.aspect;
-            }
-        }
-
-        const areaW = screenW;
-        const areaH = screenH;
-        this.area = h("rect", {
-            style: "fill:transparent",
-            transform: "translate(-" + (areaW / 2) + ", -" + (areaH / 2) + ")",
-            width: areaW,
-            height: areaH,
-        });
-
-        return {height: screenH, width: screenW};
-    }
-
     abstract _getScreenW(): number;
 
     // TODO: change these to getters and setters?
@@ -355,7 +310,6 @@ export abstract class NetGraphItem {
      */
     redraw() {
         this.redrawPosition();
-        this.redrawSize();
         this.redrawConnections();
     }
 

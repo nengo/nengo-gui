@@ -35,7 +35,6 @@ export abstract class InteractableItem extends NetGraphItem {
             this.parent.children.push(this);
         }
 
-        // TODO: HOW IS THIS SUPPOSED TO BE DRAWN?
         this.root = dom.create(this.g).domNode as SVGElement;
 
         interact(this.root).draggable({
@@ -147,7 +146,7 @@ export abstract class InteractableItem extends NetGraphItem {
         this.miniItem.remove();
     }
 
-    redrawSize() {
+    redrawSize(): Shape {
         const screenD = super.redrawSize();
         this.label = h("text", {
             transform: "translate(0, " + (screenD.height / 2) + ")",
@@ -224,7 +223,7 @@ export class PassthroughItem extends InteractableItem {
     reshapeSize() {
         const screenD = super.redrawSize();
 
-        this.shape = h("ellipse", {
+        this.shape = h("ellipse.passthrough", {
             rx: screenD.width / 2,
             ry: screenD.height / 2,
         });
