@@ -8,16 +8,18 @@ import { MockConnection } from "../websocket";
 
 test("NetGraph.createNode", assert => {
     const dom = new fixtures.DOM(assert);
-    const ng = new NetGraph("uid");
+    const netGraph = new NetGraph("uid");
 
-    const ngiArg = {ng: ng,
+    const ngiArg = {ng: netGraph,
         width: 100, height: 100,
         posX: 100, posY: 100,
         dimensions: 1, parent: null,
         uid: "node1",
     };
-    
-    ng.createNode(ngiArg);
+
+    const interArg = {miniItem: 1, label: "test_node"};
+
+    netGraph.createNode(ngiArg, interArg, false);
 
     fixtures.teardown(assert, dom);
 });

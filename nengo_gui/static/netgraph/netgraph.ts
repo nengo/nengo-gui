@@ -81,12 +81,12 @@ export class NetGraph {
      */
     collapsedConns: ConnDict = {};
     root: HTMLElement;
-    gConns;
-    gConnsMini;
-    gItems;
-    gItemsMini;
-    gNetworks;
-    gNetworksMini;
+    gConns: SVGElement;
+    gConnsMini: SVGElement;
+    gItems: SVGElement;
+    gItemsMini: SVGElement;
+    gNetworks: SVGElement;
+    gNetworksMini: SVGElement;
     height: number;
     inZoomDelay;
     menu: Menu;
@@ -130,9 +130,6 @@ export class NetGraph {
         // Three separate layers, so that expanded networks are at the back,
         // then connection lines, and then other items (nodes, ensembles, and
         // collapsed networks) are drawn on top.
-        this.gNetworks = h("g");
-        this.gConns = h("g");
-        this.gItems = h("g");
 
         // Create the master SVG element
         this.svg = h("svg.netgraph#netgraph", {
@@ -142,13 +139,17 @@ export class NetGraph {
             },
         }, [
             defs,
-            this.gNetworks,
-            this.gConns,
-            this.gItems,
+            h("g#netRoot"),
+            h("g#connRoot"),
+            h("g#itemRoot"),
         ]);
 
         this.root = dom.create(this.svg).domNode as HTMLElement;
-        // interact(this.svg).styleCursor(false);
+        interact(this.root).styleCursor(false);
+
+        this.gNetworks = this.root.querySelector("#netRoot") as SVGElement;
+        this.gConns = this.root.querySelector("#connRoot") as SVGElement;
+        this.gItems = this.root.querySelector("#itemRoot") as SVGElement;
 
         this.width = this.root.getBoundingClientRect().width;
         this.height = this.root.getBoundingClientRect().height;
@@ -694,13 +695,13 @@ export class NetGraph {
         // this.view.classList.add("view");
         // this.minimap.appendChild(this.view);
 
-        this.gNetworksMini = h("g");
-        this.gConnsMini = h("g");
-        this.gItemsMini = h("g");
+        // this.gNetworksMini = h("g");
+        // this.gConnsMini = h("g");
+        // this.gItemsMini = h("g");
         // Order these are appended is important for layering
-        this.minimap.appendChild(this.gNetworksMini);
-        this.minimap.appendChild(this.gConnsMini);
-        this.minimap.appendChild(this.gItemsMini);
+        // this.minimap.appendChild(this.gNetworksMini);
+        // this.minimap.appendChild(this.gConnsMini);
+        // this.minimap.appendChild(this.gItemsMini);
 
         // this.mmWidth = $(this.minimap).width();
         // this.mmHeight = $(this.minimap).height();

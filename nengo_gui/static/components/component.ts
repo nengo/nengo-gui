@@ -1,5 +1,4 @@
 import * as interact from "interact.js";
-import * as $ from "jquery";
 
 import { Menu } from "../menu";
 import * as utils from "../utils";
@@ -27,6 +26,7 @@ import * as allComponents from "./all-components";
  * class prototypes (ie. Slider, Value).
  *
  */
+
 export class Component {
     static all: Component[] = [];
 
@@ -141,7 +141,7 @@ export class Component {
         // Open a WebSocket to the server
         this.uid = args.uid;
         if (this.uid !== undefined) {
-            this.ws = new FastWSConnection(this.uid, "component");
+            this.ws = new FastWSConnection(this.uid);
             this.ws.onmessage = message => {
                 this.onMessage(message);
             };
@@ -170,7 +170,7 @@ export class Component {
                     }
                 }
             });
-        $(this.div).bind("contextmenu", event => {
+        window.addEventListener("contextmenu", event => {
             event.preventDefault();
             event.stopPropagation();
             if (Menu.anyVisible()) {
@@ -231,16 +231,12 @@ export class Component {
     /**
      * Method to be called when Component is resized.
      */
-    onResize(width, height) {
-        // Subclasses should implement this.
-    }
+    abstract onResize(width, height);
 
     /**
      * Method to be called when Component received a WebSocket message.
      */
-    onMessage(event) {
-        // Subclasses should implement this.
-    }
+    abstract onMessage(event);
 
     addMenuItems() {
         this.menu.addAction("Hide label", () => {
@@ -286,9 +282,7 @@ export class Component {
     /**
      * Do any visual updates needed due to changes in the underlying data.
      */
-    update(event) {
-        // Subclasses should implement this.
-    }
+    abstract update(event);
 
     hideLabel(event) {
         if (this.labelVisible) {
@@ -306,11 +300,11 @@ export class Component {
 
     layoutInfo() {
         return {
-            "height": this.h,
-            "labelVisible": this.labelVisible,
-            "width": this.w,
-            "x": this.x,
-            "y": this.y,
+            height: this.h,
+            labelVisible: this.labelVisible,
+            width: this.w,
+            x: this.x,
+            y: this.y,
         };
     }
 

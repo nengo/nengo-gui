@@ -42,17 +42,15 @@ export abstract class NetGraphItem {
     connOut;
     depth: number;
     dimensions: number;
-    fixedHeight: number;
-    fixedWidth: number;
-    g: VNode;
-    gItems;
-    gNetworks;
+    g: SVGElement;
+    gItems: SVGElement;
+    gNetworks: SVGElement;
     menu;
     minHeight;
     minWidth;
     ng: NetGraph;
     parent: NetItem;
-    shape: VNode;
+    shape: SVGElement;
     size: number[];
     uid: string;
 
@@ -72,8 +70,6 @@ export abstract class NetGraphItem {
         this._y = ngiArg.posY;
         this.dimensions = ngiArg.dimensions;
 
-        this.fixedWidth = null;
-        this.fixedHeight = null;
         this.gNetworks = this.ng.gNetworks;
         this.gItems = this.ng.gItems;
 
@@ -95,16 +91,14 @@ export abstract class NetGraphItem {
             this.depth = this.parent.depth + 1;
         }
 
-        // Create the SVG group to hold this item
-        this.g = h("g");
+        // Create the SVG group to hold this item's shape and it's label
+        this.g = dom.create(h("g")).domNode as SVGElement;
         this.gItems.appendChild(this.g);
 
         // TODO: find out where to render the menu
         //this.menu = new menu.Menu(this.ng.parent);
 
-        this.g.children.push(this.shape);
-
-        this.redraw();
+        this._renderShape();
     }
 
     get height(): number {
@@ -178,10 +172,6 @@ export abstract class NetGraphItem {
     abstract _getScreenW(): number;
 
     get screenWidth() {
-        if (this.fixedWidth !== null) {
-            return this.fixedWidth;
-        }
-
         let screenW = this._getScreenW();
 
         if (screenW < this.minWidth) {
@@ -194,10 +184,6 @@ export abstract class NetGraphItem {
     abstract _getScreenH(): number;
 
     get screenHeight() {
-        if (this.fixedHeight !== null) {
-            return this.fixedHeight;
-        }
-
         let screenH = this._getScreenH();
 
         if (screenH < this.minHeight) {
@@ -246,7 +232,7 @@ export abstract class NetGraphItem {
                 this.y * hh + dy + pos.offsetY];
     }
 
-    get MinMaxXY() {
+    get minMaxXY() {
         const minX = this.x - this.width;
         const maxX = this.x + this.width;
         const minY = this.y - this.height;
@@ -254,6 +240,9 @@ export abstract class NetGraphItem {
         return [minX, maxX, minY, maxY];
     }
 
+    abstract _renderShape();
+
+    // TODO: rename to createComponent?
     createGraph(graphType, args=null) { // tslint:disable-line
         const w = this.nestedWidth;
         const h = this.nestedHeight;
@@ -341,9 +330,10 @@ export abstract class NetGraphItem {
         const screen = this.screenLocation;
 
         // Update my position
-        this.g = h("g", {
-            transform: "translate(" + screen[0] + ", " + screen[1] + ")",
-        });
+        this.g.setAttribute(
+            "transform",
+            "translate(" + screen[0] + ", " + screen[1] + ")"
+        );
     }
 
     redrawConnections() {

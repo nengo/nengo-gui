@@ -1,3 +1,4 @@
+import * as interact from "interact.js";
 import { VNode, dom, h  } from "maquette";
 
 import { MenuItem } from "../../menu";
@@ -16,28 +17,25 @@ export abstract class InteractableItem extends NetGraphItem {
     uid;
     gNetworks;
     gItems;
-    label: VNode;
+    label: SVGTextElement;
     labelBelow: boolean;
-
-    root: SVGElement;
 
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg) {
         super(ngiArg);
         this.gNetworks = this.ng.gNetworksMini;
         this.gItems = this.ng.gItemsMini;
 
-        this.label = h("text", {innerHTML: interArg.label, transform: ""});
+        const labelNode = h("text", {innerHTML: interArg.label, transform: ""});
+        this.label = dom.create(labelNode).domNode as SVGTextElement;
         this.miniItem = interArg.miniItem;
-        this.g.children.push(this.label);
+        this.g.appendChild(this.label);
 
 
         if (ngiArg.parent !== null) {
             this.parent.children.push(this);
         }
 
-        this.root = dom.create(this.g).domNode as SVGElement;
-
-        interact(this.root).draggable({
+        interact(this.g).draggable({
             onend: event => {
                 const item = this.ng.svgObjects[this.uid];
                 item.constrainPosition();
@@ -68,7 +66,7 @@ export abstract class InteractableItem extends NetGraphItem {
             },
         });
         // Determine when to pull up the menu
-        interact(this.root)
+        interact(this.g)
             .on("hold", event => {
                 // Change to "tap" for right click
                 if (event.button === 0) {
@@ -98,16 +96,19 @@ export abstract class InteractableItem extends NetGraphItem {
                     }
                 }
             });
-        this.g = h("g", {contextmenu: event => {
-            event.preventDefault();
-            event.stopPropagation();
-            if (this.menu.visibleAny()) {
-                this.menu.hideAny();
-            } else {
-                this.menu.show(
-                    event.clientX, event.clientY, this.generateMenu());
-            }
-        }});
+        // TODO: attach menu events in a sane manner
+        // this.g = h("g", {contextmenu: event => {
+        //     event.preventDefault();
+        //     event.stopPropagation();
+        //     if (this.menu.visibleAny()) {
+        //         this.menu.hideAny();
+        //     } else {
+        //         this.menu.show(
+        //             event.clientX, event.clientY, this.generateMenu());
+        //     }
+        // }});
+
+        // TODO: redrawSize here?
     }
 
     // TODO: How do I make sure this is implemented by subclasses?
@@ -148,9 +149,10 @@ export abstract class InteractableItem extends NetGraphItem {
 
     redrawSize(): Shape {
         const screenD = this.displayedShape;
-        this.label = h("text", {
-            transform: "translate(0, " + (screenD.height / 2) + ")",
-        });
+        this.label.setAttribute(
+         "transform",
+         "translate(0, " + (screenD.height / 2) + ")",
+        );
         return screenD;
     }
 
@@ -180,27 +182,33 @@ export abstract class InteractableItem extends NetGraphItem {
     }
 
     setLabel(label) {
-        this.label = h("text", {innerHTML: label});
+        this.label.setAttribute("innerHTML", label);
     }
 
     // TODO: what is the expected functionality of this thing?
     setLabelBelow(flag) {
         if (flag && !this.labelBelow) {
             const screenH = this.screenHeight;
-            this.label = h("text", {
-                transform: "translate(0, " + (screenH / 2) + ")",
-            });
+            this.label.setAttribute(
+                "transform",
+                "translate(0, " + (screenH / 2) + ")",
+            );
         } else if (!flag && this.labelBelow) {
-            this.label = h("text", {transform: ""});
+            this.label.setAttribute(
+                "transform",
+                "",
+            );
         }
     }
 }
 
 export class PassthroughItem extends InteractableItem {
+    fixedHeight: number;
+    fixedWidth: number;
+
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg) {
         super(ngiArg, interArg);
 
-        this.shape = h("ellipse.passthrough");
         // TODO: WTF can this be avoided?
         // I have to make a sepcific minimap subclass for this...
         // or something better?
@@ -215,18 +223,33 @@ export class PassthroughItem extends InteractableItem {
         this.fixedHeight = 3;
     }
 
+    _getScreenWidth() {
+        return this.fixedWidth;
+    }
+
+    _getScreenHeight() {
+        return this.fixedHeight;
+    }
+
     // TODO: What type of menu is this thing supposed to generate?
     generateMenu() {
         return [];
     }
 
-    reshapeSize() {
+    // this is probably going to need to be refactored
+    _renderShape() {
+        const shape = h("ellipse.passthrough");
+        this.shape = dom.create(shape).domNode as SVGElement;
+        this.g.appendChild(this.shape);
+        this.redraw();
+    }
+
+    // TODO: Is this a typo?
+    redrawSize() {
         const screenD = super.redrawSize();
 
-        this.shape = h("ellipse.passthrough", {
-            rx: screenD.width / 2,
-            ry: screenD.height / 2,
-        });
+        this.shape.setAttribute("rx", String(screenD.width / 2));
+        this.shape.setAttribute("ry", String(screenD.height / 2));
 
         return screenD;
     }
