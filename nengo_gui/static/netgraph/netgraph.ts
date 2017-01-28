@@ -186,8 +186,8 @@ export class NetGraph {
                     });
                 },
                 onmove: event => {
-                    this.offsetX += event.dx / this.getScaledWidth();
-                    this.offsetY += event.dy / this.getScaledHeight();
+                    this.offsetX += event.dx / this.scaledWidth;
+                    this.offsetY += event.dy / this.scaledHeight;
 
                     Object.keys(this.svgObjects).forEach(objType => {
                         Object.keys(this.svgObjects[objType]).forEach(key => {
@@ -377,6 +377,39 @@ export class NetGraph {
     }
 
     /**
+     * Return the pixel width of the SVG times the current scale factor.
+     */
+    get scaledWidth() {
+        return this.width * this.scale;
+    }
+
+    /**
+     * Return the pixel height of the SVG times the current scale factor.
+     */
+    get scaledHeight() {
+        return this.height * this.scale;
+    }
+
+    /**
+     * Pan the screen (and redraw accordingly)
+     */
+    set offset({x, y}: Pos) {
+        this.offsetX = x;
+        this.offsetY = y;
+        this.redraw();
+
+        viewport.setPosition(x, y);
+    }
+
+    generateMenu() {
+        return [["Auto-layout", () => {
+            this.attached.forEach(conn => {
+                conn.send("netgraph.feedforwardLayout");
+            });
+        }]];
+    }
+
+    /**
      * Event handler for received WebSocket messages
      */
     attach(conn: Connection) {
@@ -395,7 +428,7 @@ export class NetGraph {
 
         // there should probably be a coordinate data type
         conn.bind("netGraph.pan", ({x, y}: Pos) => {
-            this.setOffset({x, y});
+            this.offset = {x, y};
         });
 
         conn.bind("netGraph.zoom", ({zoom}: {zoom: number}) => {
@@ -480,17 +513,6 @@ export class NetGraph {
             conn.send("netgraph." + eventName,
                 {x: this.offsetX, y: this.offsetY});
         });
-    }
-    /**
-     * Pan the screen (and redraw accordingly)
-     */
-    // TODO: Figure out how to use the Pos interface here
-    setOffset({x, y}: Pos) {
-        this.offsetX = x;
-        this.offsetY = y;
-        this.redraw();
-
-        viewport.setPosition(x, y);
     }
 
     updateFonts() {
@@ -597,21 +619,6 @@ export class NetGraph {
 
         this.redraw();
     }
-
-    /**
-     * Return the pixel width of the SVG times the current scale factor.
-     */
-    getScaledWidth() {
-        return this.width * this.scale;
-    }
-
-    /**
-     * Return the pixel height of the SVG times the current scale factor.
-     */
-    getScaledHeight() {
-        return this.height * this.scale;
-    }
-
 
     /**
      * Expand or collapse a network.

@@ -47,8 +47,8 @@ export abstract class InteractableItem extends NetGraphItem {
             },
             onmove: event => {
                 const item = this.ng.svgObjects[this.uid];
-                let w = this.ng.getScaledWidth();
-                let h = this.ng.getScaledHeight();
+                let w = this.ng.scaledWidth;
+                let h = this.ng.scaledHeight;
                 let parent = item.parent;
                 while (parent !== null) {
                     w *= parent.width * 2;
@@ -147,7 +147,7 @@ export abstract class InteractableItem extends NetGraphItem {
     }
 
     redrawSize(): Shape {
-        const screenD = super.redrawSize();
+        const screenD = this.displayedShape;
         this.label = h("text", {
             transform: "translate(0, " + (screenD.height / 2) + ")",
         });
@@ -155,11 +155,11 @@ export abstract class InteractableItem extends NetGraphItem {
     }
 
     _getScreenW() {
-        return this.getNestedWidth() * this.ng.width * this.ng.scale;
+        return this.nestedWidth * this.ng.width * this.ng.scale;
     }
 
     _getScreenH() {
-        return this.getNestedHeight() * this.ng.height * this.ng.scale;
+        return this.nestedHeight * this.ng.height * this.ng.scale;
     }
 
     redraw() {
@@ -186,7 +186,7 @@ export abstract class InteractableItem extends NetGraphItem {
     // TODO: what is the expected functionality of this thing?
     setLabelBelow(flag) {
         if (flag && !this.labelBelow) {
-            const screenH = this.getScreenHeight();
+            const screenH = this.screenHeight;
             this.label = h("text", {
                 transform: "translate(0, " + (screenH / 2) + ")",
             });

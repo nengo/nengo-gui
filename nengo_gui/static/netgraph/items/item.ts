@@ -84,7 +84,6 @@ export abstract class NetGraphItem {
         // Minimum and maximum drawn size, in pixels
         this.minWidth = 5;
         this.minHeight = 5;
-        this.aspect = null;
 
         // Determine the parent NetGraphItem (if any) and the nested depth
         // of this item.
@@ -116,12 +115,38 @@ export abstract class NetGraphItem {
         this._height = val;
     }
 
+    /**
+     * Return the height of the item, taking into account parent heights.
+     */
+    get nestedHeight() {
+        let h = this.height;
+        let parent = this.parent;
+        while (parent !== null) {
+            h *= parent.height * 2;
+            parent = parent.parent;
+        }
+        return h;
+    }
+
     get width(): number {
         return this._width;
     }
 
     set width(val: number) {
         this._width = val;
+    }
+
+    /**
+     * Return the width of the item, taking into account parent widths.
+     */
+    get nestedWidth() {
+        let w = this.width;
+        let parent = this.parent;
+        while (parent !== null) {
+            w *= parent.width * 2;
+            parent = parent.parent;
+        }
+        return w;
     }
 
     get x(): number {
@@ -140,10 +165,99 @@ export abstract class NetGraphItem {
         this._y = val;
     }
 
+    get displayedSize() {
+        return [this.width, this.height];
+    }
+
+    get displayedShape(): Shape {
+        const screenW = this.screenWidth;
+        const screenH = this.screenHeight;
+        return {height: screenH, width: screenW};
+    }
+
+    abstract _getScreenW(): number;
+
+    get screenWidth() {
+        if (this.fixedWidth !== null) {
+            return this.fixedWidth;
+        }
+
+        let screenW = this._getScreenW();
+
+        if (screenW < this.minWidth) {
+            screenW = this.minWidth;
+        }
+
+        return screenW * 2;
+    }
+
+    abstract _getScreenH(): number;
+
+    get screenHeight() {
+        if (this.fixedHeight !== null) {
+            return this.fixedHeight;
+        }
+
+        let screenH = this._getScreenH();
+
+        if (screenH < this.minHeight) {
+            screenH = this.minHeight;
+        }
+
+        return screenH * 2;
+    }
+
+    // TODO: rename
+    abstract _getPos(): {
+        w: number, h: number, offsetX: number, offsetY: number
+    };
+
+    /**
+     * Determine the pixel location of the centre of the item.
+     */
+    get screenLocation() {
+        // FIXME: this should probably use this.ng.getScaledWidth
+        // and this.ng.getScaledHeight
+
+        const pos = this._getPos();
+
+        let dx = 0;
+        let dy = 0;
+        let parent = this.parent;
+        while (parent !== null) {
+            dx *= parent.width * 2;
+            dy *= parent.height * 2;
+
+            dx += (parent.x - parent.width);
+            dy += (parent.y - parent.height);
+            parent = parent.parent;
+        }
+        dx *= pos.w;
+        dy *= pos.h;
+
+        let ww = pos.w;
+        let hh = pos.h;
+        if (this.parent !== null) {
+            ww *= this.parent.nestedWidth * 2;
+            hh *= this.parent.nestedHeight * 2;
+        }
+
+        return [this.x * ww + dx + pos.offsetX,
+                this.y * hh + dy + pos.offsetY];
+    }
+
+    get MinMaxXY() {
+        const minX = this.x - this.width;
+        const maxX = this.x + this.width;
+        const minY = this.y - this.height;
+        const maxY = this.y + this.height;
+        return [minX, maxX, minY, maxY];
+    }
+
     createGraph(graphType, args=null) { // tslint:disable-line
-        const w = this.getNestedWidth();
-        const h = this.getNestedHeight();
-        const pos = this.getScreenLocation();
+        const w = this.nestedWidth;
+        const h = this.nestedHeight;
+        const pos = this.screenLocation;
 
         const info: any = {
             height: viewport.fromScreenY(100),
@@ -205,11 +319,7 @@ export abstract class NetGraphItem {
     }
 
     constrainAspect() {
-        this.size = this.getDisplayedSize();
-    }
-
-    getDisplayedSize() {
-        return [this.width, this.height];
+        this.size = this.displayedSize;
     }
 
     constrainPosition() {
@@ -228,7 +338,7 @@ export abstract class NetGraphItem {
     }
 
     redrawPosition() {
-        const screen = this.getScreenLocation();
+        const screen = this.screenLocation;
 
         // Update my position
         this.g = h("g", {
@@ -247,114 +357,11 @@ export abstract class NetGraphItem {
     }
 
     /**
-     * Return the width of the item, taking into account parent widths.
-     */
-    getNestedWidth() {
-        let w = this.width;
-        let parent = this.parent;
-        while (parent !== null) {
-            w *= parent.width * 2;
-            parent = parent.parent;
-        }
-        return w;
-    }
-
-    /**
-     * Return the height of the item, taking into account parent heights.
-     */
-    getNestedHeight() {
-        let h = this.height;
-        let parent = this.parent;
-        while (parent !== null) {
-            h *= parent.height * 2;
-            parent = parent.parent;
-        }
-        return h;
-    }
-
-    abstract _getScreenW(): number;
-
-    // TODO: change these to getters and setters?
-    getScreenWidth() {
-        if (this.fixedWidth !== null) {
-            return this.fixedWidth;
-        }
-
-        let screenW = this._getScreenW();
-
-        if (screenW < this.minWidth) {
-            screenW = this.minWidth;
-        }
-
-        return screenW * 2;
-    }
-
-    abstract _getScreenH(): number;
-
-    getScreenHeight() {
-        if (this.fixedHeight !== null) {
-            return this.fixedHeight;
-        }
-
-        let screenH = this._getScreenH();
-
-        if (screenH < this.minHeight) {
-            screenH = this.minHeight;
-        }
-
-        return screenH * 2;
-    }
-
-    /**
      * Force a redraw of the item.
      */
     redraw() {
         this.redrawPosition();
         this.redrawConnections();
-    }
-
-    // TODO: rename
-    abstract _getPos(): {
-        w: number, h: number, offsetX: number, offsetY: number
-    };
-
-    /**
-     * Determine the pixel location of the centre of the item.
-     */
-    getScreenLocation() {
-        // FIXME: this should probably use this.ng.getScaledWidth
-        // and this.ng.getScaledHeight
-
-        let w;
-        let h;
-        let offsetX;
-        let offsetY;
-
-        w, h, offsetX, offsetX = this._getPos();
-
-        let dx = 0;
-        let dy = 0;
-        let parent = this.parent;
-        while (parent !== null) {
-            dx *= parent.width * 2;
-            dy *= parent.height * 2;
-
-            dx += (parent.x - parent.width);
-            dy += (parent.y - parent.height);
-            parent = parent.parent;
-        }
-        dx *= w;
-        dy *= h;
-
-        let ww = w;
-        let hh = h;
-        if (this.parent !== null) {
-            ww *= this.parent.getNestedWidth() * 2;
-            hh *= this.parent.getNestedHeight() * 2;
-        }
-
-        return [this.x * ww + dx + offsetX,
-                this.y * hh + dy + offsetY];
     }
 
     /**
@@ -364,13 +371,5 @@ export abstract class NetGraphItem {
         Object.keys(attrs).forEach(key => {
             el.setAttribute(key, attrs[key]);
         });
-    }
-
-    getMinMaxXY() {
-        const minX = this.x - this.width;
-        const maxX = this.x + this.width;
-        const minY = this.y - this.height;
-        const maxY = this.y + this.height;
-        return [minX, maxX, minY, maxY];
     }
 }

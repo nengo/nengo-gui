@@ -26,8 +26,8 @@ abstract class ResizableItem extends InteractableItem {
                 this.menu.hideAny();
             }).on("resizemove", event => {
                 const item = this.ng.svgObjects[this.uid];
-                let hScale = this.ng.getScaledWidth();
-                let vScale = this.ng.getScaledHeight();
+                let hScale = this.ng.scaledWidth;
+                let vScale = this.ng.scaledHeight;
                 let parent = item.parent;
                 while (parent !== null) {
                     hScale = hScale * parent.width * 2;
@@ -66,7 +66,7 @@ abstract class ResizableItem extends InteractableItem {
         item.y += offsetY;
     }
 
-    redrawSize() {
+    redrawSize(): Shape {
         const screenD = super.redrawSize();
 
         const areaW = screenD.width;
@@ -509,10 +509,10 @@ export class EnsembleItem extends ResizableItem {
     }
 
     getDisplayedSize() {
-        const hScale = this.ng.getScaledWidth();
-        const vScale = this.ng.getScaledHeight();
-        let w = this.getNestedWidth() * hScale;
-        let h = this.getNestedHeight() * vScale;
+        const hScale = this.ng.scaledWidth;
+        const vScale = this.ng.scaledHeight;
+        let w = this.nestedWidth * hScale;
+        let h = this.nestedHeight * vScale;
 
         if (h * this.aspect < w) {
             w = h * this.aspect;
