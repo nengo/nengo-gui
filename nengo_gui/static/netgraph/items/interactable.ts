@@ -114,7 +114,6 @@ export abstract class InteractableItem extends NetGraphItem {
     // TODO: How do I make sure this is implemented by subclasses?
     abstract generateMenu(): MenuItem[];
 
-    // TODO: there doesn't seem to be a way to `super` call a setter
     set height(val: number) {
         this._h = val;
         this.miniItem.height = val;
@@ -202,7 +201,26 @@ export abstract class InteractableItem extends NetGraphItem {
         }
     }
 
-        // TODO: rename to createComponent?
+    constrainAspect() {
+        this.size = this.displayedSize;
+    }
+
+    constrainPosition() {
+        this.constrainAspect();
+
+        if (this.parent !== null) {
+            this.width = Math.min(0.5, this.width);
+            this.height = Math.min(0.5, this.height);
+
+            this.x = Math.min(this.x, 1.0 - this.width);
+            this.x = Math.max(this.x, this.width);
+
+            this.y = Math.min(this.y, 1.0 - this.height);
+            this.y = Math.max(this.y, this.height);
+        }
+    }
+
+    // TODO: rename to createComponent?
     createGraph(graphType, args=null) { // tslint:disable-line
         const w = this.nestedWidth;
         const h = this.nestedHeight;

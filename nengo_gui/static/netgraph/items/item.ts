@@ -13,7 +13,7 @@
 
 import { VNode, dom, h  } from "maquette";
 
-import * as menu from "../../menu";
+// import * as menu from "../../menu";
 import { Shape } from "../../utils";
 import { NetGraph } from "../netgraph";
 import { NetItem } from "./resizable";
@@ -100,28 +100,16 @@ export abstract class NetGraphItem {
         //this.menu = new menu.Menu(this.ng.parent);
     }
 
-    get posX(): number {
+    get x(): number {
         return this._x;
     }
 
-    set posX(val: number) {
-        this._x = val;
-    }
-
-    get posY(): number {
+    get y(): number {
         return this._y;
-    }
-
-    set posY(val: number) {
-        this._y = val;
     }
 
     get height(): number {
         return this._h;
-    }
-
-    set height(val: number) {
-        this._h = val;
     }
 
     /**
@@ -137,12 +125,16 @@ export abstract class NetGraphItem {
         return h;
     }
 
-    get width(): number {
+    get fuck(): number {
         return this._w;
     }
 
-    set width(val: number) {
+    set fuck(val: number) {
         this._w = val;
+    }
+
+    get width(): number {
+        return this._w;
     }
 
     /**
@@ -230,15 +222,15 @@ export abstract class NetGraphItem {
             hh *= this.parent.nestedHeight * 2;
         }
 
-        return [this.posX * ww + dx + pos.offsetX,
-                this.posY * hh + dy + pos.offsetY];
+        return [this.x * ww + dx + pos.offsetX,
+                this.y * hh + dy + pos.offsetY];
     }
 
     get minMaxXY() {
-        const minX = this.posX - this.width;
-        const maxX = this.posX + this.width;
-        const minY = this.posY - this.height;
-        const maxY = this.posY + this.height;
+        const minX = this.x - this.width;
+        const maxX = this.x + this.width;
+        const minY = this.y - this.height;
+        const maxY = this.y + this.height;
         return [minX, maxX, minY, maxY];
     }
 
@@ -280,25 +272,6 @@ export abstract class NetGraphItem {
         this.gItems.removeChild(this.g);
         if (this.depth === 1) {
             this.ng.scaleMiniMap();
-        }
-    }
-
-    constrainAspect() {
-        this.size = this.displayedSize;
-    }
-
-    constrainPosition() {
-        this.constrainAspect();
-
-        if (this.parent !== null) {
-            this.width = Math.min(0.5, this.width);
-            this.height = Math.min(0.5, this.height);
-
-            this.posX = Math.min(this.posX, 1.0 - this.width);
-            this.posX = Math.max(this.posX, this.width);
-
-            this.posY = Math.min(this.posY, 1.0 - this.height);
-            this.posY = Math.max(this.posY, this.height);
         }
     }
 
