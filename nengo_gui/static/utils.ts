@@ -83,7 +83,7 @@ export function draw_legend(parent, labels, colorFunc, uid) {
     // Expand the width of the svg to the length of the longest string
     const labelList = $("#legend" + uid + " .legend-label").toArray();
     const longestLabel = Math.max.apply(Math, labelList.map(o => {
-        return o.getBBox().width;
+        return o.getBoundingClientRect().width;
     }));
     // "50" is for the similarity measure that is around three characters wide
     legendSVG.attr("width", longestLabel + 50);

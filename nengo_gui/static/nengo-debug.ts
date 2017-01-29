@@ -142,7 +142,6 @@ export class Debug {
 }
 
 /* tslint:disable:no-console */
-
 document.addEventListener("DOMContentLoaded", () => {
     const debug = new Debug();
     document.body.appendChild(debug.view.root);

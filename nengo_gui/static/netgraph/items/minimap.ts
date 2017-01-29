@@ -9,6 +9,10 @@ export class MinimapItem extends NetGraphItem {
         this.gItems = this.ng.gItemsMini;
     }
 
+    _renderShape() {
+        console.log("render");
+    }
+
     _getPos() {
         const mmW = this.ng.mmWidth;
         const mmH = this.ng.mmHeight;

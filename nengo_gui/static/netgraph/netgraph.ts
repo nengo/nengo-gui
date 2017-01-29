@@ -13,12 +13,12 @@
 import * as interact from "interact.js";
 import { VNode, dom, h  } from "maquette";
 
-import * as allComponents from "../components/all-components";
+import { AllComponents } from "../components/all-components";
 import { config } from "../config";
 import { Menu } from "../menu";
 import { HotkeyManager } from "../hotkeys";
 import { Shape } from "../utils";
-import * as viewport from "../viewport";
+import { ViewPort } from "../viewport";
 import { Connection } from "../websocket";
 import { NetGraphConnection } from "./connection";
 // import { Minimap } from "./minimap";
@@ -71,6 +71,7 @@ interface Pos {
 
 export class NetGraph {
 
+    allComponents: AllComponents;
     /**
      * Since connections may go to items that do not exist yet (since they
      * are inside a collapsed network), this dictionary keeps a list of
@@ -80,7 +81,6 @@ export class NetGraph {
      * when that item appears.
      */
     collapsedConns: ConnDict = {};
-    root: HTMLElement;
     gConns: SVGElement;
     gConnsMini: SVGElement;
     gItems: SVGElement;
@@ -93,10 +93,12 @@ export class NetGraph {
     minimap;
     offsetX = 0; // Global x,y pan offset
     offsetY = 0; // Global x,y pan offset
+    root: HTMLElement;
     svg: VNode;
     svgConns: ConnDict = {};
     svgObjects: SvgObjects = {net: {}, ens: {}, node: {}, passthrough: {}};
     uid: string;
+    viewPort: ViewPort;
     view;
     width: number;
     transparentNets: boolean;
@@ -154,6 +156,9 @@ export class NetGraph {
         this.width = this.root.getBoundingClientRect().width;
         this.height = this.root.getBoundingClientRect().height;
 
+        this.viewPort = new ViewPort(this);
+        this.allComponents = new AllComponents();
+
         // Respond to resize events
         window.addEventListener("resize", event => {
             this.onResize();
@@ -202,7 +207,10 @@ export class NetGraph {
                         this.svgConns[key].redraw();
                     });
 
-                    viewport.setPosition(this.offsetX, this.offsetY);
+                    this.viewPort.position = {
+                        newX: this.offsetX,
+                        newY: this.offsetY
+                    };
 
                     this.scaleMiniMapViewBox();
 
@@ -252,7 +260,7 @@ export class NetGraph {
                     zScale = 1. / zScale;
                 }
 
-                allComponents.saveLayouts();
+                this.allComponents.saveLayouts();
 
                 const xx = x / this.scale - this.offsetX;
                 const yy = y / this.scale - this.offsetY;
@@ -260,7 +268,10 @@ export class NetGraph {
                 this.offsetY = (this.offsetY + yy) / zScale - yy;
 
                 this.scale = zScale * this.scale;
-                viewport.setPosition(this.offsetX, this.offsetY);
+                this.viewPort.position = {
+                    newX: this.offsetX,
+                    newY: this.offsetY
+                };
 
                 this.scaleMiniMapViewBox();
 
@@ -342,7 +353,7 @@ export class NetGraph {
         this.updateFonts();
         this.redraw();
 
-        viewport.setScale(this._scale);
+        this.viewPort.scale = this._scale;
     }
 
     get zoomFonts(): boolean {
@@ -399,7 +410,7 @@ export class NetGraph {
         this.offsetY = y;
         this.redraw();
 
-        viewport.setPosition(x, y);
+        this.viewPort.position = {newX: x, newY: y};
     }
 
     generateMenu() {
@@ -465,7 +476,7 @@ export class NetGraph {
 
         conn.bind("netGraph.config", ({uid, config}: Uid & {config: any}) => {
             // Anything about the config of a component has changed
-            const component = allComponents.byUID(uid);
+            const component = this.allComponents.byUID(uid);
             component.updateLayout(config);
         });
 
@@ -502,7 +513,7 @@ export class NetGraph {
 
         conn.bind("netGraph.reconnect",
             ({uid, notifyServer}: Uid & any) => {
-                const component = allComponents.byUID(uid);
+                const component = this.allComponents.byUID(uid);
                 component.remove(true, notifyServer);
         });
 
@@ -603,9 +614,9 @@ export class NetGraph {
                     const item = this.svgObjects[objType][key];
                     if (item.depth === 1) {
                         const newWidth =
-                            viewport.scaleWidth(item.width) / this.scale;
+                            this.viewPort.scaleWidth(item.width) / this.scale;
                         const newHeight =
-                            viewport.scaleHeight(item.height) / this.scale;
+                            this.viewPort.scaleHeight(item.height) / this.scale;
                         item.width = newWidth / (2 * width);
                         item.height = newHeight / (2 * height);
                     }

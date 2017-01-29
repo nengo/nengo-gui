@@ -2,10 +2,11 @@ import * as interact from "interact.js";
 
 import { Menu } from "../menu";
 import * as utils from "../utils";
-import * as viewport from "../viewport";
+
 import { InputDialogView } from "../views/modal";
+import { ViewPort } from "../viewport";
 import { FastWSConnection } from "../websocket";
-import * as allComponents from "./all-components";
+import { AllComponents } from "./all-components";
 
 /**
  * Base class for interactive visualization
@@ -44,8 +45,9 @@ export class Component {
     w;
     width;
     ws;
-    x;
-    y;
+    viewPort: ViewPort;
+    x: number;
+    y: number;
 
     constructor(parent, args) {
         // Create the div for the component and position it
@@ -58,6 +60,7 @@ export class Component {
         this.y = args.y;
         this.w = args.width;
         this.h = args.height;
+        this.viewPort = args.viewPort;
 
         this.redrawSize();
         this.redrawPos();
@@ -99,8 +102,8 @@ export class Component {
                     this.saveLayout();
                 },
                 onmove: event => {
-                    this.x += viewport.fromScreenX(event.dx);
-                    this.y += viewport.fromScreenY(event.dy);
+                    this.x += this.viewPort.fromScreenX(event.dx);
+                    this.y += this.viewPort.fromScreenY(event.dy);
                     this.redrawPos();
                 },
                 onstart: () => {
@@ -124,11 +127,11 @@ export class Component {
                 const dright = event.deltaRect.right;
                 const dbottom = event.deltaRect.bottom;
 
-                this.x += viewport.fromScreenX((dleft + dright) / 2);
-                this.y += viewport.fromScreenY((dtop + dbottom) / 2);
+                this.x += this.viewPort.fromScreenX((dleft + dright) / 2);
+                this.y += this.viewPort.fromScreenY((dtop + dbottom) / 2);
 
-                this.w = viewport.unscaleWidth(newWidth);
-                this.h = viewport.unscaleHeight(newHeight);
+                this.w = this.viewPort.unscaleWidth(newWidth);
+                this.h = this.viewPort.unscaleHeight(newHeight);
 
                 this.onResize(newWidth, newHeight);
                 this.redrawSize();
@@ -259,7 +262,7 @@ export class Component {
             }
         }
         this.parent.removeChild(this.div);
-        allComponents.remove(this);
+        this.allComponents.remove(this);
     }
 
     /**
@@ -322,7 +325,9 @@ export class Component {
         this.redrawSize();
         this.redrawPos();
         this.onResize(
-            viewport.scaleWidth(this.w), viewport.scaleHeight(this.h));
+            this.viewPort.scaleWidth(this.w),
+            this.viewPort.scaleHeight(this.h)
+        );
 
         if (config.labelVisible === true) {
             this.showLabel(null);
@@ -332,15 +337,15 @@ export class Component {
     }
 
     redrawSize() {
-        this.width = viewport.scaleWidth(this.w);
-        this.height = viewport.scaleHeight(this.h);
+        this.width = this.viewPort.scaleWidth(this.w);
+        this.height = this.viewPort.scaleHeight(this.h);
         this.div.style.width = this.width;
         this.div.style.height = this.height;
     }
 
     redrawPos() {
-        const x = viewport.toScreenX(this.x - this.w);
-        const y = viewport.toScreenY(this.y - this.h);
+        const x = this.viewPort.toScreenX(this.x - this.w);
+        const y = this.viewPort.toScreenY(this.y - this.h);
         // utils.setTransform(this.div, x, y);
     }
 }

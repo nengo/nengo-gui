@@ -1,90 +1,111 @@
-import * as $ from "jquery";
-
 import * as allComponents from "./components/all-components";
+import { NetGraph } from "./netgraph/netgraph";
 
-let scale = 1.0;
-let x = 0;
-let y = 0;
-let height = 0;
-let width = 0;
-let $main;
-let netgraph;
+export class ViewPort {
+    netgraph: NetGraph;
+    mainDiv: HTMLElement;
+    _scale: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
 
-export function setNetgraph(newNetgraph) {
-    netgraph = newNetgraph;
-    $main = $("#main");
+    constructor(ng){
+        this._scale = 1.0;
+        this.x = 0;
+        this.y = 0;
 
-    width = $main.width();
-    height = $main.height();
-    window.addEventListener("resize", onresize);
-}
+        this.netgraph = ng;
+        this.mainDiv = this.netgraph.root;
 
-export function setPosition(newX, newY) {
-    x = newX;
-    y = newY;
-    redraw();
-}
+        const clientRect = this.mainDiv.getBoundingClientRect();
+        this.width = clientRect.width;
+        this.height = clientRect.height;
 
-export function setScale(newScale) {
-    scale = newScale;
-    redraw();
-}
-
-export function redraw() {
-    allComponents.onResize(scale * width * 2, height * scale * 2);
-    allComponents.redraw();
-}
-
-export function onresize() {
-    const oldWidth = width;
-    const oldHeight = height;
-
-    width = $main.width();
-    height = $main.height();
-
-    if (netgraph.aspect_resize) {
-        allComponents.rescale(oldWidth / width, oldHeight / height);
+        window.addEventListener("resize", event => {
+            this.onResize();
+        });
     }
 
-    redraw();
-}
+    // TODO: take position argument type
+    set position({newX, newY}) {
+        this.x = newX;
+        this.y = newY;
+        this.redraw();
+    }
 
-export function fromScreenX(screenX): number {
-    return screenX / (width * scale);
-}
+    set scale(newScale) {
+        this._scale = newScale;
+        this.redraw();
+    }
 
-export function shiftX(componentX): number {
-    return componentX + x;
-}
+    get scale() {
+        return this._scale;
+    }
 
-export function toScreenX(componentX): number {
-    return shiftX(componentX) *  width * scale;
-}
+    redraw() {
+        this.netgraph.allComponents.onResize(
+            this.scale * this.width * 2,
+            this.height * this.scale * 2
+        );
+        this.netgraph.allComponents.redraw();
+    }
 
-export function fromScreenY(screenY): number {
-    return screenY / (height * scale);
-}
+    onResize() {
+        const oldWidth = this.width;
+        const oldHeight = this.height;
 
-export function shiftY(componentY): number {
-    return componentY + y;
-}
+        const clientRect = this.mainDiv.getBoundingClientRect();
+        this.width = clientRect.width;
+        this.height = clientRect.height;
 
-export function toScreenY(componentY): number {
-    return shiftY(componentY) *  height * scale;
-}
+        if (this.netgraph.aspectResize) {
+            this.netgraph.allComponents.rescale(
+                oldWidth / this.width,
+                oldHeight / this.height
+            );
+        }
 
-export function scaleWidth(componentWidth): number {
-    return componentWidth * width * scale * 2;
-}
+        this.redraw();
+    }
 
-export function scaleHeight(componentHeight): number {
-    return componentHeight * height * scale * 2;
-}
+    fromScreenX(screenX): number {
+        return screenX / (this.width * this.scale);
+    }
 
-export function unscaleWidth(screenWidth): number {
-    return screenWidth / (width * scale) / 2;
-}
+    shiftX(componentX): number {
+        return componentX + this.x;
+    }
 
-export function unscaleHeight(screenHeight): number {
-    return screenHeight / (height * scale) / 2;
+    toScreenX(componentX): number {
+        return this.shiftX(componentX) *  this.width * this.scale;
+    }
+
+    fromScreenY(screenY): number {
+        return screenY / (this.height * this.scale);
+    }
+
+    shiftY(componentY): number {
+        return componentY + this.y;
+    }
+
+    toScreenY(componentY): number {
+        return this.shiftY(componentY) *  this.height * this.scale;
+    }
+
+    scaleWidth(componentWidth): number {
+        return componentWidth * this.width * this.scale * 2;
+    }
+
+    scaleHeight(componentHeight): number {
+        return componentHeight * this.height * this.scale * 2;
+    }
+
+    unscaleWidth(screenWidth): number {
+        return screenWidth / (this.width * this.scale) / 2;
+    }
+
+    unscaleHeight(screenHeight): number {
+        return screenHeight / (this.height * this.scale) / 2;
+    }
 }

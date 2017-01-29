@@ -15,7 +15,6 @@ import { VNode, dom, h  } from "maquette";
 
 import * as menu from "../../menu";
 import { Shape } from "../../utils";
-import * as viewport from "../../viewport";
 import { NetGraph } from "../netgraph";
 import { NetItem } from "./resizable";
 
@@ -46,26 +45,28 @@ export abstract class NetGraphItem {
     gItems: SVGElement;
     gNetworks: SVGElement;
     menu;
-    minHeight;
-    minWidth;
+    minHeight: number;
+    minWidth: number;
     ng: NetGraph;
     parent: NetItem;
     shape: SVGElement;
     size: number[];
     uid: string;
 
-    protected _height;
-    protected _width;
-    protected _x;
-    protected _y;
+    protected _h: number;
+    protected _w: number;
+    protected _x: number;
+    protected _y: number;
+
+    protected _fuck: number;
 
     constructor(ngiArg: NetGraphItemArg) {
 
         this.ng = ngiArg.ng;
         this.uid = ngiArg.uid;
 
-        this._width = ngiArg.width;
-        this._height = ngiArg.height;
+        this._w = ngiArg.width;
+        this._h = ngiArg.height;
         this._x = ngiArg.posX;
         this._y = ngiArg.posY;
         this.dimensions = ngiArg.dimensions;
@@ -97,16 +98,30 @@ export abstract class NetGraphItem {
 
         // TODO: find out where to render the menu
         //this.menu = new menu.Menu(this.ng.parent);
+    }
 
-        this._renderShape();
+    get posX(): number {
+        return this._x;
+    }
+
+    set posX(val: number) {
+        this._x = val;
+    }
+
+    get posY(): number {
+        return this._y;
+    }
+
+    set posY(val: number) {
+        this._y = val;
     }
 
     get height(): number {
-        return this._height;
+        return this._h;
     }
 
     set height(val: number) {
-        this._height = val;
+        this._h = val;
     }
 
     /**
@@ -123,11 +138,11 @@ export abstract class NetGraphItem {
     }
 
     get width(): number {
-        return this._width;
+        return this._w;
     }
 
     set width(val: number) {
-        this._width = val;
+        this._w = val;
     }
 
     /**
@@ -143,22 +158,6 @@ export abstract class NetGraphItem {
         return w;
     }
 
-    get x(): number {
-        return this._x;
-    }
-
-    set x(val: number) {
-        this._x = val;
-    }
-
-    get y(): number {
-        return this._y;
-    }
-
-    set y(val: number) {
-        this._y = val;
-    }
-
     get displayedSize() {
         return [this.width, this.height];
     }
@@ -169,6 +168,9 @@ export abstract class NetGraphItem {
         return {height: screenH, width: screenW};
     }
 
+    /* 
+    Different implementation for normal and mini objects 
+    */
     abstract _getScreenW(): number;
 
     get screenWidth() {
@@ -228,45 +230,19 @@ export abstract class NetGraphItem {
             hh *= this.parent.nestedHeight * 2;
         }
 
-        return [this.x * ww + dx + pos.offsetX,
-                this.y * hh + dy + pos.offsetY];
+        return [this.posX * ww + dx + pos.offsetX,
+                this.posY * hh + dy + pos.offsetY];
     }
 
     get minMaxXY() {
-        const minX = this.x - this.width;
-        const maxX = this.x + this.width;
-        const minY = this.y - this.height;
-        const maxY = this.y + this.height;
+        const minX = this.posX - this.width;
+        const maxX = this.posX + this.width;
+        const minY = this.posY - this.height;
+        const maxY = this.posY + this.height;
         return [minX, maxX, minY, maxY];
     }
 
     abstract _renderShape();
-
-    // TODO: rename to createComponent?
-    createGraph(graphType, args=null) { // tslint:disable-line
-        const w = this.nestedWidth;
-        const h = this.nestedHeight;
-        const pos = this.screenLocation;
-
-        const info: any = {
-            height: viewport.fromScreenY(100),
-            type: graphType,
-            uid: this.uid,
-            width: viewport.fromScreenX(100),
-            x: viewport.fromScreenX(pos[0]) - viewport.shiftX(w),
-            y: viewport.fromScreenY(pos[1]) - viewport.shiftY(h),
-        };
-
-        if (args !== null) {
-            info.args = args;
-        }
-
-        if (info.type === "Slider") {
-            info.width /= 2;
-        }
-
-        this.ng.notify("createGraph", info);
-    }
 
     createModal() {
         this.ng.notify("createModal", {
@@ -318,18 +294,17 @@ export abstract class NetGraphItem {
             this.width = Math.min(0.5, this.width);
             this.height = Math.min(0.5, this.height);
 
-            this.x = Math.min(this.x, 1.0 - this.width);
-            this.x = Math.max(this.x, this.width);
+            this.posX = Math.min(this.posX, 1.0 - this.width);
+            this.posX = Math.max(this.posX, this.width);
 
-            this.y = Math.min(this.y, 1.0 - this.height);
-            this.y = Math.max(this.y, this.height);
+            this.posY = Math.min(this.posY, 1.0 - this.height);
+            this.posY = Math.max(this.posY, this.height);
         }
     }
 
     redrawPosition() {
         const screen = this.screenLocation;
 
-        // Update my position
         this.g.setAttribute(
             "transform",
             "translate(" + screen[0] + ", " + screen[1] + ")"
@@ -337,7 +312,6 @@ export abstract class NetGraphItem {
     }
 
     redrawConnections() {
-        // Update any connections into and out of this
         for (let i = 0; i < this.connIn.length; i++) {
             this.connIn[i].redraw();
         }

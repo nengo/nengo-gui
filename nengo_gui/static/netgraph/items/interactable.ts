@@ -14,7 +14,7 @@ export interface InteractableItemArg {
 export abstract class InteractableItem extends NetGraphItem {
     minimap;
     miniItem;
-    uid;
+    uid: string;
     gNetworks;
     gItems;
     label: SVGTextElement;
@@ -116,12 +116,12 @@ export abstract class InteractableItem extends NetGraphItem {
 
     // TODO: there doesn't seem to be a way to `super` call a setter
     set height(val: number) {
-        this._height = val;
+        this._h = val;
         this.miniItem.height = val;
     }
 
     set width(val: number) {
-        this._width = val;
+        this._w = val;
         this.miniItem.width = val;
     }
 
@@ -144,7 +144,7 @@ export abstract class InteractableItem extends NetGraphItem {
 
         super.remove();
 
-        this.miniItem.remove();
+        // this.miniItem.remove();
     }
 
     redrawSize(): Shape {
@@ -166,6 +166,7 @@ export abstract class InteractableItem extends NetGraphItem {
 
     redraw() {
         super.redraw();
+        this.redrawSize();
         // if (this.ng.mmDisplay) {
         //     this.miniItem.redraw();
         // }
@@ -199,6 +200,34 @@ export abstract class InteractableItem extends NetGraphItem {
                 "",
             );
         }
+    }
+
+        // TODO: rename to createComponent?
+    createGraph(graphType, args=null) { // tslint:disable-line
+        const w = this.nestedWidth;
+        const h = this.nestedHeight;
+        const pos = this.screenLocation;
+
+        const info: any = {
+            height: this.ng.viewPort.fromScreenY(100),
+            type: graphType,
+            uid: this.uid,
+            width: this.ng.viewPort.fromScreenX(100),
+            x: this.ng.viewPort.fromScreenX(pos[0])
+                - this.ng.viewPort.shiftX(w),
+            y: this.ng.viewPort.fromScreenY(pos[1])
+                - this.ng.viewPort.shiftY(h),
+        };
+
+        if (args !== null) {
+            info.args = args;
+        }
+
+        if (info.type === "Slider") {
+            info.width /= 2;
+        }
+
+        this.ng.notify("createGraph", info);
     }
 }
 
@@ -244,7 +273,6 @@ export class PassthroughItem extends InteractableItem {
         this.redraw();
     }
 
-    // TODO: Is this a typo?
     redrawSize() {
         const screenD = super.redrawSize();
 

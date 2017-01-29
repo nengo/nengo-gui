@@ -13,9 +13,9 @@ abstract class ResizableItem extends InteractableItem {
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg) {
         super(ngiArg, interArg);
 
-        const area = h("rect", {style: "fill:transparent"});
-        this.g.appendChild(this.area);
+        const area = h("rect", {fill: "transparent"});
         this.area = dom.create(area).domNode as SVGElement;
+        this.g.appendChild(this.area);
 
         interact(this.area).resizable({
                 edges: {bottom: true, left: true, right: true, top: true},
@@ -70,13 +70,13 @@ abstract class ResizableItem extends InteractableItem {
 
         const areaW = screenD.width;
         const areaH = screenD.height;
-        const area = h("rect", {
-            transform: "translate(-" + (areaW / 2) + ", -" + (areaH / 2) + ")",
-            width: areaW,
-            height: areaH,
-        });
+        this.area.setAttribute(
+            "transform",
+            String("translate(-" + (areaW / 2) + ", -" + (areaH / 2) + ")")
+        );
+        this.area.setAttribute("width", String(areaW));
+        this.area.setAttribute("height", String(areaH));
 
-        // TODO: I don't think this is right
         this.shape.setAttribute("width", String(screenD.width));
         this.shape.setAttribute("height", String(screenD.height));
 
@@ -92,6 +92,8 @@ export class NodeItem extends ResizableItem {
         super(ngiArg, interArg);
         this.radiusScale = .1;
         this.htmlNode = html;
+        this._renderShape();
+        this.redraw();
     }
 
     _renderShape() {
@@ -99,8 +101,7 @@ export class NodeItem extends ResizableItem {
         const halfW = screenD.width / 2;
         const halfH = screenD.height / 2;
         const shape = h("rect.node", {
-            transform: "",
-            translate: "(-" + halfW + ", -" + halfH + ")",
+            transform: "translate(-" + halfW + ", -" + halfH + ")",
         });
         this.shape = dom.create(shape).domNode as SVGElement;
         this.g.appendChild(this.shape);
@@ -361,8 +362,7 @@ export class NetItem extends ResizableItem {
     }
 
     redraw() {
-        this.redrawPosition();
-        this.redrawSize();
+        super.redraw();
         this.redrawChildren();
         this.redrawChildConnections();
         this.redrawConnections();

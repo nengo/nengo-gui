@@ -278,4 +278,12 @@ export class Editor {
         }
         this.redraw();
     }
+
+    redraw() {
+        this.editor.resize();
+        if (this.netgraph !== undefined) {
+            this.netgraph.onResize();
+        }
+        viewport.onResize();
+    }
 }
