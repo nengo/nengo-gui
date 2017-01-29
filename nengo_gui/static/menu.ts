@@ -123,7 +123,7 @@ export class Menu {
             } else {
                 this.view.hideAction(action.element);
             }
-        });
+
         this.view.show(x, y);
         this.parent.appendChild(this.view.root);
         Menu.allShown.push(this);

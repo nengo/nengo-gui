@@ -3,7 +3,6 @@
  */
 
 import * as d3 from "d3";
-import * as $ from "jquery";
 
 /**
  * Clip a number, keeping it between two values.
@@ -29,10 +28,10 @@ export interface Shape {
 }
 
 export function disable_editor() {
-    $("#Toggle_ace").css("display", "none");
-    $("#Save_file").css("display", "none");
-    $("#Font_increase").css("display", "none");
-    $("#Font_decrease").css("display", "none");
+    document.getElementById("#Toggle_ace").setAttribute("display", "none");
+    document.getElementById("#Save_file").setAttribute("display", "none");
+    document.getElementById("#Font_increase").setAttribute("display", "none");
+    document.getElementById("#Font_decrease").setAttribute("display", "none");
 }
 
 /**
