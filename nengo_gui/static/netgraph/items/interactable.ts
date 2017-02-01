@@ -19,6 +19,7 @@ export abstract class InteractableItem extends NetGraphItem {
     gItems;
     label: SVGTextElement;
     labelBelow: boolean;
+    size: number[];
 
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg) {
         super(ngiArg);

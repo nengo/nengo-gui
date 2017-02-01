@@ -9,8 +9,9 @@ import { NetGraphItemArg } from "./item";
 
 abstract class ResizableItem extends InteractableItem {
     area: SVGElement;
+    dimensions: number;
 
-    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg) {
+    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg, dimensions) {
         super(ngiArg, interArg);
 
         const area = h("rect", {fill: "transparent"});
