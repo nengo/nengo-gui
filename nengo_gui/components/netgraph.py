@@ -2,6 +2,7 @@ import time
 import os
 import traceback
 import collections
+import logging
 import threading
 
 import nengo
@@ -14,6 +15,10 @@ from nengo_gui.components.slider import OverriddenOutput
 from nengo_gui.modal_js import infomodal
 import nengo_gui.user_action
 import nengo_gui.layout
+
+
+logger = logging.getLogger(__name__)
+
 
 class NetGraph(Component):
     """Handles computations and communications for NetGraph on the JS side.
@@ -281,8 +286,7 @@ class NetGraph(Component):
                         old_component.replace_with = obj
                         obj.original_id = old_component.original_id
                     except:
-                        traceback.print_exc()
-                        print('failed to recreate plot for %s' % obj)
+                        logger.exception('failed to recreate plot for %s', obj)
                     components.append(obj)
 
         components.sort(key=lambda x: x.component_order)
@@ -398,7 +402,7 @@ class NetGraph(Component):
         try:
             info = json.loads(msg)
         except ValueError:
-            print('invalid message', repr(msg))
+            logger.warning('invalid message %s', repr(msg))
             return
         action = info.get('act', None)
         undo = info.get('undo', None)
@@ -416,15 +420,14 @@ class NetGraph(Component):
                     self.page.undo_stack.append([act])
                     del self.page.redo_stack[:]
                 except:
-                    print('error processing message', repr(msg))
-                    traceback.print_exc()
+                    logger.exception('error processing message %s', repr(msg))
         elif undo is not None:
             if undo == '1':
                 self.undo()
             else:
                 self.redo()
         else:
-            print('received message', msg)
+            logger.debug('received message %s', msg)
 
     def undo(self):
         if self.page.undo_stack:

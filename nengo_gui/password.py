@@ -5,7 +5,11 @@ from __future__ import print_function
 import binascii
 from getpass import getpass
 import hashlib
+import logging
 import os
+
+
+logger = logging.getLogger(__name__)
 
 
 def gensalt(size=16):
@@ -27,4 +31,4 @@ def prompt_pw():
         p1 = getpass("Enter password: ")
         if p0 == p1:
             return p0
-        print("Passwords do not match. Please try again.")
+        logger.error("Passwords do not match. Please try again.")

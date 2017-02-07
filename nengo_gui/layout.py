@@ -1,8 +1,13 @@
+import logging
+
 from collections import OrderedDict
 
 import nengo
 from nengo_gui.grandalf.graphs import Vertex, Edge, Graph
 from nengo_gui.grandalf.layouts import VertexViewer, SugiyamaLayout
+
+
+logger = logging.getLogger(__name__)
 
 
 class Layout(object):
@@ -35,7 +40,7 @@ class Layout(object):
             if len(self.unexamined_networks) == 0:
                 # there are no networks left we haven't looked into
                 # this should not happen in a valid nengo.Network
-                print("could not find parent of", obj)
+                logger.error("could not find parent of %s", obj)
                 return None
             # grab the next network we haven't looked into
             net = self.unexamined_networks.pop(0)
@@ -120,7 +125,7 @@ class Layout(object):
             if pre is None or post is None:
                 # the connection does not go to a child of this network,
                 # so ignore it.
-                print('error processing', c)
+                logger.error('error processing %s', c)
             else:
                 edges[c] = Edge(vertices[pre], vertices[post], data=c)
 

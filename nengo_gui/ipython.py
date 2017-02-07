@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import atexit
+import logging
 import socket
 import threading
 import time
@@ -16,6 +17,9 @@ from IPython import get_ipython
 from IPython.display import display, HTML
 
 import nengo_gui
+
+
+logger = logging.getLogger(__name__)
 
 
 class ConfigReuseWarning(UserWarning):
@@ -127,7 +131,7 @@ class IPythonViz(object):
                 </div>
             '''.format(url=self.url, id=uuid.uuid4(), height=self.height)))
         else:
-            print("Server is not alive.")
+            logger.error("Server is not alive.")
 
 
 atexit.register(IPythonViz.shutdown_all, timeout=5)

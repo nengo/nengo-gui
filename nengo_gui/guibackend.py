@@ -252,7 +252,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
                 component.message(msg.data)
                 return True
             except:
-                logging.exception('Error processing: %s', repr(msg.data))
+                logger.exception('Error processing: %s', repr(msg.data))
 
     def _handle_config_msg(self, component, msg):
         cfg = json.loads(msg.data[7:])
@@ -399,6 +399,6 @@ class GuiServer(server.ManagedThreadHttpServer):
             time.sleep(self.settings.auto_shutdown)
             earliest_shutdown = self._last_access + self.settings.auto_shutdown
             if earliest_shutdown < time.time() and len(self.pages) <= 0:
-                logging.info(
+                logger.info(
                     "No connections remaining to the nengo_gui server.")
                 self.shutdown()

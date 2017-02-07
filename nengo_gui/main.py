@@ -10,9 +10,12 @@ from nengo_gui.guibackend import ModelContext, GuiServerSettings
 from nengo_gui.password import gensalt, hashpw, prompt_pw
 
 
+logger = logging.getLogger(__name__)
+
+
 def old_main():
-    print("'nengo_gui' has been renamed to 'nengo'.")
-    print("Please run 'nengo' in the future to avoid this message!\n")
+    logger.info("'nengo_gui' has been renamed to 'nengo'.")
+    logger.info("Please run 'nengo' in the future to avoid this message!\n")
     main()
 
 
