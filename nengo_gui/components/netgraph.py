@@ -1,13 +1,13 @@
-import time
-import os
-import traceback
 import collections
+import json
 import logging
+import os
 import threading
+import time
+import traceback
 
 import nengo
 from nengo import spa
-import json
 
 from nengo_gui.components.component import Component
 from nengo_gui.components.value import Value
