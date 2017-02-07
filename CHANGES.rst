@@ -22,7 +22,7 @@ Release History
 0.3.2 (unreleased)
 ==================
 
-
+- Dual-stack IPv4/IPv6 support
 
 0.3.1 (October 17, 2017)
 ========================

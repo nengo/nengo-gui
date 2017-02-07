@@ -4,6 +4,7 @@ import base64
 import errno
 import hashlib
 import logging
+import select
 import socket
 import struct
 import ssl
@@ -24,8 +25,6 @@ except ImportError:  # Python 2.7
 
 
 logger = logging.getLogger(__name__)
-
-
 WS_MAGIC = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
 
 
@@ -110,14 +109,124 @@ class HtmlResponse(HttpResponse):
         super(HtmlResponse, self).__init__(data, code=code, headers=headers)
 
 
-class ManagedThreadHttpServer(socketserver.ThreadingMixIn, server.HTTPServer):
+class DualStackHttpServer(object):
+    class Binding(object):
+        request_queue_size = 5
+
+        def __init__(self, address_family, address):
+            self.address_family = address_family
+            self.address = address
+            self.socket = socket.socket(
+                self.address_family, socket.SOCK_STREAM)
+            if self.address_family is socket.AF_INET6:
+                self.socket.setsockopt(
+                    socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 1)
+
+        def bind(self):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+            self.socket.bind(self.address)
+            self.address = self.socket.getsockname()
+
+            host, port = self.address[:2]
+            self.name = socket.getfqdn(host)
+            self.port = port
+
+        def activate(self):
+            self.socket.listen(self.request_queue_size)
+
+    def __init__(self, server_address, RequestHandlerClass):
+        self.server_name, self.server_port = server_address
+
+        self.bindings = []
+        for fam, socktype, _, _, addr in socket.getaddrinfo(*server_address):
+            if (fam in (socket.AF_INET, socket.AF_INET6) and
+                    socktype is socket.SOCK_STREAM):
+                self.bindings.append(self.Binding(fam, addr))
+
+        self.RequestHandlerClass = RequestHandlerClass
+
+        self.__is_shut_down = threading.Event()
+        self.__shutdown_request = False
+
+        self.server_bind()
+        self.server_activate()
+
+    def server_bind(self):
+        for b in self.bindings:
+            b.bind()
+
+    def server_activate(self):
+        for b in self.bindings:
+            b.activate()
+
+    def serve_forever(self, poll_interval=0.5):
+        self.__is_shut_down.clear()
+        try:
+            while not self.__shutdown_request:
+                sockets = [b.socket for b in self.bindings]
+                r, _, _ = select.select(sockets, [], [], poll_interval)
+                for s in r:
+                    self._handle_request_noblock(s)
+        finally:
+            self.__shutdown_request = False
+            self.__is_shut_down.set()
+
+    def shutdown(self):
+        self.__shutdown_request = True
+        self.__is_shut_down.set()
+
+    def server_close(self):
+        for s in self.sockets:
+            s.close()
+
+    def handle_request(self):
+        raise NotImplementedError()
+
+    def _handle_request_noblock(self, socket):
+        request, client_address = socket.accept()
+        if self.verify_request(request, client_address):
+            try:
+                self.process_request(request, client_address)
+            except:
+                self.handle_error(request, client_address)
+                self.shutdown_request(request)
+        else:
+            self.shutdown_request(request)
+
+    def verify_request(self, request, client_address):
+        return True
+
+    def process_request(self, request, client_address):
+        self.finish_request(request, client_address)
+        self.shutdown_request(request)
+
+    def shutdown_request(self, request):
+        try:
+            request.shutdown(socket.SHUT_WR)
+        except OSError:
+            pass
+        self.close_request(request)
+
+    def close_request(self, request):
+        pass
+
+    def finish_request(self, request, client_address):
+        self.RequestHandlerClass(request, client_address, self)
+
+    def handle_error(self, request, client_address):
+        logger.exception("Exception while handling request.")
+
+
+class ManagedThreadHttpServer(
+        socketserver.ThreadingMixIn, DualStackHttpServer):
     """Threaded HTTP and WebSocket server that keeps track of its connections
     to allow a proper shutdown."""
 
     daemon_threads = True  # this ensures all spawned threads exit
 
     def __init__(self, *args, **kwargs):
-        server.HTTPServer.__init__(self, *args, **kwargs)
+        DualStackHttpServer.__init__(self, *args, **kwargs)
 
         # keep track of open threads, so we can close them when we exit
         self._requests = []
@@ -153,7 +262,7 @@ class ManagedThreadHttpServer(socketserver.ThreadingMixIn, server.HTTPServer):
             return  # Probably caused by a server shutdown
         else:
             logger.exception("Server error.")
-            server.HTTPServer.handle_error(self, request, client_address)
+            DualStackHttpServer.handle_error(self, request, client_address)
 
     def shutdown(self):
         if self._shutting_down:
@@ -165,7 +274,7 @@ class ManagedThreadHttpServer(socketserver.ThreadingMixIn, server.HTTPServer):
         for _, request in self.requests:
             self.shutdown_request(request)
 
-        server.HTTPServer.shutdown(self)
+        DualStackHttpServer.shutdown(self)
 
     def wait_for_shutdown(self, timeout=None):
         """Wait for all request threads to finish.
@@ -370,7 +479,6 @@ class WebSocket(object):
         except socket.timeout:
             return None
 
-
     def _handle_frame(self, frame):
         if frame.opcode == WebSocketFrame.OP_CLOSE:
             if self.state not in [self.ST_CLOSING, self.ST_CLOSED]:
@@ -424,7 +532,6 @@ def _sendall(socket, data):
         bytes_sent += socket.send(data[bytes_sent:])
 
 
-
 class WebSocketFrame(object):
     __slots__ = ['fin', 'rsv', 'opcode', 'mask', 'data']
 
@@ -476,7 +583,6 @@ class WebSocketFrame(object):
             data = bytearray(unmasked_data)
             if opcode == cls.OP_TEXT:
                 data = data.decode('ascii')
-
 
             return cls(fin, rsv, opcode, mask, data), size
         except IndexError:
