@@ -171,7 +171,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
                 r.append(b'<li class="directory collapsed">'
                          b'<a href="#" rel="' + ff + b'/">' + f + b'</a></li>')
             else:
-                e = os.path.splitext(f)[1][1:] # get .ext and remove dot
+                e = os.path.splitext(f)[1][1:]  # get .ext and remove dot
                 if e == 'py':
                     e = e.encode('utf-8')
                     f = f.encode('utf-8')
@@ -213,7 +213,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         uid = int(self.query['uid'][0])
 
         component = gui.component_uids[uid]
-        while True:
+        while self.ws.state is server.WebSocket.ST_OPEN:
             try:
                 if component.replace_with is not None:
                     component.finish()
