@@ -1,7 +1,5 @@
 """Nengo GUI backend implementation."""
 
-from __future__ import print_function
-
 import hashlib
 import json
 import logging

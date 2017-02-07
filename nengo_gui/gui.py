@@ -2,8 +2,6 @@
 backend."""
 
 import logging
-from __future__ import print_function
-
 import select
 import signal
 import sys

@@ -1,7 +1,5 @@
 """Password hashing functions replicating bcrypt API."""
 
-from __future__ import print_function
-
 import binascii
 from getpass import getpass
 import hashlib
