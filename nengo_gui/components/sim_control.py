@@ -138,10 +138,6 @@ class SimControl(Component):
         else:
             self.smart_sleep_offset += delay_time
 
-    def config_settings(self, data):
-        for i in data:
-            print(i)
-
     def update_client(self, client):
         now = time.time()
         # send off a ping now and then so we'll notice when connection closes
