@@ -295,7 +295,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         return session
 
     def log_message(self, format, *args):
-        logger.info(format, *args)
+        logger.debug(format, *args)
 
 
 class ModelContext(object):
