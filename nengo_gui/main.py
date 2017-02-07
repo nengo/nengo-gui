@@ -49,9 +49,9 @@ def main():
     args = parser.parse_args()
 
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
+        logging.basicConfig(format='%(message)s', level=logging.DEBUG)
     else:
-        logging.basicConfig()
+        logging.basicConfig(format='%(message)s', level=logging.INFO)
 
     if args.password:
         if args.password is True:
