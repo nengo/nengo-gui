@@ -139,10 +139,18 @@ class DualStackHttpServer(object):
         self.server_name, self.server_port = server_address
 
         self.bindings = []
-        for fam, socktype, _, _, addr in socket.getaddrinfo(*server_address):
-            if (fam in (socket.AF_INET, socket.AF_INET6) and
-                    socktype is socket.SOCK_STREAM):
-                self.bindings.append(self.Binding(fam, addr))
+        if self.server_name == '':
+            self.bindings.append(self.Binding(
+                socket.AF_INET, ('', self.server_port)))
+            if socket.has_ipv6:
+                self.bindings.append(self.Binding(
+                    socket.AF_INET6, ('::', self.server_port)))
+        else:
+            for fam, socktype, _, _, addr in socket.getaddrinfo(
+                    *server_address):
+                if (fam in (socket.AF_INET, socket.AF_INET6) and
+                        socktype in (0, socket.SOCK_STREAM)):
+                    self.bindings.append(self.Binding(fam, addr))
 
         self.RequestHandlerClass = RequestHandlerClass
 
