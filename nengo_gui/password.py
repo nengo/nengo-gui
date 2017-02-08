@@ -29,4 +29,4 @@ def prompt_pw():
         p1 = getpass("Enter password: ")
         if p0 == p1:
             return p0
-        logger.error("Passwords do not match. Please try again.")
+        print("Passwords do not match. Please try again.")

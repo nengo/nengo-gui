@@ -90,8 +90,7 @@ class InteractiveGUI(BaseGUI):
             n_zombie = sum(thread.is_alive()
                            for thread, _ in self.server.requests)
             if n_zombie > 0:
-                logger.warning("%d zombie threads will close abruptly",
-                               n_zombie)
+                logger.debug("%d zombie threads will close abruptly", n_zombie)
 
     def _confirm_shutdown(self, signum, frame):
         signal.signal(signal.SIGINT, self._immediate_shutdown)
@@ -103,9 +102,9 @@ class InteractiveGUI(BaseGUI):
             if line[0].lower() == 'y':
                 raise ServerShutdown()
             else:
-                logger.info("Resuming...")
+                sys.stdout.write("Resuming...\n")
         else:
-            logger.info("No confirmation received. Resuming...")
+            sys.stdout.write("No confirmation received. Resuming...\n")
         signal.signal(signal.SIGINT, self._confirm_shutdown)
 
     def _immediate_shutdown(self, signum, frame):
