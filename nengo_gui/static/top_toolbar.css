@@ -51,12 +51,17 @@
     cursor: default !important;
 }
 
-#filename:hover {
+#Forum_link {
+    padding: 0.5em;
+    cursor: hand !important;
+}
+
+#filename:hover, #Forum_link:hover {
     color: #eee;
     background: #666;
 }
 
-#Help_button{
+#Help_button, #Forum_link{
     float: right;
 }
 
