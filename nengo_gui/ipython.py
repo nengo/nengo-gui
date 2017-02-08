@@ -20,10 +20,6 @@ import nengo_gui
 logger = logging.getLogger(__name__)
 
 
-class ConfigReuseWarning(UserWarning):
-    pass
-
-
 class IPythonViz(object):
     servers = weakref.WeakValueDictionary()
     threads = weakref.WeakValueDictionary()
@@ -58,9 +54,9 @@ class IPythonViz(object):
         server = cls.servers.get(cfg, None)
         existent = server_thread is not None and server is not None
         if existent and server_thread.is_alive():
-            warnings.warn(ConfigReuseWarning(
+            logger.warning(
                 "Reusing config. Only the most recent visualization will "
-                "update the config."))
+                "update the config.")
             for page in server.pages:
                 page.save_config(force=True)
                 page.filename_cfg = get_ipython().mktempfile()
