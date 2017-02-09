@@ -9,12 +9,13 @@ import mimetypes
 import os
 import os.path
 import pkgutil
+import re
+import ssl
+import time
 try:
     from urllib.parse import unquote
 except ImportError:  # Python 2.7
     from urllib import unquote
-import ssl
-import time
 
 import nengo_gui
 import nengo_gui.exec_env
@@ -102,17 +103,47 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         '/favicon.ico': 'serve_favicon',
     }
 
-    def get_expected_origins(self):
-        session = self.get_session()
+    def _is_loopback(self, host):
+        if host == 'localhost':
+            return True
+        elif host.startswith('127.0.0.'):
+            _, least_significant = host.rsplit('.', 1)
+            try:
+                return int(least_significant) < 256
+            except ValueError:
+                return False
+        elif host[0] == '[' and host[-1] == ']':  # IPv6
+            blocks = host[1:-1].split(':')
+            if len(blocks) < 8 and not '' in blocks:
+                return False
+            return (
+                re.match('0{0,3}1', blocks[-1]) and
+                all(re.match('0{0,4}', b) for b in blocks[:-1]))
+        else:
+            return False
+
+    def _is_expected_port(self, port):
+        return port == self.server.server_port
+
+    def _is_expected_host(self, host):
         has_password = self.server.settings.password_hash is not None
-        origins = []
-        if not has_password:
-            origins.append('localhost:' + str(self.server.server_port))
-            if self.server.server_port in [80, 443]:
-                origins.append('localhost')
-        elif session.login_host is not None:
-            return [session.login_host]
-        return origins
+        if has_password:
+            session = self.get_session()
+            return host == session.login_host
+        else:
+            return self._is_loopback(host)
+
+    def is_expected_origin(self, origin):
+        if ':' in origin:
+            host, port = origin.rsplit(':', 1)
+            try:
+                port = int(port)
+            except ValueError:
+                return False
+        else:
+            host, port = origin, self.server.server_port
+
+        return self._is_expected_host(host) and self._is_expected_port(port)
 
     def login_page(self):
         session = self.get_session()

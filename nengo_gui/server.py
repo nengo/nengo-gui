@@ -115,6 +115,7 @@ class ManagedThreadHttpServer(socketserver.ThreadingMixIn, server.HTTPServer):
     to allow a proper shutdown."""
 
     daemon_threads = True  # this ensures all spawned threads exit
+    address_family = socket.AF_INET6
 
     def __init__(self, *args, **kwargs):
         server.HTTPServer.__init__(self, *args, **kwargs)
@@ -261,21 +262,19 @@ class HttpWsRequestHandler(server.BaseHTTPRequestHandler):
         else:
             raise BadRequest()
 
-    def get_expected_origins(self):
+    def is_expected_origin(self, origin):
         raise NotImplementedError()
 
     def upgrade_to_ws(self):
-        response = '''HTTP/1.1 101 Switching Protocols
-Upgrade: websocket
-Connection: Upgrade
-Sec-WebSocket-Accept: {sec}
-
-'''
-        valid_srv_addrs = self.get_expected_origins()
+        response = (
+            'HTTP/1.1 101 Switching Protocols\r\n' +
+            'Upgrade: websocket\r\n' +
+            'Connection: Upgrade\r\n' +
+            'Sec-WebSocket-Accept: {sec}\r\n\r\n')
 
         try:
             origin = urlparse(self.headers['Origin'])
-            assert origin.netloc.lower() in valid_srv_addrs
+            assert self.is_expected_origin(origin.netloc.lower())
         except KeyError:
             raise Forbidden()
         except AssertionError:
@@ -283,7 +282,7 @@ Sec-WebSocket-Accept: {sec}
 
         try:
             host = self.headers['Host'].lower()
-            assert host in valid_srv_addrs
+            assert self.is_expected_origin(host)
             key = self.headers['Sec-WebSocket-Key']
             assert len(base64.b64decode(key)) == 16
         except KeyError:

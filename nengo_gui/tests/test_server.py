@@ -93,8 +93,8 @@ Sec-WebSocket-Version: 13
             def ws_default(self):
                 pass
 
-            def get_expected_origins(self):
-                return ['localhost:80']
+            def is_expected_origin(self, origin):
+                return True
 
         handler = HandlerClass(request, 'localhost', ServerMock())
         assert handler
@@ -121,8 +121,8 @@ Sec-WebSocket-Version: 13
 ''')
 
         class HandlerClass(server.HttpWsRequestHandler):
-            def get_expected_origins(self):
-                return ['localhost:80']
+            def is_expected_origin(self, origin):
+                return True
 
         handler = HandlerClass(request, 'localhost', ServerMock())
         assert handler
@@ -192,8 +192,8 @@ Sec-WebSocket-Version: 13
             def cmd(self):
                 self.called = True
 
-            def get_expected_origins(self):
-                return ['localhost:80']
+            def is_expected_origin(self, origin):
+                return True
 
         handler = HandlerClass(request, 'localhost', ServerMock())
         assert handler.called
