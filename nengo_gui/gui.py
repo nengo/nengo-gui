@@ -1,8 +1,7 @@
 """Classes to instantiate and manage the life cycle of the nengo_gui
 backend."""
 
-from __future__ import print_function
-
+import logging
 import select
 import signal
 import sys
@@ -11,6 +10,9 @@ import webbrowser
 
 import nengo_gui
 from nengo_gui.guibackend import GuiServer
+
+
+logger = logging.getLogger(__name__)
 
 
 class ServerShutdown(Exception):
@@ -70,25 +72,25 @@ class InteractiveGUI(BaseGUI):
 
     def start(self):
         protocol = 'https:' if self.server.settings.use_ssl else 'http:'
-        print("Starting nengo server at %s//%s:%d" %
-              (protocol, 'localhost', self.server.server_port))
+        logger.info("Starting nengo server at %s//%s:%d",
+                    protocol, 'localhost', self.server.server_port)
 
         if not sys.platform.startswith('win'):
             signal.signal(signal.SIGINT, self._confirm_shutdown)
 
         try:
             self.server.serve_forever(poll_interval=0.02)
-            print("No connections remaining to the nengo_gui server.")
+            logger.info("No connections remaining to the nengo_gui server.")
         except ServerShutdown:
             self.server.shutdown()
         finally:
-            print("Shutting down server...")
+            logger.info("Shutting down server...")
 
             self.server.wait_for_shutdown(0.05)
             n_zombie = sum(thread.is_alive()
                            for thread, _ in self.server.requests)
             if n_zombie > 0:
-                print("%d zombie threads will close abruptly" % n_zombie)
+                logger.debug("%d zombie threads will close abruptly", n_zombie)
 
     def _confirm_shutdown(self, signum, frame):
         signal.signal(signal.SIGINT, self._immediate_shutdown)
@@ -100,9 +102,9 @@ class InteractiveGUI(BaseGUI):
             if line[0].lower() == 'y':
                 raise ServerShutdown()
             else:
-                print("Resuming...")
+                sys.stdout.write("Resuming...\n")
         else:
-            print("No confirmation received. Resuming...")
+            sys.stdout.write("No confirmation received. Resuming...\n")
         signal.signal(signal.SIGINT, self._confirm_shutdown)
 
     def _immediate_shutdown(self, signum, frame):

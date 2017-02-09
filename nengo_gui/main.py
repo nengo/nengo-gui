@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os.path
+import sys
 import threading
 import webbrowser
 
@@ -10,9 +11,13 @@ from nengo_gui.guibackend import ModelContext, GuiServerSettings
 from nengo_gui.password import gensalt, hashpw, prompt_pw
 
 
+logger = logging.getLogger(__name__)
+
+
 def old_main():
-    print("'nengo_gui' has been renamed to 'nengo'.")
-    print("Please run 'nengo' in the future to avoid this message!\n")
+    print("'nengo_gui' has been renamed to 'nengo'.", file=sys.stderr)
+    print("Please run 'nengo' in the future to avoid this message!\n",
+          file=sys.stderr)
     main()
 
 
@@ -46,9 +51,9 @@ def main():
     args = parser.parse_args()
 
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
+        logging.basicConfig(format='%(message)s', level=logging.DEBUG)
     else:
-        logging.basicConfig()
+        logging.basicConfig(format='%(message)s', level=logging.INFO)
 
     if args.password:
         if args.password is True:

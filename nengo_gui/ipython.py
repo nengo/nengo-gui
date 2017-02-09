@@ -1,6 +1,5 @@
-from __future__ import print_function
-
 import atexit
+import logging
 import socket
 import threading
 import time
@@ -18,8 +17,7 @@ from IPython.display import display, HTML
 import nengo_gui
 
 
-class ConfigReuseWarning(UserWarning):
-    pass
+logger = logging.getLogger(__name__)
 
 
 class IPythonViz(object):
@@ -56,9 +54,9 @@ class IPythonViz(object):
         server = cls.servers.get(cfg, None)
         existent = server_thread is not None and server is not None
         if existent and server_thread.is_alive():
-            warnings.warn(ConfigReuseWarning(
+            logger.warning(
                 "Reusing config. Only the most recent visualization will "
-                "update the config."))
+                "update the config.")
             for page in server.pages:
                 page.save_config(force=True)
                 page.filename_cfg = get_ipython().mktempfile()
@@ -127,7 +125,7 @@ class IPythonViz(object):
                 </div>
             '''.format(url=self.url, id=uuid.uuid4(), height=self.height)))
         else:
-            print("Server is not alive.")
+            logger.error("Server is not alive.")
 
 
 atexit.register(IPythonViz.shutdown_all, timeout=5)

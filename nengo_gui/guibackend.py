@@ -1,7 +1,5 @@
 """Nengo GUI backend implementation."""
 
-from __future__ import print_function
-
 import hashlib
 import json
 import logging
@@ -252,7 +250,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
                 component.message(msg.data)
                 return True
             except:
-                logging.exception('Error processing: %s', repr(msg.data))
+                logger.exception('Error processing: %s', repr(msg.data))
 
     def _handle_config_msg(self, component, msg):
         cfg = json.loads(msg.data[7:])
@@ -295,7 +293,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         return session
 
     def log_message(self, format, *args):
-        logger.info(format, *args)
+        logger.debug(format, *args)
 
 
 class ModelContext(object):
@@ -399,6 +397,6 @@ class GuiServer(server.ManagedThreadHttpServer):
             time.sleep(self.settings.auto_shutdown)
             earliest_shutdown = self._last_access + self.settings.auto_shutdown
             if earliest_shutdown < time.time() and len(self.pages) <= 0:
-                logging.info(
+                logger.info(
                     "No connections remaining to the nengo_gui server.")
                 self.shutdown()

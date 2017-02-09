@@ -14,6 +14,9 @@ import nengo_gui.user_action
 import nengo_gui.config
 
 
+logger = logging.getLogger(__name__)
+
+
 class PageSettings(object):
     __slots__ = ['backend', 'editor_class', 'filename_cfg']
 
@@ -259,7 +262,7 @@ class Page(object):
                 except Exception:
                     # FIXME
                     #if self.gui.interactive:
-                    logging.debug('error parsing config: %s', line)
+                    logger.debug('error parsing config: %s', line)
 
         # make sure the required Components exist
         if '_viz_sim_control' not in self.locals:
@@ -313,8 +316,8 @@ class Page(object):
                 with open(self.filename_cfg, 'w') as f:
                     f.write(self.config.dumps(uids=self.default_labels))
             except IOError:
-                print("Could not save %s; permission denied" %
-                      self.filename_cfg)
+                logger.exception("Could not save %s; permission denied" %
+                                 self.filename_cfg)
 
     def modified_config(self):
         """Set a flag that the config file should be saved."""
@@ -407,7 +410,7 @@ class Page(object):
             del self.locals[uid]
             del self.default_labels[obj]
         else:
-            print('WARNING: remove_uid called on unknown uid: %s' % uid)
+            logger.warning('remove_uid called on unknown uid: %s', uid)
 
     def remove_component(self, component):
         """Remove a component from the layout."""

@@ -1,8 +1,12 @@
 import json
+import logging
 import os
 
 from nengo_gui.components.editor import Editor
 import nengo_gui.exec_env
+
+
+logger = logging.getLogger(__name__)
 
 
 class AceEditor(Editor):
@@ -89,8 +93,8 @@ class AceEditor(Editor):
                 self.pending_messages.append(json.dumps({
                     'save_success': True}))
             except IOError:
-                print("Could not save %s; permission denied" %
-                      self.page.filename)
+                logger.exception("Could not save %s; permission denied",
+                                 self.page.filename)
                 self.page.net_graph.update_code(self.current_code)
         else:
             self.page.net_graph.update_code(self.current_code)

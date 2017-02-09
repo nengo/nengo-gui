@@ -1,4 +1,8 @@
 import json
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class Component(object):
@@ -60,7 +64,7 @@ class Component(object):
         Any data sent by the client ove the WebSocket will be passed into
         this method.
         """
-        print('unhandled message', msg)
+        logger.warning('unhandled message %s', msg)
 
     def finish(self):
         """Close this Component"""
