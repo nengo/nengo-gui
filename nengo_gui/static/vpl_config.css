@@ -1,0 +1,32 @@
+#graph_container{
+    position: relative;
+    width: 500px;
+    height: 270px;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0px;
+}
+
+#ensModalForm input.form-control {
+    height: 25px !important;
+    width: 40px !important;
+    padding: 2px;
+    margin-right: 15px;
+}
+
+#ensModalForm .controls {
+    margin-bottom: 8px;
+}
+
+
+.slider-selection {
+	background: #5da3ff;
+}
+
+.slider-track-high {
+	background: #EEE;
+}
+
+.slider-handle {
+	background: #A6A6A6;
+}

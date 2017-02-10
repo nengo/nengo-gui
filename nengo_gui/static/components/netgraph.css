@@ -17,7 +17,6 @@ g.net rect{
 .netgraph g text {
     text-anchor: middle;
     dominant-baseline: text-before-edge;
-    cursor: default !important;
     }
 
 .netgraph g text:active {
@@ -63,3 +62,18 @@ rect.view{
     dominant-baseline: text-before-edge;
 }
 
+.node:hover > rect{
+    filter: url(#drop-shadow);
+}
+
+.ens:hover > g{
+    filter: url(#drop-shadow);
+}
+
+.net:hover > rect{
+    filter: url(#drop-shadow);
+}
+
+.conn:hover{
+    filter: url(#drop-shadow);
+}

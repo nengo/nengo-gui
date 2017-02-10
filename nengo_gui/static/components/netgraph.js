@@ -16,6 +16,12 @@ Nengo.NetGraph = function(parent, args) {
     this.offsetX = 0;          // global x,y pan offset
     this.offsetY = 0;
 
+    // override the random position chosen by the server for a new item.
+    // This is used by the drag-and-drop system to ensure that the newly
+    // created items appear at the position they were dropped at.
+    this.override_positions = {};
+    this.override_sizes = {}
+
     var scale = 1.0;
     Object.defineProperty(this, 'scale', {
         // global scaling factor
@@ -127,7 +133,7 @@ Nengo.NetGraph = function(parent, args) {
 
     this.width = $(this.svg).width();
     this.height = $(this.svg).height();
-    
+
     this.tool_height = $(toolbar.toolbar).height();
 
     /** three separate layers, so that expanded networks are at the back,
@@ -157,6 +163,9 @@ Nengo.NetGraph = function(parent, args) {
     defs.appendChild(s);
 
     this.svg.insertBefore(defs, this.svg.firstChild);
+    Nengo.create_filter([1,1,1],2,"drop-shadow");
+    Nengo.create_filter([2,0,0],1,"red-drop-shadow");
+    Nengo.create_filter([0,2,0],1,"green-drop-shadow");
 
     /** connect to server */
     this.ws = Nengo.create_websocket(args.uid);
@@ -303,8 +312,10 @@ Nengo.NetGraph = function(parent, args) {
             if (self.menu.visible_any()) {
                 self.menu.hide_any();
             } else {
-                self.menu.show(event.clientX, event.clientY,
-                               self.generate_menu());
+                if(Nengo.vpl.edit_mode == false){
+                    self.menu.show(event.clientX, event.clientY,
+                                self.generate_menu());
+                }
         }
     });
 
@@ -348,9 +359,9 @@ Nengo.NetGraph.prototype.on_message = function(event) {
         item.y = data.pos[1];
         item.width = data.size[0];
         item.height = data.size[1];
-        
+
         item.redraw();
-        
+
         this.scaleMiniMap();
 
     } else if (data.type === 'config') {
@@ -373,7 +384,8 @@ Nengo.NetGraph.prototype.on_message = function(event) {
         if (item === undefined) {
             item = this.svg_conns[data.uid];
         }
-        
+        delete this.override_positions[data.uid];
+        delete this.override_sizes[data.uid];
         item.remove();
 
     } else if (data.type === 'reconnect') {
@@ -447,6 +459,12 @@ Nengo.NetGraph.prototype.create_object = function(info) {
     var item_mini = new Nengo.NetGraphItem(this, info, true);
     this.minimap_objects[info.uid] = item_mini;
 
+    if(this.override_positions.hasOwnProperty(info.uid)){
+        info.pos[0] = this.override_positions[info.uid][0];
+        info.pos[1] = this.override_positions[info.uid][1];
+        info.size[0] = this.override_sizes[info.uid][0];
+        info.size[1] = this.override_sizes[info.uid][1];
+    }
     var item = new Nengo.NetGraphItem(this, info, false, item_mini);
     this.svg_objects[info.uid] = item;
 
@@ -461,7 +479,7 @@ Nengo.NetGraph.prototype.create_object = function(info) {
 Nengo.NetGraph.prototype.create_connection = function(info) {
 	var conn_mini = new Nengo.NetGraphConnection(this, info, true);
     this.minimap_conns[info.uid] = conn_mini;
-    
+
     var conn = new Nengo.NetGraphConnection(this, info, false, conn_mini);
     this.svg_conns[info.uid] = conn;
 };
@@ -480,7 +498,7 @@ Nengo.NetGraph.prototype.on_resize = function(event) {
                 var new_width = item.get_screen_width() / this.scale;
                 var new_height = item.get_screen_height() / this.scale;
                 item.width = new_width/(2*width);
-                item.height = new_height/(2*height);               
+                item.height = new_height/(2*height);
             }
         }
     }
@@ -583,7 +601,7 @@ Nengo.NetGraph.prototype.create_minimap = function () {
 
     this.mm_width = $(this.minimap).width();
     this.mm_height = $(this.minimap).height();
-    
+
     // default display minimap
     this.mm_display = true;
     this.toggleMiniMap();
@@ -665,7 +683,7 @@ Nengo.NetGraph.prototype.scaleMiniMap = function () {
  * main viewport and scale the viewbox to reflect that. */
 Nengo.NetGraph.prototype.scaleMiniMapViewBox = function () {
     if (!this.mm_display) { return; }
-    
+
     var mm_w = this.mm_width
     var mm_h = this.mm_height
 

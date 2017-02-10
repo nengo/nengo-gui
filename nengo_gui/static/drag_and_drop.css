@@ -1,0 +1,117 @@
+.drag_drop_menu{
+  height:100%;
+  background: #ddd;
+  color:inherit;
+  overflow: hidden;
+}
+
+.off{
+    cursor: pointer;
+    background: inherit;
+    fill: #DDD;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.2s;
+}
+
+.off:hover{
+    transform: scale(1.2);
+    fill: #DDD;
+    color: #000;
+}
+
+.on{
+    transition-duration: 0.2s;
+    cursor: pointer;
+    background-color: #CCC;
+    fill: #DDD;
+    color: #000;
+    box-shadow: inset 0 0 5px #000;
+}
+
+#mode_list{
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    color: inherit;
+    z-index: 99999;
+    padding: 2px;
+}
+
+.mode{
+    position: relative;
+    margin: 2px;
+    float: left;
+    width: 80px;
+    height: 80px;
+    -webkit-user-select: none; /* Chrome/Safari */
+    -moz-user-select: none; /* Firefox */
+}
+.mode > div{
+    text-align: center;
+    position: relative;
+    margin: 0 auto;
+    width: 100%;
+    height: 100%;
+}
+
+.mode > div >svg{
+    width: 100%;
+}
+
+.mode > div > p{
+    position: absolute;
+    bottom: -13%;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    display: none;
+    font-size: 12px;
+}
+
+.mode > div > span{
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    top: 25%;
+    font-size: 2em;
+}
+
+.mode-group {
+    overflow: hidden;
+}
+
+.mode-group > p {
+    border-bottom: 1px solid black;
+}
+
+.node_effect_good > rect{
+    filter: url(#green-drop-shadow) !important;
+}
+
+.node_effect_bad > rect{
+    filter: url(#red-drop-shadow) !important;
+}
+
+.ens_effect_good > g{
+    filter: url(#green-drop-shadow) !important;
+}
+
+.node.red_hover:hover rect {
+    filter: url(#red-drop-shadow) !important;
+}
+
+.ens.red_hover:hover > g{
+    filter: url(#red-drop-shadow) !important;
+}
+
+.net.red_hover:hover > rect{
+    filter: url(#red-drop-shadow) !important;
+}
+
+.conn.red_hover:hover {
+    filter: url(#red-drop-shadow);
+}
