@@ -11,12 +11,13 @@ abstract class ResizableItem extends InteractableItem {
     area: SVGElement;
     dimensions: number;
 
-    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg, dimensions) {
-        super(ngiArg, interArg);
+    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
+                dimensions) {
+        super(ngiArg, interArg, dimensions);
 
         const area = h("rect", {fill: "transparent"});
         this.area = dom.create(area).domNode as SVGElement;
-        this.g.appendChild(this.area);
+        this.view.g.appendChild(this.area);
 
         interact(this.area).resizable({
                 edges: {bottom: true, left: true, right: true, top: true},
@@ -78,8 +79,8 @@ abstract class ResizableItem extends InteractableItem {
         this.area.setAttribute("width", String(areaW));
         this.area.setAttribute("height", String(areaH));
 
-        this.shape.setAttribute("width", String(screenD.width));
-        this.shape.setAttribute("height", String(screenD.height));
+        this.view.shape.setAttribute("width", String(screenD.width));
+        this.view.shape.setAttribute("height", String(screenD.height));
 
         return screenD;
     }
@@ -89,8 +90,9 @@ export class NodeItem extends ResizableItem {
     htmlNode;
     radiusScale: number;
 
-    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg, html) {
-        super(ngiArg, interArg);
+    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
+                dimensions, html) {
+        super(ngiArg, interArg, dimensions);
         this.radiusScale = .1;
         this.htmlNode = html;
         this._renderShape();
@@ -98,14 +100,14 @@ export class NodeItem extends ResizableItem {
     }
 
     _renderShape() {
-        const screenD = this.displayedShape;
+        const screenD = this.view.displayedShape;
         const halfW = screenD.width / 2;
         const halfH = screenD.height / 2;
         const shape = h("rect.node", {
             transform: "translate(-" + halfW + ", -" + halfH + ")",
         });
-        this.shape = dom.create(shape).domNode as SVGElement;
-        this.g.appendChild(this.shape);
+        this.view.shape = dom.create(shape).domNode as SVGElement;
+        this.view.g.appendChild(this.view.shape);
         this.redraw();
     }
 
@@ -144,8 +146,8 @@ export class NodeItem extends ResizableItem {
         const screenD = super.redrawSize();
 
         const radius = Math.min(screenD.width, screenD.height);
-        this.shape.setAttribute("rx", String(radius * this.radiusScale));
-        this.shape.setAttribute("ry", String(radius * this.radiusScale));
+        this.view.shape.setAttribute("rx", String(radius * this.radiusScale));
+        this.view.shape.setAttribute("ry", String(radius * this.radiusScale));
 
         return screenD;
     }
@@ -158,8 +160,8 @@ export class NetItem extends ResizableItem {
     gClass: string[];
 
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
-                expanded, spTargets, defaultOutput) {
-        super(ngiArg, interArg);
+                dimensions, expanded, spTargets, defaultOutput) {
+        super(ngiArg, interArg, dimensions);
         this.expanded = expanded;
         this.spTargets = spTargets;
         this.defaultOutput = defaultOutput;
@@ -178,7 +180,7 @@ export class NetItem extends ResizableItem {
         }
 
         // TODO: Is this the right way to override an interact method?
-        interact(this.g).on("doubletap", event => {
+        interact(this.view.g).on("doubletap", event => {
                 // Get rid of menus when clicking off
                 if (event.button === 0) {
                     if (this.menu.visibleAny()) {
@@ -192,7 +194,7 @@ export class NetItem extends ResizableItem {
                     }
                 }
             });
-        interact(this.g).draggable({
+        interact(this.view.g).draggable({
             onstart: () => {
                 this.menu.hideAny();
                 this.moveToFront();
@@ -202,8 +204,8 @@ export class NetItem extends ResizableItem {
 
     _renderShape() {
         const shape = h("rect.network");
-        this.shape = dom.create(shape).domNode as SVGElement;
-        this.g.appendChild(this.shape);
+        this.view.shape = dom.create(shape).domNode as SVGElement;
+        this.view.g.appendChild(this.view.shape);
         this.redraw();
     }
 
@@ -270,10 +272,10 @@ export class NetItem extends ResizableItem {
         if (!this.expanded) {
             this.expanded = true;
             if (this.ng.transparentNets) {
-                this.shape.setAttribute("style", "fill-opacity=0.0");
+                this.view.shape.setAttribute("style", "fill-opacity=0.0");
             }
-            this.gItems.removeChild(this.g);
-            this.gNetworks.appendChild(this.g);
+            this.gItems.removeChild(this.view.g);
+            this.gNetworks.appendChild(this.view.g);
             if (!this.minimap) {
                 this.miniItem.expand(returnToServer, auto);
             }
@@ -309,10 +311,10 @@ export class NetItem extends ResizableItem {
         if (this.expanded) {
             this.expanded = false;
             if (this.ng.transparentNets) {
-                this.shape.setAttribute("style", "fill-opacity=0.0");
+                this.view.shape.setAttribute("style", "fill-opacity=0.0");
             }
-            this.gNetworks.removeChild(this.g);
-            this.gItems.appendChild(this.g);
+            this.gNetworks.removeChild(this.view.g);
+            this.gItems.appendChild(this.view.g);
             if (!this.minimap) {
                 this.miniItem.collapse(reportToServer, auto);
             }
@@ -346,7 +348,7 @@ export class NetItem extends ResizableItem {
             const ngi = this.ng.svgObjects.net[key];
             ngi.computeFill();
             if (ngi.expanded) {
-                ngi.shape.setAttribute(
+                ngi.view.shape.setAttribute(
                     "style", String("fill-opacity=" + val)
                 );
             }
@@ -355,7 +357,7 @@ export class NetItem extends ResizableItem {
 
     moveToFront() {
         // TODO: maquette doesn't seem to implement parentNode?
-        this.parent.gItems.appendChild(this.g);
+        this.parent.gItems.appendChild(this.view.g);
 
         Object.keys(this.children).forEach(key => {
             this.children[key].moveToFront();
@@ -395,7 +397,7 @@ export class NetItem extends ResizableItem {
         rgb = Math.round(255 * Math.pow(0.8, depth + 2));
         const stroke = "rgb(" + rgb + "," + rgb + "," + rgb + ")";
 
-        this.shape.setAttribute(
+        this.view.shape.setAttribute(
             "style", String("fill=" + fill + ", stroke=" + stroke)
         );
     }
@@ -405,8 +407,9 @@ export class EnsembleItem extends ResizableItem {
     aspect: number;
     radiusScale: number;
 
-    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg) {
-        super(ngiArg, interArg);
+    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
+                dimensions) {
+        super(ngiArg, interArg, dimensions);
 
         // the ensemble is the only thing with aspect
         this.aspect = 1.;
@@ -440,8 +443,8 @@ export class EnsembleItem extends ResizableItem {
         circle = h("circle", {cx: 3.894 + dx, cy: -13.158 + dy, r: "4.843"});
         shape.children.push(circle);
 
-        this.shape = dom.create(shape).domNode as SVGElement;
-        this.g.appendChild(this.shape);
+        this.view.shape = dom.create(shape).domNode as SVGElement;
+        this.view.g.appendChild(this.view.shape);
         this.redraw();
     }
 
@@ -519,8 +522,11 @@ export class EnsembleItem extends ResizableItem {
     getDisplayedSize() {
         const hScale = this.ng.scaledWidth;
         const vScale = this.ng.scaledHeight;
-        let w = this.nestedWidth * hScale;
-        let h = this.nestedHeight * vScale;
+        // TODO: get nested implemented
+        // let w = this.nestedWidth * hScale;
+        // let h = this.nestedHeight * vScale;
+        let w = this.view.width * hScale;
+        let h = this.view.height * vScale;
 
         if (h * this.aspect < w) {
             w = h * this.aspect;
@@ -545,11 +551,11 @@ export class EnsembleItem extends ResizableItem {
         const height = screenD.height;
         const scale = Math.sqrt(height * height + width * width) / Math.sqrt(2);
 
-        this.shape.setAttribute(
+        this.view.shape.setAttribute(
             "transform",
             String("scale(" + scale / 2 / this.radiusScale + ")")
         );
-        this.shape.setAttribute(
+        this.view.shape.setAttribute(
             "style",  String("stroke-width" + 20 / scale),
         );
 

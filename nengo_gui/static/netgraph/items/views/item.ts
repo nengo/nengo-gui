@@ -8,16 +8,17 @@ export class NetGraphItemView {
     gItems: SVGElement;
     ng: NetGraph;
 
-    protected g: SVGElement;
-    protected shape: SVGElement;
+    // TODO: protect these later
+    g: SVGElement;
+    shape: SVGElement;
 
-    protected minHeight: number;
-    protected minWidth: number;
+    minHeight: number;
+    minWidth: number;
 
-    protected _h: number;
-    protected _w: number;
-    protected _x: number;
-    protected _y: number;
+    _h: number;
+    _w: number;
+    _x: number;
+    _y: number;
 
     constructor(ngiArg: NetGraphItemArg) {
         // mostly just takes care of the g when things change

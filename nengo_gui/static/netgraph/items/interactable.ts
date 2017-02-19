@@ -21,7 +21,8 @@ export abstract class InteractableItem extends NetGraphItem {
     labelBelow: boolean;
     size: number[];
 
-    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg) {
+    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
+                dimensions) {
         super(ngiArg);
         this.gNetworks = this.ng.gNetworksMini;
         this.gItems = this.ng.gItemsMini;
@@ -29,14 +30,14 @@ export abstract class InteractableItem extends NetGraphItem {
         const labelNode = h("text", {innerHTML: interArg.label, transform: ""});
         this.label = dom.create(labelNode).domNode as SVGTextElement;
         this.miniItem = interArg.miniItem;
-        this.g.appendChild(this.label);
+        this.view.g.appendChild(this.label);
 
 
         if (ngiArg.parent !== null) {
             this.parent.children.push(this);
         }
 
-        interact(this.g).draggable({
+        interact(this.view.g).draggable({
             onend: event => {
                 const item = this.ng.svgObjects[this.uid];
                 item.constrainPosition();
@@ -67,7 +68,7 @@ export abstract class InteractableItem extends NetGraphItem {
             },
         });
         // Determine when to pull up the menu
-        interact(this.g)
+        interact(this.view.g)
             .on("hold", event => {
                 // Change to "tap" for right click
                 if (event.button === 0) {
@@ -116,22 +117,22 @@ export abstract class InteractableItem extends NetGraphItem {
     abstract generateMenu(): MenuItem[];
 
     set height(val: number) {
-        this._h = val;
+        this.view._h = val;
         this.miniItem.height = val;
     }
 
     set width(val: number) {
-        this._w = val;
+        this.view._w = val;
         this.miniItem.width = val;
     }
 
     set x(val: number) {
-        this._x = val;
+        this.view._x = val;
         this.miniItem.x = val;
     }
 
     set y(val: number) {
-        this._y = val;
+        this.view._y = val;
         this.miniItem.y = val;
     }
 
@@ -148,7 +149,7 @@ export abstract class InteractableItem extends NetGraphItem {
     }
 
     redrawSize(): Shape {
-        const screenD = this.displayedShape;
+        const screenD = this.view.displayedShape;
         this.label.setAttribute(
          "transform",
          "translate(0, " + (screenD.height / 2) + ")",
@@ -156,13 +157,13 @@ export abstract class InteractableItem extends NetGraphItem {
         return screenD;
     }
 
-    _getScreenW() {
-        return this.nestedWidth * this.ng.width * this.ng.scale;
-    }
+    // _getScreenW() {
+    //     return this.view.nestedWidth * this.ng.width * this.ng.scale;
+    // }
 
-    _getScreenH() {
-        return this.nestedHeight * this.ng.height * this.ng.scale;
-    }
+    // _getScreenH() {
+    //     return this.view.nestedHeight * this.ng.height * this.ng.scale;
+    // }
 
     redraw() {
         super.redraw();
@@ -189,7 +190,7 @@ export abstract class InteractableItem extends NetGraphItem {
     // TODO: what is the expected functionality of this thing?
     setLabelBelow(flag) {
         if (flag && !this.labelBelow) {
-            const screenH = this.screenHeight;
+            const screenH = this.view.screenHeight;
             this.label.setAttribute(
                 "transform",
                 "translate(0, " + (screenH / 2) + ")",
@@ -203,7 +204,7 @@ export abstract class InteractableItem extends NetGraphItem {
     }
 
     constrainAspect() {
-        this.size = this.displayedSize;
+        this.size = this.view.displayedSize;
     }
 
     constrainPosition() {
@@ -223,9 +224,12 @@ export abstract class InteractableItem extends NetGraphItem {
 
     // TODO: rename to createComponent?
     createGraph(graphType, args=null) { // tslint:disable-line
-        const w = this.nestedWidth;
-        const h = this.nestedHeight;
-        const pos = this.screenLocation;
+        // TODO: get nested implemented this
+        // const w = this.nestedWidth;
+        // const h = this.nestedHeight;
+        const pos = this.view.screenLocation;
+        const w = this.view.width;
+        const h = this.view.height;
 
         const info: any = {
             height: this.ng.viewPort.fromScreenY(100),
@@ -254,8 +258,9 @@ export class PassthroughItem extends InteractableItem {
     fixedHeight: number;
     fixedWidth: number;
 
-    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg) {
-        super(ngiArg, interArg);
+    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
+                dimensions) {
+        super(ngiArg, interArg, dimensions);
 
         // TODO: WTF can this be avoided?
         // I have to make a sepcific minimap subclass for this...
@@ -287,16 +292,16 @@ export class PassthroughItem extends InteractableItem {
     // this is probably going to need to be refactored
     _renderShape() {
         const shape = h("ellipse.passthrough");
-        this.shape = dom.create(shape).domNode as SVGElement;
-        this.g.appendChild(this.shape);
+        this.view.shape = dom.create(shape).domNode as SVGElement;
+        this.view.g.appendChild(this.view.shape);
         this.redraw();
     }
 
     redrawSize() {
         const screenD = super.redrawSize();
 
-        this.shape.setAttribute("rx", String(screenD.width / 2));
-        this.shape.setAttribute("ry", String(screenD.height / 2));
+        this.view.shape.setAttribute("rx", String(screenD.width / 2));
+        this.view.shape.setAttribute("ry", String(screenD.height / 2));
 
         return screenD;
     }
