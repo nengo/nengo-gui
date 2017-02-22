@@ -19,10 +19,21 @@ Release History
    - Bugfixes
    - Documentation
 
-0.2.1 (unreleased)
-==================
+0.3.0 (February 22, 2017)
+=========================
 
+This release is compatible with Nengo 2.1.0 and later.
 
+- Added ability to set number of neurons in raster plots.
+- Added ability to adjust synaptic filter on value plots.
+- Rewritten server implementation for robustness and compatibility.
+- Added tutorial files for "How to Build a Brain" book.
+- Improved Selenium testing.
+- Removed randomness in auto-layout algorithm.
+- Better handling of messaging errors.
+- Added red save icon indicator of a failed save.
+- Added a "Help" link to https://forum.nengo.ai
+- Removed seed changes due to creation of plots.
 
 0.2.0 (April 28, 2016)
 ======================
