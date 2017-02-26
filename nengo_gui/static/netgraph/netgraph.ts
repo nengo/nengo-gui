@@ -140,7 +140,7 @@ export class NetGraph {
                 this.onResize(event);
             },
         }, [
-            //defs,
+            defs,
             h("g#netRoot"),
             h("g#connRoot"),
             h("g#itemRoot"),
@@ -428,10 +428,12 @@ export class NetGraph {
 
         // TODO: bind a connection for the creation of each object
         // Node-only first so that I can get something I can test
-        conn.bind("netGraph.createNode", ({ngiArg, interArg, html}: {
+        conn.bind("netGraph.createNode", (
+            {ngiArg, interArg, dimensions, html}: {
             ngiArg: NetGraphItemArg,
-            interArg: InteractableItemArg, html: string}) => {
-                this.createNode(ngiArg, interArg, html);
+            interArg: InteractableItemArg,
+            dimensions: number, html: string}) => {
+                this.createNode(ngiArg, interArg, dimensions, html);
         });
 
         // temporary simple object creation
@@ -591,9 +593,9 @@ export class NetGraph {
     // }
 
     // this will need to be refactored later
-    createNode(ngiArg, interArg, html) {
+    createNode(ngiArg, interArg, dimensions, html) {
         // TODO: fill in the rest of the args
-        const item = new NodeItem(ngiArg, interArg, html);
+        const item = new NodeItem(ngiArg, interArg, dimensions, html);
         this.svgObjects.node[ngiArg.uid] = item;
 
         this.detectCollapsedConns(item.uid);

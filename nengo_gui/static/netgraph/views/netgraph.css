@@ -65,3 +65,10 @@ rect.view{
         width: 2px;
     }
 }
+
+circle.sweet {
+    fill: red;
+    cx: 1.5cm;
+    cy: 1cm;
+    order: 100;
+}

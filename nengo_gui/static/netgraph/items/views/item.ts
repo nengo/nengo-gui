@@ -36,11 +36,14 @@ export class NetGraphItemView {
 
         // temporary visible shape for debugging
         const visShape = h("g", [
-            h("circle#cool", {cx: "1cm", cy: "1cm", r: "1cm", fill: "red"}),
+            h("circle#cool.sweet", {cx: "1cm", cy: "1cm", r: "1cm", fill: "red",
+                                "z-index": "100", width: "100%", height: "100%",
+                                position: "absolute"}),
         ]);
         // Create the SVG group to hold this item's shape and it's label
         this.g = dom.create(visShape).domNode as SVGElement;
         this.gItems.appendChild(this.g);
+        console.log("View Created");
     }
 
     get x(): number {
