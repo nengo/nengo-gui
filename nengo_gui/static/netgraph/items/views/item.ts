@@ -42,7 +42,6 @@ export class NetGraphItemView {
             {namespace: "http://www.w3.org/2000/svg"}
         ).domNode as SVGElement;
         this.gItems.appendChild(this.g);
-        console.log("View Created");
     }
 
     get x(): number {
@@ -152,8 +151,8 @@ export class NetGraphItemView {
     }
 
     _getPos() {
-        const w = this.ng.width * this.ng.scale;
-        const h = this.ng.height * this.ng.scale;
+        const w = this.ng.scaledWidth;
+        const h = this.ng.scaledHeight;
 
         const offsetX = this.ng.offsetX * w;
         const offsetY = this.ng.offsetY * h;

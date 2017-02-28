@@ -1,4 +1,3 @@
-import * as allComponents from "./components/all-components";
 import { NetGraph } from "./netgraph/netgraph";
 
 export class ViewPort {
@@ -10,13 +9,13 @@ export class ViewPort {
     width: number;
     height: number;
 
-    constructor(ng){
+    constructor(ng) {
         this._scale = 1.0;
         this.x = 0;
         this.y = 0;
 
         this.netgraph = ng;
-        this.mainDiv = this.netgraph.root;
+        this.mainDiv = this.netgraph.view.root;
 
         const clientRect = this.mainDiv.getBoundingClientRect();
         this.width = clientRect.width;

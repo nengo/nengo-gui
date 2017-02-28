@@ -65,6 +65,7 @@ Vagrantfile
 
 # Node JS
 node_modules/
+yarn.lock
 
 # jsDoc
 out/
@@ -76,3 +77,6 @@ nengo_gui/static/**/*.js.map
 
 # JS files associated with tests
 **/tests/*.js
+
+# IDE related files
+.vscode/

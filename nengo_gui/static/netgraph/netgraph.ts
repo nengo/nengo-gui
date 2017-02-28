@@ -11,7 +11,6 @@
  */
 
 import * as interact from "interact.js";
-import { VNode, dom, h  } from "maquette";
 
 import { AllComponents } from "../components/all-components";
 import { config } from "../config";
@@ -21,6 +20,7 @@ import { Shape } from "../utils";
 import { ViewPort } from "../viewport";
 import { Connection } from "../websocket";
 import { NetGraphConnection } from "./connection";
+import { NetGraphView } from "./views/netgraph";
 // import { Minimap } from "./minimap";
 
 
@@ -81,26 +81,19 @@ export class NetGraph {
      * when that item appears.
      */
     collapsedConns: ConnDict = {};
-    gConns: SVGElement;
     gConnsMini: SVGElement;
-    gItems: SVGElement;
     gItemsMini: SVGElement;
-    gNetworks: SVGElement;
     gNetworksMini: SVGElement;
-    height: number;
     inZoomDelay;
     menu: Menu;
     minimap;
     offsetX = 0; // Global x,y pan offset
     offsetY = 0; // Global x,y pan offset
-    root: HTMLElement;
-    svg: VNode;
     svgConns: ConnDict = {};
     svgObjects: SvgObjects = {net: {}, ens: {}, node: {}, passthrough: {}};
     uid: string;
-    viewPort: ViewPort;
-    view;
-    width: number;
+    viewPort: ViewPort; // WHAT DOES THIS DO?
+    view: NetGraphView;
     transparentNets: boolean;
     minimapObjects;
 
@@ -120,53 +113,21 @@ export class NetGraph {
         this.inZoomDelay = false;
 
         // this.minimap = new Minimap();
-
-        // Reading netgraph.css file as text and embedding it within def tags;
-        // this is needed for saving the SVG plot to disk.
-        const css = require("!!css-loader!./views/netgraph.css").toString();
-
-        const defs = h("defs", [h(
-            "style", {type: "text/css"}, ["<![CDATA[\n" + css + "\n]]>"]
-        )]);
-
-        // Three separate layers, so that expanded networks are at the back,
-        // then connection lines, and then other items (nodes, ensembles, and
-        // collapsed networks) are drawn on top.
-
-        // Create the master SVG element
-        this.svg = h("svg.netgraph#netgraph", {
-            styles: {height: "100%", position: "absolute", width: "100%"},
-            onresize: event => {
-                this.onResize(event);
-            },
-        }, [
-            defs,
-            h("g#netRoot"),
-            h("g#connRoot"),
-            h("g#itemRoot"),
-        ]);
-
-        this.root = dom.create(this.svg).domNode as HTMLElement;
-        interact(this.root).styleCursor(false);
-
-        this.gNetworks = this.root.querySelector("#netRoot") as SVGElement;
-        this.gConns = this.root.querySelector("#connRoot") as SVGElement;
-        this.gItems = this.root.querySelector("#itemRoot") as SVGElement;
-
-        this.width = this.root.getBoundingClientRect().width;
-        this.height = this.root.getBoundingClientRect().height;
+        this.view = new NetGraphView(uid);
 
         this.viewPort = new ViewPort(this);
         this.allComponents = new AllComponents();
 
-        // Respond to resize events
+         // Respond to resize events
         window.addEventListener("resize", event => {
             this.onResize();
         });
 
+        interact(this.view.root).styleCursor(false);
+
         // Dragging the background pans the full area by changing offsetX,Y
         // Define cursor behaviour for background
-        interact(this.root)
+        interact(this.view.root)
             .on("mousedown", () => {
                 const cursor = document.documentElement.getAttribute("style");
                 if (cursor !== null) {
@@ -182,7 +143,7 @@ export class NetGraph {
                     .setAttribute("style", "cursor:default;");
             });
 
-        interact(this.root)
+        interact(this.view.root)
             .draggable({
                 onend: event => {
                     // Let the server know what happened
@@ -232,8 +193,10 @@ export class NetGraph {
                 event.preventDefault();
 
                 Menu.hideAll();
-                const x = (event.clientX) / this.width;
-                const y = (event.clientY) / this.height;
+
+                const x = (event.clientX) / this.view.width;
+                const y = (event.clientY) / this.view.height;
+
                 let delta;
 
                 if (event.deltaMode === 1) {
@@ -284,11 +247,11 @@ export class NetGraph {
                 });
             });
 
-        this.menu = new Menu(this.parent);
+        this.menu = new Menu(this.view.root);
         this.addMenuItems();
 
         // Determine when to pull up the menu
-        interact(this.root)
+        interact(this.view.root)
             .on("hold", event => { // Change to "tap" for right click
                 if (event.button === 0) {
                     if (Menu.anyVisible()) {
@@ -305,7 +268,7 @@ export class NetGraph {
                 }
             });
 
-        this.root.addEventListener("contextmenu", event => {
+        this.view.root.addEventListener("contextmenu", event => {
             event.preventDefault();
             if (Menu.anyVisible()) {
                 Menu.hideAll();
@@ -392,14 +355,14 @@ export class NetGraph {
      * Return the pixel width of the SVG times the current scale factor.
      */
     get scaledWidth() {
-        return this.width * this.scale;
+        return this.view.width * this.scale;
     }
 
     /**
      * Return the pixel height of the SVG times the current scale factor.
      */
     get scaledHeight() {
-        return this.height * this.scale;
+        return this.view.height * this.scale;
     }
 
     /**
@@ -563,7 +526,6 @@ export class NetGraph {
     redraw() {
         Object.keys(this.svgObjects).forEach(objType => {
             Object.keys(this.svgObjects[objType]).forEach(key => {
-                    console.log(this.svgObjects[objType][key]);
                     this.svgObjects[objType][key].redraw();
             });
         });
@@ -623,8 +585,8 @@ export class NetGraph {
      * Handler for resizing the full SVG.
      */
     onResize(event) {
-        const width = this.root.getBoundingClientRect().width;
-        const height = this.root.getBoundingClientRect().height;
+        const width = this.view.width;
+        const height = this.view.height;
 
         if (this.aspectResize) {
             Object.keys(this.svgObjects).forEach(objType => {
@@ -642,8 +604,6 @@ export class NetGraph {
             });
         }
 
-        this.width = width;
-        this.height = height;
         // this.mmWidth = $(this.minimap).width();
         // this.mmHeight = $(this.minimap).height();
 
