@@ -41,7 +41,7 @@
     "no-for-in": true,
     "no-function-constructor-with-string-args": true,
     "no-function-expression": true,
-    "no-http-string": true,
+    "no-http-string": [true, "http://www.w3.org/.*"],
     "no-inner-html": true,
     "no-multiline-string": true,
     "no-octal-literal": true,

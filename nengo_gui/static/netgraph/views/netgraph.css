@@ -68,7 +68,7 @@ rect.view{
 
 circle.sweet {
     fill: red;
-    cx: 1.5cm;
-    cy: 1cm;
-    order: 100;
+    cx: 50;
+    cy: 50;
+    r: 50;
 }

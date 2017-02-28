@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "sourceMap": true
+    "sourceMap": true,
+    "watch": true
   },
   "exclude": [
     "node_modules"
