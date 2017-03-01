@@ -1,8 +1,8 @@
 import * as interact from "interact.js";
-import { VNode, dom, h  } from "maquette";
+import { h } from "maquette";
 
 import { MenuItem } from "../../menu";
-import { Shape } from "../../utils";
+import { Shape, domCreateSvg } from "../../utils";
 import { NetGraphItem, NetGraphItemArg } from "./item";
 import { MinimapItem } from "./minimap";
 
@@ -15,8 +15,6 @@ export abstract class InteractableItem extends NetGraphItem {
     minimap;
     miniItem;
     uid: string;
-    gNetworks;
-    gItems;
     label: SVGTextElement;
     labelBelow: boolean;
     size: number[];
@@ -24,11 +22,9 @@ export abstract class InteractableItem extends NetGraphItem {
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
                 dimensions) {
         super(ngiArg);
-        this.gNetworks = this.ng.gNetworksMini;
-        this.gItems = this.ng.gItemsMini;
 
         const labelNode = h("text", {innerHTML: interArg.label, transform: ""});
-        this.label = dom.create(labelNode).domNode as SVGTextElement;
+        this.label = domCreateSvg(labelNode) as SVGTextElement;
         this.miniItem = interArg.miniItem;
         this.view.g.appendChild(this.label);
 
@@ -113,8 +109,8 @@ export abstract class InteractableItem extends NetGraphItem {
         // TODO: redrawSize here?
     }
 
-    // TODO: How do I make sure this is implemented by subclasses?
-    abstract generateMenu(): MenuItem[];
+    // TODO: figure out what this is actually supposed to return
+    abstract generateMenu(): any;
 
     set height(val: number) {
         this.view._h = val;
@@ -174,8 +170,8 @@ export abstract class InteractableItem extends NetGraphItem {
     }
 
     _getPos() {
-        const w = this.ng.width * this.ng.scale;
-        const h = this.ng.height * this.ng.scale;
+        const w = this.ng.scaledWidth;
+        const h = this.ng.scaledHeight;
 
         const offsetX = this.ng.offsetX * w;
         const offsetY = this.ng.offsetY * h;
@@ -292,7 +288,7 @@ export class PassthroughItem extends InteractableItem {
     // this is probably going to need to be refactored
     _renderShape() {
         const shape = h("ellipse.passthrough");
-        this.view.shape = dom.create(shape).domNode as SVGElement;
+        this.view.shape = domCreateSvg(shape);
         this.view.g.appendChild(this.view.shape);
         this.redraw();
     }

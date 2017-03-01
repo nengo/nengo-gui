@@ -37,7 +37,7 @@ export class NetGraphItem {
     connIn;
     connOut;
     depth: number;
-    gNetworks: SVGElement;
+
     menu;
     ng: NetGraph;
     parent: NetItem;
@@ -48,7 +48,6 @@ export class NetGraphItem {
 
         this.ng = ngiArg.ng;
         this.uid = ngiArg.uid;
-        this.gNetworks = this.ng.gNetworks;
 
         // NetGraphConnections leading into and out of this item
         this.connOut = [];

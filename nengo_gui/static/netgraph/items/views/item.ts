@@ -1,6 +1,6 @@
-import { dom, h  } from "maquette";
+import { h  } from "maquette";
 
-import { Shape } from "../../../utils";
+import { Shape, domCreateSvg } from "../../../utils";
 import { NetGraph } from "../../netgraph";
 import { NetGraphItemArg } from "../item";
 
@@ -28,7 +28,7 @@ export class NetGraphItemView {
         this._y = ngiArg.posY;
         this._w = ngiArg.width;
         this._h = ngiArg.height;
-        this.gItems = this.ng.gItems;
+        this.gItems = this.ng.view.gItems;
 
         // Minimum and maximum drawn size, in pixels
         this.minWidth = 5;
@@ -37,11 +37,9 @@ export class NetGraphItemView {
         // temporary visible shape for debugging
         const visShape = h("circle#cool.sweet", {cx: "50", cy: "50", r: "50", fill: "red"});
         // Create the SVG group to hold this item's shape and it's label
-        this.g = dom.create(
-            visShape,
-            {namespace: "http://www.w3.org/2000/svg"}
-        ).domNode as SVGElement;
+        this.g = domCreateSvg(visShape);
         this.gItems.appendChild(this.g);
+        console.log("made view");
     }
 
     get x(): number {
@@ -143,11 +141,11 @@ export class NetGraphItemView {
     // temporary accessors because we're not concerning ourselves
     // with the minimap yet
     _getScreenW() {
-        return this.ng.width * this.ng.scale;
+        return this.ng.view.width * this.ng.scale;
     }
 
     _getScreenH() {
-        return this.ng.height * this.ng.scale;
+        return this.ng.view.height * this.ng.scale;
     }
 
     _getPos() {

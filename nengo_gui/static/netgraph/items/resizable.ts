@@ -3,7 +3,7 @@ import { VNode, dom, h  } from "maquette";
 
 import { config } from "../../config";
 import { MenuItem } from "../../menu";
-import { Shape } from "../../utils";
+import { Shape, domCreateSvg } from "../../utils";
 import { InteractableItem, InteractableItemArg } from "./interactable";
 import { NetGraphItemArg } from "./item";
 
@@ -16,7 +16,7 @@ abstract class ResizableItem extends InteractableItem {
         super(ngiArg, interArg, dimensions);
 
         const area = h("rect", {fill: "transparent"});
-        this.area = dom.create(area).domNode as SVGElement;
+        this.area = domCreateSvg(area);
         this.view.g.appendChild(this.area);
 
         interact(this.area).resizable({
@@ -106,7 +106,7 @@ export class NodeItem extends ResizableItem {
         const shape = h("rect.node", {
             transform: "translate(-" + halfW + ", -" + halfH + ")",
         });
-        this.view.shape = dom.create(shape).domNode as SVGElement;
+        this.view.shape = domCreateSvg(shape);
         this.view.g.appendChild(this.view.shape);
         this.redraw();
     }
@@ -158,10 +158,14 @@ export class NetItem extends ResizableItem {
     spTargets;
     defaultOutput;
     gClass: string[];
+    gNetworks: SVGElement;
 
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
                 dimensions, expanded, spTargets, defaultOutput) {
         super(ngiArg, interArg, dimensions);
+
+        // TODO: This use of gItems and gNetworks is definitely wrong
+        this.gNetworks = this.ng.view.gNetworks;
         this.expanded = expanded;
         this.spTargets = spTargets;
         this.defaultOutput = defaultOutput;
@@ -274,7 +278,7 @@ export class NetItem extends ResizableItem {
             if (this.ng.transparentNets) {
                 this.view.shape.setAttribute("style", "fill-opacity=0.0");
             }
-            this.gItems.removeChild(this.view.g);
+            this.ng.view.gItems.removeChild(this.view.g);
             this.gNetworks.appendChild(this.view.g);
             if (!this.minimap) {
                 this.miniItem.expand(returnToServer, auto);
@@ -314,7 +318,7 @@ export class NetItem extends ResizableItem {
                 this.view.shape.setAttribute("style", "fill-opacity=0.0");
             }
             this.gNetworks.removeChild(this.view.g);
-            this.gItems.appendChild(this.view.g);
+            this.ng.view.gItems.appendChild(this.view.g);
             if (!this.minimap) {
                 this.miniItem.collapse(reportToServer, auto);
             }
@@ -356,8 +360,7 @@ export class NetItem extends ResizableItem {
     }
 
     moveToFront() {
-        // TODO: maquette doesn't seem to implement parentNode?
-        this.parent.gItems.appendChild(this.view.g);
+        this.parent.ng.view.gItems.appendChild(this.view.g);
 
         Object.keys(this.children).forEach(key => {
             this.children[key].moveToFront();

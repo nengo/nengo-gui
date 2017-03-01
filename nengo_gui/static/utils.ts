@@ -3,6 +3,7 @@
  */
 
 import * as d3 from "d3";
+import { VNode, dom } from "maquette";
 
 /**
  * Clip a number, keeping it between two values.
@@ -25,6 +26,11 @@ export function clip(x: number, low: number, high: number) {
 export interface Shape {
     width: number;
     height: number;
+}
+
+export function domCreateSvg(shape: VNode): SVGElement {
+    return dom.create(shape,
+            {namespace: "http://www.w3.org/2000/svg"}).domNode as SVGElement;
 }
 
 export function disable_editor() {

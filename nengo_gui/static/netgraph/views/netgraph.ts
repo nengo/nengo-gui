@@ -14,7 +14,7 @@ export class NetGraphView {
 
         // Reading netgraph.css file as text and embedding it within def tags;
         // this is needed for saving the SVG plot to disk.
-        const css = require("!!css-loader!./views/netgraph.css").toString();
+        const css = require("!!css-loader!./netgraph.css").toString();
 
         const defs = h("defs", [h(
             "style", {type: "text/css"}, ["<![CDATA[\n" + css + "\n]]>"]
