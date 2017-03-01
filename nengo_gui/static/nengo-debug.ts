@@ -79,8 +79,7 @@ export class NengoDebug {
     }
 
     register(category: string, label: string, callback: (() => any)) {
-        let clickable;
-        clickable = this.view.register(category, label);
+        const clickable = this.view.register(category, label);
 
         clickable.onclick = () => {
             const obj = callback();

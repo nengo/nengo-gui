@@ -151,7 +151,7 @@ export class FastWSConnection implements FastConnection {
         this.ws = new WebSocket(getURL(uid, FastWSConnection.typename));
         this.ws.binaryType = "arraybuffer";
         this.ws.onmessage = (event: MessageEvent) => {
-            console.assert(typeof event.data === "ArrayBuffer");
+            console.assert(event.data instanceof ArrayBuffer);
             const structure = destructure(event.data);
             step(...structure);
         };
