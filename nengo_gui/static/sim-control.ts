@@ -365,6 +365,10 @@ export class TimeSlider {
         return this.keptScale.domain()[0];
     }
 
+    get isAtEnd(): boolean {
+        return this.currentTime < this.firstShownTime + this.shownTime + 1e-9;
+    }
+
     /**
      * Update the axis given a new time point from the simulator.
      *

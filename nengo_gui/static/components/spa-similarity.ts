@@ -11,7 +11,7 @@
 import * as d3 from "d3";
 import * as $ from "jquery";
 
-import { GrowableDataStore } from "../datastore";
+import { FlexibleDataStore } from "../datastore";
 import * as utils from "../utils";
 import Component from "./component";
 import "./spa_similarity.css";
@@ -26,8 +26,7 @@ export class SpaSimilarity extends Value {
         super(parent, sim, args);
 
         this.synapse = args.synapse;
-        this.data_store =
-            new GrowableDataStore(this.n_lines, this.sim, this.synapse);
+        this.data_store = new FlexibleDataStore(this.n_lines, this.synapse);
         this.show_pairs = false;
 
         const self = this;
@@ -50,10 +49,14 @@ export class SpaSimilarity extends Value {
             this.legend, args.pointer_labels, this.color_func, this.uid);
     };
 
+    get n_lines(): number {
+        return this.data_store.dims;
+    }
+
     reset_legend_and_data(new_labels) {
         // Clear the database and create a new one since dimensions have changed
         this.data_store =
-            new GrowableDataStore(new_labels.length, this.sim, this.synapse);
+            new FlexibleDataStore(new_labels.length, this.synapse);
 
         // Delete the legend's children
         while (this.legend.lastChild) {
@@ -73,14 +76,6 @@ export class SpaSimilarity extends Value {
     };
 
     data_msg(push_data) {
-        const data_dims = push_data.length - 1;
-
-        // TODO: Move this check inside datastore?
-        if (data_dims > this.data_store.dims) {
-            this.data_store.dims = data_dims;
-            this.n_lines = data_dims;
-        }
-
         this.data_store.push(push_data);
         this.schedule_update(null);
     };
@@ -172,19 +167,8 @@ export class SpaSimilarity extends Value {
 
         // Update the lines
         const self = this;
-        const shown_data = this.data_store.get_shown_data();
-        // Data join
-        this.path = this.axes2d.svg.selectAll(".line").data(shown_data);
-        // Update
-        this.path.attr("d", self.line);
-        // Enter to append remaining lines
-        this.path.enter()
-            .append("path")
-            .attr("class", "line")
-            .style("stroke", this.color_func)
-            .attr("d", self.line);
-        // Remove any lines that aren't needed anymore
-        this.path.exit().remove();
+        const shown_data = this.data_store.get_shown_data(this.sim.time_slider);
+
 
         // Update the legend text
         if (this.legend_svg && shown_data[0].length !== 0) {

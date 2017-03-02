@@ -243,7 +243,7 @@ export class Slider extends Component {
             const data = this.dataStore.getLastData();
 
             for (let i = 0; i < this.sliders.length; i++) {
-                if (!this.dataStore.isAtEnd() || !this.sliders[i].fixed) {
+                if (!this.sim.timeSlider.isAtEnd || !this.sliders[i].fixed) {
                     this.sliders[i].displayValue(data[i]);
                 }
             }
