@@ -25,8 +25,8 @@ import { TimeAxes } from "./time-axes";
 
 export class Raster extends Component {
     axes2d;
-    dataStore;
-    nNeurons;
+    dataStore: DataStore;
+    nNeurons: number;
     path;
     sim;
 
