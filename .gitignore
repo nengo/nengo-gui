@@ -65,7 +65,6 @@ Vagrantfile
 
 # Node JS
 node_modules/
-yarn.lock
 
 # jsDoc
 out/
