@@ -32,14 +32,14 @@ export class Value extends Component {
     crosshairG;
     crosshairMouse;
     crosshairUpdates;
-    dataStore;
+    dataStore: DataStore;
     displayTime;
-    legend;
-    legendLabels;
+    legend: HTMLDivElement;
+    legendLabels: string[];
     line;
-    nLines;
+    nLines: number;
     path;
-    showLegend;
+    _showLegend: boolean;
     sim;
     synapse;
 
@@ -68,11 +68,11 @@ export class Value extends Component {
 
         // Create the lines on the plots
         this.line = d3.svg.line()
-            .x(function(d, i) {
+            .x((d, i) => {
                 return this.axes2d.scaleX(
                     this.dataStore.times[i + this.dataStore.firstShownIndex]
                 );
-            }).y(function(d) {
+            }).y((d) => {
                 return this.axes2d.scaleY(d);
             });
         this.path = this.axes2d.svg.append("g")
@@ -83,7 +83,7 @@ export class Value extends Component {
         this.path.enter()
             .append("path")
             .attr("class", "line")
-            .style("stroke", function(d, i) {
+            .style("stroke", (d, i) => {
                 return this.colors[i];
             });
 
@@ -121,22 +121,22 @@ export class Value extends Component {
             .attr("class", "graphText");
 
         this.axes2d.svg
-            .on("mouseover", function() {
+            .on("mouseover", () => {
                 const mouse = d3.mouse(this);
                 this.crosshairUpdates = true;
                 this.crosshairG.style("display", null);
                 this.crosshairMouse = [mouse[0], mouse[1]];
-            }).on("mouseout", function() {
+            }).on("mouseout", () => {
                 const mouse = d3.mouse(this);
                 this.crosshairUpdates = false;
                 this.crosshairG.style("display", "none");
                 this.crosshairMouse = [mouse[0], mouse[1]];
-            }).on("mousemove", function() {
+            }).on("mousemove", () => {
                 const mouse = d3.mouse(this);
                 this.crosshairUpdates = true;
                 this.crosshairMouse = [mouse[0], mouse[1]];
                 this.updateCrosshair(mouse);
-            }).on("mousewheel", function() {
+            }).on("mousewheel", () => {
                 // Hide the crosshair when zooming,
                 // until a better option comes along
                 this.crosshairUpdates = false;
@@ -199,7 +199,7 @@ export class Value extends Component {
             this.crosshairG.select("#crosshairXtext")
                 .attr("x", x - 2)
                 .attr("y", this.axes2d.axBottom + 17)
-                .text(function() {
+                .text(() => {
                     return Math.round(
                         this.axes2d.scaleX.invert(x) * 100) / 100;
                 });
@@ -207,7 +207,7 @@ export class Value extends Component {
             this.crosshairG.select("#crosshairYtext")
                 .attr("x", this.axes2d.axLeft - 3)
                 .attr("y", y + 3)
-                .text(function() {
+                .text(() => {
                     return Math.round(
                         this.axes2d.scaleY.invert(y) * 100) / 100;
                 });
@@ -291,10 +291,10 @@ export class Value extends Component {
                 this.setSynapseDialog();
         });
         this.menu.addAction("Hide legend", () => {
-            this.setShowLegend(false);
+            this.showLegend(false);
         }, () => this.showLegend);
         this.menu.addAction("Show legend", () => {
-            this.setShowLegend(true);
+            this.showLegend(true);
         }, () => !this.showLegend);
         // TODO: give the legend it's own context menu
         this.menu.addAction("Set legend labels", () => {
@@ -304,12 +304,12 @@ export class Value extends Component {
         super.addMenuItems();
     }
 
-    setShowLegend(value) {
-        if (this.showLegend !== value) {
-            this.showLegend = value;
+    set showLegend(value) {
+        if (this._showLegend !== value) {
+            this._showLegend = value;
             this.saveLayout();
 
-            if (this.showLegend === true) {
+            if (this._showLegend === true) {
                 // utils.drawLegend(this.legend,
                 //                   this.legendLabels.slice(0, this.nLines),
                 //                   this.colorFunc,

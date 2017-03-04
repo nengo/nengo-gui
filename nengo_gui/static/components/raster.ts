@@ -53,10 +53,10 @@ export class Raster extends Component {
 
         // Create the lines on the plots
         d3.svg.line()
-            .x(function(d, i) {
+            .x((d, i) => {
                 return this.axes2d.scaleX(this.dataStore.times[i]);
             })
-            .y(function(d) {
+            .y((d) => {
                 return this.axes2d.scaleY(d);
             });
 

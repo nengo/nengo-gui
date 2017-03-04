@@ -5,7 +5,7 @@
  * @param {DOMElement} parent - the element to add this component to
  * @param {SimControl} sim - the simulation controller
  * @param {dict} args - A set of constructor arguments (see Component)
- * @param {int} args.n_lines - number of decoded values
+ * @param {int} args.nLines - number of decoded values
  */
 
 import * as d3 from "d3";
@@ -26,17 +26,15 @@ export class SpaSimilarity extends Value {
         super(parent, sim, args);
 
         this.synapse = args.synapse;
-        this.dataStore = new FlexibleDataStore(this.n_lines, this.synapse);
-        this.showPairs = false;
-
-        const self = this;
+        this.dataStore = new FlexibleDataStore(this.nLines, this.synapse);
+        this._showPairs = false;
 
         this.colors = utils.makeColors(6);
-        this.colorFunc = function(d, i) {
-            return self.colors[i % 6];
-        };
+        this.colorFunc = (d, i) => {
+            return this.colors[i % 6];
+        }
 
-        this.line.defined(function(d) {
+        this.line.defined((d) => {
             return !isNaN(d);
         });
 
@@ -53,10 +51,9 @@ export class SpaSimilarity extends Value {
         return this.dataStore.dims;
     }
 
-    reset_legend_and_data(new_labels) {
+    resetLegendAndData(newLabels) {
         // Clear the database and create a new one since dimensions have changed
-        this.dataStore =
-            new FlexibleDataStore(new_labels.length, this.synapse);
+        this.dataStore = new FlexibleDataStore(newLabels.length, this.synapse);
 
         // Delete the legend's children
         while (this.legend.lastChild) {
@@ -68,21 +65,20 @@ export class SpaSimilarity extends Value {
 
         // Redraw all the legends if they exist
         this.legendLabels = [];
-        if (new_labels[0] !== "") {
-            this.update_legend(new_labels);
+        if (newLabels[0] !== "") {
+            this.updateLegend(newLabels);
         }
 
         this.update();
-    };
+    }
 
-    data_msg(push_data) {
-        this.dataStore.push(push_data);
-        this.schedule_update(null);
-    };
+    dataMsg(pushData) {
+        this.dataStore.push(pushData);
+        this.scheduleUpdate(null);
+    }
 
-    update_legend(new_labels) {
-        const self = this;
-        this.legendLabels = this.legendLabels.concat(new_labels);
+    updateLegend(newLabels) {
+        this.legendLabels = this.legendLabels.concat(newLabels);
 
         // Expand the height of the svg, where 20-ish is the height of the font
         this.legendSVG.attr("height", 20 * this.legendLabels.length);
@@ -92,13 +88,13 @@ export class SpaSimilarity extends Value {
             .data(this.legendLabels);
         const legendLabels = this.legendSVG.selectAll(".legend-label")
             .data(this.legendLabels);
-        const val_texts = this.legendSVG.selectAll(".val")
+        const valTexts = this.legendSVG.selectAll(".val")
             .data(this.legendLabels);
         // Enter to append remaining lines
         recs.enter()
             .append("rect")
             .attr("x", 0)
-            .attr("y", function(d, i) {
+            .attr("y", (d, i) => {
                 return i * 20;
             })
             .attr("width", 10)
@@ -107,35 +103,35 @@ export class SpaSimilarity extends Value {
 
         legendLabels.enter().append("text")
             .attr("x", 15)
-            .attr("y", function(d, i) {
+            .attr("y", (d, i) => {
                 return i * 20 + 9;
             })
             .attr("class", "legend-label")
-            .html(function(d, i) {
-                return self.legendLabels[i];
+            .html((d, i) => {
+                return this.legendLabels[i];
             });
 
         // Expand the width of the svg of the longest string
-        const label_list = $("#legend" + this.uid + " .legend-label").toArray();
-        const longest_label = Math.max.apply(Math, label_list.map(function(o) {
-            return o.getBBox().width;
+        const labelList = $("#legend" + this.uid + " .legend-label").toArray();
+        const longestLabel = Math.max.apply(Math, labelList.map((o) => {
+            return o.getBoundingClientRect().width;
         }));
         // 50 is for the similarity measure that is around three characters wide
-        const svg_right_edge = longest_label + 50;
-        this.legendSVG.attr("width", svg_right_edge);
+        const svgRightEdge = longestLabel + 50;
+        this.legendSVG.attr("width", svgRightEdge);
 
-        val_texts.attr("x", svg_right_edge)
-            .attr("y", function(d, i) {
+        valTexts.attr("x", svgRightEdge)
+            .attr("y", (d, i) => {
                 return i * 20 + 9;
             });
-        val_texts.enter().append("text")
-            .attr("x", svg_right_edge)
-            .attr("y", function(d, i) {
+        valTexts.enter().append("text")
+            .attr("x", svgRightEdge)
+            .attr("y", (d, i) => {
                 return i * 20 + 9;
             })
             .attr("text-anchor", "end")
             .attr("class", "val");
-    };
+    }
 
     /**
      * Handle websocket messages.
@@ -150,7 +146,7 @@ export class SpaSimilarity extends Value {
         const data = JSON.parse(event.data);
         const func_name = data.shift();
         this[func_name](data);
-    };
+    }
 
     /**
      * Redraw the lines and axis due to changed data.
@@ -166,73 +162,71 @@ export class SpaSimilarity extends Value {
         this.axes2d.set_time_range(t1, t2);
 
         // Update the lines
-        const self = this;
-        const shown_data = this.dataStore.get_shown_data(this.sim.time_slider);
-
+        const shown_data = this.dataStore.getShownData(this.sim.time_slider);
 
         // Update the legend text
         if (this.legendSVG && shown_data[0].length !== 0) {
             // Get the most recent similarity
-            const latest_simi = [];
+            const lastestSimi = [];
             for (let i = 0; i < shown_data.length; i++) {
-                latest_simi.push(shown_data[i][shown_data[i].length - 1]);
+                lastestSimi.push(shown_data[i][shown_data[i].length - 1]);
             }
 
             // Update the text in the legend
             const texts = this.legendSVG.selectAll(".val")
                 .data(this.legendLabels);
 
-            texts.html(function(d, i) {
+            texts.html((d, i) => {
                 let sign = "";
-                if (latest_simi[i] < 0) {
+                if (lastestSimi[i] < 0) {
                     sign = "&minus;";
                 }
-                return sign + Math.abs(latest_simi[i]).toFixed(2);
+                return sign + Math.abs(lastestSimi[i]).toFixed(2);
             });
         }
-    };
+    }
 
     addMenuItems() {
         this.menu.addAction("Set range...", () => {
             this.setRange();
         });
         this.menu.addAction("Hide pairs", () => {
-            this.set_showPairs(false);
+            this.showPairs(false);
         }, () => this.showPairs);
         this.menu.addAction("Show pairs", () => {
-            this.set_showPairs(true);
+            this.showPairs(true);
         }, () => !this.showPairs);
         this.menu.addSeparator();
         // TODO: do we want super (Value) or Component?
         super.addMenuItems();
     };
 
-    set_showPairs(value) {
-        if (this.showPairs !== value) {
-            this.showPairs = value;
-            this.save_layout();
+    set showPairs(value) {
+        if (this._showPairs !== value) {
+            this._showPairs = value;
+            this.saveLayout();
             this.ws.send(value);
         }
-    };
+    }
 
-    layout_info() {
-        const info = Component.prototype.layout_info.call(this);
-        info.showPairs = this.showPairs;
+    layoutInfo() {
+        const info = Component.prototype.layoutInfo.call(this);
+        info.show_pairs = this._showPairs;
         info.min_value = this.axes2d.scale_y.domain()[0];
         info.max_value = this.axes2d.scale_y.domain()[1];
         return info;
-    };
+    }
 
-    update_layout(config) {
-        this.update_range(config.min_value, config.max_value);
-        this.showPairs = config.showPairs;
-        Component.prototype.update_layout.call(this, config);
-    };
+    updateLayout(config) {
+        this.updateRange(config.min_value, config.max_value);
+        this.showPairs = config.show_pairs;
+        Component.prototype.updateLayout.call(this, config);
+    }
 
     reset() {
         // Ask for a legend update
         this.ws.send("reset_legend");
-    };
+    }
 
     // TODO: should I remove the ability to set range?
     // Or limit it to something intuitive

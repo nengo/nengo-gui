@@ -22,7 +22,7 @@ import { Component } from "./component";
 import "./pointer.css";
 
 export class Pointer extends Component {
-    dataStore;
+    dataStore: DataStore;
     fixedValue;
     mouseDownTime;
     pdiv;
@@ -79,9 +79,7 @@ export class Pointer extends Component {
                 }
             }
         });
-
         this.div.addEventListener("mousedown", () => {
-            // TODO: Why??
             this.mouseDownTime = new Date().getTime() / 1000;
         });
     }

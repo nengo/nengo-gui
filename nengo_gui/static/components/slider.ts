@@ -25,18 +25,18 @@ import { SliderControl } from "./slidercontrol";
 
 export class Slider extends Component {
     axTop;
-    borderSize;
-    dataStore;
+    borderSize: number;
+    dataStore: DataStore;
     fillingSliderValue;
-    group;
+    group: HTMLDivElement;
     immediateNotify;
-    nSliders;
+    nSliders: number;
     notifyMsgs;
-    resetValue;
+    resetValue: number[];
     sim;
     sliderHeight;
     sliders;
-    startValue;
+    startValue: number[];
 
     constructor(parent, sim, args) {
         super(parent, args);
@@ -79,7 +79,7 @@ export class Slider extends Component {
             slider.index = i;
             slider.fixed = false;
 
-            slider.on("change", function(event) {
+            slider.on("change", event => {
                 event.target.fixed = true;
                 this.sendValue(event.target.index, event.value);
             }).on("changestart", function(event) {
@@ -211,7 +211,7 @@ export class Slider extends Component {
         // TODO: find a better way to figure out when it's safe to send
         // another message, rather than just waiting 1ms....
         if (this.notifyMsgs.length === 1) {
-            window.setTimeout(function() {
+            window.setTimeout(() => {
                 this.sendNotifyMsg();
             }, 50);
         }
@@ -226,7 +226,7 @@ export class Slider extends Component {
         const msg = this.notifyMsgs[0];
         this.ws.send(msg);
         if (this.notifyMsgs.length > 1) {
-            window.setTimeout(function() {
+            window.setTimeout(() => {
                 this.sendNotifyMsg();
             }, 50);
         }

@@ -10,7 +10,7 @@
  * @param {float} args.max_value - maximum value on y-axis
  */
 
-import Axes2D from "./2d-axes";
+import { Axes2D } from "./2d-axes";
 
 export class XYAxes extends Axes2D {
     maxVal;
@@ -38,9 +38,9 @@ export class XYAxes extends Axes2D {
         const yOffset = this.axLeft - this.minVal /
             (this.maxVal - this.minVal) * (this.axRight - this.axLeft);
 
-        this.axisX_g.attr("transform", "translate(0," + xOffset + ")");
-        this.axisX_g.call(this.axisX);
-        this.axisY_g.attr("transform", "translate(" + yOffset + ", 0)");
-        this.axisY_g.call(this.axisY);
+        this.axisXG.attr("transform", "translate(0," + xOffset + ")");
+        this.axisXG.call(this.axisX);
+        this.axisYG.attr("transform", "translate(" + yOffset + ", 0)");
+        this.axisYG.call(this.axisY);
     }
 }

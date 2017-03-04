@@ -79,7 +79,7 @@ export class SliderControl {
 
         interact(this.handle).draggable({
             onend: event => {
-                this.dispatch("changeend", {"target": this});
+                this.dispatch("changeend", {target: this});
             },
             onmove: event => {
                 this._dragY += event.dy;
@@ -88,7 +88,7 @@ export class SliderControl {
                 this.setValue(this.scale.invert(this._dragY));
             },
             onstart: () => {
-                this.dispatch("changestart", {"target": this});
+                this.dispatch("changestart", {target: this});
                 this.deactivateTypeMode(null);
                 this._dragY = this.getHandlePos();
             },
@@ -139,7 +139,7 @@ export class SliderControl {
 
     setValue(value) {
         this.displayValue(value);
-        this.dispatch("change", {"target": this, "value": this.value});
+        this.dispatch("change", {target: this, value: this.value});
     }
 
     activateTypeMode() {
@@ -147,7 +147,7 @@ export class SliderControl {
             return;
         }
 
-        this.dispatch("changestart", {"target": this});
+        this.dispatch("changestart", {target: this});
 
         this.typeMode = true;
 
@@ -178,7 +178,7 @@ export class SliderControl {
             return;
         }
 
-        this.dispatch("changeend", {"target": this});
+        this.dispatch("changeend", {target: this});
 
         this.typeMode = false;
 
