@@ -498,6 +498,8 @@ class Page(object):
             if self.sim is not None:
                 if self.settings.backend in Page.singleton_sims:
                     Page.singleton_sims[self.settings.backend] = self
+                if 'on_start' in self.locals:
+                    self.locals['on_start'](self.sim)
 
             # remove the temporary components added for visualization
             for c in self.components:
@@ -520,6 +522,8 @@ class Page(object):
                         self.sim.run_steps(self.sim.max_steps)
                     else:
                         self.sim.step()
+                        if 'on_step' in self.locals:
+                            self.locals['on_step'](self.sim)
                 except Exception as err:
                     if self.finished:
                         return
@@ -527,8 +531,16 @@ class Page(object):
                     self.error = dict(trace=traceback.format_exc(), line=line)
                     self.sim = None
             while self.sims_to_close:
-                self.sims_to_close.pop().close()
+                s = self.sims_to_close.pop()
+                if 'on_close' in self.locals:
+                    self.locals['on_close'](s)
+                s.close()
 
             if self.rebuild:
                 self.build()
         self.sim = None
+
+    def close(self):
+        if self.sim is not None:
+            if 'on_close' in self.locals:
+                self.locals['on_close'](self.sim)

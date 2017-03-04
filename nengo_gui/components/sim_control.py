@@ -190,11 +190,16 @@ class SimControl(Component):
     def message(self, msg):
         if msg == 'pause':
             self.paused = True
+            if 'on_pause' in self.page.locals:
+                self.page.locals['on_pause'](self.page.sim)
         elif msg == 'config':
             self.send_config_options = True
         elif msg == 'continue':
             if self.page.sim is None:
                 self.page.rebuild = True
+            else:
+                if 'on_continue' in self.page.locals:
+                    self.page.locals['on_continue'](self.page.sim)
             self.paused = False
         elif msg == 'reset':
             self.paused = True

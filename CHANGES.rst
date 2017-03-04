@@ -22,6 +22,7 @@ Release History
 0.4.4 (unreleased)
 ==================
 
+- Improvement (Experimental): Added simulator hooks
 - Improvement: Added audible spike sounds
 - Improvement (Experimental): Nodes have access to the GUI keyboard state
 - Improvement: support for nengo-bio Connections
