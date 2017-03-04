@@ -3,6 +3,7 @@
  *
  * Each element that has a menu makes a call to Menu constructor
  */
+import { dom, h } from "maquette";
 
 import { MenuView } from "./views/menu";
 
@@ -27,7 +28,7 @@ export class MenuAction {
 }
 
 export interface MenuItem {
-    html: string;
+    html: HTMLElement;
     callback: () => void;
 }
 
