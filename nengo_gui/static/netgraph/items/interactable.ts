@@ -32,7 +32,7 @@ export abstract class InteractableItem extends NetGraphItem {
 
 
         if (ngiArg.parent !== null) {
-            this.parent.children.push(this);
+            this.view.parent.children.push(this);
         }
 
         interact(this.view.g).draggable({
@@ -57,7 +57,7 @@ export abstract class InteractableItem extends NetGraphItem {
                 item.y += event.dy / h;
                 item.redraw();
 
-                if (this.depth === 1) {
+                if (this.view.depth === 1) {
                     this.ng.scaleMiniMap();
                 }
             },
@@ -135,9 +135,9 @@ export abstract class InteractableItem extends NetGraphItem {
 
     remove() {
         // Remove the item from the parent's children list
-        if (this.parent !== null) {
-            const index = this.parent.children.indexOf(this);
-            this.parent.children.splice(index, 1);
+        if (this.view.parent !== null) {
+            const index = this.view.parent.children.indexOf(this);
+            this.view.parent.children.splice(index, 1);
         }
 
         super.remove();
@@ -201,7 +201,7 @@ export abstract class InteractableItem extends NetGraphItem {
     }
 
     constrainPosition() {
-        if (this.parent !== null) {
+        if (this.view.parent !== null) {
             this.width = Math.min(0.5, this.width);
             this.height = Math.min(0.5, this.height);
 
