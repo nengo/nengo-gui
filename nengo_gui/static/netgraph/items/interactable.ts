@@ -1,7 +1,7 @@
 import * as interact from "interact.js";
 import { h } from "maquette";
 
-import { MenuItem } from "../../menu";
+import { Menu, MenuItem, hideAllMenus } from "../../menu";
 import { Shape, domCreateSvg } from "../../utils";
 import { NetGraphItem, NetGraphItemArg } from "./item";
 import { MinimapItem } from "./minimap";
@@ -17,6 +17,7 @@ export abstract class InteractableItem extends NetGraphItem {
     uid: string;
     label: SVGTextElement;
     labelBelow: boolean;
+    menu: Menu;
     size: number[];
 
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
@@ -27,6 +28,8 @@ export abstract class InteractableItem extends NetGraphItem {
         this.label = domCreateSvg(labelNode) as SVGTextElement;
         this.miniItem = interArg.miniItem;
         this.view.g.appendChild(this.label);
+
+        this.menu = new Menu(this.ng.view.root);
 
 
         if (ngiArg.parent !== null) {
@@ -60,7 +63,7 @@ export abstract class InteractableItem extends NetGraphItem {
                 }
             },
             onstart: () => {
-                this.menu.hideAny();
+                hideAllMenus();
             },
         });
         // Determine when to pull up the menu
@@ -69,7 +72,7 @@ export abstract class InteractableItem extends NetGraphItem {
                 // Change to "tap" for right click
                 if (event.button === 0) {
                     if (this.menu.visibleAny()) {
-                        this.menu.hideAny();
+                        hideAllMenus();
                     } else {
                         this.menu.show(event.clientX,
                                        event.clientY,
@@ -82,7 +85,7 @@ export abstract class InteractableItem extends NetGraphItem {
                 // Get rid of menus when clicking off
                 if (event.button === 0) {
                     if (this.menu.visibleAny()) {
-                        this.menu.hideAny();
+                        hideAllMenus();
                     }
                 }
             })
@@ -90,7 +93,7 @@ export abstract class InteractableItem extends NetGraphItem {
                 // Get rid of menus when clicking off
                 if (event.button === 0) {
                     if (this.menu.visibleAny()) {
-                        this.menu.hideAny();
+                        hideAllMenus();
                     }
                 }
             });
@@ -109,8 +112,7 @@ export abstract class InteractableItem extends NetGraphItem {
         // TODO: redrawSize here?
     }
 
-    // TODO: figure out what this is actually supposed to return
-    abstract generateMenu(): any;
+    abstract generateMenu(): MenuItem[];
 
     set height(val: number) {
         this.view._h = val;

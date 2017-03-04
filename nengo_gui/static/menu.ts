@@ -33,6 +33,7 @@ export interface MenuItem {
 }
 
 export class Menu {
+
     static allShown: Menu[] = [];
 
     actions: MenuAction[] = [];

@@ -1,4 +1,5 @@
-import { VNode, dom, h  } from "maquette";
+import "./netgraph.css";
+import { dom, h  } from "maquette";
 
 export class NetGraphView {
     gConns: SVGElement;

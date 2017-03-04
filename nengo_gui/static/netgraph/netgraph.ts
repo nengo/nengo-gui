@@ -28,8 +28,6 @@ import { InteractableItemArg, PassthroughItem } from "./items/interactable";
 import { NetGraphItem, NetGraphItemArg } from "./items/item";
 import { EnsembleItem, NetItem, NodeItem} from "./items/resizable";
 
-import "./views/netgraph.css";
-
 interface NetDict {
     [uid: string]: NetItem;
 }
@@ -248,6 +246,7 @@ export class NetGraph {
             });
 
         this.menu = new Menu(this.view.root);
+
         this.addMenuItems();
 
         // Determine when to pull up the menu

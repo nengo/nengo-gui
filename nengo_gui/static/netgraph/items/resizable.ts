@@ -2,7 +2,7 @@ import * as interact from "interact.js";
 import { VNode, dom, h  } from "maquette";
 
 import { config } from "../../config";
-import { MenuItem } from "../../menu";
+import { hideAllMenus } from "../../menu";
 import { Shape, domCreateSvg } from "../../utils";
 import { InteractableItem, InteractableItemArg } from "./interactable";
 import { NetGraphItemArg } from "./item";
@@ -24,7 +24,7 @@ abstract class ResizableItem extends InteractableItem {
                 invert: "none",
                 margin: 10,
             }).on("resizestart", event => {
-                this.menu.hideAny();
+                hideAllMenus();
             }).on("resizemove", event => {
                 const item = this.ng.svgObjects[this.uid];
                 let hScale = this.ng.scaledWidth;
@@ -188,7 +188,7 @@ export class NetItem extends ResizableItem {
                 // Get rid of menus when clicking off
                 if (event.button === 0) {
                     if (this.menu.visibleAny()) {
-                        this.menu.hideAny();
+                        hideAllMenus();
                     } else {
                         if (this.expanded) {
                             this.collapse(true);
@@ -200,7 +200,7 @@ export class NetItem extends ResizableItem {
             });
         interact(this.view.g).draggable({
             onstart: () => {
-                this.menu.hideAny();
+                hideAllMenus();
                 this.moveToFront();
             },
         });

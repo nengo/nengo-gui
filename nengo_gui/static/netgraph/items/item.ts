@@ -11,7 +11,6 @@
  * @param {string|null} info.parent - a NetGraphItem with .type=="net"
  */
 
-// import * as menu from "../../menu";
 import { NetGraph } from "../netgraph";
 import { NetItem } from "./resizable";
 import { NetGraphItemView } from "./views/item";
@@ -65,9 +64,6 @@ export class NetGraphItem {
         }
 
         this.view = new NetGraphItemView(ngiArg);
-
-        // TODO: find out where to render the menu
-        //this.menu = new menu.Menu(this.ng.parent);
     }
 
     createModal() {
