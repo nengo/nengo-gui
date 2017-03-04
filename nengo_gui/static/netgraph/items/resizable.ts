@@ -38,7 +38,7 @@ abstract class ResizableItem extends InteractableItem {
                 this.contSize(event, item, hScale, vScale);
                 item.redraw();
 
-                if (this.depth === 1) {
+                if (this.view.depth === 1) {
                     this.ng.scaleMiniMap();
                 }
             }).on("resizeend", event => {
@@ -360,7 +360,7 @@ export class NetItem extends ResizableItem {
     }
 
     moveToFront() {
-        this.parent.ng.view.gItems.appendChild(this.view.g);
+        this.view.parent.ng.view.gItems.appendChild(this.view.g);
 
         Object.keys(this.children).forEach(key => {
             this.children[key].moveToFront();
@@ -392,7 +392,7 @@ export class NetItem extends ResizableItem {
      * Determine the fill color based on the depth.
      */
     computeFill() {
-        const depth = this.ng.transparentNets ? 1 : this.depth;
+        const depth = this.ng.transparentNets ? 1 : this.view.depth;
 
         let rgb = Math.round(255 * Math.pow(0.8, depth));
         const fill = "rgb(" + rgb + "," + rgb + "," + rgb + ")";
@@ -478,8 +478,6 @@ export class EnsembleItem extends ResizableItem {
     }
 
     contSize(event, item, hScale, vScale) {
-        this.constrainAspect();
-
         const pos = item.getScreenLocation();
         const verticalResize =
             event.edges.bottom || event.edges.top;

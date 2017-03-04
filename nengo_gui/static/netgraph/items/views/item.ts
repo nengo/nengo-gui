@@ -3,17 +3,21 @@ import { h  } from "maquette";
 import { Shape, domCreateSvg } from "../../../utils";
 import { NetGraph } from "../../netgraph";
 import { NetGraphItemArg } from "../item";
+import { NetItem } from "../resizable";
 
 export class NetGraphItemView {
+    depth: number;
     gItems: SVGElement;
     ng: NetGraph;
 
     // TODO: protect these later
-    g: SVGElement;
+    g: SVGGElement;
     shape: SVGElement;
 
     minHeight: number;
     minWidth: number;
+
+    parent: NetItem;
 
     _h: number;
     _w: number;
@@ -37,9 +41,20 @@ export class NetGraphItemView {
         // temporary visible shape for debugging
         const visShape = h("circle#cool.sweet", {cx: "50", cy: "50", r: "50", fill: "red"});
         // Create the SVG group to hold this item's shape and it's label
-        this.g = domCreateSvg(visShape);
+        this.g = domCreateSvg(visShape) as SVGGElement;
         this.gItems.appendChild(this.g);
         console.log("made view");
+
+        // Determine the parent NetGraphItem (if any) and the nested depth
+        // of this item.
+        if (ngiArg.parent === null) {
+            this.parent = null;
+            this.depth = 1;
+        } else {
+            // TODO: I think this is wrong
+            this.parent = this.ng.svgObjects.net[ngiArg.parent];
+            this.depth = this.parent.view.depth + 1;
+        }
     }
 
     get x(): number {
@@ -103,8 +118,6 @@ export class NetGraphItemView {
      * Determine the pixel location of the centre of the item.
      */
     get screenLocation() {
-        // FIXME: this should probably use this.ng.getScaledWidth
-        // and this.ng.getScaledHeight
 
         const pos = this._getPos();
 

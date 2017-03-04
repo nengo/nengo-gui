@@ -1,18 +1,8 @@
 /**
  * Network diagram individual item (node).
- *
- * @constructor
- * @param {NetGraph} ng - The NetGraph this Item is inside
- * @param {dict} info - A dictionary of settings for the item, including:
- * @param {float[]} info.pos - x,y position
- * @param {float[]} info.size - half width, half height of item
- * @param {string} info.type - one of ["net", "ens", "node"]
- * @param {string} info.uid - unique identifier
- * @param {string|null} info.parent - a NetGraphItem with .type=="net"
  */
 
 import { NetGraph } from "../netgraph";
-import { NetItem } from "./resizable";
 import { NetGraphItemView } from "./views/item";
 
 export interface NetGraphItemArg {
@@ -35,11 +25,8 @@ export class NetGraphItem {
     children;
     connIn;
     connOut;
-    depth: number;
 
-    menu;
     ng: NetGraph;
-    parent: NetItem;
     view: NetGraphItemView;
     uid: string;
 
@@ -51,17 +38,6 @@ export class NetGraphItem {
         // NetGraphConnections leading into and out of this item
         this.connOut = [];
         this.connIn = [];
-
-        // Determine the parent NetGraphItem (if any) and the nested depth
-        // of this item.
-        if (ngiArg.parent === null) {
-            this.parent = null;
-            this.depth = 1;
-        } else {
-            // TODO: I think this is wrong
-            this.parent = this.ng.svgObjects.net[ngiArg.parent];
-            this.depth = this.parent.depth + 1;
-        }
 
         this.view = new NetGraphItemView(ngiArg);
     }
@@ -100,7 +76,7 @@ export class NetGraphItem {
 
         // Remove from the SVG
         this.view.remove();
-        if (this.depth === 1) {
+        if (this.view.depth === 1) {
             this.ng.scaleMiniMap();
         }
     }

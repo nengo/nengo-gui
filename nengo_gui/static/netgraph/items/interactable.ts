@@ -18,7 +18,6 @@ export abstract class InteractableItem extends NetGraphItem {
     label: SVGTextElement;
     labelBelow: boolean;
     menu: Menu;
-    size: number[];
 
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
                 dimensions) {
@@ -97,17 +96,17 @@ export abstract class InteractableItem extends NetGraphItem {
                     }
                 }
             });
-        // TODO: attach menu events in a sane manner
-        // this.g = h("g", {contextmenu: event => {
-        //     event.preventDefault();
-        //     event.stopPropagation();
-        //     if (this.menu.visibleAny()) {
-        //         this.menu.hideAny();
-        //     } else {
-        //         this.menu.show(
-        //             event.clientX, event.clientY, this.generateMenu());
-        //     }
-        // }});
+
+        interact(this.view.g).on("contextmenu", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (this.menu.visibleAny()) {
+                hideAllMenus();
+            } else {
+                this.menu.show(
+                    event.clientX, event.clientY, this.generateMenu());
+            }
+        });
 
         // TODO: redrawSize here?
     }
@@ -201,13 +200,7 @@ export abstract class InteractableItem extends NetGraphItem {
         }
     }
 
-    constrainAspect() {
-        this.size = this.view.displayedSize;
-    }
-
     constrainPosition() {
-        this.constrainAspect();
-
         if (this.parent !== null) {
             this.width = Math.min(0.5, this.width);
             this.height = Math.min(0.5, this.height);
