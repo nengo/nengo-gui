@@ -501,6 +501,8 @@ class Page(object):
                         self.sim.run_steps(self.sim.max_steps)
                     else:
                         self.sim.step()
+                        if 'on_step' in self.locals:
+                            self.locals['on_step'](self.sim)
                 except Exception as err:
                     if self.finished:
                         return
