@@ -23,7 +23,6 @@ import { NetGraphConnection } from "./connection";
 import { NetGraphView } from "./views/netgraph";
 // import { Minimap } from "./minimap";
 
-
 import { InteractableItemArg, PassthroughItem } from "./items/interactable";
 import { NetGraphItem, NetGraphItemArg } from "./items/item";
 import { EnsembleItem, NetItem, NodeItem} from "./items/resizable";
@@ -168,7 +167,7 @@ export class NetGraph {
 
                     this.viewPort.position = {
                         newX: this.offsetX,
-                        newY: this.offsetY
+                        newY: this.offsetY,
                     };
 
                     this.scaleMiniMapViewBox();
@@ -231,7 +230,7 @@ export class NetGraph {
                 this.scale = zScale * this.scale;
                 this.viewPort.position = {
                     newX: this.offsetX,
-                    newY: this.offsetY
+                    newY: this.offsetY,
                 };
 
                 this.scaleMiniMapViewBox();

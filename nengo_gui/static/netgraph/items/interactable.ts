@@ -12,6 +12,7 @@ export interface InteractableItemArg {
 }
 
 export abstract class InteractableItem extends NetGraphItem {
+    alias: string;
     minimap;
     miniItem;
     uid: string;
@@ -30,28 +31,27 @@ export abstract class InteractableItem extends NetGraphItem {
 
         this.menu = new Menu(this.ng.view.root);
 
-
         if (ngiArg.parent !== null) {
             this.view.parent.children.push(this);
         }
 
         interact(this.view.g).draggable({
             onend: event => {
-                const item = this.ng.svgObjects[this.uid];
+                const item: InteractableItem = this.ng.svgObjects[this.uid];
                 item.constrainPosition();
                 this.ng.notify("pos", {uid: this.uid, x: item.x, y: item.y});
 
                 item.redraw();
             },
             onmove: event => {
-                const item = this.ng.svgObjects[this.uid];
+                const item: InteractableItem = this.ng.svgObjects[this.uid];
                 let w = this.ng.scaledWidth;
                 let h = this.ng.scaledHeight;
-                let parent = item.parent;
+                let parent = item.view.parent;
                 while (parent !== null) {
                     w *= parent.width * 2;
                     h *= parent.height * 2;
-                    parent = parent.parent;
+                    parent = parent.view.parent;
                 }
                 item.x += event.dx / w;
                 item.y += event.dy / h;
@@ -262,6 +262,7 @@ export class PassthroughItem extends InteractableItem {
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
                 dimensions) {
         super(ngiArg, interArg, dimensions);
+        this.alias = "passthrough";
 
         // TODO: WTF can this be avoided?
         // I have to make a sepcific minimap subclass for this...

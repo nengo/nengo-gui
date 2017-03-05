@@ -26,14 +26,14 @@ abstract class ResizableItem extends InteractableItem {
             }).on("resizestart", event => {
                 hideAllMenus();
             }).on("resizemove", event => {
-                const item = this.ng.svgObjects[this.uid];
+                const item = this.ng.svgObjects[this.alias][this.uid];
                 let hScale = this.ng.scaledWidth;
                 let vScale = this.ng.scaledHeight;
-                let parent = item.parent;
+                let parent = item.view.parent;
                 while (parent !== null) {
                     hScale = hScale * parent.width * 2;
                     vScale = vScale * parent.height * 2;
-                    parent = parent.parent;
+                    parent = parent.view.parent;
                 }
                 this.contSize(event, item, hScale, vScale);
                 item.redraw();
@@ -42,7 +42,7 @@ abstract class ResizableItem extends InteractableItem {
                     this.ng.scaleMiniMap();
                 }
             }).on("resizeend", event => {
-                const item = this.ng.svgObjects[this.uid];
+                const item: ResizableItem = this.ng.svgObjects[this.uid];
                 item.constrainPosition();
                 item.redraw();
                 this.ng.notify("posSize", {
@@ -93,6 +93,7 @@ export class NodeItem extends ResizableItem {
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
                 dimensions, html) {
         super(ngiArg, interArg, dimensions);
+        this.alias = "node";
         this.radiusScale = .1;
         this.htmlNode = html;
         this._renderShape();
@@ -163,6 +164,7 @@ export class NetItem extends ResizableItem {
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
                 dimensions, expanded, spTargets, defaultOutput) {
         super(ngiArg, interArg, dimensions);
+        this.alias = "net";
 
         // TODO: This use of gItems and gNetworks is definitely wrong
         this.gNetworks = this.ng.view.gNetworks;
@@ -412,6 +414,7 @@ export class EnsembleItem extends ResizableItem {
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
                 dimensions) {
         super(ngiArg, interArg, dimensions);
+        this.alias = "ens";
 
         // the ensemble is the only thing with aspect
         this.aspect = 1.;
@@ -536,7 +539,6 @@ export class EnsembleItem extends ResizableItem {
 
         return [w / hScale, h / vScale];
     }
-
 
     redrawSize() {
         const screenD = super.redrawSize();
