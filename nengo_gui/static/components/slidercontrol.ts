@@ -17,19 +17,19 @@ import * as $ from "jquery";
 import * as utils from "../utils";
 
 export class SliderControl {
-    _dragY;
-    borderWidth;
-    container;
-    fixed;
-    guideline;
-    handle;
-    index;
+    _dragY: number;
+    borderWidth: number;
+    container: HTMLDivElement;
+    fixed; // this isn't used anywhere?
+    guideline: HTMLDivElement;
+    handle: HTMLDivElement;
+    index; // this isn't used anywhere?
     listeners;
-    max;
-    min;
+    max: number;
+    min: number;
     scale;
-    typeMode;
-    value;
+    typeMode: boolean;
+    value: number;
 
     constructor(min, max) {
         this.min = min;
@@ -173,6 +173,7 @@ export class SliderControl {
         });
     }
 
+    // Is this argument ever used?
     deactivateTypeMode(event) {
         if (!this.typeMode) {
             return;

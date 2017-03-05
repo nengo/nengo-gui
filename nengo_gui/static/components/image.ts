@@ -18,12 +18,12 @@ import { Component } from "./component";
 
 export class Image extends Component {
     canvas;
-    dataStore;
+    dataStore: DataStore;
     displayTime;
     image;
-    nPixels;
-    pixelsX;
-    pixelsY;
+    nPixels: number;
+    pixelsX: number;
+    pixelsY: number;
     sim;
     svg;
 

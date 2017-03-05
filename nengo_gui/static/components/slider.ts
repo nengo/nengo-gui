@@ -13,6 +13,7 @@
  */
 
 import * as $ from "jquery";
+import { dom, h  } from "maquette";
 
 import { DataStore } from "../datastore";
 import { Menu } from "../menu";
@@ -24,7 +25,7 @@ import "./slider.css";
 import { SliderControl } from "./slidercontrol";
 
 export class Slider extends Component {
-    axTop;
+    axTop: number;
     borderSize: number;
     dataStore: DataStore;
     fillingSliderValue;
@@ -34,8 +35,8 @@ export class Slider extends Component {
     notifyMsgs;
     resetValue: number[];
     sim;
-    sliderHeight;
-    sliders;
+    sliderHeight: number;
+    sliders: SliderControl[];
     startValue: number[];
 
     constructor(parent, sim, args) {
@@ -57,11 +58,12 @@ export class Slider extends Component {
 
         this.minHeight = 40;
 
-        this.group = document.createElement("div");
-        this.group.style.height = this.sliderHeight;
-        this.group.style.marginTop = this.axTop;
-        this.group.style.whiteSpace = "nowrap";
-        this.group.position = "relative";
+        const gg = h("div", {position: "relative", style: {
+            height: this.sliderHeight,
+            marginTop: this.axTop,
+            whiteSpace: "nowrap"},
+        });
+        this.group = dom.create(gg).domNode as HTMLDivElement;
         this.div.appendChild(this.group);
 
         // Make the sliders
@@ -86,7 +88,7 @@ export class Slider extends Component {
                 Menu.hideAll();
                 for (let i = 0; i < this.sliders.length; i++) {
                     if (this.sliders[i] !== event.target) {
-                        this.sliders[i].deactivateTypeMode();
+                        this.sliders[i].deactivateTypeMode(null);
                     }
                 }
             });
@@ -175,16 +177,16 @@ export class Slider extends Component {
 
         this.setAxesGeometry(width, height);
 
-        this.group.style.height = height - this.axTop - 2 * this.borderSize;
-        this.group.style.marginTop = this.axTop;
+        this.group.style.height = String(height - this.axTop - 2 * this.borderSize);
+        this.group.style.marginTop = String(this.axTop);
 
         for (let i = 0; i < this.sliders.length; i++) {
             this.sliders[i].onResize();
         }
 
-        this.label.style.width = this.width;
-        this.div.style.width = this.width;
-        this.div.style.height = this.height;
+        this.label.style.width = String(this.width);
+        this.div.style.width = String(this.width);
+        this.div.style.height = String(this.height);
     }
 
     addMenuItems() {

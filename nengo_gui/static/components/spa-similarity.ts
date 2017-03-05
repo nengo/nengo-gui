@@ -191,10 +191,10 @@ export class SpaSimilarity extends Value {
             this.setRange();
         });
         this.menu.addAction("Hide pairs", () => {
-            this.showPairs(false);
+            this.showPairs = false;
         }, () => this.showPairs);
         this.menu.addAction("Show pairs", () => {
-            this.showPairs(true);
+            this.showPairs = true;
         }, () => !this.showPairs);
         this.menu.addSeparator();
         // TODO: do we want super (Value) or Component?
