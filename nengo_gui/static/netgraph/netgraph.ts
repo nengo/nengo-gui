@@ -375,12 +375,14 @@ export class NetGraph {
         this.viewPort.position = {newX: x, newY: y};
     }
 
-    generateMenu() {
-        return [["Auto-layout", () => {
+    generateMenu(): MenuItem[] {
+        const items: MenuItem[] = [];
+        items.push({html: "Auto-layout", callback: () => {
             this.attached.forEach(conn => {
                 conn.send("netgraph.feedforwardLayout");
             });
-        }]];
+        }});
+        return items;
     }
 
     /**

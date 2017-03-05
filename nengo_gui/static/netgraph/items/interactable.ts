@@ -111,7 +111,13 @@ export abstract class InteractableItem extends NetGraphItem {
         // TODO: redrawSize here?
     }
 
-    abstract generateMenu(): MenuItem[];
+    generateMenu(): MenuItem[] {
+        const items: MenuItem[] = [];
+        items.push({html: "Auto-layout", callback: () => {
+            this.requestFeedforwardLayout();
+        }});
+        return items;
+    }
 
     set height(val: number) {
         this.view._h = val;
@@ -131,6 +137,10 @@ export abstract class InteractableItem extends NetGraphItem {
     set y(val: number) {
         this.view._y = val;
         this.miniItem.y = val;
+    }
+
+    requestFeedforwardLayout() {
+        this.ng.notify("feedforwardLayout", {uid: this.uid});
     }
 
     remove() {
@@ -273,11 +283,6 @@ export class PassthroughItem extends InteractableItem {
 
     _getScreenHeight() {
         return this.fixedHeight;
-    }
-
-    // TODO: What type of menu is this thing supposed to generate?
-    generateMenu() {
-        return [];
     }
 
     // this is probably going to need to be refactored

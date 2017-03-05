@@ -28,7 +28,7 @@ export class MenuAction {
 }
 
 export interface MenuItem {
-    html: HTMLElement;
+    html: string;
     callback: () => void;
 }
 

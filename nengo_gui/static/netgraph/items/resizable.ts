@@ -2,7 +2,7 @@ import * as interact from "interact.js";
 import { VNode, dom, h  } from "maquette";
 
 import { config } from "../../config";
-import { hideAllMenus } from "../../menu";
+import { MenuItem, hideAllMenus } from "../../menu";
 import { Shape, domCreateSvg } from "../../utils";
 import { InteractableItem, InteractableItemArg } from "./interactable";
 import { NetGraphItemArg } from "./item";
@@ -222,43 +222,39 @@ export class NetItem extends ResizableItem {
         }
     }
 
-    generateMenu() {
-        const items = [];
+    generateMenu(): MenuItem[] {
+        const items: MenuItem[] = super.generateMenu();
         if (this.expanded) {
-            items.push(["Collapse network", () => {
+            items.push({html: "Collapse network", callback: () => {
                 this.collapse(true);
-            }]);
-            items.push(["Auto-layout", () => {
+            }});
+            items.push({html: "Auto-layout", callback: () => {
                 this.requestFeedforwardLayout();
-            }]);
+            }});
         } else {
-            items.push(["Expand network", () => {
+            items.push({html: "Expand network", callback: () => {
                 this.expand();
-            }]);
+            }});
         }
         if (this.defaultOutput && this.spTargets.length === 0) {
-            items.push(["Output Value", () => {
+            items.push({html: "Output Value", callback: () => {
                 this.createGraph("Value");
-            }]);
+            }});
         }
 
         if (this.spTargets.length > 0) {
-            items.push(["Semantic pointer cloud", () => {
+            items.push({html: "Semantic pointer cloud", callback: () => {
                 this.createGraph("Pointer", this.spTargets[0]);
-            }]);
-            items.push(["Semantic pointer plot", () => {
+            }});
+            items.push({html: "Semantic pointer plot", callback: () => {
                 this.createGraph("SpaSimilarity", this.spTargets[0]);
-            }]);
+            }});
         }
 
-        items.push(["Details ...", () => {
+        items.push({html: "Details ...", callback: () => {
             this.createModal();
-        }]);
+        }});
         return items;
-    }
-
-    requestFeedforwardLayout() {
-        this.ng.notify("feedforwardLayout", {uid: this.uid});
     }
 
     /**
