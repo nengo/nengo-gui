@@ -9,8 +9,7 @@
  */
 
 import { DataStore } from "../datastore";
-import * as utils from "../utils";
-import * as viewport from "../viewport";
+// import * as utils from "../utils";
 import { Component } from "./component";
 
 export class HTMLView extends Component {
@@ -40,8 +39,10 @@ export class HTMLView extends Component {
         });
 
         this.onResize(
-            viewport.scaleWidth(this.w), viewport.scaleHeight(this.h));
-    };
+            this.viewPort.scaleWidth(this.w),
+            this.viewPort.scaleHeight(this.h)
+        );
+    }
 
     /**
      * Receive new line data from the server

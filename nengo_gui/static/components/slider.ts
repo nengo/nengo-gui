@@ -107,7 +107,9 @@ export class Slider extends Component {
         });
 
         this.onResize(
-            viewport.scaleWidth(this.w), viewport.scaleHeight(this.h));
+            this.viewPort.scaleWidth(this.w),
+            this.viewPort.scaleHeight(this.h)
+        );
     }
 
     setAxesGeometry(width, height) {

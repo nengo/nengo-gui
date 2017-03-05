@@ -17,7 +17,6 @@ import * as $ from "jquery";
 
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
-import * as viewport from "../viewport";
 import { InputDialogView } from "../views/modal";
 import { Component } from "./component";
 import "./raster.css";
@@ -70,7 +69,9 @@ export class Raster extends Component {
 
         this.update();
         this.onResize(
-            viewport.scaleWidth(this.w), viewport.scaleHeight(this.h));
+            this.viewPort.scaleWidth(this.w),
+            this.viewPort.scaleHeight(this.h)
+        );
         this.axes2d.axisY.tickValues([0, args.nNeurons]);
         this.axes2d.fitTicks(this);
     }

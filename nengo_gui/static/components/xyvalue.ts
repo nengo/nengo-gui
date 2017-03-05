@@ -20,7 +20,6 @@ import * as $ from "jquery";
 
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
-import * as viewport from "../viewport";
 import { InputDialogView } from "../views/modal";
 import { Component } from "./component";
 import { XYAxes } from "./xy-axes";
@@ -90,7 +89,9 @@ export class XYValue extends Component {
 
         this.axes2d.fitTicks(this);
         this.onResize(
-            viewport.scaleWidth(this.w), viewport.scaleHeight(this.h));
+            this.viewPort.scaleWidth(this.w),
+            this.viewPort.scaleHeight(this.h)
+        );
     }
 
     /**
@@ -259,7 +260,9 @@ export class XYValue extends Component {
         this.axes2d.axisY_g.call(this.axes2d.axisY);
         this.axes2d.axisX_g.call(this.axes2d.axisX);
         this.onResize(
-            viewport.scaleWidth(this.w), viewport.scaleHeight(this.h));
+            this.viewPort.scaleWidth(this.w),
+            this.viewPort.scaleHeight(this.h)
+        );
     }
 
     setIndices() {

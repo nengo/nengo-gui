@@ -69,7 +69,9 @@ export class Image extends Component {
         this.canvas.height = this.pixelsY;
 
         this.onResize(
-            viewport.scaleWidth(this.w), viewport.scaleHeight(this.h));
+            this.viewPort.scaleWidth(this.w),
+            this.viewPort.scaleHeight(this.h)
+        );
 
     }
 

@@ -60,7 +60,9 @@ export class Pointer extends Component {
         });
 
         this.onResize(
-            viewport.scaleWidth(this.w), viewport.scaleHeight(this.h));
+            this.viewPort.scaleWidth(this.w),
+            this.viewPort.scaleHeight(this.h)
+        );
 
         this.fixedValue = "";
 

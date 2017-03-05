@@ -20,7 +20,7 @@ import { Value } from "./value";
 export class SpaSimilarity extends Value {
     legendSVG;
     synapse;
-    showPairs;
+    _showPairs: boolean;
 
     constructor(parent, sim, args) {
         super(parent, sim, args);
@@ -32,7 +32,7 @@ export class SpaSimilarity extends Value {
         this.colors = utils.makeColors(6);
         this.colorFunc = (d, i) => {
             return this.colors[i % 6];
-        }
+        };
 
         this.line.defined((d) => {
             return !isNaN(d);
@@ -142,10 +142,10 @@ export class SpaSimilarity extends Value {
      *   - showPairs has been toggledn
      * This calls the method associated to handling the type of message.
      */
-    on_message(event) {
+    onMessage(event) {
         const data = JSON.parse(event.data);
-        const func_name = data.shift();
-        this[func_name](data);
+        const funcName =  data.shift();
+        this[funcName](data);
     }
 
     /**
@@ -162,14 +162,14 @@ export class SpaSimilarity extends Value {
         this.axes2d.set_time_range(t1, t2);
 
         // Update the lines
-        const shown_data = this.dataStore.getShownData(this.sim.time_slider);
+        const shownData = this.dataStore.getShownData(this.sim.time_slider);
 
         // Update the legend text
-        if (this.legendSVG && shown_data[0].length !== 0) {
+        if (this.legendSVG && shownData[0].length !== 0) {
             // Get the most recent similarity
-            const lastestSimi = [];
-            for (let i = 0; i < shown_data.length; i++) {
-                lastestSimi.push(shown_data[i][shown_data[i].length - 1]);
+            const latestSimi = [];
+            for (let i = 0; i < shownData.length; i++) {
+                latestSimi.push(shownData[i][shownData[i].length - 1]);
             }
 
             // Update the text in the legend
