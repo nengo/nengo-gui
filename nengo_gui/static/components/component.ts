@@ -88,8 +88,8 @@ export class Component {
 
         // Move element to be drawn on top when clicked on
 
-        this.div.onmousedown = function() {
-            this.style.zIndex = utils.nextZindex();
+        this.div.onmousedown = () => {
+            this.div.style.zIndex = String(utils.nextZindex());
         };
 
         this.div.ontouchstart = this.div.onmousedown;
@@ -339,8 +339,8 @@ export class Component {
     redrawSize() {
         this.width = this.viewPort.scaleWidth(this.w);
         this.height = this.viewPort.scaleHeight(this.h);
-        this.div.style.width = this.width;
-        this.div.style.height = this.height;
+        this.div.style.width = String(this.width);
+        this.div.style.height = String(this.height);
     }
 
     redrawPos() {

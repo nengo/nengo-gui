@@ -224,6 +224,7 @@ export class NetItem extends ResizableItem {
 
     generateMenu(): MenuItem[] {
         const items: MenuItem[] = super.generateMenu();
+
         if (this.expanded) {
             items.push({html: "Collapse network", callback: () => {
                 this.collapse(true);
@@ -236,6 +237,7 @@ export class NetItem extends ResizableItem {
                 this.expand();
             }});
         }
+
         if (this.defaultOutput && this.spTargets.length === 0) {
             items.push({html: "Output Value", callback: () => {
                 this.createGraph("Value");
@@ -254,6 +256,7 @@ export class NetItem extends ResizableItem {
         items.push({html: "Details ...", callback: () => {
             this.createModal();
         }});
+
         return items;
     }
 

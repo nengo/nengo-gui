@@ -65,10 +65,10 @@ export class XYValue extends Component {
 
         // Create the lines on the plots
         d3.svg.line()
-            .x(function(d, i) {
+            .x((d, i) => {
                 return this.axes2d
                     .scaleX(this.dataStore.data[this.indexX][i]);
-            }).y(function(d) {
+            }).y((d) => {
                 return this.axes2d.scaleY(d);
             });
         this.path = this.axes2d.svg.append("g")
@@ -115,9 +115,9 @@ export class XYValue extends Component {
 
             // Update the lines
             const line = d3.svg.line()
-                .x(function(d, i) {
+                .x((d, i) => {
                     return this.axes2d.scaleX(shownData[this.indexX][i]);
-                }).y(function(d) {
+                }).y((d) => {
                     return this.axes2d.scaleY(d);
                 });
             this.path.data([shownData[this.indexY]])
