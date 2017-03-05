@@ -12,6 +12,7 @@ export interface InteractableItemArg {
 }
 
 export abstract class InteractableItem extends NetGraphItem {
+    alias: string;
     minimap;
     miniItem;
     uid: string;
@@ -264,6 +265,7 @@ export class PassthroughItem extends InteractableItem {
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
                 dimensions) {
         super(ngiArg, interArg, dimensions);
+        this.alias = "passthrough";
 
         // TODO: WTF can this be avoided?
         // I have to make a sepcific minimap subclass for this...

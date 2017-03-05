@@ -6,6 +6,7 @@ import { NetGraphItemArg } from "../item";
 import { NetItem } from "../resizable";
 
 export class NetGraphItemView {
+    alias: string;
     depth: number;
     gItems: SVGElement;
     ng: NetGraph;
@@ -34,16 +35,16 @@ export class NetGraphItemView {
         this._h = ngiArg.height;
         this.gItems = this.ng.view.gItems;
 
-        // Minimum and maximum drawn size, in pixels
+        // Minimum drawn size, in pixels
         this.minWidth = 5;
         this.minHeight = 5;
 
-        // temporary visible shape for debugging
-        const visShape = h("circle#cool.sweet", {cx: "50", cy: "50", r: "50", fill: "red"});
+        // temporarily hardcoded
+        this.alias = "node";
+
         // Create the SVG group to hold this item's shape and it's label
-        this.g = domCreateSvg(visShape) as SVGGElement;
+        this.g = domCreateSvg(h("g.".concat(this.alias))) as SVGGElement;
         this.gItems.appendChild(this.g);
-        console.log("made view");
 
         // Determine the parent NetGraphItem (if any) and the nested depth
         // of this item.
