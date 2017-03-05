@@ -26,45 +26,37 @@ abstract class ResizableItem extends InteractableItem {
             }).on("resizestart", event => {
                 hideAllMenus();
             }).on("resizemove", event => {
-                const item = this.ng.svgObjects[this.alias][this.uid];
-                let hScale = this.ng.scaledWidth;
-                let vScale = this.ng.scaledHeight;
-                let parent = item.view.parent;
-                while (parent !== null) {
-                    hScale = hScale * parent.width * 2;
-                    vScale = vScale * parent.height * 2;
-                    parent = parent.view.parent;
-                }
-                this.contSize(event, item, hScale, vScale);
-                item.redraw();
+                const scale = this.scales;
+
+                this.contSize(event, scale.hor, scale.vert);
+                this.redraw();
 
                 if (this.view.depth === 1) {
                     this.ng.scaleMiniMap();
                 }
             }).on("resizeend", event => {
-                const item: ResizableItem = this.ng.svgObjects[this.uid];
-                item.constrainPosition();
-                item.redraw();
+                this.constrainPosition();
+                this.redraw();
                 this.ng.notify("posSize", {
-                    height: item.height,
+                    height: this.height,
                     uid: this.uid,
-                    width: item.width,
-                    x: item.x,
-                    y: item.y,
+                    width: this.width,
+                    x: this.x,
+                    y: this.y,
                 });
             });
     }
 
-    contSize(event, item, hScale: number, vScale: number) {
+    contSize(event, hScale: number, vScale: number) {
         const dw = event.deltaRect.width / hScale / 2;
         const dh = event.deltaRect.height / vScale / 2;
         const offsetX = dw + event.deltaRect.left / hScale;
         const offsetY = dh + event.deltaRect.top / vScale;
 
-        item.width += dw;
-        item.height += dh;
-        item.x += offsetX;
-        item.y += offsetY;
+        this.width += dw;
+        this.height += dh;
+        this.x += offsetX;
+        this.y += offsetY;
     }
 
     redrawSize(): Shape {
@@ -93,7 +85,6 @@ export class NodeItem extends ResizableItem {
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
                 dimensions, html) {
         super(ngiArg, interArg, dimensions);
-        this.alias = "node";
         this.radiusScale = .1;
         this.htmlNode = html;
         this._renderShape();
@@ -164,7 +155,6 @@ export class NetItem extends ResizableItem {
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
                 dimensions, expanded, spTargets, defaultOutput) {
         super(ngiArg, interArg, dimensions);
-        this.alias = "net";
 
         // TODO: This use of gItems and gNetworks is definitely wrong
         this.gNetworks = this.ng.view.gNetworks;
@@ -414,7 +404,6 @@ export class EnsembleItem extends ResizableItem {
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
                 dimensions) {
         super(ngiArg, interArg, dimensions);
-        this.alias = "ens";
 
         // the ensemble is the only thing with aspect
         this.aspect = 1.;
@@ -479,8 +468,8 @@ export class EnsembleItem extends ResizableItem {
         return items;
     }
 
-    contSize(event, item, hScale, vScale) {
-        const pos = item.getScreenLocation();
+    contSize(event, hScale, vScale) {
+        const pos = this.view.screenLocation;
         const verticalResize =
             event.edges.bottom || event.edges.top;
         const horizontalResize =
@@ -502,8 +491,8 @@ export class EnsembleItem extends ResizableItem {
             h = 1;
         }
 
-        const screenW = item.width * hScale;
-        const screenH = item.height * vScale;
+        const screenW = this.width * hScale;
+        const screenH = this.height * vScale;
 
         if (horizontalResize && verticalResize) {
             const p = (screenW * w + screenH * h) / Math.sqrt(
@@ -518,8 +507,8 @@ export class EnsembleItem extends ResizableItem {
             w = h * this.aspect;
         }
 
-        item.width = w / hScale;
-        item.height = h / vScale;
+        this.width = w / hScale;
+        this.height = h / vScale;
     }
 
     getDisplayedSize() {

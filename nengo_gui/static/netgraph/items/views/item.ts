@@ -51,7 +51,6 @@ export class NetGraphItemView {
             this.parent = null;
             this.depth = 1;
         } else {
-            // TODO: I think this is wrong
             this.parent = this.ng.svgObjects.net[ngiArg.parent];
             this.depth = this.parent.view.depth + 1;
         }

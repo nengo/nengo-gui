@@ -12,7 +12,6 @@ export interface InteractableItemArg {
 }
 
 export abstract class InteractableItem extends NetGraphItem {
-    alias: string;
     minimap;
     miniItem;
     uid: string;
@@ -37,25 +36,16 @@ export abstract class InteractableItem extends NetGraphItem {
 
         interact(this.view.g).draggable({
             onend: event => {
-                const item: InteractableItem = this.ng.svgObjects[this.uid];
-                item.constrainPosition();
-                this.ng.notify("pos", {uid: this.uid, x: item.x, y: item.y});
+                this.constrainPosition();
+                this.ng.notify("pos", {uid: this.uid, x: this.x, y: this.y});
 
-                item.redraw();
+                this.redraw();
             },
             onmove: event => {
-                const item: InteractableItem = this.ng.svgObjects[this.uid];
-                let w = this.ng.scaledWidth;
-                let h = this.ng.scaledHeight;
-                let parent = item.view.parent;
-                while (parent !== null) {
-                    w *= parent.width * 2;
-                    h *= parent.height * 2;
-                    parent = parent.view.parent;
-                }
-                item.x += event.dx / w;
-                item.y += event.dy / h;
-                item.redraw();
+                const scale = this.scales;
+                this.x += event.dx / scale.hor;
+                this.y += event.dy / scale.vert;
+                this.redraw();
 
                 if (this.view.depth === 1) {
                     this.ng.scaleMiniMap();
@@ -119,24 +109,36 @@ export abstract class InteractableItem extends NetGraphItem {
         return items;
     }
 
+    get scales(){
+        let hScale = this.ng.scaledWidth;
+        let vScale = this.ng.scaledHeight;
+        let parent = this.view.parent;
+        while (parent !== null) {
+            hScale *= parent.width * 2;
+            vScale *= parent.height * 2;
+            parent = parent.view.parent;
+        }
+        return {hor: hScale, vert: vScale};
+    }
+
     set height(val: number) {
         this.view._h = val;
-        this.miniItem.height = val;
+        // this.miniItem.height = val;
     }
 
     set width(val: number) {
         this.view._w = val;
-        this.miniItem.width = val;
+        // this.miniItem.width = val;
     }
 
     set x(val: number) {
         this.view._x = val;
-        this.miniItem.x = val;
+        // this.miniItem.x = val;
     }
 
     set y(val: number) {
         this.view._y = val;
-        this.miniItem.y = val;
+        // this.miniItem.y = val;
     }
 
     requestFeedforwardLayout() {
@@ -262,7 +264,6 @@ export class PassthroughItem extends InteractableItem {
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
                 dimensions) {
         super(ngiArg, interArg, dimensions);
-        this.alias = "passthrough";
 
         // TODO: WTF can this be avoided?
         // I have to make a sepcific minimap subclass for this...
