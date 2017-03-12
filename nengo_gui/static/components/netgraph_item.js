@@ -402,6 +402,8 @@ Nengo.NetGraphItem.prototype.generate_menu = function () {
         if (this.html_node) {
             items.push(['HTML', function() {self.create_graph('HTMLView');}]);
         }
+        items.push(['Spikes', function() {self.create_graph('Raster');}]);
+        items.push(['Firing pattern', function() {self.create_graph('SpikeGrid');}]);
     }
     if (this.sp_targets.length > 0) {
         items.push(['Semantic pointer cloud',
