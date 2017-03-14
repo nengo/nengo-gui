@@ -78,7 +78,10 @@ export class DebugView {
                     ]),
                 ]),
                 h("div.input-group", [
-                    h("input.form-control", {"type": "text"}),
+                    h("input.form-control", {
+                        "spellcheck": false,
+                        "type": "text"
+                    }),
                     h("span.input-group-btn", [
                         h("button.btn.btn-default#eval", {"type": "button"}, [
                             "Eval JS",

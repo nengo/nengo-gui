@@ -2,6 +2,8 @@
  * Entry point into the Nengo application.
  */
 
+import "awesomplete/awesomplete.css";
+import * as Awesomplete from "awesomplete";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "imports?$=jquery,jQuery=jquery!bootstrap";
 import "imports?$=jquery,jQuery=jquery!bootstrap-validator";
@@ -18,7 +20,51 @@ import { SimControl } from "./sim-control";
 import { MockConnection } from "./websocket";
 
 import { DebugView } from "./views/debug";
+import { ModalView } from "./views/modal";
 import { SimControlView } from "./views/sim-control";
+
+if (typeof localStorage === "undefined" || localStorage === null) {
+    console.error("localStorage not available. Please update your browser!");
+}
+
+export class CommandHistory {
+    history: string[];
+    label: string;
+    toSave = 0;
+    static autoSaveThreshold = 1;
+    static keyPrefix = "ngdebug.history";
+
+    constructor(label: string) {
+        this.label = label;
+        const fromStorage = localStorage.getItem(this.key);
+        if (fromStorage === null) {
+            this.history = [];
+        } else {
+            this.history = JSON.parse(fromStorage);
+        }
+    }
+
+    get key(): string {
+        return CommandHistory.keyPrefix + "." + this.label;
+    }
+
+    add(command: string) {
+        if (this.history.indexOf(command) < 0) {
+            this.history.push(command);
+            this.toSave += 1;
+        }
+        // We expect that save will be called manually, but just in case,
+        // we autosave once we have a certain number of new commands.
+        if (this.toSave > CommandHistory.autoSaveThreshold) {
+            this.save();
+        }
+    }
+
+    save() {
+        localStorage.setItem(this.key, JSON.stringify(this.history));
+        this.toSave = 0;
+    }
+}
 
 export class NengoDebug {
     view: DebugView = new DebugView();
@@ -51,12 +97,25 @@ export class NengoDebug {
             input,
             remove,
         } = this.view.addControlGroup(label);
+
+        // Add autocomplete for the text input
+        const inputHistory = new CommandHistory(label);
+        const autocomplete = new Awesomplete(input, {
+            list: inputHistory.history,
+            minChars: 1,
+            maxItems: 5,
+        });
+
+        // Eval JS when pressing enter or clicking on eval button
         const evalView = () => {
             const js: string = input.value;
             if (js !== "") {
                 const out = eval(js); // tslint:disable-line
                 input.value = "";
                 evalOutput.textContent = out;
+                inputHistory.add(js);
+                console.log(inputHistory.history);
+                autocomplete.list = inputHistory.history;
             }
         };
         evalBtn.onclick = () => {
@@ -73,6 +132,7 @@ export class NengoDebug {
             }
         };
         remove.onclick = event => {
+            inputHistory.save();
             this.view.debug.removeChild(root);
             this.view.removeControlGroup(controlGroupRoot);
         };
