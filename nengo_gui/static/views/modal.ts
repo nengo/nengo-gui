@@ -1,8 +1,12 @@
+import * as $ from "jquery";
 import { VNode, dom, h } from "maquette";
 
 export class ModalView {
+    body: HTMLDivElement;
+    footer: HTMLDivElement;
     node: VNode;
-    root: HTMLElement;
+    root: HTMLDivElement;
+    _title: HTMLHeadingElement;
 
     constructor() {
         this.node =
@@ -15,7 +19,7 @@ export class ModalView {
                                 "data-dismiss": "modal",
                                 "aria-label": "Close",
                             }, [
-                                h("span", {"aria-hidden": "true"}, ["&times;"]),
+                                h("span", {"aria-hidden": "true"}, ["×"]),
                             ]),
                             h("h4.modal-title"),
                         ]),
@@ -25,6 +29,23 @@ export class ModalView {
                 ]),
             ]);
 
-        this.root = dom.create(this.node).domNode as HTMLElement;
+        this.root = dom.create(this.node).domNode as HTMLDivElement;
+        this._title =
+            this.root.querySelector(".modal-title") as HTMLHeadingElement;
+        this.footer =
+            this.root.querySelector(".modal-footer") as HTMLDivElement;
+        this.body = this.root.querySelector(".modal-body") as HTMLDivElement;
+    }
+
+    get title(): string {
+        return this._title.textContent;
+    }
+
+    set title(title: string) {
+        this._title.textContent = title;
+    }
+
+    show() {
+        $(this.root).modal();
     }
 }

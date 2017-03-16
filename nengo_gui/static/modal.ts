@@ -7,6 +7,7 @@ import { Hotkeys } from "./hotkeys";
 import "./modal.css";
 import * as tooltips from "./tooltips";
 import * as utils from "./utils";
+import { ModalView } from "./views/modal";
 
 export class Modal {
     $body;
@@ -19,12 +20,13 @@ export class Modal {
     sim;
     simWasRunning;
     toolbar;
+    view: ModalView = null; // Created in this.show
 
     constructor($div, editor, sim) {
-        this.$div = $div;
-        this.$title = this.$div.find(".modal-title").first();
-        this.$footer = this.$div.find(".modal-footer").first();
-        this.$body = this.$div.find(".modal-body").first();
+        // this.$div = $div;
+        // this.$title = this.$div.find(".modal-title").first();
+        // this.$footer = this.$div.find(".modal-footer").first();
+        // this.$body = this.$div.find(".modal-body").first();
         this.editor = editor;
         this.sim = sim;
         this.netgraph = this.editor.netgraph;
@@ -44,13 +46,14 @@ export class Modal {
     show() {
         this.hotkeys.setActive(false);
         this.simWasRunning = !this.sim.paused;
-        this.$div.modal("show");
         this.sim.pause();
+        this.view = new ModalView();
+        this.view.show();
     }
 
-    title(title) {
-        this.$title.text(title);
-    }
+    // title(title) {
+    //     this.$title.text(title);
+    // }
 
     footer(type, okFunction, cancelFunction) {
         this.$footer.empty();

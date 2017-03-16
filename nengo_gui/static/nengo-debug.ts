@@ -1,27 +1,16 @@
 /**
- * Entry point into the Nengo application.
+ * Entry point into the Nengo debug application.
  */
 
 import "awesomplete/awesomplete.css";
 import * as Awesomplete from "awesomplete";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "imports?$=jquery,jQuery=jquery!bootstrap";
-import "imports?$=jquery,jQuery=jquery!bootstrap-validator";
-import "imports?$=jquery,jQuery=jquery!jquery-ui";
-import "imports?$=jquery,jQuery=jquery!jqueryfiletree/src/jQueryFileTree";
-import "jqueryfiletree/dist/jQueryFileTree.min.css";
-import * as d3 from "d3";
-import * as interact from "interact.js";
+import "imports-loader?$=jquery,jQuery=jquery!bootstrap";
 
 import "./favicon.ico";
-import "./nengo.css";
 
-import { SimControl } from "./sim-control";
-import { MockConnection } from "./websocket";
-
+import { NengoDebug, NengoWindow } from "./nengo";
 import { DebugView } from "./views/debug";
-import { ModalView } from "./views/modal";
-import { SimControlView } from "./views/sim-control";
 
 if (typeof localStorage === "undefined" || localStorage === null) {
     console.error("localStorage not available. Please update your browser!");
@@ -66,30 +55,41 @@ export class CommandHistory {
     }
 }
 
-export class NengoDebug {
+export class Debug {
+    nengoDebug: NengoDebug;
+    nengoWindow: NengoWindow;
     view: DebugView = new DebugView();
 
     constructor() {
-        document.body.appendChild(this.view.root);
+        this.view.iframe.addEventListener("load", () => {
+            this.nengoWindow = this.view.iframe.contentWindow as NengoWindow;
+            this.nengoDebug = this.nengoWindow.nengoDebug;
 
-        this.view.outline.onclick = () => {
-            const stylesheet = document.styleSheets[0] as CSSStyleSheet;
-            const rule = stylesheet.cssRules[0];
-            const ruleText = ".debug * { outline: red solid 1px; }";
-            const active = rule.cssText === ruleText;
+            this.view.outline.onclick = () => {
+                this.nengoDebug.toggleOutline();
+            };
+            this.view.log.onclick = () => {
+                this.nengoDebug.toggleLog();
+            };
 
-            if (active) {
-                stylesheet.deleteRule(0);
-            } else {
-                stylesheet.insertRule(ruleText, 0);
-            }
-        };
-        this.view.log.onclick = () => {
-            MockConnection.verbose = !MockConnection.verbose;
-        };
+            Object.keys(this.nengoDebug.objects).forEach(category => {
+                Object.keys(this.nengoDebug.objects[category]).forEach(label => {
+                    const clickable = this.view.register(category, label);
+
+                    clickable.onclick = () => {
+                        const dbg = this.nengoDebug.add(category, label);
+                        this.attachControlGroup(dbg, label);
+                        this.nengoWindow.dispatchEvent(new Event("resize"));
+                    };
+                });
+            });
+        });
     }
 
-    attachControlGroup(obj: any, root: HTMLDivElement, label: string) {
+    attachControlGroup(
+        dbg: {eval: (command: string) => any, remove: () => void},
+        label: string,
+    ) {
         const {
             controlGroupRoot,
             evalBtn,
@@ -110,11 +110,10 @@ export class NengoDebug {
         const evalView = () => {
             const js: string = input.value;
             if (js !== "") {
-                const out = eval(js); // tslint:disable-line
+                const out = dbg.eval(js);
                 input.value = "";
                 evalOutput.textContent = out;
                 inputHistory.add(js);
-                console.log(inputHistory.history);
                 autocomplete.list = inputHistory.history;
             }
         };
@@ -133,25 +132,8 @@ export class NengoDebug {
         };
         remove.onclick = event => {
             inputHistory.save();
-            this.view.debug.removeChild(root);
+            dbg.remove();
             this.view.removeControlGroup(controlGroupRoot);
-        };
-    }
-
-    register(category: string, label: string, callback: (() => any)) {
-        const clickable = this.view.register(category, label);
-
-        clickable.onclick = () => {
-            const obj = callback();
-            let root: HTMLDivElement;
-            if (category === "main") {
-                root = obj.view.root;
-            } else if (category === "view") {
-                root = obj.root;
-            }
-            this.view.debug.appendChild(root);
-            this.attachControlGroup(obj, root, label);
-            window.dispatchEvent(new Event("resize"));
         };
     }
 }
@@ -159,14 +141,6 @@ export class NengoDebug {
 /* tslint:disable:no-console */
 
 document.addEventListener("DOMContentLoaded", () => {
-    const nengo = new NengoDebug();
-    nengo.register("view", "SimControlView", () => {
-        return new SimControlView();
-    });
-    nengo.register("main", "SimControl", () => {
-        const simcontrol = new SimControl("uid", 4.0, 0.5);
-        // Monkey patches for debugging
-        simcontrol.attach(new MockConnection());
-        return simcontrol;
-    });
+    const debug = new Debug();
+    document.body.appendChild(debug.view.root);
 });

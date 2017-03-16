@@ -3,12 +3,23 @@
     --dark: gray(60%);
 }
 
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+}
+
 .debug {
     height: 100%;
     width: 100%;
 
+    iframe {
+        border: none;
+        height: calc(100% - 200px); /* 200px for div.debug-controls */
+        width: 100%;
+    }
+
     &-controls {
-        /* align-items: baseline; */
         background-color: var(--light);
         border: 1px var(--dark) solid {
             radius: 5px 5px 0 0;
@@ -26,6 +37,10 @@
 
         .awesomplete {
             display: block;
+
+            .visually-hidden {
+                display: none;
+            }
 
             > ul {
                 font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
@@ -64,7 +79,7 @@
 
             &.last {
                 border-right: none;
-                min-width: 380px;
+                flex-grow: 1;
             }
         }
     }

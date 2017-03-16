@@ -13,11 +13,11 @@ Release History
 
 .. Changes should be organized in one of several sections:
 
-   - API changes
-   - Improvements
-   - Behavioural changes
-   - Bugfixes
-   - Documentation
+   - Added
+   - Changed
+   - Deprecated
+   - Removed
+   - Fixed
 
 0.2.1 (unreleased)
 ==================

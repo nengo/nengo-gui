@@ -14,7 +14,7 @@ import * as $ from "jquery";
 import { FlexibleDataStore } from "../datastore";
 import * as utils from "../utils";
 import Component from "./component";
-import "./spa_similarity.css";
+import "./spa-similarity.css";
 import Value from "./value";
 
 export class SpaSimilarity extends Value {

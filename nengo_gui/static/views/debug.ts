@@ -1,7 +1,6 @@
 import { VNode, dom, h } from "maquette";
 
 import "./debug.css";
-// import { first, setTransform } from "./views";
 
 function menu(id: string, label: string): VNode {
     let text = "Add " + label;
@@ -33,17 +32,16 @@ function button(id: string, icon: string, {active: active = false} = {}) {
 }
 
 export class DebugView {
-    root: HTMLDivElement;
-    debug: HTMLDivElement;
+    iframe: HTMLIFrameElement;
     log: HTMLButtonElement;
     outline: HTMLButtonElement;
+    root: HTMLDivElement;
     private controls: HTMLDivElement;
     private menus: {[id: string]: HTMLDivElement};
 
     constructor() {
         const node =
-            h("div", [
-                h("div.debug"),
+            h("div.debug", [
                 h("div.debug-controls", [
                     h("div.control-group", [
                         button("outline", "th"),
@@ -54,9 +52,10 @@ export class DebugView {
                         menu("view", "View"),
                     ]),
                 ]),
+                h("iframe", {src: "nengo.html"}),
             ]);
         this.root = dom.create(node).domNode as HTMLDivElement;
-        this.debug = this.root.querySelector(".debug") as HTMLDivElement;
+        this.iframe = this.root.querySelector("iframe") as HTMLIFrameElement;
         this.controls =
             this.root.querySelector(".debug-controls") as HTMLDivElement;
         this.outline =
@@ -72,7 +71,7 @@ export class DebugView {
         const controlGroupNode =
             h("div.control-group.last", [
                 h("div", [
-                    h("p", [h("code", ["obj = new " + label + "(...);"])]),
+                    h("p", [h("code", ["var obj = new " + label + "(...);"])]),
                     h("button.btn.btn-xs.btn-default.pull-right#remove", [
                         "Remove " + label,
                     ]),
@@ -110,15 +109,15 @@ export class DebugView {
         };
     }
 
-    removeControlGroup(root: HTMLDivElement) {
-        this.controls.removeChild(root);
-    }
-
-    register(category: string, label: string) {
-        const node = h("li", [h("a", {href: "#"}, [label])]);
+    register(category: string, typeName: string) {
+        const node = h("li", [h("a", {href: "#"}, [typeName])]);
         const root = dom.create(node).domNode;
         this.menus[category].querySelector(".dropdown-menu").appendChild(root);
         return root.querySelector("a") as HTMLAnchorElement;
+    }
+
+    removeControlGroup(root: HTMLDivElement) {
+        this.controls.removeChild(root);
     }
 
     redraw(): void {
