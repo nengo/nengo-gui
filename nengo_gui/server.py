@@ -6,7 +6,10 @@ import hashlib
 import logging
 import socket
 import struct
-import ssl
+try:
+    import ssl
+except ImportError:
+    pass
 import sys
 import threading
 import traceback
@@ -342,13 +345,13 @@ class WebSocket(object):
     def _read(self):
         try:
             self._buf = self._buf + bytearray(self.socket.recv(512))
-        except ssl.SSLError as e:
-            if e.errno == 2:
-                # Corresponds to SSLWantReadError which only exists in Python
-                # 2.7.9+ and 3.3+.
-                pass
-            else:
-                raise
+        #except ssl.SSLError as e:
+        #    if e.errno == 2:
+        #        # Corresponds to SSLWantReadError which only exists in Python
+        #        # 2.7.9+ and 3.3+.
+        #        pass
+        #    else:
+        #        raise
         except socket.error as e:
             if e.errno in [errno.EDEADLK, errno.EAGAIN, 10035]:
                 # no data available

@@ -65,8 +65,8 @@ def main():
         server_settings = GuiServerSettings(
             ('', port), args.auto_shutdown[0], password_hash=password,
             ssl_cert=args.cert[0], ssl_key=args.key[0])
-        if not server_settings.use_ssl:
-            raise ValueError("Password protection only allowed with SSL.")
+        #if not server_settings.use_ssl:
+        #    raise ValueError("Password protection only allowed with SSL.")
     else:
         server_settings = GuiServerSettings(
             ('localhost', port), args.auto_shutdown[0], ssl_cert=args.cert[0],
