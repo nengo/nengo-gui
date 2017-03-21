@@ -1,0 +1,128 @@
+div.modal {
+    cursor: default;
+    z-index: 100000001;
+
+    .modal-body {
+        margin-left: 20px;
+        margin-right: 20px;
+
+        .tab-pane {
+            margin: 20px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            cursor: text;
+        }
+
+        .tab-pane .dt-connections {
+            margin-top: 20px;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+            /* text-indent: 20px; */
+
+            label {
+                text-align: left;
+            }
+        }
+
+        .with-errors {
+            font-size: .8em;
+        }
+
+        .tab-pane {
+
+            .list-group-item {
+                padding: 5px 10px;
+            }
+
+            .list-group-item.shaded {
+                color: #aaaaaa;
+            }
+
+            > h3 {
+                font: {
+                size: 1.3em;
+                weight: bold;
+            }
+            }
+
+            th {
+                font-size: 1em;
+                font-weight: bold;
+                border: 0px;
+                background-color: #dddddd;
+            }
+
+            td {
+                font-size: 0.9em;
+                border: 0px;
+            }
+        }
+
+        table {
+            .conn-objs {
+                width: 30%;
+            }
+
+            .conn-funcs {
+                width: 50%;
+            }
+
+            .conn-fan {
+                width: 20%;
+            }
+
+            ul > li > .glyphicon {
+                padding-right: 8px;
+            }
+
+            th .glyphicon {
+                padding-left: 8px;
+            }
+        }
+
+        .tooltip-inner {
+            max-width: 350px;
+            text-align: left;
+            white-space: pre-wrap;
+        }
+
+        .popover {
+            max-width: 350px;
+        }
+
+        .popover-title,
+        .popover-content {
+            font-size: 0.9em;
+            padding: 5px 10px;
+            text-align: left;
+            white-space: pre-wrap;
+        }
+
+        .popover-title {
+            line-height: 1.2;
+        }
+    }
+
+    .alert .glyphicon {
+        padding-right: 5px;
+    }
+
+    .modal-dialog.modal-sm td {
+        padding: 4px;
+    }
+}
+
+div.modal-backdrop {
+    z-index: 100000000;
+}

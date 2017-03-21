@@ -87,7 +87,7 @@ export class Debug {
     }
 
     attachControlGroup(
-        dbg: {eval: (command: string) => any, remove: () => void},
+        dbg: {eval: (command: string) => any, obj: any, remove: () => void},
         label: string,
     ) {
         const {
@@ -103,7 +103,10 @@ export class Debug {
         const autocomplete = new Awesomplete(input, {
             list: inputHistory.history,
             minChars: 1,
-            maxItems: 5,
+            maxItems: 4,
+        });
+        Object.getOwnPropertyNames(dbg.obj).forEach(key => {
+            inputHistory.add("obj." + key);
         });
 
         // Eval JS when pressing enter or clicking on eval button

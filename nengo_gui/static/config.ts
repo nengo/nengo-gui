@@ -1,3 +1,5 @@
+import { ConfigDialogView } from "./views/config";
+
 /**
  * A class that takes the place of localStorage if it doesn't exist.
  *
@@ -60,6 +62,14 @@ class Config {
 
     set autoUpdate(val: boolean) {
         this.setAny("autoUpdate", val);
+    }
+
+    get backend(): string {
+        return this.getString("backend", "nengo");
+    }
+
+    set backend(val: string) {
+        this.setAny("backend", val);
     }
 
     get consoleHeight(): number {
@@ -147,7 +157,215 @@ class Config {
 
     private setAny(key: string, val: any) {
         this.storage.setItem("ng." + key, val);
+        document.dispatchEvent(new CustomEvent("nengoConfigChange", {
+            detail: key,
+        }));
     }
 }
 
 export const config = new Config();
+
+// The following classes deal with the rendering of config items in the UI
+
+export class ConfigItem {
+    help: string;
+    key: string;
+    label: string;
+    update: (event: Event) => void;
+
+    constructor(
+        key: string,
+        label: string,
+        update: (event: Event) => void = null,
+        help: string = null
+    ) {
+        this.help = help;
+        this.key = key;
+        this.label = label;
+        this.update = update;
+        if (this.update === null) {
+            this.update = (event: Event) => { this.defaultUpdate(event); };
+        }
+    }
+
+    defaultUpdate(event: Event) {
+        const el = event.target as HTMLElement;
+        const eltype = el.getAttribute("type");
+        if (el instanceof HTMLInputElement &&  eltype === "checkbox") {
+            config[this.key] = el.checked;
+        } else if (el instanceof HTMLInputElement ||
+                   el instanceof HTMLSelectElement) {
+            config[this.key] = el.value;
+        }
+    }
+
+    setView(element: HTMLInputElement | HTMLSelectElement) {
+        element.value = config[this.key];
+    }
+}
+
+export class CheckboxItem extends ConfigItem {
+    setView(element: HTMLInputElement | HTMLSelectElement) {
+        if (element instanceof HTMLInputElement) {
+            element.checked = config[this.key];
+        }
+    }
+}
+
+export class ComboboxItem extends ConfigItem {
+    options: string[];
+
+    constructor(
+        key: string,
+        label: string,
+        options: string[],
+        update: (event: Event) => void = null,
+        help: string = null
+    ) {
+        super(key, label, update, help);
+        this.options = options;
+    }
+}
+
+export class TextItem extends ConfigItem {
+    attributes: any;
+
+    constructor(
+        key: string,
+        label: string,
+        update: (event: Event) => void = null,
+        help: string = null,
+        attributes: any = {},
+    ) {
+        super(key, label, update, help);
+        this.attributes = attributes;
+        this.attributes["type"] = "text";
+    }
+}
+
+export class NumberItem extends TextItem {
+    unit: string;
+
+    constructor(
+        key: string,
+        label: string,
+        unit: string = "",
+        update: (event: Event) => void = null,
+        help: string = null,
+        attributes: any = {},
+    ) {
+        super(key, label, update, help, attributes);
+        this.unit = unit;
+        this.attributes["type"] = "number";
+    }
+}
+
+export const configItems = [
+    new NumberItem(
+        "fontSize",
+        "Font size",
+        "%",
+        null,
+        "As a percentage of base size",
+        {
+            "data-error": "Must be within 20–999 percent base size",
+            "max": 999,
+            "maxlength": 3,
+            "min": 20,
+            "required": true,
+            "step": 1,
+        }
+    ),
+    new CheckboxItem("zoomFonts", "Scale text when zooming"),
+    new CheckboxItem(
+        "aspectResize",
+        "Fix aspect ratio of elements on canvas resize"
+    ),
+    new CheckboxItem(
+        "autoUpdate",
+        "Automatically synchronize model with editor",
+        (event) => {
+            const el = event.target as HTMLInputElement;
+            config["autoUpdate"] = el.checked;
+            // Also modify editor.updateTrigger?
+        }
+    ),
+    new CheckboxItem("transparentNets", "Expanded networks are transparent"),
+    new TextItem(
+        "scriptdir",
+        "Script directory",
+        null,
+        "Enter a full absolute path, or '.' to use the current directory.",
+        {
+            placeholder: "Current directory"
+        }
+    ),
+    new ComboboxItem("backend", "Select backend", ["nengo"]), // TODO: this.sim.simulatorOptions
+];
+
+export class ConfigDialog {
+    saved: any = {};
+    view: ConfigDialogView = new ConfigDialogView(configItems);
+
+    constructor() {
+        this.view.ok.addEventListener("click", () => {
+            const validator = $(this.view.form).data("bs.validator");
+            validator.validate();
+            if (validator.hasErrors() || validator.isIncomplete()) {
+                return;
+            }
+            // Set the data-dismiss attribute and let event propagate
+            $(this.view).modal("hide");
+        });
+
+        this.view.cancel.addEventListener("click", () => {
+            // Roll back any changes
+            Object.keys(this.saved).forEach(option => {
+                if (config[option] !== this.saved[option]) {
+                    config[option] = this.saved[option];
+                }
+            });
+        });
+
+        this.view.configItems.forEach((configItem, i) => {
+            // Allow the enter key to submit on text/number inputs
+            const inputType = configItem.getAttribute("type");
+            if (inputType === "text" || inputType === "number") {
+                configItem.addEventListener("keydown", (event: KeyboardEvent) => {
+                    if (event.which === 13) {
+                        event.preventDefault();
+                        this.view.ok.click();
+                    }
+                });
+            }
+            // All inputs get updated live
+            configItem.addEventListener("change", (event) => {
+                const validator = $(this.view.form).data("bs.validator");
+                validator.validate();
+                if (!validator.hasErrors()) {
+                    configItems[i].update(event);
+                }
+            });
+        });
+
+        $(this.view.form).validator();
+    }
+
+    show() {
+        // Save values from before showing the modal for restoring after cancel
+        for (const option in config) {
+            const vType = typeof config[option];
+            if (vType === "number" || vType === "boolean" || vType === "string") {
+                this.saved[option] = config[option];
+            }
+        }
+
+        // Set values as of current config state
+        configItems.forEach((configItem, i) => {
+            configItem.setView(this.view.configItems[i]);
+        });
+        const validator = $(this.view.form).data("bs.validator");
+        validator.validate();
+        this.view.show();
+    }
+}

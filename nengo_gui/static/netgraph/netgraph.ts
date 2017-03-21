@@ -17,6 +17,7 @@ import { dom, h, VNode } from "maquette";
 import * as allComponents from "../components/all-components";
 import { config } from "../config";
 import * as menu from "../menu";
+import { HotkeyManager } from "../hotkeys";
 import * as viewport from "../viewport";
 import { Connection } from "../websocket";
 import { NetGraphConnection } from "./connection";
@@ -123,7 +124,7 @@ export class NetGraph {
 
         // Respond to resize events
         window.addEventListener("resize", event => {
-            this.onResize(event);
+            this.onResize();
         });
 
         // Dragging the background pans the full area by changing offsetX,Y
@@ -270,6 +271,17 @@ export class NetGraph {
 
         this.createMinimap();
         this.updateFonts();
+
+        document.addEventListener("nengoConfigChange", (event: CustomEvent) => {
+            const key = event.detail;
+            if (key === "aspectResize") {
+                this.onResize();
+            } else if (key === "fontSize" || key === "zoomFonts") {
+                this.updateFonts();
+            } else if (key === "transparentNets") {
+                this.updateTransparency();
+            }
+        })
     }
 
     get aspectResize(): boolean {
@@ -292,7 +304,6 @@ export class NetGraph {
             return;
         }
         config.fontSize = val;
-        this.updateFonts();
     }
 
     get scale(): number {
@@ -319,13 +330,6 @@ export class NetGraph {
             return;
         }
         config.transparentNets = val;
-        Object.keys(this.svgObjects).forEach(key => {
-            const ngi = this.svgObjects[key];
-            ngi.computeFill();
-            if (ngi.type === "net" && ngi.expanded) {
-                ngi.shape.style["fill-opacity"] = val ? 0.0 : 1.0;
-            }
-        });
     }
 
     get zoomFonts(): boolean {
@@ -337,7 +341,21 @@ export class NetGraph {
             return;
         }
         config.zoomFonts = val;
-        this.updateFonts();
+    }
+
+    hotkeys(manager: HotkeyManager) {
+        manager.add("Undo", "z", {ctrl: true}, () => {
+            this.notify({undo: "1"});
+        });
+        manager.add("Redo", "z", {ctrl: true, shift: true}, () => {
+            this.notify({undo: "0"});
+        });
+        manager.add("Redo", "y", {ctrl: true}, () => {
+            this.notify({undo: "0"});
+        });
+        manager.add("Toggle minimap", "m", {ctrl: true}, () => {
+            this.toggleMiniMap();
+        });
     }
 
     generateMenu() {
@@ -442,6 +460,17 @@ export class NetGraph {
         }
     }
 
+    updateTransparency() {
+        const opacity = this.transparentNets ? 0.0 : 1.0;
+        Object.keys(this.svgObjects).forEach(key => {
+            const ngi = this.svgObjects[key];
+            ngi.computeFill();
+            if (ngi.type === "net" && ngi.expanded) {
+                ngi.shape.style["fill-opacity"] = opacity;
+            }
+        });
+    }
+
     /**
      * Redraw all elements
      */
@@ -494,7 +523,7 @@ export class NetGraph {
     /**
      * Handler for resizing the full SVG.
      */
-    onResize(event) {
+    onResize() {
         const width = $(this.svg).width();
         const height = $(this.svg).height();
 

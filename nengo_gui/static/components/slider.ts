@@ -16,7 +16,9 @@ import * as $ from "jquery";
 
 import { DataStore } from "../datastore";
 import * as menu from "../menu";
+import * as utils from "../utils";
 import * as viewport from "../viewport";
+import { InputDialogView } from "../views/modal";
 import { Component } from "./component";
 import "./slider.css";
 import { SliderControl } from "./slidercontrol";
@@ -251,57 +253,51 @@ export class Slider extends Component {
     }
 
     userValue() {
-        // First build the prompt string
-        let promptString = "";
-        for (let i = 0; i < this.sliders.length; i++) {
-            promptString = promptString + this.sliders[i].value.toFixed(2);
-            if (i !== this.sliders.length - 1) {
-                promptString = promptString + ", ";
-            }
-        }
-        this.sim.modal.title("Set slider value(s)...");
-        this.sim.modal.singleInputBody(promptString, "New value(s)");
-        this.sim.modal.footer("okCancel", function(e) {
-            let newValue = $("#singleInput").val();
-            const modal = $("#myModalForm").data("bs.validator");
+        const prompt = this.sliders.map(slider => {
+            return slider.value.toFixed(2);
+        }).join(", ");
 
-            modal.validate();
-            if (modal.hasErrors() || modal.isIncomplete()) {
+        const modal = new InputDialogView(
+            prompt, "New value(s)", "Input should be one comma-separated " +
+                "numerical value for each slider."
+        );
+        modal.title = "Set slider value(s)...";
+        const okButton = modal.addFooterButton("OK");
+        modal.addCloseButton("Cancel");
+        okButton.addEventListener("click", () => {
+            const validator = $(modal).data("bs.validator");
+            validator.validate();
+            if (validator.hasErrors() || validator.isIncomplete()) {
                 return;
             }
             this.immediateNotify = false;
-            if (newValue !== null) {
-                newValue = newValue.split(",");
+            if (modal.input.value !== null) {
+                const newValue = modal.input.value.split(",");
                 // Update the sliders one at a time
-                for (let i = 0; i < this.sliders.length; i++) {
-                    this.sliders[i].fixed = true;
-                    this.sliders[i].setValue(parseFloat(newValue[i]));
-                }
+                this.sliders.forEach((slider, i) => {
+                    slider.fixed = true;
+                    slider.setValue(parseFloat(newValue[i]));
+                });
             }
             this.immediateNotify = true;
-            $("#OK").attr("data-dismiss", "modal");
+            // Set the data-dismiss attribute and let event propagate
+            okButton.setAttribute("data-dismiss", "modal");
         });
 
-        $("#myModalForm").validator({
+        $(modal).validator({
             custom: {
-                myValidator: function($item) {
-                    const nums = $item.val().split(",");
+                ngvalidator: item => {
+                    const nums = item.value.split(",");
                     if (nums.length !== this.sliders.length) {
                         return false;
                     }
-                    for (let i = 0; i < nums.length; i++) {
-                        if (!$.isNumeric(nums[i])) {
-                            return false;
-                        }
-                    }
-                    return true;
+                    return nums.every(num => {
+                        return utils.isNum(num);
+                    });
                 },
             },
         });
-
-        $("#singleInput").attr("data-error", "Input should be one " +
-                               "comma-separated numerical value for each slider.");
-        this.sim.modal.show();
+        modal.show();
     }
 
     userResetValue() {
@@ -315,18 +311,20 @@ export class Slider extends Component {
 
     setRange() {
         const range = this.sliders[0].scale.domain();
-        this.sim.modal.title("Set slider range...");
-        this.sim.modal.singleInputBody([range[1], range[0]], "New range");
-        this.sim.modal.footer("okCancel", function(e) {
-            let newRange = $("#singleInput").val();
-            const modal = $("#myModalForm").data("bs.validator");
-
-            modal.validate();
-            if (modal.hasErrors() || modal.isIncomplete()) {
+        const modal = new InputDialogView(
+            String([range[1], range[0]]), "New range",
+            "Input should be in the form '<min>,<max>'.");
+        modal.title = "Set slider range...";
+        const okButton = modal.addFooterButton("OK");
+        modal.addCloseButton("Cancel");
+        okButton.addEventListener("click", () => {
+            const validator = $(modal).data("bs.validator");
+            validator.validate();
+            if (validator.hasErrors() || validator.isIncomplete()) {
                 return;
             }
-            if (newRange !== null) {
-                newRange = newRange.split(",");
+            if (modal.input.value !== null) {
+                const newRange = modal.input.value.split(",");
                 const min = parseFloat(newRange[0]);
                 const max = parseFloat(newRange[1]);
                 for (let i = 0; i < this.sliders.length; i++) {
@@ -334,14 +332,17 @@ export class Slider extends Component {
                 }
                 this.saveLayout();
             }
-            $("#OK").attr("data-dismiss", "modal");
+            // Set the data-dismiss attribute and let event propagate
+            okButton.setAttribute("data-dismiss", "modal");
         });
-        $("#myModalForm").validator({
+        this.addKeyHandler(modal);
+
+        $(modal).validator({
             custom: {
-                myValidator: function($item) {
-                    const nums = $item.val().split(",");
+                ngvalidator: item => {
+                    const nums = item.value.split(",");
                     let valid = false;
-                    if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
+                    if (utils.isNum(nums[0]) && utils.isNum(nums[1])) {
                         if (Number(nums[0]) < Number(nums[1])) {
                             // Two numbers, 1st less than 2nd
                             valid = true;
@@ -351,10 +352,7 @@ export class Slider extends Component {
                 },
             },
         });
-
-        $("#singleInput").attr("data-error", "Input should be in the " +
-                               "form '<min>,<max>'.");
-        this.sim.modal.show();
+        modal.show();
     }
 
     layoutInfo() {

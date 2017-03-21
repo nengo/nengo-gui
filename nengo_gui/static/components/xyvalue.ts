@@ -21,6 +21,7 @@ import * as $ from "jquery";
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
 import * as viewport from "../viewport";
+import { InputDialogView } from "../views/modal";
 import { Component } from "./component";
 import { XYAxes } from "./xy-axes";
 import "./xyvalue.css";
@@ -203,32 +204,38 @@ export class XYValue extends Component {
 
     setRange() {
         const range = this.axes2d.scaleY.domain();
-        this.sim.modal.title("Set graph range...");
-        this.sim.modal.singleInputBody(range, "New range");
-        this.sim.modal.footer("okCancel", function(e) {
-            let newRange = $("#singleInput").val();
-            const modal = $("#myModalForm").data("bs.validator");
-
-            modal.validate();
-            if (modal.hasErrors() || modal.isIncomplete()) {
+        const modal = new InputDialogView(
+            range, "New range", "Input should be in the form " +
+                "'<min>,<max>' and the axes must cross at zero."
+        );
+        modal.title = "Set graph range...";
+        const okButton = modal.addFooterButton("OK");
+        modal.addCloseButton("Cancel");
+        okButton.addEventListener("click", () => {
+            const validator = $(modal).data("bs.validator");
+            validator.validate();
+            if (validator.hasErrors() || validator.isIncomplete()) {
                 return;
             }
-            if (newRange !== null) {
-                newRange = newRange.split(",");
+            if (modal.input.value !== null) {
+                const newRange = modal.input.value.split(",");
                 const min = parseFloat(newRange[0]);
                 const max = parseFloat(newRange[1]);
                 this.updateRange(min, max);
                 this.update();
                 this.saveLayout();
             }
-            $("#OK").attr("data-dismiss", "modal");
+            // Set the data-dismiss attribute and let event propagate
+            okButton.setAttribute("data-dismiss", "modal");
         });
-        $("#myModalForm").validator({
+        this.addKeyHandler(modal);
+
+        $(modal).validator({
             custom: {
-                myValidator: function($item) {
-                    const nums = $item.val().split(",");
+                ngvalidator: item => {
+                    const nums = item.value.split(",");
                     let valid = false;
-                    if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
+                    if (utils.isNum(nums[0]) && utils.isNum(nums[1])) {
                         // Two numbers, 1st less than 2nd.
                         // The axes must intersect at 0.
                         const ordered = Number(nums[0]) < Number(nums[1]);
@@ -241,11 +248,7 @@ export class XYValue extends Component {
                 },
             },
         });
-
-        $("#singleInput").attr(
-            "data-error", "Input should be in the form " +
-                "'<min>,<max>' and the axes must cross at zero.");
-        this.sim.modal.show();
+        modal.show();
     }
 
     updateRange(min, max) {

@@ -18,6 +18,7 @@ import * as $ from "jquery";
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
 import * as viewport from "../viewport";
+import { InputDialogView } from "../views/modal";
 import { Component } from "./component";
 import "./raster.css";
 import { TimeAxes } from "./time-axes";
@@ -160,46 +161,39 @@ export class Raster extends Component {
 
     setNeuronCount() {
         const count = this.nNeurons;
-        this.sim.modal.title("Set number of neurons...");
-        this.sim.modal.singleInputBody(count, "Number of neurons");
-        this.sim.modal.footer("okCancel", function(e) {
-            let newCount = $("#singleInput").val();
-            const modal = $("#myModalForm").data("bs.validator");
-            modal.validate();
-            if (modal.hasErrors() || modal.isIncomplete()) {
+        const modal = new InputDialogView(
+            count, "Number of neurons", "Input should be a positive integer"
+        );
+        modal.title = "Set number of neurons...";
+        const okButton = modal.addFooterButton("OK");
+        modal.addCloseButton("Cancel");
+        okButton.addEventListener("click", () => {
+            const validator = $(modal).data("bs.validator");
+            validator.validate();
+            if (validator.hasErrors() || validator.isIncomplete()) {
                 return;
             }
-            if (newCount !== null) {
-                newCount = parseInt(newCount, 10);
+            if (modal.input.value !== null) {
+                const newCount = parseInt(modal.input.value, 10);
                 this.setN_neurons(newCount);
                 this.axes2d.fitTicks(this);
             }
-            $("#OK").attr("data-dismiss", "modal");
+            // Set the data-dismiss attribute and let event propagate
+            okButton.setAttribute("data-dismiss", "modal");
+
+            // TODO: this was a separate handler before, but should only
+            //       fire when validation passes right?
+            this.onResize(this.div.clientWidth, this.div.clienHeight);
         });
-        $("#myModalForm").validator({
+        this.addKeyHandler(modal);
+
+        $(modal).validator({
             custom: {
-                myValidator: function($item) {
-                    let num = $item.val();
-                    let valid = false;
-                    if ($.isNumeric(num)) {
-                        num = Number(num);
-                        // TODO: make into utils.isInteger
-                        if (num >= 0 && num === parseInt(num, 10)) {
-                            valid = true;
-                        }
-                    }
-                    return valid;
+                ngvalidator: item => {
+                    return utils.isInt(item.value);
                 },
             },
         });
-
-        $("#singleInput").attr(
-            "data-error", "Input should be a positive integer");
-
-        this.sim.modal.show();
-        $("#OK").on("click", function() {
-            const div = $(this.div);
-            this.onResize(div.width(), div.height());
-        });
+        modal.show();
     }
 }

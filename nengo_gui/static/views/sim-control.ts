@@ -1,7 +1,6 @@
 import * as d3 from "d3";
 import { VNode, dom, h } from "maquette";
 
-import { ModalView } from "./modal";
 import "./sim-control.css";
 import { getTransform, setTransform } from "./views";
 
@@ -268,11 +267,5 @@ export class TimeSliderView {
 
     callAxis(axis: d3.svg.Axis): void {
         axis(d3.select(this.axis));
-    }
-}
-
-export class DiconnectedModalView extends ModalView {
-    constructor() {
-        super();
     }
 }

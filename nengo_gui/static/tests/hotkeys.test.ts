@@ -6,9 +6,8 @@ import * as test from "tape";
 
 import * as fixtures from "./fixtures";
 
-import { Hotkeys } from "../hotkeys";
+import { HotkeyManager } from "../hotkeys";
 
-test("Hotkeys", assert => {
-
+test("Hotkey", assert => {
     fixtures.teardown(assert);
 });

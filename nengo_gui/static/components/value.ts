@@ -20,6 +20,7 @@ import * as $ from "jquery";
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
 import * as viewport from "../viewport";
+import { InputDialogView } from "../views/modal";
 import { Component } from "./component";
 import { TimeAxes } from "./time-axes";
 import "./value.css";
@@ -331,11 +332,12 @@ export class Value extends Component {
     }
 
     setLegendLabels() {
-        this.sim.modal.title("Enter comma seperated legend label values");
-        this.sim.modal.singleInputBody("Legend label", "New value");
-        this.sim.modal.footer("okCancel", function(e) {
-            const labelCsv = $("#singleInput").val();
-            $("#myModalForm").data("bs.validator");
+        const modal = new InputDialogView("Legend label", "New value");
+        modal.title = "Enter comma seperated legend label values";
+        const okButton = modal.addFooterButton("OK");
+        modal.addCloseButton("Cancel");
+        okButton.addEventListener("click", () => {
+            const labelCsv = modal.input.value;
 
             // No validation to do.
             // Empty entries assumed to be indication to skip modification.
@@ -362,10 +364,10 @@ export class Value extends Component {
                 //                   this.uid);
                 this.saveLayout();
             }
-            $("#OK").attr("data-dismiss", "modal");
+            // Set the data-dismiss attribute and let event propagate
+            okButton.setAttribute("data-dismiss", "modal");
         });
-
-        this.sim.modal.show();
+        modal.show();
     }
 
     layoutInfo() {
@@ -384,17 +386,20 @@ export class Value extends Component {
 
     setRange() {
         const range = this.axes2d.scaleY.domain();
-        this.sim.modal.title("Set graph range...");
-        this.sim.modal.singleInputBody(range, "New range");
-        this.sim.modal.footer("okCancel", function(e) {
-            let newRange = $("#singleInput").val();
-            const modal = $("#myModalForm").data("bs.validator");
-            modal.validate();
-            if (modal.hasErrors() || modal.isIncomplete()) {
+        const modal = new InputDialogView(
+            range, "New range", "Input should be in the form '<min>,<max>'."
+        );
+        modal.title = "Set graph range...";
+        const okButton = modal.addFooterButton("OK");
+        modal.addCloseButton("Cancel");
+        okButton.addEventListener("click", () => {
+            const validator = $(modal).data("bs.validator");
+            validator.validate();
+            if (validator.hasErrors() || validator.isIncomplete()) {
                 return;
             }
-            if (newRange !== null) {
-                newRange = newRange.split(",");
+            if (modal.input.value !== null) {
+                const newRange = modal.input.value.split(",");
                 const min = parseFloat(newRange[0]);
                 const max = parseFloat(newRange[1]);
                 this.updateRange(min, max);
@@ -402,30 +407,30 @@ export class Value extends Component {
                 this.axes2d.axisY.tickValues([min, max]);
                 this.axes2d.fitTicks(this);
             }
-            $("#OK").attr("data-dismiss", "modal");
+            // Set the data-dismiss attribute and let event propagate
+            okButton.setAttribute("data-dismiss", "modal");
+
+            // TODO: this was a separate handler before, but should only
+            //       fire when validation passes right?
+            this.onResize(this.div.clientWidth, this.div.clienHeight);
         });
-        $("#myModalForm").validator({
+
+        $(modal).validator({
             custom: {
-                myValidator: function($item) {
-                    const nums = $item.val().split(",");
+                ngvalidator: item => {
+                    const nums = item.value.split(",");
                     let valid = false;
-                    if ($.isNumeric(nums[0]) && $.isNumeric(nums[1])) {
+                    if (utils.isNum(nums[0]) && utils.isNum(nums[1])) {
+                        // Two numbers, 1st less than 2nd
                         if (Number(nums[0]) < Number(nums[1])) {
-                            valid = true; // Two numbers, 1st less than 2nd
+                            valid = true;
                         }
                     }
                     return (nums.length === 2 && valid);
                 },
             },
         });
-
-        $("#singleInput").attr("data-error", "Input should be in the " +
-                               "form '<min>,<max>'.");
-        this.sim.modal.show();
-        $("#OK").on("click", function() {
-            const div = $(this.div);
-            this.onResize(div.width(), div.height());
-        });
+        modal.show();
     }
 
     updateRange(min, max) {
@@ -439,41 +444,37 @@ export class Value extends Component {
     }
 
     setSynapseDialog() {
-        this.sim.modal.title("Set synaptic filter...");
-        this.sim.modal.singleInputBody(this.synapse,
-                                         "Filter time constant (in seconds)");
-        this.sim.modal.footer("okCancel", function(e) {
-            let newSynapse = $("#singleInput").val();
-            const modal = $("#myModalForm").data("bs.validator");
-            modal.validate();
-            if (modal.hasErrors() || modal.isIncomplete()) {
+        const modal = new InputDialogView(
+            this.synapse, "Filter time constant (in seconds)",
+            "Input should be a non-negative number"
+        );
+        modal.title = "Set synaptic filter...";
+        const okButton = modal.addFooterButton("OK");
+        modal.addCloseButton("Cancel");
+        okButton.addEventListener("click", () => {
+            const validator = $(modal).data("bs.validator");
+            validator.validate();
+            if (validator.hasErrors() || validator.isIncomplete()) {
                 return;
             }
-            if (newSynapse !== null) {
-                newSynapse = parseFloat(newSynapse);
-                if (newSynapse === this.synapse) {
-                    return;
+            if (modal.input.value !== null) {
+                const newSynapse = parseFloat(modal.input.value);
+                if (newSynapse !== this.synapse) {
+                    this.synapse = newSynapse;
+                    this.ws.send("synapse:" + this.synapse);
                 }
-                this.synapse = newSynapse;
-                this.ws.send("synapse:" + this.synapse);
             }
-            $("#OK").attr("data-dismiss", "modal");
+            // Set the data-dismiss attribute and let event propagate
+            okButton.setAttribute("data-dismiss", "modal");
         });
-        $("#myModalForm").validator({
+
+        $(modal).validator({
             custom: {
-                myValidator: function($item) {
-                    let num = $item.val();
-                    if ($.isNumeric(num)) {
-                        num = Number(num);
-                        if (num >= 0) {
-                            return true;
-                        }
-                    }
-                    return false;
+                ngvalidator: item => {
+                    return utils.isNum(item.value) && Number(item.value) >= 0;
                 },
             },
         });
-        $("#singleInput").attr("data-error", "should be a non-negative number");
-        this.sim.modal.show();
+        modal.show();
     }
 }

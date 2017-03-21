@@ -1,8 +1,9 @@
 import * as d3 from "d3";
 import * as interact from "interact.js";
 
-import { Modal } from "./modal";
+import { HotkeyManager } from "./hotkeys";
 import * as utils from "./utils";
+import { AlertDialogView } from "./views/modal";
 import {
     SimControlView, SpeedThrottleView, TimeSliderView,
 } from "./views/sim-control";
@@ -53,14 +54,8 @@ export class SimControl {
         });
         this.speedThrottle = new SpeedThrottle(this.view.speedThrottle);
 
-        // this.modal = new Modal($(".modal").first(), editor, this);
-
         this.view.pause.onclick = event => {
-            if (this.paused) {
-                this.play();
-            } else {
-                this.pause();
-            }
+            this.togglePlaying();
         };
 
         this.view.pause.onkeydown = event => {
@@ -145,12 +140,33 @@ export class SimControl {
     }
 
     disconnected() {
-        // $("#main").css("background-color", "#a94442");
-        // this.modal.title("Nengo has stopped running");
-        // this.modal.text_body("To continue working with your model, re-run " +
-        //                      "nengo and click Refresh.", "danger");
-        // this.modal.footer("refresh");
-        // this.modal.show();
+        document.body.style.backgroundColor = "#a94442";
+        const modal = new AlertDialogView(
+            "To continue working with your model, re-run nengo and click Refresh.",
+            "danger"
+        );
+        modal.title = "Nengo has stopped running";
+        const refresh = modal.addFooterButton("Refresh");
+            $("#refreshButton").on("click", () => {
+                location.reload();
+            });
+        refresh.addEventListener("click", () => { location.reload(); });
+        document.body.appendChild(modal.root);
+        modal.show();
+        return modal;
+    }
+
+    hotkeys(manager: HotkeyManager) {
+        manager.add("Play / pause", " ", (event) => {
+            if (!event.repeat) {
+                this.togglePlaying();
+            }
+        });
+        manager.add("Play / pause", "enter", {shift: true}, (event) => {
+            if (!event.repeat) {
+                this.togglePlaying();
+            }
+        });
     }
 
     setBackend(backend: string) {
@@ -189,6 +205,14 @@ export class SimControl {
         this.attached.forEach(conn => {
             conn.send("simcontrol.reset");
         });
+    }
+
+    togglePlaying() {
+        if (this.paused) {
+            this.play();
+        } else {
+            this.pause();
+        }
     }
 
     /**

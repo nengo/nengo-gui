@@ -5,35 +5,107 @@
  */
 
 import { Editor } from "./editor";
-import { Modal } from "./modal";
 import { NetGraph } from "./netgraph/netgraph";
 import { SimControl } from "./sim-control"
+import { HotkeysDialogView } from "./views/hotkeys";
 
-export class Hotkeys {
-    active: boolean = true;
-    editor: Editor;
-    modal: Modal;
-    netgraph: NetGraph;
-    sim: SimControl;
+export type Modifiers = {ctrl?: boolean, shift?: boolean};
+export type HotkeyCallback = (event: KeyboardEvent) => void;
 
-    constructor(editor: Editor, modal) {
-        this.editor = editor;
-        this.netgraph = this.editor.netgraph;
-        this.modal = modal;
-        this.sim = this.modal.sim;
+export class Hotkey {
+    static ctrl = "Ctrl";
+    static shift = "Shift";
 
-        document.addEventListener("keydown", event => {
-            this.on_keydown(event);
-        });
+    callback: HotkeyCallback;
+    key: string;
+    name: string | null;
+    modifiers: Modifiers = {ctrl: false, shift: false};
+
+    constructor(
+        name: string | null,
+        key: string,
+        modifiers: Modifiers,
+        callback: HotkeyCallback
+    ) {
+        this.name = name;
+        this.key = key;
+        for (const modifier in modifiers) {
+            this.modifiers[modifier] = modifiers[modifier];
+        }
+        this.callback = callback;
     }
 
-    on_keydown(event: KeyboardEvent) {
-        if (!this.active) {
+    get shortcut(): string {
+        let shortcut = this.key;
+        if (this.modifiers.shift) {
+            shortcut = Hotkey.shift + "-" + shortcut;
+        }
+        if (this.modifiers.ctrl) {
+            shortcut = Hotkey.ctrl + "-" + shortcut;
+        }
+        return shortcut;
+    }
+
+    check(key: string, modifiers: Modifiers) {
+        const modEqual = Object.getOwnPropertyNames(modifiers).every(mod => {
+            return this.modifiers[mod] === modifiers[mod];
+        });
+        return this.key.toLowerCase() === key.toLowerCase() && modEqual;
+    }
+
+}
+
+if (navigator.userAgent.toLowerCase().indexOf("mac") > -1) {
+    Hotkey.ctrl = "⌘";
+    Hotkey.shift = "⇧";
+}
+
+export class HotkeyManager {
+    hotkeys: Hotkey[] = [];
+
+    active: boolean = true;
+
+    constructor() {
+        document.addEventListener("keydown", event => {
+            this.onkeydown(event);
+        });
+
+        // Bring up help menu with ?
+        this.add("Show hotkeys", "?", () => {
+            const modal = new HotkeysDialogView(this);
+            modal.show();
+        });
+        // Prevent going back in history.
+        this.add(null, "backspace", () => {});
+    }
+
+    add(name: string, key: string, ...args: (Modifiers | HotkeyCallback)[]) {
+        let modifiers: Modifiers = {};
+        let callback: HotkeyCallback;
+        if (args.length === 1) {
+            callback = args[0] as HotkeyCallback;
+        } else if (args.length === 2) {
+            modifiers = args[0] as Modifiers;
+            callback = args[1] as HotkeyCallback;
+        } else {
+            throw new TypeError(
+                "Expected 2 or 3 arguments. Got " + arguments.length + "."
+            );
+        }
+        this.hotkeys.push(new Hotkey(name, key, modifiers, callback));
+    }
+
+    onkeydown(event: KeyboardEvent) {
+        // TODO: Right now, we ignore all hotkeys when focused on the editor.
+        //       previously only some of these were ignored.
+        //       Is it worth making this possible again?
+
+        const onEditor =
+            (<Element> event.target).className === "ace_text-input";
+
+        if (!this.active || onEditor) {
             return;
         }
-
-        const on_editor =
-            (<Element> event.target).className === "ace_text-input";
 
         const ctrl = event.ctrlKey || event.metaKey;
         const shift = event.shiftKey;
@@ -53,81 +125,15 @@ export class Hotkeys {
         }
         key = key.toLowerCase();
 
-        // Toggle editor with ctrl-e
-        if (ctrl && key === "e") {
-            this.editor.toggle_shown();
-            event.preventDefault();
-        }
-        // Undo with ctrl-z
-        if (ctrl && key === "z") {
-            this.netgraph.notify({undo: "1"});
-            event.preventDefault();
-        }
-        // Redo with shift-ctrl-z
-        if (ctrl && shift && key === "z") {
-            this.netgraph.notify({undo: "0"});
-            event.preventDefault();
-        }
-        // Redo with ctrl-y
-        if (ctrl && key === "y") {
-            this.netgraph.notify({undo: "0"});
-            event.preventDefault();
-        }
-        // Save with save-s
-        if (ctrl && key === "s") {
-            this.editor.save_file();
-            event.preventDefault();
-        }
-        // Run model with spacebar or with shift-enter
-        if ((key === " " && !on_editor) ||
-            (event.shiftKey && key === "enter")) {
-            if (!event.repeat) {
-                this.sim.on_pause_click();
+        // Using Array.some to iterate through hotkeys, stopping when a
+        // check returns true. Like forEach with `break`.
+        this.hotkeys.some(hk => {
+            const check = hk.check(key, {ctrl: ctrl, shift: shift});
+            if (check) {
+                hk.callback(event);
+                event.preventDefault();
             }
-            event.preventDefault();
-        }
-        // Bring up help menu with ?
-        if (key === "?" && !on_editor) {
-            this.callMenu();
-            event.preventDefault();
-        }
-        // Bring up minimap with ctrl-m
-        if (ctrl && key === "m") {
-            this.netgraph.toggleMiniMap();
-            event.preventDefault();
-        }
-        // Disable backspace navigation
-        if (key === "backspace" && !on_editor) {
-            event.preventDefault();
-        }
-        // Toggle auto-updating with TODO: pick a good shortcut
-        if (ctrl && event.shiftKey && key === "1") {
-            this.editor.auto_update = !this.editor.auto_update;
-            this.editor.update_trigger = this.editor.auto_update;
-            event.preventDefault();
-        }
-        // Trigger a single update with TODO: pick a good shortcut
-        if (ctrl && !event.shiftKey && key === "1") {
-            this.editor.update_trigger = true;
-            event.preventDefault();
-        }
-    }
-
-    callMenu() {
-        this.modal.title("Hotkeys list");
-        this.modal.footer("close");
-        this.modal.help_body();
-        this.modal.show();
-    }
-
-    /**
-     * Turn hotkeys on or off.
-     *
-     * set_active is provided with a boolean argument, which will either
-     * turn the hotkeys on or off.
-     */
-    set_active(bool) {
-        console.assert(typeof(bool) === "boolean");
-        this.active = bool;
+            return check
+        });
     }
 }

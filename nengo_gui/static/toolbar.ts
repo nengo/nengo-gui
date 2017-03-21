@@ -11,38 +11,32 @@
 import * as interact from "interact.js";
 import * as $ from "jquery";
 
-import { config } from "./config";
+import { config, ConfigDialog } from "./config";
 import { Editor } from "./editor";
 import * as menu from "./menu";
 import { Modal } from "./modal";
 import { SimControl } from "./sim-control";
 import "./toolbar.css";
 import * as utils from "./utils";
+import { AlertDialogView } from "./views/modal";
 
 export class Toolbar {
+    configDialog: ConfigDialog = new ConfigDialog();
     editor: Editor;
     hotkeys;
     menu;
-    modal: Modal;
     netgraph;
     sim: SimControl;
     toolbar;
 
     constructor(filename: string, sim: SimControl) {
         this.sim = sim;
-        this.modal = this.sim.modal;
-        this.modal.toolbar = this; // TODO: remove this hack
         this.netgraph = this.modal.netgraph;
         this.hotkeys = this.modal.hotkeys;
         this.editor = this.modal.editor;
 
         $("#Reset_layout_button")[0].addEventListener("click", () => {
-            this.modal.title(
-                "Are you sure you wish to reset this layout, removing all " +
-                    "the graphs and resetting the position of all items?");
-            this.modal.textBody("This operation cannot be undone!", "danger");
-            this.modal.footer("confirm_reset");
-            this.modal.show();
+            this.askResetLayout();
         });
 
         $("#Undo_last_button")[0].addEventListener("click", () => {
@@ -78,6 +72,20 @@ export class Toolbar {
         });
     }
 
+    askResetLayout() {
+        const modal = new AlertDialogView(
+            "This operation cannot be undone!", "danger"
+        );
+        modal.title = "Are you sure you wish to reset this layout, " +
+            "removing all the graphs and resetting the position of all items?";
+        const resetButton = modal.addFooterButton("Reset");
+        modal.addCloseButton();
+        resetButton.addEventListener("click", () => {
+            this.resetModelLayout();
+        });
+        modal.show();
+    }
+
     /**
      * Trims the filename and sends it to the server.
      */
@@ -111,45 +119,8 @@ export class Toolbar {
     }
 
     configModalShow() {
-        // Get current state in case user clicks cancel
-        const original = {
-            aspectResize: this.netgraph.aspectResize,
-            autoUpdate: this.editor.autoUpdate,
-            fontSize: this.netgraph.fontSize,
-            scriptdir: config.scriptdir,
-            transparentNets: this.netgraph.transparentNets,
-            zoom: this.netgraph.zoomFonts,
-        };
-
-        this.modal.title("Configure Options");
-        this.modal.mainConfig();
-        this.modal.footer("ok_cancel", e => {
-            const modal = $("#myModalForm").data("bs.validator");
-            modal.validate();
-            if (modal.hasErrors() || modal.isIncomplete()) {
-                return;
-            }
-            $("#OK").attr("data-dismiss", "modal");
-        }, () => { // CancelFunction
-            this.netgraph.zoomFonts = original.zoom;
-            this.netgraph.fontSize = original.fontSize;
-            this.netgraph.transparentNets = original.transparentNets;
-            this.netgraph.aspectResize = original.aspectResize;
-            this.editor.autoUpdate = original.autoUpdate;
-            config.scriptdir = original.scriptdir;
-            $("#cancel-button").attr("data-dismiss", "modal");
-        });
-
-        $("#myModalForm").validator({
-            custom: {
-                myValidator: $item => {
-                    const num = $item.val();
-                    return (num.length <= 3 && num > 20);
-                },
-            },
-        });
-
-        this.modal.show();
+        // TODO: this should be called by the server
+        this.configDialog.show();
     }
 
     saveAs() {

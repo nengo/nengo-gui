@@ -16,6 +16,7 @@ import * as $ from "jquery";
 
 import { config } from "./config";
 import "./editor.css";
+import { HotkeyManager } from "./hotkeys";
 import * as utils from "./utils";
 import * as viewport from "./viewport";
 import { WSConnection } from "./websocket";
@@ -109,7 +110,7 @@ export class Editor {
             }).on("resizemove", function(event) {
                 this.width -= event.deltaRect.left;
                 this.redraw();
-            });
+p            });
 
         interact("#console")
             .resizable({
@@ -128,6 +129,26 @@ export class Editor {
             }).on("resizeend", function(event) {
                 config.consoleHeight = this.consoleHeight;
             });
+
+        document.addEventListener("nengoConfigChange", (event: CustomEvent) => {
+            const key = event.detail;
+            if (key === "editorWidth") {
+                $("#rightpane").width(
+                    utils.clip(this.width, this.minWidth, this.maxWidth)
+                );
+            } else if (key === "hideEditor") {
+                if (this.hidden) {
+                    this.hideEditor();
+                } else {
+                    this.showEditor();
+                }
+            } else if (key === "editorFontSize") {
+                this.editor.setFontSize(Math.max(this.fontSize, 6));
+            } else if (key === "autoUpdate") {
+                this.updateTrigger = this.autoUpdate;
+            }
+        });
+
     }
 
     get width(): number {
@@ -135,8 +156,6 @@ export class Editor {
     }
 
     set width(val: number) {
-        val = Math.max(Math.min(val, this.maxWidth), this.minWidth);
-        $("#rightpane").width(val);
         config.editorWidth = val;
     }
 
@@ -146,11 +165,6 @@ export class Editor {
 
     set hidden(val: boolean) {
         config.hideEditor = val;
-        if (val) {
-            this.hideEditor();
-        } else {
-            this.showEditor();
-        }
     }
 
     get fontSize(): number {
@@ -158,8 +172,6 @@ export class Editor {
     }
 
     set fontSize(val: number) {
-        val = Math.max(val, 6);
-        this.editor.setFontSize(val);
         config.editorFontSize = val;
     }
 
@@ -168,8 +180,22 @@ export class Editor {
     }
 
     set autoUpdate(val: boolean) {
-        this.updateTrigger = val;
         config.autoUpdate = val;
+    }
+
+    hotkeys(manager: HotkeyManager) {
+        manager.add("Toggle editor", "e", {ctrl: true}, () => {
+            this.toggleShown();
+        });
+        manager.add("Save", "s", {ctrl: true}, () => { this.saveFile(); });
+        // TODO: pick better shortcuts
+        manager.add("Toggle auto-update", "1", {ctrl: true, shift: true}, () => {
+            this.autoUpdate = !this.autoUpdate;
+            this.updateTrigger = this.autoUpdate;
+        });
+        manager.add("Update display", "1", {ctrl: true}, () => {
+            this.updateTrigger = true;
+        });
     }
 
     /**

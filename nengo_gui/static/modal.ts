@@ -3,11 +3,9 @@ import * as $ from "jquery";
 
 import * as allComponents from "./components/all-components";
 import { config } from "./config";
-import { Hotkeys } from "./hotkeys";
-import "./modal.css";
 import * as tooltips from "./tooltips";
 import * as utils from "./utils";
-import { ModalView } from "./views/modal";
+import { InputDialogView, ModalView } from "./views/modal";
 
 export class Modal {
     $body;
@@ -30,7 +28,6 @@ export class Modal {
         this.editor = editor;
         this.sim = sim;
         this.netgraph = this.editor.netgraph;
-        this.hotkeys = new Hotkeys(this.editor, this);
 
         this.simWasRunning = false;
 
@@ -44,7 +41,8 @@ export class Modal {
     }
 
     show() {
-        this.hotkeys.setActive(false);
+        // TODO: get the hotkeys and deactivate
+        // this.hotkeys.setActive(false);
         this.simWasRunning = !this.sim.paused;
         this.sim.pause();
         this.view = new ModalView();
@@ -62,21 +60,6 @@ export class Modal {
             this.$footer.append(
                 "<button type='button' class='btn btn-default'" +
                     " data-dismiss='modal'>Close</button>");
-        } else if (type === "okCancel") {
-            const $footerBtn = $("<div class='form-group'/>")
-                .appendTo(this.$footer);
-            $footerBtn.append("<button id='cancel-button' type='button' " +
-                              "class='btn btn-default'>Cancel</button>");
-            $footerBtn.append("<button id='OK' type='submit' " +
-                              "class='btn btn-primary'>OK</button>");
-            $("#OK").on("click", okFunction);
-            if (typeof cancelFunction !== "undefined") {
-                $("#cancel-button").on("click", cancelFunction);
-            } else {
-                $("#cancel-button").on("click", () => {
-                    $("#cancel-button").attr("data-dismiss", "modal");
-                });
-            }
         } else if (type === "confirmReset") {
             this.$footer.append("<button type='button' " +
                                 "id='confirmResetButton' " +
@@ -151,73 +134,7 @@ export class Modal {
                 link.click();
                 document.body.removeChild(link);
             });
-
-        } else if (type === "refresh") {
-            this.$footer.append("<button type='button' " +
-                                "id='refreshButton' " +
-                                "class='btn btn-primary'>Refresh</button>");
-            $("#refreshButton").on("click", () => {
-                location.reload();
-            });
-        } else {
-            console.warn("Modal footer type " + type + " not recognized.");
         }
-    }
-
-    clearBody() {
-        this.$body.empty();
-        this.$div.find(".modal-dialog").removeClass("modal-sm");
-        this.$div.off("shown.bs.modal");
-    }
-
-    textBody(text, type = "info") {
-        this.clearBody();
-        const $alert = $("<div class='alert alert-" + type + "' role='alert'/>")
-            .appendTo(this.$body);
-        const $p = $("<p/>").appendTo($alert);
-        $p.append("<span class='glyphicon glyphicon-exclamation-sign' " +
-                  "aria-hidden='true'></span>");
-        $p.append(document.createTextNode(text));
-    }
-
-    helpBody() {
-        this.clearBody();
-
-        let ctrl = "Ctrl";
-        let shift = "Shift";
-
-        if (navigator.userAgent.toLowerCase().indexOf("mac") > -1) {
-            ctrl = "&#8984;";
-            shift = "&#8679;";
-        }
-
-        this.$div.find(".modal-dialog").addClass("modal-sm");
-        const $body = $("<table class='table-striped' width=100%>");
-        // TODO: make this fit
-        $body.append("<tr><td>Play / pause</td>" +
-                     "<td align='right'>Spacebar, " + shift +
-                     "-Enter</td></tr>");
-        $body.append("<tr><td>Undo</td>" +
-                     "<td align='right'>" + ctrl + "-z</td></tr>");
-        $body.append("<tr><td>Redo</td>" +
-                     "<td align='right'>" + ctrl + "-" + shift +
-                     "-z, " + ctrl + "-y</td></tr>");
-        $body.append("<tr><td>Save</td>" +
-                     "<td align='right'>" + ctrl + "-s</td></tr>");
-        $body.append("<tr><td>Toggle minimap</td>" +
-                     "<td align='right'>" + ctrl + "-m</td></tr>");
-        $body.append("<tr><td>Toggle editor</td>" +
-                     "<td align='right'>" + ctrl + "-e</td></tr>");
-        // TODO: possibly pick a better shortcut key
-        $body.append("<tr><td>Update display</td>" +
-                     "<td align='right'>" + ctrl + "-1</td></tr>");
-        $body.append("<tr><td>Toggle auto-update</td>" +
-                     "<td align='right'>" + ctrl + "-" + shift +
-                     "-1</td></tr>");
-        $body.append("<tr><td>Show hotkeys</td>" +
-                     "<td align='right'>?</td></tr>");
-        $body.append("</table>");
-        $body.appendTo(this.$body);
     }
 
     /**
@@ -252,125 +169,6 @@ export class Modal {
      * Sets up the body for main configuration.
      */
     mainConfig() {
-        this.clearBody();
-
-        const $form = $("<form class='form-horizontal' id" +
-                        "='myModalForm'/>").appendTo(this.$body);
-        $("<div class='form-group' id='config-fontsize-group'>" +
-          "<label for='config-fontsize' class='control-label'>" +
-          "Font size</label>" +
-          "<div class='input-group col-xs-2'>" +
-          "<input type='number' min='20' max='999' step='1' " +
-          "maxlength='3' class='form-control' id='config-fontsize' " +
-          "data-error='Twenty to 999 percent of the base size' " +
-          "required>" +
-          "<span class='input-group-addon'>%</span>" +
-          "</div>" +
-          "<span class='help-block with-errors'>As a percentage of " +
-          "the base size</span>" +
-          "</div>" +
-          "<div class='form-group'>" +
-          "<div class='checkbox'>" +
-          "<label for='zoom-fonts' class='control-label'>" +
-          "<input type='checkbox' id='zoom-fonts'>" +
-          "Scale text when zooming" +
-          "</label>" +
-          "<div class='help-block with-errors'></div>" +
-          "</div>" +
-          "</div>" +
-          "<div class='form-group'>" +
-          "<div class='checkbox'>" +
-          "<label for='aspect-resize' class='control-label'>" +
-          "<input type='checkbox' id='aspect-resize'>" +
-          "Fix aspect ratio of elements on canvas resize" +
-          "</label>" +
-          "<div class='help-block with-errors'></div>" +
-          "</div>" +
-          "</div>" +
-          "<div class='form-group'>" +
-          "<div class='checkbox'>" +
-          "<label for='sync-editor' class='control-label'>" +
-          "<input type='checkbox' id='sync-editor'>" +
-          "Automatically synchronize model with editor" +
-          "</label>" +
-          "<div class='help-block with-errors'></div>" +
-          "</div>" +
-          "</div>" +
-          "<div class='form-group'>" +
-          "<div class='checkbox'>" +
-          "<label for='transparent-nets' class='control-label'>" +
-          "<input type='checkbox' id='transparent-nets'>" +
-          "Expanded networks are transparent" +
-          "</label>" +
-          "<div class='help-block with-errors'></div>" +
-          "</div>" +
-          "</div>" +
-          "<div class='form-group' id='config-scriptdir-group'>" +
-          "<label for='config-scriptdir' class='control-label'>" +
-          "Script directory</label>" +
-          "<input type='text' id='config-scriptdir' class='form-control' " +
-          "placeholder='Current directory'/>" +
-          "<span class='help-block with-errors'>Enter a full absolute path " +
-          "or leave blank to use the current directory.</span>" +
-          "</div>" +
-          "<div class='form-group'>" +
-          "<label for='config-backend' class='control-label'>" +
-          "Select backend" +
-          "</label>" +
-          "<select class='form-control' id='config-backend'>" +
-          this.sim.simulatorOptions +
-          "</select>" +
-          "</div>" +
-          "</div>").appendTo($form);
-
-        this.$div.on("shown.bs.modal", () => {
-            $("#config-fontsize").focus();
-        });
-        $("#zoom-fonts").prop("checked", this.netgraph.zoomFonts);
-        $("#zoom-fonts").change(function() {
-            this.netgraph.zoomFonts = $("#zoom-fonts").prop("checked");
-        });
-
-        $("#aspect-resize").prop("checked", this.netgraph.aspectResize);
-        $("#aspect-resize").change(function() {
-            this.netgraph.aspectResize = $("#aspect-resize").prop("checked");
-        });
-
-        $("#transparent-nets").prop("checked", this.netgraph.transparentNets);
-        $("#transparent-nets").change(function() {
-            this.netgraph.transparentNets =
-                $("#transparent-nets").prop("checked");
-        });
-
-        $("#sync-editor").prop("checked", this.editor.autoUpdate);
-        $("#sync-editor").change(function() {
-            this.editor.autoUpdate = $("#sync-editor").prop("checked");
-            this.editor.updateTrigger = $("#sync-editor").prop("checked");
-        });
-
-        $("#config-fontsize").val(this.netgraph.fontSize);
-        $("#config-fontsize").bind("keyup input", function() {
-            this.netgraph.fontSize = parseInt($("#config-fontsize").val(), 10);
-        });
-        $("#config-fontsize").attr("data-myValidator", "custom");
-
-        let sd = config.scriptdir;
-        if (sd === ".") {
-            sd = "";
-        }
-        $("#config-scriptdir").val(sd);
-        $("#config-scriptdir").bind("keyup input", () => {
-            let newsd = $("#config-scriptdir").val();
-            if (!newsd) {
-                newsd = ".";
-            }
-            config.scriptdir = newsd;
-        });
-
-        $("#config-backend").change(function() {
-            this.sim.setBackend($("#config-backend").val());
-        });
-
         // Allow the enter key to submit
         const submit = event => {
             if (event.which === 13) {
@@ -386,23 +184,21 @@ export class Modal {
      * Sets up the body for standard input forms.
      */
     singleInputBody(startValues, label) {
-        this.clearBody();
-
-        const $form = $("<form class='form-horizontal' id ='myModalForm'/>")
-            .appendTo(this.$body);
-        const $ctrlg = $("<div class='form-group'/>").appendTo($form);
-        $ctrlg.append("<label class='control-label' for='singleInput'>" +
-                      label + "</label>");
-        const $ctrls = $("<div class='controls'/>").appendTo($ctrlg);
-        $ctrls.append("<input id='singleInput' type='text' placeholder='" +
-                      startValues + "'/>");
-        $("<div class='help-block with-errors'/>").appendTo($ctrls);
-        this.$div.on("shown.bs.modal", () => {
-            $("#singleInput").focus();
-        });
+        // const $form = $("<form class='form-horizontal' id ='myModalForm'/>")
+        //     .appendTo(this.$body);
+        // const $ctrlg = $("<div class='form-group'/>").appendTo($form);
+        // $ctrlg.append("<label class='control-label' for='singleInput'>" +
+        //               label + "</label>");
+        // const $ctrls = $("<div class='controls'/>").appendTo($ctrlg);
+        // $ctrls.append("<input id='singleInput' type='text' placeholder='" +
+        //               startValues + "'/>");
+        // $("<div class='help-block with-errors'/>").appendTo($ctrls);
+        // this.$div.on("shown.bs.modal", () => {
+        //     $("#singleInput").focus();
+        // });
 
         // Add custom validator
-        $("#singleInput").attr("data-myValidator", "custom");
+        // $("#singleInput").attr("data-myValidator", "custom");
 
         $(".controls").on("keydown", "#singleInput", event => {
             // Allow the enter key to submit
@@ -882,14 +678,3 @@ export class Modal {
     }
 
 }
-
-// Change the global defaults of the modal validator
-$( document ).ready(() => {
-    const $validator = $.fn.validator.Constructor.DEFAULTS;
-    // Change the delay before showing errors
-    $validator.delay = 5000;
-    // Leave the ok button on
-    $validator.disable = false;
-    // Set the error messages for new validators
-    $validator.errors = {myValidator: "Does not match"};
-});

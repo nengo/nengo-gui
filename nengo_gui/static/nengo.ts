@@ -12,8 +12,12 @@ import "jqueryfiletree/dist/jQueryFileTree.min.css";
 import "./favicon.ico";
 import "./nengo.css";
 
+import { ConfigDialog, configItems } from "./config";
+import { HotkeyManager } from "./hotkeys";
 import { SimControl } from "./sim-control";
-import { ModalView } from "./views/modal";
+import { ConfigDialogView } from "./views/config";
+import { HotkeysDialogView } from "./views/hotkeys";
+import { AlertDialogView, InputDialogView, ModalView } from "./views/modal";
 import { SimControlView } from "./views/sim-control";
 import { MockConnection } from "./websocket";
 
@@ -31,16 +35,56 @@ import { MockConnection } from "./websocket";
 // filename
 
 export class NengoDebug {
+    listeners = {
+        ConfigDialog: null,
+    }
     live: any[] = [];
     objects = {
         main: {
+            ConfigDialog: () => {
+                const cd = new ConfigDialog();
+                if (this.listeners.ConfigDialog === null) {
+                    this.listeners.ConfigDialog = (e: CustomEvent) => {
+                        console.log(e.detail + " changed");
+                    };
+                    document.addEventListener(
+                        "nengoConfigChange", this.listeners.ConfigDialog
+                    );
+                }
+                cd.show();
+                return cd;
+            },
             SimControl: () => {
                 const sc = new SimControl("uid", 4.0, 0.5);
                 sc.attach(new MockConnection());
                 return sc
-            }
+            },
         },
         view: {
+            AlertDialogView: () => {
+                const a = new AlertDialogView("Test text");
+                a.show();
+                return a;
+            },
+            ConfigDialogView: () => {
+                const cd = new ConfigDialogView(configItems);
+                cd.show();
+                return cd;
+            },
+            HotkeysDialogView: () => {
+                const m = new HotkeyManager();
+                m.add("Test ctrl", "a", {ctrl: true}, () => {});
+                m.add("Test shift", "b", {shift: true}, () => {});
+                m.add("Test both", "c", {ctrl: true, shift: true}, () => {});
+                const hk = new HotkeysDialogView(m);
+                hk.show();
+                return hk;
+            },
+            InputDialogView: () => {
+                const i = new InputDialogView("0.5", "Test label");
+                i.show();
+                return i;
+            },
             ModalView: () => {
                 const mv = new ModalView();
                 mv.show();
@@ -64,8 +108,15 @@ export class NengoDebug {
             eval: (command: string) => {
                 eval(command);
             },
+            obj: obj,
             remove: () => {
                 document.body.removeChild(root);
+                // Bootstrap modals can leave behind a backdrop. Annoying!
+                const backdrop = document.body.querySelector(".modal-backdrop");
+                if (backdrop !== null) {
+                    document.body.classList.remove("modal-open");
+                    document.body.removeChild(backdrop);
+                }
                 this.live.splice(this.live.indexOf(obj), 1);
             },
         }

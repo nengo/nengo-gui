@@ -87,6 +87,24 @@ export function draw_legend(parent, labels, colorFunc, uid) {
 }
 
 /**
+ * Check if a string value represents an integer.
+ *
+ * Short-circuits if not a number for speed reasons; see
+ * http://stackoverflow.com/a/14794066/1306923.
+ *
+ * @param {string} value - The string to check.
+ * @returns {boolean} Whether the value is a number.
+ */
+export function isInt(value) {
+    if (isNaN(value)) {
+        return false;
+    }
+    const num = parseFloat(value);
+    return (num | 0) === num;
+}
+
+
+/**
  * Check if a string value represents a number.
  *
  * @param {string} value - The string to check.
