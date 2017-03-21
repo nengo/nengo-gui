@@ -165,13 +165,23 @@ class NetGraph(Component):
                 rebuilt_objects.append(uid)
             else:
                 # fix aspects of the item that may have changed
-                if self._reload_update_item(uid, old_item, new_item,
-                                            name_finder):
+                changed = self._reload_update_item(uid, old_item, new_item,
+                                                   name_finder)
+
+                if changed:
                     # something has changed about this object, so rebuild
                     # the components that use it
                     rebuilt_objects.append(uid)
-
-                self.uids[uid] = new_item
+                if changed is None:
+                    # the new object actually doesn't exist, so should be
+                    #  removed
+                    self.to_be_sent.append(dict(
+                        type='remove', uid=uid))
+                    del self.uids[uid]
+                    removed_uids[old_item] = uid
+                    rebuilt_objects.append(uid)
+                else:
+                    self.uids[uid] = new_item
 
         self.to_be_expanded.append(self.page.model)
 
@@ -346,19 +356,24 @@ class NetGraph(Component):
                 # if the connection has changed, tell javascript
                 pres = self.get_parents(
                     new_pre,
-                    default_labels=new_name_finder.known_name)[:-1]
+                    default_labels=new_name_finder.known_name)
                 posts = self.get_parents(
                     new_post,
-                    default_labels=new_name_finder.known_name)[:-1]
-                self.to_be_sent.append(dict(
-                    type='reconnect', uid=uid,
-                    pres=pres, posts=posts))
-                changed = True
+                    default_labels=new_name_finder.known_name)
+                if pres is None or posts is None:
+                    return None
+                else:
+                    self.to_be_sent.append(dict(
+                        type='reconnect', uid=uid,
+                        pres=pres[:-1], posts=posts[:-1]))
+                    changed = True
         return changed
 
     def get_parents(self, uid, default_labels=None):
         """Get parent networks for a connection"""
         while uid not in self.parents:
+            if len(self.networks_to_search) == 0:
+                return None
             net = self.networks_to_search.pop(0)
             net_uid = self.page.get_uid(net, default_labels=default_labels)
             for n in net.nodes:
