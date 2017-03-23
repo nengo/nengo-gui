@@ -16,6 +16,7 @@ import * as $ from "jquery";
 import { DataStore } from "../datastore";
 // import * as utils from "../utils";
 import * as viewport from "../viewport";
+import { InputDialogView } from "../views/modal";
 import { Component } from "./component";
 import "./pointer.css";
 
@@ -112,27 +113,36 @@ export class Pointer extends Component {
     }
 
     setValue() {
-        this.sim.modal.title("Enter a Semantic Pointer value...");
-        this.sim.modal.singleInputBody("Pointer", "New value");
-        this.sim.modal.footer("okCancel", function(e) {
-            let value = $("#singleInput").val();
-            const modal = $("#myModalForm").data("bs.validator");
-
-            modal.validate();
-            if (modal.hasErrors() || modal.isIncomplete()) {
+        const modal = new InputDialogView(
+            "Pointer", "New value", "Invalid semantic pointer expression. " +
+                "Semantic pointers must start with a capital letter. " +
+                "Expressions can include mathematical operators such as +, " +
+                "* (circular convolution), and ~ (pseudo-inverse). E.g., " +
+                "(A + ~(B * C) * 2) * 0.5 would be a valid semantic pointer " +
+                "expression."
+        );
+        modal.title = "Enter a Semantic Pointer value...";
+        modal.ok.addEventListener("click", () => {
+            const validator = $(modal).data("bs.validator");
+            validator.validate();
+            if (validator.hasErrors() || validator.isIncomplete()) {
                 return;
             }
+
+            let value = modal.input.value;
             if ((value === null) || (value === "")) {
                 value = ":empty:";
             }
             this.fixedValue = value;
             this.ws.send(value);
-            $("#OK").attr("data-dismiss", "modal");
+            $(modal).modal("hide");
         });
-        $("#myModalForm").validator({
+        this.addKeyHandler(modal);
+
+        $(modal).validator({
             custom: {
-                myValidator: function($item) {
-                    let ptr = $item.val();
+                ngvalidator: item => {
+                    let ptr = item.value;
                     if (ptr === null) {
                         ptr = "";
                     }
@@ -141,17 +151,7 @@ export class Pointer extends Component {
                 },
             },
         });
-
-        $("#singleInput").attr(
-            "data-error",
-            "Invalid semantic pointer expression. Semantic pointers " +
-                "themselves must start with a capital letter. Expressions " +
-                "can include mathematical operators such as +, * (circular " +
-                "convolution), and ~ (pseudo-inverse). E.g., " +
-                "(A+~(B*C)*2)*0.5 would be a valid semantic pointer " +
-                "expression.");
-
-        this.sim.modal.show();
+        modal.show();
     }
 
     /**

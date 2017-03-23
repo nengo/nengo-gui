@@ -7,13 +7,14 @@
 
 import * as $ from "jquery";
 
+import * as allComponents from "./components/all-components";
 import { config } from "./config";
 import "./side-menu.css";
+import { AlertDialogView } from "./views/modal";
 
 export class SideMenu {
     menuOpen;
     menuWidth;
-    modal;
     netgraph;
     sim;
     tabs;
@@ -22,7 +23,6 @@ export class SideMenu {
     constructor (sim) {
         let fileBrowserOpen = false;
         this.sim = sim;
-        this.modal = this.sim.modal;
         this.netgraph = this.modal.netgraph;
         // Menu initially closed
         this.menuOpen = false;
@@ -48,7 +48,7 @@ export class SideMenu {
 
         // Modal Handlers
         $("#Pdf_button")[0].addEventListener("click", () => {
-            this.pdfModal();
+            this.svgModal();
         });
         $("#Download_button")[0].addEventListener("click", () => {
             this.csvModal();
@@ -181,21 +181,76 @@ export class SideMenu {
     /**
      * Export the layout to the SVG in Downloads folder.
      */
-    pdfModal() {
-        this.modal.title("Export the layout to SVG");
-        this.modal.textBody("Do you want to save the file?", "info");
-        this.modal.footer("confirmSavepdf");
-        this.modal.show();
+    svgModal() {
+        const modal = new AlertDialogView("Do you want to save the SVG file?");
+        modal.title = "Export the layout to SVG";
+
+        const save = modal.addFooterButton("Save");
+        save.addEventListener("click", () => {
+            // TODO: without jquery
+            const svg = $("#main svg")[0];
+
+            // Serialize SVG as XML
+            const svgXml = (new XMLSerializer()).serializeToString(svg);
+            let source = "<?xml version='1.0' standalone='no'?>" + svgXml;
+            source = source.replace("&lt;", "<");
+            source = source.replace("&gt;", ">");
+
+            const svgUri = "data:image/svg+xml;base64," + btoa(source);
+
+            // Extract filename from the path
+            // TODO: without jquery
+            const path = $("#filename")[0].textContent;
+            let filename = path.split("/").pop();
+            filename = filename.split(".")[0];
+
+            // Initiate download
+            const link = document.createElement("a");
+            // Experimental future feature; uncomment when finalized.
+            // link.download = filename + ".svg";
+            link.href = svgUri;
+
+            // Adding element to the DOM (needed for Firefox)
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            $(modal).modal("hide");
+        });
+        modal.show();
     }
 
     /**
      * Export the graph data to the CSV in Downloads folder.
      */
     csvModal() {
-        this.modal.title("Export the graph data to CSV");
-        this.modal.textBody("Do you want to save the file?", "info");
-        this.modal.footer("confirmSavecsv");
-        this.modal.show();
+        const modal = new AlertDialogView("Do you want to save the CSV file?");
+        modal.title = "Export the graph data to CSV";
+
+        const save = modal.addFooterButton("Save");
+        save.addEventListener("click", () => {
+            // TODO: remove jquery
+
+            const csv = allComponents.toCSV();
+            // Extract filename from the path
+            const path = $("#filename")[0].textContent;
+            let filename = path.split("/").pop();
+            filename = filename.split(".")[0];
+
+            const uri =
+                "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+
+            const link = document.createElement("a");
+            link.href = uri;
+            link.style.visibility = "hidden";
+            // Experimental future feature; uncomment when finalized.
+            // link.download = filename + ".csv";
+            // Adding element to the DOM (needed for Firefox)
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            $(modal).modal("hide");
+        });
+        modal.show();
     }
 
 }

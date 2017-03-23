@@ -18,7 +18,7 @@ import { Modal } from "./modal";
 import { SimControl } from "./sim-control";
 import "./toolbar.css";
 import * as utils from "./utils";
-import { AlertDialogView } from "./views/modal";
+import { AlertDialogView, InputDialogView } from "./views/modal";
 
 export class Toolbar {
     configDialog: ConfigDialog = new ConfigDialog();
@@ -124,34 +124,29 @@ export class Toolbar {
     }
 
     saveAs() {
-        this.modal.title("Save file as");
-        this.modal.clearBody();
+        // TODO: get without jqeury
+        const filename =$("#filename")[0].innerHTML;
 
-        const filename = $("#filename")[0].innerHTML;
+        const modal = new InputDialogView(null, null);
+        modal.title = "Save file as...";
+        modal.input.value = filename;
 
-        const $form = $("<form class='form-horizontal' id" +
-                        "='myModalForm'/>").appendTo(this.modal.$body);
-        $("<div class='form-group' id='save-as-group'>" +
-          "<input type='text' id='save-as-filename' class='form-control' " +
-          "value='" + filename + "'/>" +
-          "</div>").appendTo($form);
-
-        this.modal.footer("okCancel", function() {
-            const saveAsFilename = $("#save-as-filename").val();
-            if (saveAsFilename !== filename) {
+        modal.ok.addEventListener("click", () => {
+            const newFilename = modal.input.value;
+            if (newFilename !== filename) {
                 const editorCode = this.editor.editor.getValue();
                 this.editor.ws.send(JSON.stringify(
-                    {code: editorCode, save: true, saveAs: saveAsFilename}
+                    {code: editorCode, save: true, saveAs: newFilename}
                 ));
             }
+            $(modal).modal("hide");
         });
-        $("#OK").attr("data-dismiss", "modal");
-        $("#save-as-filename").keypress(event => {
+        modal.ok.addEventListener("keypress", (event: KeyboardEvent) => {
             if (event.which === 13) {
                 event.preventDefault();
-                $("#OK").click();
+                modal.ok.click();
             }
         });
-        this.modal.show();
+        modal.show();
     }
 }

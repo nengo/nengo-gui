@@ -2,6 +2,59 @@
  * Utility functions for views.
  */
 
+import { VNode, h } from "maquette";
+
+export type AlertLevel = "danger" | "info" | "success" | "warning";
+
+export function bsAlert(text: string, level: AlertLevel = "info"): VNode {
+    return h("div.alert.alert-" + level, {role: "alert"}, [
+        h("p", [
+            h("span.glyphicon.glyphicon-exclamation-sign", {
+                "aria-hidden": true
+            }),
+            text,
+        ])
+    ]);
+}
+
+export function bsActivatePopovers(parent: Element) {
+    $(parent).find("[data-toggle=popover]").popover({trigger: "hover"});
+}
+
+export function bsActivateTooltips(parent: Element) {
+    $(parent).find("[data-toggle=tooltip]").tooltip();
+}
+
+export function bsPopover(
+    title: string,
+    content: string,
+    placement = "bottom"
+): VNode {
+    return h("a", {
+        "href": "#",
+        "data-content": content,
+        "data-placement": placement,
+        "data-toggle": "popover",
+        "title": title,
+    }, [
+        h("sup", ["?"]),
+    ]);
+}
+
+export function bsTooltip(
+    content: string,
+    placement: string = "bottom"
+): VNode {
+    return h("a", {
+        "href": "#",
+        "data-toggle": "tooltip",
+        "data-placement": placement,
+        "title": content
+    }, [
+        h("sup", ["?"]),
+    ]);
+}
+
 /**
  * Safely sets the content of an element to the given text.
  *

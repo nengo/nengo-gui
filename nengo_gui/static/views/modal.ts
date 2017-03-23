@@ -2,6 +2,7 @@ import * as $ from "jquery";
 import { VNode, dom, h } from "maquette";
 
 import "./modal.css";
+import * as views from "./views";
 
 export class ModalView {
     body: HTMLDivElement;
@@ -48,16 +49,19 @@ export class ModalView {
         this._title.textContent = title;
     }
 
-    addFooterButton(label: string): HTMLButtonElement {
+    addFooterButton(
+        label: string,
+        style: string = "primary"
+    ): HTMLButtonElement {
         const node =
-            h("button.btn.btn-primary", {"type": "button"}, [label])
+            h("button.btn.btn-" + style, {"type": "button"}, [label])
         const button = dom.create(node).domNode;
         this.footer.appendChild(button);
         return button as HTMLButtonElement;
     }
 
     addCloseButton(label: string = "Close"): HTMLButtonElement {
-        const button = this.addFooterButton(label);
+        const button = this.addFooterButton(label, "default");
         button.setAttribute("data-dismiss", "modal");
         return button;
     }
@@ -71,28 +75,21 @@ export class ModalView {
     }
 }
 
-export type AlertLevel = "info" | "danger";
-
 export class AlertDialogView extends ModalView {
+    close: HTMLButtonElement;
 
-    constructor(bodyText: string, alertLevel: AlertLevel = "info") {
+    constructor(text: string, level: views.AlertLevel = "info") {
         super();
-        const node =
-            h("div.alert.alert-" + alertLevel, {role: "alert"}, [
-                h("p", [
-                    h("span.glyphicon.glyphicon-exclamation-sign", {
-                        "aria-hidden": true
-                    }),
-                    bodyText,
-                ])
-            ]);
-        this.body.appendChild(dom.create(node).domNode);
+        this.body.appendChild(dom.create(
+            views.bsAlert(text, level)
+        ).domNode);
+        this.close = this.addCloseButton();
     }
 }
 
 export class InputDialogView extends ModalView {
     cancel: HTMLButtonElement;
-    // controls: HTMLDivElement
+    form: HTMLFormElement;
     input: HTMLInputElement;
     ok: HTMLButtonElement;
 
@@ -101,23 +98,29 @@ export class InputDialogView extends ModalView {
         const node =
             h("form.form-horizontal", [
                 h("div.form-group", [
-                    h("label.control-label", {"for": "single-input"}, [label]),
                     h("div.controls", [
-                        h("input#single-input", {
-                            "data-error": errorText,
-                            "data-ngvalidator": "custom",
-                            "placeholder": initialValues,
-                            "type": "text",
-                        }),
+                        h("label.control-label", [
+                            label,
+                            h("input", {
+                                "data-error": errorText,
+                                "data-ngvalidator": "custom",
+                                "placeholder": initialValues,
+                                "type": "text",
+                            }),
+                        ]),
                         h("div.help-block.with-errors"),
                     ]),
                 ]),
             ]);
 
-        this.body.appendChild(dom.create(node).domNode);
-        // this.controls = this.body.querySelector(".controls") as HTMLDivElement;
-        this.input =
-            this.body.querySelector("#single-input") as HTMLInputElement;
+        this.form = dom.create(node).domNode as HTMLFormElement;
+        this.body.appendChild(this.form);
+        this.input = this.body.querySelector("input") as HTMLInputElement;
+        this.cancel = this.addCloseButton("Cancel");
+        this.ok = this.addFooterButton("OK");
+
+        // Prevent enter from submitting the form
+        this.form.onsubmit = () => false;
     }
 
     show() {

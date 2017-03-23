@@ -209,9 +209,7 @@ export class XYValue extends Component {
                 "'<min>,<max>' and the axes must cross at zero."
         );
         modal.title = "Set graph range...";
-        const okButton = modal.addFooterButton("OK");
-        modal.addCloseButton("Cancel");
-        okButton.addEventListener("click", () => {
+        modal.ok.addEventListener("click", () => {
             const validator = $(modal).data("bs.validator");
             validator.validate();
             if (validator.hasErrors() || validator.isIncomplete()) {
@@ -225,8 +223,7 @@ export class XYValue extends Component {
                 this.update();
                 this.saveLayout();
             }
-            // Set the data-dismiss attribute and let event propagate
-            okButton.setAttribute("data-dismiss", "modal");
+            $(modal).modal("hide");
         });
         this.addKeyHandler(modal);
 
@@ -265,29 +262,32 @@ export class XYValue extends Component {
     }
 
     setIndices() {
-        this.sim.modal.title("Set X and Y indices...");
-        this.sim.modal.singleInputBody(
-            [this.indexX, this.indexY], "New indices");
-        this.sim.modal.footer("okCancel", function(e) {
-            let newIndices = $("#singleInput").val();
-            const modal = $("#myModalForm").data("bs.validator");
-
-            modal.validate();
-            if (modal.hasErrors() || modal.isIncomplete()) {
+        const modal = new InputDialogView(
+            String([this.indexX, this.indexY]), "New indices",
+            "Input should be two positive integers in the form " +
+                "'<dimension 1>,<dimension 2>'. Dimensions are zero indexed."
+        );
+        modal.title = "Set X and Y indices...";
+        modal.ok.addEventListener("click", () => {
+            const validator = $(modal).data("bs.validator");
+            validator.validate();
+            if (validator.hasErrors() || validator.isIncomplete()) {
                 return;
             }
-            if (newIndices !== null) {
-                newIndices = newIndices.split(",");
+            if (modal.input.value !== null) {
+                const newIndices = modal.input.value.split(",");
                 this.updateIndices(parseInt(newIndices[0], 10),
-                                    parseInt(newIndices[1], 10));
+                                   parseInt(newIndices[1], 10));
                 this.saveLayout();
             }
-            $("#OK").attr("data-dismiss", "modal");
+            $(modal).modal("hide");
         });
-        $("#myModalForm").validator({
+        this.addKeyHandler(modal);
+
+        $(modal).validator({
             custom: {
-                myValidator: function($item) {
-                    const nums = $item.val().split(",").map(Number);
+                ngvalidator: item => {
+                    const nums = item.value.split(",").map(Number);
                     return ((parseInt(nums[0], 10) === nums[0]) &&
                             (parseInt(nums[1], 10) === nums[1]) &&
                             (nums.length === 2) &&
@@ -298,13 +298,7 @@ export class XYValue extends Component {
                 },
             },
         });
-
-        $("#singleInput").attr(
-            "data-error", "Input should be two positive " +
-                "integers in the form '<dimension 1>,<dimension 2>'. " +
-                "Dimensions are zero indexed.");
-
-        this.sim.modal.show();
+        modal.show();
     }
 
     updateIndices(indexX, indexY) {

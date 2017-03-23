@@ -29,5 +29,6 @@ export class HotkeysDialogView extends ModalView {
             ]);
 
         this.body.appendChild(dom.create(node).domNode);
+        this.addCloseButton();
     }
 }

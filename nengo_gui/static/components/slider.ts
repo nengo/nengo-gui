@@ -262,9 +262,7 @@ export class Slider extends Component {
                 "numerical value for each slider."
         );
         modal.title = "Set slider value(s)...";
-        const okButton = modal.addFooterButton("OK");
-        modal.addCloseButton("Cancel");
-        okButton.addEventListener("click", () => {
+        modal.ok.addEventListener("click", () => {
             const validator = $(modal).data("bs.validator");
             validator.validate();
             if (validator.hasErrors() || validator.isIncomplete()) {
@@ -280,9 +278,9 @@ export class Slider extends Component {
                 });
             }
             this.immediateNotify = true;
-            // Set the data-dismiss attribute and let event propagate
-            okButton.setAttribute("data-dismiss", "modal");
+            $(modal).modal("hide");
         });
+        this.addKeyHandler(modal);
 
         $(modal).validator({
             custom: {
@@ -315,9 +313,7 @@ export class Slider extends Component {
             String([range[1], range[0]]), "New range",
             "Input should be in the form '<min>,<max>'.");
         modal.title = "Set slider range...";
-        const okButton = modal.addFooterButton("OK");
-        modal.addCloseButton("Cancel");
-        okButton.addEventListener("click", () => {
+        modal.ok.addEventListener("click", () => {
             const validator = $(modal).data("bs.validator");
             validator.validate();
             if (validator.hasErrors() || validator.isIncomplete()) {
@@ -332,8 +328,7 @@ export class Slider extends Component {
                 }
                 this.saveLayout();
             }
-            // Set the data-dismiss attribute and let event propagate
-            okButton.setAttribute("data-dismiss", "modal");
+            $(modal).modal("hide");
         });
         this.addKeyHandler(modal);
 

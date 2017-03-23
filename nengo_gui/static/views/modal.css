@@ -13,6 +13,7 @@ div.modal {
         input[type="text"],
         input[type="number"] {
             cursor: text;
+            width: 100%;
         }
 
         .tab-pane .dt-connections {
@@ -32,6 +33,7 @@ div.modal {
 
             label {
                 text-align: left;
+                width: 100%;
             }
         }
 
@@ -112,16 +114,25 @@ div.modal {
         .popover-title {
             line-height: 1.2;
         }
-    }
 
-    .alert .glyphicon {
-        padding-right: 5px;
-    }
-
-    .modal-dialog.modal-sm td {
-        padding: 4px;
+        .alert .glyphicon {
+            padding-right: 5px;
+        }
     }
 }
+
+.modal-dialog.modal-sm {
+
+    .modal-body {
+        padding-left: 0;
+        padding-right: 0;
+
+        td {
+            padding: 4px;
+        }
+    }
+}
+
 
 div.modal-backdrop {
     z-index: 100000000;

@@ -165,9 +165,7 @@ export class Raster extends Component {
             count, "Number of neurons", "Input should be a positive integer"
         );
         modal.title = "Set number of neurons...";
-        const okButton = modal.addFooterButton("OK");
-        modal.addCloseButton("Cancel");
-        okButton.addEventListener("click", () => {
+        modal.ok.addEventListener("click", () => {
             const validator = $(modal).data("bs.validator");
             validator.validate();
             if (validator.hasErrors() || validator.isIncomplete()) {
@@ -178,12 +176,11 @@ export class Raster extends Component {
                 this.setN_neurons(newCount);
                 this.axes2d.fitTicks(this);
             }
-            // Set the data-dismiss attribute and let event propagate
-            okButton.setAttribute("data-dismiss", "modal");
-
             // TODO: this was a separate handler before, but should only
             //       fire when validation passes right?
             this.onResize(this.div.clientWidth, this.div.clienHeight);
+
+            $(modal).modal("hide");
         });
         this.addKeyHandler(modal);
 

@@ -334,9 +334,7 @@ export class Value extends Component {
     setLegendLabels() {
         const modal = new InputDialogView("Legend label", "New value");
         modal.title = "Enter comma seperated legend label values";
-        const okButton = modal.addFooterButton("OK");
-        modal.addCloseButton("Cancel");
-        okButton.addEventListener("click", () => {
+        modal.ok.addEventListener("click", () => {
             const labelCsv = modal.input.value;
 
             // No validation to do.
@@ -364,9 +362,9 @@ export class Value extends Component {
                 //                   this.uid);
                 this.saveLayout();
             }
-            // Set the data-dismiss attribute and let event propagate
-            okButton.setAttribute("data-dismiss", "modal");
+            $(modal).modal("hide");
         });
+        this.addKeyHandler(modal);
         modal.show();
     }
 
@@ -390,9 +388,7 @@ export class Value extends Component {
             range, "New range", "Input should be in the form '<min>,<max>'."
         );
         modal.title = "Set graph range...";
-        const okButton = modal.addFooterButton("OK");
-        modal.addCloseButton("Cancel");
-        okButton.addEventListener("click", () => {
+        modal.ok.addEventListener("click", () => {
             const validator = $(modal).data("bs.validator");
             validator.validate();
             if (validator.hasErrors() || validator.isIncomplete()) {
@@ -407,13 +403,13 @@ export class Value extends Component {
                 this.axes2d.axisY.tickValues([min, max]);
                 this.axes2d.fitTicks(this);
             }
-            // Set the data-dismiss attribute and let event propagate
-            okButton.setAttribute("data-dismiss", "modal");
-
             // TODO: this was a separate handler before, but should only
             //       fire when validation passes right?
             this.onResize(this.div.clientWidth, this.div.clienHeight);
+
+            $(modal).modal("hide");
         });
+        this.addKeyHandler(modal);
 
         $(modal).validator({
             custom: {
@@ -449,9 +445,7 @@ export class Value extends Component {
             "Input should be a non-negative number"
         );
         modal.title = "Set synaptic filter...";
-        const okButton = modal.addFooterButton("OK");
-        modal.addCloseButton("Cancel");
-        okButton.addEventListener("click", () => {
+        modal.ok.addEventListener("click", () => {
             const validator = $(modal).data("bs.validator");
             validator.validate();
             if (validator.hasErrors() || validator.isIncomplete()) {
@@ -464,9 +458,9 @@ export class Value extends Component {
                     this.ws.send("synapse:" + this.synapse);
                 }
             }
-            // Set the data-dismiss attribute and let event propagate
-            okButton.setAttribute("data-dismiss", "modal");
+            $(modal).modal("hide");
         });
+        this.addKeyHandler(modal);
 
         $(modal).validator({
             custom: {
