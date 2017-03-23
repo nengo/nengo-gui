@@ -13,9 +13,11 @@ import "./favicon.ico";
 import "./nengo.css";
 
 import { ConfigDialog, configItems } from "./config";
+import { Editor } from "./editor";
 import { HotkeyManager } from "./hotkeys";
 import { SimControl } from "./sim-control";
 import { ConfigDialogView } from "./views/config";
+import { EditorView } from "./views/editor";
 import { HotkeysDialogView } from "./views/hotkeys";
 import { AlertDialogView, InputDialogView, ModalView } from "./views/modal";
 import { SimControlView } from "./views/sim-control";
@@ -54,6 +56,9 @@ export class NengoDebug {
                 cd.show();
                 return cd;
             },
+            Editor: () => {
+                return new Editor(null);
+            },
             SimControl: () => {
                 const sc = new SimControl("uid", 4.0, 0.5);
                 sc.attach(new MockConnection());
@@ -70,6 +75,9 @@ export class NengoDebug {
                 const cd = new ConfigDialogView(configItems);
                 cd.show();
                 return cd;
+            },
+            EditorView: () => {
+                return new EditorView();
             },
             HotkeysDialogView: () => {
                 const m = new HotkeyManager();

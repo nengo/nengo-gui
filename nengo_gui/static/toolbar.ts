@@ -14,7 +14,6 @@ import * as $ from "jquery";
 import { config, ConfigDialog } from "./config";
 import { Editor } from "./editor";
 import * as menu from "./menu";
-import { Modal } from "./modal";
 import { SimControl } from "./sim-control";
 import "./toolbar.css";
 import * as utils from "./utils";
@@ -31,9 +30,9 @@ export class Toolbar {
 
     constructor(filename: string, sim: SimControl) {
         this.sim = sim;
-        this.netgraph = this.modal.netgraph;
-        this.hotkeys = this.modal.hotkeys;
-        this.editor = this.modal.editor;
+        // this.netgraph = this.modal.netgraph;
+        // this.hotkeys = this.modal.hotkeys;
+        // this.editor = this.modal.editor;
 
         $("#Reset_layout_button")[0].addEventListener("click", () => {
             this.askResetLayout();
@@ -49,7 +48,7 @@ export class Toolbar {
             this.configModal();
         });
         $("#Sync_editor_button")[0].addEventListener("click", () => {
-            this.editor.updateTrigger = true;
+            // this.editor.updateTrigger = true;
         });
         $("#Help_button")[0].addEventListener("click", () => {
             this.hotkeys.callMenu();
@@ -58,7 +57,7 @@ export class Toolbar {
             this.saveAs();
         });
 
-        utils.safeSetText($("#filename")[0], filename);
+        $("#filename")[0].textContent = filename;
 
         // Update the URL so reload and bookmarks work as expected
         history.pushState({}, filename, "/?filename=" + filename);

@@ -11,7 +11,7 @@
 
 import * as $ from "jquery";
 
-import Axes2D from "./2d-axes";
+import { Axes2D } from "./2d-axes";
 
 export class TimeAxes extends Axes2D {
     axisTimeEnd;
@@ -41,7 +41,7 @@ export class TimeAxes extends Axes2D {
         this.scaleX.domain([start, end]);
         this.axisTimeStart.textContent = start.toFixed(3);
         this.axisTimeEnd.textContent = end.toFixed(3);
-        this.axisX_g.call(this.axisX);
+        // this.axisX_g.call(this.axisX);
     }
 
     onResize(width, height) {

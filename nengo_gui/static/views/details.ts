@@ -4,6 +4,7 @@ import { VNode, dom, h } from "maquette";
 import { ModalView } from "./modal";
 import { lines } from "./plots";
 import * as views from "./views";
+import * as tooltips from "../tooltips";
 
 export class DetailsDialogView extends ModalView {
     contents: HTMLDivElement;
@@ -34,7 +35,7 @@ export class DetailsDialogView extends ModalView {
 
                 // Make a row in the table
                 const tr = h("tr", [
-                    h("td", [String(connOther.label.innerHTML)].concat(
+                    h("td", (<Array<string|VNode>> [String(connOther.label.innerHTML)]).concat(
                         dropdown(
                             connOther.uid,
                             conninfo.objType[String(obj.uid)],
@@ -47,7 +48,7 @@ export class DetailsDialogView extends ModalView {
                     h("td", [
                         conninfo.fan[String(obj.uid)],
                         conninfo.objType[String(obj.uid)] === "passthrough" ?
-                            views.tooltip(tooltips.Conn.fan_passthrough) : null,
+                            views.bsTooltip(tooltips.Conn.fan_passthrough[0]) : null,
                     ]),
                 ]);
             })
@@ -62,10 +63,13 @@ export class DetailsDialogView extends ModalView {
                     let endpointIcon = "glyphicon glyphicon-triangle-right";
                     let shadedOption = "shaded";
                     let pathItem: string;
-                    if (connUidList[p] in this.netgraph.svgObjects) {
+
+                    const svgObjects: any = {};
+                    // svgObjects = this.netgraph.svgObjects
+
+                    if (connUidList[p] in svgObjects) {
                         // If the uid is in ng.svgObjects, use the obj's label
-                        pathItem = this.netgraph.svgObjects[connUidList[p]]
-                            .label.innerHTML;
+                        pathItem = svgObjects[connUidList[p]].label.innerHTML;
                     } else {
                         // Otherwise, use the object's uid (with brackets to
                         // indicate that the UI is unsure of the exact label)
@@ -103,7 +107,7 @@ export class DetailsDialogView extends ModalView {
                         "data-toggle": "collapse",
                         "href": "#pathlist" + slug,
                     }, [
-                        views.bsTooltip(tooltips.Conn.expand, "right"),
+                        views.bsTooltip(tooltips.Conn.expand[0], "right"),
                     ])
                 );
 
@@ -185,16 +189,16 @@ export class DetailsDialogView extends ModalView {
                     h("tr", [
                         h("th.conn-objs", [
                             "Object",
-                            views.popover(
+                            views.bsPopover(
                                 "'Post' object",
                                 "This object plays the role of 'Post' in " +
                                     "the connection from this object.",
                                 "top"
                             ),
-                        ])
+                        ]),
                         h("th.conn-funcs", [
                             "Function",
-                            views.popover(
+                            views.bsPopover(
                                 "Connection function",
                                 "The function being computed across this " +
                                     "connection (in vector space).",
@@ -203,7 +207,7 @@ export class DetailsDialogView extends ModalView {
                         ]),
                         h("th.conn-fan", [
                             "Fan out",
-                            views.popover(
+                            views.bsPopover(
                                 "Neuron fan-out",
                                 "The number of outgoing neural connections. " +
                                     "In biological terms, this is the " +
@@ -325,11 +329,9 @@ export class EnsembleDialogView extends DetailsDialogView {
     constructor() {
         super();
 
-        this.params = this.addParamTab(params, strings);
-        this.plots = this.addPlotsTab(plots);
-        this.connections = this.addConnectionsTab(ngi, conninfo);
-
-        this.params.appendChild(this.paramList(params, tooltips.Ens));
+        this.params = this.addParamTab(null, null);
+        this.plots = this.addPlotsTab(null);
+        this.connections = this.addConnectionsTab(null, null);
     }
 }
 
@@ -341,11 +343,9 @@ export class NodeDialogView extends DetailsDialogView {
     constructor() {
         super();
 
-        this.params = this.addParamTab(params, strings);
-        this.plots = this.addPlotsTab(plots);
-        this.connections = this.addConnectionsTab(ngi, conninfo);
-
-        this.params.appendChild(this.paramList(params, tooltips.Node));
+        this.params = this.addParamTab(null, null);
+        this.plots = this.addPlotsTab(null);
+        this.connections = this.addConnectionsTab(null, null);
     }
 }
 
@@ -356,10 +356,8 @@ export class NetworkDialogView extends DetailsDialogView {
     constructor() {
         super();
 
-        this.stats = this.addStatisticsTab(stats);
-        this.connections = this.addConnectionsTab(ngi, conninfo);
-
-        this.stats.appendChild(this.statistics(stats));
+        this.stats = this.addStatisticsTab(null);
+        this.connections = this.addConnectionsTab(null, null);
     }
 
     addStatisticsTab(stats): HTMLDivElement {

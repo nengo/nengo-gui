@@ -126,13 +126,13 @@ export class SimControl {
         conn.bind("close", event => {
             this.disconnected();
         });
-        conn.bind("simcontrol.status", ({status: status}) => {
+        conn.bind("simcontrol.status", ({status}) => {
             this.status = status;
         });
-        conn.bind("simcontrol.simulator", ({simulator: simulator}) => {
+        conn.bind("simcontrol.simulator", ({simulator}) => {
             this.simulatorOptions = simulator;
         });
-        conn.bind("simcontrol.config", ({js: js}) => {
+        conn.bind("simcontrol.config", ({js}) => {
             // TODO: nooooo
             eval(js);
         });

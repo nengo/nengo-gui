@@ -15,156 +15,121 @@ import * as interact from "interact.js";
 import * as $ from "jquery";
 
 import { config } from "./config";
-import "./editor.css";
 import { HotkeyManager } from "./hotkeys";
 import * as utils from "./utils";
-import * as viewport from "./viewport";
-import { WSConnection } from "./websocket";
+import { EditorView } from "./views/editor";
+import { Connection } from "./websocket";
 
 const Range = ace.acequire("ace/range").Range;
 
 export class Editor {
-    console;
-    consoleError;
-    consoleHeight;
-    consoleStdout;
     currentCode;
     editor;
     marker;
     maxWidth;
-    minWidth;
-    netgraph;
-    saveDisabled;
-    updateTrigger;
+    minWidth: number = 50;
+    saveDisabled: boolean = true;
+    syncIntervalID: number = null;
+    view = new EditorView();
     ws;
 
-    constructor(uid, netgraph) {
-        this.netgraph = netgraph;
+    private attached: Connection[] = [];
 
-        if (uid[0] === "<") {
-            console.error("invalid uid for Editor: " + uid);
-        }
-        this.minWidth = 50;
-        this.maxWidth = $(window).width() - 100;
+    constructor(netgraph) {
+        // if (uid[0] === "<") {
+        //     console.error("invalid uid for Editor: " + uid);
+        // }
 
-        this.ws = new WSConnection(uid); // TODO: , "editor");
-        this.ws.onmessage = function(event) {
-            this.onmessage(event);
-        };
+        this.maxWidth = window.innerWidth - 100;
 
         this.currentCode = "";
-        const codeDiv = document.createElement("div");
-        codeDiv.id = "editor";
-        $("#rightpane").append(codeDiv);
-        this.editor = ace.edit("editor");
+
+        // Set up Ace editor
+        this.editor = ace.edit(this.view.editor);
         this.editor.getSession().setMode("ace/mode/python");
         this.editor.gotoLine(1);
         this.marker = null;
+        this.view.consoleHeight = this.consoleHeight;
 
-        this.console = document.createElement("div");
-        this.console.id = "console";
-        $("#rightpane").append(this.console);
-        this.consoleHeight = config.consoleHeight;
-        this.consoleStdout = document.createElement("pre");
-        this.consoleError = document.createElement("pre");
-        this.consoleStdout.id = "consoleStdout";
-        this.consoleError.id = "consoleError";
-        this.console.appendChild(this.consoleStdout);
-        this.console.appendChild(this.consoleError);
-        $("#console").height(this.consoleHeight);
-
-        this.saveDisabled = true;
-        // If an update of the model from the code editor is allowed
-        this.updateTrigger = true;
-        // Automatically update the model based on the text
-        this.autoUpdate = true;
-
-        // Setup the button to toggle the code editor
-        $("#Toggle_ace").on("click", function() {
-            this.toggleShown();
-        });
-        $("#Save_file").on("click", function() {
-            this.saveFile();
-        });
-        $("#Font_increase").on("click", function() {
-            this.fontSize += 1;
-        });
-        $("#Font_decrease").on("click", function() {
-            this.fontSize -= 1;
-        });
-
-        this.scheduleUpdates();
-
-        this.width = config.editorWidth;
-        this.hidden = config.hideEditor;
-        this.fontSize = config.editorFontSize;
-        this.autoUpdate = config.autoUpdate;
         this.redraw();
 
-        $(window).on("resize", function() {
+        // Sync with server every 200 ms
+        if (this.autoUpdate) {
+            this.syncIntervalID = window.setInterval(() => {
+                this.syncWithServer();
+            }, 200);
+        }
+
+        // Add event handlers
+        window.addEventListener("resize", utils.throttle(() => {
             this.onresize();
-        });
-        interact("#editor")
+        }, 66)); // 66 ms throttle = 15 FPS update
+
+        interact(this.view.editor)
             .resizable({
                 edges: { bottom: false, left: true, right: false, top: false },
-            }).on("resizemove", function(event) {
+            }).on("resizemove", (event) => {
                 this.width -= event.deltaRect.left;
-                this.redraw();
-p            });
+            });
 
-        interact("#console")
+        interact(this.view.console)
             .resizable({
                 edges: { bottom: false, left: true, right: false, top: true },
-            }).on("resizemove", function(event) {
-                const max = $("#rightpane").height() - 40;
+            }).on("resizemove", (event) => {
+                const max = this.view.height - 40;
                 const min = 20;
-
-                this.consoleHeight -= event.deltaRect.top;
-
-                this.consoleHeight = utils.clip(this.consoleHeight, min, max);
-                $("#console").height(this.consoleHeight);
-
+                const height = this.consoleHeight - event.deltaRect.top;
+                this.consoleHeight = utils.clip(height, min, max);
                 this.width -= event.deltaRect.left;
-                this.redraw();
-            }).on("resizeend", function(event) {
-                config.consoleHeight = this.consoleHeight;
-            });
+            }); // .on("resizeend", () {
+            //     this.consoleHeight = this.consoleHeight;
+            // });
 
         document.addEventListener("nengoConfigChange", (event: CustomEvent) => {
             const key = event.detail;
             if (key === "editorWidth") {
-                $("#rightpane").width(
-                    utils.clip(this.width, this.minWidth, this.maxWidth)
-                );
+                this.view.width =
+                    utils.clip(this.width, this.minWidth, this.maxWidth);
+                this.redraw();
+            } else if (key === "consoleHeight") {
+                this.view.consoleHeight = this.consoleHeight;
+                this.redraw();
             } else if (key === "hideEditor") {
-                if (this.hidden) {
-                    this.hideEditor();
-                } else {
-                    this.showEditor();
-                }
+                this.view.hidden = this.hidden;
             } else if (key === "editorFontSize") {
                 this.editor.setFontSize(Math.max(this.fontSize, 6));
             } else if (key === "autoUpdate") {
-                this.updateTrigger = this.autoUpdate;
+                if (this.autoUpdate && this.syncIntervalID === null) {
+                    this.syncIntervalID = window.setInterval(() => {
+                        this.syncWithServer();
+                    }, 200);
+                } else if (!this.autoUpdate && this.syncIntervalID !== null) {
+                    window.clearInterval(this.syncIntervalID);
+                    this.syncIntervalID = null;
+                }
             }
         });
-
     }
 
-    get width(): number {
-        return config.editorWidth;
+    // Automatically update the model based on the text
+    get autoUpdate(): boolean {
+        return config.autoUpdate;
     }
 
-    set width(val: number) {
-        config.editorWidth = val;
+    set autoUpdate(val: boolean) {
+        config.autoUpdate = val;
     }
 
-    get hidden(): boolean {
-        return config.hideEditor;
+    get editorCode(): string {
+        return this.editor.getValue();
     }
 
-    set hidden(val: boolean) {
-        config.hideEditor = val;
+    get consoleHeight(): number {
+        return config.consoleHeight;
+    }
+
+    set consoleHeight(val: number) {
+        config.consoleHeight = val;
     }
 
     get fontSize(): number {
@@ -175,148 +140,142 @@ p            });
         config.editorFontSize = val;
     }
 
-    get autoUpdate(): boolean {
-        return config.autoUpdate;
+    get hidden(): boolean {
+        return config.hideEditor;
     }
 
-    set autoUpdate(val: boolean) {
-        config.autoUpdate = val;
+    set hidden(val: boolean) {
+        config.hideEditor = val;
     }
 
-    hotkeys(manager: HotkeyManager) {
-        manager.add("Toggle editor", "e", {ctrl: true}, () => {
-            this.toggleShown();
-        });
-        manager.add("Save", "s", {ctrl: true}, () => { this.saveFile(); });
-        // TODO: pick better shortcuts
-        manager.add("Toggle auto-update", "1", {ctrl: true, shift: true}, () => {
-            this.autoUpdate = !this.autoUpdate;
-            this.updateTrigger = this.autoUpdate;
-        });
-        manager.add("Update display", "1", {ctrl: true}, () => {
-            this.updateTrigger = true;
-        });
+    get width(): number {
+        return config.editorWidth;
     }
 
-    /**
-     * Send changes to the code to server every 100ms.
-     */
-    scheduleUpdates() {
-        setInterval(function() {
-            const editorCode = this.editor.getValue();
-            if (editorCode !== this.currentCode) {
-                if (this.updateTrigger) {
-                    this.updateTrigger = this.autoUpdate;
-                    this.ws.send(JSON.stringify({
-                        code: editorCode,
-                        save: false,
-                    }));
-                    this.currentCode = editorCode;
-                    this.enableSave();
-                    $("#Sync_editor_button").addClass("disabled");
-                } else {
-                    // Visual indication that the code is different
-                    // than the model displayed
-                    $("#Sync_editor_button").removeClass("disabled");
-                }
-            }
-        }, 100);
+    set width(val: number) {
+        config.editorWidth = val;
     }
 
-    saveFile() {
-        if (!($("#Save_file").hasClass("disabled"))) {
-            const editorCode = this.editor.getValue();
-            this.ws.send(JSON.stringify({code: editorCode, save: true}));
-            this.disableSave();
-        }
-    }
+    attach(conn: Connection) {
 
-    enableSave() {
-        $("#Save_file").removeClass("disabled");
-    }
-
-    disableSave() {
-        $("#Save_file").addClass("disabled");
-    }
-
-    onmessage(event) {
-        const msg = JSON.parse(event.data);
-        if (msg.code !== undefined) {
-            this.editor.setValue(msg.code);
-            this.currentCode = msg.code;
+        conn.bind("editor.code", ({code}) => {
+            this.editor.setValue(code);
+            this.currentCode = code;
             this.editor.gotoLine(1);
             this.redraw();
-            this.disableSave();
-        } else if (msg.error === null) {
+        });
+
+        conn.bind("editor.stdout", ({stdout}) => {
             if (this.marker !== null) {
                 this.editor.getSession().removeMarker(this.marker);
                 this.marker = null;
                 this.editor.getSession().clearAnnotations();
             }
-            $(this.consoleStdout).text(msg.stdout);
-            $(this.consoleError).text("");
-            this.console.scrollTop = this.console.scrollHeight;
-        } else if (msg.filename !== undefined) {
-            if (msg.valid) {
-                $("#filename")[0].innerHTML = msg.filename;
+            this.view.stdout = stdout;
+            this.view.stderr = "";
+            this.view.console.scrollTop = this.view.console.scrollHeight;
+        });
+
+        conn.bind("editor.filename", ({filename, error}) => {
+            if (error === null) {
+                $("#filename")[0].innerHTML = filename;
                 // Update the URL so reload and bookmarks work as expected
-                history.pushState(
-                    {}, msg.filename, "/?filename=" + msg.filename);
+                history.pushState({}, filename, "/?filename=" + filename);
             } else {
-                alert(msg.error);
+                alert(error); // TODO: modal instead of alert
             }
-        } else if (msg.error !== undefined) {
-            const line = msg.error.line;
+        });
+
+        conn.bind("editor.error", ({error, shortMsg, stdout}) => {
+            const line = error.line;
             this.marker = this.editor.getSession()
                 .addMarker(new Range(line - 1, 0, line - 1, 10),
                            "highlight", "fullLine", true);
             this.editor.getSession().setAnnotations([{
                 row: line - 1,
-                text: msg.shortMsg,
+                text: shortMsg,
                 type: "error",
             }]);
-            $(this.consoleStdout).text(msg.stdout);
-            $(this.consoleError).text(msg.error.trace);
-            this.console.scrollTop = this.console.scrollHeight;
-        } else {
-            console.warn("Unhandled message: " + msg);
-        }
+            this.view.stdout = stdout;
+            this.view.stderr = error.trace;
+            this.view.console.scrollTop = this.view.console.scrollHeight;
+        });
+
+        this.attached.push(conn);
     }
 
-    onresize() {
-        this.maxWidth = $(window).width() - 100;
+    attachToolbar(toolbar: any) {
+        // TODO: get handles
+        // Setup the button to toggle the code editor
+        $("#Toggle_ace").on("click", () => {
+            this.toggleHidden();
+        });
+        $("#Save_file").on("click", () => {
+            this.saveFile();
+        });
+        $("#Font_increase").on("click", () => {
+            this.fontSize += 1;
+        });
+        $("#Font_decrease").on("click", () => {
+            this.fontSize -= 1;
+        });
+        this.editor.on("change", () => {
+            $("#Sync_editor_button").removeClass("disabled");
+        });
+        this.view.editor.addEventListener("saved", () => {
+            $("#Sync_editor_button").addClass("disabled");
+        });
+    }
+
+    hotkeys(manager: HotkeyManager) {
+        manager.add("Toggle editor", "e", {ctrl: true}, () => {
+            this.toggleHidden();
+        });
+        manager.add("Save", "s", {ctrl: true}, () => { this.saveFile(); });
+        // TODO: pick better shortcuts
+        manager.add("Toggle auto-update", "1", {ctrl: true, shift: true}, () => {
+            this.autoUpdate = !this.autoUpdate;
+        });
+        manager.add("Update display", "1", {ctrl: true}, () => {
+            this.syncWithServer();
+        });
+    }
+
+    onresize = utils.throttle(() => {
+        this.maxWidth = window.innerWidth - 100;
         if (this.width > this.maxWidth) {
             this.width = this.maxWidth;
         }
         this.redraw();
+    }, 66);
+
+    redraw = utils.throttle(() => {
+        this.editor.resize();
+        // if (this.netgraph !== undefined && this.netgraph !== null) {
+        //     this.netgraph.onresize();
+        // }
+        // viewport.onresize();
+    }, 66);
+
+    saveFile() {
+        this.syncWithServer(true);
     }
 
-    showEditor() {
-        const editor = document.getElementById("rightpane");
-        editor.style.display = "flex";
-        this.redraw();
-    }
+    // syncWithServer called at most once per 150 ms
+    syncWithServer = utils.throttle((save: boolean = false) => {
+        if (this.editorCode !== this.currentCode) {
+            this.ws.send(JSON.stringify({code: this.editorCode, save: save}));
+            this.currentCode = this.editorCode;
+            this.view.editor.dispatchEvent(new Event("saved"));
+        }
+    }, 150);
 
-    hideEditor() {
-        const editor = document.getElementById("rightpane");
-        editor.style.display = "none";
-        this.redraw();
-    }
-
-    toggleShown() {
+    toggleHidden() {
         if (this.hidden) {
             this.hidden = false;
         } else {
             this.hidden = true;
         }
         this.redraw();
-    }
-
-    redraw() {
-        this.editor.resize();
-        if (this.netgraph !== undefined) {
-            this.netgraph.onresize();
-        }
-        viewport.onresize();
     }
 }

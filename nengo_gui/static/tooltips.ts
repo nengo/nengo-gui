@@ -2,22 +2,6 @@ import * as $ from "jquery";
 
 import "./tooltips.css";
 
-export function tooltip($parent, content, placement="bottom") { // tslint:disable-line
-    const $tooltip = $("<a href='#' data-toggle='tooltip' " +
-                       "data-placement='" + placement + "' title='" +
-                       content + "'/>");
-    $tooltip.append("<sup>?</sup>").appendTo($parent);
-    $tooltip.tooltip();
-}
-
-export function popover($parent, title, content, placement="bottom") { // tslint:disable-line
-    const $tooltip = $("<a href='#' data-toggle='popover' " +
-                       "data-placement='" + placement + "' title='" +
-                       title + "' data-content='" + content + "'/>");
-    $tooltip.append("<sup>?</sup>").appendTo($parent);
-    $tooltip.popover({"trigger": "hover"});
-}
-
 export const Ens = {
     "n_neurons": ["Type: int", "The number of neurons."],
     "dimensions": ["Type: int",
