@@ -612,7 +612,14 @@ class NetGraph(Component):
         pre = self.page.get_uid(pre)
         post = self.page.get_uid(post)
         self.uids[uid] = conn
-        pres = self.get_parents(pre)[:-1]
-        posts = self.get_parents(post)[:-1]
-        info = dict(uid=uid, pre=pres, post=posts, type='conn', parent=parent)
+        pres = self.get_parents(pre)
+        if pres is None:
+            print('could not find pre object for %s' % conn)
+            return
+        posts = self.get_parents(post)
+        if posts is None:
+            print('could not find post object for %s' % conn)
+            return
+        info = dict(uid=uid, pre=pres[:-1], post=posts[:-1],
+                    type='conn', parent=parent)
         client.write_text(json.dumps(info))
