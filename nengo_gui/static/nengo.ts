@@ -46,7 +46,7 @@ import { MockConnection } from "./websocket";
 export class NengoDebug {
     listeners = {
         ConfigDialog: null,
-    }
+    };
     live: any[] = [];
     objects = {
         main: {
@@ -57,7 +57,7 @@ export class NengoDebug {
                         console.log(e.detail + " changed");
                     };
                     document.addEventListener(
-                        "nengoConfigChange", this.listeners.ConfigDialog
+                        "nengoConfigChange", this.listeners.ConfigDialog,
                     );
                 }
                 cd.show();
@@ -139,8 +139,8 @@ export class NengoDebug {
             ToolbarView: () => new ToolbarView(),
             SimControlView: () => new SimControlView(),
             UtilitiesView: () => new UtilitiesView(),
-        }
-    }
+        },
+    };
 
     add(category: string, name: string) {
         const obj = this.objects[category][name]();
@@ -167,7 +167,7 @@ export class NengoDebug {
                 }
                 this.live.splice(this.live.indexOf(obj), 1);
             },
-        }
+        };
     }
 
     toggleLog() {
