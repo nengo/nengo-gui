@@ -1,5 +1,5 @@
+import { dom, h } from "maquette";
 import "./netgraph.css";
-import { dom, h  } from "maquette";
 
 export class NetGraphView {
     gConns: SVGElement;
@@ -18,14 +18,13 @@ export class NetGraphView {
         const css = require("!!css-loader!./netgraph.css").toString();
 
         const defs = h("defs", [h(
-            "style", {type: "text/css"}, ["<![CDATA[\n" + css + "\n]]>"]
+            "style", {type: "text/css"}, ["<![CDATA[\n" + css + "\n]]>"],
         )]);
-
 
         // Create the master SVG element
         const svg = h("svg.netgraph#netgraph", {
             styles: {height: "100%", position: "absolute", width: "100%"},
-            onresize: event => {
+            onresize: (event) => {
                 this.onResize(event);
             },
         }, [
@@ -49,7 +48,7 @@ export class NetGraphView {
         this.height = this.root.getBoundingClientRect().height;
 
         // Respond to resize events
-        window.addEventListener("resize", event => {
+        window.addEventListener("resize", (event) => {
             this.onResize(event);
         });
     }
@@ -62,5 +61,13 @@ export class NetGraphView {
         this.height = this.root.getBoundingClientRect().height;
 
         // Should also call the netgraph resize? Is this an anti-pattern?
+    }
+
+    updateFonts(zoom: boolean, fontSize: number, scale: number) {
+        if (zoom) {
+            this.root.style.fontSize = 3 * scale * fontSize / 100 + "em";
+        } else {
+            this.root.style.fontSize = fontSize / 100 + "em";
+        }
     }
 }

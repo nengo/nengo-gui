@@ -184,13 +184,13 @@ export class NetGraphConnection {
      * Determine the best available item to connect from.
      */
     findPre() {
-        for (let i = 0; i < this.pres.length; i++) {
-            const pre = this.objects[this.pres[i]];
+        for (const preIdx of this.pres) {
+            const pre = this.objects[preIdx];
             if (pre !== undefined) {
                 return pre;
             } else {
                 // Register to be notified if a better match occurs
-                this.ng.registerConn(this, this.pres[i]);
+                this.ng.registerConn(this, preIdx);
             }
         }
         return null;
@@ -200,13 +200,13 @@ export class NetGraphConnection {
      * Determine the best available item to connect to.
      */
     findPost() {
-        for (let i = 0; i < this.posts.length; i++) {
-            const post = this.objects[this.posts[i]];
+        for (const postIdx of this.posts) {
+            const post = this.objects[postIdx];
             if (post !== undefined) {
                 return post;
             } else {
                 // Register to be notified if a better match occurs
-                this.ng.registerConn(this, this.posts[i]);
+                this.ng.registerConn(this, postIdx);
             }
         }
         return null;

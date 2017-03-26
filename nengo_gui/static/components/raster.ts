@@ -35,18 +35,20 @@ export class Raster extends Component {
         this.sim = sim;
 
         // For storing the accumulated data
-        this.dataStore = new DataStore(1, this.sim, 0);
+        this.dataStore = new DataStore(1, 0);
 
         this.axes2d = new TimeAxes(this.div, args);
         this.axes2d.scaleY.domain([0, args.nNeurons]);
 
+        // TODO: pull resetting up into a super-class
+
         // Call scheduleUpdate whenever the time is adjusted in the SimControl
-        this.sim.timeSlider.div.addEventListener("adjustTime", e => {
+        this.sim.timeSlider.div.addEventListener("adjustTime", (e) => {
             this.scheduleUpdate();
         });
 
         // Call reset whenever the simulation is reset
-        this.sim.div.addEventListener("resetSim", e => {
+        this.sim.div.addEventListener("resetSim", (e) => {
             this.reset();
         });
 
@@ -70,7 +72,7 @@ export class Raster extends Component {
         this.update();
         this.onResize(
             this.viewPort.scaleWidth(this.w),
-            this.viewPort.scaleHeight(this.h)
+            this.viewPort.scaleHeight(this.h),
         );
         this.axes2d.axisY.tickValues([0, args.nNeurons]);
         this.axes2d.fitTicks(this);

@@ -51,17 +51,19 @@ export class Value extends Component {
         this.synapse = args.synapse;
 
         // For storing the accumulated data
-        this.dataStore = new DataStore(this.nLines, this.sim, 0.0);
+        this.dataStore = new DataStore(this.nLines, 0.0);
 
         this.axes2d = new TimeAxes(this.div, args);
 
+        // TODO: pull resetting up into a super-class
+
         // Call scheduleUpdate whenever the time is adjusted in the SimControl
-        this.sim.timeSlider.div.addEventListener("adjustTime", e => {
+        this.sim.timeSlider.div.addEventListener("adjustTime", (e) => {
             this.scheduleUpdate();
         });
 
         // Call reset whenever the simulation is reset
-        this.sim.div.addEventListener("resetSim", e => {
+        this.sim.div.addEventListener("resetSim", (e) => {
             this.reset();
         });
 
@@ -69,7 +71,7 @@ export class Value extends Component {
         this.line = d3.svg.line()
             .x((d, i) => {
                 return this.axes2d.scaleX(
-                    this.dataStore.times[i + this.dataStore.firstShownIndex]
+                    this.dataStore.times[i + this.dataStore.firstShownIndex],
                 );
             }).y((d) => {
                 return this.axes2d.scaleY(d);
@@ -145,7 +147,7 @@ export class Value extends Component {
         this.update();
         this.onResize(
             this.viewPort.scaleWidth(this.w),
-            this.viewPort.scaleHeight(this.h)
+            this.viewPort.scaleHeight(this.h),
         );
         this.axes2d.axisY.tickValues([args.minValue, args.maxValue]);
         this.axes2d.fitTicks(this);
@@ -241,7 +243,7 @@ export class Value extends Component {
      */
     update() {
         // Let the data store clear out old values
-        this.dataStore.update();
+        this.dataStore.update(this.sim.timeSlider);
 
         // Determine visible range from the SimControl
         const t1 = this.sim.timeSlider.firstShownTime;
@@ -250,7 +252,7 @@ export class Value extends Component {
         this.axes2d.setTimeRange(t1, t2);
 
         // Update the lines
-        const shownData = this.dataStore.getShownData();
+        const shownData = this.dataStore.getShownData(this.sim.timeSlider);
 
         this.path.data(shownData)
             .attr("d", this.line);
@@ -402,7 +404,7 @@ export class Value extends Component {
             }
             // TODO: this was a separate handler before, but should only
             //       fire when validation passes right?
-            this.onResize(this.div.clientWidth, this.div.clienHeight);
+            this.onResize(this.div.clientWidth, this.div.clientHeight);
 
             $(modal).modal("hide");
         });

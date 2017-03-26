@@ -1,8 +1,8 @@
 import * as interact from "interact.js";
 import { h } from "maquette";
 
-import { Menu, MenuItem, hideAllMenus } from "../../menu";
-import { Shape, domCreateSvg } from "../../utils";
+import { hideAllMenus, Menu, MenuItem } from "../../menu";
+import { domCreateSvg, Shape } from "../../utils";
 import { NetGraphItem, NetGraphItemArg } from "./item";
 import { MinimapItem } from "./minimap";
 
@@ -36,13 +36,13 @@ export abstract class InteractableItem extends NetGraphItem {
         }
 
         interact(this.view.g).draggable({
-            onend: event => {
+            onend: (event) => {
                 this.constrainPosition();
                 this.ng.notify("pos", {uid: this.uid, x: this.x, y: this.y});
 
                 this.redraw();
             },
-            onmove: event => {
+            onmove: (event) => {
                 const scale = this.scales;
                 this.x += event.dx / scale.hor;
                 this.y += event.dy / scale.vert;
@@ -58,7 +58,7 @@ export abstract class InteractableItem extends NetGraphItem {
         });
         // Determine when to pull up the menu
         interact(this.view.g)
-            .on("hold", event => {
+            .on("hold", (event) => {
                 // Change to "tap" for right click
                 if (event.button === 0) {
                     if (this.menu.visibleAny()) {
@@ -71,7 +71,7 @@ export abstract class InteractableItem extends NetGraphItem {
                     event.stopPropagation();
                 }
             })
-            .on("tap", event => {
+            .on("tap", (event) => {
                 // Get rid of menus when clicking off
                 if (event.button === 0) {
                     if (this.menu.visibleAny()) {
@@ -79,7 +79,7 @@ export abstract class InteractableItem extends NetGraphItem {
                     }
                 }
             })
-            .on("doubletap", event => {
+            .on("doubletap", (event) => {
                 // Get rid of menus when clicking off
                 if (event.button === 0) {
                     if (this.menu.visibleAny()) {
@@ -88,7 +88,7 @@ export abstract class InteractableItem extends NetGraphItem {
                 }
             });
 
-        interact(this.view.g).on("contextmenu", event => {
+        interact(this.view.g).on("contextmenu", (event) => {
             event.preventDefault();
             event.stopPropagation();
             if (this.menu.visibleAny()) {

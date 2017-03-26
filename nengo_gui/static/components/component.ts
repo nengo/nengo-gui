@@ -3,8 +3,8 @@ import * as interact from "interact.js";
 import { Menu } from "../menu";
 import * as utils from "../utils";
 
-import { InputDialogView } from "../views/modal";
 import { ViewPort } from "../viewport";
+import { InputDialogView } from "../views/modal";
 import { FastWSConnection } from "../websocket";
 import { AllComponents } from "./all-components";
 
@@ -98,10 +98,10 @@ export class Component {
         interact(this.div)
             .draggable({
                 inertia: true,
-                onend: event => {
+                onend: (event) => {
                     this.saveLayout();
                 },
-                onmove: event => {
+                onmove: (event) => {
                     this.x += this.viewPort.fromScreenX(event.dx);
                     this.y += this.viewPort.fromScreenY(event.dy);
                     this.redrawPos();
@@ -119,7 +119,7 @@ export class Component {
             .on("resizestart", event => {
                 Menu.hideAll();
             })
-            .on("resizemove", event => {
+            .on("resizemove", (event) => {
                 const newWidth = event.rect.width;
                 const newHeight = event.rect.height;
                 const dleft = event.deltaRect.left;
@@ -137,7 +137,7 @@ export class Component {
                 this.redrawSize();
                 this.redrawPos();
             })
-            .on("resizeend", event => {
+            .on("resizeend", (event) => {
                 this.saveLayout();
             });
 
@@ -145,7 +145,7 @@ export class Component {
         this.uid = args.uid;
         if (this.uid !== undefined) {
             this.ws = new FastWSConnection(this.uid);
-            this.ws.onmessage = message => {
+            this.ws.onmessage = (message) => {
                 this.onMessage(message);
             };
         }
@@ -156,7 +156,7 @@ export class Component {
         this.menu = new Menu(this.parent);
         this.addMenuItems();
         interact(this.div)
-            .on("hold", event => { // Change to 'tap' for right click
+            .on("hold", (event) => { // Change to 'tap' for right click
                 if (event.button === 0) {
                     if (Menu.anyVisible()) {
                         Menu.hideAll();
@@ -166,14 +166,14 @@ export class Component {
                     event.stopPropagation();
                 }
             })
-            .on("tap", event => { // Get rid of menus when clicking off
+            .on("tap", (event) => { // Get rid of menus when clicking off
                 if (event.button === 0) {
                     if (Menu.anyVisible()) {
                         Menu.hideAll();
                     }
                 }
             });
-        window.addEventListener("contextmenu", event => {
+        window.addEventListener("contextmenu", (event) => {
             event.preventDefault();
             event.stopPropagation();
             if (Menu.anyVisible()) {
@@ -188,7 +188,7 @@ export class Component {
     }
 
     addKeyHandler(dialog: InputDialogView) {
-        dialog.input.addEventListener("keydown", event => {
+        dialog.input.addEventListener("keydown", (event) => {
             // Allow the enter key to submit
             if (event.which === 13) {
                 event.preventDefault();
@@ -326,7 +326,7 @@ export class Component {
         this.redrawPos();
         this.onResize(
             this.viewPort.scaleWidth(this.w),
-            this.viewPort.scaleHeight(this.h)
+            this.viewPort.scaleHeight(this.h),
         );
 
         if (config.labelVisible === true) {

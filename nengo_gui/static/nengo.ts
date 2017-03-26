@@ -16,6 +16,8 @@ import { ConfigDialog, configItems } from "./config";
 import { Editor } from "./editor";
 import { HotkeyManager } from "./hotkeys";
 import { Menu } from "./menu";
+import { NetGraph } from "./netgraph/netgraph";
+import { NetGraphView } from "./netgraph/views/netgraph";
 import { UtilitiesSidebar } from "./sidebar";
 import { SimControl } from "./sim-control";
 import { Toolbar } from "./toolbar";
@@ -74,10 +76,15 @@ export class NengoDebug {
                 menu.show(0, 0);
                 return menu;
             },
+            NetGraph: () => {
+                const ng = new NetGraph("uid");
+                ng.attach(new MockConnection());
+                return ng;
+            },
             SimControl: () => {
                 const sc = new SimControl("uid", 4.0, 0.5);
                 sc.attach(new MockConnection());
-                return sc
+                return sc;
             },
             Toolbar: () => new Toolbar("test.py"),
             UtilitiesSidebar: () => new UtilitiesSidebar(),
@@ -121,13 +128,16 @@ export class NengoDebug {
                 menu.addAction("Action 2.1");
                 return menu;
             },
+            NetGraphView: () => {
+                return new NetGraphView("uid");
+            },
             ModalView: () => {
                 const mv = new ModalView();
                 mv.show();
                 return mv;
             },
-            SimControlView: () => new SimControlView(),
             ToolbarView: () => new ToolbarView(),
+            SimControlView: () => new SimControlView(),
             UtilitiesView: () => new UtilitiesView(),
         }
     }

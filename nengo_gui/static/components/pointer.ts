@@ -47,21 +47,23 @@ export class Pointer extends Component {
         this.showPairs = args.showPairs;
 
         // For storing the accumulated data
-        this.dataStore = new DataStore(1, this.sim, 0);
+        this.dataStore = new DataStore(1, 0);
+
+        // TODO: pull resetting up into a super-class
 
         // Call scheduleUpdate whenever the time is adjusted in the SimControl
-        this.sim.timeSlider.div.addEventListener("adjustTime", e => {
+        this.sim.timeSlider.div.addEventListener("adjustTime", (e) => {
             this.scheduleUpdate();
         });
 
         // Call reset whenever the simulation is reset
-        this.sim.div.addEventListener("resetSim", e => {
+        this.sim.div.addEventListener("resetSim", (e) => {
             this.reset();
         });
 
         this.onResize(
             this.viewPort.scaleWidth(this.w),
-            this.viewPort.scaleHeight(this.h)
+            this.viewPort.scaleHeight(this.h),
         );
 
         this.fixedValue = "";
@@ -197,10 +199,10 @@ export class Pointer extends Component {
         const items = [];
 
         // Display the text in proportion to similarity
-        for (let i = 0; i < data.length; i++) {
-            const size = parseFloat(data[i].substring(0, 4));
+        for (const dat of data) {
+            const size = parseFloat(dat.substring(0, 4));
             const span = document.createElement("span");
-            // span.innerHTML = data[i].substring(4);
+            // span.innerHTML = dat.substring(4);
             this.pdiv.appendChild(span);
             totalSize += size;
             let c = Math.floor(255 - 255 * size);
@@ -217,10 +219,10 @@ export class Pointer extends Component {
 
         const scale = this.height / totalSize * 0.6;
 
-        for (let i = 0; i < data.length; i++) {
-            const size = parseFloat(data[i].substring(0, 4));
+        data.forEach((dat, i) => {
+            const size = parseFloat(dat.substring(0, 4));
             items[i].style.fontSize = "" + (size * scale) + "px";
-        }
+        });
     }
 
     /**

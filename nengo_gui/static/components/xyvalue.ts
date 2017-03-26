@@ -44,7 +44,7 @@ export class XYValue extends Component {
         this.sim = sim;
 
         // For storing the accumulated data
-        this.dataStore = new DataStore(this.nLines, this.sim, 0);
+        this.dataStore = new DataStore(this.nLines, 0);
 
         this.axes2d = new XYAxes(this.div, args);
 
@@ -52,13 +52,15 @@ export class XYValue extends Component {
         this.indexX = args.indexX;
         this.indexY = args.indexY;
 
+        // TODO: pull resetting up into a super-class
+
         // Call scheduleUpdate whenever the time is adjusted in the SimControl
-        this.sim.timeSlider.div.addEventListener("adjustTime", e => {
+        this.sim.timeSlider.div.addEventListener("adjustTime", (e) => {
             this.scheduleUpdate();
         });
 
         // Call reset whenever the simulation is reset
-        this.sim.div.addEventListener("resetSim", e => {
+        this.sim.div.addEventListener("resetSim", (e) => {
             this.reset();
         });
 
@@ -90,7 +92,7 @@ export class XYValue extends Component {
         this.axes2d.fitTicks(this);
         this.onResize(
             this.viewPort.scaleWidth(this.w),
-            this.viewPort.scaleHeight(this.h)
+            this.viewPort.scaleHeight(this.h),
         );
     }
 

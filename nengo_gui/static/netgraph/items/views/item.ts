@@ -1,6 +1,6 @@
 import { h  } from "maquette";
 
-import { Shape, domCreateSvg } from "../../../utils";
+import { domCreateSvg, Shape } from "../../../utils";
 import { NetGraph } from "../../netgraph";
 import { NetGraphItemArg } from "../item";
 import { NetItem } from "../resizable";
@@ -208,7 +208,7 @@ export class NetGraphItemView {
 
         this.g.setAttribute(
             "transform",
-            "translate(" + screen[0] + ", " + screen[1] + ")"
+            "translate(" + screen[0] + ", " + screen[1] + ")",
         );
     }
 
@@ -217,10 +217,10 @@ export class NetGraphItemView {
     }
 
     /**
-    * Helper function for setting attributes.
-    */
+     * Helper function for setting attributes.
+     */
     setAttributes(el, attrs) {
-        Object.keys(attrs).forEach(key => {
+        Object.keys(attrs).forEach((key) => {
             el.setAttribute(key, attrs[key]);
         });
     }

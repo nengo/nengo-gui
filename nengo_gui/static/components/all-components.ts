@@ -34,28 +34,28 @@ export class AllComponents {
     }
 
     onResize(widthScale: number, heightScale: number): void {
-        this.components.forEach(component => {
+        this.components.forEach((component) => {
             component.onResize(
                 component.width * widthScale, component.height * heightScale);
         });
     }
 
     redraw() {
-        this.components.forEach(component => {
+        this.components.forEach((component) => {
             component.redrawSize();
             component.redrawPos();
         });
     }
 
     rescale(widthScale, heightScale) {
-        this.components.forEach(component => {
+        this.components.forEach((component) => {
             component.w *= widthScale;
             component.h *= heightScale;
         });
     }
 
     saveLayouts(): void {
-        this.components.forEach(component => {
+        this.components.forEach((component) => {
             component.saveLayout();
         });
     }
@@ -69,12 +69,13 @@ export class AllComponents {
      */
     toCSV(): string {
 
+        // TODO: Should this just use a library?
         const data = [];
         const csv = [];
 
         // Extract all the data from the value components
-        for (let i = 0; i < this.values.length; i++) {
-            data.push(this.values[i].dataStore.data);
+        for (const val of this.values) {
+            data.push(val.dataStore.data);
         }
 
         // Grabs all the time steps

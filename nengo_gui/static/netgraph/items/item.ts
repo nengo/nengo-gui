@@ -44,10 +44,10 @@ export class NetGraphItem {
 
     createModal() {
         this.ng.notify("createModal", {
-            connInUids: this.connIn.map(c => {
+            connInUids: this.connIn.map((c) => {
                 return c.uid;
             }),
-            connOutUids: this.connOut.map(c => {
+            connOutUids: this.connOut.map((c) => {
                 return c.uid;
             }),
             uid: this.uid,
@@ -62,14 +62,12 @@ export class NetGraphItem {
 
         // Update any connections into or out of this item
         const connIn = this.connIn.slice();
-        for (let i = 0; i < connIn.length; i++) {
-            const conn = connIn[i];
+        for (const conn of connIn) {
             conn.setPost(conn.findPost());
             conn.redraw();
         }
         const connOut = this.connOut.slice();
-        for (let i = 0; i < connOut; i++) {
-            const conn = connOut[i];
+        for (const conn of connOut) {
             conn.setPre(conn.findPre());
             conn.redraw();
         }
@@ -86,11 +84,11 @@ export class NetGraphItem {
     }
 
     redrawConnections() {
-        for (let i = 0; i < this.connIn.length; i++) {
-            this.connIn[i].redraw();
+        for (const conn of this.connIn) {
+            conn.redraw();
         }
-        for (let i = 0; i < this.connOut.length; i++) {
-            this.connOut[i].redraw();
+        for (const conn of this.connOut) {
+            conn.redraw();
         }
     }
 

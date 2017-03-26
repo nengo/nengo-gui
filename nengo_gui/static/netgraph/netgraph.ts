@@ -115,11 +115,6 @@ export class NetGraph {
         this.viewPort = new ViewPort(this);
         this.allComponents = new AllComponents();
 
-         // Respond to resize events
-        window.addEventListener("resize", event => {
-            this.onResize();
-        });
-
         interact(this.view.root).styleCursor(false);
 
         // Dragging the background pans the full area by changing offsetX,Y
@@ -142,26 +137,26 @@ export class NetGraph {
 
         interact(this.view.root)
             .draggable({
-                onend: event => {
+                onend: (event) => {
                     // Let the server know what happened
-                    this.attached.forEach(conn => {
+                    this.attached.forEach((conn) => {
                         conn.send("netgraph.pan",
                             {x: this.offsetX, y: this.offsetY});
                     });
                 },
-                onmove: event => {
+                onmove: (event) => {
                     this.offsetX += event.dx / this.scaledWidth;
                     this.offsetY += event.dy / this.scaledHeight;
 
-                    Object.keys(this.svgObjects).forEach(objType => {
-                        Object.keys(this.svgObjects[objType]).forEach(key => {
+                    Object.keys(this.svgObjects).forEach((objType) => {
+                        Object.keys(this.svgObjects[objType]).forEach((key) => {
                             this.svgObjects[objType][key].redrawPosition();
                         // if (this.mmDisplay) {
                         //     this.minimapObjects[key].redrawPosition();
                         // }
                         });
                     });
-                    Object.keys(this.svgConns).forEach(key => {
+                    Object.keys(this.svgConns).forEach((key) => {
                         this.svgConns[key].redraw();
                     });
 
@@ -181,12 +176,12 @@ export class NetGraph {
         // Scrollwheel on background zooms the full area by changing scale.
         // Note that offsetX,Y are also changed to zoom into a particular
         // point in the space
-        interact(document.getElementById("main"))
-            // .on("click", event => {
+        interact(this.view.root)
+            // .on("click", (event) => {
             //     document.querySelector(".aceText-input")
             //         .dispatchEvent(new Event("blur"));
             // })
-            .on("wheel", event => {
+            .on("wheel", (event) => {
                 event.preventDefault();
 
                 Menu.hideAll();
@@ -238,7 +233,7 @@ export class NetGraph {
                 this.redraw();
 
                 // Let the server know what happened
-                this.attached.forEach(conn => {
+                this.attached.forEach((conn) => {
                     conn.send("netgraph.zoom",
                         {scale: this.scale, x: this.offsetX, y: this.offsetY});
                 });
@@ -250,7 +245,7 @@ export class NetGraph {
 
         // Determine when to pull up the menu
         interact(this.view.root)
-            .on("hold", event => { // Change to "tap" for right click
+            .on("hold", (event) => { // Change to "tap" for right click
                 if (event.button === 0) {
                     if (Menu.anyVisible()) {
                         Menu.hideAll();
@@ -260,13 +255,13 @@ export class NetGraph {
                     event.stopPropagation();
                 }
             })
-            .on("tap", event => { // Get rid of menus when clicking off
+            .on("tap", (event) => { // Get rid of menus when clicking off
                 if (event.button === 0) {
                     Menu.hideAll();
                 }
             });
 
-        this.view.root.addEventListener("contextmenu", event => {
+        this.view.root.addEventListener("contextmenu", (event) => {
             event.preventDefault();
             if (Menu.anyVisible()) {
                 Menu.hideAll();
@@ -276,8 +271,7 @@ export class NetGraph {
         });
 
         // this.createMinimap();
-        // I need to figure out how to update the fonts
-        // this.updateFonts();
+        this.view.updateFonts(this.zoomFonts, this.fontSize, this._scale);
     }
 
     get aspectResize(): boolean {
@@ -311,7 +305,7 @@ export class NetGraph {
             return;
         }
         this._scale = val;
-        this.updateFonts();
+        this.view.updateFonts(this.zoomFonts, this.fontSize, this._scale);
         this.redraw();
 
         this.viewPort.scale = this._scale;
@@ -330,13 +324,13 @@ export class NetGraph {
 
     hotkeys(manager: HotkeyManager) {
         manager.add("Undo", "z", {ctrl: true}, () => {
-            this.notify({undo: "1"});
+            this.notify("undo", "1");
         });
         manager.add("Redo", "z", {ctrl: true, shift: true}, () => {
-            this.notify({undo: "0"});
+            this.notify("undo", "0");
         });
         manager.add("Redo", "y", {ctrl: true}, () => {
-            this.notify({undo: "0"});
+            this.notify("undo", "0");
         });
         manager.add("Toggle minimap", "m", {ctrl: true}, () => {
             this.toggleMiniMap();
@@ -377,7 +371,7 @@ export class NetGraph {
     generateMenu(): MenuItem[] {
         const items: MenuItem[] = [];
         items.push({html: "Auto-layout", callback: () => {
-            this.attached.forEach(conn => {
+            this.attached.forEach((conn) => {
                 conn.send("netgraph.feedforwardLayout");
             });
         }});
@@ -493,25 +487,15 @@ export class NetGraph {
     }
 
     notify(eventName, eventArg) {
-        this.attached.forEach(conn => {
+        this.attached.forEach((conn) => {
             conn.send("netgraph." + eventName,
                 {x: this.offsetX, y: this.offsetY});
         });
     }
 
-    updateFonts() {
-        if (this.zoomFonts) {
-            document.getElementById("main").style.fontSize =
-                           3 * this.scale * this.fontSize / 100 + "em";
-        } else {
-            document.getElementById("#main").style.fontSize =
-                this.fontSize / 100 + "em";
-        }
-    }
-
     updateTransparency() {
         const opacity = this.transparentNets ? 0.0 : 1.0;
-        Object.keys(this.svgObjects).forEach(key => {
+        Object.keys(this.svgObjects).forEach((key) => {
             const ngi = this.svgObjects[key];
             ngi.computeFill();
             if (ngi.type === "net" && ngi.expanded) {
@@ -524,12 +508,12 @@ export class NetGraph {
      * Redraw all elements
      */
     redraw() {
-        Object.keys(this.svgObjects).forEach(objType => {
-            Object.keys(this.svgObjects[objType]).forEach(key => {
+        Object.keys(this.svgObjects).forEach((objType) => {
+            Object.keys(this.svgObjects[objType]).forEach((key) => {
                     this.svgObjects[objType][key].redraw();
             });
         });
-        Object.keys(this.svgConns).forEach(key => {
+        Object.keys(this.svgConns).forEach((key) => {
             this.svgConns[key].redraw();
         });
     }
@@ -589,8 +573,8 @@ export class NetGraph {
         const height = this.view.height;
 
         if (this.aspectResize) {
-            Object.keys(this.svgObjects).forEach(objType => {
-                Object.keys(this.svgObjects[objType]).forEach(key => {
+            Object.keys(this.svgObjects).forEach((objType) => {
+                Object.keys(this.svgObjects[objType]).forEach((key) => {
                     const item = this.svgObjects[objType][key];
                     if (item.depth === 1) {
                         const newWidth =

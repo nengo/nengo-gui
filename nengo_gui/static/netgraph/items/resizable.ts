@@ -1,9 +1,9 @@
 import * as interact from "interact.js";
-import { VNode, dom, h  } from "maquette";
+import { dom, h, VNode } from "maquette";
 
 import { config } from "../../config";
-import { MenuItem, hideAllMenus } from "../../menu";
-import { Shape, domCreateSvg } from "../../utils";
+import { hideAllMenus, MenuItem } from "../../menu";
+import { domCreateSvg, Shape } from "../../utils";
 import { InteractableItem, InteractableItemArg } from "./interactable";
 import { NetGraphItemArg } from "./item";
 
@@ -23,9 +23,9 @@ abstract class ResizableItem extends InteractableItem {
                 edges: {bottom: true, left: true, right: true, top: true},
                 invert: "none",
                 margin: 10,
-            }).on("resizestart", event => {
+            }).on("resizestart", (event) => {
                 hideAllMenus();
-            }).on("resizemove", event => {
+            }).on("resizemove", (event) => {
                 const scale = this.scales;
 
                 this.contSize(event, scale.hor, scale.vert);
@@ -34,7 +34,7 @@ abstract class ResizableItem extends InteractableItem {
                 if (this.view.depth === 1) {
                     this.ng.scaleMiniMap();
                 }
-            }).on("resizeend", event => {
+            }).on("resizeend", (event) => {
                 this.constrainPosition();
                 this.redraw();
                 this.ng.notify("posSize", {
@@ -66,7 +66,7 @@ abstract class ResizableItem extends InteractableItem {
         const areaH = screenD.height;
         this.area.setAttribute(
             "transform",
-            String("translate(-" + (areaW / 2) + ", -" + (areaH / 2) + ")")
+            String("translate(-" + (areaW / 2) + ", -" + (areaH / 2) + ")"),
         );
         this.area.setAttribute("width", String(areaW));
         this.area.setAttribute("height", String(areaH));
@@ -178,7 +178,7 @@ export class NetItem extends ResizableItem {
         }
 
         // TODO: Is this the right way to override an interact method?
-        interact(this.view.g).on("doubletap", event => {
+        interact(this.view.g).on("doubletap", (event) => {
                 // Get rid of menus when clicking off
                 if (event.button === 0) {
                     if (this.menu.visibleAny()) {
@@ -341,12 +341,12 @@ export class NetItem extends ResizableItem {
             return;
         }
         config.transparentNets = val;
-        Object.keys(this.ng.svgObjects.net).forEach(key => {
+        Object.keys(this.ng.svgObjects.net).forEach((key) => {
             const ngi = this.ng.svgObjects.net[key];
             ngi.computeFill();
             if (ngi.expanded) {
                 ngi.view.shape.setAttribute(
-                    "style", String("fill-opacity=" + val)
+                    "style", String("fill-opacity=" + val),
                 );
             }
         });
@@ -355,7 +355,7 @@ export class NetItem extends ResizableItem {
     moveToFront() {
         this.view.parent.ng.view.gItems.appendChild(this.view.g);
 
-        Object.keys(this.children).forEach(key => {
+        Object.keys(this.children).forEach((key) => {
             this.children[key].moveToFront();
         });
     }
@@ -369,15 +369,15 @@ export class NetItem extends ResizableItem {
 
     redrawChildren() {
         // Update any children's positions
-        for (let i = 0; i < this.children.length; i++) {
-            this.children[i].redraw();
+        for (const child of this.children) {
+            child.redraw();
         }
     }
 
     redrawChildConnections() {
         // Update any children's positions
-        for (let i = 0; i < this.childConnections.length; i++) {
-            this.childConnections[i].redraw();
+        for (const child of this.childConnections) {
+            child.redraw();
         }
     }
 
@@ -394,7 +394,7 @@ export class NetItem extends ResizableItem {
         const stroke = "rgb(" + rgb + "," + rgb + "," + rgb + ")";
 
         this.view.shape.setAttribute(
-            "style", String("fill=" + fill + ", stroke=" + stroke)
+            "style", String("fill=" + fill + ", stroke=" + stroke),
         );
     }
 }
@@ -547,7 +547,7 @@ export class EnsembleItem extends ResizableItem {
 
         this.view.shape.setAttribute(
             "transform",
-            String("scale(" + scale / 2 / this.radiusScale + ")")
+            String("scale(" + scale / 2 / this.radiusScale + ")"),
         );
         this.view.shape.setAttribute(
             "style",  String("stroke-width" + 20 / scale),
