@@ -6,6 +6,8 @@
   ],
   "rules": {
 
+    "max-classes-per-file": [false],
+
     "interface-name": [true, "never-prefix"],
     "max-line-length": [true, 80],
     "member-access": false,
