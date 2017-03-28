@@ -16,18 +16,19 @@ import { ConfigDialog, configItems } from "./config";
 import { Editor } from "./editor";
 import { HotkeyManager } from "./hotkeys";
 import { SimControl } from "./sim-control";
+import { Toolbar } from "./toolbar";
 import { ConfigDialogView } from "./views/config";
 import { EditorView } from "./views/editor";
 import { HotkeysDialogView } from "./views/hotkeys";
 import { AlertDialogView, InputDialogView, ModalView } from "./views/modal";
 import { SimControlView } from "./views/sim-control";
+import { ToolbarView } from "./views/toolbar";
 import { MockConnection } from "./websocket";
 
 // import { Editor } from "./editor";
 // import { NetGraph } from "./netgraph/netgraph";
 // import { SideMenu } from "./side-menu";
 // import { SimControl } from "./sim-control";
-// import { Toolbar } from "./toolbar";
 // import { WSConnection } from "./websocket";
 
 // TODO: put all of this in an ajax call to Python. To get:
@@ -64,6 +65,9 @@ export class NengoDebug {
                 sc.attach(new MockConnection());
                 return sc
             },
+            Toolbar: () => {
+                return new Toolbar("test.py");
+            },
         },
         view: {
             AlertDialogView: () => {
@@ -98,7 +102,8 @@ export class NengoDebug {
                 mv.show();
                 return mv;
             },
-            SimControlView: () => { return new SimControlView(); },
+            SimControlView: () => new SimControlView(),
+            ToolbarView: () => new ToolbarView(),
         }
     }
 

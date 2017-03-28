@@ -1,0 +1,85 @@
+:root {
+    --lighter: gray(94%);
+    --light: gray(80%);
+    --dark: gray(40%);
+    --darker: gray(20%);
+}
+
+div.toolbar {
+    border-bottom: 1px solid var(--dark);
+    width: 100%;
+    z-index: 99999;
+
+    > ul.nav {
+        align-items: stretch;
+        background-color: var(--lighter);
+        display: flex;
+        width: 100%;
+
+        > li {
+            line-height: 1;
+            margin: 0;
+            padding: 0;
+
+            &.left {
+                order: 0;
+            }
+            &.center {
+                order: 10;
+            }
+            &.right {
+                order: 20;
+            }
+
+            &.spacer {
+                flex-grow: 1;
+                &.left {
+                    order: 5;
+                }
+                &.right {
+                    order: 15;
+                }
+            }
+
+            &.deactivated a, &.disabled a {
+                color: var(--light);
+
+                &:hover {
+                    background: none;
+                    color: var(--light);
+                }
+            }
+
+            &.selected {
+                background-color: var(--light);
+            }
+
+            a {
+                border-radius: 0;
+                color: var(--darker);
+                cursor: default;
+                top: 0;
+
+                &:hover {
+                    color: var(--lighter);
+                    background-color: var(--dark);
+                }
+
+                &.reversed {
+                    transform: scaleX(-1);
+                    filter: FlipH;
+                }
+            }
+        }
+    }
+}
+
+/* TODO: huh? */
+#global_config_menu {
+    background: purple;
+    height: 20em;
+    width: 20em;
+    z-index: 99999;
+    margin-top: 3em;
+    position: absolute;
+}

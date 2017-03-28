@@ -9,51 +9,39 @@ import * as $ from "jquery";
 import "./menu.css";
 import * as utils from "./utils";
 
-/**
- * Dictionary of currently shown menus.
- *
- * The key is the div the menu is in.
- */
-export var visibleMenus = {};
-
-/**
- * Hide any menu that is displayed in the given div
- */
-export function hideMenuIn(div) {
-    const menu = visibleMenus[div];
-    if (menu !== undefined) {
-        menu.hide();
-    }
-}
-
-export function hideAny() {
-    Object.keys(visibleMenus).forEach(k => {
-        hideMenuIn(k);
-    });
-}
-
 export class Menu {
+    static all: Menu[];
+
     actions;
-    div;
     menu;
     menuDiv;
+    parent: HTMLElement;
     visible;
 
-    constructor(div) {
+    constructor(parent: HTMLElement) {
         this.visible = false; // Whether it's currently visible
-        this.div = div; // The parent div
+        this.parent = parent; // The parent div
         this.menuDiv = null; // The div for the menu itself
         this.actions = {}; // The current action list for the menu
+    }
+
+    static hideAll(parent: HTMLElement | null = null) {
+        Menu.all.forEach(menu => {
+            if (parent === null || menu.parent === parent) {
+                menu.hide();
+            }
+        });
     }
 
     /**
      * Show this menu at the given (x,y) location.
      *
-     * Automatically hides any menu that's in the same div
+     * Automatically hides any menu with the same parent.
+     *
      * Called by a listener from netgraph.js
      */
     show(x, y, items) {
-        hideMenuIn(this.div);
+        Menu.hideAll(this.parent);
 
         if (items.length === 0) {
             return;

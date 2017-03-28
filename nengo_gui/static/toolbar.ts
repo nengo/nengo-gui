@@ -9,66 +9,75 @@
  */
 
 import * as interact from "interact.js";
-import * as $ from "jquery";
 
 import { config, ConfigDialog } from "./config";
 import { Editor } from "./editor";
-import * as menu from "./menu";
+import { Menu } from "./menu";
 import { SimControl } from "./sim-control";
-import "./toolbar.css";
 import * as utils from "./utils";
 import { AlertDialogView, InputDialogView } from "./views/modal";
+import { ToolbarView } from "./views/toolbar";
+import { Connection } from "./websocket";
 
 export class Toolbar {
     configDialog: ConfigDialog = new ConfigDialog();
-    editor: Editor;
-    hotkeys;
-    menu;
-    netgraph;
-    sim: SimControl;
-    toolbar;
+    view = new ToolbarView();
 
-    constructor(filename: string, sim: SimControl) {
-        this.sim = sim;
-        // this.netgraph = this.modal.netgraph;
-        // this.hotkeys = this.modal.hotkeys;
-        // this.editor = this.modal.editor;
+    private attached: Connection[] = [];
 
-        $("#Reset_layout_button")[0].addEventListener("click", () => {
+    constructor(filename: string) {
+        this.view.buttons["reset"].addEventListener("click", () => {
             this.askResetLayout();
         });
+        this.view.buttons["undo"].addEventListener("click", () => {
+            // TODO: connect netgraph
+            // this.netgraph.notify({undo: "1"});
+        });
+        this.view.buttons["redo"].addEventListener("click", () => {
+            // TODO: connect netgraph
+            // this.netgraph.notify({undo: "0"});
+        });
+        // TODO: is this in side-menu now?
+        this.view.buttons["utils"].addEventListener("click", () => {
+            this.askConfig();
+        });
+        this.view.buttons["sync"].addEventListener("click", () => {
+            // TODO: connect editor
+            // this.editor.syncWithServer();
+        });
+        this.view.buttons["hotkeys"].addEventListener("click", () => {
+            // TODO: hotkeys menu func
+            // hotkeys.callMenu();
+        });
+        this.view.buttons["filename"].addEventListener("click", () => {
+            this.askSaveAs();
+        });
 
-        $("#Undo_last_button")[0].addEventListener("click", () => {
-            this.netgraph.notify({undo: "1"});
-        });
-        $("#Redo_last_button")[0].addEventListener("click", () => {
-            this.netgraph.notify({undo: "0"});
-        });
-        $("#Config_button")[0].addEventListener("click", () => {
-            this.configModal();
-        });
-        $("#Sync_editor_button")[0].addEventListener("click", () => {
-            // this.editor.updateTrigger = true;
-        });
-        $("#Help_button")[0].addEventListener("click", () => {
-            this.hotkeys.callMenu();
-        });
-        $("#filename")[0].addEventListener("click", () => {
-            this.saveAs();
-        });
-
-        $("#filename")[0].textContent = filename;
+        this.filename = filename;
 
         // Update the URL so reload and bookmarks work as expected
         history.pushState({}, filename, "/?filename=" + filename);
 
-        this.toolbar = $("#toolbar_object")[0];
-
-        this.menu = new menu.Menu(this.toolbar);
-
-        interact(this.toolbar).on("tap", () => {
-            menu.hideAny();
+        interact(this.view.root).on("tap", () => {
+            Menu.hideAll();
         });
+    }
+
+    get filename(): string {
+        return this.view.filename;
+    }
+
+    set filename(val: string) {
+        this.view.filename = val;
+    }
+
+    attach(conn: Connection) {
+        this.attached.push(conn);
+    }
+
+    askConfig() {
+        // TODO: this should be called by the server
+        this.configDialog.show();
     }
 
     askResetLayout() {
@@ -85,58 +94,20 @@ export class Toolbar {
         modal.show();
     }
 
-    /**
-     * Trims the filename and sends it to the server.
-     */
-    fileName() {
-        const openEl = <HTMLInputElement> document.getElementById("openFile");
-        console.assert(openEl.hasOwnProperty("value"));
-        let filename = openEl.value;
-        filename = filename.replace("C:\\fakepath\\", "");
-        this.sim.ws.send("open" + filename);
-    }
-
-    /**
-     * Reset the model layout to the default.
-     *
-     * This is done by deleting the config file and reloading the script.
-     */
-    resetModelLayout() {
-        window.location.assign(
-            "/?reset=True&filename=" + $("#filename")[0].innerHTML);
-    }
-
-    /**
-     * Launch the config modal.
-     *
-     * This is done by calling the server to call configModalShow with config
-     * data.
-     */
-    configModal() {
-        // Doing it this way in case we need to save options to a file later
-        this.sim.ws.send("config");
-    }
-
-    configModalShow() {
-        // TODO: this should be called by the server
-        this.configDialog.show();
-    }
-
-    saveAs() {
-        // TODO: get without jqeury
-        const filename =$("#filename")[0].innerHTML;
-
+    askSaveAs() {
         const modal = new InputDialogView(null, null);
         modal.title = "Save file as...";
-        modal.input.value = filename;
+        modal.input.value = this.filename;
 
         modal.ok.addEventListener("click", () => {
             const newFilename = modal.input.value;
-            if (newFilename !== filename) {
-                const editorCode = this.editor.editor.getValue();
-                this.editor.ws.send(JSON.stringify(
-                    {code: editorCode, save: true, saveAs: newFilename}
-                ));
+            if (newFilename !== this.filename) {
+                // TODO: connect to editor and do below
+                // const editorCode = this.editor.editor.getValue();
+                // TODO: make this an editor method
+                // this.editor.ws.send(JSON.stringify(
+                //     {code: editorCode, save: true, saveAs: newFilename}
+                // ));
             }
             $(modal).modal("hide");
         });
@@ -148,4 +119,37 @@ export class Toolbar {
         });
         modal.show();
     }
+
+    // TODO: does this ever get used...?
+    // fileName() {
+    //     const openEl = <HTMLInputElement> document.getElementById("openFile");
+    //     console.assert(openEl.hasOwnProperty("value"));
+    //     let filename = openEl.value;
+    //     filename = filename.replace("C:\\fakepath\\", "");
+    //     this.sim.ws.send("open" + filename);
+    // }
+
+    /**
+     * Reset the model layout to the default.
+     *
+     * This is done by deleting the config file and reloading the script.
+     */
+    resetModelLayout() {
+        // TODO: is this the best way to refresh? Does reset=True do anything?
+        window.location.assign("/?reset=True&filename=" + this.filename);
+    }
+
+    /**
+     * Launch the config modal.
+     *
+     * This is done by calling the server to call configModalShow with config
+     * data.
+     */
+    configModal() {
+        // Doing it this way in case we need to save options to a file later
+        this.attached.forEach(conn => {
+            conn.send("config"); // TODO: ???
+        });
+    }
+
 }

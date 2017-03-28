@@ -1,53 +1,61 @@
 import { VNode, dom, h } from "maquette";
 
-function button(
-    id: string,
-    icon: string,
-    title: string,
-    aClasses: string[] = []
-): VNode {
-    const classes = ["glyphicon", "glyphicon-" + icon].concat(aClasses);
-    return h("li#" + id, {role: "presentation"}, [
-        h("a." + classes.join("."), {title: title}),
-    ]);
-}
+import "./toolbar.css";
 
-class Toolbar {
-    node: VNode;
+export class ToolbarView {
+    buttons: {[name: string]: HTMLAnchorElement | HTMLLIElement};
     root: HTMLElement;
+    private ul: HTMLUListElement;
 
     constructor() {
-        this.node =
-            h("div#top_toolbar_div", [
-                h("ul.nav.nav-pills#toolbar_object", [
-                    button("Open_file_button", "folder-open", "Open file"),
-                    button("Config_menu", "wrench", "Utilities"),
-                    button(
-                        "Reset_layout_button",
-                        "trash",
-                        "Reset model layout"
-                    ),
-                    button(
-                        "Undo_last_button",
-                        "share-alt",
-                        "Undo last",
-                        ["reversed"]
-                    ),
-                    button("Redo_last_button", "share-alt", "Redo last"),
-                    button("Help_button", "question-sign", "List of hotkeys"),
-                    button("Toggle_ace", "list-alt", "Open code editor"),
-                    button("Font_decrease", "zoom-out", "Decrease font size"),
-                    button("Font_increase", "zoom-in", "Increase font size"),
-                    button("Save_file", "floppy-save", "Save file"),
-                    button(
-                        "Sync_editor_button",
-                        "circle-arrow-left",
-                        "Sync diagram with editor"
-                    ),
-                    h("li", {role: "presentation"}, [h("div#filename")]),
-                ]),
-            ]);
+        const node = h("div.toolbar", [h("ul.nav.nav-pills")]);
+        this.root = dom.create(node).domNode as HTMLElement;
+        this.ul = this.root.querySelector("ul") as HTMLUListElement;
 
-        this.root = dom.create(this.node).domNode as HTMLElement;
+        this.buttons = {
+            open: this.addButton("Open file", "folder-open", "left"),
+            utils: this.addButton("Utilities", "wrench", "left"),
+            reset: this.addButton("Reset model layout", "trash", "left"),
+            undo: this.addButton("Undo", "share-alt.reversed", "left"),
+            redo: this.addButton("Redo", "share-alt", "left"),
+            leftSpace: this.addSpacer("left"),
+            filename: this.addButton("Filename", null, "center"),
+            rightSpace: this.addSpacer("right"),
+            sync: this.addButton("Sync code", "circle-arrow-left", "right"),
+            save: this.addButton("Save file", "floppy-save", "right"),
+            fontDown: this.addButton("Decrease font size", "zoom-out", "right"),
+            fontUp: this.addButton("Increase font size", "zoom-in", "right"),
+            editor: this.addButton("Open code editor", "list-alt", "right"),
+            hotkeys: this.addButton("Hotkey list", "question-sign", "right"),
+        };
+        this.filename = "filename";
     }
+
+    get filename(): string {
+        return this.buttons["filename"].textContent;
+    }
+
+    set filename(val: string) {
+        this.buttons["filename"].textContent = val;
+    }
+
+    addButton(
+        title: string,
+        icon: string | null,
+        align: "left" | "center" | "right",
+    ): HTMLAnchorElement {
+        const aClass = icon === null ? "" : ".glyphicon.glyphicon-" + icon;
+        const node = h("li." + align, [h("a" + aClass, {title: title})]);
+        const button = dom.create(node).domNode;
+        this.ul.appendChild(button);
+        return button.firstChild as HTMLAnchorElement;
+    }
+
+    addSpacer(align: "left" | "right"): HTMLLIElement {
+        const node = h("li.spacer." + align);
+        const spacer = dom.create(node).domNode as HTMLLIElement;
+        this.ul.appendChild(spacer);
+        return spacer;
+    }
+
 }
