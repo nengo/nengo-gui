@@ -151,12 +151,12 @@ export class Raster extends Component {
         this.scheduleUpdate();
     }
 
-    generateMenu() {
-        const items = [["Set # neurons...", function() {
+    addMenuItems() {
+        this.menu.addAction("Set # neurons...", () => {
             this.setNeuronCount();
-        }]];
-
-        return $.merge(items, Component.prototype.generateMenu.call(this));
+        });
+        this.menu.addSeparator();
+        super.addMenuItems();
     }
 
     setNeuronCount() {

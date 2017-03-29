@@ -14,6 +14,7 @@
 import * as $ from "jquery";
 
 import { DataStore } from "../datastore";
+import { Menu } from "../menu";
 // import * as utils from "../utils";
 import * as viewport from "../viewport";
 import { InputDialogView } from "../views/modal";
@@ -63,7 +64,7 @@ export class Pointer extends Component {
 
         this.fixedValue = "";
 
-        this.div.addEventListener("mouseup", function(event) {
+        this.div.addEventListener("mouseup", (event) => {
             // For some reason "tap" doesn't seem to work here while the
             // simulation is running, so I'm doing the timing myself
             const now = new Date().getTime() / 1000;
@@ -71,38 +72,32 @@ export class Pointer extends Component {
                 return;
             }
             if (event.button === 0) {
-                if (this.menu.visible) {
+                if (!this.menu.hidden) {
                     this.menu.hide();
                 } else {
-                    this.menu.show(event.clientX, event.clientY,
-                                   this.generateMenu());
+                    this.menu.show(event.clientX, event.clientY);
                 }
             }
         });
 
-        this.div.addEventListener("mousedown", function(event) {
+        this.div.addEventListener("mousedown", () => {
+            // TODO: Why??
             this.mouseDownTime = new Date().getTime() / 1000;
         });
     }
 
-    generateMenu() {
-        const items = [];
-        items.push(["Set value...", function() {
+    addMenuItems() {
+        this.menu.addAction("Set value...", () => {
             this.setValue();
-        }]);
-        if (this.showPairs) {
-            items.push(["Hide pairs", function() {
-                this.setShowPairs(false);
-            }]);
-        } else {
-            items.push(["Show pairs", function() {
-                this.setShowPairs(true);
-            }]);
-        }
-
-        // Add the parent's menu items to this
-        // TODO: is this really the best way to call the parent's generateMenu()?
-        return $.merge(items, Component.prototype.generateMenu.call(this));
+        });
+        this.menu.addAction("Hide pairs", () => {
+            this.setShowPairs(false);
+        }, () => this.showPairs);
+        this.menu.addAction("Show pairs", () => {
+            this.setShowPairs(true);
+        }, () => !this.showPairs);
+        this.menu.addSeparator();
+        super.addMenuItems();
     }
 
     setShowPairs(value) {

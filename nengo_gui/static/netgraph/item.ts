@@ -14,7 +14,7 @@
 import * as interact from "interact.js";
 import * as $ from "jquery";
 
-import * as menu from "../menu";
+import { Menu } from "../menu";
 import * as viewport from "../viewport";
 
 export class NetGraphItem {
@@ -118,7 +118,8 @@ export class NetGraphItem {
         this.area = this.ng.createSVGElement("rect");
         this.area.style.fill = "transparent";
 
-        this.menu = new menu.Menu(this.ng.parent);
+        this.menu = new Menu(this.ng.parent);
+        this.addMenuItems();
 
         // Different types use different SVG elements for display
         if (info.type === "node") {
@@ -190,7 +191,7 @@ export class NetGraphItem {
                     }
                 },
                 onstart: () => {
-                    menu.hideAny();
+                    Menu.hideAll();
                     this.moveToFront();
                 },
             });
@@ -206,7 +207,7 @@ export class NetGraphItem {
                     invert: this.type === "ens" ? "reposition" : "none",
                     margin: 10,
                 }).on("resizestart", event => {
-                    menu.hideAny();
+                    Menu.hideAll();
                 }).on("resizemove", event => {
                     const item = this.ng.svgObjects[uid];
                     const pos = item.getScreenLocation();
@@ -298,12 +299,10 @@ export class NetGraphItem {
                 .on("hold", event => {
                     // Change to "tap" for right click
                     if (event.button === 0) {
-                        if (this.menu.visibleAny()) {
-                            menu.hideAny();
+                        if (Menu.anyVisible()) {
+                            Menu.hideAll();
                         } else {
-                            this.menu.show(event.clientX,
-                                           event.clientY,
-                                           this.generateMenu());
+                            this.menu.show(event.clientX, event.clientY);
                         }
                         event.stopPropagation();
                     }
@@ -311,16 +310,14 @@ export class NetGraphItem {
                 .on("tap", event => {
                     // Get rid of menus when clicking off
                     if (event.button === 0) {
-                        if (this.menu.visibleAny()) {
-                            menu.hideAny();
-                        }
+                        Menu.hideAll();
                     }
                 })
                 .on("doubletap", event => {
                     // Get rid of menus when clicking off
                     if (event.button === 0) {
-                        if (this.menu.visibleAny()) {
-                            menu.hideAny();
+                        if (Menu.anyVisible()) {
+                            Menu.hideAll();
                         } else if (this.type === "net") {
                             if (this.expanded) {
                                 this.collapse(true);
@@ -333,11 +330,10 @@ export class NetGraphItem {
             $(this.g).bind("contextmenu", event => {
                 event.preventDefault();
                 event.stopPropagation();
-                if (this.menu.visibleAny()) {
-                    menu.hideAny();
+                if (Menu.anyVisible()) {
+                    Menu.hideAll();
                 } else {
-                    this.menu.show(
-                        event.clientX, event.clientY, this.generateMenu());
+                    this.menu.show(event.clientX, event.clientY);
                 }
             });
 
@@ -411,79 +407,67 @@ export class NetGraphItem {
         });
     }
 
-    generateMenu() {
-        const items = [];
+    addMenuItems() {
         if (this.type === "net") {
-            if (this.expanded) {
-                items.push(["Collapse network", () => {
-                    this.collapse(true);
-                }]);
-                items.push(["Auto-layout", () => {
-                    this.requestFeedforwardLayout();
-                }]);
-            } else {
-                items.push(["Expand network", () => {
-                    this.expand();
-                }]);
-            }
-            if (this.defaultOutput && this.spTargets.length === 0) {
-                items.push(["Output Value", () => {
-                    this.createGraph("Value");
-                }]);
-            }
-        }
-        if (this.type === "ens") {
-            items.push(["Value", () => {
+            this.menu.addAction("Collapse network", () => {
+                this.collapse(true);
+            }, () => this.expanded);
+            this.menu.addAction("Auto-layout", () => {
+                this.requestFeedforwardLayout();
+            }, () => this.expanded);
+            this.menu.addAction("Expand network", () => {
+                this.expand();
+            }, () => !this.expanded);
+            this.menu.addHeader("Plots");
+            this.menu.addAction("Output value", () => {
                 this.createGraph("Value");
-            }]);
-            if (this.dimensions > 1) {
-                items.push(["XY-value", () => {
-                    this.createGraph("XYValue");
-                }]);
-            }
-            items.push(["Spikes", () => {
+            }, () => this.defaultOutput && this.spTargets.length === 0);
+        } else if (this.type === "ens") {
+            this.menu.addHeader("Plots");
+            this.menu.addAction("Value", () => {
+                this.createGraph("Value");
+            });
+            this.menu.addAction("XY-value", () => {
+                this.createGraph("XYValue");
+            }, () => this.dimensions > 1);
+            this.menu.addAction("Spikes", () => {
                 this.createGraph("Raster");
-            }]);
-            items.push(["Voltages", () => {
+            });
+            this.menu.addAction("Voltages", () => {
                 this.createGraph("Voltage");
-            }]);
-            items.push(["Firing pattern", () => {
+            });
+            this.menu.addAction("Firing pattern", () => {
                 this.createGraph("SpikeGrid");
-            }]);
-        }
-        if (this.type === "node") {
-            items.push(["Slider", () => {
+            });
+        } else if (this.type === "node") {
+            this.menu.addHeader("Plots");
+            this.menu.addAction("Slider", () => {
                 this.createGraph("Slider");
-            }]);
-            if (this.dimensions > 0) {
-                items.push(["Value", () => {
-                    this.createGraph("Value");
-                }]);
-            }
-            if (this.dimensions > 1) {
-                items.push(["XY-value", () => {
-                    this.createGraph("XYValue");
-                }]);
-            }
-            if (this.htmlNode) {
-                items.push(["HTML", () => {
-                    this.createGraph("HTMLView");
-                }]);
-            }
+            });
+            this.menu.addAction("Value", () => {
+                this.createGraph("Value");
+            }, () => this.dimensions > 0);
+            this.menu.addAction("XY-value", () => {
+                this.createGraph("XYValue");
+            }, () => this.dimensions > 1);
+            this.menu.addAction("HTML", () => {
+                this.createGraph("HTMLView");
+            }, () => this.htmlNode);
         }
-        if (this.spTargets.length > 0) {
-            items.push(["Semantic pointer cloud", () => {
-                this.createGraph("Pointer", this.spTargets[0]);
-            }]);
-            items.push(["Semantic pointer plot", () => {
-                this.createGraph("SpaSimilarity", this.spTargets[0]);
-            }]);
-        }
+
+        this.menu.addAction("Semantic pointer cloud", () => {
+            this.createGraph("Pointer", this.spTargets[0]);
+        }, () => this.spTargets.length > 0);
+        this.menu.addAction("Semantic pointer plot", () => {
+            this.createGraph("Spa similarity", this.spTargets[0]);
+        }, () => this.spTargets.length > 0);
+
         // TODO: Enable input and output value plots for basal ganglia network
-        items.push(["Details ...", () => {
+
+        this.menu.addSeparator();
+        this.menu.addAction("Details ...", () => {
             this.createModal();
-        }]);
-        return items;
+        });
     }
 
     createGraph(type, args=null) { // tslint:disable-line

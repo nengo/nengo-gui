@@ -173,18 +173,15 @@ export class XYValue extends Component {
         return Math.min(this.width, this.height) / 30;
     }
 
-    generateMenu() {
-        const items = [
-            ["Set range...", function() {
-                this.setRange();
-            }],
-            ["Set X, Y indices...", function() {
-                this.setIndices();
-            }],
-        ];
-
-        // Add the parent's menu items to this
-        return $.merge(items, Component.prototype.generateMenu.call(this));
+    addMenuItems() {
+        this.menu.addAction("Set range...", () => {
+            this.setRange();
+        });
+        this.menu.addAction("Set X, Y indices...", () => {
+            this.setIndices();
+        });
+        this.menu.addSeparator();
+        super.addMenuItems();
     }
 
     layoutInfo() {

@@ -15,11 +15,13 @@ import "./nengo.css";
 import { ConfigDialog, configItems } from "./config";
 import { Editor } from "./editor";
 import { HotkeyManager } from "./hotkeys";
+import { Menu } from "./menu";
 import { SimControl } from "./sim-control";
 import { Toolbar } from "./toolbar";
 import { ConfigDialogView } from "./views/config";
 import { EditorView } from "./views/editor";
 import { HotkeysDialogView } from "./views/hotkeys";
+import { MenuView } from "./views/menu";
 import { AlertDialogView, InputDialogView, ModalView } from "./views/modal";
 import { SimControlView } from "./views/sim-control";
 import { ToolbarView } from "./views/toolbar";
@@ -60,6 +62,16 @@ export class NengoDebug {
             Editor: () => {
                 return new Editor(null);
             },
+            Menu: () => {
+                const menu = new Menu(document.body);
+                menu.addAction("Action 1.1", () => console.log("Action 1.1"));
+                menu.addHeader("Hidden");
+                menu.addAction("Hidden", () => false, () => false);
+                menu.addSeparator();
+                menu.addAction("Action 2.1", () => console.log("Action 2.1"));
+                menu.show(0, 0);
+                return menu;
+            },
             SimControl: () => {
                 const sc = new SimControl("uid", 4.0, 0.5);
                 sc.attach(new MockConnection());
@@ -96,6 +108,16 @@ export class NengoDebug {
                 const i = new InputDialogView("0.5", "Test label");
                 i.show();
                 return i;
+            },
+            MenuView: () => {
+                const menu = new MenuView();
+                menu.addAction("Action 1");
+                menu.addHeader("Subactions");
+                menu.addAction("Action 1.1");
+                menu.addAction("Action 1.2");
+                menu.addSeparator();
+                menu.addAction("Action 2.1");
+                return menu;
             },
             ModalView: () => {
                 const mv = new ModalView();

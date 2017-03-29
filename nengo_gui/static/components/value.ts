@@ -283,33 +283,25 @@ export class Value extends Component {
         this.div.style.height = height;
     }
 
-    generateMenu() {
-        const items = [
-            ["Set range...", function() {
-                this.setRange();
-            }],
-            ["Set synapse...", function() {
+    addMenuItems() {
+        this.menu.addAction("Set range...", () => {
+            this.setRange();
+        });
+        this.menu.addAction("Set synapse...", () => {
                 this.setSynapseDialog();
-            }],
-        ];
-
-        if (this.showLegend) {
-            items.push(["Hide legend", function() {
-                this.setShowLegend(false);
-            }]);
-        } else {
-            items.push(["Show legend", function() {
-                this.setShowLegend(true);
-            }]);
-        }
-
+        });
+        this.menu.addAction("Hide legend", () => {
+            this.setShowLegend(false);
+        }, () => this.showLegend);
+        this.menu.addAction("Show legend", () => {
+            this.setShowLegend(true);
+        }, () => !this.showLegend);
         // TODO: give the legend it's own context menu
-        items.push(["Set legend labels", function() {
+        this.menu.addAction("Set legend labels", () => {
             this.setLegendLabels();
-        }]);
-
-        // Add the parent's menu items to this
-        return $.merge(items, Component.prototype.generateMenu.call(this));
+        });
+        this.menu.addSeparator();
+        super.addMenuItems();
     }
 
     setShowLegend(value) {

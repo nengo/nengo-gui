@@ -1,0 +1,14 @@
+div.menu {
+    position: fixed;
+
+    .dropdown-menu {
+        display: block;
+        position: absolute;
+
+        .menu-item {
+            cursor: pointer !important;
+            font-size: 90%;
+            text-align: left;
+        }
+    }
+}

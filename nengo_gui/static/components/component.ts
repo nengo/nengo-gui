@@ -1,7 +1,7 @@
 import * as interact from "interact.js";
 import * as $ from "jquery";
 
-import * as menu from "../menu";
+import { Menu } from "../menu";
 import * as utils from "../utils";
 import * as viewport from "../viewport";
 import { InputDialogView } from "../views/modal";
@@ -28,12 +28,14 @@ import * as allComponents from "./all-components";
  *
  */
 export class Component {
+    static all: Component[] = [];
+
     div;
     h;
     height;
     label;
     labelVisible;
-    menu;
+    menu: Menu;
     minHeight;
     minWidth;
     parent;
@@ -102,7 +104,7 @@ export class Component {
                     this.redrawPos();
                 },
                 onstart: () => {
-                    menu.hideAny();
+                    Menu.hideAll();
                 },
             });
 
@@ -112,7 +114,7 @@ export class Component {
                 edges: { bottom: true, left: true, right: true, top: true },
             })
             .on("resizestart", event => {
-                menu.hideAny();
+                Menu.hideAll();
             })
             .on("resizemove", event => {
                 const newWidth = event.rect.width;
@@ -148,39 +150,38 @@ export class Component {
         // Flag whether there is a scheduled update that hasn't happened yet
         this.pendingUpdate = false;
 
-        this.menu = new menu.Menu(this.parent);
+        this.menu = new Menu(this.parent);
+        this.addMenuItems();
         interact(this.div)
             .on("hold", event => { // Change to 'tap' for right click
                 if (event.button === 0) {
-                    if (this.menu.visibleAny()) {
-                        menu.hideAny();
+                    if (Menu.anyVisible()) {
+                        Menu.hideAll();
                     } else {
-                        this.menu.show(event.clientX, event.clientY,
-                                       this.generateMenu());
+                        this.menu.show(event.clientX, event.clientY);
                     }
                     event.stopPropagation();
                 }
             })
             .on("tap", event => { // Get rid of menus when clicking off
                 if (event.button === 0) {
-                    if (this.menu.visibleAny()) {
-                        menu.hideAny();
+                    if (Menu.anyVisible()) {
+                        Menu.hideAll();
                     }
                 }
             });
         $(this.div).bind("contextmenu", event => {
             event.preventDefault();
             event.stopPropagation();
-            if (this.menu.visibleAny()) {
-                menu.hideAny();
+            if (Menu.anyVisible()) {
+                Menu.hideAll();
             } else {
-                this.menu.show(
-                    event.clientX, event.clientY, this.generateMenu());
+                this.menu.show(event.clientX, event.clientY);
             }
             return false;
         });
 
-        allComponents.add(this);
+        Component.all.push(this);
     }
 
     addKeyHandler(dialog: InputDialogView) {
@@ -241,23 +242,16 @@ export class Component {
         // Subclasses should implement this.
     }
 
-    generateMenu() {
-        const items = [];
-        if (this.labelVisible) {
-            items.push(["Hide label", () => {
-                this.hideLabel(null);
-                this.saveLayout();
-            }]);
-        } else {
-            items.push(["Show label", () => {
-                this.showLabel(null);
-                this.saveLayout();
-            }]);
-        }
-        items.push(["Remove", () => {
-            this.remove();
-        }]);
-        return items;
+    addMenuItems() {
+        this.menu.addAction("Hide label", () => {
+            this.hideLabel(null);
+            this.saveLayout();
+        }, () => this.labelVisible)
+        this.menu.addAction("Show label", () => {
+            this.showLabel(null);
+            this.saveLayout();
+        }, () => !this.labelVisible);
+        this.menu.addAction("Remove", () => { this.remove(); });
     }
 
     remove(undoFlag=false, notifyServer=true) { // tslint:disable-line

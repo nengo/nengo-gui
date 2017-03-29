@@ -16,7 +16,7 @@ import { dom, h, VNode } from "maquette";
 
 import * as allComponents from "../components/all-components";
 import { config } from "../config";
-import * as menu from "../menu";
+import { Menu } from "../menu";
 import { HotkeyManager } from "../hotkeys";
 import * as viewport from "../viewport";
 import { Connection } from "../websocket";
@@ -53,7 +53,7 @@ export class NetGraph {
     gNetworksMini;
     height;
     inZoomDelay;
-    menu;
+    menu: Menu;
     minimap;
     offsetX = 0; // Global x,y pan offset
     offsetY = 0; // Global x,y pan offset
@@ -170,7 +170,7 @@ export class NetGraph {
 
                 },
                 onstart: () => {
-                    menu.hideAny();
+                    Menu.hideAll();
                 },
             });
 
@@ -184,7 +184,7 @@ export class NetGraph {
             .on("wheel", event => {
                 event.preventDefault();
 
-                menu.hideAny();
+                Menu.hideAll();
                 const x = (event.clientX) / this.width;
                 const y = (event.clientY - this.toolHeight) / this.height;
                 let delta;
@@ -236,36 +236,33 @@ export class NetGraph {
                 });
             });
 
-        this.menu = new menu.Menu(this.parent);
+        this.menu = new Menu(this.parent);
+        this.addMenuItems();
 
         // Determine when to pull up the menu
         interact(this.svg)
             .on("hold", event => { // Change to "tap" for right click
                 if (event.button === 0) {
-                    if (this.menu.visibleAny()) {
-                        menu.hideAny();
+                    if (Menu.anyVisible()) {
+                        Menu.hideAll();
                     } else {
-                        this.menu.show(event.clientX, event.clientY,
-                                       this.generateMenu());
+                        this.menu.show(event.clientX, event.clientY);
                     }
                     event.stopPropagation();
                 }
             })
             .on("tap", event => { // Get rid of menus when clicking off
                 if (event.button === 0) {
-                    if (this.menu.visibleAny()) {
-                        menu.hideAny();
-                    }
+                    Menu.hideAll();
                 }
             });
 
         $(this.svg).bind("contextmenu", event => {
             event.preventDefault();
-            if (this.menu.visibleAny()) {
-                menu.hideAny();
+            if (Menu.anyVisible()) {
+                Menu.hideAll();
             } else {
-                this.menu.show(
-                    event.clientX, event.clientY, this.generateMenu());
+                this.menu.show(event.clientX, event.clientY);
             }
         });
 
@@ -358,10 +355,10 @@ export class NetGraph {
         });
     }
 
-    generateMenu() {
-        return [["Auto-layout", () => {
+    addMenuItems() {
+        this.menu.addAction("Auto-layout", () => {
             this.notify({act: "feedforwardLayout", uid: null});
-        }]];
+        });
     }
 
     /**

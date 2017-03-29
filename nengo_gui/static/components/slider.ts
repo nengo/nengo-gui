@@ -15,7 +15,7 @@
 import * as $ from "jquery";
 
 import { DataStore } from "../datastore";
-import * as menu from "../menu";
+import { Menu } from "../menu";
 import * as utils from "../utils";
 import * as viewport from "../viewport";
 import { InputDialogView } from "../views/modal";
@@ -83,7 +83,7 @@ export class Slider extends Component {
                 event.target.fixed = true;
                 this.sendValue(event.target.index, event.value);
             }).on("changestart", function(event) {
-                menu.hideAny();
+                Menu.hideAll();
                 for (let i = 0; i < this.sliders.length; i++) {
                     if (this.sliders[i] !== event.target) {
                         this.sliders[i].deactivateTypeMode();
@@ -187,22 +187,18 @@ export class Slider extends Component {
         this.div.style.height = this.height;
     }
 
-    generateMenu() {
-        const items = [
-            ["Set range...", function() {
-                this.setRange();
-            }],
-            ["Set value...", function() {
-                this.userValue();
-            }],
-            ["Reset value", function() {
-                this.userResetValue();
-            }],
-        ];
-
-        // Add the parent's menu items to this
-        // TODO: is this really the best way to call the parent's generateMenu()?
-        return $.merge(items, Component.prototype.generateMenu.call(this));
+    addMenuItems() {
+        this.menu.addAction("Set range...", () => {
+            this.setRange();
+        });
+        this.menu.addAction("Set value...", () => {
+            this.userValue();
+        });
+        this.menu.addAction("Reset value", () => {
+            this.userResetValue();
+        });
+        this.menu.addSeparator();
+        super.addMenuItems();
     }
 
     /**

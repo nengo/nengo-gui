@@ -4,33 +4,85 @@
  * Each element that has a menu makes a call to Menu constructor
  */
 
-import * as $ from "jquery";
+import { MenuView } from "./views/menu";
 
-import "./menu.css";
 import * as utils from "./utils";
 
+export class MenuAction {
+    active: () => boolean | null;
+    element: HTMLLIElement;
+
+    constructor(element: HTMLLIElement, active: () => boolean = null) {
+        this.element = element;
+        this.active = active;
+    }
+
+    isActive(): boolean {
+        if (this.active === null) {
+            return true;
+        } else {
+            return this.active();
+        }
+    }
+}
+
 export class Menu {
-    static all: Menu[];
+    static allShown: Menu[] = [];
 
-    actions;
-    menu;
-    menuDiv;
+    actions: MenuAction[] = [];
     parent: HTMLElement;
-    visible;
+    view: MenuView = new MenuView();
 
-    constructor(parent: HTMLElement) {
-        this.visible = false; // Whether it's currently visible
-        this.parent = parent; // The parent div
-        this.menuDiv = null; // The div for the menu itself
-        this.actions = {}; // The current action list for the menu
+    static anyVisible(parent: HTMLElement | null = null) {
+        if (parent === null) {
+            return Menu.allShown.length;
+        } else {
+            return Menu.allShown.reduce((sum, menu) => {
+                return sum + (menu.parent === parent ? 1 : 0);
+            }, 0);
+        }
     }
 
     static hideAll(parent: HTMLElement | null = null) {
-        Menu.all.forEach(menu => {
+        Menu.allShown.forEach(menu => {
             if (parent === null || menu.parent === parent) {
                 menu.hide();
             }
         });
+    }
+
+    constructor(parent: HTMLElement) {
+        this.parent = parent;
+    }
+
+    get hidden(): boolean {
+        return this.view.root.parentNode === this.parent;
+    }
+
+    addAction(
+        label: string,
+        callback: (event: Event) => void,
+        active: () => boolean = null,
+    ) {
+        const element = this.view.addAction(label);
+        element.addEventListener("click", (event: Event) => {
+            callback(event);
+            this.hide();
+        })
+        element.addEventListener("contextmenu", (event: Event) => {
+            event.preventDefault();
+            callback(event);
+            this.hide();
+        });
+        this.actions.push(new MenuAction(element, active));
+    }
+
+    addHeader(label: string) {
+        this.view.addHeader(label);
+    }
+
+    addSeparator() {
+        this.view.addSeparator();
     }
 
     /**
@@ -40,86 +92,44 @@ export class Menu {
      *
      * Called by a listener from netgraph.js
      */
-    show(x, y, items) {
-        Menu.hideAll(this.parent);
+    show(x: number, y: number) {
+        // TODO: have to get toolbar height somehow...
+        // For now, we know it's always 35 px
+        const toolbarHeight = 35;
+        const correctedY = y - toolbarHeight;
+        const h = this.view.height;
+        const w = this.view.width;
 
-        if (items.length === 0) {
-            return;
+        // TODO: mainH and mainW: get from viewport...?
+        const mainH = 600;
+        const mainW = 600;
+
+        if (correctedY + h > mainH) {
+            y = mainH - h;
+        }
+        if (x + w > mainW) {
+            x = mainW - w;
         }
 
-        // TODO: move this to the constructor
-        this.menuDiv = document.createElement("div");
-        this.menuDiv.style.position = "fixed";
-        this.menuDiv.style.left = x;
-        this.menuDiv.style.top = y;
-        this.menuDiv.style.zIndex = utils.nextZindex();
-
-        this.menu = document.createElement("ul");
-        this.menu.className = "dropdown-menu";
-        this.menu.style.position = "absolute";
-        this.menu.style.display = "block";
-        this.menu.role = "menu";
-
-        this.menuDiv.appendChild(this.menu);
-        this.div.appendChild(this.menuDiv);
-
-        this.actions = {};
-
-        items.forEach(item => {
-            // TODO: Fix this stuff up, not sure things are bound correctly
-            const [html, func] = item;
-            const b = document.createElement("li");
-            const a = document.createElement("a");
-            a.setAttribute("href", "#");
-            a.className = "menu-item";
-            $(a).append(html);
-
-            this.actions[html] = func;
-            $(a).click(e => {
-                func();
-                this.hide();
-            }).on("contextmenu", e => {
-                e.preventDefault();
-                func();
-                this.hide();
-            });
-            b.appendChild(a);
-            this.menu.appendChild(b);
+        Menu.hideAll(this.parent);
+        this.actions.forEach((action, i) => {
+            if (action.isActive()) {
+                this.view.showAction(action.element);
+            } else {
+                this.view.hideAction(action.element);
+            }
         });
-        this.visible = true;
-        this.checkOverflow(x, y);
-        visibleMenus[this.div] = this;
+        this.view.show(x, y);
+        this.parent.appendChild(this.view.root);
+        Menu.allShown.push(this);
     }
 
     /**
      * Hide this menu.
      */
     hide() {
-        this.div.removeChild(this.menuDiv);
-        this.visible = false;
-
-        this.menuDiv = null;
-        delete visibleMenus[this.div];
-    }
-
-    visibleAny() {
-        return visibleMenus[this.div] !== undefined;
-    }
-
-    checkOverflow(x, y) {
-        const correctedY = y - $("#top_toolbar_div").height();
-        const h = $(this.menu).outerHeight();
-        const w = $(this.menu).outerWidth();
-
-        const mainH = $("#main").height();
-        const mainW = $("#main").width();
-
-        if (correctedY + h > mainH) {
-            this.menuDiv.style.top = y - h;
-        }
-
-        if (x + w > mainW) {
-            this.menuDiv.style.left = mainW - w;
-        }
+        this.parent.removeChild(this.view.root);
+        // Remove from allShown list
+        Menu.allShown.splice(Menu.allShown.indexOf(this), 1);
     }
 }
