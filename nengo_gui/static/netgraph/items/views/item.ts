@@ -110,7 +110,7 @@ export class NetGraphItemView {
     }
 
     // TODO: rename
-    // abstract _getPos(): {
+    // abstract _getNetGraphDims(): {
     //     w: number, h: number, offsetX: number, offsetY: number
     // };
 
@@ -119,12 +119,13 @@ export class NetGraphItemView {
      */
     get screenLocation() {
 
-        const pos = this._getPos();
+        const pos = this._getNetGraphDims();
 
         let dx = 0;
         let dy = 0;
         // let parent = this.parent;
         // while (parent !== null) {
+        //     WHAT THE HELL IS THIS ACCOMPLISHING?
         //     dx *= parent.width * 2;
         //     dy *= parent.height * 2;
 
@@ -161,7 +162,7 @@ export class NetGraphItemView {
         return this.ng.view.height * this.ng.scale;
     }
 
-    _getPos() {
+    _getNetGraphDims() {
         const w = this.ng.scaledWidth;
         const h = this.ng.scaledHeight;
 

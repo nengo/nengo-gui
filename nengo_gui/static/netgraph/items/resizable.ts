@@ -89,7 +89,6 @@ export class NodeItem extends ResizableItem {
         this.radiusScale = .1;
         this.htmlNode = html;
         this._renderShape();
-        this.redraw();
     }
 
     _renderShape() {
@@ -191,8 +190,8 @@ export class NetItem extends ResizableItem {
                         }
                     }
                 }
-            });
-        interact(this.view.g).draggable({
+            })
+        .draggable({
             onstart: () => {
                 hideAllMenus();
                 this.moveToFront();

@@ -79,10 +79,6 @@ export class NetGraphItem {
         }
     }
 
-    redrawPosition() {
-        this.view.redrawPosition();
-    }
-
     redrawConnections() {
         for (const conn of this.connIn) {
             conn.redraw();
@@ -96,7 +92,7 @@ export class NetGraphItem {
      * Force a redraw of the item.
      */
     redraw() {
-        this.redrawPosition();
+        this.view.redrawPosition();
         this.redrawConnections();
     }
 }

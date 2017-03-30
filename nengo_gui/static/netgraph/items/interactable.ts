@@ -16,8 +16,8 @@ export abstract class InteractableItem extends NetGraphItem {
     minimap;
     miniItem;
     uid: string;
-    label: SVGTextElement;
-    labelBelow: boolean;
+    _label: SVGTextElement;
+    _labelBelow: boolean;
     menu: Menu;
 
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
@@ -25,9 +25,9 @@ export abstract class InteractableItem extends NetGraphItem {
         super(ngiArg);
 
         const labelNode = h("text", {innerHTML: interArg.label, transform: ""});
-        this.label = domCreateSvg(labelNode) as SVGTextElement;
+        this._label = domCreateSvg(labelNode) as SVGTextElement;
         this.miniItem = interArg.miniItem;
-        this.view.g.appendChild(this.label);
+        this.view.g.appendChild(this._label);
 
         this.menu = new Menu(this.ng.view.root);
 
@@ -35,29 +35,30 @@ export abstract class InteractableItem extends NetGraphItem {
             this.view.parent.children.push(this);
         }
 
-        interact(this.view.g).draggable({
-            onend: (event) => {
-                this.constrainPosition();
-                this.ng.notify("pos", {uid: this.uid, x: this.x, y: this.y});
-
-                this.redraw();
-            },
-            onmove: (event) => {
-                const scale = this.scales;
-                this.x += event.dx / scale.hor;
-                this.y += event.dy / scale.vert;
-                this.redraw();
-
-                if (this.view.depth === 1) {
-                    this.ng.scaleMiniMap();
-                }
-            },
-            onstart: () => {
-                hideAllMenus();
-            },
-        });
-        // Determine when to pull up the menu
         interact(this.view.g)
+            .draggable({
+                onend: (event) => {
+                    this.constrainPosition();
+                    this.ng.notify("pos", {
+                        uid: this.uid, x: this.x, y: this.y});
+
+                    this.redraw();
+                },
+                onmove: (event) => {
+                    const scale = this.scales;
+                    this.x += event.dx / scale.hor;
+                    this.y += event.dy / scale.vert;
+                    this.redraw();
+
+                    if (this.view.depth === 1) {
+                        this.ng.scaleMiniMap();
+                    }
+                },
+                onstart: () => {
+                    hideAllMenus();
+                },
+            })
+            // Determine when to pull up the menu
             .on("hold", (event) => {
                 // Change to "tap" for right click
                 if (event.button === 0) {
@@ -65,8 +66,8 @@ export abstract class InteractableItem extends NetGraphItem {
                         hideAllMenus();
                     } else {
                         this.menu.show(event.clientX,
-                                       event.clientY,
-                                       this.generateMenu());
+                                        event.clientY,
+                                        this.generateMenu());
                     }
                     event.stopPropagation();
                 }
@@ -86,20 +87,17 @@ export abstract class InteractableItem extends NetGraphItem {
                         hideAllMenus();
                     }
                 }
+            })
+            .on("contextmenu", (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                if (this.menu.visibleAny()) {
+                    hideAllMenus();
+                } else {
+                    this.menu.show(
+                        event.clientX, event.clientY, this.generateMenu());
+                }
             });
-
-        interact(this.view.g).on("contextmenu", (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            if (this.menu.visibleAny()) {
-                hideAllMenus();
-            } else {
-                this.menu.show(
-                    event.clientX, event.clientY, this.generateMenu());
-            }
-        });
-
-        // TODO: redrawSize here?
     }
 
     generateMenu(): MenuItem[] {
@@ -160,7 +158,7 @@ export abstract class InteractableItem extends NetGraphItem {
 
     redrawSize(): Shape {
         const screenD = this.view.displayedShape;
-        this.label.setAttribute(
+        this._label.setAttribute(
          "transform",
          "translate(0, " + (screenD.height / 2) + ")",
         );
@@ -183,29 +181,19 @@ export abstract class InteractableItem extends NetGraphItem {
         // }
     }
 
-    _getPos() {
-        const w = this.ng.scaledWidth;
-        const h = this.ng.scaledHeight;
-
-        const offsetX = this.ng.offsetX * w;
-        const offsetY = this.ng.offsetY * h;
-
-        return {w, h, offsetX, offsetY};
-    }
-
-    setLabel(label) {
-        this.label.setAttribute("innerHTML", label);
+    set label(label) {
+        this._label.setAttribute("innerHTML", label);
     }
 
     // TODO: what is the expected functionality of this thing?
-    setLabelBelow(flag) {
-        if (flag && !this.labelBelow) {
+    set labelBelow(flag) {
+        if (flag && !this._labelBelow) {
             const screenH = this.view.screenHeight;
             this.label.setAttribute(
                 "transform",
                 "translate(0, " + (screenH / 2) + ")",
             );
-        } else if (!flag && this.labelBelow) {
+        } else if (!flag && this._labelBelow) {
             this.label.setAttribute(
                 "transform",
                 "",

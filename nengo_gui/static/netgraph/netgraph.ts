@@ -133,9 +133,7 @@ export class NetGraph {
             .on("mouseup", () => {
                 document.documentElement
                     .setAttribute("style", "cursor:default;");
-            });
-
-        interact(this.view.root)
+            })
             .draggable({
                 onend: (event) => {
                     // Let the server know what happened
@@ -171,16 +169,14 @@ export class NetGraph {
                 onstart: () => {
                     Menu.hideAll();
                 },
-            });
-
-        // Scrollwheel on background zooms the full area by changing scale.
-        // Note that offsetX,Y are also changed to zoom into a particular
-        // point in the space
-        interact(this.view.root)
+            })
             // .on("click", (event) => {
             //     document.querySelector(".aceText-input")
             //         .dispatchEvent(new Event("blur"));
             // })
+            // Scrollwheel on background zooms the full area by changing scale.
+            // Note that offsetX,Y are also changed to zoom into a particular
+            // point in the space
             .on("wheel", (event) => {
                 event.preventDefault();
 
