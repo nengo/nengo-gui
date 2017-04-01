@@ -2,7 +2,7 @@ import * as interact from "interact.js";
 import { dom, h, VNode } from "maquette";
 
 import { config } from "../../config";
-import { hideAllMenus, MenuItem } from "../../menu";
+import { Menu } from "../../menu";
 import { domCreateSvg, Shape } from "../../utils";
 import { InteractableItem, InteractableItemArg } from "./interactable";
 import { NetGraphItemArg } from "./item";
@@ -24,7 +24,7 @@ abstract class ResizableItem extends InteractableItem {
                 invert: "none",
                 margin: 10,
             }).on("resizestart", (event) => {
-                hideAllMenus();
+                Menu.hideAll();
             }).on("resizemove", (event) => {
                 const scale = this.scales;
 
@@ -103,35 +103,30 @@ export class NodeItem extends ResizableItem {
         this.redraw();
     }
 
-    generateMenu() {
-        const items = [];
-
-        items.push({
-            html: "Slider",
-            callback: () => {
+    addMenuItems() {
+        this.menu.addAction("Slider", () => {
                 this.createGraph("Slider");
             },
-        });
+        );
         if (this.dimensions > 0) {
-            items.push(["Value", () => {
+            this.menu.addAction("Value", () => {
                 this.createGraph("Value");
-            }]);
+            });
         }
         if (this.dimensions > 1) {
-            items.push(["XY-value", () => {
+            this.menu.addAction("XY-value", () => {
                 this.createGraph("XYValue");
-            }]);
+            });
         }
         if (this.htmlNode) {
-            items.push(["HTML", () => {
+            this.menu.addAction("HTML", () => {
                 this.createGraph("HTMLView");
-            }]);
+            });
         }
 
-        items.push(["Details ...", () => {
+        this.menu.addAction("Details ...", () => {
             this.createModal();
-        }]);
-        return items;
+        });
     }
 
     redrawSize() {
@@ -160,6 +155,7 @@ export class NetItem extends ResizableItem {
         // TODO: This use of gItems and gNetworks is definitely wrong
         this.gNetworks = this.ng.view.gNetworks;
         this.expanded = expanded;
+        // TODO: what type is this supposed to be?
         this.spTargets = spTargets;
         this.defaultOutput = defaultOutput;
 
@@ -180,8 +176,8 @@ export class NetItem extends ResizableItem {
         interact(this.view.g).on("doubletap", (event) => {
                 // Get rid of menus when clicking off
                 if (event.button === 0) {
-                    if (this.menu.visibleAny()) {
-                        hideAllMenus();
+                    if (Menu.anyVisible()) {
+                        Menu.hideAll();
                     } else {
                         if (this.expanded) {
                             this.collapse(true);
@@ -193,7 +189,7 @@ export class NetItem extends ResizableItem {
             })
         .draggable({
             onstart: () => {
-                hideAllMenus();
+                Menu.hideAll();
                 this.moveToFront();
             },
         });
@@ -215,42 +211,38 @@ export class NetItem extends ResizableItem {
         }
     }
 
-    generateMenu(): MenuItem[] {
-        const items: MenuItem[] = super.generateMenu();
-
+    addMenuItems() {
         if (this.expanded) {
-            items.push({html: "Collapse network", callback: () => {
+            this.menu.addAction("Collapse network", () => {
                 this.collapse(true);
-            }});
-            items.push({html: "Auto-layout", callback: () => {
+            });
+            this.menu.addAction("Auto-layout", () => {
                 this.requestFeedforwardLayout();
-            }});
+            });
         } else {
-            items.push({html: "Expand network", callback: () => {
+            this.menu.addAction("Expand network", () => {
                 this.expand();
-            }});
+            });
         }
 
         if (this.defaultOutput && this.spTargets.length === 0) {
-            items.push({html: "Output Value", callback: () => {
+            this.menu.addAction("Output Value", () => {
                 this.createGraph("Value");
-            }});
+            });
         }
 
         if (this.spTargets.length > 0) {
-            items.push({html: "Semantic pointer cloud", callback: () => {
+            this.menu.addAction("Semantic pointer cloud", () => {
                 this.createGraph("Pointer", this.spTargets[0]);
-            }});
-            items.push({html: "Semantic pointer plot", callback: () => {
+            });
+            this.menu.addAction("Semantic pointer plot", () => {
                 this.createGraph("SpaSimilarity", this.spTargets[0]);
-            }});
+            });
         }
 
-        items.push({html: "Details ...", callback: () => {
+        this.menu.addAction("Details ...", () => {
             this.createModal();
-        }});
-
-        return items;
+        });
     }
 
     /**
@@ -444,30 +436,28 @@ export class EnsembleItem extends ResizableItem {
         this.redraw();
     }
 
-    generateMenu() {
-        const items = [];
-        items.push(["Value", () => {
+    addMenuItems() {
+        this.menu.addAction("Value", () => {
             this.createGraph("Value");
-        }]);
+        });
         if (this.dimensions > 1) {
-            items.push(["XY-value", () => {
+            this.menu.addAction("XY-value", () => {
                 this.createGraph("XYValue");
-            }]);
+            });
         }
-        items.push(["Spikes", () => {
+        this.menu.addAction("Spikes", () => {
             this.createGraph("Raster");
-        }]);
-        items.push(["Voltages", () => {
+        });
+        this.menu.addAction("Voltages", () => {
             this.createGraph("Voltage");
-        }]);
-        items.push(["Firing pattern", () => {
+        });
+        this.menu.addAction("Firing pattern", () => {
             this.createGraph("SpikeGrid");
-        }]);
+        });
 
-        items.push(["Details ...", () => {
+        this.menu.addAction("Details ...", () => {
             this.createModal();
-        }]);
-        return items;
+        });
     }
 
     contSize(event, hScale, vScale) {

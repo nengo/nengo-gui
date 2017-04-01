@@ -153,7 +153,7 @@ export class Value extends Component {
         this.axes2d.fitTicks(this);
 
         this.colors = utils.makeColors(6);
-        this.colorFunc = function(d, i) {
+        this.colorFunc = (d, i) => {
             return this.colors[i % 6];
         };
         this.legend = document.createElement("div");

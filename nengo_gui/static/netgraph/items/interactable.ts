@@ -1,7 +1,7 @@
 import * as interact from "interact.js";
 import { h } from "maquette";
 
-import { hideAllMenus, Menu, MenuItem } from "../../menu";
+import {Menu } from "../../menu";
 import { domCreateSvg, Shape } from "../../utils";
 import { NetGraphItem, NetGraphItemArg } from "./item";
 import { MinimapItem } from "./minimap";
@@ -55,19 +55,17 @@ export abstract class InteractableItem extends NetGraphItem {
                     }
                 },
                 onstart: () => {
-                    hideAllMenus();
+                    Menu.hideAll();
                 },
             })
             // Determine when to pull up the menu
             .on("hold", (event) => {
                 // Change to "tap" for right click
                 if (event.button === 0) {
-                    if (this.menu.visibleAny()) {
-                        hideAllMenus();
+                    if (Menu.anyVisible()) {
+                        Menu.hideAll();
                     } else {
-                        this.menu.show(event.clientX,
-                                        event.clientY,
-                                        this.generateMenu());
+                        this.menu.show(event.clientX, event.clientY);
                     }
                     event.stopPropagation();
                 }
@@ -75,37 +73,34 @@ export abstract class InteractableItem extends NetGraphItem {
             .on("tap", (event) => {
                 // Get rid of menus when clicking off
                 if (event.button === 0) {
-                    if (this.menu.visibleAny()) {
-                        hideAllMenus();
+                    if (Menu.anyVisible()) {
+                        Menu.hideAll();
                     }
                 }
             })
             .on("doubletap", (event) => {
                 // Get rid of menus when clicking off
                 if (event.button === 0) {
-                    if (this.menu.visibleAny()) {
-                        hideAllMenus();
+                    if (Menu.anyVisible()) {
+                        Menu.hideAll();
                     }
                 }
             })
             .on("contextmenu", (event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                if (this.menu.visibleAny()) {
-                    hideAllMenus();
+                if (Menu.anyVisible()) {
+                    Menu.hideAll();
                 } else {
-                    this.menu.show(
-                        event.clientX, event.clientY, this.generateMenu());
+                    this.menu.show(event.clientX, event.clientY);
                 }
             });
     }
 
-    generateMenu(): MenuItem[] {
-        const items: MenuItem[] = [];
-        items.push({html: "Auto-layout", callback: () => {
+    addMenuItems() {
+        this.menu.addAction("Auto-layout", () => {
             this.requestFeedforwardLayout();
-        }});
-        return items;
+        });
     }
 
     get scales(){

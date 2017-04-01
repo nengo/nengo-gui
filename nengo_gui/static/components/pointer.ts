@@ -27,7 +27,7 @@ export class Pointer extends Component {
     mouseDownTime;
     pdiv;
     pointerStatus;
-    showPairs;
+    _showPairs: boolean;
     sim;
 
     constructor(parent, sim, args) {
@@ -44,7 +44,7 @@ export class Pointer extends Component {
         this.pdiv.classList.add("pointer");
         this.div.appendChild(this.pdiv);
 
-        this.showPairs = args.showPairs;
+        this._showPairs = args.showPairs;
 
         // For storing the accumulated data
         this.dataStore = new DataStore(1, 0);
@@ -76,8 +76,8 @@ export class Pointer extends Component {
                 return;
             }
             if (event.button === 0) {
-                if (!this.menu.hidden) {
-                    this.menu.hide();
+                if (Menu.anyVisible()) {
+                    Menu.hideAll();
                 } else {
                     this.menu.show(event.clientX, event.clientY);
                 }
@@ -93,18 +93,18 @@ export class Pointer extends Component {
             this.setValue();
         });
         this.menu.addAction("Hide pairs", () => {
-            this.setShowPairs(false);
-        }, () => this.showPairs);
+            this.showPairs = false;
+        }, () => this._showPairs);
         this.menu.addAction("Show pairs", () => {
-            this.setShowPairs(true);
-        }, () => !this.showPairs);
+            this.showPairs = true;
+        }, () => !this._showPairs);
         this.menu.addSeparator();
         super.addMenuItems();
     }
 
-    setShowPairs(value) {
-        if (this.showPairs !== value) {
-            this.showPairs = value;
+    set showPairs(value) {
+        if (this._showPairs !== value) {
+            this._showPairs = value;
             this.saveLayout();
         }
     }

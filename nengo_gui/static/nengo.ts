@@ -31,10 +31,7 @@ import { SimControlView } from "./views/sim-control";
 import { ToolbarView } from "./views/toolbar";
 import { MockConnection } from "./websocket";
 
-// import { Editor } from "./editor";
-// import { NetGraph } from "./netgraph/netgraph";
 // import { SideMenu } from "./side-menu";
-// import { SimControl } from "./sim-control";
 // import { WSConnection } from "./websocket";
 
 // TODO: put all of this in an ajax call to Python. To get:

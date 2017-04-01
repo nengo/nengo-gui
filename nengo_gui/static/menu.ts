@@ -36,10 +36,6 @@ export class Menu {
 
     static allShown: Menu[] = [];
 
-    actions: MenuAction[] = [];
-    parent: HTMLElement;
-    view: MenuView = new MenuView();
-
     static anyVisible(parent: HTMLElement | null = null) {
         if (parent === null) {
             return Menu.allShown.length;
@@ -51,12 +47,16 @@ export class Menu {
     }
 
     static hideAll(parent: HTMLElement | null = null) {
-        Menu.allShown.forEach(menu => {
+        Menu.allShown.forEach((menu) => {
             if (parent === null || menu.parent === parent) {
                 menu.hide();
             }
         });
     }
+
+    actions: MenuAction[] = [];
+    parent: HTMLElement;
+    view: MenuView = new MenuView();
 
     constructor(parent: HTMLElement) {
         this.parent = parent;
@@ -75,7 +75,7 @@ export class Menu {
         element.addEventListener("click", (event: Event) => {
             callback(event);
             this.hide();
-        })
+        });
         element.addEventListener("contextmenu", (event: Event) => {
             event.preventDefault();
             callback(event);
@@ -125,7 +125,7 @@ export class Menu {
             } else {
                 this.view.hideAction(action.element);
             }
-
+        });
         this.view.show(x, y);
         this.parent.appendChild(this.view.root);
         Menu.allShown.push(this);

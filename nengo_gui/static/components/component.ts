@@ -28,7 +28,7 @@ import { AllComponents } from "./all-components";
  *
  */
 
-export class Component {
+export abstract class Component {
     static all: Component[] = [];
 
     div: HTMLDivElement;

@@ -14,8 +14,8 @@ import * as interact from "interact.js";
 
 import { AllComponents } from "../components/all-components";
 import { config } from "../config";
-import { Menu } from "../menu";
 import { HotkeyManager } from "../hotkeys";
+import { Menu } from "../menu";
 import { Shape } from "../utils";
 import { ViewPort } from "../viewport";
 import { Connection } from "../websocket";
@@ -331,7 +331,9 @@ export class NetGraph {
 
     addMenuItems() {
         this.menu.addAction("Auto-layout", () => {
-            this.notify({act: "feedforwardLayout", uid: null});
+            this.attached.forEach((conn) => {
+                conn.send("netgraph.feedforwardLayout");
+            });
         });
     }
 
@@ -358,16 +360,6 @@ export class NetGraph {
         this.redraw();
 
         this.viewPort.position = {newX: x, newY: y};
-    }
-
-    generateMenu(): MenuItem[] {
-        const items: MenuItem[] = [];
-        items.push({html: "Auto-layout", callback: () => {
-            this.attached.forEach((conn) => {
-                conn.send("netgraph.feedforwardLayout");
-            });
-        }});
-        return items;
     }
 
     /**

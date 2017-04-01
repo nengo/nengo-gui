@@ -45,10 +45,6 @@ export class SpaSimilarity extends Value {
         this.div.appendChild(this.legend);
         this.legendSVG = utils.draw_legend(
             this.legend, args.pointer_labels, this.colorFunc, this.uid);
-    };
-
-    get n_lines(): number {
-        return this.dataStore.dims;
     }
 
     resetLegendAndData(newLabels) {
@@ -178,10 +174,10 @@ export class SpaSimilarity extends Value {
 
             texts.html((d, i) => {
                 let sign = "";
-                if (lastestSimi[i] < 0) {
+                if (latestSimi[i] < 0) {
                     sign = "&minus;";
                 }
-                return sign + Math.abs(lastestSimi[i]).toFixed(2);
+                return sign + Math.abs(latestSimi[i]).toFixed(2);
             });
         }
     }

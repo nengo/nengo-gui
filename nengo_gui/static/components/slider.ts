@@ -148,7 +148,7 @@ export class Slider extends Component {
     onMessage(event) {
         const data = new Float32Array(event.data);
         if (this.dataStore === null) {
-            this.dataStore = new DataStore(this.sliders.length, this.sim, 0);
+            this.dataStore = new DataStore(this.sliders.length, 0);
         }
         this.resetValue = [];
         for (let i = 0; i < this.sliders.length; i++) {
