@@ -66,7 +66,7 @@ abstract class ResizableItem extends InteractableItem {
         const areaH = screenD.height;
         this.area.setAttribute(
             "transform",
-            String("translate(-" + (areaW / 2) + ", -" + (areaH / 2) + ")"),
+            `translate(-${areaW / 2}, -${areaH / 2})`,
         );
         this.area.setAttribute("width", String(areaW));
         this.area.setAttribute("height", String(areaH));
@@ -96,7 +96,7 @@ export class NodeItem extends ResizableItem {
         const halfW = screenD.width / 2;
         const halfH = screenD.height / 2;
         const shape = h("rect.node", {
-            transform: "translate(-" + halfW + ", -" + halfH + ")",
+            transform: `translate(-${halfW}, -${halfH})`,
         });
         this.view.shape = domCreateSvg(shape);
         this.view.g.appendChild(this.view.shape);
@@ -345,7 +345,7 @@ export class NetItem extends ResizableItem {
             ngi.computeFill();
             if (ngi.expanded) {
                 ngi.view.shape.setAttribute(
-                    "style", String("fill-opacity=" + val),
+                    "style", `fill-opacity=${val}`,
                 );
             }
         });
@@ -387,13 +387,13 @@ export class NetItem extends ResizableItem {
         const depth = this.ng.transparentNets ? 1 : this.view.depth;
 
         let rgb = Math.round(255 * Math.pow(0.8, depth));
-        const fill = "rgb(" + rgb + "," + rgb + "," + rgb + ")";
+        const fill = `rgb(${rgb}, ${rgb}, ${rgb})`;
 
         rgb = Math.round(255 * Math.pow(0.8, depth + 2));
-        const stroke = "rgb(" + rgb + "," + rgb + "," + rgb + ")";
+        const stroke = `rgb(${rgb}, ${rgb}, ${rgb})`;
 
         this.view.shape.setAttribute(
-            "style", String("fill=" + fill + ", stroke=" + stroke),
+            "style", `fill=${fill}, stroke=${stroke}`,
         );
     }
 }
@@ -546,10 +546,10 @@ export class EnsembleItem extends ResizableItem {
 
         this.view.shape.setAttribute(
             "transform",
-            String("scale(" + scale / 2 / this.radiusScale + ")"),
+            `scale(${scale / 2 / this.radiusScale})`,
         );
         this.view.shape.setAttribute(
-            "style",  String("stroke-width" + 20 / scale),
+            "style",  `stroke-width ${20 / scale}`,
         );
 
         this.area.setAttribute(

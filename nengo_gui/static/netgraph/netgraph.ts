@@ -63,8 +63,7 @@ interface Pos {
     y: number;
 }
 
-// TODO: figure out an interface for config (maybe a type?)
-// since you can't just use the class
+// TODO: figure out how to break out the minimap from this class
 
 export class NetGraph {
 
@@ -92,7 +91,6 @@ export class NetGraph {
     viewPort: ViewPort; // WHAT DOES THIS DO?
     view: NetGraphView;
     transparentNets: boolean;
-    minimapObjects;
 
     private attached: Connection[] = [];
 
@@ -106,8 +104,6 @@ export class NetGraph {
         if (uid[0] === "<") {
             console.warn("invalid uid for NetGraph: " + uid);
         }
-
-        this.inZoomDelay = false;
 
         // this.minimap = new Minimap();
         this.view = new NetGraphView(uid);
@@ -389,13 +385,6 @@ export class NetGraph {
                 this.createNode(ngiArg, interArg, dimensions, html);
         });
 
-        // temporary simple object creation
-        conn.bind("netGraph.createSimple", ({ngiArg}: {
-            ngiArg: NetGraphItemArg,
-            interArg: InteractableItemArg, html: string}) => {
-                this.createSimple(ngiArg);
-        });
-
         conn.bind("netGraph.createConnection", ({connArg}) => {
             this.createConnection(connArg);
         });
@@ -514,40 +503,11 @@ export class NetGraph {
         });
     }
 
-    /**
-     * Create a new NetGraphItem.
-     *
-     * If an existing NetGraphConnection is looking for this item, it will be
-     * notified
-     */
-    // createObject(info) {
-    //     // TODO: this should be actual arguments, not just an arbitrary object
-    //     const itemMini = new NetGraphItem(this, info, true, null);
-    //     this.minimapObjects[info.uid] = itemMini;
-
-    //     const item = new NetGraphItem(this, info, false, itemMini);
-    //     this.svgObjects[info.uid] = item;
-
-    //     this.detectCollapsedConns(item.uid);
-    //     this.detectCollapsedConns(itemMini.uid);
-
-    //     this.scaleMiniMap();
-    // }
-
     // this will need to be refactored later
     createNode(ngiArg, interArg, dimensions, html) {
         // TODO: fill in the rest of the args
         const item = new NodeItem(ngiArg, interArg, dimensions, html);
         this.svgObjects.node[ngiArg.uid] = item;
-
-        this.detectCollapsedConns(item.uid);
-    }
-
-    // this will need to be refactored later
-    createSimple(ngiArg) {
-        // TODO: fill in the rest of the args
-        const item = new NetGraphItem(ngiArg);
-        //this.svgObjects.node[ngiArg.uid] = item;
 
         this.detectCollapsedConns(item.uid);
     }
@@ -572,6 +532,8 @@ export class NetGraph {
             Object.keys(this.svgObjects).forEach((objType) => {
                 Object.keys(this.svgObjects[objType]).forEach((key) => {
                     const item = this.svgObjects[objType][key];
+                    // TODO: this is the only thing ViewPort is being used for,
+                    // so it can probably be removed
                     if (item.depth === 1) {
                         const newWidth =
                             this.viewPort.scaleWidth(item.width) / this.scale;

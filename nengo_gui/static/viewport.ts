@@ -21,7 +21,7 @@ export class ViewPort {
         this.width = clientRect.width;
         this.height = clientRect.height;
 
-        window.addEventListener("resize", event => {
+        window.addEventListener("resize", (event) => {
             this.onResize();
         });
     }
@@ -45,7 +45,7 @@ export class ViewPort {
     redraw() {
         this.netgraph.allComponents.onResize(
             this.scale * this.width * 2,
-            this.height * this.scale * 2
+            this.height * this.scale * 2,
         );
         this.netgraph.allComponents.redraw();
     }
@@ -61,7 +61,7 @@ export class ViewPort {
         if (this.netgraph.aspectResize) {
             this.netgraph.allComponents.rescale(
                 oldWidth / this.width,
-                oldHeight / this.height
+                oldHeight / this.height,
             );
         }
 

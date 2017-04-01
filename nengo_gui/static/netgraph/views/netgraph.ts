@@ -18,7 +18,7 @@ export class NetGraphView {
         const css = require("!!css-loader!./netgraph.css").toString();
 
         const defs = h("defs", [h(
-            "style", {type: "text/css"}, ["<![CDATA[\n" + css + "\n]]>"],
+            "style", {type: "text/css"}, [`<![CDATA[\n ${css} \n]]>`],
         )]);
 
         // Create the master SVG element
@@ -65,9 +65,9 @@ export class NetGraphView {
 
     updateFonts(zoom: boolean, fontSize: number, scale: number) {
         if (zoom) {
-            this.root.style.fontSize = 3 * scale * fontSize / 100 + "em";
+            this.root.style.fontSize = `${3 * scale * fontSize / 100}em`;
         } else {
-            this.root.style.fontSize = fontSize / 100 + "em";
+            this.root.style.fontSize = `${fontSize / 100}em`;
         }
     }
 }

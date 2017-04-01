@@ -160,7 +160,7 @@ export abstract class InteractableItem extends NetGraphItem {
         const screenD = this.view.displayedShape;
         this._label.setAttribute(
          "transform",
-         "translate(0, " + (screenD.height / 2) + ")",
+         `translate(0, ${screenD.height / 2})`,
         );
         return screenD;
     }
@@ -191,7 +191,7 @@ export abstract class InteractableItem extends NetGraphItem {
             const screenH = this.view.screenHeight;
             this.label.setAttribute(
                 "transform",
-                "translate(0, " + (screenH / 2) + ")",
+                `translate(0, ${screenH / 2})`,
             );
         } else if (!flag && this._labelBelow) {
             this.label.setAttribute(

@@ -43,7 +43,7 @@ export class NetGraphItemView {
         this.alias = "node";
 
         // Create the SVG group to hold this item's shape and it's label
-        this.g = domCreateSvg(h("g.".concat(this.alias))) as SVGGElement;
+        this.g = domCreateSvg(h(`g.${this.alias}`)) as SVGGElement;
         this.gItems.appendChild(this.g);
 
         // Determine the parent NetGraphItem (if any) and the nested depth
@@ -209,7 +209,7 @@ export class NetGraphItemView {
 
         this.g.setAttribute(
             "transform",
-            "translate(" + screen[0] + ", " + screen[1] + ")",
+            `translate(${screen[0]}, ${screen[1]})`,
         );
     }
 
