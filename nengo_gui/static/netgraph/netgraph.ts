@@ -83,8 +83,11 @@ export class NetGraph {
     inZoomDelay;
     menu: Menu;
     minimap;
-    offsetX = 0; // Global x,y pan offset
-    offsetY = 0; // Global x,y pan offset
+
+    // Global x,y pan offset
+    offsetX: number = 0;
+    offsetY: number = 0;
+
     svgConns: ConnDict = {};
     svgObjects: SvgObjects = {net: {}, ens: {}, node: {}, passthrough: {}};
     uid: string;
@@ -94,7 +97,7 @@ export class NetGraph {
 
     private attached: Connection[] = [];
 
-    private _scale: number = 1.0;
+    private _scale: number = 1;
 
     constructor(uid: string) {
         this.uid = uid;
@@ -139,12 +142,14 @@ export class NetGraph {
                     });
                 },
                 onmove: (event) => {
+                    console.assert(this.scaledWidth !== 0);
+                    console.assert(this.scaledHeight !== 0);
                     this.offsetX += event.dx / this.scaledWidth;
                     this.offsetY += event.dy / this.scaledHeight;
 
                     Object.keys(this.svgObjects).forEach((objType) => {
                         Object.keys(this.svgObjects[objType]).forEach((key) => {
-                            this.svgObjects[objType][key].redrawPosition();
+                            this.svgObjects[objType][key].view.redrawPosition();
                         // if (this.mmDisplay) {
                         //     this.minimapObjects[key].redrawPosition();
                         // }
@@ -341,6 +346,8 @@ export class NetGraph {
      * Return the pixel width of the SVG times the current scale factor.
      */
     get scaledWidth() {
+        console.assert(this.view.width !== 0);
+        console.assert(this.scale !== 0);
         return this.view.width * this.scale;
     }
 
@@ -348,6 +355,8 @@ export class NetGraph {
      * Return the pixel height of the SVG times the current scale factor.
      */
     get scaledHeight() {
+        console.assert(this.view.height !== 0);
+        console.assert(this.scale !== 0);
         return this.view.height * this.scale;
     }
 

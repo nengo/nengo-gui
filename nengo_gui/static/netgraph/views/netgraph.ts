@@ -60,7 +60,8 @@ export class NetGraphView {
         this.width = this.root.getBoundingClientRect().width;
         this.height = this.root.getBoundingClientRect().height;
 
-        // Should also call the netgraph resize? Is this an anti-pattern?
+        console.assert(this.width !== 0);
+        console.assert(this.height !== 0);
     }
 
     updateFonts(zoom: boolean, fontSize: number, scale: number) {

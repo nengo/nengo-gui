@@ -1,4 +1,4 @@
-import { VNode, dom, h } from "maquette";
+import { dom, h, VNode } from "maquette";
 
 import "./toolbar.css";
 

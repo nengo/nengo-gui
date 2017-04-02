@@ -76,7 +76,7 @@ export class Toolbar {
 
     askResetLayout() {
         const modal = new AlertDialogView(
-            "This operation cannot be undone!", "danger"
+            "This operation cannot be undone!", "danger",
         );
         modal.title = "Are you sure you wish to reset this layout, " +
             "removing all the graphs and resetting the position of all items?";
