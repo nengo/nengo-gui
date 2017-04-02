@@ -236,7 +236,20 @@ export class NetView extends ResizeableView {
         this.shape.setAttribute("style", "fill-opacity=0.0");
     }
 
-    opacity(val: number) {
-        this.shape.setAttribute("style", `fill-opacity=${val}`);
+    transparentShape(val: boolean) {
+        if (val) {
+            this.shape.setAttribute("style", "fill-opacity=0.0");
+        } else {
+            this.shape.setAttribute("style", "fill-opacity=1.0");
+        }
+    }
+
+    shapeFill(fill: number, stroke: number) {
+        const fi = `rgb(${fill}, ${fill}, ${fill})`;
+        const st = `rgb(${stroke}, ${stroke}, ${stroke})`;
+
+        this.shape.setAttribute(
+            "style", `fill=${fi}, stroke=${st}`,
+        );
     }
 }
