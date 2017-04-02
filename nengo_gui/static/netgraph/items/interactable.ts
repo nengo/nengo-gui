@@ -1,10 +1,11 @@
 import * as interact from "interact.js";
 import { h } from "maquette";
 
-import {Menu } from "../../menu";
+import { Menu } from "../../menu";
 import { domCreateSvg, Shape } from "../../utils";
 import { NetGraphItem, NetGraphItemArg } from "./item";
 import { MinimapItem } from "./minimap";
+import { InteractableView, PassthroughView } from "./views/interactable";
 
 export interface InteractableItemArg {
     miniItem: MinimapItem;
@@ -16,18 +17,16 @@ export abstract class InteractableItem extends NetGraphItem {
     minimap;
     miniItem;
     uid: string;
-    _label: SVGTextElement;
     _labelBelow: boolean;
     menu: Menu;
 
+    view: InteractableView;
+
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
-                dimensions) {
+                dimensions: number) {
         super(ngiArg);
 
-        const labelNode = h("text", {innerHTML: interArg.label, transform: ""});
-        this._label = domCreateSvg(labelNode) as SVGTextElement;
         this.miniItem = interArg.miniItem;
-        this.view.g.appendChild(this._label);
 
         this.menu = new Menu(this.ng.view.root);
 
@@ -38,16 +37,14 @@ export abstract class InteractableItem extends NetGraphItem {
         interact(this.view.g)
             .draggable({
                 onend: (event) => {
-                    this.constrainPosition();
+                    this.view.constrainPosition();
                     this.ng.notify("pos", {
-                        uid: this.uid, x: this.x, y: this.y});
+                        uid: this.uid, x: this.view.x, y: this.view.y});
 
                     this.redraw();
                 },
                 onmove: (event) => {
-                    const scale = this.scales;
-                    this.x += event.dx / scale.hor;
-                    this.y += event.dy / scale.vert;
+                    this.view.move(event);
                     this.redraw();
 
                     if (this.view.depth === 1) {
@@ -103,38 +100,6 @@ export abstract class InteractableItem extends NetGraphItem {
         });
     }
 
-    get scales(){
-        let hScale = this.ng.scaledWidth;
-        let vScale = this.ng.scaledHeight;
-        let parent = this.view.parent;
-        while (parent !== null) {
-            hScale *= parent.width * 2;
-            vScale *= parent.height * 2;
-            parent = parent.view.parent;
-        }
-        return {hor: hScale, vert: vScale};
-    }
-
-    set height(val: number) {
-        this.view._h = val;
-        // this.miniItem.height = val;
-    }
-
-    set width(val: number) {
-        this.view._w = val;
-        // this.miniItem.width = val;
-    }
-
-    set x(val: number) {
-        this.view._x = val;
-        // this.miniItem.x = val;
-    }
-
-    set y(val: number) {
-        this.view._y = val;
-        // this.miniItem.y = val;
-    }
-
     requestFeedforwardLayout() {
         this.ng.notify("feedforwardLayout", {uid: this.uid});
     }
@@ -151,61 +116,20 @@ export abstract class InteractableItem extends NetGraphItem {
         // this.miniItem.remove();
     }
 
-    redrawSize(): Shape {
-        const screenD = this.view.displayedShape;
-        this._label.setAttribute(
-         "transform",
-         `translate(0, ${screenD.height / 2})`,
-        );
-        return screenD;
-    }
-
-    // _getScreenW() {
-    //     return this.view.nestedWidth * this.ng.width * this.ng.scale;
-    // }
-
-    // _getScreenH() {
-    //     return this.view.nestedHeight * this.ng.height * this.ng.scale;
-    // }
-
     redraw() {
         super.redraw();
-        this.redrawSize();
+        this.view.redrawSize();
         // if (this.ng.mmDisplay) {
         //     this.miniItem.redraw();
         // }
     }
 
-    set label(label) {
-        this._label.setAttribute("innerHTML", label);
-    }
-
-    // TODO: what is the expected functionality of this thing?
     set labelBelow(flag) {
         if (flag && !this._labelBelow) {
             const screenH = this.view.screenHeight;
-            this.label.setAttribute(
-                "transform",
-                `translate(0, ${screenH / 2})`,
-            );
+            this.view.moveLabel(screenH / 2);
         } else if (!flag && this._labelBelow) {
-            this.label.setAttribute(
-                "transform",
-                "",
-            );
-        }
-    }
-
-    constrainPosition() {
-        if (this.view.parent !== null) {
-            this.width = Math.min(0.5, this.width);
-            this.height = Math.min(0.5, this.height);
-
-            this.x = Math.min(this.x, 1.0 - this.width);
-            this.x = Math.max(this.x, this.width);
-
-            this.y = Math.min(this.y, 1.0 - this.height);
-            this.y = Math.max(this.y, this.height);
+            this.view.moveLabel(0);
         }
     }
 
@@ -218,6 +142,7 @@ export abstract class InteractableItem extends NetGraphItem {
         const w = this.view.width;
         const h = this.view.height;
 
+        // TODO: implement an interfact for this and rename it
         const info: any = {
             height: this.ng.viewPort.fromScreenY(100),
             type: graphType,
@@ -237,6 +162,7 @@ export abstract class InteractableItem extends NetGraphItem {
             info.width /= 2;
         }
 
+        // TODO: change this to an actual function call
         this.ng.notify("createGraph", info);
     }
 }
@@ -246,46 +172,9 @@ export class PassthroughItem extends InteractableItem {
     fixedWidth: number;
 
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
-                dimensions) {
+                dimensions: number, createView: boolean) {
         super(ngiArg, interArg, dimensions);
         this.alias = "passthrough";
-
-        // TODO: WTF can this be avoided?
-        // I have to make a sepcific minimap subclass for this...
-        // or something better?
-        // if (this.minimap === false) {
-        //     this.fixedWidth = 10;
-        //     this.fixedHeight = 10;
-        // } else {
-        //     this.fixedWidth = 3;
-        //     this.fixedHeight = 3;
-        // }
-        this.fixedWidth = 3;
-        this.fixedHeight = 3;
-    }
-
-    _getScreenWidth() {
-        return this.fixedWidth;
-    }
-
-    _getScreenHeight() {
-        return this.fixedHeight;
-    }
-
-    // this is probably going to need to be refactored
-    _renderShape() {
-        const shape = h("ellipse.passthrough");
-        this.view.shape = domCreateSvg(shape);
-        this.view.g.appendChild(this.view.shape);
-        this.redraw();
-    }
-
-    redrawSize() {
-        const screenD = super.redrawSize();
-
-        this.view.shape.setAttribute("rx", String(screenD.width / 2));
-        this.view.shape.setAttribute("ry", String(screenD.height / 2));
-
-        return screenD;
+        this.view = new PassthroughView(ngiArg, interArg);
     }
 }

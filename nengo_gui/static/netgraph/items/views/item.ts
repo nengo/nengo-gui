@@ -58,10 +58,12 @@ export class NetGraphItemView {
     }
 
     get x(): number {
+        console.assert(!isNaN(this._x));
         return this._x;
     }
 
     get y(): number {
+        console.assert(!isNaN(this._y));
         return this._y;
     }
 
@@ -72,15 +74,15 @@ export class NetGraphItemView {
     /**
      * Return the height of the item, taking into account parent heights.
      */
-    // get nestedHeight() {
-    //     let h = this.height;
-    //     let parent = this.parent;
-    //     while (parent !== null) {
-    //         h *= parent.height * 2;
-    //         parent = parent.parent;
-    //     }
-    //     return h;
-    // }
+    get nestedHeight() {
+        let h = this.height;
+        let parent = this.parent;
+        while (parent !== null) {
+            h *= parent.view.height * 2;
+            parent = parent.view.parent;
+        }
+        return h;
+    }
 
     get width(): number {
         return this._w;
@@ -89,15 +91,15 @@ export class NetGraphItemView {
     /**
      * Return the width of the item, taking into account parent widths.
      */
-    // get nestedWidth() {
-    //     let w = this.width;
-    //     let parent = this.parent;
-    //     while (parent !== null) {
-    //         w *= parent.width * 2;
-    //         parent = parent.parent;
-    //     }
-    //     return w;
-    // }
+    get nestedWidth() {
+        let w = this.width;
+        let parent = this.parent;
+        while (parent !== null) {
+            w *= parent.view.width * 2;
+            parent = parent.view.parent;
+        }
+        return w;
+    }
 
     get displayedSize() {
         return [this.width, this.height];
@@ -109,7 +111,7 @@ export class NetGraphItemView {
         return {height: screenH, width: screenW};
     }
 
-    // TODO: rename
+    // TODO: make abstract once minimap is implemented
     // abstract _getNetGraphDims(): {
     //     w: number, h: number, offsetX: number, offsetY: number
     // };
@@ -119,32 +121,30 @@ export class NetGraphItemView {
      */
     get screenLocation() {
 
-        const pos = this._getNetGraphDims();
+        const ngDims = this._getNetGraphDims();
 
-        let dx = 0;
-        let dy = 0;
-        // let parent = this.parent;
-        // while (parent !== null) {
-        //     WHAT THE HELL IS THIS ACCOMPLISHING?
-        //     dx *= parent.width * 2;
-        //     dy *= parent.height * 2;
+        let parentShiftX = 0;
+        let parentShiftY = 0;
+        let parent = this.parent;
+        while (parent !== null) {
+            parentShiftX = ((parentShiftX * parent.view.width * 2)
+                                + (parent.view.x - parent.view.width));
+            parentShiftY = ((parentShiftY * parent.view.height * 2)
+                                + (parent.view.y - parent.view.height));
+            parent = parent.view.parent;
+        }
+        parentShiftX *= ngDims.w;
+        parentShiftY *= ngDims.h;
 
-        //     dx += (parent.x - parent.width);
-        //     dy += (parent.y - parent.height);
-        //     parent = parent.parent;
-        // }
-        dx *= pos.w;
-        dy *= pos.h;
+        let wScale = ngDims.w;
+        let hScale = ngDims.h;
+        if (this.parent !== null) {
+            wScale *= this.parent.view.nestedWidth * 2;
+            hScale *= this.parent.view.nestedHeight * 2;
+        }
 
-        let ww = pos.w;
-        let hh = pos.h;
-        // if (this.parent !== null) {
-        //     ww *= this.parent.nestedWidth * 2;
-        //     hh *= this.parent.nestedHeight * 2;
-        // }
-
-        return [this.x * ww + dx + pos.offsetX,
-                this.y * hh + dy + pos.offsetY];
+        return [this.x * wScale + parentShiftX + ngDims.offsetX,
+                this.y * hScale + parentShiftY + ngDims.offsetY];
     }
 
     /* 
@@ -168,6 +168,9 @@ export class NetGraphItemView {
 
         const offsetX = this.ng.offsetX * w;
         const offsetY = this.ng.offsetY * h;
+
+        console.assert(!isNaN(offsetX));
+        console.assert(!isNaN(offsetY));
 
         return {w, h, offsetX, offsetY};
     }

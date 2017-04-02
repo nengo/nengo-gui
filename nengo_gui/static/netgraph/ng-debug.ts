@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.assert(netg.view.width !== 0);
     console.assert(netg.view.height !== 0);
     netg.createNode(
-        {ng: netg, width: 100, height: 100, posX: 100, posY: 100,
+        {ng: netg, width: 0.2, height: 0.2, posX: 0.5, posY: 0.5,
             parent: null, uid: "node2"},
         {miniItem: 1, label: "test_node"}, 1, null);
     console.log("stuff is loaded");

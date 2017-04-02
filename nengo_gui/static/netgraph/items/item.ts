@@ -19,8 +19,7 @@ export interface NetGraphItemArg {
     uid: string;
 }
 
-// TODO: make abstract once basics are completed
-export class NetGraphItem {
+export abstract class NetGraphItem {
     childConnections;
     children;
     connIn;
@@ -38,8 +37,6 @@ export class NetGraphItem {
         // NetGraphConnections leading into and out of this item
         this.connOut = [];
         this.connIn = [];
-
-        this.view = new NetGraphItemView(ngiArg);
     }
 
     createModal() {

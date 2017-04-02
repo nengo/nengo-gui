@@ -9,7 +9,7 @@
         stroke-width: 1;
     }
 
-    g.net rect{
+    g.net rect {
         stroke-width: 1;
     }
 
@@ -54,7 +54,7 @@
     }
 }
 
-rect.view{
+rect.view {
     fill: #d9edf7;
     stroke: #ccc;
 }
