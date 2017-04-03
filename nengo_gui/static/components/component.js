@@ -73,6 +73,10 @@ Nengo.Component = function(parent, args) {
                 self.menu.hide_any();
             },
             onmove: function (event) {
+                if (Nengo.netgraph.capture_move_event(event)) {
+                    return;
+                }
+
                 var target = event.target;
 
                 self.x = self.x + event.dx / (self.viewport.w * self.viewport.scale);
