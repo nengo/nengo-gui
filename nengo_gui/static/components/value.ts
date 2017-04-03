@@ -357,6 +357,10 @@ export class Value extends Component {
             $(modal).modal("hide");
         });
         this.addKeyHandler(modal);
+        $(modal.root).on("hidden.bs.modal", () => {
+            document.body.removeChild(modal.root);
+        });
+        document.body.appendChild(modal.root);
         modal.show();
     }
 
@@ -418,6 +422,10 @@ export class Value extends Component {
                 },
             },
         });
+        $(modal.root).on("hidden.bs.modal", () => {
+            document.body.removeChild(modal.root);
+        });
+        document.body.appendChild(modal.root);
         modal.show();
     }
 
@@ -461,6 +469,10 @@ export class Value extends Component {
                 },
             },
         });
+        $(modal.root).on("hidden.bs.modal", () => {
+            document.body.removeChild(modal.root);
+        });
+        document.body.appendChild(modal.root);
         modal.show();
     }
 }

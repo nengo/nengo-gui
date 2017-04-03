@@ -1,0 +1,130 @@
+:root {
+    --lightest: gray(94%);
+    --lighter: gray(86%);
+    --light: gray(60%);
+    --dark: gray(40%);
+    --darker: gray(30%);
+    --darkest: gray(20%);
+}
+
+div.sidebar {
+    background-color: var(--lightest);
+    border-right: 1px solid var(--darker);
+    color: var(--darkest);
+    font-size: 15px;
+    height: 100%;
+    overflow: {
+        x: hidden;
+        y: hidden;
+    }
+    transition: 0.5s;
+    width: 250px;
+    z-index: 9999;
+
+    &.hidden {
+        display: block!important;
+        transform: translate(-250px);
+    }
+
+    .accordion-content {
+        display: none;
+
+        &.default {
+            display: block;
+        }
+    }
+
+    .accordion-toggle {
+
+    }
+
+    .sidebar-item {
+        align-items: center;
+        background: none;
+        border: {
+            bottom: solid var(--light) 1px;
+        }
+        color: inherit;
+        cursor: pointer;
+        display: flex;
+        height: 40px;
+        justify-content: space-between;
+        width: 100%;
+
+        span {
+            font-size: 14px;
+            padding: 8px;
+        }
+
+        &:hover {
+            background: var(--dark);
+            color: var(--lightest);
+        }
+
+        &.indent {
+            background: var(--lighter);
+            border: 0;
+            padding-top: 1px;
+
+            &:hover {
+                background: var(--dark);
+                color: var(--lightest);
+            }
+
+            .title {
+                float: left;
+                font-size: 14px;
+                padding: {
+                    left: 23px;
+                    top: 8px;
+                }
+            }
+        }
+
+        .icon {
+            float: right;
+            font-size: 14px;
+            padding: {
+                right: 8px;
+                top: 12px;
+            }
+        }
+    }
+
+    a {
+        color: inherit;
+        display: block;
+        font-size: 15px;
+        transition: 0.3s
+    }
+}
+
+div.filebrowser {
+    a {
+        color: inherit;
+
+        &:hover {
+            background: var(--dark);
+            color: var(--lightest);
+        }
+    }
+
+    li.examples_dir {
+        background-color: var(--lighter);
+        cursor: pointer;
+
+        > a {
+            font-style: italic;
+        }
+    }
+}
+
+@media screen and (max-height: 450px) {
+    .sidebar {
+        padding-top: 15px;
+
+        a {
+            font-size: 18px;
+        }
+    }
+}

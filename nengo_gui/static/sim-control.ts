@@ -151,6 +151,9 @@ export class SimControl {
                 location.reload();
             });
         refresh.addEventListener("click", () => { location.reload(); });
+        $(modal.root).on("hidden.bs.modal", () => {
+            document.body.removeChild(modal.root);
+        });
         document.body.appendChild(modal.root);
         modal.show();
         return modal;

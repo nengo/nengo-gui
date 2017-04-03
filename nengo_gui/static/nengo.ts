@@ -16,6 +16,7 @@ import { ConfigDialog, configItems } from "./config";
 import { Editor } from "./editor";
 import { HotkeyManager } from "./hotkeys";
 import { Menu } from "./menu";
+import { UtilitiesSidebar } from "./sidebar";
 import { SimControl } from "./sim-control";
 import { Toolbar } from "./toolbar";
 import { ConfigDialogView } from "./views/config";
@@ -23,6 +24,7 @@ import { EditorView } from "./views/editor";
 import { HotkeysDialogView } from "./views/hotkeys";
 import { MenuView } from "./views/menu";
 import { AlertDialogView, InputDialogView, ModalView } from "./views/modal";
+import { FilebrowserView, UtilitiesView } from "./views/sidebar";
 import { SimControlView } from "./views/sim-control";
 import { ToolbarView } from "./views/toolbar";
 import { MockConnection } from "./websocket";
@@ -77,9 +79,8 @@ export class NengoDebug {
                 sc.attach(new MockConnection());
                 return sc
             },
-            Toolbar: () => {
-                return new Toolbar("test.py");
-            },
+            Toolbar: () => new Toolbar("test.py"),
+            UtilitiesSidebar: () => new UtilitiesSidebar(),
         },
         view: {
             AlertDialogView: () => {
@@ -95,6 +96,7 @@ export class NengoDebug {
             EditorView: () => {
                 return new EditorView();
             },
+            FilebrowserView: () => new FilebrowserView(),
             HotkeysDialogView: () => {
                 const m = new HotkeyManager();
                 m.add("Test ctrl", "a", {ctrl: true}, () => {});
@@ -126,6 +128,7 @@ export class NengoDebug {
             },
             SimControlView: () => new SimControlView(),
             ToolbarView: () => new ToolbarView(),
+            UtilitiesView: () => new UtilitiesView(),
         }
     }
 

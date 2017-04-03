@@ -10,7 +10,7 @@
 .sim-control {
     align-items: stretch;
     background-color: var(--light);
-    box-shadow: 0 -2px 4px 0 gray(60%);
+    border-top: 1px solid var(--dark);
     display: flex;
     flex: {
         grow: 0;

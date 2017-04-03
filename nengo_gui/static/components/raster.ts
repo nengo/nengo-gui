@@ -191,6 +191,10 @@ export class Raster extends Component {
                 },
             },
         });
+        $(modal.root).on("hidden.bs.modal", () => {
+            document.body.removeChild(modal.root);
+        });
+        document.body.appendChild(modal.root);
         modal.show();
     }
 }

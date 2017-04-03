@@ -73,6 +73,10 @@ export class HotkeyManager {
         // Bring up help menu with ?
         this.add("Show hotkeys", "?", () => {
             const modal = new HotkeysDialogView(this);
+            $(modal.root).on("hidden.bs.modal", () => {
+                document.body.removeChild(modal.root);
+            });
+            document.body.appendChild(modal.root);
             modal.show();
         });
         // Prevent going back in history.

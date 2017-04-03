@@ -10,7 +10,7 @@
 
 import * as interact from "interact.js";
 
-import { config, ConfigDialog } from "./config";
+import { config } from "./config";
 import { Editor } from "./editor";
 import { Menu } from "./menu";
 import { SimControl } from "./sim-control";
@@ -20,7 +20,6 @@ import { ToolbarView } from "./views/toolbar";
 import { Connection } from "./websocket";
 
 export class Toolbar {
-    configDialog: ConfigDialog = new ConfigDialog();
     view = new ToolbarView();
 
     private attached: Connection[] = [];
@@ -39,7 +38,7 @@ export class Toolbar {
         });
         // TODO: is this in side-menu now?
         this.view.buttons["utils"].addEventListener("click", () => {
-            this.askConfig();
+            // TODO: show UtilitiesSidebar
         });
         this.view.buttons["sync"].addEventListener("click", () => {
             // TODO: connect editor
@@ -75,11 +74,6 @@ export class Toolbar {
         this.attached.push(conn);
     }
 
-    askConfig() {
-        // TODO: this should be called by the server
-        this.configDialog.show();
-    }
-
     askResetLayout() {
         const modal = new AlertDialogView(
             "This operation cannot be undone!", "danger"
@@ -91,6 +85,10 @@ export class Toolbar {
         resetButton.addEventListener("click", () => {
             this.resetModelLayout();
         });
+        $(modal.root).on("hidden.bs.modal", () => {
+            document.body.removeChild(modal.root);
+        });
+        document.body.appendChild(modal.root);
         modal.show();
     }
 
@@ -117,6 +115,10 @@ export class Toolbar {
                 modal.ok.click();
             }
         });
+        $(modal.root).on("hidden.bs.modal", () => {
+            document.body.removeChild(modal.root);
+        });
+        document.body.appendChild(modal.root);
         modal.show();
     }
 
@@ -138,18 +140,4 @@ export class Toolbar {
         // TODO: is this the best way to refresh? Does reset=True do anything?
         window.location.assign("/?reset=True&filename=" + this.filename);
     }
-
-    /**
-     * Launch the config modal.
-     *
-     * This is done by calling the server to call configModalShow with config
-     * data.
-     */
-    configModal() {
-        // Doing it this way in case we need to save options to a file later
-        this.attached.forEach(conn => {
-            conn.send("config"); // TODO: ???
-        });
-    }
-
 }
