@@ -22,6 +22,7 @@ Release History
 0.3.2 (unreleased)
 ==================
 
+- Pan view with CTRL/MMB
 - Support for nengo_spa
 - Added --browser option
 - Added --unsecure option
