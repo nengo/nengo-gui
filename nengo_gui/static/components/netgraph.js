@@ -683,3 +683,19 @@ Nengo.NetGraph.prototype.scaleMiniMapViewBox = function () {
     this.view.setAttribute('width', w / this.scale);
     this.view.setAttribute('height', h / this.scale);
 }
+
+/** Called from the individual component ondragmove handlers in order to pan
+ * the entire view whenever CTRL or the middle mouse button are pressed.
+ * Returns true if the event has been processed by the NetGraph component and
+ * no further event processing must be performed by the calling code.
+ * Returns false otherwise. */
+Nengo.NetGraph.prototype.capture_move_event = function (event) {
+    // For more constants see https://www.w3.org/TR/uievents/#mouseevent
+    var MOUSE_BUTTON_MIDDLE_MASK = 4
+
+    if (event.ctrlKey || (event.buttons & MOUSE_BUTTON_MIDDLE_MASK)) {
+        interact(this.svg).ondragmove(event);
+        return true;
+    }
+    return false;
+}
