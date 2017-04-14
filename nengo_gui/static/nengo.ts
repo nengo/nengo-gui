@@ -12,27 +12,10 @@ import "jqueryfiletree/dist/jQueryFileTree.min.css";
 import "./favicon.ico";
 import "./nengo.css";
 
-import { ConfigDialog, configItems } from "./config";
-import { Editor } from "./editor";
-import { HotkeyManager } from "./hotkeys";
-import { Menu } from "./menu";
-import { NetGraph } from "./netgraph/netgraph";
-import { NetGraphView } from "./netgraph/views/netgraph";
-import { UtilitiesSidebar } from "./sidebar";
-import { SimControl } from "./sim-control";
-import { Toolbar } from "./toolbar";
-import { ConfigDialogView } from "./views/config";
-import { EditorView } from "./views/editor";
-import { HotkeysDialogView } from "./views/hotkeys";
-import { MenuView } from "./views/menu";
-import { AlertDialogView, InputDialogView, ModalView } from "./views/modal";
-import { FilebrowserView, UtilitiesView } from "./views/sidebar";
-import { SimControlView } from "./views/sim-control";
-import { ToolbarView } from "./views/toolbar";
-import { MockConnection } from "./websocket";
+import * as items from "./debug/items";
 
-// import { SideMenu } from "./side-menu";
-// import { WSConnection } from "./websocket";
+import { NetGraph } from "./netgraph";
+import { MockConnection } from "./websocket";
 
 // TODO: put all of this in an ajax call to Python. To get:
 // editor uid (uid)
@@ -41,113 +24,33 @@ import { MockConnection } from "./websocket";
 // filename
 
 export class NengoDebug {
-    listeners = {
-        ConfigDialog: null,
-    };
     live: any[] = [];
-    objects = {
-        main: {
-            ConfigDialog: () => {
-                const cd = new ConfigDialog();
-                if (this.listeners.ConfigDialog === null) {
-                    this.listeners.ConfigDialog = (e: CustomEvent) => {
-                        console.log(e.detail + " changed");
-                    };
-                    document.addEventListener(
-                        "nengoConfigChange", this.listeners.ConfigDialog,
-                    );
-                }
-                cd.show();
-                return cd;
-            },
-            Editor: () => {
-                return new Editor(null);
-            },
-            Menu: () => {
-                const menu = new Menu(document.body);
-                menu.addAction("Action 1.1", () => console.log("Action 1.1"));
-                menu.addHeader("Hidden");
-                menu.addAction("Hidden", () => false, () => false);
-                menu.addSeparator();
-                menu.addAction("Action 2.1", () => console.log("Action 2.1"));
-                menu.show(0, 0);
-                return menu;
-            },
-            NetGraph: () => {
-                const ng = new NetGraph("uid");
-                ng.attach(new MockConnection());
-                return ng;
-            },
-            SimControl: () => {
-                const sc = new SimControl("uid", 4.0, 0.5);
-                sc.attach(new MockConnection());
-                return sc;
-            },
-            Toolbar: () => new Toolbar("test.py"),
-            UtilitiesSidebar: () => new UtilitiesSidebar(),
-        },
-        view: {
-            AlertDialogView: () => {
-                const a = new AlertDialogView("Test text");
-                a.show();
-                return a;
-            },
-            ConfigDialogView: () => {
-                const cd = new ConfigDialogView(configItems);
-                cd.show();
-                return cd;
-            },
-            EditorView: () => {
-                return new EditorView();
-            },
-            FilebrowserView: () => new FilebrowserView(),
-            HotkeysDialogView: () => {
-                const m = new HotkeyManager();
-                m.add("Test ctrl", "a", {ctrl: true}, () => {});
-                m.add("Test shift", "b", {shift: true}, () => {});
-                m.add("Test both", "c", {ctrl: true, shift: true}, () => {});
-                const hk = new HotkeysDialogView(m);
-                hk.show();
-                return hk;
-            },
-            InputDialogView: () => {
-                const i = new InputDialogView("0.5", "Test label");
-                i.show();
-                return i;
-            },
-            MenuView: () => {
-                const menu = new MenuView();
-                menu.addAction("Action 1");
-                menu.addHeader("Subactions");
-                menu.addAction("Action 1.1");
-                menu.addAction("Action 1.2");
-                menu.addSeparator();
-                menu.addAction("Action 2.1");
-                return menu;
-            },
-            NetGraphView: () => {
-                return new NetGraphView("uid");
-            },
-            ModalView: () => {
-                const mv = new ModalView();
-                mv.show();
-                return mv;
-            },
-            ToolbarView: () => new ToolbarView(),
-            SimControlView: () => new SimControlView(),
-            UtilitiesView: () => new UtilitiesView(),
-        },
-    };
+    netgraph: NetGraph = new NetGraph("debug");
+
+    constructor() {
+        this.netgraph.attach(new MockConnection());
+        document.body.appendChild(this.netgraph.view.root);
+    }
 
     add(category: string, name: string) {
-        const obj = this.objects[category][name]();
+        const obj = items[category][name]();
         let root: HTMLDivElement;
-        if (category === "main") {
+        if ("view" in obj) {
             root = obj.view.root;
-        } else if (category === "view") {
+        } else if ("root" in obj) {
             root = obj.root;
+        } else {
+            console.error("Cannot find root.");
         }
-        document.body.appendChild(root);
+
+        if (category === "componentview") {
+            this.netgraph.view.root.appendChild(root);
+            obj.ondomadd();
+        } else if (category === "component") {
+            this.netgraph.add(obj);
+        } else {
+            document.body.appendChild(root);
+        }
         this.live.push(obj);
         return {
             eval: (command: string) => {
@@ -155,7 +58,13 @@ export class NengoDebug {
             },
             obj: obj,
             remove: () => {
-                document.body.removeChild(root);
+                if (category === "componentview") {
+                    this.netgraph.view.root.removeChild(root);
+                } else if (category === "component") {
+                    this.netgraph.remove(obj);
+                } else {
+                    document.body.removeChild(root);
+                }
                 // Bootstrap modals can leave behind a backdrop. Annoying!
                 const backdrop = document.body.querySelector(".modal-backdrop");
                 if (backdrop !== null) {

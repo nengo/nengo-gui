@@ -1,4 +1,4 @@
-import { NetGraph } from "./netgraph/netgraph";
+import { NetGraph } from "./netgraph";
 
 export class ViewPort {
     netgraph: NetGraph;
@@ -22,7 +22,7 @@ export class ViewPort {
         this.height = clientRect.height;
 
         window.addEventListener("resize", (event) => {
-            this.onResize();
+            this.onresize();
         });
     }
 
@@ -43,14 +43,14 @@ export class ViewPort {
     }
 
     redraw() {
-        this.netgraph.allComponents.onResize(
+        this.netgraph.onresize(
             this.scale * this.width * 2,
             this.height * this.scale * 2,
         );
-        this.netgraph.allComponents.redraw();
+        this.netgraph.redraw();
     }
 
-    onResize() {
+    onresize() {
         const oldWidth = this.width;
         const oldHeight = this.height;
 
@@ -59,7 +59,7 @@ export class ViewPort {
         this.height = clientRect.height;
 
         if (this.netgraph.aspectResize) {
-            this.netgraph.allComponents.rescale(
+            this.netgraph.rescale(
                 oldWidth / this.width,
                 oldHeight / this.height,
             );

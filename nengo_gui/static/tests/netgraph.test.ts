@@ -3,7 +3,7 @@ import * as test from "tape";
 
 import * as fixtures from "./fixtures";
 
-import { NetGraph } from "../netgraph/netgraph";
+import { NetGraph } from "../netgraph";
 import { MockConnection } from "../websocket";
 
 test("NetGraph.createNode", assert => {
@@ -19,7 +19,7 @@ test("NetGraph.createNode", assert => {
 
     const interArg = {miniItem: 1, label: "test_node"};
 
-    netGraph.createNode(ngiArg, interArg, false);
+    // netGraph.createNode(ngiArg, interArg, false);
 
     fixtures.teardown(assert, dom);
 });

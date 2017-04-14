@@ -1,7 +1,6 @@
 import * as d3 from "d3";
 import * as $ from "jquery";
 
-import * as allComponents from "./components/all-components";
 import { config } from "./config";
 import * as tooltips from "./tooltips";
 import * as utils from "./utils";

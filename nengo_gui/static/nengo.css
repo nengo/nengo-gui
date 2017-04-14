@@ -79,11 +79,13 @@ div.minimap {
 
     text.graph_text {
         font-size: .8em;
+        /* TODO: think about pointer-events */
         pointer-events: none;
     }
 
     .axis text {
         font-size: .8em;
+        /* TODO: think about pointer-events */
         pointer-events: none;
     }
 
@@ -92,8 +94,9 @@ div.minimap {
             size: 1em;
             family: sans-serif;
             weight: normal;
-        }
+    }
         color: black;
+        /* TODO: think about pointer-events */
         pointer-events: none;
     }
 }

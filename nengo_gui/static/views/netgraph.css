@@ -1,26 +1,23 @@
-.netgraph {
+svg.netgraph {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
     .ens {
         stroke-width: 1;
     }
 
-    g.node rect {
+    g.node rect,
+    g.nets rect {
         stroke-width: 1;
     }
 
-    g.net rect {
-        stroke-width: 1;
-    }
-
-    g text {
-        cursor: default !important;
+    text {
+        cursor: default;
         dominant-baseline: text-before-edge;
         text-anchor: middle;
-    }
 
-    g text:active {
-        cursor: move;
+        &:active {
+            cursor: move;
+        }
     }
 
     line {
@@ -29,14 +26,9 @@
         }
     }
 
-    g.passthrough ellipse {
+    g.passthrough circle {
         fill: black;
         stroke-width: 0px;
-    }
-
-    g.passthrough text {
-        dominant-baseline: text-before-edge;
-        text-anchor: middle;
     }
 }
 

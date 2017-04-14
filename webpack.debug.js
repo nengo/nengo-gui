@@ -1,4 +1,5 @@
 var HtmlWebpackPlugin = require("html-webpack-plugin");
+var webpack = require("webpack");
 
 var webpackConfig = require("./webpack.config");
 
@@ -6,17 +7,20 @@ module.exports = (env) => {
     var config = webpackConfig(env);
 
     config.devtool = "source-map";
-    config.entry.debug = "./nengo_gui/static/nengo-debug.ts",
+    config.entry.debug = "./nengo_gui/static/debug/main.ts",
     config.output.pathinfo = true;
     config.output.publicPath = "/";
     config.plugins.push(new HtmlWebpackPlugin({
-        chunks: ["debug"],
+        chunks: ["common", "debug"],
         title: "Nengo Debug",
     }));
     config.plugins.push(new HtmlWebpackPlugin({
-        chunks: ["nengo"],
+        chunks: ["common", "nengo"],
         filename: "nengo.html",
         title: "Nengo",
+    }));
+    config.plugins.push(new webpack.optimize.CommonsChunkPlugin({
+        name: "common",
     }));
     config.module.rules.forEach(rule => {
         if (rule.test.toString() === /\.tsx?$/.toString()) {

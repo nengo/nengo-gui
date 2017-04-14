@@ -3,8 +3,6 @@
  *
  * Each element that has a menu makes a call to Menu constructor
  */
-import { dom, h } from "maquette";
-
 import { MenuView } from "./views/menu";
 
 import * as utils from "./utils";
@@ -27,44 +25,19 @@ export class MenuAction {
     }
 }
 
-export interface MenuItem {
-    html: string;
-    callback: () => void;
-}
-
 export class Menu {
 
-    static allShown: Menu[] = [];
+    static shown: Menu = null;
 
-    static anyVisible(parent: HTMLElement | null = null) {
-        if (parent === null) {
-            return Menu.allShown.length;
-        } else {
-            return Menu.allShown.reduce((sum, menu) => {
-                return sum + (menu.parent === parent ? 1 : 0);
-            }, 0);
+    static hideShown = utils.debounce(() => {
+        if (Menu.shown !== null) {
+            document.body.removeChild(Menu.shown.view.root);
+            Menu.shown = null;
         }
-    }
-
-    static hideAll(parent: HTMLElement | null = null) {
-        Menu.allShown.forEach((menu) => {
-            if (parent === null || menu.parent === parent) {
-                menu.hide();
-            }
-        });
-    }
+    }, 50, {immediate: true});
 
     actions: MenuAction[] = [];
-    parent: HTMLElement;
     view: MenuView = new MenuView();
-
-    constructor(parent: HTMLElement) {
-        this.parent = parent;
-    }
-
-    get hidden(): boolean {
-        return this.view.root.parentNode === this.parent;
-    }
 
     addAction(
         label: string,
@@ -74,12 +47,12 @@ export class Menu {
         const element = this.view.addAction(label);
         element.addEventListener("click", (event: Event) => {
             callback(event);
-            this.hide();
+            Menu.hideShown();
         });
         element.addEventListener("contextmenu", (event: Event) => {
             event.preventDefault();
             callback(event);
-            this.hide();
+            Menu.hideShown();
         });
         this.actions.push(new MenuAction(element, active));
     }
@@ -118,7 +91,7 @@ export class Menu {
             x = mainW - w;
         }
 
-        Menu.hideAll(this.parent);
+        Menu.hideShown();
         this.actions.forEach((action, i) => {
             if (action.isActive()) {
                 this.view.showAction(action.element);
@@ -127,16 +100,7 @@ export class Menu {
             }
         });
         this.view.show(x, y);
-        this.parent.appendChild(this.view.root);
-        Menu.allShown.push(this);
-    }
-
-    /**
-     * Hide this menu.
-     */
-    hide() {
-        this.parent.removeChild(this.view.root);
-        // Remove from allShown list
-        Menu.allShown.splice(Menu.allShown.indexOf(this), 1);
+        document.body.appendChild(this.view.root);
+        Menu.shown = this;
     }
 }

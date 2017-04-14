@@ -348,16 +348,17 @@ export class TimeSlider {
             const relativeX = event.pageX - this.view.svgLeft;
             return relativeX >= 0 && relativeX <= this.view.svgWidth;
         };
-        interact(this.view.shownTimeHandle)
-            .draggable({onmove: event => {
+        interact(this.view.shownTime)
+            .draggable(true)
+            .resizable({
+                edges: {bottom: false, left: true, right: true, top: false},
+            })
+            .on("dragmove", event => {
                 if (inBounds(event)) {
                     this.moveShown(
                         this.toTime(this.firstShownPixel + event.dx)
                     );
                 }
-            }})
-            .resizable({
-                edges: {bottom: false, left: true, right: true, top: false},
             })
             .on("resizemove", event => {
                 if (inBounds(event)) {
@@ -380,7 +381,7 @@ export class TimeSlider {
             this.view.shownWidth = width * this.shownTime / this.keptTime;
             this.keptScale.range([0, width]);
             this.view.shownOffset = this.firstShownPixel;
-            this.view.callAxis(this.sliderAxis);
+            this.sliderAxis(d3.select(this.view.axis));
         }, 66));
     }
 
@@ -415,7 +416,7 @@ export class TimeSlider {
         this.keptScale.domain([time - this.keptTime, time]);
 
         // Update the time axis display
-        this.view.callAxis(this.sliderAxis);
+        this.sliderAxis(d3.select(this.view.axis));
     }
 
     jumpToEnd() {
@@ -465,7 +466,7 @@ export class TimeSlider {
         this.keptScale.domain([
             this.currentTime - this.keptTime, this.currentTime,
         ]);
-        this.view.callAxis(this.sliderAxis);
+        this.sliderAxis(d3.select(this.view.axis));
     }
 
     toPixel(time: number): number {

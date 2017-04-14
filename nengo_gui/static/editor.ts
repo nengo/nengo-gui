@@ -33,31 +33,6 @@ export class Editor {
     view = new EditorView();
     ws;
 
-    // syncWithServer called at most once per 150 ms
-    syncWithServer = utils.throttle((save: boolean = false) => {
-        if (this.editorCode !== this.currentCode) {
-            this.ws.send(JSON.stringify({code: this.editorCode, save}));
-            this.currentCode = this.editorCode;
-            this.view.editor.dispatchEvent(new Event("saved"));
-        }
-    }, 150);
-
-    onresize = utils.throttle(() => {
-        this.maxWidth = window.innerWidth - 100;
-        if (this.width > this.maxWidth) {
-            this.width = this.maxWidth;
-        }
-        this.redraw();
-    }, 66);
-
-    redraw = utils.throttle(() => {
-        this.editor.resize();
-        // if (this.netgraph !== undefined && this.netgraph !== null) {
-        //     this.netgraph.onresize();
-        // }
-        // viewport.onresize();
-    }, 66);
-
     private attached: Connection[] = [];
 
     constructor(netgraph) {
@@ -260,18 +235,44 @@ export class Editor {
             this.saveFile();
         });
         // TODO: pick better shortcuts
-        manager.add("Toggle auto-update", "1",
-            {ctrl: true, shift: true}, () => {
+        manager.add(
+            "Toggle auto-update", "1", {ctrl: true, shift: true}, () => {
                 this.autoUpdate = !this.autoUpdate;
-        });
+            }
+        );
         manager.add("Update display", "1", {ctrl: true}, () => {
             this.syncWithServer();
         });
     }
 
+    onresize = utils.throttle(() => {
+        this.maxWidth = window.innerWidth - 100;
+        if (this.width > this.maxWidth) {
+            this.width = this.maxWidth;
+        }
+        this.redraw();
+    }, 66);
+
+    redraw = utils.throttle(() => {
+        this.editor.resize();
+        // if (this.netgraph !== undefined && this.netgraph !== null) {
+        //     this.netgraph.onresize();
+        // }
+        // viewport.onresize();
+    }, 66);
+
     saveFile() {
         this.syncWithServer(true);
     }
+
+    // syncWithServer called at most once per 150 ms
+    syncWithServer = utils.throttle((save: boolean = false) => {
+        if (this.editorCode !== this.currentCode) {
+            this.ws.send(JSON.stringify({code: this.editorCode, save}));
+            this.currentCode = this.editorCode;
+            this.view.editor.dispatchEvent(new Event("saved"));
+        }
+    }, 150);
 
     toggleHidden() {
         if (this.hidden) {

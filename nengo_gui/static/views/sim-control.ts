@@ -1,8 +1,7 @@
-import * as d3 from "d3";
 import { VNode, dom, h } from "maquette";
 
 import "./sim-control.css";
-import { getTransform, setTransform } from "./views";
+import { getTranslate, setTranslate } from "./views";
 
 function button(id: string, icon: string): VNode {
     return h("button.btn.btn-default." + id + "-button", [
@@ -161,32 +160,25 @@ export class SpeedThrottleView {
 }
 
 export class TimeSliderView {
+    axis: SVGGElement;
     root: HTMLDivElement;
-    shownTimeHandle: HTMLDivElement;
-    private axis: SVGGElement;
-    private shownTime: SVGGElement;
+    shownTime: SVGGElement;
     private svg: SVGSVGElement;
 
     constructor() {
-        const [width, height] = [200, 58];
+        const [width, height] = [200, 57];
         const node =
             h("div.time-slider", [
-                h("div.shown-time-handle", {styles: {
-                    height: height + "px",
-                    width: height + "px",
-                }}),
                 h("svg", {
-                    height: "100%",
                     preserveAspectRatio: "xMinYMin",
-                    viewBox: "0 0 " + width + " " + height,
-                    width: "100%",
+                    viewBox: `0 0 ${width} ${height}`,
                 }, [
                     h("g.shown-time", {
                         transform: "translate(0,0)",
                     }, [
                         h("rect", {
-                            height: String(height),
-                            width: String(height),
+                            height: `${height}`,
+                            width: `${height}`,
                             x: "0",
                             y: "0",
                         }),
@@ -194,24 +186,21 @@ export class TimeSliderView {
                             x1: "0",
                             x2: "0",
                             y1: "0",
-                            y2: String(height),
+                            y2: `${height}`,
                         }),
                         h("line.shown-time-border#right", {
-                            x1: String(height),
-                            x2: String(height),
+                            x1: `${height}`,
+                            x2: `${height}`,
                             y1: "0",
-                            y2: String(height),
+                            y2: `${height}`,
                         }),
                     ]),
                     h("g.axis", {
-                        transform: "translate(0," + (height / 2) + ")",
+                        transform: `translate(0,${height / 2})`,
                     }),
                 ]),
             ]);
         this.root = dom.create(node).domNode as HTMLDivElement;
-        this.shownTimeHandle =
-            this.root.querySelector(".shown-time-handle") as HTMLDivElement;
-
         this.svg = this.root.querySelector("svg") as SVGSVGElement;
         this.shownTime = this.svg.querySelector("g.shown-time") as SVGGElement;
         this.axis = this.svg.querySelector("g.axis") as SVGGElement;
@@ -222,21 +211,20 @@ export class TimeSliderView {
     }
 
     set height(val: number) {
-        this.root.style.height = String(val);
+        this.root.style.height = `${val}`;
     }
 
     /**
      * Offset of the shownTime rect in pixels.
      */
     get shownOffset(): number {
-        const [x, y] = getTransform(this.shownTimeHandle);
+        const [x, y] = getTranslate(this.shownTime);
         console.assert(y === 0);
         return x;
     }
 
     set shownOffset(val: number) {
-        setTransform(this.shownTime, val, 0);
-        setTransform(this.shownTimeHandle, val, 0);
+        setTranslate(this.shownTime, val, 0);
     }
 
     get shownWidth(): number {
@@ -250,7 +238,6 @@ export class TimeSliderView {
         rect.width.baseVal.value = val;
         right.x1.baseVal.value = val;
         right.x2.baseVal.value = val;
-        this.shownTimeHandle.style.width = val + "px";
     }
 
     get svgLeft(): number {
@@ -263,9 +250,5 @@ export class TimeSliderView {
 
     get width(): number {
         return this.root.clientWidth;
-    }
-
-    callAxis(axis: d3.svg.Axis): void {
-        axis(d3.select(this.axis));
     }
 }

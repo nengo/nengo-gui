@@ -5,6 +5,60 @@
 import * as d3 from "d3";
 import { VNode, dom } from "maquette";
 
+import { InputDialogView } from "./views/modal";
+
+export function handleTabs(dialog: InputDialogView) {
+    dialog.input.addEventListener("keydown", (event) => {
+        // Allow the enter key to submit
+        if (event.which === 13) {
+            event.preventDefault();
+            dialog.ok.click();
+            // Allow tabs to enter in default values
+        } else if ((event.keyCode || event.which) === 9) {
+            const values = dialog.input.placeholder.split(",");
+            const curVal = dialog.input.value;
+            let curIndex = curVal.split(",").length - 1;
+            let pre = " "; // Space and possible comma before value
+            let post = ","; // Possible comma after value
+
+            // Only do special things if there are more values to enter
+            if (curIndex < values.length) {
+                // Compute the correct current index
+                if (curVal.length > 0) {
+                    if (curVal.trim().slice(-1) !== ",") {
+                        curIndex += 1;
+                        pre = ", "; // Need a comma as well between values
+                    }
+                } else {
+                    pre = ""; // No space for the first value
+                }
+                if (curIndex === values.length - 1) {
+                    post = "";
+                }
+                // If the last character is a comma or there are no
+                // characters, fill in the next default value
+                if (curVal.length === 0 ||
+                    curVal.trim().slice(-1) === ",") {
+                    dialog.input.value += (
+                        pre + values[curIndex].trim() + post);
+                    event.preventDefault();
+                } else if (curIndex < values.length) {
+                    dialog.input.value += ", ";
+                    event.preventDefault();
+                }
+            }
+        }
+    });
+}
+
+export function startsWith(str: string, prefix: string) {
+    return str.lastIndexOf(prefix, 0) === 0;
+}
+
+export function endsWith(str: string, suffix: string) {
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
+}
+
 /**
  * Clip a number, keeping it between two values.
  *
@@ -28,7 +82,29 @@ export interface Shape {
     height: number;
 }
 
-export function domCreateSvg(shape: VNode): SVGElement {
+export class Rect implements ClientRect {
+    bottom: number;
+    left: number;
+    right: number;
+    top: number;
+
+    constructor({bottom, left, right, top}) {
+        this.bottom = bottom;
+        this.left = left;
+        this.right = right;
+        this.top = top;
+    }
+
+    get height() {
+        return Math.abs(this.bottom - this.top);
+    }
+
+    get width() {
+        return Math.abs(this.right - this.left);
+    }
+}
+
+export function domCreateSVG(shape: VNode): SVGElement {
     return dom.create(shape,
             {namespace: "http://www.w3.org/2000/svg"}).domNode as SVGElement;
 }

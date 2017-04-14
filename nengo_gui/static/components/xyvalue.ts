@@ -21,7 +21,7 @@ import * as $ from "jquery";
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
 import { InputDialogView } from "../views/modal";
-import { Component } from "./component";
+import { Component } from "./base";
 import { XYAxes } from "./xy-axes";
 import "./xyvalue.css";
 
@@ -90,7 +90,7 @@ export class XYValue extends Component {
         this.invalidDims = false;
 
         this.axes2d.fitTicks(this);
-        this.onResize(
+        this.onresize(
             this.viewPort.scaleWidth(this.w),
             this.viewPort.scaleHeight(this.h),
         );
@@ -159,8 +159,8 @@ export class XYValue extends Component {
     /**
      * Adjust the graph layout due to changed size
      */
-    onResize(width, height) {
-        this.axes2d.onResize(width, height);
+    onresize(width, height) {
+        this.axes2d.onresize(width, height);
 
         this.update();
 
@@ -225,7 +225,7 @@ export class XYValue extends Component {
             }
             $(modal).modal("hide");
         });
-        this.addKeyHandler(modal);
+        utils.handleTabs(modal);
 
         $(modal).validator({
             custom: {
@@ -261,7 +261,7 @@ export class XYValue extends Component {
         this.axes2d.axisY.tickValues([min, max]);
         this.axes2d.axisY_g.call(this.axes2d.axisY);
         this.axes2d.axisX_g.call(this.axes2d.axisX);
-        this.onResize(
+        this.onresize(
             this.viewPort.scaleWidth(this.w),
             this.viewPort.scaleHeight(this.h)
         );
@@ -288,7 +288,7 @@ export class XYValue extends Component {
             }
             $(modal).modal("hide");
         });
-        this.addKeyHandler(modal);
+        utils.handleTabs(modal);
 
         $(modal).validator({
             custom: {

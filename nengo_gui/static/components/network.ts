@@ -1,139 +1,20 @@
-import * as interact from "interact.js";
-import { dom, h, VNode } from "maquette";
+import { ResizableModelObj } from "./base";
+import { Menu } from "../menu";
+import { NetworkView } from "./views/network";
 
-import { config } from "../../config";
-import { Menu } from "../../menu";
-import { domCreateSvg, Shape } from "../../utils";
-import { InteractableItem, InteractableItemArg } from "./interactable";
-import { NetGraphItemArg } from "./item";
-import { EnsembleView, NetView,
-         NodeView, ResizeableView } from "./views/resizable";
-
-abstract class ResizableItem extends InteractableItem {
-    dimensions: number;
-    view: ResizeableView;
-
-    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
-                dimensions) {
-        super(ngiArg, interArg, dimensions);
-
-        interact(this.view.area).resizable({
-                edges: {bottom: true, left: true, right: true, top: true},
-                invert: "none",
-                margin: 10,
-            }).on("resizestart", (event) => {
-                Menu.hideAll();
-            }).on("resizemove", (event) => {
-                this.view.contSize(event);
-                this.redraw();
-
-                if (this.view.depth === 1) {
-                    this.ng.scaleMiniMap();
-                }
-            }).on("resizeend", (event) => {
-                this.view.constrainPosition();
-                this.redraw();
-
-                // TODO: turn this into an actual function call
-                this.ng.notify("posSize", {
-                    height: this.view.height,
-                    uid: this.uid,
-                    width: this.view.width,
-                    x: this.view.x,
-                    y: this.view.y,
-                });
-            });
-    }
-}
-
-export class NodeItem extends ResizableItem {
-    htmlNode;
-    view: NodeView;
-
-    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
-                dimensions, html) {
-        super(ngiArg, interArg, dimensions);
-        this.alias = "node";
-        this.htmlNode = html;
-        this.view = new NodeView(ngiArg, interArg);
-    }
-
-    addMenuItems() {
-        this.menu.addAction("Slider", () => {
-                this.createGraph("Slider");
-            },
-        );
-        if (this.dimensions > 0) {
-            this.menu.addAction("Value", () => {
-                this.createGraph("Value");
-            });
-        }
-        if (this.dimensions > 1) {
-            this.menu.addAction("XY-value", () => {
-                this.createGraph("XYValue");
-            });
-        }
-        if (this.htmlNode) {
-            this.menu.addAction("HTML", () => {
-                this.createGraph("HTMLView");
-            });
-        }
-
-        this.menu.addAction("Details ...", () => {
-            this.createModal();
-        });
-    }
-}
-
-export class EnsembleItem extends ResizableItem {
-    view: EnsembleView;
-
-    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
-                dimensions) {
-        super(ngiArg, interArg, dimensions);
-        this.alias = "ens";
-        this.view = new EnsembleView(ngiArg, interArg);
-    }
-
-    addMenuItems() {
-        this.menu.addAction("Value", () => {
-            this.createGraph("Value");
-        });
-        if (this.dimensions > 1) {
-            this.menu.addAction("XY-value", () => {
-                this.createGraph("XYValue");
-            });
-        }
-        this.menu.addAction("Spikes", () => {
-            this.createGraph("Raster");
-        });
-        this.menu.addAction("Voltages", () => {
-            this.createGraph("Voltage");
-        });
-        this.menu.addAction("Firing pattern", () => {
-            this.createGraph("SpikeGrid");
-        });
-
-        this.menu.addAction("Details ...", () => {
-            this.createModal();
-        });
-    }
-}
-
-export class NetItem extends ResizableItem {
+export class Network extends ResizableModelObj {
     expanded: boolean;
     // TODO: what type is this supposed to be?
     spTargets;
     defaultOutput;
     gClass: string[];
     gNetworks: SVGElement;
-    view: NetView;
+    view: NetworkView;
 
     constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
                 dimensions, expanded, spTargets, defaultOutput) {
         super(ngiArg, interArg, dimensions);
-        this.alias = "net";
-        this.view = new NetView(ngiArg, interArg);
+        this.view = new NetworkView(ngiArg, interArg);
 
         // TODO: This use of gItems and gNetworks is definitely wrong
         this.gNetworks = this.ng.view.gNetworks;
@@ -159,8 +40,8 @@ export class NetItem extends ResizableItem {
         interact(this.view.g).on("doubletap", (event) => {
                 // Get rid of menus when clicking off
                 if (event.button === 0) {
-                    if (Menu.anyVisible()) {
-                        Menu.hideAll();
+                    if (Menu.shown !== null) {
+                        Menu.hideShown();
                     } else {
                         if (this.expanded) {
                             this.collapse(true);
@@ -172,7 +53,7 @@ export class NetItem extends ResizableItem {
             })
         .draggable({
             onstart: () => {
-                Menu.hideAll();
+                Menu.hideShown();
                 this.moveToFront();
             },
         });
@@ -188,34 +69,24 @@ export class NetItem extends ResizableItem {
     }
 
     addMenuItems() {
-        if (this.expanded) {
-            this.menu.addAction("Collapse network", () => {
-                this.collapse(true);
-            });
-            this.menu.addAction("Auto-layout", () => {
-                this.requestFeedforwardLayout();
-            });
-        } else {
-            this.menu.addAction("Expand network", () => {
-                this.expand();
-            });
-        }
-
-        if (this.defaultOutput && this.spTargets.length === 0) {
-            this.menu.addAction("Output Value", () => {
-                this.createGraph("Value");
-            });
-        }
-
-        if (this.spTargets.length > 0) {
-            this.menu.addAction("Semantic pointer cloud", () => {
-                this.createGraph("Pointer", this.spTargets[0]);
-            });
-            this.menu.addAction("Semantic pointer plot", () => {
-                this.createGraph("SpaSimilarity", this.spTargets[0]);
-            });
-        }
-
+        this.menu.addAction("Collapse network", () => {
+            this.collapse(true);
+        }, () => this.expanded);
+        this.menu.addAction("Auto-layout", () => {
+            this.requestFeedforwardLayout();
+        }, () => this.expanded);
+        this.menu.addAction("Expand network", () => {
+            this.expand();
+        }, () => !this.expanded);
+        this.menu.addAction("Output Value", () => {
+            this.createGraph("Value");
+        }, () => this.defaultOutput && this.spTargets.length === 0);
+        this.menu.addAction("Semantic pointer cloud", () => {
+            this.createGraph("Pointer", this.spTargets[0]);
+        }, () => this.spTargets.length > 0);
+        this.menu.addAction("Semantic pointer plot", () => {
+            this.createGraph("SpaSimilarity", this.spTargets[0]);
+        }, () => this.spTargets.length > 0);
         this.menu.addAction("Details ...", () => {
             this.createModal();
         });
@@ -353,6 +224,7 @@ export class NetItem extends ResizableItem {
         const depth = this.ng.transparentNets ? 1 : this.view.depth;
         const fill = Math.round(255 * Math.pow(0.8, depth));
         const stroke = Math.round(255 * Math.pow(0.8, depth + 2));
-        this.view.shapeFill(fill, stroke);
+        this.view.fill = `rgb(${fill},${fill},${fill})`;
+        this.view.stroke = `rgb(${stroke},${stroke},${stroke})`;
     }
 }

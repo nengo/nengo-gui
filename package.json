@@ -16,7 +16,6 @@
   "scripts": {
     "build": "webpack --debug --devtool source-map --output-pathinfo --env.noDocs",
     "debug": "webpack-dev-server --config webpack.debug.js --env.noDocs --inline",
-    "ngdebug": "webpack-dev-server --config webpack.ngdebug.js --env.noDocs --inline",
     "release": "webpack --optimize-minimize --optimize-occurence-order",
     "style": "tslint 'nengo_gui/**/*.ts' && stylelint 'nengo_gui/**/*.css'",
     "test": "webpack --config webpack.test.js --env.noDocs",

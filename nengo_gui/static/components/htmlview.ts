@@ -10,7 +10,7 @@
 
 import { DataStore } from "../datastore";
 // import * as utils from "../utils";
-import { Component } from "./component";
+import { Component } from "./base";
 
 export class HTMLView extends Component {
     dataStore;
@@ -38,7 +38,7 @@ export class HTMLView extends Component {
             this.scheduleUpdate();
         });
 
-        this.onResize(
+        this.onresize(
             this.viewPort.scaleWidth(this.w),
             this.viewPort.scaleHeight(this.h)
         );
@@ -77,7 +77,7 @@ export class HTMLView extends Component {
     /**
      * Adjust the graph layout due to changed size
      */
-    onResize(width, height) {
+    onresize(width, height) {
         if (width < this.minWidth) {
             width = this.minWidth;
         }

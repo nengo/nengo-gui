@@ -18,7 +18,7 @@ import * as $ from "jquery";
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
 import { InputDialogView } from "../views/modal";
-import { Component } from "./component";
+import { Component } from "./base";
 import "./raster.css";
 import { TimeAxes } from "./time-axes";
 
@@ -70,7 +70,7 @@ export class Raster extends Component {
             .style("stroke", utils.makeColors(1));
 
         this.update();
-        this.onResize(
+        this.onresize(
             this.viewPort.scaleWidth(this.w),
             this.viewPort.scaleHeight(this.h),
         );
@@ -129,7 +129,7 @@ export class Raster extends Component {
     /**
      * Adjust the graph layout due to changed size.
      */
-    onResize(width, height) {
+    onresize(width, height) {
         if (width < this.minWidth) {
             width = this.minWidth;
         }
@@ -137,7 +137,7 @@ export class Raster extends Component {
             height = this.minHeight;
         }
 
-        this.axes2d.onResize(width, height);
+        this.axes2d.onresize(width, height);
 
         this.update();
 
@@ -181,11 +181,11 @@ export class Raster extends Component {
             }
             // TODO: this was a separate handler before, but should only
             //       fire when validation passes right?
-            this.onResize(this.div.clientWidth, this.div.clienHeight);
+            this.onresize(this.div.clientWidth, this.div.clienHeight);
 
             $(modal).modal("hide");
         });
-        this.addKeyHandler(modal);
+        utils.handleTabs(modal);
 
         $(modal).validator({
             custom: {

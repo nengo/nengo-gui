@@ -58,7 +58,7 @@ export class Toolbar {
         history.pushState({}, filename, "/?filename=" + filename);
 
         interact(this.view.root).on("tap", () => {
-            Menu.hideAll();
+            Menu.hideShown();
         });
     }
 

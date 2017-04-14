@@ -4,6 +4,8 @@
 
 import { VNode, h } from "maquette";
 
+import * as utils from "../utils";
+
 export type AlertLevel = "danger" | "info" | "success" | "warning";
 
 export function bsAlert(text: string, level: AlertLevel = "info"): VNode {
@@ -71,25 +73,41 @@ export function safeSetText(element: HTMLElement, text: string) {
     element.appendChild(document.createTextNode(text));
 }
 
-/**
- * Get the transform of an element.
- */
-export function getTransform(element: Element) {
-    let translate;
+function getTransformNums(element: Element) {
+    let transform: string;
     if (element instanceof SVGElement) {
-        translate = element.getAttribute("transform");
+        transform = element.getAttribute("transform");
     } else if (element instanceof HTMLElement) {
-        translate = element.style.transform;
+        transform = element.style.transform;
     } else {
-        console.warn("'element' is not HTML or SVG in 'getTransform'");
-        translate = "translate(0,0);";
+        console.error("'element' is not HTML or SVG");
     }
-    console.assert(translate.startsWith("translate("));
-    // Remove non-digit and non-comma characters
-    translate.replace(/[^0-9,]/g, "");
-    const nums = translate.split(",");
-    console.assert(nums.length === 2);
-    return [Number(nums[0]), Number(nums[1])];
+
+    return transform.replace(/[^0-9\.,]/g, "").split(",").map(s => Number(s));
+}
+
+export function getMatrix(element: Element): Array<number> {
+    const nums = getTransformNums(element);
+    console.assert(nums.length === 6);
+    return nums;
+}
+
+export function getScale(element: Element): [number, number] {
+    const nums = getTransformNums(element);
+    if (nums.length === 2) {
+        return [nums[0], nums[1]];
+    } else if (nums.length === 6) {
+        return [nums[0], nums[3]];
+    }
+}
+
+export function getTranslate(element: Element): [number, number] {
+    const nums = getTransformNums(element);
+    if (nums.length === 2) {
+        return [nums[0], nums[1]];
+    } else if (nums.length === 6) {
+        return [nums[4], nums[5]];
+    }
 }
 
 /**
@@ -98,14 +116,53 @@ export function getTransform(element: Element) {
  * @param {HTMLElement} element - The HTML element to set.
  * @param {number} x - Shift on the x-axis.
  * @param {number} y - Shift on the y-axis.
+ * @param {number}
  */
-export function setTransform(element: Element, x: number, y: number) {
-    if (element instanceof SVGElement) {
-        element.setAttribute("transform", "translate(" + x + "," + y + ")");
-    } else if (element instanceof HTMLElement) {
-        element.style.webkitTransform = element.style.transform =
-            "translate(" + x + "px," + y + "px)";
-    } else {
-        console.warn("'element' is not HTML or SVG in 'setTransform'");
+function setTransform(
+    element: Element,
+    transform: string,
+    nums: Number[]
+) {
+    let unit = "";
+    if (element instanceof HTMLElement) {
+        unit = "px";
     }
+    const sep = `${unit},`
+    const str = `${transform}(${nums.join(sep)}${unit})`
+
+    // let transform;
+    // if (w === null && h === null) {
+    //     transform = `translate(${xy})`;
+    // } else {
+    //     console.assert(w !== null && h !== null);
+    //     transform = `matrix(${w}${unit},0,0,${h}${unit},${xy})`;
+    // }
+
+    if (element instanceof SVGElement) {
+        element.setAttribute("transform", str);
+    } else if (element instanceof HTMLElement) {
+        element.style.webkitTransform = element.style.transform = str;
+    } else {
+        console.error("'element' is not HTML or SVG in 'setTransform'");
+    }
+}
+
+export function setMatrix(
+    element: Element,
+    a: number,
+    b: number,
+    c: number,
+    d: number,
+    e: number,
+    f: number,
+) {
+    setTransform(element, "matrix", [a, b, c, d, e, f]);
+}
+
+export function setScale(element: Element, x: number, y: number) {
+    setTransform(element, "scale", [x, y]);
+}
+
+export function setTranslate(element: Element, x: number, y: number) {
+    setTransform(element, "translate", [x, y]);
 }

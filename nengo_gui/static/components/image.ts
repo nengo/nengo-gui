@@ -14,7 +14,7 @@ import * as d3 from "d3";
 
 import { DataStore } from "../datastore";
 import * as viewport from "../viewport";
-import { Component } from "./component";
+import { Component } from "./base";
 
 export class Image extends Component {
     canvas;
@@ -68,7 +68,7 @@ export class Image extends Component {
         this.canvas.width = this.pixelsX;
         this.canvas.height = this.pixelsY;
 
-        this.onResize(
+        this.onresize(
             this.viewPort.scaleWidth(this.w),
             this.viewPort.scaleHeight(this.h)
         );
@@ -116,7 +116,7 @@ export class Image extends Component {
     /**
      * Adjust the graph layout due to changed size
      */
-    onResize(width, height) {
+    onresize(width, height) {
         if (width < this.minWidth) {
             width = this.minWidth;
         }

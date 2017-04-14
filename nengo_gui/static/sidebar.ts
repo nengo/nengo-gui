@@ -5,7 +5,6 @@
  * upon page load.
  */
 
-import * as allComponents from "./components/all-components";
 import { config, ConfigDialog } from "./config";
 import * as utils from "./utils";
 import { AlertDialogView } from "./views/modal";

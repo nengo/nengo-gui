@@ -134,25 +134,12 @@
         margin: 10px 5px;
         order: 3;
 
-        .shown-time {
-            fill: var(--shown-color);
-        }
-
-        .shown-time-border {
-            stroke: var(--accent) {
-                width: 1;
-            }
-        }
-
-        .shown-time-handle {
-            position: absolute;
-        }
-
         svg {
             flex-grow: 1;
-            pointer-events: none;
 
-            .axis {
+            g.axis {
+                pointer-events: none;
+
                 path {
                     fill: none;
                     stroke: #333;
@@ -162,6 +149,16 @@
                 .tick {
                     font-family: sans-serif;
                     font-size: 12px;
+                }
+            }
+
+            g.shown-time {
+                fill: var(--shown-color);
+
+                .shown-time-border {
+                    stroke: var(--accent) {
+                        width: 1;
+                    }
                 }
             }
         }

@@ -20,7 +20,7 @@ import { Menu } from "../menu";
 import * as utils from "../utils";
 import * as viewport from "../viewport";
 import { InputDialogView } from "../views/modal";
-import { Component } from "./component";
+import { Component } from "./base";
 import "./slider.css";
 import { SliderControl } from "./slidercontrol";
 
@@ -85,7 +85,7 @@ export class Slider extends Component {
                 event.target.fixed = true;
                 this.sendValue(event.target.index, event.value);
             }).on("changestart", function(event) {
-                Menu.hideAll();
+                Menu.hideShown();
                 for (let i = 0; i < this.sliders.length; i++) {
                     if (this.sliders[i] !== event.target) {
                         this.sliders[i].deactivateTypeMode(null);
@@ -106,7 +106,7 @@ export class Slider extends Component {
             this.onResetSim();
         });
 
-        this.onResize(
+        this.onresize(
             this.viewPort.scaleWidth(this.w),
             this.viewPort.scaleHeight(this.h)
         );
@@ -166,7 +166,7 @@ export class Slider extends Component {
     /**
      * Update visual display based when component is resized.
      */
-    onResize(width, height) {
+    onresize(width, height) {
         console.assert(typeof width === "number");
         console.assert(typeof height === "number");
 
@@ -183,7 +183,7 @@ export class Slider extends Component {
         this.group.style.marginTop = String(this.axTop);
 
         for (let i = 0; i < this.sliders.length; i++) {
-            this.sliders[i].onResize();
+            this.sliders[i].onresize();
         }
 
         this.label.style.width = String(this.width);
@@ -280,7 +280,7 @@ export class Slider extends Component {
             this.immediateNotify = true;
             $(modal).modal("hide");
         });
-        this.addKeyHandler(modal);
+        utils.handleTabs(modal);
 
         $(modal).validator({
             custom: {
@@ -334,7 +334,7 @@ export class Slider extends Component {
             }
             $(modal).modal("hide");
         });
-        this.addKeyHandler(modal);
+        utils.handleTabs(modal);
 
         $(modal).validator({
             custom: {

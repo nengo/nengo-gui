@@ -1,35 +1,6 @@
 import { VNode, dom, h } from "maquette";
 
-import "./debug.css";
-
-function menu(id: string, label: string): VNode {
-    let text = "Add " + label;
-    if (label === "") {
-        text = "Add"; // Remove the trailing space
-    }
-    return h("div.dropup#" + id, [
-        h("button.btn.btn-default.btn-block.dropdown-toggle", {
-            "data-toggle": "dropdown",
-            "type": "button",
-        }, [text, h("span.caret")]),
-        h("ul.dropdown-menu"),
-    ]);
-}
-
-function button(id: string, icon: string, {active: active = false} = {}) {
-    let activeClass = "";
-    if (active) {
-        activeClass = ".active";
-    }
-
-    return h("button.btn.btn-default.btn-block" + activeClass + "#" + id, {
-        "autocomplete": "off",
-        "data-toggle": "button",
-        "type": "button",
-    }, [
-        h("span.glyphicon.glyphicon-" + icon),
-    ]);
-}
+import "./view.css";
 
 export class DebugView {
     iframe: HTMLIFrameElement;
@@ -40,6 +11,38 @@ export class DebugView {
     private menus: {[id: string]: HTMLDivElement};
 
     constructor() {
+        const button = (
+            id: string,
+            icon: string,
+            {active: active = false} = {}
+        ): VNode => {
+            let activeClass = "";
+            if (active) {
+                activeClass = ".active";
+            }
+
+            return h(`button.btn.btn-default.btn-block${activeClass}#${id}`, {
+                "autocomplete": "off",
+                "data-toggle": "button",
+                "type": "button",
+            }, [
+                h(`span.glyphicon.glyphicon-${icon}`),
+            ]);
+        };
+        const menu = (id: string, label: string = ""): VNode => {
+            let text = `Add ${label}`;
+            if (label === "") {
+                text = "Add"; // Remove the trailing space
+            }
+            return h(`div.dropup#${id}`, [
+                h("button.btn.btn-default.btn-block.dropdown-toggle", {
+                    "data-toggle": "dropdown",
+                    "type": "button",
+                }, [text, h("span.caret")]),
+                h("ul.dropdown-menu"),
+            ]);
+        };
+
         const node =
             h("div.debug", [
                 h("div.debug-controls", [
@@ -48,8 +51,10 @@ export class DebugView {
                         button("log", "info-sign", {active: true}),
                     ]),
                     h("div.control-group", [
-                        menu("main", ""),
+                        menu("main"),
                         menu("view", "View"),
+                        menu("component", "Component"),
+                        menu("componentview", "Component View"),
                     ]),
                 ]),
                 h("iframe", {src: "nengo.html"}),
@@ -62,6 +67,12 @@ export class DebugView {
             this.controls.querySelector("#outline") as HTMLButtonElement;
         this.log = this.controls.querySelector("#log") as HTMLButtonElement;
         this.menus = {
+            component: (
+                this.controls.querySelector("#component") as HTMLDivElement
+            ),
+            componentview: (
+                this.controls.querySelector("#componentview") as HTMLDivElement
+            ),
             main: this.controls.querySelector("#main") as HTMLDivElement,
             view: this.controls.querySelector("#view") as HTMLDivElement,
         };
@@ -71,9 +82,9 @@ export class DebugView {
         const controlGroupNode =
             h("div.control-group.last", [
                 h("div", [
-                    h("p", [h("code", ["var obj = new " + label + "(...);"])]),
+                    h("p", [h("code", [`var obj = new ${label}(...);`])]),
                     h("button.btn.btn-xs.btn-default.pull-right#remove", [
-                        "Remove " + label,
+                        `Remove ${label}`,
                     ]),
                 ]),
                 h("div.input-group", [
@@ -118,9 +129,5 @@ export class DebugView {
 
     removeControlGroup(root: HTMLDivElement) {
         this.controls.removeChild(root);
-    }
-
-    redraw(): void {
-        // nothing needed
     }
 }

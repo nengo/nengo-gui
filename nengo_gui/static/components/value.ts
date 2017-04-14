@@ -20,7 +20,7 @@ import * as $ from "jquery";
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
 import { InputDialogView } from "../views/modal";
-import { Component } from "./component";
+import { Component } from "./base";
 import { TimeAxes } from "./time-axes";
 import "./value.css";
 
@@ -145,7 +145,7 @@ export class Value extends Component {
             });
 
         this.update();
-        this.onResize(
+        this.onresize(
             this.viewPort.scaleWidth(this.w),
             this.viewPort.scaleHeight(this.h),
         );
@@ -266,7 +266,7 @@ export class Value extends Component {
     /**
      * Adjust the graph layout due to changed size.
      */
-    onResize(width, height) {
+    onresize(width, height) {
         if (width < this.minWidth) {
             width = this.minWidth;
         }
@@ -274,7 +274,7 @@ export class Value extends Component {
             height = this.minHeight;
         }
 
-        this.axes2d.onResize(width, height);
+        this.axes2d.onresize(width, height);
 
         this.update();
 
@@ -359,7 +359,7 @@ export class Value extends Component {
             }
             $(modal).modal("hide");
         });
-        this.addKeyHandler(modal);
+        utils.handleTabs(modal);
         $(modal.root).on("hidden.bs.modal", () => {
             document.body.removeChild(modal.root);
         });
@@ -404,11 +404,11 @@ export class Value extends Component {
             }
             // TODO: this was a separate handler before, but should only
             //       fire when validation passes right?
-            this.onResize(this.div.clientWidth, this.div.clientHeight);
+            this.onresize(this.div.clientWidth, this.div.clientHeight);
 
             $(modal).modal("hide");
         });
-        this.addKeyHandler(modal);
+        utils.handleTabs(modal);
 
         $(modal).validator({
             custom: {
@@ -463,7 +463,7 @@ export class Value extends Component {
             }
             $(modal).modal("hide");
         });
-        this.addKeyHandler(modal);
+        utils.handleTabs(modal);
 
         $(modal).validator({
             custom: {

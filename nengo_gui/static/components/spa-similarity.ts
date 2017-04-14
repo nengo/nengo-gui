@@ -13,7 +13,7 @@ import * as $ from "jquery";
 
 import { FlexibleDataStore } from "../datastore";
 import * as utils from "../utils";
-import { Component } from "./component";
+import { Component } from "./base";
 import "./spa-similarity.css";
 import { Value } from "./value";
 

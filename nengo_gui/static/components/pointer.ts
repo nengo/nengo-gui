@@ -18,7 +18,7 @@ import { Menu } from "../menu";
 // import * as utils from "../utils";
 import * as viewport from "../viewport";
 import { InputDialogView } from "../views/modal";
-import { Component } from "./component";
+import { Component } from "./base";
 import "./pointer.css";
 
 export class Pointer extends Component {
@@ -61,7 +61,7 @@ export class Pointer extends Component {
             this.reset();
         });
 
-        this.onResize(
+        this.onresize(
             this.viewPort.scaleWidth(this.w),
             this.viewPort.scaleHeight(this.h),
         );
@@ -76,8 +76,8 @@ export class Pointer extends Component {
                 return;
             }
             if (event.button === 0) {
-                if (Menu.anyVisible()) {
-                    Menu.hideAll();
+                if (Menu.shown !== null) {
+                    Menu.hideShown();
                 } else {
                     this.menu.show(event.clientX, event.clientY);
                 }
@@ -134,7 +134,7 @@ export class Pointer extends Component {
             this.ws.send(value);
             $(modal).modal("hide");
         });
-        this.addKeyHandler(modal);
+        utils.handleTabs(modal);
 
         $(modal).validator({
             custom: {
@@ -228,7 +228,7 @@ export class Pointer extends Component {
     /**
      * Adjust the graph layout due to changed size.
      */
-    onResize(width, height) {
+    onresize(width, height) {
         if (width < this.minWidth) {
             width = this.minWidth;
         }
