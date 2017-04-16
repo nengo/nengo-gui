@@ -1,19 +1,22 @@
 import { VNode, dom, h } from "maquette";
 
-import { ModelObjView } from "./base";
+import {
+    getScale, getTranslate, setScale, setTranslate
+} from "../../views/views";
+
+import { ModelObjView, ResizableModelObjView } from "./base";
+
 import * as utils from "../../utils"
+
+import "./node.css";
 
 export class PassthroughNodeView extends ModelObjView {
     // fixedHeight: number = 3;
     // fixedWidth: number = 3;
 
     shapeNode(): VNode {
-        return h("g.passthrough", {transform: "scale(1,1)"}, [
-            h("circle.passthrough", {
-                cx: "3",
-                cy: "3",
-                r: "3",
-            })
+        return h("g.passthrough", [
+            h("circle", {cx: "4", cy: "4", r: "4"}),
         ]);
     }
 
@@ -51,24 +54,45 @@ export class PassthroughNodeView extends ModelObjView {
     // }
 }
 
-export class NodeView extends ModelObjView {
-    radiusScale: number = 0.1;
+export class NodeView extends ResizableModelObjView {
+    static radiusScale: number = 0.1;
+
+    rect: SVGRectElement;
+
+    constructor(label: string) {
+        super(label);
+        this.rect = this.shape.firstChild as SVGRectElement;
+    }
 
     shapeNode(): VNode {
-        // const screenD = this.displayedShape; // TODO: ???
-        // const halfW = screenD.width / 2;
-        // const halfH = screenD.height / 2;
-        // const radius = Math.min(screenD.width, screenD.height);
-        return h("g.node", {transform: "scale(1,1)"}, [
-            h("rect.node", {
+        return h("g.node", [
+            h("rect", {
                 height: "50",
-                rx: `${this.radiusScale * 50}`,
-                ry: `${this.radiusScale * 50}`,
+                rx: `${NodeView.radiusScale * 50}`,
+                ry: `${NodeView.radiusScale * 50}`,
                 width: "50",
                 x: "0",
                 y: "0",
             }),
         ]);
+    }
+
+    get scale(): [number, number] {
+        return [
+            Number(this.rect.getAttribute("width")),
+            Number(this.rect.getAttribute("height")),
+        ];
+    }
+
+    set scale(val: [number, number]) {
+        const width = Math.max(ResizableModelObjView.minWidth, val[0]);
+        const height = Math.max(ResizableModelObjView.minHeight, val[1]);
+        const smaller = Math.min(width, height);
+        this.rect.setAttribute("width", `${width}`);
+        this.rect.setAttribute("height", `${height}`);
+        this.rect.setAttribute("rx", `${NodeView.radiusScale * smaller}`);
+        this.rect.setAttribute("ry", `${NodeView.radiusScale * smaller}`);
+        this.overlayScale = [width, height];
     }
 
     // redrawSize() {

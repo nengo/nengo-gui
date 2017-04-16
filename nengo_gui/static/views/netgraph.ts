@@ -16,18 +16,19 @@ export class NetGraphView {
     private _zoomFonts: boolean = false;
 
     constructor() {
+        // TODO:
         // Reading netgraph.css file as text and embedding it within def tags;
         // this is needed for saving the SVG plot to disk.
-        const css = require("!!css-loader!./netgraph.css").toString();
+        // const css = require("!!css-loader!./netgraph.css").toString();
 
-        const defs = h("defs", [h(
-            "style", {type: "text/css"}, [`<![CDATA[\n${css}\n]]>`],
-        )]);
+        // const defs = h("defs", [h(
+        //     "style", {type: "text/css"}, [`<![CDATA[\n${css}\n]]>`],
+        // )]);
 
         // Create the master SVG element
         const svg = h("svg.netgraph", {styles: {
             height: "600", position: "absolute", width: "600"
-        }}, [defs, h("g.plots"), h("g.nets"), h("g.conns"), h("g.items")]);
+        }}, [h("g.plots"), h("g.nets"), h("g.conns"), h("g.items")]); // defs,
 
         this.root = dom.create(svg).domNode as SVGSVGElement;
 

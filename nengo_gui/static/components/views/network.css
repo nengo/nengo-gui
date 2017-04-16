@@ -1,0 +1,6 @@
+svg g.network rect {
+    fill: gray(80%);
+    stroke: gray(50%) {
+        width: 1;
+    }
+}

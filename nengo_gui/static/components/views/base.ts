@@ -4,6 +4,7 @@ import {
     getScale, getTranslate, setScale, setTranslate
 } from "../../views/views";
 
+import "./base.css";
 import * as utils from "../../utils";
 
 export class ComponentView {
@@ -55,8 +56,7 @@ export class ComponentView {
 }
 
 export abstract class ModelObjView {
-    static minHeight: number = 20;
-    static minWidth: number = 20;
+    static labelPad: number = 3;
 
     baseHeight: number;
     baseWidth: number;
@@ -71,7 +71,7 @@ export abstract class ModelObjView {
         const node = h("g", {transform: "translate(0,0)"}, [
             this.shapeNode(),
             h("text", {transform: "translate(0,0)"}, [label]),
-            h("rect.overlay", {fill: "transparent", x: "0", y: "0"}),
+            h("rect.overlay", {x: "0", y: "0"}),
         ]);
 
         // Create the SVG group to hold this item's shape and it's label
@@ -82,7 +82,7 @@ export abstract class ModelObjView {
     }
 
     get height(): number {
-        return this.scale[1];
+        return this.baseHeight;
     }
 
     get label(): string {
@@ -97,6 +97,20 @@ export abstract class ModelObjView {
         return this.pos[0];
     }
 
+    get overlayScale(): [number, number] {
+        return [
+            Number(this.overlay.getAttribute("width")),
+            Number(this.overlay.getAttribute("height")),
+        ];
+    }
+
+    set overlayScale(val: [number, number]) {
+        const [width, height] = val;
+        this.overlay.setAttribute("width", `${width}`);
+        this.overlay.setAttribute("height", `${height}`);
+        setTranslate(this._label, width * 0.5, height + ModelObjView.labelPad);
+    }
+
     get pos(): [number, number] {
         return getTranslate(this.root)
     }
@@ -105,33 +119,36 @@ export abstract class ModelObjView {
         setTranslate(this.root, val[0], val[1]);
     }
 
-    get scale(): [number, number] {
-        const [width, height] = getScale(this.shape)
-        return [width * this.baseWidth, height * this.baseHeight];
-    }
-
-    set scale(val: [number, number]) {
-        const width = Math.max(ModelObjView.minWidth, val[0]);
-        const height = Math.max(ModelObjView.minHeight, val[1]);
-        setScale(this.shape, width / this.baseWidth, height / this.baseHeight);
-        setTranslate(this._label, width * 0.5, height);
-        this.overlay.setAttribute("width", `${width}`);
-        this.overlay.setAttribute("height", `${height}`);
-    }
-
     get top(): number {
         return this.pos[1];
     }
 
     get width(): number {
-        return this.scale[0];
+        return this.baseWidth;
     }
 
     ondomadd() {
         const rect = this.shape.getBoundingClientRect();
         this.baseHeight = rect.height;
         this.baseWidth = rect.width;
+        this.overlayScale = [this.baseWidth, this.baseHeight];
     }
 
     abstract shapeNode(): VNode;
+}
+
+export abstract class ResizableModelObjView extends ModelObjView {
+    static minHeight: number = 20;
+    static minWidth: number = 20;
+
+    get height(): number {
+        return this.scale[1];
+    }
+
+    get width(): number {
+        return this.scale[0];
+    }
+
+    abstract get scale(): [number, number];
+    abstract set scale(val: [number, number]);
 }

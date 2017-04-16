@@ -1,0 +1,11 @@
+svg g.node rect {
+    fill: gray(80%);
+    stroke: gray(50%) {
+        width: 1;
+    }
+}
+
+svg g.passthrough circle {
+    fill: black;
+    stroke: none;
+}

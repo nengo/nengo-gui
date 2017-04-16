@@ -29,6 +29,7 @@ export class NengoDebug {
 
     constructor() {
         this.netgraph.attach(new MockConnection());
+        this.netgraph.view.root.style.outline = "red solid 1px";
         document.body.appendChild(this.netgraph.view.root);
     }
 

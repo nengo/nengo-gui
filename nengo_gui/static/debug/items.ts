@@ -23,10 +23,12 @@ import { ToolbarView } from "../views/toolbar";
 
 // components
 import { Ensemble } from "../components/ensemble";
+import { Network } from "../components/network";
 import { Node, PassthroughNode } from "../components/node";
 
 // component views
 import { EnsembleView } from "../components/views/ensemble";
+import { NetworkView } from "../components/views/network";
 import { NodeView, PassthroughNodeView } from "../components/views/node";
 
 export const listeners = {
@@ -120,12 +122,14 @@ export const view = {
 
 export const component = {
     Ensemble: () => new Ensemble(20, 20, 50, 50, "", "Ensemble", 1),
+    Network: () => new Network(20, 20, 50, 50, "", "Network", 1),
     Node: () => new Node(20, 20, 50, 50, "", "Node", 1),
-    PassthroughNode: () => new PassthroughNode(20, 20, 50, 50, "", "Passthrough", 1),
+    PassthroughNode: () => new PassthroughNode(20, 20, 5, 5, "", "Passthrough", 1),
 }
 
 export const componentview = {
     EnsembleView: () => new EnsembleView("Ensemble"),
+    NetworkView: () => new NetworkView("Network"),
     NodeView: () => new NodeView("Node"),
     PassthroughNodeView: () => new PassthroughNodeView("PassthroughNode"),
 }

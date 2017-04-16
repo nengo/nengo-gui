@@ -1,4 +1,5 @@
 import { ResizableModelObj } from "./base";
+import { config } from "../config";
 import { Menu } from "../menu";
 import { NetworkView } from "./views/network";
 
@@ -9,17 +10,28 @@ export class Network extends ResizableModelObj {
     defaultOutput;
     gClass: string[];
     gNetworks: SVGElement;
-    view: NetworkView;
 
-    constructor(ngiArg: NetGraphItemArg, interArg: InteractableItemArg,
-                dimensions, expanded, spTargets, defaultOutput) {
-        super(ngiArg, interArg, dimensions);
-        this.view = new NetworkView(ngiArg, interArg);
+    protected _view: NetworkView;
+
+    constructor(
+        left: number,
+        top: number,
+        width: number,
+        height: number,
+        parent: string,
+        uid: string,
+        dimensions: number,
+        miniItem = null,
+        expanded = false,
+        spTargets = null,
+        defaultOutput = null,
+    ) {
+        super(left, top, width, height, parent, uid, dimensions, miniItem);
 
         // TODO: This use of gItems and gNetworks is definitely wrong
-        this.gNetworks = this.ng.view.gNetworks;
-        this.expanded = expanded;
+        // this.gNetworks = this.ng.view.gNetworks;
 
+        this.expanded = expanded;
         this.spTargets = spTargets;
         this.defaultOutput = defaultOutput;
 
@@ -37,35 +49,52 @@ export class Network extends ResizableModelObj {
         }
 
         // TODO: Is this the right way to override an interact method?
-        interact(this.view.g).on("doubletap", (event) => {
-                // Get rid of menus when clicking off
-                if (event.button === 0) {
-                    if (Menu.shown !== null) {
-                        Menu.hideShown();
+        this.interactable.on("doubletap", (event) => {
+            // Get rid of menus when clicking off
+            if (event.button === 0) {
+                if (Menu.shown !== null) {
+                    Menu.hideShown();
+                } else {
+                    if (this.expanded) {
+                        this.collapse(true);
                     } else {
-                        if (this.expanded) {
-                            this.collapse(true);
-                        } else {
-                            this.expand();
-                        }
+                        this.expand();
                     }
                 }
-            })
-        .draggable({
-            onstart: () => {
-                Menu.hideShown();
-                this.moveToFront();
-            },
+            }
+        });
+
+        this.interactable.on("dragstart", () => {
+            Menu.hideShown();
+            this.moveToFront();
         });
     }
 
-    remove() {
-        super.remove();
-        if (this.expanded) {
-            // Collapse the item, but don't tell the server since that would
-            // update the server's config
-            this.collapse(false);
+    get transparentNets(): boolean {
+        return config.transparentNets;
+    }
+
+    // TODO: this feels like a weird level to manipulate all other
+    // networks from. Should push up to NetGraph
+    set transparentNets(val: boolean) {
+        if (val === config.transparentNets) {
+            return;
         }
+        config.transparentNets = val;
+        // Object.keys(this.ng.svgObjects.net).forEach((key) => {
+        //     const net = this.ng.svgObjects.net[key];
+        //     net.computeFill();
+        //     if (net.expanded) {
+        //         net.view.transparentShape(val);
+        //     }
+        // });
+    }
+
+    get view(): NetworkView {
+        if (this._view === null) {
+            this._view = new NetworkView("?");
+        }
+        return this._view;
     }
 
     addMenuItems() {
@@ -93,9 +122,22 @@ export class Network extends ResizableModelObj {
     }
 
     /**
+     * Determine the fill color based on the depth.
+     */
+    computeFill() {
+        // const depth = this.ng.transparentNets ? 1 : this.view.depth;
+        // TODO: depth
+        const depth = 1;
+        const fill = Math.round(255 * Math.pow(0.8, depth));
+        const stroke = Math.round(255 * Math.pow(0.8, depth + 2));
+        this.view.fill = `rgb(${fill},${fill},${fill})`;
+        this.view.stroke = `rgb(${stroke},${stroke},${stroke})`;
+    }
+
+    /**
      * Expand a collapsed network.
      */
-    expand(returnToServer=true, auto=false) { // tslint:disable-line
+    expand(returnToServer = true, auto = false) {
         // Default to true if no parameter is specified
         if (typeof returnToServer !== "undefined") {
             returnToServer = true;
@@ -106,11 +148,11 @@ export class Network extends ResizableModelObj {
 
         if (!this.expanded) {
             this.expanded = true;
-            if (this.ng.transparentNets) {
-                this.view.transparentShape(false);
-            }
-            this.ng.view.gItems.removeChild(this.view.g);
-            this.gNetworks.appendChild(this.view.g);
+            // if (this.ng.transparentNets) {
+            //     this.view.transparentShape(false);
+            // }
+            // this.ng.view.gItems.removeChild(this.view.g);
+            // this.gNetworks.appendChild(this.view.g);
             if (!this.minimap) {
                 this.miniItem.expand(returnToServer, auto);
             }
@@ -120,12 +162,12 @@ export class Network extends ResizableModelObj {
         }
 
         if (returnToServer) {
-            if (auto) {
-                // Update the server, but do not place on the undo stack
-                this.ng.notify("autoExpand", {uid: this.uid});
-            } else {
-                this.ng.notify("expand", {uid: this.uid});
-            }
+            // if (auto) {
+            //     // Update the server, but do not place on the undo stack
+            //     this.ng.notify("autoExpand", {uid: this.uid});
+            // } else {
+            //     this.ng.notify("expand", {uid: this.uid});
+            // }
         }
     }
 
@@ -145,86 +187,64 @@ export class Network extends ResizableModelObj {
 
         if (this.expanded) {
             this.expanded = false;
-            if (this.ng.transparentNets) {
-                this.view.transparentShape(false);
-            }
-            this.gNetworks.removeChild(this.view.g);
-            this.ng.view.gItems.appendChild(this.view.g);
-            if (!this.minimap) {
-                this.miniItem.collapse(reportToServer, auto);
-            }
+            // if (this.ng.transparentNets) {
+            //     this.view.transparentShape(false);
+            // }
+            // this.gNetworks.removeChild(this.view.g);
+            // this.ng.view.gItems.appendChild(this.view.g);
+            // if (!this.minimap) {
+            //     this.miniItem.collapse(reportToServer, auto);
+            // }
         } else {
             console.warn(
                 "collapsed a network that was already collapsed: " + this);
         }
 
         if (reportToServer) {
-            if (auto) {
-                // Update the server, but do not place on the undo stack
-                this.ng.notify("autoCollapse", {uid: this.uid});
-            } else {
-                this.ng.notify("collapse", {uid: this.uid});
-            }
+            // if (auto) {
+            //     // Update the server, but do not place on the undo stack
+            //     this.ng.notify("autoCollapse", {uid: this.uid});
+            // } else {
+            //     this.ng.notify("collapse", {uid: this.uid});
+            // }
         }
-    }
-
-    get transparentNets(): boolean {
-        return config.transparentNets;
-    }
-
-    // TODO: this feels like a weird level to manipulate all other
-    // networks from. Should push up to NetGraph
-    set transparentNets(val: boolean) {
-        if (val === config.transparentNets) {
-            return;
-        }
-        config.transparentNets = val;
-        Object.keys(this.ng.svgObjects.net).forEach((key) => {
-            const net = this.ng.svgObjects.net[key];
-            net.computeFill();
-            if (net.expanded) {
-                net.view.transparentShape(val);
-            }
-        });
     }
 
     moveToFront() {
-        this.view.parent.ng.view.gItems.appendChild(this.view.g);
+        // this.view.parent.ng.view.gItems.appendChild(this.view.g);
 
-        Object.keys(this.children).forEach((key) => {
-            this.children[key].moveToFront();
-        });
+        // Object.keys(this.children).forEach((key) => {
+        //     this.children[key].moveToFront();
+        // });
     }
 
-    redraw() {
-        super.redraw();
-        this.redrawChildren();
-        this.redrawChildConnections();
-        this.redrawConnections();
-    }
+    // redraw() {
+    //     super.redraw();
+    //     this.redrawChildren();
+    //     this.redrawChildConnections();
+    //     this.redrawConnections();
+    // }
 
-    redrawChildren() {
-        // Update any children's positions
-        for (const child of this.children) {
-            child.redraw();
+    // redrawChildren() {
+    //     // Update any children's positions
+    //     for (const child of this.children) {
+    //         child.redraw();
+    //     }
+    // }
+
+    // redrawChildConnections() {
+    //     // Update any children's positions
+    //     for (const child of this.childConnections) {
+    //         child.redraw();
+    //     }
+    // }
+
+    remove() {
+        super.remove();
+        if (this.expanded) {
+            // Collapse the item, but don't tell the server since that would
+            // update the server's config
+            this.collapse(false);
         }
-    }
-
-    redrawChildConnections() {
-        // Update any children's positions
-        for (const child of this.childConnections) {
-            child.redraw();
-        }
-    }
-
-    /**
-     * Determine the fill color based on the depth.
-     */
-    computeFill() {
-        const depth = this.ng.transparentNets ? 1 : this.view.depth;
-        const fill = Math.round(255 * Math.pow(0.8, depth));
-        const stroke = Math.round(255 * Math.pow(0.8, depth + 2));
-        this.view.fill = `rgb(${fill},${fill},${fill})`;
-        this.view.stroke = `rgb(${stroke},${stroke},${stroke})`;
     }
 }

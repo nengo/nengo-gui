@@ -1,15 +1,6 @@
 svg.netgraph {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
-    .ens {
-        stroke-width: 1;
-    }
-
-    g.node rect,
-    g.nets rect {
-        stroke-width: 1;
-    }
-
     text {
         cursor: default;
         dominant-baseline: text-before-edge;
@@ -26,9 +17,9 @@ svg.netgraph {
         }
     }
 
-    g.passthrough circle {
-        fill: black;
-        stroke-width: 0px;
+    rect.view {
+        fill: #d9edf7;
+        stroke: #ccc;
     }
 }
 
@@ -39,16 +30,11 @@ svg.netgraph {
     position: 'relative';
     width: 100%;
 
-    .minimap line {
+    line {
         stroke: black {
             width: 1px;
         }
     }
-}
-
-rect.view {
-    fill: #d9edf7;
-    stroke: #ccc;
 }
 
 .recur {

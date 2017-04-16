@@ -1,46 +1,74 @@
 import { VNode, dom, h } from "maquette";
 
-import { ModelObjView } from "./base";
+import { ResizableModelObjView } from "./base";
 import * as utils from "../../utils"
 
-export class NetworkView extends ModelObjView {
+import "./network.css";
+
+export class NetworkView extends ResizableModelObjView {
+    rect: SVGRectElement;
+
+    constructor(label: string) {
+        super(label);
+        this.rect = this.shape.firstChild as SVGRectElement;
+    }
 
     shapeNode(): VNode {
-        return h("rect.network", {
-            styles: {
-                "fill": "rgb(0,0,0)",
-                "fill-opacity": "1.0",
-                "stroke": "rgb(0,0,0)",
-            },
-            transform: "scale(1,1)",
-        });
+        return h("g.network", [
+            h("rect", {
+                height: "50",
+                styles: {
+                    "fill": "rgb(0,0,0)",
+                    "fill-opacity": "1.0",
+                    "stroke": "rgb(0,0,0)",
+                },
+                width: "50",
+                x: "0",
+                y: "0",
+            })
+        ]);
     }
 
     get fill(): string {
-        return this.shape.style.fill;
+        return this.rect.style.fill;
     }
 
     set fill(val: string) {
-        this.shape.style.fill = val;
+        this.rect.style.fill = val;
+    }
+
+    get scale(): [number, number] {
+        return [
+            Number(this.rect.getAttribute("width")),
+            Number(this.rect.getAttribute("height")),
+        ];
+    }
+
+    set scale(val: [number, number]) {
+        const width = Math.max(ResizableModelObjView.minWidth, val[0]);
+        const height = Math.max(ResizableModelObjView.minHeight, val[1]);
+        this.rect.setAttribute("width", `${width}`);
+        this.rect.setAttribute("height", `${height}`);
+        this.overlayScale = [width, height];
     }
 
     get stroke(): string {
-        return this.shape.style.stroke;
+        return this.rect.style.stroke;
     }
 
     set stroke(val: string) {
-        this.shape.style.stroke = val;
+        this.rect.style.stroke = val;
     }
 
     get transparent(): boolean {
-        return this.shape.style.fillOpacity === "0";
+        return this.rect.style.fillOpacity === "0";
     }
 
     set transparent(val: boolean) {
         if (val) {
-            this.shape.style.fillOpacity = "0";
+            this.rect.style.fillOpacity = "0";
         } else {
-            this.shape.style.fillOpacity = "1";
+            this.rect.style.fillOpacity = "1";
         }
     }
 }

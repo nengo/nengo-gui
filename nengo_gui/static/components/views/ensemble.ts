@@ -1,11 +1,25 @@
 import { VNode, dom, h } from "maquette";
 
-import { ModelObjView } from "./base";
-import * as utils from "../../utils"
+import {
+    getScale, getTranslate, setScale, setTranslate
+} from "../../views/views";
 
-export class EnsembleView extends ModelObjView {
+import { ResizableModelObjView } from "./base";
+import "./ensemble.css";
+import * as utils from "../../utils";
+
+export class EnsembleView extends ResizableModelObjView {
     aspect: number = 1.;
-    radiusScale: number = 17.8;
+    circles: Array<SVGCircleElement>;
+
+    constructor(label: string) {
+        super(label);
+
+        // Convert NodeList to array
+        this.circles = Array.prototype.slice.call(
+            this.shape.childNodes
+        ) as Array<SVGCircleElement>;
+    }
 
     shapeNode(): VNode {
         // const dx = -1.25;
@@ -13,13 +27,30 @@ export class EnsembleView extends ModelObjView {
         const r = "4.843";
 
         return h("g.ensemble", {transform: "scale(1,1)"}, [
-            h("circle", {cx: r, cy: "10.52", r: r}),
-            h("circle", {cx: "16.186", cy: "17.874", r: r}),
-            h("circle", {cx: "21.012", cy: "30.561", r: r}),
-            h("circle", {cx: "29.704", cy: "17.23", r: r}),
-            h("circle", {cx: "5.647", cy: "26.414", r: r}),
-            h("circle", {cx: "19.894", cy: r, r: r}),
+            h("circle", {cx: r, cy: "10.52", r: r, "stroke-width": "1"}),
+            h("circle", {cx: "16.186", cy: "17.874", r: r, "stroke-width": "1"}),
+            h("circle", {cx: "21.012", cy: "30.561", r: r, "stroke-width": "1"}),
+            h("circle", {cx: "29.704", cy: "17.23", r: r, "stroke-width": "1"}),
+            h("circle", {cx: "5.647", cy: "26.414", r: r, "stroke-width": "1"}),
+            h("circle", {cx: "19.894", cy: r, r: r, "stroke-width": "1"}),
         ]);
+    }
+
+    get scale(): [number, number] {
+        const [width, height] = getScale(this.shape)
+        return [width * this.baseWidth, height * this.baseHeight];
+    }
+
+    set scale(val: [number, number]) {
+        const width = Math.max(ResizableModelObjView.minWidth, val[0]);
+        const height = Math.max(ResizableModelObjView.minHeight, val[1]);
+        // Should be 1 at basewidth; scale accordingly
+        const strokeWidth = `${this.baseWidth / width}`;
+        setScale(this.shape, width / this.baseWidth, height / this.baseHeight);
+        this.circles.forEach(circle => {
+            circle.setAttribute("stroke-width", strokeWidth);
+        });
+        this.overlayScale = [width, height];
     }
 
     // get displayedSize() {
