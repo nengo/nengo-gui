@@ -49,6 +49,8 @@ Nengo.Ace = function (uid, args) {
     this.console.appendChild(this.console_error);
     $('#console').height(this.console_height);
 
+    this.update_frequency = 2000; //2000ms
+
     this.save_disabled = true;
     this.update_trigger = true; // if an update of the model from the code editor is allowed
     this.auto_update = true; // automatically update the model based on the text
@@ -146,7 +148,7 @@ Nengo.Ace = function (uid, args) {
         });
 }
 
-//Send changes to the code to server every 100ms
+//Send changes to the code to server every 2s
 Nengo.Ace.prototype.schedule_updates = function () {
     var self = this;
     setInterval(function () {
@@ -163,7 +165,7 @@ Nengo.Ace.prototype.schedule_updates = function () {
                 $('#Sync_editor_button').removeClass('disabled');
             }
         }
-    }, 100)
+    }, self.update_frequency)
 }
 
 Nengo.Ace.prototype.save_file = function () {
