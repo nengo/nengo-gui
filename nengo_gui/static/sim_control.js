@@ -346,11 +346,32 @@ Nengo.TimeSlider = function(args) {
     this.axis = d3.svg.axis()
         .scale(this.kept_scale)
         .orient("bottom")
-        .ticks(10);
+        .ticks(0);
     this.axis_g = this.svg.append("g")
         .attr("class", "axis")
         .attr("transform", "translate(0," + (args.height / 2) + ")")
         .call(this.axis);
+
+    this.sim_time_end = this.svg.append("text")
+        .text("Time: NULL")
+        .attr('class', 'sim_end')
+        .attr('y', function() {
+            return parseFloat(self.div.style.height) / 2 - 1;
+        })
+        .attr('x', function() {
+            return parseFloat(self.div.style.width) - 30;
+        });
+
+    this.sim_time_start = this.svg.append("text")
+        .text("Time: NULL")
+        .attr('class','sim_start')
+        .attr('y', function() {
+            return parseFloat(self.div.style.height) / 2 - 1;
+        })
+        .attr('x', 0 );
+
+    this.sim_time_start_text = this.sim_time_start[0][0];
+    this.sim_time_end_text = this.sim_time_end[0][0];
 }
 
 Nengo.TimeSlider.prototype.jump_to_end = function() {
@@ -402,6 +423,7 @@ Nengo.TimeSlider.prototype.resize = function(width, height) {
  * Update the axis given a new time point from the simulator
  */
 Nengo.TimeSlider.prototype.update_times = function(time) {
+    var self = this;
     var delta = time - this.last_time;   // time since last update_time()
 
     if (delta < 0) {
@@ -417,4 +439,17 @@ Nengo.TimeSlider.prototype.update_times = function(time) {
     /** update the time axis display */
     this.axis_g
         .call(this.axis);
+
+    //update the two text fields showing start and end times
+    this.sim_time_start_text.textContent = (time - this.kept_time).toFixed(2);
+    this.sim_time_end_text.textContent = time.toFixed(2);
+
+    //Reposition the end time text appropriately
+    this.end_time_displace = (this.sim_time_end_text.textContent.length - 1) * 10;
+    if (this.sim_time_end) {
+        this.sim_time_end
+            .attr('x', function() {
+                return parseFloat(self.div.style.width) - self.end_time_displace;
+            });
+    }
 }
