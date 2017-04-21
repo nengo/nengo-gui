@@ -1,9 +1,9 @@
-import { ResizableModelObj } from "./base";
+import { ResizableComponent } from "./base";
 import { config } from "../config";
 import { Menu } from "../menu";
 import { NetworkView } from "./views/network";
 
-export class Network extends ResizableModelObj {
+export class Network extends ResizableComponent {
     expanded: boolean;
     // TODO: what type is this supposed to be?
     spTargets;

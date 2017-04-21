@@ -4,20 +4,23 @@ import {
     getScale, getTranslate, setScale, setTranslate
 } from "../../views/views";
 
-import { ModelObjView, ResizableModelObjView } from "./base";
+import { ComponentView, ResizableComponentView } from "./base";
 
 import * as utils from "../../utils"
 
 import "./node.css";
 
-export class PassthroughNodeView extends ModelObjView {
+export class PassthroughNodeView extends ComponentView {
     // fixedHeight: number = 3;
     // fixedWidth: number = 3;
 
-    shapeNode(): VNode {
-        return h("g.passthrough", [
+    constructor(label: string) {
+        super(label);
+        const node = h("g.passthrough", [
             h("circle", {cx: "4", cy: "4", r: "4"}),
         ]);
+        this.body = utils.domCreateSVG(node) as SVGGElement;
+        this.root.appendChild(this.body);
     }
 
     // constructor(label: string) {
@@ -54,18 +57,14 @@ export class PassthroughNodeView extends ModelObjView {
     // }
 }
 
-export class NodeView extends ResizableModelObjView {
+export class NodeView extends ResizableComponentView {
     static radiusScale: number = 0.1;
 
     rect: SVGRectElement;
 
     constructor(label: string) {
         super(label);
-        this.rect = this.shape.firstChild as SVGRectElement;
-    }
-
-    shapeNode(): VNode {
-        return h("g.node", [
+        const node = h("g.node", [
             h("rect", {
                 height: "50",
                 rx: `${NodeView.radiusScale * 50}`,
@@ -75,6 +74,9 @@ export class NodeView extends ResizableModelObjView {
                 y: "0",
             }),
         ]);
+        this.body = utils.domCreateSVG(node) as SVGGElement;
+        this.root.appendChild(this.body);
+        this.rect = this.body.firstChild as SVGRectElement;
     }
 
     get scale(): [number, number] {
@@ -85,8 +87,8 @@ export class NodeView extends ResizableModelObjView {
     }
 
     set scale(val: [number, number]) {
-        const width = Math.max(ResizableModelObjView.minWidth, val[0]);
-        const height = Math.max(ResizableModelObjView.minHeight, val[1]);
+        const width = Math.max(ResizableComponentView.minWidth, val[0]);
+        const height = Math.max(ResizableComponentView.minHeight, val[1]);
         const smaller = Math.min(width, height);
         this.rect.setAttribute("width", `${width}`);
         this.rect.setAttribute("height", `${height}`);

@@ -132,12 +132,14 @@ export class InputDialogView extends ModalView {
 }
 
 // Change the global defaults of the modal validator
-document.addEventListener("DOMContentLoaded", () => {
-    const validator = $.fn.validator.Constructor.DEFAULTS;
-    // Change the delay before showing errors
-    validator.delay = 5000;
-    // Leave the ok button on
-    validator.disable = false;
-    // Set the error messages for new validators
-    validator.errors = {ngvalidator: "Does not match"};
-});
+if (typeof document !== "undefined") {
+    document.addEventListener("DOMContentLoaded", () => {
+        const validator = $.fn.validator.Constructor.DEFAULTS;
+        // Change the delay before showing errors
+        validator.delay = 5000;
+        // Leave the ok button on
+        validator.disable = false;
+        // Set the error messages for new validators
+        validator.errors = {ngvalidator: "Does not match"};
+    });
+}

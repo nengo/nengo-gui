@@ -1,0 +1,24 @@
+svg {
+    .crosshair {
+        stroke: black {
+            width: 0.5;
+        }
+
+        text {
+            font-size: 80%;
+            pointer-events: none;
+        }
+    }
+
+    .crosshairX {
+        text {
+            text-anchor: middle;
+        }
+    }
+
+    .crosshairY {
+        text {
+            text-anchor: end;
+        }
+    }
+}

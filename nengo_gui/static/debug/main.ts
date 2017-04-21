@@ -150,11 +150,12 @@ export class Debug {
     }
 }
 
-/* tslint:disable:no-console */
-document.addEventListener("DOMContentLoaded", () => {
-    const debug = new Debug();
-    document.body.appendChild(debug.view.root);
-});
+if (typeof document !== "undefined") {
+    document.addEventListener("DOMContentLoaded", () => {
+        const debug = new Debug();
+        document.body.appendChild(debug.view.root);
+    });
+}
 
 // TODO
 

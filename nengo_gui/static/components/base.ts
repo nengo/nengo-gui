@@ -1,234 +1,176 @@
 import * as interact from "interact.js";
 
 import { config } from "../config";
+import { DataStore } from "../datastore";
 import { Menu } from "../menu";
 import * as utils from "../utils";
 import { ViewPort } from "../viewport";
-import { ComponentView, ModelObjView } from "./views/base";
+import {
+    ComponentView, ResizableComponentView,
+} from "./views/base";
 import { InputDialogView } from "../views/modal";
 import { FastWSConnection } from "../websocket";
 
 /**
  * Base class for any element that is added to the NetGraph.
  */
-export abstract class Component {
-    static minHeight: number = 2;
-    static minWidth: number = 2;
+// export abstract class Component {
+    // static minHeight: number = 2;
+    // static minWidth: number = 2;
 
-    interactable;
+    // interactable;
 
-    h: number;
-    height: number;
-    label: HTMLDivElement;
-    menu: Menu;
-    minHeight: number;
-    minWidth: number;
-    parent: HTMLElement;
-    uid: string;
-    w: number;
-    width: number;
-    ws;
-    viewPort: ViewPort;
-    x: number;
-    y: number;
+    // h: number;
+    // height: number;
+    // label: HTMLDivElement;
+    // menu: Menu;
+    // minHeight: number;
+    // minWidth: number;
+    // parent: HTMLElement;
+    // uid: string;
+    // w: number;
+    // width: number;
+    // ws;
+    // viewPort: ViewPort;
+    // x: number;
+    // y: number;
 
-    view: ComponentView;
+    // view: ComponentView;
 
-    constructor(parent, x, y, width, height, viewPort, label, labelVisible, uid) {
+    // constructor(parent, x, y, width, height, viewPort, label, labelVisible, uid) {
 
-        this.interactable = interact(this.view.root);
+        // this.interactable = interact(this.view.root);
 
         // Prevent interact from messing up cursor
-        this.interactable.styleCursor(true);
+        // this.interactable.styleCursor(true);
 
-        this.x = x;
-        this.y = y;
-        this.w = width;
-        this.h = height;
-        this.viewPort = viewPort;
+        // this.x = x;
+        // this.y = y;
+        // this.w = width;
+        // this.h = height;
+        // this.viewPort = viewPort;
 
-        this.redrawSize();
-        this.redrawPos();
+        // this.redrawSize();
+        // this.redrawPos();
 
         // TODO: parent needed?
         // parent.appendChild(this.div);
         // this.parent = parent;
-        this.view.labelVisible = labelVisible;
+        // this.view.labelVisible = labelVisible;
 
-        // Move element to be drawn on top when clicked on
-        const raiseToTop = () => {
-            this.view.root.style.zIndex = String(utils.nextZindex());
-        };
-        this.view.root.addEventListener("mousedown", raiseToTop);
-        this.view.root.addEventListener("touchstart", raiseToTop);
-
-        // Allow element to be dragged
-        this.interactable.draggable({inertia: true});
-        this.interactable.on("drageend", (event) => {
-            this.saveLayout();
-        });
-        this.interactable.on("dragmove", (event) => {
-            this.x += this.viewPort.fromScreenX(event.dx);
-            this.y += this.viewPort.fromScreenY(event.dy);
-            this.redrawPos();
-        });
-        this.interactable.on("dragstart", () => {
-            Menu.hideShown();
-        });
+        // this.interactable.on("dragmove", (event) => {
+        //     this.x += this.viewPort.fromScreenX(event.dx);
+        //     this.y += this.viewPort.fromScreenY(event.dy);
+        //     this.redrawPos();
+        // });
+        // this.interactable.on("dragstart", () => {
+        //     Menu.hideShown();
+        // });
 
         // Allow element to be resized
-        this.interactable.resizable({
-            edges: {bottom: true, left: true, right: true, top: true},
-        });
-        this.interactable.on("resizestart", (event) => {
-            Menu.hideShown();
-        });
-        this.interactable.on("resizemove", (event) => {
-            const newWidth = event.rect.width;
-            const newHeight = event.rect.height;
-            const dleft = event.deltaRect.left;
-            const dtop = event.deltaRect.top;
-            const dright = event.deltaRect.right;
-            const dbottom = event.deltaRect.bottom;
+        // this.interactable.resizable({
+        //     edges: {bottom: true, left: true, right: true, top: true},
+        // });
+        // this.interactable.on("resizestart", (event) => {
+        //     Menu.hideShown();
+        // });
+        // this.interactable.on("resizemove", (event) => {
+        //     const newWidth = event.rect.width;
+        //     const newHeight = event.rect.height;
+        //     const dleft = event.deltaRect.left;
+        //     const dtop = event.deltaRect.top;
+        //     const dright = event.deltaRect.right;
+        //     const dbottom = event.deltaRect.bottom;
 
-            this.x += this.viewPort.fromScreenX((dleft + dright) / 2);
-            this.y += this.viewPort.fromScreenY((dtop + dbottom) / 2);
+        //     this.x += this.viewPort.fromScreenX((dleft + dright) / 2);
+        //     this.y += this.viewPort.fromScreenY((dtop + dbottom) / 2);
 
-            this.w = this.viewPort.unscaleWidth(newWidth);
-            this.h = this.viewPort.unscaleHeight(newHeight);
+        //     this.w = this.viewPort.unscaleWidth(newWidth);
+        //     this.h = this.viewPort.unscaleHeight(newHeight);
 
-            this.onresize(newWidth, newHeight);
-            this.redrawSize();
-            this.redrawPos();
-        })
-        this.interactable.on("resizeend", (event) => {
-            this.saveLayout();
-        });
+        //     this.onresize(newWidth, newHeight);
+        //     this.redrawSize();
+        //     this.redrawPos();
+        // })
 
         // Open a WebSocket to the server
-        this.uid = uid;
-        if (this.uid !== undefined) {
+        // this.uid = uid;
+        // if (this.uid !== undefined) {
             // this.ws = new FastWSConnection(this.uid);
             // this.ws.onmessage = (message) => {
             //     this.onMessage(message);
             // };
-        }
+        // }
 
-        this.menu = new Menu();
-        this.addMenuItems();
+        // this.menu = new Menu();
+        // this.addMenuItems();
 
-        interact(this.view.root)
-            .on("hold", (event) => { // Change to 'tap' for right click
-                if (event.button === 0) {
-                    if (Menu.shown !== null) {
-                        Menu.hideShown();
-                    } else {
-                        this.menu.show(event.clientX, event.clientY);
-                    }
-                    event.stopPropagation();
-                }
-            })
-            .on("tap", (event) => { // Get rid of menus when clicking off
-                if (event.button === 0) {
-                    if (Menu.shown !== null) {
-                        Menu.hideShown();
-                    }
-                }
-            });
-        window.addEventListener("contextmenu", (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            if (Menu.shown !== null) {
-                Menu.hideShown();
-            } else {
-                this.menu.show(event.clientX, event.clientY);
-            }
-            return false;
-        });
-    }
-
-    get labelVisible(): boolean {
-        return this.view.labelVisible;
-    }
-
-    set labelVisible(val: boolean) {
-        this.view.labelVisible = val;
-    }
-
-    /**
-     * Method to be called when Component is resized.
-     */
-    abstract onresize(width, height);
-
-    /**
-     * Method to be called when Component received a WebSocket message.
-     */
-    abstract onMessage(event);
-
-    addMenuItems() {
-        this.menu.addAction("Hide label", () => {
-            this.labelVisible = false;
-            this.saveLayout();
-        }, () => this.labelVisible)
-        this.menu.addAction("Show label", () => {
-            this.labelVisible = true;
-            this.saveLayout();
-        }, () => !this.labelVisible);
-        // TODO: attachNetGraph
-        // this.menu.addAction("Remove", () => { this.remove(); });
-    }
+        // interact(this.view.root)
+        //     .on("hold", (event) => { // Change to 'tap' for right click
+        //         if (event.button === 0) {
+        //             if (Menu.shown !== null) {
+        //                 Menu.hideShown();
+        //             } else {
+        //                 this.menu.show(event.clientX, event.clientY);
+        //             }
+        //             event.stopPropagation();
+        //         }
+        //     })
+        //     .on("tap", (event) => { // Get rid of menus when clicking off
+        //         if (event.button === 0) {
+        //             if (Menu.shown !== null) {
+        //                 Menu.hideShown();
+        //             }
+        //         }
+        //     });
+        // window.addEventListener("contextmenu", (event) => {
+        //     event.preventDefault();
+        //     event.stopPropagation();
+        //     if (Menu.shown !== null) {
+        //         Menu.hideShown();
+        //     } else {
+        //         this.menu.show(event.clientX, event.clientY);
+        //     }
+        //     return false;
+        // });
+    // }
 
     /**
      * Do any visual updates needed due to changes in the underlying data.
      */
     // TODO: ensure this is throttled
-    abstract update(event);
+    // abstract update(event);
 
-    layoutInfo() {
-        return {
-            height: this.h,
-            labelVisible: this.labelVisible,
-            width: this.w,
-            x: this.x,
-            y: this.y,
-        };
-    }
+//     updateLayout(config) {
+//         this.w = config.width;
+//         this.h = config.height;
+//         this.x = config.x;
+//         this.y = config.y;
 
-    saveLayout() {
-        const info = this.layoutInfo();
-        this.ws.send("config:" + JSON.stringify(info));
-    }
+//         this.redrawSize();
+//         this.redrawPos();
+//         // this.onresize(
+//         //     this.viewPort.scaleWidth(this.w),
+//         //     this.viewPort.scaleHeight(this.h),
+//         // );
 
-    updateLayout(config) {
-        this.w = config.width;
-        this.h = config.height;
-        this.x = config.x;
-        this.y = config.y;
+//         this.labelVisible = config.labelVisible;
+//     }
 
-        this.redrawSize();
-        this.redrawPos();
-        this.onresize(
-            this.viewPort.scaleWidth(this.w),
-            this.viewPort.scaleHeight(this.h),
-        );
+//     redrawSize() {
+//         this.width = this.viewPort.scaleWidth(this.w);
+//         this.height = this.viewPort.scaleHeight(this.h);
+//         // this.view.scale = [this.width, this.height];
+//     }
 
-        this.labelVisible = config.labelVisible;
-    }
+//     redrawPos() {
+//         const x = this.viewPort.toScreenX(this.x - this.w);
+//         const y = this.viewPort.toScreenY(this.y - this.h);
+//         // utils.setTransform(this.div, x, y);
+//     }
+// }
 
-    redrawSize() {
-        this.width = this.viewPort.scaleWidth(this.w);
-        this.height = this.viewPort.scaleHeight(this.h);
-        // this.view.scale = [this.width, this.height];
-    }
-
-    redrawPos() {
-        const x = this.viewPort.toScreenX(this.x - this.w);
-        const y = this.viewPort.toScreenY(this.y - this.h);
-        // utils.setTransform(this.div, x, y);
-    }
-}
-
-export abstract class ModelObj {
+export abstract class Component {
     minimap;
     miniItem;
     _labelBelow: boolean;
@@ -246,18 +188,14 @@ export abstract class ModelObj {
 
     interactable;
 
-    protected _height: number;
     protected _left: number;
     protected _scaleToPixels: number;
     protected _top: number;
-    protected _view: ModelObjView = null;
-    protected _width: number;
+    protected _view: ComponentView = null;
 
     constructor(
         left: number,
         top: number,
-        width: number,
-        height: number,
         parent: string,
         uid: string,
         dimensions: number,
@@ -266,8 +204,6 @@ export abstract class ModelObj {
         this.uid = uid;
         this._left = left;
         this._top = top;
-        this._width = width;
-        this._height = height;
 
         this.miniItem = miniItem;
 
@@ -279,10 +215,10 @@ export abstract class ModelObj {
         //     this.view.parent.children.push(this);
         // }
 
-        console.warn("hmm");
         this.interactable = interact(this.view.overlay);
 
-        this.interactable.draggable(true);
+        // TODO: Dicuss: previously, only plots had inertia. Should they all?
+        this.interactable.draggable({inertia: true});
         this.interactable.on("dragmove", (event) => {
             const [left, top] = this.view.pos;
             this.view.pos = [left + event.dx, top + event.dy];
@@ -304,6 +240,7 @@ export abstract class ModelObj {
             this._top = top / this.scaleToPixels;
         });
 
+        // --- Menu
         const toggleMenu = (event) => {
             if (Menu.shown !== null) {
                 Menu.hideShown();
@@ -326,10 +263,6 @@ export abstract class ModelObj {
         });
     }
 
-    get height(): number {
-        return this._height;
-    }
-
     // _getScreenW() {
     //     return this.view.nestedWidth * this.ng.width * this.ng.scale;
     // }
@@ -337,6 +270,14 @@ export abstract class ModelObj {
     // _getScreenH() {
     //     return this.view.nestedHeight * this.ng.height * this.ng.scale;
     // }
+
+    get labelVisible(): boolean {
+        return this.view.labelVisible;
+    }
+
+    set labelVisible(val: boolean) {
+        this.view.labelVisible = val;
+    }
 
     get left(): number {
         return this._left;
@@ -349,18 +290,13 @@ export abstract class ModelObj {
     set scaleToPixels(val: number) {
         this._scaleToPixels = val;
         this.view.pos = [this._left * val, this._top * val];
-        this.view.scale = [this._width * val, this._height * val];
     }
 
     get top(): number {
         return this._top;
     }
 
-    abstract get view(): ModelObjView;
-
-    get width(): number {
-        return this._width;
-    }
+    abstract get view(): ComponentView;
 
     // get screenLocation() {
     //     const ngDims = this.ng.rect();
@@ -396,17 +332,18 @@ export abstract class ModelObj {
     // }
 
     get scales(){
-        let hScale = this.ng.scaledWidth;
-        let vScale = this.ng.scaledHeight;
-        let parent = this.parent;
-        while (parent !== null) {
-            hScale *= parent.view.width * 2;
-            vScale *= parent.view.height * 2;
-            parent = parent.view.parent;
-        }
-        console.assert(!isNaN(hScale));
-        console.assert(!isNaN(vScale));
-        return {hor: hScale, vert: vScale};
+        // let hScale = this.ng.scaledWidth;
+        // let vScale = this.ng.scaledHeight;
+        // let parent = this.parent;
+        // while (parent !== null) {
+        //     hScale *= parent.view.width * 2;
+        //     vScale *= parent.view.height * 2;
+        //     parent = parent.view.parent;
+        // }
+        // console.assert(!isNaN(hScale));
+        // console.assert(!isNaN(vScale));
+        // return {hor: hScale, vert: vScale};
+        return "todo";
     }
 
     addMenuItems() {
@@ -415,16 +352,6 @@ export abstract class ModelObj {
             this.requestFeedforwardLayout();
         });
     }
-
-    // TODO: redraw
-    // redrawSize(): Shape {
-    //     const screenD = this.displayedShape;
-    //     this._label.setAttribute(
-    //      "transform",
-    //      `translate(0, ${screenD.height / 2})`,
-    //     );
-    //     return screenD;
-    // }
 
     // TODO: constrainPosition
     // constrainPosition() {
@@ -507,7 +434,7 @@ export abstract class ModelObj {
         const w = this.view.width;
         const h = this.view.height;
 
-        // TODO: implement an interfact for this and rename it
+        // TODO: implement an interface for this and rename it
         const info: any = {
             // height: this.ng.viewPort.fromScreenY(100),
             // type: graphType,
@@ -535,13 +462,12 @@ export abstract class ModelObj {
         this.view.ondomadd();
         this.scaleToPixels = 1; // TODO: get from somewhere
     }
-
-    onresize() {
-
-    }
 }
 
-export abstract class ResizableModelObj extends ModelObj {
+export abstract class ResizableComponent extends Component {
+
+    // TODO: do we need viewport anymore?
+
     static resizeOptions: any = {
         edges: {bottom: true, left: true, right: true, top: true},
         invert: "none",
@@ -556,6 +482,10 @@ export abstract class ResizableModelObj extends ModelObj {
         }
     };
 
+    protected _height: number;
+    protected _view: ResizableComponentView;
+    protected _width: number;
+
     // TODO: Add all things to constructor
     constructor(
         left: number,
@@ -567,10 +497,12 @@ export abstract class ResizableModelObj extends ModelObj {
         dimensions: number,
         miniItem = null,
     ) {
-        super(left, top, width, height, parent, uid, dimensions, miniItem);
+        super(left, top, parent, uid, dimensions, miniItem);
+
+        this._height = height;
+        this._width = width;
 
         this.interactable.resizable(this.resizeOptions);
-
         this.interactable.on("resizestart", (event) => {
             Menu.hideShown();
         });
@@ -607,15 +539,72 @@ export abstract class ResizableModelObj extends ModelObj {
         });
     }
 
-    get resizeOptions(): any {
-        return ResizableModelObj.resizeOptions;
+    get height(): number {
+        return this._height;
     }
+
+    get resizeOptions(): any {
+        return ResizableComponent.resizeOptions;
+    }
+
+    get scaleToPixels(): number {
+        return this._scaleToPixels;
+    }
+
+    set scaleToPixels(val: number) {
+        this._scaleToPixels = val;
+        this.view.pos = [this._left * val, this._top * val];
+        this.view.scale = [this._width * val, this._height * val];
+    }
+
+    abstract get view(): ResizableComponentView;
+
+    get width(): number {
+        return this._width;
+    }
+
 }
 
-// export class Plot extends Component {
+export abstract class Plot extends ResizableComponent {
 
-// }
+    datastore: DataStore;
 
-// export class Widget extends Component {
+    constructor(
+        left: number,
+        top: number,
+        width: number,
+        height: number,
+        parent: string,
+        uid: string,
+        dimensions: number,
+        miniItem = null,
+    ) {
+        super(left, top, width, height, parent, uid, dimensions, miniItem);
 
-// }
+        // For storing the accumulated data
+        this.datastore = new DataStore(this.dimensions, 0.0);
+
+    }
+
+
+    addMenuItems() {
+
+        this.menu.addAction("Hide label", () => {
+            this.labelVisible = false;
+            // see component.interactable.on("dragend resizeend")
+            // this.saveLayout();
+        }, () => this.labelVisible)
+        this.menu.addAction("Show label", () => {
+            this.labelVisible = true;
+            // see component.interactable.on("dragend resizeend")
+            // this.saveLayout();
+        }, () => !this.labelVisible);
+        // TODO: attachNetGraph
+        // this.menu.addAction("Remove", () => { this.remove(); });
+    }
+
+}
+
+export abstract class Widget extends Component {
+
+}

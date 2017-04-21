@@ -18,10 +18,11 @@ import { Menu } from "../menu";
 // import * as utils from "../utils";
 import * as viewport from "../viewport";
 import { InputDialogView } from "../views/modal";
-import { Component } from "./base";
+import { ValueView } from "./views/value";
+import { Plot } from "./base";
 import "./pointer.css";
 
-export class Pointer extends Component {
+export class Pointer extends Plot {
     dataStore: DataStore;
     fixedValue;
     mouseDownTime;
@@ -29,6 +30,8 @@ export class Pointer extends Component {
     pointerStatus;
     _showPairs: boolean;
     sim;
+
+    protected _view: ValueView;
 
     constructor(parent, sim, args) {
         super(parent, args);
@@ -52,7 +55,7 @@ export class Pointer extends Component {
         // TODO: pull resetting up into a super-class
 
         // Call scheduleUpdate whenever the time is adjusted in the SimControl
-        this.sim.timeSlider.div.addEventListener("adjustTime", (e) => {
+        window.addEventListener("TimeSlider.moveShown", (e) => {
             this.scheduleUpdate();
         });
 
@@ -86,6 +89,13 @@ export class Pointer extends Component {
         this.div.addEventListener("mousedown", () => {
             this.mouseDownTime = new Date().getTime() / 1000;
         });
+    }
+
+    get view(): ValueView {
+        if (this._view === null) {
+            this._view = new ValueView("?");
+        }
+        return this._view;
     }
 
     addMenuItems() {
@@ -236,8 +246,8 @@ export class Pointer extends Component {
             height = this.minHeight;
         }
 
-        this.width = width;
-        this.height = height;
+        // this.width = width;
+        // this.height = height;
         this.div.style.width = width;
         this.div.style.height = height;
 

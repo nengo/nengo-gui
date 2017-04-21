@@ -1,15 +1,15 @@
 import * as interact from "interact.js";
 
-import { ResizableModelObj } from "./base";
+import { ResizableComponent } from "./base";
 import { EnsembleView } from "./views/ensemble";
 
-export class Ensemble extends ResizableModelObj {
+export class Ensemble extends ResizableComponent {
     protected _view: EnsembleView;
 
     get resizeOptions(): any {
         const options: any = {};
-        for (const option in ResizableModelObj.resizeOptions) {
-            options[option]= ResizableModelObj.resizeOptions[option];
+        for (const option in ResizableComponent.resizeOptions) {
+            options[option]= ResizableComponent.resizeOptions[option];
         }
         options.invert = "reposition";
         options.square = true;

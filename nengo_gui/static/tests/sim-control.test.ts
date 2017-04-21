@@ -73,13 +73,13 @@ test("TimeSlider.addTime", assert => {
     const ts = new SimControl("uid", 4.0, 0.5).timeSlider;
     const tolerance = 1e-5;
 
-    let firstShown = ts.firstShownTime;
+    let firstShown = ts.shownTime[0];
 
     // Increasing times
     [0.001, 0.01, 0.1, 1.0].forEach(time => {
         ts.addTime(time);
         assert.equal(ts.currentTime, time);
-        assert.ok(ts.firstShownTime - (firstShown + time) <= tolerance);
+        assert.ok(ts.shownTime[0] - (firstShown + time) <= tolerance);
     });
 
     // When time goes backward, we reset

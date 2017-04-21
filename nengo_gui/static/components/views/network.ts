@@ -1,20 +1,16 @@
 import { VNode, dom, h } from "maquette";
 
-import { ResizableModelObjView } from "./base";
+import { ResizableComponentView } from "./base";
 import * as utils from "../../utils"
 
 import "./network.css";
 
-export class NetworkView extends ResizableModelObjView {
+export class NetworkView extends ResizableComponentView {
     rect: SVGRectElement;
 
     constructor(label: string) {
         super(label);
-        this.rect = this.shape.firstChild as SVGRectElement;
-    }
-
-    shapeNode(): VNode {
-        return h("g.network", [
+        const node = h("g.network", [
             h("rect", {
                 height: "50",
                 styles: {
@@ -27,6 +23,9 @@ export class NetworkView extends ResizableModelObjView {
                 y: "0",
             })
         ]);
+        this.body = utils.domCreateSVG(node) as SVGGElement;
+        this.root.appendChild(this.body);
+        this.rect = this.body.firstChild as SVGRectElement;
     }
 
     get fill(): string {
@@ -45,8 +44,8 @@ export class NetworkView extends ResizableModelObjView {
     }
 
     set scale(val: [number, number]) {
-        const width = Math.max(ResizableModelObjView.minWidth, val[0]);
-        const height = Math.max(ResizableModelObjView.minHeight, val[1]);
+        const width = Math.max(ResizableComponentView.minWidth, val[0]);
+        const height = Math.max(ResizableComponentView.minHeight, val[1]);
         this.rect.setAttribute("width", `${width}`);
         this.rect.setAttribute("height", `${height}`);
         this.overlayScale = [width, height];

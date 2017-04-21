@@ -17,21 +17,15 @@
 import * as d3 from "d3";
 import * as $ from "jquery";
 
-import { DataStore } from "../datastore";
 import * as utils from "../utils";
 import { InputDialogView } from "../views/modal";
-import { Component } from "./base";
-import { TimeAxes } from "./time-axes";
+import { ValueView } from "./views/value";
+import { Plot } from "./base";
+import { TimeAxes } from "./axes";
 import "./value.css";
 
-export class Value extends Component {
-    axes2d;
-    colorFunc;
-    colors;
-    crosshairG;
-    crosshairMouse;
-    crosshairUpdates;
-    dataStore: DataStore;
+export class Value extends Plot {
+    axes;
     displayTime;
     legend: HTMLDivElement;
     legendLabels: string[];
@@ -39,252 +33,165 @@ export class Value extends Component {
     nLines: number;
     path;
     _showLegend: boolean;
-    sim;
     synapse;
 
-    constructor(parent, sim, args) {
-        super(parent, args);
+    protected _view: ValueView;
 
-        this.nLines = args.nLines || 1;
-        this.sim = sim;
-        this.displayTime = args.displayTime;
-        this.synapse = args.synapse;
+    constructor(
+        left: number,
+        top: number,
+        width: number,
+        height: number,
+        parent: string,
+        uid: string,
+        dimensions: number,
+        displayTime: number,
+        synapse: number,
+        miniItem = null,
+        nLines = 1,
+        minValue: number = -1,
+        maxValue: number = 1,
+    ) {
+        super(left, top, width, height, parent, uid, dimensions, miniItem);
 
-        // For storing the accumulated data
-        this.dataStore = new DataStore(this.nLines, 0.0);
+        this.nLines = nLines;
+        this.displayTime = displayTime;
+        this.synapse = synapse;
 
-        this.axes2d = new TimeAxes(this.div, args);
+        this.axes = new TimeAxes(
+            this.view.axes,
+            width,
+            height,
+            0.0, // minValue,
+            1.0, // maxValue,
+            4.0, // timeVisible,
+        );
 
-        // TODO: pull resetting up into a super-class
-
-        // Call scheduleUpdate whenever the time is adjusted in the SimControl
-        this.sim.timeSlider.div.addEventListener("adjustTime", (e) => {
-            this.scheduleUpdate();
-        });
-
-        // Call reset whenever the simulation is reset
-        this.sim.div.addEventListener("resetSim", (e) => {
+        window.addEventListener(
+            "TimeSlider.moveShown", utils.throttle((e: CustomEvent) => {
+                // Determine visible range from the SimControl
+                const [t1, t2] = e.detail.shownTime;
+                this.axes.timeRange = [t1, t2];
+                // Update the lines
+                const shownData = this.datastore.dataAtTime(t1, t2);
+                this.path.data(shownData).attr("d", this.line);
+            }, 50) // Update once every 50 ms
+        );
+        window.addEventListener("SimControl.reset", (e) => {
             this.reset();
         });
 
         // Create the lines on the plots
-        this.line = d3.svg.line()
-            .x((d, i) => {
-                return this.axes2d.scaleX(
-                    this.dataStore.times[i + this.dataStore.firstShownIndex],
-                );
-            }).y((d) => {
-                return this.axes2d.scaleY(d);
-            });
-        this.path = this.axes2d.svg.append("g")
+        this.line = d3.svg.line();
+        // TODO: hopefully the moveShown takes care of this?
+        // this.line.x((d, i) => {
+        //     return this.axes.scaleX(
+        //         this.datastore.times[i + this.datastore.firstShownIndex],
+        //     );
+        // });
+        this.line.y((d) => {
+            return this.axes.scaleY(d);
+        });
+        this.path = d3.select(this.view.plot)
             .selectAll("path")
-            .data(this.dataStore.data);
+            .data(this.datastore.data);
 
-        this.colors = utils.makeColors(this.nLines);
-        this.path.enter()
-            .append("path")
-            .attr("class", "line")
-            .style("stroke", (d, i) => {
-                return this.colors[i];
-            });
+        // TODO: onresize
+        // this.onresize(
+        //     this.viewPort.scaleWidth(this.w),
+        //     this.viewPort.scaleHeight(this.h),
+        // );
 
-        // Flag for whether or not update code should be changing the crosshair.
-        // Both zooming and the simulator time changing cause an update, but the
-        // crosshair should only update when the time is changing.
-        this.crosshairUpdates = false;
+        this.axes.yTicks = [minValue, maxValue];
 
-        // Keep track of mouse position TODO: fix this to be not required
-        this.crosshairMouse = [0, 0];
+        // TODO: legend
+        // this.legend = document.createElement("div");
+        // this.legend.classList.add("legend");
+        // this.div.appendChild(this.legend);
 
-        this.crosshairG = this.axes2d.svg.append("g")
-            .attr("class", "crosshair");
+        // this.legendLabels = args.legendLabels || [];
+        // if (this.legendLabels.length !== this.nLines) {
+        //     // Fill up the array with temporary labels
+        //     for (let i = this.legendLabels.length; i < this.nLines; i++) {
+        //         this.legendLabels[i] = "label_" + i;
+        //     }
+        // }
 
-        // TODO: put the crosshair properties in CSS
-        this.crosshairG.append("line")
-            .attr("id", "crosshairX")
-            .attr("stroke", "black")
-            .attr("stroke-width", "0.5px");
-
-        this.crosshairG.append("line")
-            .attr("id", "crosshairY")
-            .attr("stroke", "black")
-            .attr("stroke-width", "0.5px");
-
-        // TODO: have the fonts and colour set appropriately
-        this.crosshairG.append("text")
-            .attr("id", "crosshairXtext")
-            .style("text-anchor", "middle")
-            .attr("class", "graphText");
-
-        this.crosshairG.append("text")
-            .attr("id", "crosshairYtext")
-            .style("text-anchor", "end")
-            .attr("class", "graphText");
-
-        this.axes2d.svg
-            .on("mouseover", () => {
-                const mouse = d3.mouse(this);
-                this.crosshairUpdates = true;
-                this.crosshairG.style("display", null);
-                this.crosshairMouse = [mouse[0], mouse[1]];
-            }).on("mouseout", () => {
-                const mouse = d3.mouse(this);
-                this.crosshairUpdates = false;
-                this.crosshairG.style("display", "none");
-                this.crosshairMouse = [mouse[0], mouse[1]];
-            }).on("mousemove", () => {
-                const mouse = d3.mouse(this);
-                this.crosshairUpdates = true;
-                this.crosshairMouse = [mouse[0], mouse[1]];
-                this.updateCrosshair(mouse);
-            }).on("mousewheel", () => {
-                // Hide the crosshair when zooming,
-                // until a better option comes along
-                this.crosshairUpdates = false;
-                this.crosshairG.style("display", "none");
-            });
-
-        this.update();
-        this.onresize(
-            this.viewPort.scaleWidth(this.w),
-            this.viewPort.scaleHeight(this.h),
-        );
-        this.axes2d.axisY.tickValues([args.minValue, args.maxValue]);
-        this.axes2d.fitTicks(this);
-
-        this.colors = utils.makeColors(6);
-        this.colorFunc = (d, i) => {
-            return this.colors[i % 6];
-        };
-        this.legend = document.createElement("div");
-        this.legend.classList.add("legend");
-        this.div.appendChild(this.legend);
-
-        this.legendLabels = args.legendLabels || [];
-        if (this.legendLabels.length !== this.nLines) {
-            // Fill up the array with temporary labels
-            for (let i = this.legendLabels.length; i < this.nLines; i++) {
-                this.legendLabels[i] = "label_" + i;
-            }
-        }
-
-        this.showLegend = args.showLegend || false;
-        if (this.showLegend === true) {
-            // utils.drawLegend(this.legend,
-            //                   this.legendLabels.slice(0, this.nLines),
-            //                   this.colorFunc,
-            //                   this.uid);
-        }
+        // this.showLegend = args.showLegend || false;
+        // if (this.showLegend === true) {
+        //     // utils.drawLegend(this.legend,
+        //     //                   this.legendLabels.slice(0, this.nLines),
+        //     //                   this.colorFunc,
+        //     //                   this.uid);
+        // }
     }
 
-    updateCrosshair(mouse) {
-        const {x, y} = mouse;
+    // set showLegend(value) {
+    //     if (this._showLegend !== value) {
+    //         this._showLegend = value;
+    //         this.saveLayout();
 
-        // TODO: I don't like having ifs here.
-        //       Make a smaller rectangle for mouseovers
-        if (x > this.axes2d.axLeft && x < this.axes2d.axRight &&
-            y > this.axes2d.axTop && y < this.axes2d.axBottom) {
-            this.crosshairG.style("display", null);
+    //         if (this._showLegend === true) {
+    //             // utils.drawLegend(this.legend,
+    //             //                   this.legendLabels.slice(0, this.nLines),
+    //             //                   this.colorFunc,
+    //             //                   this.uid);
+    //         } else {
+    //             // Delete the legend's children
+    //             while (this.legend.lastChild) {
+    //                 this.legend.removeChild(this.legend.lastChild);
+    //             }
+    //         }
+    //     }
+    // }
 
-            this.crosshairG.select("#crosshairX")
-                .attr("x1", x)
-                .attr("y1", this.axes2d.axTop)
-                .attr("x2", x)
-                .attr("y2", this.axes2d.axBottom);
-
-            this.crosshairG.select("#crosshairY")
-                .attr("x1", this.axes2d.axLeft)
-                .attr("y1", y)
-                .attr("x2", this.axes2d.axRight)
-                .attr("y2", y);
-
-            // TODO: don't use magic numbers
-            this.crosshairG.select("#crosshairXtext")
-                .attr("x", x - 2)
-                .attr("y", this.axes2d.axBottom + 17)
-                .text(() => {
-                    return Math.round(
-                        this.axes2d.scaleX.invert(x) * 100) / 100;
-                });
-
-            this.crosshairG.select("#crosshairYtext")
-                .attr("x", this.axes2d.axLeft - 3)
-                .attr("y", y + 3)
-                .text(() => {
-                    return Math.round(
-                        this.axes2d.scaleY.invert(y) * 100) / 100;
-                });
-        } else {
-            this.crosshairG.style("display", "none");
+    get view(): ValueView {
+        if (this._view === null) {
+            this._view = new ValueView("?");
         }
+        return this._view;
     }
 
     /**
      * Receive new line data from the server.
      */
-    onMessage(event) {
-        let data = new Float32Array(event.data);
-        data = Array.prototype.slice.call(data);
-        const size = this.nLines + 1;
-        // Since multiple data packets can be sent with a single event,
-        // make sure to process all the packets.
-        while (data.length >= size) {
-            this.dataStore.push(data.slice(0, size));
-            data = data.slice(size);
-        }
-        if (data.length > 0) {
-            console.warn("extra data: " + data.length);
-        }
-        this.scheduleUpdate();
-    }
-
-    /**
-     * Redraw the lines and axis due to changed data.
-     */
-    update() {
-        // Let the data store clear out old values
-        this.dataStore.update(this.sim.timeSlider);
-
-        // Determine visible range from the SimControl
-        const t1 = this.sim.timeSlider.firstShownTime;
-        const t2 = t1 + this.sim.timeSlider.shownTime;
-
-        this.axes2d.setTimeRange(t1, t2);
-
-        // Update the lines
-        const shownData = this.dataStore.getShownData(this.sim.timeSlider);
-
-        this.path.data(shownData)
-            .attr("d", this.line);
-
-        // Update the crosshair text if the mouse is on top
-        if (this.crosshairUpdates) {
-            this.updateCrosshair(this.crosshairMouse);
-        }
-    }
+    // onMessage(event) {
+    //     let data = new Float32Array(event.data);
+    //     data = Array.prototype.slice.call(data);
+    //     const size = this.nLines + 1;
+    //     // Since multiple data packets can be sent with a single event,
+    //     // make sure to process all the packets.
+    //     while (data.length >= size) {
+    //         this.datastore.push(data.slice(0, size));
+    //         data = data.slice(size);
+    //     }
+    //     if (data.length > 0) {
+    //         console.warn("extra data: " + data.length);
+    //     }
+    // }
 
     /**
      * Adjust the graph layout due to changed size.
      */
-    onresize(width, height) {
-        if (width < this.minWidth) {
-            width = this.minWidth;
-        }
-        if (height < this.minHeight) {
-            height = this.minHeight;
-        }
+    // onresize(width, height) {
+    //     if (width < this.minWidth) {
+    //         width = this.minWidth;
+    //     }
+    //     if (height < this.minHeight) {
+    //         height = this.minHeight;
+    //     }
 
-        this.axes2d.onresize(width, height);
+    //     this.axes.onresize(width, height);
 
-        this.update();
+    //     this.update();
 
-        this.label.style.width = width;
+    //     this.label.style.width = width;
 
-        this.width = width;
-        this.height = height;
-        this.div.style.width = width;
-        this.div.style.height = height;
-    }
+    //     // this.width = width;
+    //     // this.height = height;
+    //     this.div.style.width = width;
+    //     this.div.style.height = height;
+    // }
 
     addMenuItems() {
         this.menu.addAction("Set range...", () => {
@@ -293,96 +200,77 @@ export class Value extends Component {
         this.menu.addAction("Set synapse...", () => {
                 this.setSynapseDialog();
         });
-        this.menu.addAction("Hide legend", () => {
-            this.showLegend(false);
-        }, () => this.showLegend);
-        this.menu.addAction("Show legend", () => {
-            this.showLegend(true);
-        }, () => !this.showLegend);
+        // this.menu.addAction("Hide legend", () => {
+        //     this.showLegend(false);
+        // }, () => this.showLegend);
+        // this.menu.addAction("Show legend", () => {
+        //     this.showLegend(true);
+        // }, () => !this.showLegend);
         // TODO: give the legend it's own context menu
         this.menu.addAction("Set legend labels", () => {
-            this.setLegendLabels();
+            // this.setLegendLabels();
         });
         this.menu.addSeparator();
         super.addMenuItems();
     }
 
-    set showLegend(value) {
-        if (this._showLegend !== value) {
-            this._showLegend = value;
-            this.saveLayout();
+    // setLegendLabels() {
+    //     const modal = new InputDialogView("Legend label", "New value");
+    //     modal.title = "Enter comma seperated legend label values";
+    //     modal.ok.addEventListener("click", () => {
+    //         const labelCsv = modal.input.value;
 
-            if (this._showLegend === true) {
-                // utils.drawLegend(this.legend,
-                //                   this.legendLabels.slice(0, this.nLines),
-                //                   this.colorFunc,
-                //                   this.uid);
-            } else {
-                // Delete the legend's children
-                while (this.legend.lastChild) {
-                    this.legend.removeChild(this.legend.lastChild);
-                }
-            }
-        }
-    }
+    //         // No validation to do.
+    //         // Empty entries assumed to be indication to skip modification.
+    //         // Long strings okay.
+    //         // Excissive entries get ignored.
+    //         // TODO: Allow escaping of commas
+    //         if ((labelCsv !== null) && (labelCsv !== "")) {
+    //             const labels = labelCsv.split(",");
 
-    setLegendLabels() {
-        const modal = new InputDialogView("Legend label", "New value");
-        modal.title = "Enter comma seperated legend label values";
-        modal.ok.addEventListener("click", () => {
-            const labelCsv = modal.input.value;
+    //             for (let i = 0; i < this.nLines; i++) {
+    //                 if (labels[i] !== "" && labels[i] !== undefined) {
+    //                     this.legendLabels[i] = labels[i];
+    //                 }
+    //             }
 
-            // No validation to do.
-            // Empty entries assumed to be indication to skip modification.
-            // Long strings okay.
-            // Excissive entries get ignored.
-            // TODO: Allow escaping of commas
-            if ((labelCsv !== null) && (labelCsv !== "")) {
-                const labels = labelCsv.split(",");
+    //             // Redraw the legend with the updated label values
+    //             while (this.legend.lastChild) {
+    //                 this.legend.removeChild(this.legend.lastChild);
+    //             }
 
-                for (let i = 0; i < this.nLines; i++) {
-                    if (labels[i] !== "" && labels[i] !== undefined) {
-                        this.legendLabels[i] = labels[i];
-                    }
-                }
+    //             // utils.drawLegend(this.legend,
+    //             //                   this.legendLabels,
+    //             //                   this.colorFunc,
+    //             //                   this.uid);
+    //             this.saveLayout();
+    //         }
+    //         $(modal).modal("hide");
+    //     });
+    //     utils.handleTabs(modal);
+    //     $(modal.root).on("hidden.bs.modal", () => {
+    //         document.body.removeChild(modal.root);
+    //     });
+    //     document.body.appendChild(modal.root);
+    //     modal.show();
+    // }
 
-                // Redraw the legend with the updated label values
-                while (this.legend.lastChild) {
-                    this.legend.removeChild(this.legend.lastChild);
-                }
+    // layoutInfo() {
+    //     const info = Component.prototype.layoutInfo.call(this);
+    //     info.showLegend = this.showLegend;
+    //     info.legendLabels = this.legendLabels;
+    //     info.minValue = this.axes.scaleY.domain()[0];
+    //     info.maxValue = this.axes.scaleY.domain()[1];
+    //     return info;
+    // }
 
-                // utils.drawLegend(this.legend,
-                //                   this.legendLabels,
-                //                   this.colorFunc,
-                //                   this.uid);
-                this.saveLayout();
-            }
-            $(modal).modal("hide");
-        });
-        utils.handleTabs(modal);
-        $(modal.root).on("hidden.bs.modal", () => {
-            document.body.removeChild(modal.root);
-        });
-        document.body.appendChild(modal.root);
-        modal.show();
-    }
-
-    layoutInfo() {
-        const info = Component.prototype.layoutInfo.call(this);
-        info.showLegend = this.showLegend;
-        info.legendLabels = this.legendLabels;
-        info.minValue = this.axes2d.scaleY.domain()[0];
-        info.maxValue = this.axes2d.scaleY.domain()[1];
-        return info;
-    }
-
-    updateLayout(config) {
-        this.updateRange(config.minValue, config.maxValue);
-        Component.prototype.updateLayout.call(this, config);
-    }
+    // updateLayout(config) {
+    //     this.yLim(config.minValue, config.maxValue);
+    //     Component.prototype.updateLayout.call(this, config);
+    // }
 
     setRange() {
-        const range = this.axes2d.scaleY.domain();
+        const range = this.axes.scaleY.domain();
         const modal = new InputDialogView(
             range, "New range", "Input should be in the form '<min>,<max>'."
         );
@@ -397,14 +285,14 @@ export class Value extends Component {
                 const newRange = modal.input.value.split(",");
                 const min = parseFloat(newRange[0]);
                 const max = parseFloat(newRange[1]);
-                this.updateRange(min, max);
-                this.saveLayout();
-                this.axes2d.axisY.tickValues([min, max]);
-                this.axes2d.fitTicks(this);
+                this.yLim(min, max);
+                // this.saveLayout();
+                this.axes.axisY.tickValues([min, max]);
+                this.axes.fitTicks(this);
             }
             // TODO: this was a separate handler before, but should only
             //       fire when validation passes right?
-            this.onresize(this.div.clientWidth, this.div.clientHeight);
+            // this.onresize(this.div.clientWidth, this.div.clientHeight);
 
             $(modal).modal("hide");
         });
@@ -432,14 +320,15 @@ export class Value extends Component {
         modal.show();
     }
 
-    updateRange(min, max) {
-        this.axes2d.scaleY.domain([min, max]);
-        this.axes2d.axisY_g.call(this.axes2d.axisY);
+    // TODO: move to axes
+    yLim(min, max) {
+        this.axes.scaleY.domain([min, max]);
+        this.axes.axisY(this.axes.view.axisY);
     }
 
     reset() {
-        this.dataStore.reset();
-        this.scheduleUpdate();
+        this.datastore.reset();
+
     }
 
     setSynapseDialog() {
@@ -458,7 +347,7 @@ export class Value extends Component {
                 const newSynapse = parseFloat(modal.input.value);
                 if (newSynapse !== this.synapse) {
                     this.synapse = newSynapse;
-                    this.ws.send("synapse:" + this.synapse);
+                    // this.ws.send("synapse:" + this.synapse);
                 }
             }
             $(modal).modal("hide");

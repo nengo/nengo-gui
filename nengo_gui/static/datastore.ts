@@ -1,4 +1,4 @@
-import { TimeSlider } from "./sim-control";
+import * as utils from "./utils";
 
 /**
  * Storage of a set of data points and associated times with a fixed
@@ -19,6 +19,20 @@ export class DataStore {
         for (let i = 0; i < dims; i++) {
             this.data.push([]);
         }
+
+        // Listen for updates to the TimeSlider
+        window.addEventListener(
+            "TimeSlider.addTime", utils.throttle((event: CustomEvent) => {
+                // How much has the most recent time exceeded how much is kept?
+                const limit = event.detail.currentTime - event.detail.keptTime;
+                const extra = DataStore.indexBefore(this.times, limit);
+
+                // Remove the extra data
+                if (extra > 0) {
+                    this.remove(0, extra);
+                }
+            }, 100) // Only update once per 100 ms
+        );
     }
 
     get dims(): number {
@@ -63,42 +77,23 @@ export class DataStore {
         return 0;
     }
 
-    dataAtIndex(index: number) {
+    dataAtIndex(beginIndex: number, endIndex?: number) {
         const sliced = [];
         this.data.forEach(dimdata => {
-            sliced.push(dimdata[index]);
+            if (endIndex) {
+                sliced.push(dimdata.slice(beginIndex, endIndex));
+            } else {
+                sliced.push(dimdata[beginIndex]);
+            }
         });
         return sliced;
     }
 
-    dataSlice(begin, end=undefined) {
-        const sliced = [];
-        this.data.forEach(dimdata => {
-            sliced.push(dimdata.slice(begin, end));
-        });
-        return sliced;
-    }
-
-    getLastData(timeSlider: TimeSlider) {
-        // Determine time range
-        const t1 = timeSlider.firstShownTime;
-        const t2 = t1 + timeSlider.shownTime;
-
-        return this.dataAtIndex(DataStore.indexBefore(this.times, t2))
-    }
-
-    /**
-     * Return just the data that is to be shown.
-     */
-    getShownData(timeSlider: TimeSlider) {
-        // Determine time range
-        const t1 = timeSlider.firstShownTime;
-        const t2 = t1 + timeSlider.shownTime;
-
-        // Find the corresponding index values
-        const begin = DataStore.indexBefore(this.times, t1);
-        const end = DataStore.indexBefore(this.times, t2);
-        return this.dataSlice(begin, end+1);
+    dataAtTime(beginTime: number, endTime?: number) {
+        const beginIndex = DataStore.indexBefore(this.times, beginTime);
+        const endIndex = endTime ?
+            DataStore.indexBefore(this.times, endTime) + 1 : undefined;
+        return this.dataAtIndex(beginIndex, endIndex);
     }
 
     /**
@@ -110,7 +105,7 @@ export class DataStore {
         const [time, newdata] = [row[0], row.slice(1)];
         // If we get data out of order, wipe out the later data
         if (time < this.times[this.times.length - 1]) {
-            this.splice(DataStore.indexBefore(this.times, time));
+            this.remove(DataStore.indexBefore(this.times, time));
         }
 
         // Compute lowpass filter (value = value*decay + newValue*(1-decay)
@@ -146,32 +141,21 @@ export class DataStore {
      * nothing to display on a reset event.
      */
     reset() {
-        this.splice(0);
+        this.remove(0);
     }
 
-    splice(...spliceargs) {
-        this.times.splice(...spliceargs);
-        this.data.forEach(dimdata => {
-            dimdata.splice(...spliceargs);
-        });
-    }
-
-    /**
-     * Update the data storage.
-     *
-     * Removes old data outside the storage limit set by the SimControl.
-     *
-     * This should be called periodically (before visual updates, but not
-     * necessarily after every push()).
-     */
-    update(timeSlider: TimeSlider) {
-        // How much has the most recent time exceeded how much is kept?
-        const limit = timeSlider.currentTime - timeSlider.keptTime;
-        const extra = DataStore.indexBefore(this.times, limit);
-
-        // Remove the extra data
-        if (extra > 0) {
-            this.splice(0, extra);
+    remove(start: number, deleteCount?: number) {
+        // TODO: try to remove this weird if statement
+        if (deleteCount) {
+            this.times.splice(start, deleteCount);
+            this.data.forEach(dimdata => {
+                dimdata.splice(start, deleteCount);
+            });
+        } else {
+            this.times.splice(start);
+            this.data.forEach(dimdata => {
+                dimdata.splice(start);
+            });
         }
     }
 }

@@ -149,13 +149,15 @@ export interface NengoWindow extends Window {
 
 // Most initialization can be done before DOM content is loaded
 // const nengo = new Nengo(null, null, null, null);
-document.addEventListener("DOMContentLoaded", () => {
-    // This is what normally happens -- for now we'll just ignore it
-    // nengo.ondomload();
+if (typeof document !== "undefined") {
+    document.addEventListener("DOMContentLoaded", () => {
+        // This is what normally happens -- for now we'll just ignore it
+        // nengo.ondomload();
 
-    // Set a function in the window for debug purposes
-    (<NengoWindow> window).nengoDebug = new NengoDebug();
-});
+        // Set a function in the window for debug purposes
+        (<NengoWindow> window).nengoDebug = new NengoDebug();
+    });
+}
 
 
 // Exposing components for server

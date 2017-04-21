@@ -18,16 +18,19 @@ import * as $ from "jquery";
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
 import { InputDialogView } from "../views/modal";
-import { Component } from "./base";
+import { ValueView } from "./views/value";
+import { Plot } from "./base";
 import "./raster.css";
-import { TimeAxes } from "./time-axes";
+import { TimeAxes } from "./axes";
 
-export class Raster extends Component {
+export class Raster extends Plot {
     axes2d;
     dataStore: DataStore;
     nNeurons: number;
     path;
     sim;
+
+    protected _view: ValueView;
 
     constructor(parent, sim, args) {
         super(parent, args);
@@ -43,12 +46,12 @@ export class Raster extends Component {
         // TODO: pull resetting up into a super-class
 
         // Call scheduleUpdate whenever the time is adjusted in the SimControl
-        this.sim.timeSlider.div.addEventListener("adjustTime", (e) => {
+        window.addEventListener("TimeSlider.moveShown", (e) => {
             this.scheduleUpdate();
         });
 
         // Call reset whenever the simulation is reset
-        this.sim.div.addEventListener("resetSim", (e) => {
+        window.addEventListener("SimControl.reset", (e) => {
             this.reset();
         });
 
@@ -76,6 +79,13 @@ export class Raster extends Component {
         );
         this.axes2d.axisY.tickValues([0, args.nNeurons]);
         this.axes2d.fitTicks(this);
+    }
+
+    get view(): ValueView {
+        if (this._view === null) {
+            this._view = new ValueView("?");
+        }
+        return this._view;
     }
 
     /**
@@ -143,8 +153,8 @@ export class Raster extends Component {
 
         this.label.style.width = width;
 
-        this.width = width;
-        this.height = height;
+        // this.width = width;
+        // this.height = height;
         this.div.style.width = width;
         this.div.style.height = height;
     }

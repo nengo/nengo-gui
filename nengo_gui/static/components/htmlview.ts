@@ -10,12 +10,15 @@
 
 import { DataStore } from "../datastore";
 // import * as utils from "../utils";
-import { Component } from "./base";
+import { Plot } from "./base";
+import { ValueView } from "./views/value";
 
-export class HTMLView extends Component {
+export class HTMLView extends Plot {
     dataStore;
     pdiv;
     sim;
+
+    protected _view: ValueView;
 
     constructor(parent, sim, args) {
         super(parent, args);
@@ -34,7 +37,7 @@ export class HTMLView extends Component {
         this.dataStore = new DataStore(1, this.sim, 0);
 
         // Call scheduleUpdate whenever the time is adjusted in the SimControl
-        this.sim.timeSlider.div.addEventListener("adjustTime", e => {
+        window.addEventListener("TimeSlider.moveShown", e => {
             this.scheduleUpdate();
         });
 
@@ -42,6 +45,13 @@ export class HTMLView extends Component {
             this.viewPort.scaleWidth(this.w),
             this.viewPort.scaleHeight(this.h)
         );
+    }
+
+    get view(): ValueView {
+        if (this._view === null) {
+            this._view = new ValueView("?");
+        }
+        return this._view;
     }
 
     /**
@@ -85,8 +95,8 @@ export class HTMLView extends Component {
             height = this.minHeight;
         }
 
-        this.width = width;
-        this.height = height;
+        // this.width = width;
+        // this.height = height;
         this.label.style.width = width;
 
         this.update();

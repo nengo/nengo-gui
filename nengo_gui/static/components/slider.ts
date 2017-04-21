@@ -20,11 +20,12 @@ import { Menu } from "../menu";
 import * as utils from "../utils";
 import * as viewport from "../viewport";
 import { InputDialogView } from "../views/modal";
-import { Component } from "./base";
+import { ValueView } from "./views/value";
+import { Widget } from "./base";
 import "./slider.css";
 import { SliderControl } from "./slidercontrol";
 
-export class Slider extends Component {
+export class Slider extends Widget {
     axTop: number;
     borderSize: number;
     dataStore: DataStore;
@@ -38,6 +39,8 @@ export class Slider extends Component {
     sliderHeight: number;
     sliders: SliderControl[];
     startValue: number[];
+
+    protected _view: ValueView;
 
     constructor(parent, sim, args) {
         super(parent, args);
@@ -98,11 +101,11 @@ export class Slider extends Component {
         }
 
         // Call scheduleUpdate whenever the time is adjusted in the SimControl
-        this.sim.timeSlider.div.addEventListener("adjustTime", e => {
+        window.addEventListener("TimeSlider.moveShown", e => {
             this.scheduleUpdate();
         });
 
-        this.sim.div.addEventListener("resetSim", e => {
+        window.addEventListener("SimControl.reset", e => {
             this.onResetSim();
         });
 
@@ -110,6 +113,13 @@ export class Slider extends Component {
             this.viewPort.scaleWidth(this.w),
             this.viewPort.scaleHeight(this.h)
         );
+    }
+
+    get view(): ValueView {
+        if (this._view === null) {
+            this._view = new ValueView("?");
+        }
+        return this._view;
     }
 
     setAxesGeometry(width, height) {

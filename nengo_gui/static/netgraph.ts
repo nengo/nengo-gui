@@ -18,7 +18,7 @@ import { Menu } from "./menu";
 import * as utils from "./utils";
 import { ViewPort } from "./viewport";
 import { Connection } from "./websocket";
-import { Component, ModelObj } from "./components/base";
+import { Component, ResizableComponent, Plot } from "./components/base";
 import { Value } from "./components/value";
 import { NetGraphView } from "./views/netgraph";
 
@@ -40,7 +40,7 @@ export class ComponentManager {
     components: {[uid: string]: Component} = {};
     children: {[uid: string]: Component[]} = {};
     parent: {[uid: string]: Component | null} = {};
-    values: Value[];
+    values: Value[] = [];
 
     add(component: Component, parent = null) {
         this.components[component.uid] = component;
@@ -77,9 +77,10 @@ export class ComponentManager {
     onresize = utils.throttle((widthScale: number, heightScale: number): void => {
         for (const uid in this.components) {
             const component = this.components[uid];
-            component.onresize(
-                component.width * widthScale, component.height * heightScale,
-            );
+            // TODO: Set component scaleToPixels
+            // component.onresize(
+            //     component.width * widthScale, component.height * heightScale,
+            // );
         }
     }, 66);
 
@@ -531,19 +532,30 @@ export class NetGraph {
     add(component: Component) {
         this.components.add(component);
         let group: SVGElement = this.view.root;
-        if (component instanceof ModelObj) {
-            group = this.view.items;
-
-            component.interactable.on("dragend", (event) => {
-                console.log("cool");
-                // component.view.constrainPosition();
-                // this.notify("pos", {
-                //     uid: component.uid, x: component.view.x, y: component.view.y
-                // });
-                // component.redraw();
+        // TODO: group should be part of comopnent i guess?
+        if (component instanceof ResizableComponent) {
+            component.interactable.on("dragend resizeend", (event) => {
+                // const info = {
+                //     height: this.h,
+                //     labelVisible: this.labelVisible,
+                //     width: this.w,
+                //     x: this.x,
+                //     y: this.y,
+                // };
+                // this.ws.send("config:" + JSON.stringify(info));
             })
-
         }
+
+        // -- Move element to top when clicked on
+        const raiseToTop = () => {
+            // In SVG, z-order is based on element location, so to raise
+            // to the top we re-add the element.
+            // The DOM automatically removes element that get added twice.
+            group.appendChild(component.view.root);
+        };
+        component.view.root.addEventListener("mousedown", raiseToTop);
+        component.view.root.addEventListener("touchstart", raiseToTop);
+
         group.appendChild(component.view.root);
         component.ondomadd();
     }

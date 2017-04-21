@@ -1,7 +1,7 @@
-import { ModelObj, ResizableModelObj } from "./base";
+import { Component, ResizableComponent } from "./base";
 import { NodeView, PassthroughNodeView } from "./views/node";
 
-export class PassthroughNode extends ModelObj {
+export class PassthroughNode extends Component {
     fixedHeight: number;
     fixedWidth: number;
 
@@ -15,7 +15,7 @@ export class PassthroughNode extends ModelObj {
     }
 }
 
-export class Node extends ResizableModelObj {
+export class Node extends ResizableComponent {
     htmlNode;
 
     protected _view: NodeView;

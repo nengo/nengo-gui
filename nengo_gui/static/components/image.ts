@@ -14,9 +14,10 @@ import * as d3 from "d3";
 
 import { DataStore } from "../datastore";
 import * as viewport from "../viewport";
-import { Component } from "./base";
+import { Plot } from "./base";
+import { ValueView } from "./views/value";
 
-export class Image extends Component {
+export class Image extends Plot {
     canvas;
     dataStore: DataStore;
     displayTime;
@@ -48,7 +49,7 @@ export class Image extends Component {
             ].join(""));
 
         // Call schedule_update whenever the time is adjusted in the SimControl
-        this.sim.timeSlider.div.addEventListener("adjustTime", e => {
+        window.addEventListener("TimeSlider.moveShown", e => {
             this.scheduleUpdate();
         });
 
@@ -73,6 +74,13 @@ export class Image extends Component {
             this.viewPort.scaleHeight(this.h)
         );
 
+    }
+
+    get view(): ValueView {
+        if (this._view === null) {
+            this._view = new ValueView("?");
+        }
+        return this._view;
     }
 
     /**
@@ -132,8 +140,8 @@ export class Image extends Component {
 
         this.label.style.width = width;
 
-        this.width = width;
-        this.height = height;
+        // this.width = width;
+        // this.height = height;
         this.div.style.width = width;
         this.div.style.height = height;
     }

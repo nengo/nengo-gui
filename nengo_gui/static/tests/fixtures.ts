@@ -30,11 +30,9 @@ function setDOMGlobals(document) {
     global["WebSocket"] = WebSocket;
     global["document"] = document;
     global["window"] = global["document"].defaultView;
-    // The following are needed for interact.js
-    ["navigator", "Element", "Event"].forEach(key => {
+    ["CustomEvent", "Element", "Event", "navigator"].forEach(key => {
         global[key] = global["window"][key];
     });
-    // We use the following types
     ["HTMLElement", "SVGElement"].forEach(key => {
         global[key] = () => {};
     });

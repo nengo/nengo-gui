@@ -6,12 +6,14 @@ var webpackConfig = require("./webpack.config");
 module.exports = (env) => {
     var config = webpackConfig(env);
 
+    // Style loader doesn't work in testing
+    config.module.rules[0].use.splice(0, 1);
     config.entry = glob.sync("./nengo_gui/**/tests/*.test.ts");
     config.externals = "jsdom";
     config.output = {
         filename: "nengo.test.js",
         libraryTarget: "commonjs",
-        path: "./nengo_gui/static/dist/",
+        path: path.resolve(__dirname, "./nengo_gui/static/dist/"),
         pathinfo: true,
     }
     config.target = "node";

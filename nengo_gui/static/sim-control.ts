@@ -9,9 +9,6 @@ import {
 } from "./views/sim-control";
 import { Connection, FastWSConnection } from "./websocket";
 
-const resetSim = new Event("resetSim");
-const adjustTime = new Event("adjustTime");
-
 /**
  * Control panel for a simulation.
  */
@@ -39,19 +36,16 @@ export class SimControl {
      * @param keptTime - How much time the time slider should keep.
      * @param shownTime - How much time the time slider should show.
      */
-    constructor(uid, keptTime, shownTime) {
+    constructor(uid, keptTime, shownTime: [number, number]) {
         this.uid = uid;
         if (uid[0] === "<") {
             console.warn("invalid uid for SimControl: " + uid);
         }
 
         this.view = new SimControlView("sim-control-" + this.uid);
-
-        this.timeSlider = new TimeSlider({
-            keptTime: keptTime,
-            shownTime: shownTime,
-            view: this.view.timeSlider,
-        });
+        this.timeSlider = new TimeSlider(
+            keptTime, shownTime, this.view.timeSlider,
+        );
         this.speedThrottle = new SpeedThrottle(this.view.speedThrottle);
 
         this.view.pause.onclick = event => {
@@ -297,23 +291,15 @@ export class TimeSlider {
     currentTime: number = 0.0;
 
     /**
-     * Left edge of the shownTime box.
-     */
-    firstShownTime: number;
-
-    /**
      * How much total time to store.
      *
      * This is also the width of the TimeSlider in seconds.
      */
     keptTime: number;
 
-    /**
-     * How much time to show in normal graphs.
-     *
-     * This is also the width of the shownTime box in seconds.
-     */
-    shownTime: number;
+    interactable;
+
+    shownTime: [number, number];
 
     /**
      * View associated with this TimeSlider.
@@ -326,16 +312,15 @@ export class TimeSlider {
     private keptScale: d3.scale.Linear<number, number>;
     private sliderAxis: d3.svg.Axis;
 
-    constructor({
-        keptTime: keptTime = 4.0,
-        shownTime: shownTime = 0.5,
-        view: view,
-    }) {
-        this.keptTime = keptTime;
+    constructor(
+        keptTime: number = 4.0,
+        shownTime: [number, number] = [-1.0, 0.0],
+        view: TimeSliderView,
+    ) {
         this.view = view;
+        this.keptTime = keptTime;
         this.shownTime = shownTime;
 
-        this.firstShownTime = this.currentTime - this.shownTime;
         this.keptScale = d3.scale.linear()
             .domain([0.0 - this.keptTime, 0.0]);
         this.sliderAxis = d3.svg.axis()
@@ -344,49 +329,43 @@ export class TimeSlider {
             .ticks(10);
 
         // Make the shown time draggable and resizable
-        const inBounds = event => {
+        const inBounds = (event) => {
             const relativeX = event.pageX - this.view.svgLeft;
             return relativeX >= 0 && relativeX <= this.view.svgWidth;
         };
-        interact(this.view.shownTime)
-            .draggable(true)
-            .resizable({
-                edges: {bottom: false, left: true, right: true, top: false},
-            })
-            .on("dragmove", event => {
-                if (inBounds(event)) {
-                    this.moveShown(
-                        this.toTime(this.firstShownPixel + event.dx)
-                    );
-                }
-            })
-            .on("resizemove", event => {
-                if (inBounds(event)) {
-                    const rect = event.deltaRect;
-                    const start = this.toTime(this.firstShownPixel + rect.left);
-                    const end = this.toTime(
-                        this.firstShownPixel + this.view.shownWidth + rect.right
-                    );
-                    this.resizeShown(start, end);
-                }
-            });
+        this.interactable = interact(this.view.shownTime);
+        this.interactable.draggable(true);
+        this.interactable.resizable({
+            edges: {bottom: false, left: true, right: true, top: false},
+        });
+        this.interactable.on("dragmove", event => {
+            if (inBounds(event)) {
+                this.moveShown(this.toTime(
+                    this.toPixel(this.shownTime[0]) + event.dx
+                ));
+            }
+        });
+        this.interactable.on("resizemove", event => {
+            if (inBounds(event)) {
+                const rect = event.deltaRect;
+                this.resizeShown(
+                    this.toTime(this.toPixel(this.shownTime[0]) + rect.left),
+                    this.toTime(this.toPixel(this.shownTime[1]) + rect.right),
+                );
+            }
+        });
 
         this.view.root.addEventListener("resetSim", event => {
             this.reset();
         });
 
-        // 66 ms throttle = 15 FPS update
         window.addEventListener("resize", utils.throttle(() => {
             const width = this.view.width;
-            this.view.shownWidth = width * this.shownTime / this.keptTime;
+            this.view.shownWidth = width * this.shownWidth / this.keptTime;
             this.keptScale.range([0, width]);
-            this.view.shownOffset = this.firstShownPixel;
+            this.view.shownOffset = this.toPixel(this.shownTime[0]);
             this.sliderAxis(d3.select(this.view.axis));
-        }, 66));
-    }
-
-    get firstShownPixel(): number {
-        return this.toPixel(this.firstShownTime);
+        }, 66)); // 66 ms throttle = 15 FPS update
     }
 
     get firstTime(): number {
@@ -394,7 +373,12 @@ export class TimeSlider {
     }
 
     get isAtEnd(): boolean {
-        return this.currentTime < this.firstShownTime + this.shownTime + 1e-9;
+        // TODO: is this really needed?
+        return this.currentTime < this.shownTime[1] + 1e-9;
+    }
+
+    get shownWidth(): number {
+        return this.shownTime[1] - this.shownTime[0];
     }
 
     /**
@@ -406,57 +390,43 @@ export class TimeSlider {
         const delta = time - this.currentTime; // Time since last addTime()
 
         if (delta < 0) {
-            this.view.root.dispatchEvent(resetSim);
+            window.dispatchEvent(new Event("SimControl.reset"));
             return;
         }
         this.currentTime = time;
-        this.firstShownTime = this.firstShownTime + delta;
+        this.moveShown(this.shownTime[0] + delta);
 
         // Update the limits on the time axis
         this.keptScale.domain([time - this.keptTime, time]);
 
         // Update the time axis display
         this.sliderAxis(d3.select(this.view.axis));
+
+        // Fire an event so datastores and components can update
+        window.dispatchEvent(new CustomEvent("TimeSlider.addTime", {
+            detail: {
+                currentTime: this.currentTime,
+                keptTime: this.keptTime,
+            }
+        }));
     }
 
     jumpToEnd() {
-        this.moveShown(this.currentTime - this.shownTime);
+        this.moveShown(this.currentTime - this.shownWidth);
     }
 
     moveShown(time: number) {
-        this.firstShownTime = utils.clip(
-            time,
-            this.firstTime,
-            this.currentTime - this.shownTime
+        time = utils.clip(
+            time, this.firstTime, this.currentTime - this.shownWidth
         );
-        this.view.shownOffset = this.firstShownPixel;
-        this.view.root.dispatchEvent(adjustTime);
-    }
+        this.view.shownOffset = this.toPixel(time);
+        const diff = time - this.shownTime[0];
+        this.shownTime = [this.shownTime[0] + diff, this.shownTime[1] + diff];
 
-    resizeShown(startTime: number, endTime: number) {
-        startTime = utils.clip(
-            startTime,
-            this.firstTime,
-            this.toTime(
-                this.toPixel(this.firstShownTime + this.shownTime)
-                    - TimeSlider.minPixelWidth
-            ),
-        );
-        endTime = utils.clip(
-            endTime,
-            this.toTime(this.toPixel(startTime) + TimeSlider.minPixelWidth),
-            this.currentTime,
-        );
-
-        // Update times
-        this.firstShownTime = startTime;
-        this.shownTime = endTime - startTime;
-
-        // Adjust width
-        this.view.shownWidth = this.toPixel(endTime) - this.toPixel(startTime);
-
-        // Adjust offset
-        this.moveShown(this.firstShownTime);
+        // Fire an event so datastores and components can update
+        window.dispatchEvent(new CustomEvent("TimeSlider.shownTime", {
+            detail: {shownTime: this.shownTime}
+        }));
     }
 
     reset() {
@@ -467,6 +437,28 @@ export class TimeSlider {
             this.currentTime - this.keptTime, this.currentTime,
         ]);
         this.sliderAxis(d3.select(this.view.axis));
+    }
+
+    resizeShown(startTime: number, endTime: number) {
+        startTime = utils.clip(
+            startTime,
+            this.firstTime,
+            this.toTime(
+                this.toPixel(this.shownTime[1]) - TimeSlider.minPixelWidth
+            ),
+        );
+        endTime = utils.clip(
+            endTime,
+            this.toTime(this.toPixel(startTime) + TimeSlider.minPixelWidth),
+            this.currentTime,
+        );
+
+        // Update times
+        this.shownTime = [startTime, endTime];
+        // Adjust width
+        this.view.shownWidth = this.toPixel(endTime) - this.toPixel(startTime);
+        // Adjust offset
+        this.moveShown(startTime);
     }
 
     toPixel(time: number): number {

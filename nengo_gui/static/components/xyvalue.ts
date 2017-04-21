@@ -21,11 +21,12 @@ import * as $ from "jquery";
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
 import { InputDialogView } from "../views/modal";
-import { Component } from "./base";
-import { XYAxes } from "./xy-axes";
+import { ValueView } from "./views/value";
+import { Plot } from "./base";
+import { XYAxes } from "./axes";
 import "./xyvalue.css";
 
-export class XYValue extends Component {
+export class XYValue extends Plot {
     axes2d;
     dataStore;
     indexX;
@@ -36,6 +37,8 @@ export class XYValue extends Component {
     recentCircle;
     sim;
     warningText;
+
+    protected _view: ValueView;
 
     constructor(parent, sim, args) {
         super(parent, args);
@@ -55,12 +58,12 @@ export class XYValue extends Component {
         // TODO: pull resetting up into a super-class
 
         // Call scheduleUpdate whenever the time is adjusted in the SimControl
-        this.sim.timeSlider.div.addEventListener("adjustTime", (e) => {
+        window.addEventListener("TimeSlider.moveShown", (e: CustomEvent) => {
             this.scheduleUpdate();
         });
 
         // Call reset whenever the simulation is reset
-        this.sim.div.addEventListener("resetSim", (e) => {
+        window.addEventListener("SimControl.reset", (e) => {
             this.reset();
         });
 
@@ -94,6 +97,13 @@ export class XYValue extends Component {
             this.viewPort.scaleWidth(this.w),
             this.viewPort.scaleHeight(this.h),
         );
+    }
+
+    get view(): ValueView {
+        if (this._view === null) {
+            this._view = new ValueView("?");
+        }
+        return this._view;
     }
 
     /**
@@ -165,8 +175,8 @@ export class XYValue extends Component {
         this.update();
 
         this.label.style.width = width;
-        this.width = width;
-        this.height = height;
+        // this.width = width;
+        // this.height = height;
         this.div.style.width = width;
         this.div.style.height = height;
         this.recentCircle.attr("r", this.getCircleRadius());
