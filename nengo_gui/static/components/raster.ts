@@ -21,7 +21,7 @@ import { InputDialogView } from "../views/modal";
 import { ValueView } from "./views/value";
 import { Plot } from "./base";
 import "./raster.css";
-import { TimeAxes } from "./axes";
+import { Axes } from "./axes";
 
 export class Raster extends Plot {
     axes2d;
@@ -40,7 +40,7 @@ export class Raster extends Plot {
         // For storing the accumulated data
         this.dataStore = new DataStore(1, 0);
 
-        this.axes2d = new TimeAxes(this.div, args);
+        this.axes2d = new Axes(this.div, args);
         this.axes2d.scaleY.domain([0, args.nNeurons]);
 
         // TODO: pull resetting up into a super-class

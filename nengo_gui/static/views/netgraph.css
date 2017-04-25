@@ -3,17 +3,10 @@ svg.netgraph {
 
     text {
         cursor: default;
-        dominant-baseline: text-before-edge;
         text-anchor: middle;
 
         &:active {
             cursor: move;
-        }
-    }
-
-    line {
-        stroke: black {
-            width: 2px;
         }
     }
 

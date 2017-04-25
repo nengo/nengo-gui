@@ -583,9 +583,7 @@ export abstract class Plot extends ResizableComponent {
 
         // For storing the accumulated data
         this.datastore = new DataStore(this.dimensions, 0.0);
-
     }
-
 
     addMenuItems() {
 

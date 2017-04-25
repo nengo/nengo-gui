@@ -55,7 +55,9 @@ export class NengoDebug {
         this.live.push(obj);
         return {
             eval: (command: string) => {
-                eval(command);
+                const retval =  eval(command);
+                console.log(retval);
+                return retval;
             },
             obj: obj,
             remove: () => {

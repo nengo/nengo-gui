@@ -21,8 +21,7 @@ import * as utils from "../utils";
 import { InputDialogView } from "../views/modal";
 import { ValueView } from "./views/value";
 import { Plot } from "./base";
-import { TimeAxes } from "./axes";
-import "./value.css";
+import { Axes } from "./axes";
 
 export class Value extends Plot {
     axes;
@@ -58,14 +57,22 @@ export class Value extends Plot {
         this.displayTime = displayTime;
         this.synapse = synapse;
 
-        this.axes = new TimeAxes(
-            this.view.axes,
+        this.axes = new Axes(
+            this.view,
             width,
             height,
-            0.0, // minValue,
+            -1.0, // minValue,
             1.0, // maxValue,
-            4.0, // timeVisible,
         );
+
+        this.interactable.on("resizemove", (event) => {
+            // Resizing the view happens in the superclass; we update axes here
+            const [width, height] = this.view.scale;
+
+            this.axes.scale = [
+                width * this.scaleToPixels, height * this.scaleToPixels
+            ];
+        });
 
         window.addEventListener(
             "TimeSlider.moveShown", utils.throttle((e: CustomEvent) => {
@@ -102,7 +109,7 @@ export class Value extends Plot {
         //     this.viewPort.scaleHeight(this.h),
         // );
 
-        this.axes.yTicks = [minValue, maxValue];
+        this.axes.y.lims = [minValue, maxValue];
 
         // TODO: legend
         // this.legend = document.createElement("div");
@@ -268,6 +275,11 @@ export class Value extends Plot {
     //     this.yLim(config.minValue, config.maxValue);
     //     Component.prototype.updateLayout.call(this, config);
     // }
+
+    ondomadd() {
+        super.ondomadd();
+        this.axes.ondomadd();
+    }
 
     setRange() {
         const range = this.axes.scaleY.domain();

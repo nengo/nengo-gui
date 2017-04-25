@@ -1,7 +1,9 @@
 svg {
     .crosshair {
-        stroke: black {
-            width: 0.5;
+        line {
+            stroke: black {
+                width: 0.5;
+            }
         }
 
         text {

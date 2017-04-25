@@ -1,5 +1,5 @@
 /**
- * Test the Axes2D class.
+ * Test the Axes class.
  */
 
 import { dom, h } from "maquette";
@@ -7,7 +7,7 @@ import * as test from "tape";
 
 import * as fixtures from "../../tests/fixtures";
 
-import { Axes2D } from "../axes";
+import { Axes } from "../axes";
 
 // function axesNode() {
 //     return h("div", [h("svg", {height: "100%", width: "100%"}, [
@@ -63,11 +63,11 @@ import { Axes2D } from "../axes";
 //     ]);
 // }
 
-// test("Axes2D.setAxesGeometry", assert => {
+// test("Axes.setAxesGeometry", assert => {
 //     const document = new fixtures.Document(assert);
 //     const div = document.document.createElement("div");
 
-//     const axes = new Axes2D(div, {
+//     const axes = new Axes(div, {
 //         "height": 100,
 //         "maxValue": 1,
 //         "minValue": 0,

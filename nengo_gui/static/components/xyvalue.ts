@@ -23,7 +23,7 @@ import * as utils from "../utils";
 import { InputDialogView } from "../views/modal";
 import { ValueView } from "./views/value";
 import { Plot } from "./base";
-import { XYAxes } from "./axes";
+import { Axes } from "./axes";
 import "./xyvalue.css";
 
 export class XYValue extends Plot {
@@ -49,7 +49,7 @@ export class XYValue extends Plot {
         // For storing the accumulated data
         this.dataStore = new DataStore(this.nLines, 0);
 
-        this.axes2d = new XYAxes(this.div, args);
+        this.axes2d = new Axes(this.div, args);
 
         // The two indices of the multi-dimensional data to display
         this.indexX = args.indexX;

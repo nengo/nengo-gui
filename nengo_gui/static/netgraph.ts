@@ -533,18 +533,22 @@ export class NetGraph {
         this.components.add(component);
         let group: SVGElement = this.view.root;
         // TODO: group should be part of comopnent i guess?
-        if (component instanceof ResizableComponent) {
-            component.interactable.on("dragend resizeend", (event) => {
-                // const info = {
-                //     height: this.h,
-                //     labelVisible: this.labelVisible,
-                //     width: this.w,
-                //     x: this.x,
-                //     y: this.y,
-                // };
-                // this.ws.send("config:" + JSON.stringify(info));
-            })
+        if (component instanceof Plot) {
+            group = this.view.plots;
+        } else {
+            group = this.view.items;
         }
+
+        component.interactable.on("dragend resizeend", (event) => {
+            // const info = {
+            //     height: this.h,
+            //     labelVisible: this.labelVisible,
+            //     width: this.w,
+            //     x: this.x,
+            //     y: this.y,
+            // };
+            // this.ws.send("config:" + JSON.stringify(info));
+        })
 
         // -- Move element to top when clicked on
         const raiseToTop = () => {
