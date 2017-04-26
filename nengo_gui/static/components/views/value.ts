@@ -6,7 +6,7 @@ import {
 
 import { AxesView } from "./axes";
 import { ResizableComponentView } from "./base";
-import "./value.css";
+// import "./value.css";
 import * as utils from "../../utils";
 
 export class ValueView extends ResizableComponentView {
@@ -23,9 +23,10 @@ export class ValueView extends ResizableComponentView {
         this.body = this.axes.root;
         const paths = new Array(dimensions);
 
-        const node = h("g.plot.value", new Array(dimensions).map(
-            (_, i) => (h("path.line", {stroke: this.colors[i]}))
-        ));
+        const node =
+            h("g.plot.value", Array.apply(null, Array(dimensions)).map(
+                (_, i) => (h("path.line", {stroke: this.colors[i]}))
+            ));
         this.plot = utils.domCreateSVG(node) as SVGGElement;
         this.body.appendChild(this.plot);
         this.root.appendChild(this.body);
@@ -34,16 +35,20 @@ export class ValueView extends ResizableComponentView {
         ) as Array<SVGPathElement>;
     }
 
+    set lines(val: Array<string>) {
+        this.paths.forEach((path, i) => {
+            path.setAttribute("d", val[i]);
+        });
+    }
+
     get scale(): [number, number] {
-        console.log(this.overlayScale);
         return this.overlayScale;
     }
 
     set scale(val: [number, number]) {
         const width = Math.max(ResizableComponentView.minWidth, val[0]);
         const height = Math.max(ResizableComponentView.minHeight, val[1]);
-        console.log("set scale");
         this.overlayScale = [width, height];
-        // this.axes.scale = [width, height];
     }
+
 }

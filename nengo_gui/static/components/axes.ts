@@ -61,10 +61,13 @@ export class Axis {
         this.axis.outerTickSize(val);
     }
 
+    pixelAt(value: number) {
+        return this._scale(value);
+    }
+
     valueAt(pixel: number) {
         return this._scale.invert(pixel);
     }
-
 }
 
 export class Axes {

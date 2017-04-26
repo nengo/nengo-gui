@@ -205,6 +205,8 @@ export abstract class Component {
         this._left = left;
         this._top = top;
 
+        this.dimensions = dimensions;
+
         this.miniItem = miniItem;
 
         this.menu = new Menu();

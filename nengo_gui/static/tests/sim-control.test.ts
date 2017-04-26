@@ -8,7 +8,7 @@ import { MockConnection } from "../websocket";
 
 test("SimControl.status", assert => {
     const dom = new fixtures.DOM(assert);
-    const sim = new SimControl("uid", 4.0, 0.5);
+    const sim = new SimControl("uid", 4.0, [-0.5, 0.0]);
 
     assert.equal(sim.status, "paused");
     assert.equal(sim.paused, true);
@@ -26,7 +26,7 @@ test("SimControl.status", assert => {
 
 test("SimControl.attach", assert => {
     const dom = new fixtures.DOM(assert);
-    const sim = new SimControl("uid", 4.0, 0.5);
+    const sim = new SimControl("uid", 4.0, [-0.5, 0.0]);
 
     const conn = new MockConnection();
     sim.attach(conn);
@@ -41,7 +41,7 @@ test("SimControl.attach", assert => {
 
 test("SimControl sends", assert => {
     const dom = new fixtures.DOM(assert);
-    const sim = new SimControl("uid", 4.0, 0.5);
+    const sim = new SimControl("uid", 4.0, [-0.5, 0.0]);
 
     const conn = new MockConnection();
     sim.attach(conn);
@@ -70,7 +70,7 @@ test("SimControl sends", assert => {
 
 test("TimeSlider.addTime", assert => {
     const dom = new fixtures.DOM(assert);
-    const ts = new SimControl("uid", 4.0, 0.5).timeSlider;
+    const ts = new SimControl("uid", 4.0, [-0.5, 0.0]).timeSlider;
     const tolerance = 1e-5;
 
     let firstShown = ts.shownTime[0];
@@ -91,7 +91,7 @@ test("TimeSlider.addTime", assert => {
 
 test("TimeSlider.reset", assert => {
     const dom = new fixtures.DOM(assert);
-    const sim = new SimControl("uid", 4.0, 0.5);
+    const sim = new SimControl("uid", 4.0, [-0.5, 0.0]);
     const ts = sim.timeSlider;
 
     ts.addTime(0.1);

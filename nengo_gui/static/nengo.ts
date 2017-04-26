@@ -56,7 +56,9 @@ export class NengoDebug {
         return {
             eval: (command: string) => {
                 const retval =  eval(command);
-                console.log(retval);
+                if (retval) {
+                    console.log(retval);
+                }
                 return retval;
             },
             obj: obj,

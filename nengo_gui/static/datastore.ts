@@ -14,18 +14,18 @@ export class DataStore {
     times: number[] = [];
     synapse: number;
 
+    protected _dims: number;
+
     constructor(dims: number, synapse: number) {
+        this._dims = dims;
         this.synapse = synapse; // TODO: get from SimControl
-        for (let i = 0; i < dims; i++) {
-            this.data.push([]);
-        }
 
         // Listen for updates to the TimeSlider
         window.addEventListener(
             "TimeSlider.addTime", utils.throttle((event: CustomEvent) => {
                 // How much has the most recent time exceeded how much is kept?
                 const limit = event.detail.currentTime - event.detail.keptTime;
-                const extra = DataStore.indexBefore(this.times, limit);
+                const extra = DataStore.nearestIndex(this.times, limit);
 
                 // Remove the extra data
                 if (extra > 0) {
@@ -36,15 +36,15 @@ export class DataStore {
     }
 
     get dims(): number {
+        return this._dims;
+    }
+
+    get length(): number {
         return this.data.length;
     }
 
-    get points(): number {
-        return this.data[0].length;
-    }
-
     /**
-     * Returns the index in `array` before `element`.
+     * Returns the index in `array` at `element`, or before it.
      *
      * This is helpful for determining where to insert an element,
      * and for finding indices between two elements.
@@ -56,7 +56,7 @@ export class DataStore {
      *
      * Returns 0 if element is less than all elements in array.
      */
-    static indexBefore(array: number[], element: number) {
+    static nearestIndex(array: number[], element: number) {
         let [low, high] = [0, array.length];
 
         while (high > low) {
@@ -77,35 +77,17 @@ export class DataStore {
         return 0;
     }
 
-    dataAtIndex(beginIndex: number, endIndex?: number) {
-        const sliced = [];
-        this.data.forEach(dimdata => {
-            if (endIndex) {
-                sliced.push(dimdata.slice(beginIndex, endIndex));
-            } else {
-                sliced.push(dimdata[beginIndex]);
-            }
-        });
-        return sliced;
-    }
-
-    dataAtTime(beginTime: number, endTime?: number) {
-        const beginIndex = DataStore.indexBefore(this.times, beginTime);
-        const endIndex = endTime ?
-            DataStore.indexBefore(this.times, endTime) + 1 : undefined;
-        return this.dataAtIndex(beginIndex, endIndex);
-    }
-
     /**
-     * Add a set of data.
+     * Add a row of data.
      *
      * @param {array} row - dims+1 data points, with time as the first one
      */
-    push(row: number[]) {
-        const [time, newdata] = [row[0], row.slice(1)];
+    add(row: number[]) {
+        console.assert(row.length - 1 === this.dims);
+        const time = row[0];
         // If we get data out of order, wipe out the later data
         if (time < this.times[this.times.length - 1]) {
-            this.remove(DataStore.indexBefore(this.times, time));
+            this.remove(DataStore.nearestIndex(this.times, time));
         }
 
         // Compute lowpass filter (value = value*decay + newValue*(1-decay)
@@ -115,22 +97,21 @@ export class DataStore {
             decay = Math.exp(-dt / this.synapse);
         }
 
-        // Put filtered values into data array
-        if (decay === 0.0) {
-            this.data.forEach((dimdata, dim) => {
-                dimdata.push(newdata[dim]);
-            });
-        } else {
-            this.data.forEach((dimdata, dim) => {
-                if (dimdata[dimdata.length - 1] === null) {
-                    dimdata.push(newdata[dim]);
+        // Filter new data
+        let newdata = row.slice(1);
+        const lastdata = this.data[this.data.length - 1];
+        if (decay > 0.0) {
+            newdata = newdata.map((datum, dim) => {
+                if (lastdata[dim] === null) {
+                    return datum;
                 } else {
-                    dimdata.push(newdata[dim] * (1 - decay) +
-                                 dimdata[dimdata.length - 1] * decay);
+                    const lastdatum = lastdata[dim];
+                    return datum * (1 - decay) + lastdatum * decay;
                 }
             });
         }
-        // Store the time as well
+        this.data.push([time].concat(newdata));
+        // Also keep a separate times list (for fast lookups)
         this.times.push(time);
     }
 
@@ -147,16 +128,27 @@ export class DataStore {
     remove(start: number, deleteCount?: number) {
         // TODO: try to remove this weird if statement
         if (deleteCount) {
+            this.data.splice(start, deleteCount);
             this.times.splice(start, deleteCount);
-            this.data.forEach(dimdata => {
-                dimdata.splice(start, deleteCount);
-            });
         } else {
+            this.data.splice(start);
             this.times.splice(start);
-            this.data.forEach(dimdata => {
-                dimdata.splice(start);
-            });
         }
+    }
+
+    slice(beginIndex: number, endIndex?: number) {
+        if (endIndex) {
+            return this.data.slice(beginIndex, endIndex);
+        } else {
+            return this.data[beginIndex];
+        }
+    }
+
+    timeSlice(beginTime: number, endTime?: number) {
+        const beginIndex = DataStore.nearestIndex(this.times, beginTime);
+        const endIndex = endTime ?
+            DataStore.nearestIndex(this.times, endTime) + 1 : undefined;
+        return this.slice(beginIndex, endIndex);
     }
 }
 
@@ -175,24 +167,23 @@ export class DataStore {
  * @param {float} synapse - the filter to apply to the data
  */
 export class FlexibleDataStore extends DataStore {
+
     get dims(): number {
-        return this.data.length;
+        return this._dims;
     }
 
-    set dims(dimVal: number) {
-        const nullArray = function(length: number) {
-            return Array.apply(null, Array(length)).map(() => {return null;});
-        }
+    set dims(val: number) {
+        const newDims = val - this._dims;
 
-        const prevDims = this.dims;
-        if (prevDims < dimVal) {
-            for (let i = prevDims; i < dimVal; i++) {
-                this.data.push(nullArray(this.points));
-            }
-        } else if (prevDims > dimVal) {
-            console.warn("Removed " + (prevDims - dimVal) + " dimension(s).");
-            this.data.splice(dimVal);
+        if (newDims > 0) {
+            const nulls = Array.apply(null, Array(newDims)).map(() => null);
+            this.data = this.data.map(row => row.concat(nulls));
+        } else if (newDims < 0) {
+            console.warn(`Removed ${Math.abs(newDims)} dimension(s).`);
+            // + 2 because time is dim 0, and end is not included
+            this.data = this.data.map(row => row.slice(0, val + 2));
         }
+        this._dims = val;
     }
 
     /**
@@ -200,11 +191,10 @@ export class FlexibleDataStore extends DataStore {
      *
      * @param {array} row - dims+1 data points, with time as the first one
      */
-    push(row: number[]) {
-        const [time, newdata] = [row[0], row.slice(1)];
-        if (newdata.length !== this.dims) {
-            this.dims = newdata.length;
+    add(row: number[]) {
+        if (row.length - 1 !== this.dims) {
+            this.dims = row.length - 1;
         }
-        super.push(row);
+        super.add(row);
     }
 }

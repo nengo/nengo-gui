@@ -355,7 +355,7 @@ export class TimeSlider {
             }
         });
 
-        this.view.root.addEventListener("resetSim", event => {
+        window.addEventListener("SimControl.reset", event => {
             this.reset();
         });
 

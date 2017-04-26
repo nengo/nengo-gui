@@ -24,13 +24,12 @@ import { Plot } from "./base";
 import { Axes } from "./axes";
 
 export class Value extends Plot {
-    axes;
+    axes: Axes;
     displayTime;
     legend: HTMLDivElement;
     legendLabels: string[];
     line;
     nLines: number;
-    path;
     _showLegend: boolean;
     synapse;
 
@@ -47,13 +46,12 @@ export class Value extends Plot {
         displayTime: number,
         synapse: number,
         miniItem = null,
-        nLines = 1,
         minValue: number = -1,
         maxValue: number = 1,
     ) {
         super(left, top, width, height, parent, uid, dimensions, miniItem);
 
-        this.nLines = nLines;
+        this.nLines = dimensions;
         this.displayTime = displayTime;
         this.synapse = synapse;
 
@@ -61,8 +59,8 @@ export class Value extends Plot {
             this.view,
             width,
             height,
-            -1.0, // minValue,
-            1.0, // maxValue,
+            minValue,
+            maxValue,
         );
 
         this.interactable.on("resizemove", (event) => {
@@ -78,10 +76,10 @@ export class Value extends Plot {
             "TimeSlider.moveShown", utils.throttle((e: CustomEvent) => {
                 // Determine visible range from the SimControl
                 const [t1, t2] = e.detail.shownTime;
-                this.axes.timeRange = [t1, t2];
+                this.axes.x.lims = [t1, t2];
                 // Update the lines
-                const shownData = this.datastore.dataAtTime(t1, t2);
-                this.path.data(shownData).attr("d", this.line);
+                const shownData = this.datastore.timeSlice(t1, t2);
+                this.view.lines = [this.line(shownData)];
             }, 50) // Update once every 50 ms
         );
         window.addEventListener("SimControl.reset", (e) => {
@@ -90,26 +88,18 @@ export class Value extends Plot {
 
         // Create the lines on the plots
         this.line = d3.svg.line();
-        // TODO: hopefully the moveShown takes care of this?
-        // this.line.x((d, i) => {
-        //     return this.axes.scaleX(
-        //         this.datastore.times[i + this.datastore.firstShownIndex],
-        //     );
-        // });
-        this.line.y((d) => {
-            return this.axes.scaleY(d);
+        this.line.x((d) => {
+            return this.axes.x.pixelAt(d[0]);
         });
-        this.path = d3.select(this.view.plot)
-            .selectAll("path")
-            .data(this.datastore.data);
+        this.line.y((d) => {
+            return this.axes.y.pixelAt(d.slice(1));
+        });
 
         // TODO: onresize
         // this.onresize(
         //     this.viewPort.scaleWidth(this.w),
         //     this.viewPort.scaleHeight(this.h),
         // );
-
-        this.axes.y.lims = [minValue, maxValue];
 
         // TODO: legend
         // this.legend = document.createElement("div");
@@ -162,20 +152,20 @@ export class Value extends Plot {
     /**
      * Receive new line data from the server.
      */
-    // onMessage(event) {
-    //     let data = new Float32Array(event.data);
-    //     data = Array.prototype.slice.call(data);
-    //     const size = this.nLines + 1;
-    //     // Since multiple data packets can be sent with a single event,
-    //     // make sure to process all the packets.
-    //     while (data.length >= size) {
-    //         this.datastore.push(data.slice(0, size));
-    //         data = data.slice(size);
-    //     }
-    //     if (data.length > 0) {
-    //         console.warn("extra data: " + data.length);
-    //     }
-    // }
+    add(data: Array<number>) {
+        // TODO: handle this in the websocket code
+        // const size = this.nLines + 1;
+        // // Since multiple data packets can be sent with a single event,
+        // // make sure to process all the packets.
+        // while (data.length >= size) {
+        //     this.datastore.push(data.slice(0, size));
+        //     data = data.slice(size);
+        // }
+        // if (data.length > 0) {
+        //     console.warn("extra data: " + data.length);
+        // }
+        this.datastore.add(data);
+    }
 
     /**
      * Adjust the graph layout due to changed size.
@@ -272,13 +262,17 @@ export class Value extends Plot {
     // }
 
     // updateLayout(config) {
-    //     this.yLim(config.minValue, config.maxValue);
+    //     this.axes.y.lim = [config.minValue, config.maxValue];
     //     Component.prototype.updateLayout.call(this, config);
     // }
 
     ondomadd() {
         super.ondomadd();
         this.axes.ondomadd();
+    }
+
+    reset() {
+        this.datastore.reset();
     }
 
     setRange() {
@@ -297,7 +291,7 @@ export class Value extends Plot {
                 const newRange = modal.input.value.split(",");
                 const min = parseFloat(newRange[0]);
                 const max = parseFloat(newRange[1]);
-                this.yLim(min, max);
+                this.axes.y.lim = [min, max];
                 // this.saveLayout();
                 this.axes.axisY.tickValues([min, max]);
                 this.axes.fitTicks(this);
@@ -330,17 +324,6 @@ export class Value extends Plot {
         });
         document.body.appendChild(modal.root);
         modal.show();
-    }
-
-    // TODO: move to axes
-    yLim(min, max) {
-        this.axes.scaleY.domain([min, max]);
-        this.axes.axisY(this.axes.view.axisY);
-    }
-
-    reset() {
-        this.datastore.reset();
-
     }
 
     setSynapseDialog() {

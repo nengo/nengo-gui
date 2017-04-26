@@ -5,9 +5,7 @@ svg {
 
     .line {
         fill: none;
-        stroke: black {
-            width: 1.5;
-        }
+        stroke-width: 1.5;
     }
 
     .plots {
@@ -26,13 +24,6 @@ svg {
 
         .label {
             font: 1em normal sans-serif;
-        }
-
-        .line {
-            fill: none;
-            stroke: black {
-                width: 1.5px;
-            }
         }
 
         text {
