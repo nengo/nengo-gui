@@ -77,6 +77,14 @@ export function clip(x: number, low: number, high: number) {
     return x;
 }
 
+export function emptyArray(length: number) {
+    return Array.apply(null, new Array(length));
+}
+
+export function toArray(collection: NodeListOf<any>): Array<any> {
+    return Array.prototype.slice.call(collection);
+}
+
 export interface Shape {
     width: number;
     height: number;
@@ -114,62 +122,6 @@ export function disable_editor() {
     document.getElementById("#Save_file").setAttribute("display", "none");
     document.getElementById("#Font_increase").setAttribute("display", "none");
     document.getElementById("#Font_decrease").setAttribute("display", "none");
-}
-
-/**
- * Draw a legend.
- *
- * @param {HTMLElement} parent - The parent element.
- * @param {string[]} labels - Legend labels.
- * @param {function} color_func - Function to choose colors.
- * @param {string} uid - uid associated with the Value component.
- * @returns {SVGElement} The created SVG element.
- */
-export function draw_legend(parent, labels, colorFunc, uid) {
-    // "20" is around the size of the font
-    const legendSVG = d3.select(parent)
-        .append("svg")
-        .attr("width", 150)
-        .attr("height", 20 * labels.length)
-        .attr("id", "legend" + uid);
-
-    if (labels.length === 0) {
-        return legendSVG;
-    }
-
-    legendSVG.selectAll("rect")
-        .data(labels)
-        .enter()
-        .append("rect")
-        .attr("x", 0)
-        .attr("y", (d, i) => {
-            return i * 20;
-        }).attr("class", "legend-label")
-        .attr("width", 10)
-        .attr("height", 10)
-        .style("fill", colorFunc);
-
-    legendSVG.selectAll("text")
-        .data(labels)
-        .enter()
-        .append("text")
-        .attr("x", 15)
-        .attr("y", (d, i) => {
-            return i * 20 + 9;
-        }).attr("class", "legend-label")
-        .text((d, i) => { // TODO: ensure html and text give same result
-            return labels[i];
-        });
-
-    // Expand the width of the svg to the length of the longest string
-    const labelList = $("#legend" + uid + " .legend-label").toArray();
-    const longestLabel = Math.max.apply(Math, labelList.map(o => {
-        return o.getBoundingClientRect().width;
-    }));
-    // "50" is for the similarity measure that is around three characters wide
-    legendSVG.attr("width", longestLabel + 50);
-
-    return legendSVG;
 }
 
 /**

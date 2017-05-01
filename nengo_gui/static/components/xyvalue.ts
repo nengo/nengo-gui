@@ -1,170 +1,92 @@
-/**
- * Line graph showing decoded values over time.
- *
- * @constructor
- * @param {DOMElement} parent - the exylement to add this component to
- * @param {SimControl} sim - the simulation controller
- * @param {dict} args - A set of constructor arguments (see Component)
- * @param {int} args.n_lines - number of decoded values
- * @param {float} args.min_value - minimum value on x-axis and y-axis
- * @param {float} args.max_value - maximum value on x-axis and y-axis
- * @param {SimControl} args.sim - the simulation controller
- *
- * XYValue constructor is called by python server when a user requests a plot
- * or when the config file is making graphs. Server request is handled in
- * netgraph.js {.on_message} function.
- */
-
 import * as d3 from "d3";
 import * as $ from "jquery";
 
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
 import { InputDialogView } from "../views/modal";
-import { ValueView } from "./views/value";
-import { Plot } from "./base";
-import { Axes } from "./axes";
-import "./xyvalue.css";
+import { XYValueView } from "./views/xyvalue";
+import { Axes, Plot } from "./base";
 
 export class XYValue extends Plot {
-    axes2d;
-    dataStore;
-    indexX;
-    indexY;
-    invalidDims;
-    nLines;
-    path;
-    recentCircle;
-    sim;
-    warningText;
 
-    protected _view: ValueView;
+    line: d3.svg.Line<Array<number>>;
+    protected _index: [number, number] = [0, 1];
+    protected _view: XYValueView;
 
-    constructor(parent, sim, args) {
-        super(parent, args);
-
-        this.nLines = args.nLines || 1;
-        this.sim = sim;
-
-        // For storing the accumulated data
-        this.dataStore = new DataStore(this.nLines, 0);
-
-        this.axes2d = new Axes(this.div, args);
-
-        // The two indices of the multi-dimensional data to display
-        this.indexX = args.indexX;
-        this.indexY = args.indexY;
-
-        // TODO: pull resetting up into a super-class
-
-        // Call scheduleUpdate whenever the time is adjusted in the SimControl
-        window.addEventListener("TimeSlider.moveShown", (e: CustomEvent) => {
-            this.scheduleUpdate();
-        });
-
-        // Call reset whenever the simulation is reset
-        window.addEventListener("SimControl.reset", (e) => {
-            this.reset();
-        });
-
-        // Create the lines on the plots
-        d3.svg.line()
-            .x((d, i) => {
-                return this.axes2d
-                    .scaleX(this.dataStore.data[this.indexX][i]);
-            }).y((d) => {
-                return this.axes2d.scaleY(d);
-            });
-        this.path = this.axes2d.svg.append("g")
-            .selectAll("path")
-            .data([this.dataStore.data[this.indexY]]);
-        this.path.enter().append("path")
-            .attr("class", "line")
-            .style("stroke", utils.makeColors(1));
-
-        // Create a circle to track the most recent data
-        this.recentCircle = this.axes2d.svg.append("circle")
-            .attr("r", this.getCircleRadius())
-            .attr("cx", this.axes2d.scaleX(0))
-            .attr("cy", this.axes2d.scaleY(0))
-            .style("fill", utils.makeColors(1)[0])
-            .style("fill-opacity", 0);
-
-        this.invalidDims = false;
-
-        this.axes2d.fitTicks(this);
-        this.onresize(
-            this.viewPort.scaleWidth(this.w),
-            this.viewPort.scaleHeight(this.h),
+    constructor(
+        left: number,
+        top: number,
+        width: number,
+        height: number,
+        parent: string,
+        uid: string,
+        dimensions: number,
+        synapse: number,
+        miniItem = null,
+        index: [number, number] = [0, 1],
+        xlim: [number, number] = [-1, 1],
+        ylim: [number, number] = [-1, 1],
+    ) {
+        super(
+            left,
+            top,
+            width,
+            height,
+            parent,
+            uid,
+            dimensions,
+            synapse,
+            miniItem,
+            xlim,
+            ylim
         );
+        this.index = index;
+        this.line = d3.svg.line();
+        this.line.x((d) => this.axes.x.pixelAt(d[this._index[0] + 1]));
+        this.line.y((d) => this.axes.y.pixelAt(d[this._index[1] + 1]));
     }
 
-    get view(): ValueView {
+    get index(): [number, number] {
+        return this._index;
+    }
+
+    set index(val: [number, number]) {
+        if (val[0] >= this.dimensions || val[1] >= this.dimensions) {
+            console.error(`Index not in ${this.dimensions} dimensions`);
+        } else {
+            this._index = val;
+        }
+    }
+
+    get view(): XYValueView {
         if (this._view === null) {
-            this._view = new ValueView("?");
+            this._view = new XYValueView("?");
         }
         return this._view;
     }
 
-    /**
-     * Receive new line data from the server.
-     */
-    onMessage(event) {
-        const data = new Float32Array(event.data);
-        this.dataStore.push(data);
-        this.scheduleUpdate();
+    addMenuItems() {
+        this.menu.addAction("Set X, Y limits...", () => {
+            this.setRange();
+        });
+        this.menu.addAction("Set X, Y indices...", () => {
+            this.setIndices();
+        });
+        this.menu.addSeparator();
+        super.addMenuItems();
     }
 
     /**
      * Redraw the lines and axis due to changed data.
      */
-    update() {
-        // Let the data store clear out old values
-        this.dataStore.update();
-
-        // Update the lines if there is data with valid dimensions
-        if (this.indexX < this.nLines && this.indexY < this.nLines) {
-            const shownData = this.dataStore.getShownData();
-
-            // Update the lines
-            const line = d3.svg.line()
-                .x((d, i) => {
-                    return this.axes2d.scaleX(shownData[this.indexX][i]);
-                }).y((d) => {
-                    return this.axes2d.scaleY(d);
-                });
-            this.path.data([shownData[this.indexY]])
-                .attr("d", line);
-
-            const lastIndex = shownData[this.indexX].length - 1;
-
-            if (lastIndex >= 0) {
-                // Update the circle if there is valid data
-                this.recentCircle
-                    .attr("cx", this.axes2d.scaleX(
-                        shownData[this.indexX][lastIndex]))
-                    .attr("cy", this.axes2d.scaleY(
-                        shownData[this.indexY][lastIndex]))
-                    .style("fill-opacity", 0.5);
-            }
-
-            // If switching from invalids dimensions to valid dimensions, remove
-            // the label
-            if (this.invalidDims === true) {
-                this.div.removeChild(this.warningText);
-                this.invalidDims = false;
-            }
-
-        } else if (this.invalidDims === false) {
-            this.invalidDims = true;
-
-            // Create the HTML text element
-            this.warningText = document.createElement("div");
-            this.div.appendChild(this.warningText);
-            this.warningText.className = "warning-text";
-            this.warningText.innerHTML = "Change<br>Dimension<br>Indices";
+    syncWithDataStore = utils.throttle(() => {
+        // Update the lines
+        const [tStart, tEnd] = this.xlim;
+        const shownData = this.datastore.timeSlice(tStart, tEnd);
+        if (shownData[0] != null) {
+            this.view.line = this.line(shownData);
         }
-    }
+    }, 20);
 
     /**
      * Adjust the graph layout due to changed size
@@ -180,21 +102,6 @@ export class XYValue extends Plot {
         this.div.style.width = width;
         this.div.style.height = height;
         this.recentCircle.attr("r", this.getCircleRadius());
-    }
-
-    getCircleRadius() {
-        return Math.min(this.width, this.height) / 30;
-    }
-
-    addMenuItems() {
-        this.menu.addAction("Set range...", () => {
-            this.setRange();
-        });
-        this.menu.addAction("Set X, Y indices...", () => {
-            this.setIndices();
-        });
-        this.menu.addSeparator();
-        super.addMenuItems();
     }
 
     layoutInfo() {

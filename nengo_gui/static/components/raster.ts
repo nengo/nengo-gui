@@ -19,9 +19,8 @@ import { DataStore } from "../datastore";
 import * as utils from "../utils";
 import { InputDialogView } from "../views/modal";
 import { ValueView } from "./views/value";
-import { Plot } from "./base";
+import { Axes, Plot } from "./base";
 import "./raster.css";
-import { Axes } from "./axes";
 
 export class Raster extends Plot {
     axes2d;

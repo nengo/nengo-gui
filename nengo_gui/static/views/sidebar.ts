@@ -1,6 +1,7 @@
 import { VNode, dom, h } from "maquette";
 
 import "./sidebar.css";
+import * as utils from "../utils";
 
 export class SidebarView {
     root: HTMLDivElement;
@@ -92,8 +93,8 @@ export class UtilitiesView extends SidebarView {
         this.groups.push({content: contentDiv, heading: headingDiv});
 
         // Convert HTMLCollection to array
-        return Array.prototype.slice.call(
+        return utils.toArray(
             contentDiv.getElementsByClassName("sidebar-item")
-        ) as Array<HTMLDivElement>;
+        );
     }
 }

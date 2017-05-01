@@ -7,7 +7,7 @@ import * as test from "tape";
 
 import * as fixtures from "../../tests/fixtures";
 
-import { Axes } from "../axes";
+import { Axes } from "../base";
 
 // function axesNode() {
 //     return h("div", [h("svg", {height: "100%", width: "100%"}, [

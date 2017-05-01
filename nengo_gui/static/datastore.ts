@@ -127,20 +127,20 @@ export class DataStore {
 
     remove(start: number, deleteCount?: number) {
         // TODO: try to remove this weird if statement
-        if (deleteCount) {
-            this.data.splice(start, deleteCount);
-            this.times.splice(start, deleteCount);
-        } else {
+        if (deleteCount == null) {
             this.data.splice(start);
             this.times.splice(start);
+        } else {
+            this.data.splice(start, deleteCount);
+            this.times.splice(start, deleteCount);
         }
     }
 
     slice(beginIndex: number, endIndex?: number) {
-        if (endIndex) {
-            return this.data.slice(beginIndex, endIndex);
+        if (endIndex == null) {
+            return [this.data[beginIndex]];
         } else {
-            return this.data[beginIndex];
+            return this.data.slice(beginIndex, endIndex);
         }
     }
 
@@ -176,7 +176,7 @@ export class FlexibleDataStore extends DataStore {
         const newDims = val - this._dims;
 
         if (newDims > 0) {
-            const nulls = Array.apply(null, Array(newDims)).map(() => null);
+            const nulls = utils.emptyArray(newDims).map(() => null);
             this.data = this.data.map(row => row.concat(nulls));
         } else if (newDims < 0) {
             console.warn(`Removed ${Math.abs(newDims)} dimension(s).`);

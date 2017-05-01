@@ -27,9 +27,7 @@ export class EnsembleView extends ResizableComponentView {
         this.root.appendChild(this.body);
 
         // Convert NodeList to array
-        this.circles = Array.prototype.slice.call(
-            this.body.childNodes
-        ) as Array<SVGCircleElement>;
+        this.circles = utils.toArray(this.body.childNodes);
     }
 
     get scale(): [number, number] {
@@ -48,95 +46,4 @@ export class EnsembleView extends ResizableComponentView {
         });
         this.overlayScale = [width, height];
     }
-
-    // get displayedSize() {
-    //     const hScale = this.ng.scaledWidth;
-    //     const vScale = this.ng.scaledHeight;
-    //     // TODO: get nested implemented
-    //     // let w = this.nestedWidth * hScale;
-    //     // let h = this.nestedHeight * vScale;
-    //     let w = this.width * hScale;
-    //     let h = this.height * vScale;
-
-    //     if (h * this.aspect < w) {
-    //         w = h * this.aspect;
-    //     } else if (w / this.aspect < h) {
-    //         h = w / this.aspect;
-    //     }
-
-    //     return [w / hScale, h / vScale];
-    // }
-
-    // contSize(event) {
-    //     const scale = this.scales;
-    //     const pos = this.screenLocation;
-    //     const verticalResize =
-    //         event.edges.bottom || event.edges.top;
-    //     const horizontalResize =
-    //         event.edges.left || event.edges.right;
-
-    //     let w = pos[0] - event.clientX + this.ng.offsetX;
-    //     let h = pos[1] - event.clientY + this.ng.offsetY;
-
-    //     if (event.edges.right) {
-    //         w *= -1;
-    //     }
-    //     if (event.edges.bottom) {
-    //         h *= -1;
-    //     }
-    //     if (w < 0) {
-    //         w = 1;
-    //     }
-    //     if (h < 0) {
-    //         h = 1;
-    //     }
-
-    //     const screenW = this.width * scale.hor;
-    //     const screenH = this.height * scale.vert;
-
-    //     if (horizontalResize && verticalResize) {
-    //         const p = (screenW * w + screenH * h) / Math.sqrt(
-    //             screenW * screenW + screenH * screenH);
-    //         const norm = Math.sqrt(
-    //             this.aspect * this.aspect + 1);
-    //         h = p / (this.aspect / norm);
-    //         w = p * (this.aspect / norm);
-    //     } else if (horizontalResize) {
-    //         h = w / this.aspect;
-    //     } else {
-    //         w = h * this.aspect;
-    //     }
-
-    //     this.width = w / scale.hor;
-    //     this.height = h / scale.vert;
-    // }
-
-    // redrawSize() {
-    //     // this redraws the label
-    //     const screenD = super.redrawSize();
-
-    //     if (screenD.height * this.aspect < screenD.width) {
-    //         screenD.width = screenD.height * this.aspect;
-    //     } else if (screenD.width / this.aspect < screenD.height) {
-    //         screenD.height = screenD.width / this.aspect;
-    //     }
-
-    //     const width = screenD.width;
-    //     const height = screenD.height;
-    //     const scale = Math.sqrt(height * height + width * width) / Math.sqrt(2);
-
-    //     this.body.setAttribute(
-    //         "transform",
-    //         `scale(${scale / 2 / this.radiusScale})`,
-    //     );
-    //     this.body.setAttribute(
-    //         "style",  `stroke-width ${20 / scale}`,
-    //     );
-
-    //     this.area.setAttribute(
-    //         "width", String(width * 0.97),
-    //     );
-
-    //     return screenD;
-    // }
 }

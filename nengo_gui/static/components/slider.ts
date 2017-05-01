@@ -123,8 +123,7 @@ export class Slider extends Widget {
     }
 
     setAxesGeometry(width, height) {
-        this.width = width;
-        this.height = height;
+        this.scale = [width, height]
         const scale = parseFloat($("#main").css("font-size"));
         this.borderSize = 1;
         this.axTop = 1.75 * scale;

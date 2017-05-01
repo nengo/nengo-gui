@@ -11,8 +11,6 @@ import * as utils from "../../utils"
 import "./node.css";
 
 export class PassthroughNodeView extends ComponentView {
-    // fixedHeight: number = 3;
-    // fixedWidth: number = 3;
 
     constructor(label: string) {
         super(label);
@@ -96,14 +94,4 @@ export class NodeView extends ResizableComponentView {
         this.rect.setAttribute("ry", `${NodeView.radiusScale * smaller}`);
         this.overlayScale = [width, height];
     }
-
-    // redrawSize() {
-    //     const screenD = super.redrawSize();
-
-    //     const radius = Math.min(screenD.width, screenD.height);
-    //     this.shape.setAttribute("rx", `${radius * this.radiusScale}`);
-    //     this.shape.setAttribute("ry", `${radius * this.radiusScale}`);
-
-    //     return screenD;
-    // }
 }

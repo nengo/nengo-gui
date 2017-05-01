@@ -1,4 +1,5 @@
 import * as interact from "interact.js";
+import * as d3 from "d3";
 
 import { config } from "../config";
 import { DataStore } from "../datastore";
@@ -6,8 +7,10 @@ import { Menu } from "../menu";
 import * as utils from "../utils";
 import { ViewPort } from "../viewport";
 import {
-    ComponentView, ResizableComponentView,
+    AxesView, ComponentView, ResizableComponentView, PlotView,
 } from "./views/base";
+import { LegendView } from "./views/base";
+
 import { InputDialogView } from "../views/modal";
 import { FastWSConnection } from "../websocket";
 
@@ -567,9 +570,10 @@ export abstract class ResizableComponent extends Component {
 
 }
 
-export abstract class Plot extends ResizableComponent {
+export abstract class Widget extends ResizableComponent {
 
     datastore: DataStore;
+    synapse: number;
 
     constructor(
         left: number,
@@ -579,16 +583,42 @@ export abstract class Plot extends ResizableComponent {
         parent: string,
         uid: string,
         dimensions: number,
+        synapse: number,
         miniItem = null,
     ) {
         super(left, top, width, height, parent, uid, dimensions, miniItem);
-
-        // For storing the accumulated data
+        this.synapse = synapse;
         this.datastore = new DataStore(this.dimensions, 0.0);
     }
 
-    addMenuItems() {
+    /**
+     * Receive new line data from the server.
+     */
+    add(data: Array<number>) {
+        // TODO: handle this in the websocket code
+        // const size = this.dimensions + 1;
+        // // Since multiple data packets can be sent with a single event,
+        // // make sure to process all the packets.
+        // while (data.length >= size) {
+        //     this.datastore.push(data.slice(0, size));
+        //     data = data.slice(size);
+        // }
+        // if (data.length > 0) {
+        //     console.warn("extra data: " + data.length);
+        // }
+        if (data.length !== this.dimensions + 1) {
+            console.error(`Got data with ${data.length - 1} dimensions; ` +
+                          `should be ${this.dimensions} dimensions.`);
+        } else {
+            this.datastore.add(data);
+            this.syncWithDataStore();
+        }
+    }
 
+    addMenuItems() {
+        this.menu.addAction("Set synapse...", () => {
+            this.askSynapse();
+        });
         this.menu.addAction("Hide label", () => {
             this.labelVisible = false;
             // see component.interactable.on("dragend resizeend")
@@ -601,10 +631,313 @@ export abstract class Plot extends ResizableComponent {
         }, () => !this.labelVisible);
         // TODO: attachNetGraph
         // this.menu.addAction("Remove", () => { this.remove(); });
+
+        super.addMenuItems();
     }
 
+    askSynapse() {
+        const modal = new InputDialogView(
+            String(this.synapse),
+            "Synaptic filter time constant (in seconds)",
+            "Input should be a non-negative number"
+        );
+        modal.title = "Set synaptic filter...";
+        modal.ok.addEventListener("click", () => {
+            const validator = $(modal).data("bs.validator");
+            validator.validate();
+            if (validator.hasErrors() || validator.isIncomplete()) {
+                return;
+            }
+            if (modal.input.value !== null) {
+                const newSynapse = parseFloat(modal.input.value);
+                if (newSynapse !== this.synapse) {
+                    this.synapse = newSynapse;
+                    // this.ws.send("synapse:" + this.synapse);
+                }
+            }
+            $(modal).modal("hide");
+        });
+        utils.handleTabs(modal);
+
+        $(modal).validator({
+            custom: {
+                ngvalidator: item => {
+                    return utils.isNum(item.value) && Number(item.value) >= 0;
+                },
+            },
+        });
+        $(modal.root).on("hidden.bs.modal", () => {
+            document.body.removeChild(modal.root);
+        });
+        document.body.appendChild(modal.root);
+        modal.show();
+    }
+
+    reset() {
+        this.datastore.reset();
+    }
+
+    syncWithDataStore: () => void;
 }
 
-export abstract class Widget extends Component {
+export class Axis {
+    private axis: d3.svg.Axis;
+    private g: d3.Selection<SVGGElement>;
+    private _scale: d3.scale.Linear<number, number>;
 
+    constructor(xy: "X" | "Y", g: SVGGElement, lim: [number, number]) {
+        this._scale = d3.scale.linear();
+        this.axis = d3.svg.axis()
+        this.axis.orient(xy === "X" ? "bottom" : "left");
+        this.axis.scale(this._scale);
+        this.g = d3.select(g);
+        this.lim = lim;
+    }
+
+    get lim(): [number, number] {
+        const lim = this._scale.domain() as [number, number];
+        console.assert(lim.length === 2);
+        return lim;
+    }
+
+    set lim(val: [number, number]) {
+        this._scale.domain(val);
+        this.axis.tickValues(val);
+        this.axis(this.g);
+    }
+
+    get scale(): [number, number] {
+        const scale = this._scale.range() as [number, number];
+        console.assert(scale.length === 2);
+        return scale;
+    }
+
+    set scale(val: [number, number]) {
+        this._scale.range(val);
+        this.axis(this.g);
+    }
+
+    get tickSize(): number {
+        return this.axis.outerTickSize();
+    }
+
+    set tickSize(val: number) {
+        // .tickPadding(val * 0.5)
+        this.axis.outerTickSize(val);
+    }
+
+    pixelAt(value: number) {
+        return this._scale(value);
+    }
+
+    valueAt(pixel: number) {
+        return this._scale.invert(pixel);
+    }
+}
+
+export class Axes {
+    // TODO: what should these actually be?
+    static minHeight: number = 20;
+    static minWidth: number = 20;
+
+    x: Axis;
+    y: Axis;
+
+    view: AxesView;
+
+    protected _height: number;
+    protected _width: number;
+
+    // TODO: have left xtick disappear if too close to right xtick?
+
+    // TODO: probably don't have width, height passed in? get from view?
+    constructor(
+        valueView: PlotView,
+        width,
+        height,
+        xlim: [number, number] = [-0.5, 0.0],
+        ylim: [number, number] = [-1, 1],
+    ) {
+        this.view = valueView.axes;
+        this._width = width;
+        this._height = height;
+
+        // TODO: better initial values for x?
+        this.x = new Axis("X", this.view.x.g, xlim);
+        this.y = new Axis("Y", this.view.y.g, ylim);
+
+        // Set up mouse handlers for crosshairs
+        valueView.overlay.addEventListener("mouseover", () => {
+            this.view.crosshair.visible = true;
+        });
+        valueView.overlay.addEventListener("mouseout", () => {
+            this.view.crosshair.visible = false;
+        });
+        valueView.overlay.addEventListener("mousemove", (event: MouseEvent) => {
+            const [offsetX, offsetY] = valueView.pos;
+            const [x, y] = [event.x - offsetX, event.y - offsetY];
+            this.view.crosshair.pos = [x, y];
+            this.view.crosshair.value = [this.x.valueAt(x), this.y.valueAt(y)];
+        });
+
+        // TODO: previosly, we hid on mouse wheel... should we?
+        // this.view.root.addEventListener("mousewheel", () => {
+        //     this.view.crosshairPos = ;
+        // });
+    }
+
+    get height(): number {
+        return this._height;
+    }
+
+    set scale(val: [number, number]) {
+        this._width = Math.max(Axes.minWidth, val[0]);
+        this._height = Math.max(Axes.minHeight, val[1]);
+
+        const [xWidth, xHeight] = this.view.x.scale;
+        const [yWidth, yHeight] = this.view.y.scale;
+
+        // TOOD: why 0 and not yWidth?
+        this.view.x.pos = [0, this._height - xHeight];
+        this.x.scale = [yWidth, this._width];
+        this.view.y.pos = [yWidth, 0];
+        this.y.scale = [this._height - xHeight, 0];
+        this.view.crosshair.scale = [
+            this._width, this._height - xHeight
+        ];
+    }
+
+    get width(): number {
+        return this._width;
+    }
+
+    ondomadd() {
+        this.scale = [this._width, this._height];
+        const yWidth = this.view.y.scale[0];
+        this.view.crosshair.offset = [0, yWidth];
+        this.x.tickSize = 0.4 * yWidth;
+        this.y.tickSize = 0.4 * yWidth;
+    }
+}
+
+export abstract class Plot extends Widget {
+    axes: Axes;
+
+    protected _view: PlotView;
+
+    constructor(
+        left: number,
+        top: number,
+        width: number,
+        height: number,
+        parent: string,
+        uid: string,
+        dimensions: number,
+        synapse: number,
+        miniItem = null,
+        xlim: [number, number] = [-0.5, 0],
+        ylim: [number, number] = [-1, 1],
+    ) {
+        super(left, top, width, height, parent, uid, dimensions, synapse, miniItem);
+        this.synapse = synapse;
+
+        this.axes = new Axes(this.view, width, height, xlim,  ylim);
+
+        this.interactable.on("resizemove", (event) => {
+            // Resizing the view happens in the superclass; we update axes here
+            const [width, height] = this.view.scale;
+            this.axes.scale = [
+                width * this.scaleToPixels, height * this.scaleToPixels
+            ];
+            this.syncWithDataStore();
+        });
+
+        window.addEventListener(
+            "TimeSlider.moveShown", utils.throttle((e: CustomEvent) => {
+                this.xlim = e.detail.shownTime;
+            }, 50) // Update once every 50 ms
+        );
+        window.addEventListener("SimControl.reset", (e) => {
+            this.reset();
+        });
+    }
+
+    get legendLabels(): Array<string> {
+        return this.view.legendLabels;
+    }
+
+    set legendLabels(val: Array<string>) {
+        this.view.legendLabels = val;
+    }
+
+    get legendVisible(): boolean {
+        return this.view.legendVisible;
+    }
+
+    set legendVisible(val: boolean) {
+        this.view.legendVisible = val;
+    }
+
+    abstract get view(): PlotView;
+
+    get xlim(): [number, number] {
+        return this.axes.x.lim;
+    }
+
+    set xlim(val: [number, number]) {
+        this.axes.x.lim = val;
+        this.syncWithDataStore();
+    }
+
+    get ylim(): [number, number] {
+        return this.axes.y.lim;
+    }
+
+    set ylim(val: [number, number]) {
+        this.axes.y.lim = val;
+        this.syncWithDataStore();
+    }
+
+    addMenuItems() {
+        this.menu.addAction("Hide legend", () => {
+            this.legendVisible = false;
+        }, () => this.legendVisible);
+        this.menu.addAction("Show legend", () => {
+            this.legendVisible = true;
+        }, () => !this.legendVisible);
+        // TODO: give the legend its own context menu
+        this.menu.addAction("Set legend labels", () => {
+            this.askLegend();
+        }, () => this.legendVisible);
+        this.menu.addSeparator();
+        super.addMenuItems();
+    }
+
+    askLegend() {
+        const modal = new InputDialogView("Legend labels", "New value");
+        modal.title = "Enter comma separated legend labels";
+        modal.ok.addEventListener("click", () => {
+            const labelCSV = modal.input.value;
+            // No validation to do.
+            // Empty entries assumed to be indication to skip modification.
+            // Long strings okay.
+            // Excissive entries get ignored.
+            // TODO: Allow escaping of commas
+            if ((labelCSV !== null) && (labelCSV !== "")) {
+                this.legendLabels = labelCSV.split(",").map(s => s.trim());
+            }
+            $(modal).modal("hide");
+        });
+        utils.handleTabs(modal);
+        $(modal.root).on("hidden.bs.modal", () => {
+            document.body.removeChild(modal.root);
+        });
+        document.body.appendChild(modal.root);
+        modal.show();
+    }
+
+    ondomadd() {
+        super.ondomadd();
+        this.axes.ondomadd();
+    }
 }
