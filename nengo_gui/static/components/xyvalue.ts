@@ -7,6 +7,28 @@ import { InputDialogView } from "../views/modal";
 import { XYValueView } from "./views/xyvalue";
 import { Axes, Plot } from "./base";
 
+export class XYAxes extends Axes {
+    get padding(): [number, number] {
+        return [5, 5];
+    }
+
+    set scale(val: [number, number]) {
+        this._width = Math.max(Axes.minWidth, val[0]);
+        this._height = Math.max(Axes.minHeight, val[1]);
+
+        const [xWidth, xHeight] = this.view.x.scale;
+        const [yWidth, yHeight] = this.view.y.scale;
+
+        this.x.pixelLim = [0, this._width];
+        this.y.pixelLim = [this._height, 0];
+        this.view.x.pos = [0, utils.clip(this.y.pixelAt(0), 0, this._height)];
+        this.view.y.pos = [
+            utils.clip(this.x.pixelAt(0), yWidth, this._width), 0
+        ];
+        this.view.crosshair.scale = [this._width, this._height];
+    }
+}
+
 export class XYValue extends Plot {
 
     line: d3.svg.Line<Array<number>>;
@@ -55,6 +77,7 @@ export class XYValue extends Plot {
             console.error(`Index not in ${this.dimensions} dimensions`);
         } else {
             this._index = val;
+            this.syncWithDataStore();
         }
     }
 
@@ -65,67 +88,28 @@ export class XYValue extends Plot {
         return this._view;
     }
 
+    addAxes(width, height, xlim, ylim) {
+        this.axes = new XYAxes(this.view, width, height, xlim,  ylim);
+    }
+
     addMenuItems() {
         this.menu.addAction("Set X, Y limits...", () => {
-            this.setRange();
+            this.askLim();
         });
         this.menu.addAction("Set X, Y indices...", () => {
-            this.setIndices();
+            this.askIndices();
         });
         this.menu.addSeparator();
         super.addMenuItems();
     }
 
-    /**
-     * Redraw the lines and axis due to changed data.
-     */
-    syncWithDataStore = utils.throttle(() => {
-        // Update the lines
-        const [tStart, tEnd] = this.xlim;
-        const shownData = this.datastore.timeSlice(tStart, tEnd);
-        if (shownData[0] != null) {
-            this.view.line = this.line(shownData);
-        }
-    }, 20);
-
-    /**
-     * Adjust the graph layout due to changed size
-     */
-    onresize(width, height) {
-        this.axes2d.onresize(width, height);
-
-        this.update();
-
-        this.label.style.width = width;
-        // this.width = width;
-        // this.height = height;
-        this.div.style.width = width;
-        this.div.style.height = height;
-        this.recentCircle.attr("r", this.getCircleRadius());
-    }
-
-    layoutInfo() {
-        const info = Component.prototype.layoutInfo.call(this);
-        info.minValue = this.axes2d.scaleY.domain()[0];
-        info.maxValue = this.axes2d.scaleY.domain()[1];
-        info.indexX = this.indexX;
-        info.indexY = this.indexY;
-        return info;
-    }
-
-    updateLayout(config) {
-        this.updateIndices(config.indexX, config.indexY);
-        this.updateRange(config.minValue, config.maxValue);
-        Component.prototype.updateLayout.call(this, config);
-    }
-
-    setRange() {
-        const range = this.axes2d.scaleY.domain();
+    askLim() {
+        const lim = this.axes.y.lim;
         const modal = new InputDialogView(
-            range, "New range", "Input should be in the form " +
-                "'<min>,<max>' and the axes must cross at zero."
+            `${lim[0]},${lim[1]}`, "New limits", "Input should be in the " +
+                "form '<min>,<max>' and the axes must cross at zero."
         );
-        modal.title = "Set graph range...";
+        modal.title = "Set X, Y limits...";
         modal.ok.addEventListener("click", () => {
             const validator = $(modal).data("bs.validator");
             validator.validate();
@@ -136,9 +120,8 @@ export class XYValue extends Plot {
                 const newRange = modal.input.value.split(",");
                 const min = parseFloat(newRange[0]);
                 const max = parseFloat(newRange[1]);
-                this.updateRange(min, max);
-                this.update();
-                this.saveLayout();
+                this.xlim = [min, max];
+                this.ylim = [min, max];
             }
             $(modal).modal("hide");
         });
@@ -169,28 +152,13 @@ export class XYValue extends Plot {
         modal.show();
     }
 
-    updateRange(min, max) {
-        this.axes2d.minVal = min;
-        this.axes2d.maxVal = max;
-        this.axes2d.scaleX.domain([min, max]);
-        this.axes2d.scaleY.domain([min, max]);
-        this.axes2d.axisX.tickValues([min, max]);
-        this.axes2d.axisY.tickValues([min, max]);
-        this.axes2d.axisY_g.call(this.axes2d.axisY);
-        this.axes2d.axisX_g.call(this.axes2d.axisX);
-        this.onresize(
-            this.viewPort.scaleWidth(this.w),
-            this.viewPort.scaleHeight(this.h)
-        );
-    }
-
-    setIndices() {
+    askIndices() {
         const modal = new InputDialogView(
-            String([this.indexX, this.indexY]), "New indices",
+            `${this.index[0]},${this.index[1]}`, "New indices",
             "Input should be two positive integers in the form " +
                 "'<dimension 1>,<dimension 2>'. Dimensions are zero indexed."
         );
-        modal.title = "Set X and Y indices...";
+        modal.title = "Set X, Y indices...";
         modal.ok.addEventListener("click", () => {
             const validator = $(modal).data("bs.validator");
             validator.validate();
@@ -199,9 +167,10 @@ export class XYValue extends Plot {
             }
             if (modal.input.value !== null) {
                 const newIndices = modal.input.value.split(",");
-                this.updateIndices(parseInt(newIndices[0], 10),
-                                   parseInt(newIndices[1], 10));
-                this.saveLayout();
+                this.index = [
+                    parseInt(newIndices[0], 10),
+                    parseInt(newIndices[1], 10),
+                ]
             }
             $(modal).modal("hide");
         });
@@ -214,9 +183,9 @@ export class XYValue extends Plot {
                     return ((parseInt(nums[0], 10) === nums[0]) &&
                             (parseInt(nums[1], 10) === nums[1]) &&
                             (nums.length === 2) &&
-                            (Number(nums[1]) < this.nLines &&
+                            (Number(nums[1]) < this.dimensions &&
                              Number(nums[1]) >= 0) &&
-                            (Number(nums[0]) < this.nLines &&
+                            (Number(nums[0]) < this.dimensions &&
                              Number(nums[0]) >= 0));
                 },
             },
@@ -228,14 +197,15 @@ export class XYValue extends Plot {
         modal.show();
     }
 
-    updateIndices(indexX, indexY) {
-        this.indexX = indexX;
-        this.indexY = indexY;
-        this.update();
-    }
-
-    reset() {
-        this.dataStore.reset();
-        this.scheduleUpdate();
-    }
+    /**
+     * Redraw the lines and axis due to changed data.
+     */
+    syncWithDataStore = utils.throttle(() => {
+        // Update the lines
+        const [tStart, tEnd] = this.xlim;
+        const shownData = this.datastore.timeSlice(tStart, tEnd);
+        if (shownData[0] != null) {
+            this.view.line = this.line(shownData);
+        }
+    }, 20);
 }

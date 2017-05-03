@@ -15,92 +15,76 @@ import * as $ from "jquery";
 
 import { DataStore } from "../datastore";
 import { Menu } from "../menu";
-// import * as utils from "../utils";
+import * as utils from "../utils";
 import * as viewport from "../viewport";
 import { InputDialogView } from "../views/modal";
-import { ValueView } from "./views/value";
-import { Plot } from "./base";
-import "./pointer.css";
+import { PointerView } from "./views/pointer";
+import { Widget } from "./base";
 
-export class Pointer extends Plot {
-    dataStore: DataStore;
-    fixedValue;
-    mouseDownTime;
-    pdiv;
-    pointerStatus;
-    _showPairs: boolean;
-    sim;
+export class Pointer extends Widget {
 
-    protected _view: ValueView;
+    protected _fixedValue: string = null;
+    protected _showPairs: boolean;
+    protected _view: PointerView;
 
-    constructor(parent, sim, args) {
-        super(parent, args);
-
-        this.sim = sim;
-        this.pointerStatus = false;
-
-        this.pdiv = document.createElement("div");
-        this.pdiv.style.width = args.width;
-        this.pdiv.style.height = args.height;
-        // utils.setTransform(this.pdiv, 0, 25);
-        this.pdiv.style.position = "fixed";
-        this.pdiv.classList.add("pointer");
-        this.div.appendChild(this.pdiv);
-
-        this._showPairs = args.showPairs;
-
-        // For storing the accumulated data
-        this.dataStore = new DataStore(1, 0);
-
-        // TODO: pull resetting up into a super-class
-
-        // Call scheduleUpdate whenever the time is adjusted in the SimControl
-        window.addEventListener("TimeSlider.moveShown", (e) => {
-            this.scheduleUpdate();
-        });
-
-        // Call reset whenever the simulation is reset
-        this.sim.div.addEventListener("resetSim", (e) => {
-            this.reset();
-        });
-
-        this.onresize(
-            this.viewPort.scaleWidth(this.w),
-            this.viewPort.scaleHeight(this.h),
+    constructor(
+        left: number,
+        top: number,
+        width: number,
+        height: number,
+        parent: string,
+        uid: string,
+        dimensions: number,
+        synapse: number,
+        miniItem = null,
+        showPairs: boolean = false,
+    ) {
+        super(
+            left,
+            top,
+            width,
+            height,
+            parent,
+            uid,
+            dimensions,
+            synapse,
+            miniItem,
         );
-
-        this.fixedValue = "";
-
-        this.div.addEventListener("mouseup", (event) => {
-            // For some reason "tap" doesn't seem to work here while the
-            // simulation is running, so I'm doing the timing myself
-            const now = new Date().getTime() / 1000;
-            if (now - this.mouseDownTime > 0.1) {
-                return;
-            }
-            if (event.button === 0) {
-                if (Menu.shown !== null) {
-                    Menu.hideShown();
-                } else {
-                    this.menu.show(event.clientX, event.clientY);
-                }
-            }
-        });
-        this.div.addEventListener("mousedown", () => {
-            this.mouseDownTime = new Date().getTime() / 1000;
-        });
+        this.showPairs = showPairs;
     }
 
-    get view(): ValueView {
+    get fixedValue(): string | null {
+        return this._fixedValue;
+    }
+
+    set fixedValue(val: string | null) {
+        this._fixedValue = val;
+        this.syncWithDataStore;
+    }
+
+    get showPairs(): boolean {
+        return this._showPairs;
+    }
+
+    set showPairs(val: boolean) {
+        if (this._showPairs !== val) {
+            this._showPairs = val;
+            // Notify server?
+            // this.saveLayout();
+        }
+    }
+
+    get view(): PointerView {
         if (this._view === null) {
-            this._view = new ValueView("?");
+            // TODO: how to get numItems?
+            this._view = new PointerView("?", 1);
         }
         return this._view;
     }
 
     addMenuItems() {
-        this.menu.addAction("Set value...", () => {
-            this.setValue();
+        this.menu.addAction("Set pointer...", () => {
+            this.askValue();
         });
         this.menu.addAction("Hide pairs", () => {
             this.showPairs = false;
@@ -112,14 +96,9 @@ export class Pointer extends Plot {
         super.addMenuItems();
     }
 
-    set showPairs(value) {
-        if (this._showPairs !== value) {
-            this._showPairs = value;
-            this.saveLayout();
-        }
-    }
+    // TODO: handle bad pointer errors (?)
 
-    setValue() {
+    askValue() {
         const modal = new InputDialogView(
             "Pointer", "New value", "Invalid semantic pointer expression. " +
                 "Semantic pointers must start with a capital letter. " +
@@ -128,7 +107,7 @@ export class Pointer extends Plot {
                 "(A + ~(B * C) * 2) * 0.5 would be a valid semantic pointer " +
                 "expression."
         );
-        modal.title = "Enter a Semantic Pointer value...";
+        modal.title = "Enter a Semantic Pointer ...";
         modal.ok.addEventListener("click", () => {
             const validator = $(modal).data("bs.validator");
             validator.validate();
@@ -141,7 +120,7 @@ export class Pointer extends Plot {
                 value = ":empty:";
             }
             this.fixedValue = value;
-            this.ws.send(value);
+            // this.ws.send(value);
             $(modal).modal("hide");
         });
         utils.handleTabs(modal);
@@ -153,8 +132,7 @@ export class Pointer extends Plot {
                     if (ptr === null) {
                         ptr = "";
                     }
-                    this.ws.send(":check only:" + ptr);
-                    return this.pointerStatus;
+                    // this.ws.send(":check only:" + ptr);
                 },
             },
         });
@@ -166,109 +144,12 @@ export class Pointer extends Plot {
     }
 
     /**
-     * Receive new line data from the server.
-     */
-    onMessage(event) {
-        const data = event.data.split(" ");
-
-        if (data[0].substring(0, 11) === "badPointer") {
-            this.pointerStatus = false;
-            return;
-        } else if (data[0].substring(0, 12) === "goodPointer") {
-            this.pointerStatus = true;
-            return;
-        }
-
-        const time = parseFloat(data[0]);
-
-        const items = data[1].split(";");
-        this.dataStore.push([time, items]);
-        this.scheduleUpdate();
-    }
-
-    /**
      * Redraw the lines and axis due to changed data.
      */
-    update() {
-        // Let the data store clear out old values
-        this.dataStore.update();
-
-        const data = this.dataStore.getLastData()[0];
-
-        while (this.pdiv.firstChild) {
-            this.pdiv.removeChild(this.pdiv.firstChild);
+    syncWithDataStore = utils.throttle(() => {
+        const data = this.datastore.at(this.currentTime);
+        if (data != null) {
+            this.view.values = data;
         }
-        this.pdiv.style.width = this.width;
-        this.pdiv.style.height = this.height;
-
-        if (data === undefined) {
-            return;
-        }
-
-        let totalSize = 0;
-        const items = [];
-
-        // Display the text in proportion to similarity
-        for (const dat of data) {
-            const size = parseFloat(dat.substring(0, 4));
-            const span = document.createElement("span");
-            // span.innerHTML = dat.substring(4);
-            this.pdiv.appendChild(span);
-            totalSize += size;
-            let c = Math.floor(255 - 255 * size);
-            // TODO: Use clip
-            if (c < 0) {
-                c = 0;
-            }
-            if (c > 255) {
-                c = 255;
-            }
-            span.style.color = "rgb(" + c + "," + c + "," + c + ")";
-            items.push(span);
-        }
-
-        const scale = this.height / totalSize * 0.6;
-
-        data.forEach((dat, i) => {
-            const size = parseFloat(dat.substring(0, 4));
-            items[i].style.fontSize = "" + (size * scale) + "px";
-        });
-    }
-
-    /**
-     * Adjust the graph layout due to changed size.
-     */
-    onresize(width, height) {
-        if (width < this.minWidth) {
-            width = this.minWidth;
-        }
-        if (height < this.minHeight) {
-            height = this.minHeight;
-        }
-
-        // this.width = width;
-        // this.height = height;
-        this.div.style.width = width;
-        this.div.style.height = height;
-
-        this.label.style.width = width;
-
-        this.update();
-    }
-
-    layoutInfo() {
-        const info = Component.prototype.layoutInfo.call(this);
-        info.showPairs = this.showPairs;
-        return info;
-    }
-
-    updateLayout(config) {
-        this.showPairs = config.showPairs;
-        Component.prototype.updateLayout.call(this, config);
-    }
-
-    reset() {
-        this.dataStore.reset();
-        this.scheduleUpdate();
-    }
+    }, 20);
 }

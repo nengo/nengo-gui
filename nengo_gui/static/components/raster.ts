@@ -18,163 +18,72 @@ import * as $ from "jquery";
 import { DataStore } from "../datastore";
 import * as utils from "../utils";
 import { InputDialogView } from "../views/modal";
-import { ValueView } from "./views/value";
+import { RasterView } from "./views/raster";
 import { Axes, Plot } from "./base";
-import "./raster.css";
 
 export class Raster extends Plot {
-    axes2d;
-    dataStore: DataStore;
-    nNeurons: number;
-    path;
-    sim;
 
-    protected _view: ValueView;
+    protected _nNeurons: number;
+    protected _view: RasterView;
 
-    constructor(parent, sim, args) {
-        super(parent, args);
-        this.nNeurons = args.nNeurons || 1;
-        this.sim = sim;
-
-        // For storing the accumulated data
-        this.dataStore = new DataStore(1, 0);
-
-        this.axes2d = new Axes(this.div, args);
-        this.axes2d.scaleY.domain([0, args.nNeurons]);
-
-        // TODO: pull resetting up into a super-class
-
-        // Call scheduleUpdate whenever the time is adjusted in the SimControl
-        window.addEventListener("TimeSlider.moveShown", (e) => {
-            this.scheduleUpdate();
-        });
-
-        // Call reset whenever the simulation is reset
-        window.addEventListener("SimControl.reset", (e) => {
-            this.reset();
-        });
-
-        // Create the lines on the plots
-        d3.svg.line()
-            .x((d, i) => {
-                return this.axes2d.scaleX(this.dataStore.times[i]);
-            })
-            .y((d) => {
-                return this.axes2d.scaleY(d);
-            });
-
-        this.path = this.axes2d.svg.append("g")
-            .selectAll("path")
-            .data(this.dataStore.data);
-
-        this.path.enter().append("path")
-            .attr("class", "line")
-            .style("stroke", utils.makeColors(1));
-
-        this.update();
-        this.onresize(
-            this.viewPort.scaleWidth(this.w),
-            this.viewPort.scaleHeight(this.h),
+    constructor(
+        left: number,
+        top: number,
+        width: number,
+        height: number,
+        parent: string,
+        uid: string,
+        dimensions: number,
+        synapse: number,
+        miniItem = null,
+        xlim: [number, number] = [-0.5, 0],
+        nNeurons: number = 1,
+    ) {
+        super(
+            left,
+            top,
+            width,
+            height,
+            parent,
+            uid,
+            nNeurons,
+            synapse,
+            miniItem,
+            xlim,
+            [0, nNeurons],
         );
-        this.axes2d.axisY.tickValues([0, args.nNeurons]);
-        this.axes2d.fitTicks(this);
+        this.nNeurons = nNeurons;
     }
 
-    get view(): ValueView {
+    get nNeurons(): number {
+        return this._nNeurons;
+    }
+
+    set nNeurons(val: number) {
+        this._nNeurons = val;
+        this.ylim = [0, this.nNeurons];
+    }
+
+    get view(): RasterView {
         if (this._view === null) {
-            this._view = new ValueView("?");
+            this._view = new RasterView("?");
         }
         return this._view;
     }
 
-    /**
-     * Receive new line data from the server.
-     */
-    onMessage(event) {
-        const time = new Float32Array(event.data, 0, 1);
-        const data = new Int16Array(event.data, 4);
-        this.dataStore.push([time[0], data]);
-        this.scheduleUpdate();
-    }
-
-    setN_neurons(nNeurons) {
-        this.nNeurons = nNeurons;
-        this.axes2d.scaleY.domain([0, nNeurons]);
-        this.axes2d.axisY.tickValues([0, nNeurons]);
-        this.ws.send("nNeurons:" + nNeurons);
-    }
-
-    /**
-     * Redraw the lines and axis due to changed data.
-     */
-    update() {
-        // Let the data store clear out old values
-        this.dataStore.update();
-
-        // Determine visible range from the SimControl
-        const t1 = this.sim.timeSlider.firstShownTime;
-        const t2 = t1 + this.sim.timeSlider.shownTime;
-
-        this.axes2d.setTimeRange(t1, t2);
-
-        // Update the lines
-        const shownData = this.dataStore.getShownData();
-
-        const path = [];
-        for (let i = 0; i < shownData[0].length; i++) {
-            const t = this.axes2d.scaleX(
-                this.dataStore.times[
-                    this.dataStore.firstShownIndex + i]);
-
-            for (let j = 0; j < shownData[0][i].length; j++) {
-                const y1 = this.axes2d.scaleY(shownData[0][i][j]);
-                const y2 = this.axes2d.scaleY(shownData[0][i][j] + 1);
-                path.push("M " + t + " " + y1 + "V" + y2);
-            }
-        }
-        this.path.attr("d", path.join(""));
-    }
-
-    /**
-     * Adjust the graph layout due to changed size.
-     */
-    onresize(width, height) {
-        if (width < this.minWidth) {
-            width = this.minWidth;
-        }
-        if (height < this.minHeight) {
-            height = this.minHeight;
-        }
-
-        this.axes2d.onresize(width, height);
-
-        this.update();
-
-        this.label.style.width = width;
-
-        // this.width = width;
-        // this.height = height;
-        this.div.style.width = width;
-        this.div.style.height = height;
-    }
-
-    reset() {
-        this.dataStore.reset();
-        this.scheduleUpdate();
-    }
-
     addMenuItems() {
-        this.menu.addAction("Set # neurons...", () => {
-            this.setNeuronCount();
+        this.menu.addAction("Set number of neurons...", () => {
+            this.askNNeurons();
         });
         this.menu.addSeparator();
         super.addMenuItems();
     }
 
-    setNeuronCount() {
-        const count = this.nNeurons;
+    askNNeurons() {
         const modal = new InputDialogView(
-            count, "Number of neurons", "Input should be a positive integer"
+            `${this.nNeurons}`,
+            "Number of neurons",
+            "Input should be a positive integer"
         );
         modal.title = "Set number of neurons...";
         modal.ok.addEventListener("click", () => {
@@ -185,13 +94,8 @@ export class Raster extends Plot {
             }
             if (modal.input.value !== null) {
                 const newCount = parseInt(modal.input.value, 10);
-                this.setN_neurons(newCount);
-                this.axes2d.fitTicks(this);
+                this.nNeurons = newCount;
             }
-            // TODO: this was a separate handler before, but should only
-            //       fire when validation passes right?
-            this.onresize(this.div.clientWidth, this.div.clienHeight);
-
             $(modal).modal("hide");
         });
         utils.handleTabs(modal);
@@ -209,4 +113,26 @@ export class Raster extends Plot {
         document.body.appendChild(modal.root);
         modal.show();
     }
+
+    /**
+     * Redraw the lines and axis due to changed data.
+     */
+    syncWithDataStore = utils.throttle(() => {
+        const [tStart, tEnd] = this.xlim;
+        const shownData = this.datastore.timeSlice(tStart, tEnd);
+
+        const path = [];
+        if (shownData[0] != null) {
+            shownData.forEach(row => {
+                const t = this.axes.x.pixelAt(row[0]);
+                // TODO: figure out what this should be (what is data?)
+                row.slice(1).forEach(y => {
+                    const y1 = this.axes.y.pixelAt(y);
+                    const y2 = this.axes.y.pixelAt(y + 1);
+                    path.push(`M ${t} ${y1}V${y2}`);
+                });
+            });
+        }
+        this.view.line = path.join("");
+    }, 20);
 }

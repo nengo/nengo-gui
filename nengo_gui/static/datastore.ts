@@ -39,6 +39,20 @@ export class DataStore {
         return this._dims;
     }
 
+    set dims(val: number) {
+        const newDims = val - this._dims;
+
+        if (newDims > 0) {
+            const nulls = utils.emptyArray(newDims).map(() => null);
+            this.data = this.data.map(row => row.concat(nulls));
+        } else if (newDims < 0) {
+            console.warn(`Removed ${Math.abs(newDims)} dimension(s).`);
+            // + 2 because time is dim 0, and end is not included
+            this.data = this.data.map(row => row.slice(0, val + 2));
+        }
+        this._dims = val;
+    }
+
     get length(): number {
         return this.data.length;
     }
@@ -115,6 +129,10 @@ export class DataStore {
         this.times.push(time);
     }
 
+    at(time: number) {
+        return this.data[DataStore.nearestIndex(this.times, time)];
+    }
+
     /**
      * Reset the data storage.
      *
@@ -138,7 +156,7 @@ export class DataStore {
 
     slice(beginIndex: number, endIndex?: number) {
         if (endIndex == null) {
-            return [this.data[beginIndex]];
+            return this.data.slice(beginIndex);
         } else {
             return this.data.slice(beginIndex, endIndex);
         }
@@ -149,52 +167,5 @@ export class DataStore {
         const endIndex = endTime ?
             DataStore.nearestIndex(this.times, endTime) + 1 : undefined;
         return this.slice(beginIndex, endIndex);
-    }
-}
-
-/**
- * Flexible storage of a set of data points and associated times.
- *
- * Flexibile storage means that the number of dimensions can be modified after
- * instantiation. If the number of dimensions increases, any missing values
- * will be filled in with `null`. If the number of dimensions decreases,
- * the last dimensions will be removed. If you wish to remove specific
- * dimensions, modify the `.data` property manually.
- *
- * @constructor
- * @param {int} dims - number of data points per time
- * @param {SimControl} sim - the simulation controller
- * @param {float} synapse - the filter to apply to the data
- */
-export class FlexibleDataStore extends DataStore {
-
-    get dims(): number {
-        return this._dims;
-    }
-
-    set dims(val: number) {
-        const newDims = val - this._dims;
-
-        if (newDims > 0) {
-            const nulls = utils.emptyArray(newDims).map(() => null);
-            this.data = this.data.map(row => row.concat(nulls));
-        } else if (newDims < 0) {
-            console.warn(`Removed ${Math.abs(newDims)} dimension(s).`);
-            // + 2 because time is dim 0, and end is not included
-            this.data = this.data.map(row => row.slice(0, val + 2));
-        }
-        this._dims = val;
-    }
-
-    /**
-     * Add a set of data.
-     *
-     * @param {array} row - dims+1 data points, with time as the first one
-     */
-    add(row: number[]) {
-        if (row.length - 1 !== this.dims) {
-            this.dims = row.length - 1;
-        }
-        super.add(row);
     }
 }

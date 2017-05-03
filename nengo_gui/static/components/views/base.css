@@ -1,6 +1,15 @@
 svg.netgraph {
-    .axes {
 
+
+    /* .pointer span { */
+    /*     display: block; */
+    /*     margin: 0; */
+    /*     padding: 0; */
+    /*     text-align: center; */
+    /* } */
+
+
+    .axes {
         &:hover {
             border: 1px solid #888888;
         }
@@ -65,10 +74,15 @@ svg.netgraph {
         }
     }
 
-    .legend {
+    .legend-item {
         text {
             font-size: 80%; /* TODO: global for text? */
-            text-anchor: start;
+            &.label {
+                text-anchor: start;
+            }
+            &.value {
+                text-anchor: end;
+            }
         }
     }
 

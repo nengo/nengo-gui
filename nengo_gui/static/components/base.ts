@@ -572,6 +572,7 @@ export abstract class ResizableComponent extends Component {
 
 export abstract class Widget extends ResizableComponent {
 
+    currentTime: number = 0.0;
     datastore: DataStore;
     synapse: number;
 
@@ -589,6 +590,12 @@ export abstract class Widget extends ResizableComponent {
         super(left, top, width, height, parent, uid, dimensions, miniItem);
         this.synapse = synapse;
         this.datastore = new DataStore(this.dimensions, 0.0);
+
+        window.addEventListener(
+            "TimeSlider.moveShown", utils.throttle((e: CustomEvent) => {
+                this.currentTime = e.detail.shownTime[1];
+            }, 50) // Update once every 50 ms
+        );
     }
 
     /**
@@ -683,37 +690,37 @@ export abstract class Widget extends ResizableComponent {
 export class Axis {
     private axis: d3.svg.Axis;
     private g: d3.Selection<SVGGElement>;
-    private _scale: d3.scale.Linear<number, number>;
+    private scale: d3.scale.Linear<number, number>;
 
     constructor(xy: "X" | "Y", g: SVGGElement, lim: [number, number]) {
-        this._scale = d3.scale.linear();
+        this.scale = d3.scale.linear();
         this.axis = d3.svg.axis()
         this.axis.orient(xy === "X" ? "bottom" : "left");
-        this.axis.scale(this._scale);
+        this.axis.scale(this.scale);
         this.g = d3.select(g);
         this.lim = lim;
     }
 
     get lim(): [number, number] {
-        const lim = this._scale.domain() as [number, number];
+        const lim = this.scale.domain() as [number, number];
         console.assert(lim.length === 2);
         return lim;
     }
 
     set lim(val: [number, number]) {
-        this._scale.domain(val);
+        this.scale.domain(val);
         this.axis.tickValues(val);
         this.axis(this.g);
     }
 
-    get scale(): [number, number] {
-        const scale = this._scale.range() as [number, number];
+    get pixelLim(): [number, number] {
+        const scale = this.scale.range() as [number, number];
         console.assert(scale.length === 2);
         return scale;
     }
 
-    set scale(val: [number, number]) {
-        this._scale.range(val);
+    set pixelLim(val: [number, number]) {
+        this.scale.range(val);
         this.axis(this.g);
     }
 
@@ -727,11 +734,11 @@ export class Axis {
     }
 
     pixelAt(value: number) {
-        return this._scale(value);
+        return this.scale(value);
     }
 
     valueAt(pixel: number) {
-        return this._scale.invert(pixel);
+        return this.scale.invert(pixel);
     }
 }
 
@@ -742,7 +749,6 @@ export class Axes {
 
     x: Axis;
     y: Axis;
-
     view: AxesView;
 
     protected _height: number;
@@ -790,6 +796,10 @@ export class Axes {
         return this._height;
     }
 
+    get padding(): [number, number] {
+        return [5, 5];
+    }
+
     set scale(val: [number, number]) {
         this._width = Math.max(Axes.minWidth, val[0]);
         this._height = Math.max(Axes.minHeight, val[1]);
@@ -799,9 +809,9 @@ export class Axes {
 
         // TOOD: why 0 and not yWidth?
         this.view.x.pos = [0, this._height - xHeight];
-        this.x.scale = [yWidth, this._width];
+        this.x.pixelLim = [yWidth, this._width];
         this.view.y.pos = [yWidth, 0];
-        this.y.scale = [this._height - xHeight, 0];
+        this.y.pixelLim = [this._height - xHeight, 0];
         this.view.crosshair.scale = [
             this._width, this._height - xHeight
         ];
@@ -841,7 +851,7 @@ export abstract class Plot extends Widget {
         super(left, top, width, height, parent, uid, dimensions, synapse, miniItem);
         this.synapse = synapse;
 
-        this.axes = new Axes(this.view, width, height, xlim,  ylim);
+        this.addAxes(width, height, xlim, ylim);
 
         this.interactable.on("resizemove", (event) => {
             // Resizing the view happens in the superclass; we update axes here
@@ -896,6 +906,10 @@ export abstract class Plot extends Widget {
     set ylim(val: [number, number]) {
         this.axes.y.lim = val;
         this.syncWithDataStore();
+    }
+
+    addAxes(width, height, xlim, ylim) {
+        this.axes = new Axes(this.view, width, height, xlim,  ylim);
     }
 
     addMenuItems() {

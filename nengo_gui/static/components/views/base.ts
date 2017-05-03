@@ -266,36 +266,17 @@ export class AxesView {
 export class LegendView {
     colors: Array<string>;
     root: SVGGElement;
-    private _labels: Array<SVGTextElement>;
+
+    private _labels: Array<SVGTextElement> = [];
+    private _legendItems: Array<SVGGElement> = [];
+    private _values: Array<SVGTextElement> = [];
 
     constructor(colors: Array<string>) {
         this.colors = colors;
         const dimensions = this.colors.length;
-        const node =
-            h("g.legend", {
-                height: `${20 * dimensions}`,
-                transform: "translate(0,0)",
-                width: "150",
-            }, utils.emptyArray(dimensions).map(
-                (_, i) =>
-                    h("g.legend-item", [
-                        h("rect", {
-                            fill: this.colors[i],
-                            height: "10",
-                            width: "10",
-                            x: "0", // Default?
-                            y: `${i * 20}`,
-                        }),
-                        h("text", {
-                            x: "15",
-                            y: `${i * 20 + 9}`,
-                        }),
-                    ])
-            ));
+        const node = h("g.legend", {transform: "translate(0,0)"});
         this.root = utils.domCreateSVG(node) as SVGGElement;
-        this._labels = utils.toArray(this.root.childNodes).map(
-            g => g.querySelector("text")
-        );
+        this.numLabels = this.colors.length;
         this.labels = [];
     }
 
@@ -313,12 +294,81 @@ export class LegendView {
         });
     }
 
+    get numLabels(): number {
+        return this._legendItems.length;
+    }
+
+    set numLabels(val: number) {
+        while (this._legendItems.length - val < 0) {
+            this.addLabel();
+        }
+        while (this._legendItems.length - val > 0) {
+            this.removeLabel();
+        }
+    }
+
     get pos(): [number, number] {
         return getTranslate(this.root)
     }
 
     set pos(val: [number, number]) {
         setTranslate(this.root, val[0], val[1]);
+    }
+
+    get valuesVisible(): boolean {
+        return this._values[0].style.display !== "none";
+    }
+
+    set valuesVisible(val: boolean) {
+        this._values.forEach(value => {
+            value.style.display = val ? null : "none";
+        })
+    }
+
+    set values(val: Array<number>) {
+        console.assert(val.length === this.numLabels);
+        this._values.forEach((value, i) => {
+            value.textContent = val[i].toFixed(2);
+        });
+    }
+
+    private addLabel() {
+        const i = this._legendItems.length;
+        const node =
+            h("g.legend-item", [
+                h("rect", {
+                    fill: this.colors[i % this.colors.length],
+                    height: "10",
+                    width: "10",
+                    y: `${i * 20}`,
+                }),
+                h("text.label", {
+                    x: "15",
+                    y: `${i * 20 + 9}`,
+                }),
+                h("text.value", {
+                    styles: {display: "none"}, // Hide by default
+                    y: `${i * 20 + 9}`
+                }),
+            ]);
+        const legendItem = utils.domCreateSVG(node) as SVGGElement;
+        this.root.appendChild(legendItem);
+        this._legendItems.push(legendItem);
+        this._labels.push(
+            legendItem.querySelector("text.label") as SVGTextElement
+        );
+        this._values.push(
+            legendItem.querySelector("text.value") as SVGTextElement
+        );
+    }
+
+    private removeLabel() {
+        const legendItem = this._legendItems.pop();
+        this._labels.pop();
+        this._values.pop();
+        if (legendItem != null) {
+            this.root.removeChild(legendItem);
+        }
     }
 }
 

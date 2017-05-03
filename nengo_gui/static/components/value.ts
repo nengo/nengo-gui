@@ -59,6 +59,7 @@ export class Value extends Plot {
             (_, i) => d3.svg.line()
                 .x((d) => this.axes.x.pixelAt(d[0]))
                 .y((d) => this.axes.y.pixelAt(d[i + 1]))
+                .defined((d) => d[i + 1] != null)
         );
     }
 
@@ -129,6 +130,10 @@ export class Value extends Plot {
         const shownData = this.datastore.timeSlice(tStart, tEnd);
         if (shownData[0] != null) {
             this.view.lines = this.lines.map(line => line(shownData));
+            if (this.legendVisible && this.view.legend.valuesVisible) {
+                const last = shownData[shownData.length - 1];
+                this.view.legend.values = last.slice(1);
+            }
         }
     }, 20);
 }

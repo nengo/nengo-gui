@@ -25,6 +25,7 @@ import { ToolbarView } from "../views/toolbar";
 import { Ensemble } from "../components/ensemble";
 import { Network } from "../components/network";
 import { Node, PassthroughNode } from "../components/node";
+import { Raster } from "../components/raster";
 import { Value } from "../components/value";
 import { XYValue } from "../components/xyvalue";
 
@@ -127,6 +128,7 @@ export const component = {
     Network: () => new Network(20, 20, 50, 50, "", "Network", 1),
     Node: () => new Node(20, 20, 50, 50, "", "Node", 1),
     PassthroughNode: () => new PassthroughNode(20, 20, 5, 5, "", "Passthrough", 1),
+    Raster: () => new Raster(20, 20, 100, 100, "", "Value", 20, 0.005),
     Value: () => new Value(20, 20, 100, 100, "", "Value", 2, 1.0, 0.005),
     XYValue: () => new XYValue(20, 20, 100, 100, "", "Value", 2, 1.0, 0.005),
 }
