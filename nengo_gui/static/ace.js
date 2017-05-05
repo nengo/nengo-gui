@@ -201,7 +201,7 @@ Nengo.Ace.prototype.on_message = function (event) {
             this.marker = null;
             this.editor.getSession().clearAnnotations();
         }
-        $(this.console_stdout).text(msg.stdout);
+        $(this.console_stdout).html(msg.stdout);
         $(this.console_error).text('');
         this.console.scrollTop = this.console.scrollHeight;
     } else if (msg.filename !== undefined) {
@@ -222,7 +222,7 @@ Nengo.Ace.prototype.on_message = function (event) {
             type: 'error',
             text: msg.short_msg,
         }]);
-        $(this.console_stdout).text(msg.stdout);
+        $(this.console_stdout).html(msg.stdout);
         $(this.console_error).text(msg.error.trace);
         this.console.scrollTop = this.console.scrollHeight;
     } else {

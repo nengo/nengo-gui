@@ -223,11 +223,12 @@ class Page(object):
             exec_env.stdout.write('Warning: Simulators cannot be manually'
                                   ' run inside nengo_gui (line %d)\n' % line)
             exec_env.stdout.write('\nIf you are running a Nengo script from'
-                                  ' a tutorial, this may be a tutorial\nthat'
-                                  ' should be run in a Python interpreter,'
-                                  ' rather than in the Nengo GUI.\nSee'
-                                  ' https://nengo.github.io/users.html'
-                                  ' for more details.\n')
+                ' a tutorial, this may be a tutorial\nthat'
+                ' should be run in a Python interpreter,'
+                ' rather than in the Nengo GUI.\nSee'
+                ' <a href="https://nengo.github.io/users.html"'
+                '  target="_blank">https://nengo.github.io/users.html</a>'
+                ' for more details.\n')
         except nengo_gui.exec_env.StartedGUIException:
             line = nengo_gui.exec_env.determine_line_number()
             exec_env.stdout.write('Warning: nengo_gui cannot be run inside'
