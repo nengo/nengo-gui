@@ -91,7 +91,7 @@ svg.netgraph {
         stroke-width: 1.5;
     }
 
-    .plots {
+    .widgets {
         rect.overlay {
             stroke: gray(40%) {
                 width: 1;

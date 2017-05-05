@@ -325,3 +325,80 @@ export function debounce(
 
     return debounced;
 }
+
+/**
+ * Linear interpolation.
+ *
+ * Precise method, which guarantees v = v1 when t = 1.
+ */
+export function lerp(v0: number, v1: number, t: number) {
+    return (1 - t) * v0 + t * v1;
+}
+
+/**
+ * Angle of the vector between two points, in degrees.
+ */
+export function angle(x1: number, x2: number, y1: number, y2:number) {
+    return Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+}
+
+// from http://jsbin.com/yiliwu/4/edit?js,console
+export function singleline(
+    inStrings: TemplateStringsArray | string, ...values: any[]
+) {
+    const strings = typeof inStrings === "string" ? [inStrings] : inStrings;
+    console.assert(strings.length === values.length + 1);
+
+    // Perform interpolation.
+    let output = strings[0];
+    for (let i = 0; i < values.length; i++) {
+        output += values[i] + strings[i + 1];
+    }
+
+    // Split on newlines.
+    var lines = output.split(/(?:\r\n|\n|\r)/);
+
+    // Rip out the leading whitespace.
+    return lines.map((line) => line.replace(/^\s+/gm, "")).join(" ").trim();
+}
+
+// From https://github.com/MartinKolarik/dedent-js/blob/master/src/index.ts
+export function dedent(
+    inStrings: TemplateStringsArray | string, ...values: any[]
+) {
+    let strings = typeof inStrings === "string" ?
+        [inStrings] : inStrings.slice();
+    console.assert(strings.length === values.length + 1);
+
+    // Remove trailing whitespace.
+    const last = strings.length - 1;
+    strings[last] = strings[last].replace(/\r?\n([\t ]*)$/, "");
+
+    // Find all line breaks to determine the highest common indentation level
+    let matches = [];
+    let match;
+    for (let i = 0; i < strings.length; i++) {
+        if (match = strings[i].match(/\n[\t ]+/g)) {
+            matches.push(...match);
+        }
+    }
+
+    //  Remove the common indentation from all strings.
+    if (matches.length) {
+        let size = Math.min(...matches.map(value => value.length - 1));
+        let pattern = new RegExp(`\n[\t ]{${size}}`, "g");
+
+        strings = strings.map(s => s.replace(pattern, "\n"));
+    }
+
+    // Remove leading whitespace.
+    strings[0] = strings[0].replace(/^\r?\n/, "");
+
+    // Perform interpolation.
+    let output = strings[0];
+    for (let i = 0; i < values.length; i++) {
+        output += values[i] + strings[i + 1];
+    }
+
+    return output;
+}

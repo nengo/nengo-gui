@@ -31,6 +31,11 @@ export abstract class ComponentView {
         this._label = this.root.querySelector("text") as SVGTextElement;
     }
 
+    get centerPos(): [number, number] {
+        const pos = this.pos;
+        return [pos[0] + this.width * 0.5, pos[1] + this.height * 0.5];
+    }
+
     get height(): number {
         return this.baseHeight;
     }

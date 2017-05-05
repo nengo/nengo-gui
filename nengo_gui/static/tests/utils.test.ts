@@ -448,3 +448,24 @@ test("utils.debounce re-entrant", assert => {
         fixtures.teardown(assert);
     }, 100);
 });
+
+test("utils.singleLine", assert => {
+    assert.is(utils.singleline`  this
+              will
+                  be
+                    one
+                       line  `, "this will be one line")
+    fixtures.teardown(assert);
+});
+
+test("utils.dedent", assert => {
+    assert.is(utils.dedent`this
+              will
+              line
+              up`, "this\nwill\nline\nup")
+    assert.is(utils.dedent`this
+              will
+                * indent
+                  * as expected`, "this\nwill\n  * indent\n    * as expected");
+    fixtures.teardown(assert);
+});

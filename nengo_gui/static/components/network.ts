@@ -1,9 +1,104 @@
-import { ResizableComponent } from "./base";
+import { Component, ResizableComponent, Plot } from "./base";
+import { FeedforwardConnection, RecurrentConnection } from "./connection";
 import { config } from "../config";
 import { Menu } from "../menu";
+import * as utils from "../utils";
 import { NetworkView } from "./views/network";
 
+export class ComponentManager {
+    components: Array<Component> = [];
+    connections: {[uids: string]: ComponentConnection} = {};
+    networks: Array<Network> = [];
+
+    add(component: Component) {
+        this.components.push(component);
+        if (component instanceof Network) {
+            this.networks.push(component);
+        }
+    }
+
+    // get nestedHeight() {
+    //     let h = this.height;
+    //     let parent = this.parent;
+    //     while (parent !== null) {
+    //         h *= parent.view.height * 2;
+    //         parent = parent.view.parent;
+    //     }
+    //     return h;
+    // }
+
+    // get nestedWidth() {
+    //     let w = this.width;
+    //     let parent = this.parent;
+    //     while (parent !== null) {
+    //         w *= parent.view.width * 2;
+    //         parent = parent.view.parent;
+    //     }
+    //     return w;
+    // }
+
+    connect(pre: Component, post: Component) {
+        console.assert(this.contains(pre));
+        console.assert(this.contains(post));
+        const uids = `${pre.uid}->${post.uid}`;
+        if (!(uids in this.connections)) {
+            if (pre === post) {
+                this.connections[uids] = new RecurrentConnection(pre, post);
+            } else {
+
+            }
+        }
+    }
+
+    contains(component: Component) {
+        return this.components.indexOf(component) > -1;
+    }
+
+    disconnect(pre: Component, post: Component) {
+        const uids = `${pre.uid}->${post.uid}`;
+        if (uids in this.connections) {
+            // TODO: need to remove from document?
+            delete this.connections[uids];
+        }
+    }
+
+    onresize = utils.throttle((widthScale: number, heightScale: number): void => {
+        // for (const uid in this.components) {
+        //     const component = this.components[uid];
+        //     // TODO: Set component scaleToPixels
+        //     // component.onresize(
+        //     //     component.width * widthScale, component.height * heightScale,
+        //     // );
+        // }
+    }, 66);
+
+    remove(component: Component) {
+        // First, remove all children ???
+        const index = this.components.indexOf(component);
+        this.components.splice(index, 1);
+    }
+
+    rescale(widthScale, heightScale) {
+        this.components.forEach(component => {
+            if (component instanceof ResizableComponent) {
+                // TODO: resizable component should do scale probably
+                const scale = component.scale;
+                component.scale = [scale[0] * widthScale, scale[1] * heightScale];
+            }
+        });
+    }
+
+    saveLayouts() {
+        this.components.forEach(component => {
+            // TODO: layout?
+            // component.saveLayout();
+        });
+    }
+}
+
 export class Network extends ResizableComponent {
+    components: ComponentManager = new ComponentManager();
+
     expanded: boolean;
     // TODO: what type is this supposed to be?
     spTargets;

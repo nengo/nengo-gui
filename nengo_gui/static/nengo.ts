@@ -46,7 +46,9 @@ export class NengoDebug {
 
         if (category === "componentview") {
             this.netgraph.view.root.appendChild(root);
-            obj.ondomadd();
+            if ("ondomadd" in obj) {
+                obj.ondomadd();
+            }
         } else if (category === "component") {
             this.netgraph.add(obj);
         } else {

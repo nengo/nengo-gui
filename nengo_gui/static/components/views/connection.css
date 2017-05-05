@@ -1,0 +1,13 @@
+svg.netgraph g.connection {
+    line, path {
+        fill: none;
+        stroke: black {
+            width: 2;
+        }
+    }
+
+    path.arrow {
+        fill: black;
+        stroke: none;
+    }
+}

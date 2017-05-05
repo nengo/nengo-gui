@@ -16,9 +16,9 @@ import { config } from "./config";
 import { HotkeyManager } from "./hotkeys";
 import { Menu } from "./menu";
 import * as utils from "./utils";
-import { ViewPort } from "./viewport";
 import { Connection } from "./websocket";
-import { Component, ResizableComponent, Plot } from "./components/base";
+import { Component, ResizableComponent, Widget } from "./components/base";
+import { ComponentManager } from "./components/network";
 import { Value } from "./components/value";
 import { NetGraphView } from "./views/netgraph";
 
@@ -35,136 +35,6 @@ import { NetGraphView } from "./views/netgraph";
 //     this.parent = this.ng.svgObjects.net[ngiArg.parent];
 //     this.depth = this.parent.view.depth + 1;
 // }
-
-export class ComponentManager {
-    components: {[uid: string]: Component} = {};
-    children: {[uid: string]: Component[]} = {};
-    parent: {[uid: string]: Component | null} = {};
-    values: Value[] = [];
-
-    add(component: Component, parent = null) {
-        this.components[component.uid] = component;
-        this.children[component.uid] = [];
-        this.parent[component.uid] = parent;
-        if (parent !== null) {
-            this.children[parent.uid].push(component);
-        }
-        if (component instanceof Value) {
-            this.values.push(component);
-        }
-    }
-
-    // get nestedHeight() {
-    //     let h = this.height;
-    //     let parent = this.parent;
-    //     while (parent !== null) {
-    //         h *= parent.view.height * 2;
-    //         parent = parent.view.parent;
-    //     }
-    //     return h;
-    // }
-
-    // get nestedWidth() {
-    //     let w = this.width;
-    //     let parent = this.parent;
-    //     while (parent !== null) {
-    //         w *= parent.view.width * 2;
-    //         parent = parent.view.parent;
-    //     }
-    //     return w;
-    // }
-
-    onresize = utils.throttle((widthScale: number, heightScale: number): void => {
-        for (const uid in this.components) {
-            const component = this.components[uid];
-            // TODO: Set component scaleToPixels
-            // component.onresize(
-            //     component.width * widthScale, component.height * heightScale,
-            // );
-        }
-    }, 66);
-
-    redraw() {
-        for (const uid in this.components) {
-            this.components[uid].redrawSize();
-            this.components[uid].redrawPos();
-        }
-    }
-
-    remove(component: Component) {
-        // First, remove all children ???
-        delete this.components[component.uid];
-        // foreeach child, unset parent?
-        delete this.children[component.uid];
-        delete this.parent[component.uid];
-
-
-        if (component instanceof Value) {
-            this.values.splice(this.values.indexOf(component), 1);
-        }
-    }
-
-    rescale(widthScale, heightScale) {
-        for (const uid in this.components) {
-            this.components[uid].w *= widthScale;
-            this.components[uid].h *= heightScale;
-        }
-    }
-
-    saveLayouts() {
-        for (const uid in this.components) {
-            this.components[uid].saveLayout();
-        }
-    }
-
-    toCSV(): string {
-        const data = [];
-        const csv = [];
-
-        // Extract all the data from the value components
-        this.values.forEach(value => {
-            data.push(value.dataStore.data);
-        });
-
-        // Grabs all the time steps
-        const times = this.values[0].dataStore.times;
-
-        // Headers for the csv file
-        csv.push(["Graph Name"]);
-        csv.push(["Times"]);
-
-        // Adds ensemble name and appropriate number of spaces to the header
-        this.values.forEach((value, i) => {
-            csv[0].push(value.label.innerHTML);
-            data[i].forEach(() => {
-                csv[0].push([]);
-            });
-        });
-
-        data.forEach(dims => {
-            dims.forEach((dim, i) => {
-                csv[1].push(`Dimension ${i + 1}`);
-            });
-        });
-
-        // Puts the data at each time step into a row in the csv
-        times.forEach((time, timeIdx) => {
-            const tempArr = [time];
-            data.forEach((dims, dimsIdx) => {
-                dims.forEach((dim, dimIdx) => {
-                    tempArr.push(data[dimsIdx][dimIdx][timeIdx]);
-                });
-            });
-            csv.push(tempArr);
-        });
-
-        // Turns the array into a CSV string
-        csv.forEach((elem, index) => {
-            csv[index] = elem.join(",");
-        });
-        return csv.join("\n");
-    }
-}
 
 class Action {
     apply: () => void;
@@ -216,6 +86,7 @@ export class NetGraph {
     actions: ActionStack = new ActionStack();
     components: ComponentManager = new ComponentManager();
     interactable;
+    widgets: Array<Widget>;
 
     /**
      * Since connections may go to items that do not exist yet (since they
@@ -239,12 +110,11 @@ export class NetGraph {
     offsetX: number = 0;
     offsetY: number = 0;
 
-    // COnnDict
+    // ConnDict
     svgConns: any = {};
     // SvgObjecs
     svgObjects: any = {net: {}, ens: {}, node: {}, passthrough: {}};
     uid: string;
-    viewPort: ViewPort; // WHAT DOES THIS DO?
     view: NetGraphView;
     transparentNets: boolean;
 
@@ -267,8 +137,6 @@ export class NetGraph {
         this.view.scale = this.scale;
         this.view.zoomFonts = this.zoomFonts;
 
-        this.viewPort = new ViewPort(this);
-
         // Set up interactivity
         this.interactable = interact(this.view.root);
         this.interactable.styleCursor(false)
@@ -288,9 +156,9 @@ export class NetGraph {
             document.documentElement.style.cursor = "default";
         });
         this.interactable.on("dragend", (event) => {
-            // Let the server know what happened
-            this.attached.forEach((conn) => {
-                conn.send("netgraph.pan", {x: this.offsetX, y: this.offsetY});
+            // Update internal state of components
+            this.components.components.forEach(component => {
+                component.syncWithView();
             });
         });
         this.interactable.on("dragmove", (event) => {
@@ -299,26 +167,10 @@ export class NetGraph {
             this.offsetX += event.dx / this.scaledWidth;
             this.offsetY += event.dy / this.scaledHeight;
 
-            Object.keys(this.svgObjects).forEach((objType) => {
-                Object.keys(this.svgObjects[objType]).forEach((key) => {
-                    // TODO: pos =
-                    this.svgObjects[objType][key].view.pos = [0, 0];
-                    // if (this.mmDisplay) {
-                    //     this.minimapObjects[key].redrawPosition();
-                    // }
-                });
+            this.components.components.forEach(component => {
+                const [left, top] = component.view.pos;
+                component.view.pos = [left - event.dx, top - event.dy];
             });
-            Object.keys(this.svgConns).forEach((key) => {
-                this.svgConns[key].redraw();
-            });
-
-            this.viewPort.position = {
-                newX: this.offsetX,
-                newY: this.offsetY,
-            };
-
-            // this.scaleMiniMapViewBox();
-
         });
         this.interactable.on("dragstart", () => {
             Menu.hideShown();
@@ -365,10 +217,6 @@ export class NetGraph {
             this.offsetY = (this.offsetY + yy) / zScale - yy;
 
             this.scale = zScale * this.scale;
-            this.viewPort.position = {
-                newX: this.offsetX,
-                newY: this.offsetY,
-            };
 
             // this.scaleMiniMapViewBox();
 
@@ -481,8 +329,6 @@ export class NetGraph {
         this.offsetX = x;
         this.offsetY = y;
         this.redraw();
-
-        this.viewPort.position = {newX: x, newY: y};
     }
 
     get scale(): number {
@@ -496,8 +342,6 @@ export class NetGraph {
         this.view.scale = val;
         this._scale = val;
         this.redraw();
-
-        this.viewPort.scale = this._scale;
     }
 
     /**
@@ -530,13 +374,12 @@ export class NetGraph {
     }
 
     add(component: Component) {
-        this.components.add(component);
         let group: SVGElement = this.view.root;
-        // TODO: group should be part of comopnent i guess?
-        if (component instanceof Plot) {
-            group = this.view.plots;
+        if (component instanceof Widget) {
+            group = this.view.widgets;
         } else {
             group = this.view.items;
+            this.components.add(component);
         }
 
         component.interactable.on("dragend resizeend", (event) => {
@@ -843,6 +686,54 @@ export class NetGraph {
         // if (this.view.depth === 1) {
         //     this.ng.scaleMiniMap();
         // }
+    }
+
+    toCSV(): string {
+        const data = [];
+        const csv = [];
+
+        // Extract all the data from the value components
+        this.values.forEach(value => {
+            data.push(value.datastore.data);
+        });
+
+        // Grabs all the time steps
+        const times = this.values[0].datastore.times;
+
+        // Headers for the csv file
+        csv.push(["Graph Name"]);
+        csv.push(["Times"]);
+
+        // Adds ensemble name and appropriate number of spaces to the header
+        this.values.forEach((value, i) => {
+            csv[0].push(value.label.innerHTML);
+            data[i].forEach(() => {
+                csv[0].push([]);
+            });
+        });
+
+        data.forEach(dims => {
+            dims.forEach((dim, i) => {
+                csv[1].push(`Dimension ${i + 1}`);
+            });
+        });
+
+        // Puts the data at each time step into a row in the csv
+        times.forEach((time, timeIdx) => {
+            const tempArr = [time];
+            data.forEach((dims, dimsIdx) => {
+                dims.forEach((dim, dimIdx) => {
+                    tempArr.push(data[dimsIdx][dimIdx][timeIdx]);
+                });
+            });
+            csv.push(tempArr);
+        });
+
+        // Turns the array into a CSV string
+        csv.forEach((elem, index) => {
+            csv[index] = elem.join(",");
+        });
+        return csv.join("\n");
     }
 
     /**

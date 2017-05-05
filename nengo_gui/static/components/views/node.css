@@ -1,11 +1,14 @@
-svg g.node rect {
-    fill: gray(80%);
-    stroke: gray(50%) {
-        width: 1;
-    }
-}
+svg.netgraph {
 
-svg g.passthrough circle {
-    fill: black;
-    stroke: none;
+    g.node rect {
+        fill: gray(80%);
+        stroke: gray(50%) {
+            width: 1;
+        }
+    }
+
+    g.passthrough circle {
+        fill: black;
+        stroke: none;
+    }
 }

@@ -1,54 +1,56 @@
-/**
- * Network diagram connection line.
- *
- * @constructor
- * @param {NetGraph} ng - The containing NetGraph
- * @param {dict} info - A set of constructor arguments, including:
- * @param {string} info.uid - A unique identifier
- * @param {string|null} info.parent - A containing NetGraphItem
- * @param {string[]} info.pre - uid to connect from and its parents
- * @param {string[]} info.post - uid to connect to and its parents
- */
+import { Component } from "./base";
+import { ConnectionView, RecurrentConnectionView } from "./views/connection";
 
-export class NetGraphConnection {
-    g;
-    gConns;
-    line;
-    marker;
-    miniConn;
-    minimap;
-    ng;
-    objects;
-    parent;
-    post;
-    posts;
-    pre;
-    pres;
-    recurrent;
-    recurrentEllipse;
-    removed;
-    uid;
+export abstract class ComponentConnection {
+    view: ConnectionView | RecurrentConnectionView;
 
-    constructor(ng, info, minimap, miniConn) {
-        this.ng = ng;
-        this.uid = info.uid;
+    get visible(): boolean {
+        return this.view.visible;
+    }
 
+    set visible(val: boolean) {
+        this.view.visible = val;
+    }
+}
+
+export class FeedforwardConnection extends ComponentConnection {
+    readonly pre: Component;
+    readonly post: Component;
+    view: ConnectionView;
+
+    constructor(pre, post) {
+        super();
+        console.assert(this.pre !== this.post);
+        this.pre = pre;
+        this.post = post;
+        this.view = new ConnectionView();
+
+        this.pre.interactable.on("dragmove", () => {
+            this.view.startPos = this.pre.view.centerPos;
+        });
+        this.post.interactable.on("dragmove", () => {
+            this.view.endPos = this.post.view.centerPos;
+        });
+
+    }
+
+    // constructor(ng, info, minimap, miniConn) {
         // Flag to indicate this Connection has been deleted
-        this.removed = false;
+        // this.removed = false;
 
         // The actual NetGraphItem currently connected to/from
-        this.pre = null;
-        this.post = null;
+        // this.pre = null;
+        // this.post = null;
 
-        this.minimap = minimap;
-        this.miniConn = miniConn;
-        if (!minimap) {
-            this.gConns = ng.gConns;
-            this.objects = ng.svgObjects;
-        } else {
-            this.gConns = ng.gConnsMini;
-            this.objects = ng.minimapObjects;
-        }
+        // this.minimap = minimap;
+        // this.miniConn = miniConn;
+        // if (!minimap) {
+        //     this.gConns = ng.gConns;
+        //     this.objects = ng.svgObjects;
+        // } else {
+        //     this.gConns = ng.gConnsMini;
+        //     this.objects = ng.minimapObjects;
+        // }
 
         // The uids for the pre and post items in the connection.
 
@@ -57,215 +59,80 @@ export class NetGraphConnection {
         // this does not exist (due to it being inside a collapsed network),
         // the connection will look for the next item on the list, and so on
         // until it finds one that does exist.
-        this.pres = info.pre;
-        this.posts = info.post;
+        // this.pres = info.pre;
+        // this.posts = info.post;
 
-        this.recurrent = this.pres[0] === this.posts[0];
+        // this.recurrent = this.pres[0] === this.posts[0];
 
         // Figure out the best available items to connect to
-        this.setPre(this.findPre());
-        this.setPost(this.findPost());
+        // this.setPre(this.findPre());
+        // this.setPost(this.findPost());
 
         // Determine parent and add to parent's children list
-        if (info.parent === null) {
-            this.parent = null;
-        } else {
-            this.parent = this.objects[info.parent];
-            if (!minimap) {
-                this.parent.childConnections.push(this);
-            }
-        }
+        // if (info.parent === null) {
+        //     this.parent = null;
+        // } else {
+        //     this.parent = this.objects[info.parent];
+        //     if (!minimap) {
+        //         this.parent.childConnections.push(this);
+        //     }
+        // }
 
         // Create the line and its arrowhead marker
-        this.g = ng.createSVGElement("g");
+        // this.g = ng.createSVGElement("g");
 
-        this.createLine();
+        // this.createLine();
 
-        this.redraw();
+        // this.redraw();
 
-        this.gConns.appendChild(this.g);
-    }
-
-    setRecurrent(recurrent) {
-        if (this.recurrent === recurrent) {
-            return;
-        }
-        this.removeLine();
-        this.recurrent = recurrent;
-        this.createLine();
-    }
+        // this.gConns.appendChild(this.g);
+    // }
 
     createLine() {
-        if (this.recurrent) {
-            this.recurrentEllipse = this.ng.createSVGElement("path");
-            this.recurrentEllipse.setAttribute(
-                "d",
-                "M6.451,28.748C2.448,26.041,0,22.413,0,18.425C0, " +
-                    "10.051,10.801,3.262,24.125,3.262 " +
-                    "S48.25,10.051,48.25,18.425c0," +
-                    "6.453-6.412,11.964-15.45,14.153");
-            this.recurrentEllipse.setAttribute("class", "recur");
-            this.g.appendChild(this.recurrentEllipse);
+        // if (this.recurrent) {
+            // this.recurrentEllipse = this.ng.createSVGElement("path");
+            // this.recurrentEllipse.setAttribute(
+            //     "d",
+            //     "M6.451,28.748C2.448,26.041,0,22.413,0,18.425C0, " +
+            //         "10.051,10.801,3.262,24.125,3.262 " +
+            //         "S48.25,10.051,48.25,18.425c0," +
+            //         "6.453-6.412,11.964-15.45,14.153");
+            // this.recurrentEllipse.setAttribute("class", "recur");
+            // this.g.appendChild(this.recurrentEllipse);
 
-            this.marker = this.ng.createSVGElement("path");
-            this.g.appendChild(this.marker);
+            // this.marker = this.ng.createSVGElement("path");
+            // this.g.appendChild(this.marker);
 
-            if (this.minimap === false) {
-                this.marker.setAttribute("d", "M 6.5 0 L 0 5.0 L 7.5 8.0 z");
-            } else {
-                this.marker.setAttribute("d", "M 4 0 L 0 2 L 4 4 z");
-            }
-        } else {
-            this.line = this.ng.createSVGElement("line");
-            this.g.appendChild(this.line);
-            this.marker = this.ng.createSVGElement("path");
-            if (this.minimap === false) {
-                this.marker.setAttribute("d", "M 10 0 L -5 -5 L -5 5 z");
-            } else {
-                this.marker.setAttribute("d", "M 3 0 L -2.5 -2.5 L -2.5 2.5 z");
-            }
-            this.g.appendChild(this.marker);
-        }
+            // if (this.minimap === false) {
+            //     this.marker.setAttribute("d", "M 6.5 0 L 0 5.0 L 7.5 8.0 z");
+            // } else {
+            //     this.marker.setAttribute("d", "M 4 0 L 0 2 L 4 4 z");
+            // }
+        // } else {
+            // this.line = this.ng.createSVGElement("line");
+            // this.g.appendChild(this.line);
+            // this.marker = this.ng.createSVGElement("path");
+            // if (this.minimap === false) {
+            //     this.marker.setAttribute("d", "M 10 0 L -5 -5 L -5 5 z");
+            // } else {
+            //     this.marker.setAttribute("d", "M 3 0 L -2.5 -2.5 L -2.5 2.5 z");
+            // }
+            // this.g.appendChild(this.marker);
+        // }
     }
 
     removeLine() {
-        if (this.recurrent) {
-            this.g.removeChild(this.recurrentEllipse);
-            this.g.removeChild(this.marker);
-            this.recurrentEllipse = undefined;
-            this.marker = undefined;
-        } else {
-            this.g.removeChild(this.line);
-            this.g.removeChild(this.marker);
-            this.line = undefined;
-            this.marker = undefined;
-        }
-    }
-
-    /**
-     * Set the item connecting from.
-     */
-    setPre(pre) {
-        if (this.pre !== null) {
-            // If we're currently connected, disconnect
-            const index = this.pre.connOut.indexOf(this);
-            if (index === -1) {
-                console.warn("error removing in setPre");
-            }
-            this.pre.connOut.splice(index, 1);
-        }
-        this.pre = pre;
-        if (this.pre !== null) {
-            // Add myself to pre's output connections list
-            this.pre.connOut.push(this);
-        }
-    }
-
-    /**
-     * Set the item connecting to.
-     */
-    setPost(post) {
-        if (this.post !== null) {
-            // If we're currently connected, disconnect
-            const index = this.post.connIn.indexOf(this);
-            if (index === -1) {
-                console.warn("error removing in setPre");
-            }
-            this.post.connIn.splice(index, 1);
-        }
-        this.post = post;
-        if (this.post !== null) {
-            // Add myself to post's input connections list
-            this.post.connIn.push(this);
-        }
-    }
-
-    /**
-     * Determine the best available item to connect from.
-     */
-    findPre() {
-        for (const preIdx of this.pres) {
-            const pre = this.objects[preIdx];
-            if (pre !== undefined) {
-                return pre;
-            } else {
-                // Register to be notified if a better match occurs
-                this.ng.registerConn(this, preIdx);
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Determine the best available item to connect to.
-     */
-    findPost() {
-        for (const postIdx of this.posts) {
-            const post = this.objects[postIdx];
-            if (post !== undefined) {
-                return post;
-            } else {
-                // Register to be notified if a better match occurs
-                this.ng.registerConn(this, postIdx);
-            }
-        }
-        return null;
-    }
-
-    setPres(pres) {
-        this.pres = pres;
-        this.setPre(this.findPre());
-
-        if (!this.minimap) {
-            this.miniConn.setPres(pres);
-        }
-    }
-
-    setPosts(posts) {
-        this.posts = posts;
-        this.setPost(this.findPost());
-
-        if (!this.minimap) {
-            this.miniConn.setPosts(posts);
-        }
-    }
-
-    /**
-     * Remove this connection.
-     */
-    remove() {
-        if (!this.minimap && this.parent !== null) {
-            const index = this.parent.childConnections.indexOf(this);
-            if (index === -1) {
-                console.warn("error removing in remove");
-            }
-            this.parent.childConnections.splice(index, 1);
-        }
-
-        if (this.pre != null) {
-            const index = this.pre.connOut.indexOf(this);
-            if (index === -1) {
-                console.warn("error removing from connOut");
-            }
-            this.pre.connOut.splice(index, 1);
-        }
-
-        if (this.post != null) {
-            const index = this.post.connIn.indexOf(this);
-            if (index === -1) {
-                console.warn("error removing from connIn");
-            }
-            this.post.connIn.splice(index, 1);
-        }
-
-        this.gConns.removeChild(this.g);
-        this.removed = true;
-
-        delete this.ng.svgConns[this.uid];
-
-        if (!this.minimap) {
-            this.miniConn.remove();
-        }
+        // if (this.recurrent) {
+        //     this.g.removeChild(this.recurrentEllipse);
+        //     this.g.removeChild(this.marker);
+        //     this.recurrentEllipse = undefined;
+        //     this.marker = undefined;
+        // } else {
+        //     this.g.removeChild(this.line);
+        //     this.g.removeChild(this.marker);
+        //     this.line = undefined;
+        //     this.marker = undefined;
+        // }
     }
 
     /**
@@ -287,42 +154,6 @@ export class NetGraphConnection {
         const prePos = this.pre.getScreenLocation();
 
         if (this.recurrent) {
-            const item = this.objects[this.pres[0]];
-            if (item === undefined) {
-                this.marker.setAttribute("visibility", "hidden");
-                this.recurrentEllipse.setAttribute("visibility", "hidden");
-            } else {
-                this.marker.setAttribute("visibility", "visible");
-                this.recurrentEllipse.setAttribute("visibility", "visible");
-                const height = item.getDisplayedSize()[1];
-
-                const scale = item.shape.getAttribute("transform");
-                const scaleValue = parseFloat(scale.split(/[()]+/)[1]);
-
-                if (this.minimap === false) {
-                    this.recurrentEllipse.setAttribute(
-                        "stroke-width", 2 / scaleValue);
-                } else {
-                    this.recurrentEllipse.setAttribute(
-                        "stroke-width", 1 / scaleValue);
-                }
-
-                const ex = prePos[0] - scaleValue * 17.5;
-                const ey = prePos[1] - height - scaleValue * 36;
-
-                this.recurrentEllipse.setAttribute(
-                    "transform", "translate(" + ex + "," + ey + ")" + scale);
-
-                const mx = prePos[0] - 1;
-                let my;
-                if (this.minimap === false) {
-                    my = prePos[1] - height - scaleValue * 32.15 - 5;
-                } else {
-                    my = prePos[1] - height - scaleValue * 32 - 2;
-                }
-                this.marker.setAttribute(
-                    "transform", "translate(" + mx + "," + my + ")");
-            }
         } else {
             const postPos = this.post.getScreenLocation();
             this.line.setAttribute("x1", prePos[0]);
@@ -411,5 +242,20 @@ export class NetGraphConnection {
         }
 
         return [x, y];
+    }
+}
+
+export class RecurrentConnection extends ComponentConnection {
+    readonly component: Component;
+    view: RecurrentConnectionView;
+
+    constructor(component) {
+        super();
+        this.component = component;
+        this.view = new RecurrentConnectionView();
+
+        this.component.interactable.on("dragmove", () => {
+            this.view.pos = this.component.view.centerPos;
+        });
     }
 }

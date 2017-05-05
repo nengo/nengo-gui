@@ -9,7 +9,7 @@ export class NetGraphView {
     items: SVGGElement;
     networks: SVGGElement;
     root: SVGSVGElement;
-    plots: SVGGElement;
+    widgets: SVGGElement;
 
     private _fontSize: number = 16;
     private _scale: number = 1;
@@ -28,7 +28,7 @@ export class NetGraphView {
         // Create the master SVG element
         const svg = h("svg.netgraph", {styles: {
             height: "600", position: "absolute", width: "600"
-        }}, [h("g.plots"), h("g.nets"), h("g.conns"), h("g.items")]); // defs,
+        }}, [h("g.widgets"), h("g.nets"), h("g.conns"), h("g.items")]); // defs,
 
         this.root = dom.create(svg).domNode as SVGSVGElement;
 
@@ -38,7 +38,7 @@ export class NetGraphView {
         this.networks = this.root.querySelector(".nets") as SVGGElement;
         this.conns = this.root.querySelector(".conns") as SVGGElement;
         this.items = this.root.querySelector(".items") as SVGGElement;
-        this.plots = this.root.querySelector(".plots") as SVGGElement;
+        this.widgets = this.root.querySelector(".widgets") as SVGGElement;
     }
 
     get fontSize(): number {

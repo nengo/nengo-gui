@@ -16,7 +16,6 @@ import * as $ from "jquery";
 import { DataStore } from "../datastore";
 import { Menu } from "../menu";
 import * as utils from "../utils";
-import * as viewport from "../viewport";
 import { InputDialogView } from "../views/modal";
 import { PointerView } from "./views/pointer";
 import { Widget } from "./base";

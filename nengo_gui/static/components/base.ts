@@ -5,7 +5,6 @@ import { config } from "../config";
 import { DataStore } from "../datastore";
 import { Menu } from "../menu";
 import * as utils from "../utils";
-import { ViewPort } from "../viewport";
 import {
     AxesView, ComponentView, ResizableComponentView, PlotView,
 } from "./views/base";
@@ -13,165 +12,6 @@ import { LegendView } from "./views/base";
 
 import { InputDialogView } from "../views/modal";
 import { FastWSConnection } from "../websocket";
-
-/**
- * Base class for any element that is added to the NetGraph.
- */
-// export abstract class Component {
-    // static minHeight: number = 2;
-    // static minWidth: number = 2;
-
-    // interactable;
-
-    // h: number;
-    // height: number;
-    // label: HTMLDivElement;
-    // menu: Menu;
-    // minHeight: number;
-    // minWidth: number;
-    // parent: HTMLElement;
-    // uid: string;
-    // w: number;
-    // width: number;
-    // ws;
-    // viewPort: ViewPort;
-    // x: number;
-    // y: number;
-
-    // view: ComponentView;
-
-    // constructor(parent, x, y, width, height, viewPort, label, labelVisible, uid) {
-
-        // this.interactable = interact(this.view.root);
-
-        // Prevent interact from messing up cursor
-        // this.interactable.styleCursor(true);
-
-        // this.x = x;
-        // this.y = y;
-        // this.w = width;
-        // this.h = height;
-        // this.viewPort = viewPort;
-
-        // this.redrawSize();
-        // this.redrawPos();
-
-        // TODO: parent needed?
-        // parent.appendChild(this.div);
-        // this.parent = parent;
-        // this.view.labelVisible = labelVisible;
-
-        // this.interactable.on("dragmove", (event) => {
-        //     this.x += this.viewPort.fromScreenX(event.dx);
-        //     this.y += this.viewPort.fromScreenY(event.dy);
-        //     this.redrawPos();
-        // });
-        // this.interactable.on("dragstart", () => {
-        //     Menu.hideShown();
-        // });
-
-        // Allow element to be resized
-        // this.interactable.resizable({
-        //     edges: {bottom: true, left: true, right: true, top: true},
-        // });
-        // this.interactable.on("resizestart", (event) => {
-        //     Menu.hideShown();
-        // });
-        // this.interactable.on("resizemove", (event) => {
-        //     const newWidth = event.rect.width;
-        //     const newHeight = event.rect.height;
-        //     const dleft = event.deltaRect.left;
-        //     const dtop = event.deltaRect.top;
-        //     const dright = event.deltaRect.right;
-        //     const dbottom = event.deltaRect.bottom;
-
-        //     this.x += this.viewPort.fromScreenX((dleft + dright) / 2);
-        //     this.y += this.viewPort.fromScreenY((dtop + dbottom) / 2);
-
-        //     this.w = this.viewPort.unscaleWidth(newWidth);
-        //     this.h = this.viewPort.unscaleHeight(newHeight);
-
-        //     this.onresize(newWidth, newHeight);
-        //     this.redrawSize();
-        //     this.redrawPos();
-        // })
-
-        // Open a WebSocket to the server
-        // this.uid = uid;
-        // if (this.uid !== undefined) {
-            // this.ws = new FastWSConnection(this.uid);
-            // this.ws.onmessage = (message) => {
-            //     this.onMessage(message);
-            // };
-        // }
-
-        // this.menu = new Menu();
-        // this.addMenuItems();
-
-        // interact(this.view.root)
-        //     .on("hold", (event) => { // Change to 'tap' for right click
-        //         if (event.button === 0) {
-        //             if (Menu.shown !== null) {
-        //                 Menu.hideShown();
-        //             } else {
-        //                 this.menu.show(event.clientX, event.clientY);
-        //             }
-        //             event.stopPropagation();
-        //         }
-        //     })
-        //     .on("tap", (event) => { // Get rid of menus when clicking off
-        //         if (event.button === 0) {
-        //             if (Menu.shown !== null) {
-        //                 Menu.hideShown();
-        //             }
-        //         }
-        //     });
-        // window.addEventListener("contextmenu", (event) => {
-        //     event.preventDefault();
-        //     event.stopPropagation();
-        //     if (Menu.shown !== null) {
-        //         Menu.hideShown();
-        //     } else {
-        //         this.menu.show(event.clientX, event.clientY);
-        //     }
-        //     return false;
-        // });
-    // }
-
-    /**
-     * Do any visual updates needed due to changes in the underlying data.
-     */
-    // TODO: ensure this is throttled
-    // abstract update(event);
-
-//     updateLayout(config) {
-//         this.w = config.width;
-//         this.h = config.height;
-//         this.x = config.x;
-//         this.y = config.y;
-
-//         this.redrawSize();
-//         this.redrawPos();
-//         // this.onresize(
-//         //     this.viewPort.scaleWidth(this.w),
-//         //     this.viewPort.scaleHeight(this.h),
-//         // );
-
-//         this.labelVisible = config.labelVisible;
-//     }
-
-//     redrawSize() {
-//         this.width = this.viewPort.scaleWidth(this.w);
-//         this.height = this.viewPort.scaleHeight(this.h);
-//         // this.view.scale = [this.width, this.height];
-//     }
-
-//     redrawPos() {
-//         const x = this.viewPort.toScreenX(this.x - this.w);
-//         const y = this.viewPort.toScreenY(this.y - this.h);
-//         // utils.setTransform(this.div, x, y);
-//     }
-// }
 
 export abstract class Component {
     minimap;
@@ -240,9 +80,7 @@ export abstract class Component {
             Menu.hideShown();
         });
         this.interactable.on("dragend", () => {
-            const [left, top] = this.view.pos;
-            this._left = left / this.scaleToPixels;
-            this._top = top / this.scaleToPixels;
+            this.syncWithView();
         });
 
         // --- Menu
@@ -267,14 +105,6 @@ export abstract class Component {
             toggleMenu(event);
         });
     }
-
-    // _getScreenW() {
-    //     return this.view.nestedWidth * this.ng.width * this.ng.scale;
-    // }
-
-    // _getScreenH() {
-    //     return this.view.nestedHeight * this.ng.height * this.ng.scale;
-    // }
 
     get labelVisible(): boolean {
         return this.view.labelVisible;
@@ -467,6 +297,12 @@ export abstract class Component {
         this.view.ondomadd();
         this.scaleToPixels = 1; // TODO: get from somewhere
     }
+
+    syncWithView = utils.throttle(() => {
+        const [left, top] = this.view.pos;
+        this._left = left / this.scaleToPixels;
+        this._top = top / this.scaleToPixels;
+    }, 20);
 }
 
 export abstract class ResizableComponent extends Component {

@@ -18,7 +18,6 @@ import { dom, h  } from "maquette";
 import { DataStore } from "../datastore";
 import { Menu } from "../menu";
 import * as utils from "../utils";
-import * as viewport from "../viewport";
 import { InputDialogView } from "../views/modal";
 import { ValueView } from "./views/value";
 import { Widget } from "./base";
@@ -109,10 +108,6 @@ export class Slider extends Widget {
             this.onResetSim();
         });
 
-        this.onresize(
-            this.viewPort.scaleWidth(this.w),
-            this.viewPort.scaleHeight(this.h)
-        );
     }
 
     get view(): ValueView {

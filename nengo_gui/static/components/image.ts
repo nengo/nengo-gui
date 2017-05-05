@@ -13,7 +13,6 @@
 import * as d3 from "d3";
 
 import { DataStore } from "../datastore";
-import * as viewport from "../viewport";
 import { Plot } from "./base";
 import { ValueView } from "./views/value";
 
@@ -68,11 +67,6 @@ export class Image extends Plot {
         this.canvas = document.createElement("CANVAS");
         this.canvas.width = this.pixelsX;
         this.canvas.height = this.pixelsY;
-
-        this.onresize(
-            this.viewPort.scaleWidth(this.w),
-            this.viewPort.scaleHeight(this.h)
-        );
 
     }
 

@@ -30,6 +30,9 @@ import { Value } from "../components/value";
 import { XYValue } from "../components/xyvalue";
 
 // component views
+import {
+    ConnectionView, RecurrentConnectionView
+} from "../components/views/connection";
 import { EnsembleView } from "../components/views/ensemble";
 import { NetworkView } from "../components/views/network";
 import { NodeView, PassthroughNodeView } from "../components/views/node";
@@ -134,8 +137,10 @@ export const component = {
 }
 
 export const componentview = {
+    ConnectionView: () => new ConnectionView(),
     EnsembleView: () => new EnsembleView("Ensemble"),
     NetworkView: () => new NetworkView("Network"),
     NodeView: () => new NodeView("Node"),
     PassthroughNodeView: () => new PassthroughNodeView("PassthroughNode"),
+    RecurrentConnectionView: () => new RecurrentConnectionView(),
 }
