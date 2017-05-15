@@ -1,6 +1,6 @@
 import collections
 
-from nengo.spa.module import Module
+import nengo_spa as spa
 
 from nengo_gui.components.component import Component
 
@@ -31,7 +31,7 @@ class SpaPlot(Component):
     @staticmethod
     def applicable_targets(obj):
         targets = []
-        if isinstance(obj, Module):
+        if isinstance(obj, spa.Network):
             for target_name, (obj, vocab) in obj.outputs.items():
                 if vocab is not None:
                     targets.append(target_name)

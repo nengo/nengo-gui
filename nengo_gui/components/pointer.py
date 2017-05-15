@@ -2,7 +2,8 @@ import copy
 import itertools
 
 import nengo
-import nengo.spa as spa
+import nengo_spa as spa
+from nengo_spa.examine import pairs
 import numpy as np
 
 from nengo_gui.components.component import Component
@@ -30,7 +31,7 @@ class Pointer(SpaPlot):
         # Looping-in has the advantage of actually changing the
         # neural activity of the population, rather than just changing
         # the output.
-        self.loop_in_whitelist = [spa.Buffer, spa.Memory, spa.State]
+        self.loop_in_whitelist = [spa.State]
 
         self.node = None
         self.conn1 = None
@@ -60,13 +61,13 @@ class Pointer(SpaPlot):
         key_similarities = np.dot(vocab.vectors, x)
         over_threshold = key_similarities > 0.01
         matches = zip(key_similarities[over_threshold],
-                      np.array(vocab.keys)[over_threshold])
+                      [k for i, k in enumerate(vocab) if over_threshold[i]])
         if self.config.show_pairs:
             self.vocab_out.include_pairs = True
-            pair_similarities = np.dot(vocab.vector_pairs, x)
+            pair_similarities = np.array([np.dot(vocab.parse(p).v, x) for p in pairs(vocab)])
             over_threshold = pair_similarities > 0.01
             pair_matches = zip(pair_similarities[over_threshold],
-                               np.array(vocab.key_pairs)[over_threshold])
+                    (k for i, k in enumerate(pairs(vocab)) if over_threshold[i]))
             matches = itertools.chain(matches, pair_matches)
 
         text = ';'.join(['%0.2f%s' % ( min(sim, 9.99), key) for sim, key in matches])
