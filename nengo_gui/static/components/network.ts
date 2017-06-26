@@ -1,111 +1,21 @@
 import { Component, ResizableComponent, Plot } from "./base";
-import { FeedforwardConnection, RecurrentConnection } from "./connection";
-import { config } from "../config";
+import {
+    ComponentConnection, FeedforwardConnection, RecurrentConnection
+} from "./connection";
 import { Menu } from "../menu";
+import { NetGraph } from "../netgraph";
 import * as utils from "../utils";
 import { NetworkView } from "./views/network";
 
-export class ComponentManager {
-    components: Array<Component> = [];
-    connections: {[uids: string]: ComponentConnection} = {};
-    networks: Array<Network> = [];
-
-    add(component: Component) {
-        this.components.push(component);
-        if (component instanceof Network) {
-            this.networks.push(component);
-        }
-    }
-
-    // get nestedHeight() {
-    //     let h = this.height;
-    //     let parent = this.parent;
-    //     while (parent !== null) {
-    //         h *= parent.view.height * 2;
-    //         parent = parent.view.parent;
-    //     }
-    //     return h;
-    // }
-
-    // get nestedWidth() {
-    //     let w = this.width;
-    //     let parent = this.parent;
-    //     while (parent !== null) {
-    //         w *= parent.view.width * 2;
-    //         parent = parent.view.parent;
-    //     }
-    //     return w;
-    // }
-
-    connect(pre: Component, post: Component) {
-        console.assert(this.contains(pre));
-        console.assert(this.contains(post));
-        const uids = `${pre.uid}->${post.uid}`;
-        if (!(uids in this.connections)) {
-            if (pre === post) {
-                this.connections[uids] = new RecurrentConnection(pre, post);
-            } else {
-
-            }
-        }
-    }
-
-    contains(component: Component) {
-        return this.components.indexOf(component) > -1;
-    }
-
-    disconnect(pre: Component, post: Component) {
-        const uids = `${pre.uid}->${post.uid}`;
-        if (uids in this.connections) {
-            // TODO: need to remove from document?
-            delete this.connections[uids];
-        }
-    }
-
-    onresize = utils.throttle((widthScale: number, heightScale: number): void => {
-        // for (const uid in this.components) {
-        //     const component = this.components[uid];
-        //     // TODO: Set component scaleToPixels
-        //     // component.onresize(
-        //     //     component.width * widthScale, component.height * heightScale,
-        //     // );
-        // }
-    }, 66);
-
-    remove(component: Component) {
-        // First, remove all children ???
-        const index = this.components.indexOf(component);
-        this.components.splice(index, 1);
-    }
-
-    rescale(widthScale, heightScale) {
-        this.components.forEach(component => {
-            if (component instanceof ResizableComponent) {
-                // TODO: resizable component should do scale probably
-                const scale = component.scale;
-                component.scale = [scale[0] * widthScale, scale[1] * heightScale];
-            }
-        });
-    }
-
-    saveLayouts() {
-        this.components.forEach(component => {
-            // TODO: layout?
-            // component.saveLayout();
-        });
-    }
-}
-
 export class Network extends ResizableComponent {
-    components: ComponentManager = new ComponentManager();
 
     expanded: boolean;
-    // TODO: what type is this supposed to be?
-    spTargets;
-    defaultOutput;
+    // spTargets; // Vocab...? Subclass for SPA networks?
+    // defaultOutput;
     gClass: string[];
     gNetworks: SVGElement;
 
+    protected _depth: number;
     protected _view: NetworkView;
 
     constructor(
@@ -118,71 +28,37 @@ export class Network extends ResizableComponent {
         dimensions: number,
         miniItem = null,
         expanded = false,
-        spTargets = null,
+        depth = 0,
         defaultOutput = null,
     ) {
         super(left, top, width, height, parent, uid, dimensions, miniItem);
 
-        // TODO: This use of gItems and gNetworks is definitely wrong
-        // this.gNetworks = this.ng.view.gNetworks;
-
         this.expanded = expanded;
-        this.spTargets = spTargets;
-        this.defaultOutput = defaultOutput;
+        this.depth = depth;
+        // this.defaultOutput = defaultOutput;
 
-        // Set of NetGraphItems and NetGraphConnections that are inside
-        // this network
-        this.children = [];
-        this.childConnections = [];
-
-        this.computeFill();
-
-        // If a network is flagged to expand on creation, then expand it
-        if (expanded) {
-            // Report to server but do not add to the undo stack
-            this.expand(true, true);
-        }
-
-        // TODO: Is this the right way to override an interact method?
-        this.interactable.on("doubletap", (event) => {
-            // Get rid of menus when clicking off
-            if (event.button === 0) {
-                if (Menu.shown !== null) {
-                    Menu.hideShown();
-                } else {
-                    if (this.expanded) {
-                        this.collapse(true);
-                    } else {
-                        this.expand();
-                    }
-                }
-            }
-        });
-
-        this.interactable.on("dragstart", () => {
-            Menu.hideShown();
-            this.moveToFront();
-        });
+        // Do in expanded or depth setter?
+        // this.computeFill();
     }
 
-    get transparentNets(): boolean {
-        return config.transparentNets;
+    get depth(): number {
+        return this._depth;
     }
 
-    // TODO: this feels like a weird level to manipulate all other
-    // networks from. Should push up to NetGraph
-    set transparentNets(val: boolean) {
-        if (val === config.transparentNets) {
-            return;
-        }
-        config.transparentNets = val;
-        // Object.keys(this.ng.svgObjects.net).forEach((key) => {
-        //     const net = this.ng.svgObjects.net[key];
-        //     net.computeFill();
-        //     if (net.expanded) {
-        //         net.view.transparentShape(val);
-        //     }
-        // });
+    set depth(val: number) {
+        const fill = Math.round(255 * Math.pow(0.8, val));
+        const stroke = Math.round(255 * Math.pow(0.8, val + 2));
+        this.view.fill = `rgb(${fill},${fill},${fill})`;
+        this.view.stroke = `rgb(${stroke},${stroke},${stroke})`;
+        this._depth = val;
+    }
+
+    get transparent(): boolean {
+        return this.view.transparent;
+    }
+
+    set transparent(val: boolean ) {
+        this.view.transparent = val;
     }
 
     get view(): NetworkView {
@@ -193,24 +69,15 @@ export class Network extends ResizableComponent {
     }
 
     addMenuItems() {
-        this.menu.addAction("Collapse network", () => {
-            this.collapse(true);
-        }, () => this.expanded);
-        this.menu.addAction("Auto-layout", () => {
-            this.requestFeedforwardLayout();
-        }, () => this.expanded);
-        this.menu.addAction("Expand network", () => {
-            this.expand();
-        }, () => !this.expanded);
-        this.menu.addAction("Output Value", () => {
-            this.createGraph("Value");
-        }, () => this.defaultOutput && this.spTargets.length === 0);
-        this.menu.addAction("Semantic pointer cloud", () => {
-            this.createGraph("Pointer", this.spTargets[0]);
-        }, () => this.spTargets.length > 0);
-        this.menu.addAction("Semantic pointer plot", () => {
-            this.createGraph("SpaSimilarity", this.spTargets[0]);
-        }, () => this.spTargets.length > 0);
+        // this.menu.addAction("Output Value", () => {
+        //     this.createGraph("Value");
+        // }, () => this.defaultOutput && this.spTargets.length === 0);
+        // this.menu.addAction("Semantic pointer cloud", () => {
+        //     this.createGraph("Pointer", this.spTargets[0]);
+        // }, () => this.spTargets.length > 0);
+        // this.menu.addAction("Semantic pointer plot", () => {
+        //     this.createGraph("SpaSimilarity", this.spTargets[0]);
+        // }, () => this.spTargets.length > 0);
         this.menu.addAction("Details ...", () => {
             this.createModal();
         });
@@ -223,123 +90,34 @@ export class Network extends ResizableComponent {
         // const depth = this.ng.transparentNets ? 1 : this.view.depth;
         // TODO: depth
         const depth = 1;
-        const fill = Math.round(255 * Math.pow(0.8, depth));
-        const stroke = Math.round(255 * Math.pow(0.8, depth + 2));
-        this.view.fill = `rgb(${fill},${fill},${fill})`;
-        this.view.stroke = `rgb(${stroke},${stroke},${stroke})`;
     }
 
-    /**
-     * Expand a collapsed network.
-     */
-    expand(returnToServer = true, auto = false) {
-        // Default to true if no parameter is specified
-        if (typeof returnToServer !== "undefined") {
-            returnToServer = true;
-        }
-        auto = typeof auto !== "undefined" ? auto : false;
+    onnetgraphadd(netgraph: NetGraph) {
+        this.menu.addAction("Collapse network", () => {
+            netgraph.collapse(this);
+        }, () => this.expanded);
+        this.menu.addAction("Auto-layout", () => {
+            this.requestFeedforwardLayout();
+        }, () => this.expanded);
+        this.menu.addAction("Expand network", () => {
+            netgraph.expand(this);
+        }, () => !this.expanded);
 
-        this.gClass.push("expanded");
-
-        if (!this.expanded) {
-            this.expanded = true;
-            // if (this.ng.transparentNets) {
-            //     this.view.transparentShape(false);
-            // }
-            // this.ng.view.gItems.removeChild(this.view.g);
-            // this.gNetworks.appendChild(this.view.g);
-            if (!this.minimap) {
-                this.miniItem.expand(returnToServer, auto);
+        this.interactable.on("doubletap", (event) => {
+            // Get rid of menus when clicking off
+            if (event.button === 0) {
+                if (Menu.shown !== null) {
+                    Menu.hideShown();
+                } else {
+                    if (this.expanded) {
+                        netgraph.collapse(this);
+                    } else {
+                        netgraph.expand(this);
+                    }
+                }
             }
-        } else {
-            console.warn(
-                "expanded a network that was already expanded: " + this);
-        }
+        });
 
-        if (returnToServer) {
-            // if (auto) {
-            //     // Update the server, but do not place on the undo stack
-            //     this.ng.notify("autoExpand", {uid: this.uid});
-            // } else {
-            //     this.ng.notify("expand", {uid: this.uid});
-            // }
-        }
-    }
-
-    /**
-     * Collapse an expanded network.
-     */
-    collapse(reportToServer, auto=false) { // tslint:disable-line
-        this.gClass.pop();
-
-        // Remove child NetGraphItems and NetGraphConnections
-        while (this.childConnections.length > 0) {
-            this.childConnections[0].remove();
-        }
-        while (this.children.length > 0) {
-            this.children[0].remove();
-        }
-
-        if (this.expanded) {
-            this.expanded = false;
-            // if (this.ng.transparentNets) {
-            //     this.view.transparentShape(false);
-            // }
-            // this.gNetworks.removeChild(this.view.g);
-            // this.ng.view.gItems.appendChild(this.view.g);
-            // if (!this.minimap) {
-            //     this.miniItem.collapse(reportToServer, auto);
-            // }
-        } else {
-            console.warn(
-                "collapsed a network that was already collapsed: " + this);
-        }
-
-        if (reportToServer) {
-            // if (auto) {
-            //     // Update the server, but do not place on the undo stack
-            //     this.ng.notify("autoCollapse", {uid: this.uid});
-            // } else {
-            //     this.ng.notify("collapse", {uid: this.uid});
-            // }
-        }
-    }
-
-    moveToFront() {
-        // this.view.parent.ng.view.gItems.appendChild(this.view.g);
-
-        // Object.keys(this.children).forEach((key) => {
-        //     this.children[key].moveToFront();
-        // });
-    }
-
-    // redraw() {
-    //     super.redraw();
-    //     this.redrawChildren();
-    //     this.redrawChildConnections();
-    //     this.redrawConnections();
-    // }
-
-    // redrawChildren() {
-    //     // Update any children's positions
-    //     for (const child of this.children) {
-    //         child.redraw();
-    //     }
-    // }
-
-    // redrawChildConnections() {
-    //     // Update any children's positions
-    //     for (const child of this.childConnections) {
-    //         child.redraw();
-    //     }
-    // }
-
-    remove() {
-        super.remove();
-        if (this.expanded) {
-            // Collapse the item, but don't tell the server since that would
-            // update the server's config
-            this.collapse(false);
-        }
+        super.onnetgraphadd(netgraph)
     }
 }

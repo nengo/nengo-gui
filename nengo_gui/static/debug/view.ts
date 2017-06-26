@@ -2,6 +2,60 @@ import { VNode, dom, h } from "maquette";
 
 import "./view.css";
 
+export class ControlGroupView {
+    evalButton: HTMLButtonElement;
+    evalOutput: HTMLElement;
+    input: HTMLInputElement;
+    removeButton: HTMLButtonElement;
+    root: HTMLDivElement;
+
+    constructor(label: string) {
+        const node =
+            h("div.control-group.last", [
+                h("div", [
+                    h("p", [h("code", [`var obj = new ${label}(...);`])]),
+                    h("button.btn.btn-xs.btn-default.pull-right#remove", [
+                        `Remove ${label}`,
+                    ]),
+                ]),
+                h("div.input-group", [
+                    h("input.form-control", {
+                        "spellcheck": false,
+                        "type": "text"
+                    }),
+                    h("span.input-group-btn", [
+                        h("button.btn.btn-default#eval", {"type": "button"}, [
+                            "Eval JS",
+                        ]),
+                    ]),
+                ]),
+                h("div", [
+                    h("p", [
+                        h("code", [h("span.glyphicon.glyphicon-console")]),
+                    ]),
+                    h("p", [h("code#output")]),
+                ]),
+            ]);
+        this.root = dom.create(node).domNode as HTMLDivElement;
+        this.input = this.root.querySelector("input") as HTMLInputElement;
+        this.evalButton =
+            this.root.querySelector("#eval") as HTMLButtonElement;
+        this.evalOutput = this.root.querySelector("#output") as HTMLElement;
+        this.removeButton =
+            this.root.querySelector("#remove") as HTMLButtonElement;
+    }
+
+    addConnectButton() {
+        const node =
+            h("button.btn.btn-xs.btn-default.pull-right#connect", [
+                "Connect to random object",
+            ]);
+        const button = dom.create(node).domNode as HTMLButtonElement;
+        this.root.firstChild.appendChild(button);
+        return button;
+    }
+}
+
 export class DebugView {
     iframe: HTMLIFrameElement;
     log: HTMLButtonElement;
@@ -79,45 +133,9 @@ export class DebugView {
     }
 
     addControlGroup(label: string) {
-        const controlGroupNode =
-            h("div.control-group.last", [
-                h("div", [
-                    h("p", [h("code", [`var obj = new ${label}(...);`])]),
-                    h("button.btn.btn-xs.btn-default.pull-right#remove", [
-                        `Remove ${label}`,
-                    ]),
-                ]),
-                h("div.input-group", [
-                    h("input.form-control", {
-                        "spellcheck": false,
-                        "type": "text"
-                    }),
-                    h("span.input-group-btn", [
-                        h("button.btn.btn-default#eval", {"type": "button"}, [
-                            "Eval JS",
-                        ]),
-                    ]),
-                ]),
-                h("div", [
-                    h("p", [
-                        h("code", [h("span.glyphicon.glyphicon-console")]),
-                    ]),
-                    h("p", [h("code#output")]),
-                ]),
-            ]);
-        const root = dom.create(controlGroupNode).domNode as HTMLDivElement;
-        const input = root.querySelector("input");
-        const evalBtn = root.querySelector("#eval") as HTMLButtonElement;
-        const evalOutput = root.querySelector("#output") as HTMLElement;
-        const remove = root.querySelector("#remove") as HTMLButtonElement;
-        this.controls.appendChild(root);
-        return {
-            controlGroupRoot: root,
-            evalBtn: evalBtn,
-            evalOutput: evalOutput,
-            input: input,
-            remove: remove,
-        };
+        const group = new ControlGroupView(label);
+        this.controls.appendChild(group.root);
+        return group;
     }
 
     register(category: string, typeName: string) {
@@ -127,7 +145,7 @@ export class DebugView {
         return root.querySelector("a") as HTMLAnchorElement;
     }
 
-    removeControlGroup(root: HTMLDivElement) {
-        this.controls.removeChild(root);
+    removeControlGroup(group: ControlGroupView) {
+        this.controls.removeChild(group.root);
     }
 }

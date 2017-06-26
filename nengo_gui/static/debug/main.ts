@@ -13,7 +13,7 @@ import "imports-loader?$=jquery,jQuery=jquery!jqueryfiletree/src/jQueryFileTree"
 import "../favicon.ico";
 
 import * as items from "./items";
-import { NengoDebug, NengoWindow } from "../nengo";
+import { DebugItem, NengoDebug, NengoWindow } from "../nengo";
 import { DebugView } from "./view";
 
 if (typeof localStorage === "undefined" || localStorage === null) {
@@ -82,8 +82,8 @@ export class Debug {
                     const clickable = this.view.register(category, label);
 
                     clickable.onclick = () => {
-                        const dbg = this.nengoDebug.add(category, label);
-                        this.attachControlGroup(dbg, label);
+                        const item = this.nengoDebug.add(category, label);
+                        this.attachControlGroup(item);
                         this.nengoWindow.dispatchEvent(new Event("resize"));
                     };
                 });
@@ -95,58 +95,60 @@ export class Debug {
         });
     }
 
-    attachControlGroup(
-        dbg: {eval: (command: string) => any, obj: any, remove: () => void},
-        label: string,
-    ) {
-        const {
-            controlGroupRoot,
-            evalBtn,
-            evalOutput,
-            input,
-            remove,
-        } = this.view.addControlGroup(label);
+    attachControlGroup(item: DebugItem) {
+        const group = this.view.addControlGroup(item.name);
+        if (item.category === "component") {
+            const connectButton = group.addConnectButton();
+            connectButton.addEventListener("click", event => {
+                const ng = this.nengoDebug.netgraph;
+                const randomObj = ng.components.components[
+                    Math.floor(Math.random() * ng.components.length)
+                ];
+                console.log(`Connecting to ${randomObj.uid}`);
+                ng.connect(item.obj, randomObj);
+            });
+        }
 
         // Add autocomplete for the text input
-        const inputHistory = new CommandHistory(label);
-        const autocomplete = new Awesomplete(input, {
+        const inputHistory = new CommandHistory(item.name);
+        const autocomplete = new Awesomplete(group.input, {
             list: inputHistory.history,
             minChars: 1,
             maxItems: 4,
         });
-        Object.getOwnPropertyNames(dbg.obj).forEach(key => {
+        Object.getOwnPropertyNames(item.obj).forEach(key => {
             inputHistory.add("obj." + key);
         });
 
         // Eval JS when pressing enter or clicking on eval button
         const evalView = () => {
-            const js: string = input.value;
+            const js: string = group.input.value;
             if (js !== "") {
-                const out = dbg.eval(js);
-                input.value = "";
-                evalOutput.textContent = out;
+                const out = item.eval(js);
+                group.input.value = "";
+                group.evalOutput.textContent = out;
                 inputHistory.add(js);
                 autocomplete.list = inputHistory.history;
             }
         };
-        evalBtn.onclick = () => {
+        group.evalButton.addEventListener("click", () => {
             evalView();
-        };
+        });
 
         // TODO: hijack console.log
         // stackoverflow.com/questions/11403107/
 
-        input.onkeypress = event => {
+        group.input.addEventListener("keypress", event => {
             if (event.key.toLowerCase() === "enter") {
                 evalView();
                 return false;
             }
-        };
-        remove.onclick = event => {
+        });
+        group.removeButton.addEventListener("click", event => {
             inputHistory.save();
-            dbg.remove();
-            this.view.removeControlGroup(controlGroupRoot);
-        };
+            this.nengoDebug.remove(item);
+            this.view.removeControlGroup(group);
+        });
     }
 }
 

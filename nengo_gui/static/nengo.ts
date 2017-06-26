@@ -14,6 +14,7 @@ import "./nengo.css";
 
 import * as items from "./debug/items";
 
+import { Network } from "./components/network";
 import { NetGraph } from "./netgraph";
 import { MockConnection } from "./websocket";
 
@@ -23,8 +24,39 @@ import { MockConnection } from "./websocket";
 // simcontrol config/args (simconfig) -- shown_time, uid, kept_time
 // filename
 
+export class DebugItem {
+    category: string;
+    name: string;
+    obj: any;
+    root: HTMLDivElement;
+
+    constructor(category: string, name: string) {
+        this.category = category;
+        this.name = name;
+        this.obj = items[category][name]();
+
+        if ("view" in this.obj) {
+            this.root = this.obj.view.root;
+        } else if ("root" in this.obj) {
+            this.root = this.obj.root;
+        } else {
+            console.error("Cannot find root.");
+        }
+    }
+
+    eval(command: string) {
+        const obj = this.obj;
+        const retval = eval(command);
+        if (retval) {
+            console.log(retval);
+        }
+        return retval;
+    }
+
+}
+
 export class NengoDebug {
-    live: any[] = [];
+    items: Array<DebugItem> = [];
     netgraph: NetGraph = new NetGraph("debug");
 
     constructor() {
@@ -34,53 +66,43 @@ export class NengoDebug {
     }
 
     add(category: string, name: string) {
-        const obj = items[category][name]();
-        let root: HTMLDivElement;
-        if ("view" in obj) {
-            root = obj.view.root;
-        } else if ("root" in obj) {
-            root = obj.root;
-        } else {
-            console.error("Cannot find root.");
-        }
-
-        if (category === "componentview") {
-            this.netgraph.view.root.appendChild(root);
-            if ("ondomadd" in obj) {
-                obj.ondomadd();
+        const item = new DebugItem(category, name);
+        if (item.category === "componentview") {
+            this.netgraph.view.root.appendChild(item.root);
+            if ("ondomadd" in item.obj) {
+                item.obj.ondomadd();
             }
-        } else if (category === "component") {
-            this.netgraph.add(obj);
+        } else if (item.category === "component") {
+            // Add the item to the last added network.
+            let network = null;
+            this.netgraph.components.components.forEach(component => {
+                if (component instanceof Network) {
+                    network = component;
+                }
+            });
+            this.netgraph.add(item.obj, network);
         } else {
-            document.body.appendChild(root);
+            document.body.appendChild(item.root);
         }
-        this.live.push(obj);
-        return {
-            eval: (command: string) => {
-                const retval =  eval(command);
-                if (retval) {
-                    console.log(retval);
-                }
-                return retval;
-            },
-            obj: obj,
-            remove: () => {
-                if (category === "componentview") {
-                    this.netgraph.view.root.removeChild(root);
-                } else if (category === "component") {
-                    this.netgraph.remove(obj);
-                } else {
-                    document.body.removeChild(root);
-                }
-                // Bootstrap modals can leave behind a backdrop. Annoying!
-                const backdrop = document.body.querySelector(".modal-backdrop");
-                if (backdrop !== null) {
-                    document.body.classList.remove("modal-open");
-                    document.body.removeChild(backdrop);
-                }
-                this.live.splice(this.live.indexOf(obj), 1);
-            },
-        };
+        this.items.push(item);
+        return item;
+    }
+
+    remove(item: DebugItem) {
+        if (item.category === "componentview") {
+            this.netgraph.view.root.removeChild(item.root);
+        } else if (item.category === "component") {
+            this.netgraph.remove(item.obj);
+        } else {
+            document.body.removeChild(item.root);
+        }
+        // Bootstrap modals can leave behind a backdrop. Annoying!
+        const backdrop = document.body.querySelector(".modal-backdrop");
+        if (backdrop !== null) {
+            document.body.classList.remove("modal-open");
+            document.body.removeChild(backdrop);
+        }
+        this.items.splice(this.items.indexOf(item), 1);
     }
 
     toggleLog() {

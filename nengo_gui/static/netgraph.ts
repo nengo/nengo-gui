@@ -18,7 +18,10 @@ import { Menu } from "./menu";
 import * as utils from "./utils";
 import { Connection } from "./websocket";
 import { Component, ResizableComponent, Widget } from "./components/base";
-import { ComponentManager } from "./components/network";
+import {
+    ComponentConnection, FeedforwardConnection, RecurrentConnection
+} from "./components/connection";
+import { Network } from "./components/network";
 import { Value } from "./components/value";
 import { NetGraphView } from "./views/netgraph";
 
@@ -36,7 +39,7 @@ import { NetGraphView } from "./views/netgraph";
 //     this.depth = this.parent.view.depth + 1;
 // }
 
-class Action {
+export class Action {
     apply: () => void;
     undo: () => void;
 
@@ -81,10 +84,179 @@ export class ActionStack {
     }
 }
 
+export class ConnectionManager {
+    byComponent: {[uid: string]: Array<ComponentConnection>} = {};
+    connections: {[uids: string]: ComponentConnection} = {};
+
+    private static removeFromArray(
+        array: Array<ComponentConnection>,
+        connection: ComponentConnection
+    ) {
+        const ix = array.indexOf(connection);
+        if (ix > -1) {
+            array.splice(ix, 1);
+        }
+    }
+
+    connect(pre: Component, post: Component) {
+        const uids = `${pre.uid}->${post.uid}`;
+        if (!(uids in this.connections)) {
+            if (!(pre.uid in this.byComponent)) {
+                this.byComponent[pre.uid] = [];
+            }
+            if (!(post.uid in this.byComponent)) {
+                this.byComponent[post.uid] = [];
+            }
+
+            let connection;
+            if (pre === post) {
+                connection = new RecurrentConnection(pre);
+            } else {
+                connection = new FeedforwardConnection(pre, post);
+            }
+            this.connections[uids] = connection;
+            this.byComponent[pre.uid].push(connection);
+            this.byComponent[post.uid].push(connection);
+        }
+        return this.connections[uids];
+    }
+
+    disconnect(pre: Component, post: Component) {
+        const uids = `${pre.uid}->${post.uid}`;
+        if (uids in this.connections) {
+            const conn = this.connections[uids];
+            delete this.connections[uids];
+            ConnectionManager.removeFromArray(this.byComponent[pre.uid], conn);
+            ConnectionManager.removeFromArray(this.byComponent[post.uid], conn);
+        }
+    }
+
+    removeAll(component: Component) {
+        this.byComponent[component.uid].forEach(conn => {
+            if (conn instanceof FeedforwardConnection) {
+                this.disconnect(conn.pre, conn.post);
+            } else if (conn instanceof RecurrentConnection) {
+                this.disconnect(conn.component, conn.component);
+            }
+        });
+        console.assert(this.byComponent[component.uid].length === 0);
+    }
+}
+
+export class ComponentManager {
+    components: Array<Component> = [];
+    networks: {[uid: string]: Network} = {};
+    widgets: Array<Widget> = [];
+
+    get length(): number {
+        return this.components.length;
+    }
+
+    add(component: Component, network: Network = null) {
+        this.components.push(component);
+        this.networks[component.uid] = network;
+        if (component instanceof Widget) {
+            this.widgets.push(component);
+        }
+    }
+
+    // get nestedHeight() {
+    //     let h = this.height;
+    //     let parent = this.parent;
+    //     while (parent !== null) {
+    //         h *= parent.view.height * 2;
+    //         parent = parent.view.parent;
+    //     }
+    //     return h;
+    // }
+
+    // get nestedWidth() {
+    //     let w = this.width;
+    //     let parent = this.parent;
+    //     while (parent !== null) {
+    //         w *= parent.view.width * 2;
+    //         parent = parent.view.parent;
+    //     }
+    //     return w;
+    // }
+
+    onresize = utils.throttle((widthScale: number, heightScale: number): void => {
+        // for (const uid in this.components) {
+        //     const component = this.components[uid];
+        //     // TODO: Set component scaleToPixels
+        //     // component.onresize(
+        //     //     component.width * widthScale, component.height * heightScale,
+        //     // );
+        // }
+    }, 66);
+
+    remove(component: Component) {
+        // First, remove all children ???
+        const index = this.components.indexOf(component);
+        this.components.splice(index, 1);
+    }
+
+    saveLayouts() {
+        this.components.forEach(component => {
+            // TODO: layout?
+            // component.saveLayout();
+        });
+    }
+
+    toCSV(): string {
+        const data = [];
+        const csv = [];
+
+        // Extract all the data from the value components
+        this.widgets.forEach(widget => {
+            data.push(widget.datastore.data);
+        });
+
+        // Grabs all the time steps
+        const times = this.widgets[0].datastore.times;
+
+        // Headers for the csv file
+        csv.push(["Graph Name"]);
+        csv.push(["Times"]);
+
+        // Adds ensemble name and appropriate number of spaces to the header
+        this.widgets.forEach((value, i) => {
+            csv[0].push(value.uid);
+            data[i].forEach(() => {
+                csv[0].push([]);
+            });
+        });
+
+        data.forEach(dims => {
+            dims.forEach((dim, i) => {
+                csv[1].push(`Dimension ${i + 1}`);
+            });
+        });
+
+        // Puts the data at each time step into a row in the csv
+        times.forEach((time, timeIx) => {
+            const row = [time];
+            data.forEach((dims, dimsIx) => {
+                dims.forEach((dim, dimIx) => {
+                    row.push(data[dimsIx][dimIx][timeIx]);
+                });
+            });
+            csv.push(row);
+        });
+
+        // Turns the array into a CSV string
+        csv.forEach((elem, i) => {
+            csv[i] = elem.join(",");
+        });
+        return csv.join("\n");
+    }
+}
+
 export class NetGraph {
 
     actions: ActionStack = new ActionStack();
     components: ComponentManager = new ComponentManager();
+    connections: ConnectionManager = new ConnectionManager();
     interactable;
     widgets: Array<Widget>;
 
@@ -116,7 +288,6 @@ export class NetGraph {
     svgObjects: any = {net: {}, ens: {}, node: {}, passthrough: {}};
     uid: string;
     view: NetGraphView;
-    transparentNets: boolean;
 
     private attached: Connection[] = [];
 
@@ -169,8 +340,12 @@ export class NetGraph {
 
             this.components.components.forEach(component => {
                 const [left, top] = component.view.pos;
-                component.view.pos = [left - event.dx, top - event.dy];
+                component.view.pos = [left + event.dx, top + event.dy];
             });
+
+            for (const uid in this.connections.connections) {
+                this.connections.connections[uid].syncWithComponents();
+            }
         });
         this.interactable.on("dragstart", () => {
             Menu.hideShown();
@@ -263,9 +438,7 @@ export class NetGraph {
         });
 
         // Respond to resize events
-        window.addEventListener("resize", (event) => {
-            this.onresize(event);
-        });
+        window.addEventListener("resize", (event) => this.onresize(event));
 
         // this.createMinimap();
         this.menu = new Menu();
@@ -362,6 +535,22 @@ export class NetGraph {
         return this.view.width * this.scale;
     }
 
+    get transparentNets(): boolean {
+        return config.transparentNets;
+    }
+
+    set transparentNets(val: boolean) {
+        if (val === config.transparentNets) {
+            return;
+        }
+        config.transparentNets = val;
+        this.components.components.forEach(component => {
+            if (component instanceof Network) {
+                component.transparent = val;
+            }
+        });
+    }
+
     get zoomFonts(): boolean {
         return config.zoomFonts;
     }
@@ -373,25 +562,24 @@ export class NetGraph {
         config.zoomFonts = val;
     }
 
-    add(component: Component) {
-        let group: SVGElement = this.view.root;
+    private viewGroup(component: Component) {
         if (component instanceof Widget) {
-            group = this.view.widgets;
+            return this.view.widgets;
+        } else if (component instanceof Network) {
+            return this.view.networks;
         } else {
-            group = this.view.items;
-            this.components.add(component);
+            return this.view.items;
         }
+    }
 
-        component.interactable.on("dragend resizeend", (event) => {
-            // const info = {
-            //     height: this.h,
-            //     labelVisible: this.labelVisible,
-            //     width: this.w,
-            //     x: this.x,
-            //     y: this.y,
-            // };
-            // this.ws.send("config:" + JSON.stringify(info));
-        })
+    add(component: Component, network: Network = null) {
+        const group = this.viewGroup(component);
+        this.components.add(component, network);
+        if (network != null) {
+            component.onnetadd(network);
+        }
+        group.appendChild(component.view.root);
+        component.ondomadd();
 
         // -- Move element to top when clicked on
         const raiseToTop = () => {
@@ -403,8 +591,17 @@ export class NetGraph {
         component.view.root.addEventListener("mousedown", raiseToTop);
         component.view.root.addEventListener("touchstart", raiseToTop);
 
-        group.appendChild(component.view.root);
-        component.ondomadd();
+        // -- Record moves and resizes
+        this.interactable.on("dragend resizeend", (event) => {
+            // const info = {
+            //     height: this.h,
+            //     labelVisible: this.labelVisible,
+            //     width: this.w,
+            //     x: this.x,
+            //     y: this.y,
+            // };
+            // this.ws.send("config:" + JSON.stringify(info));
+        });
     }
 
     addMenuItems() {
@@ -515,6 +712,48 @@ export class NetGraph {
         this.attached.push(conn);
     }
 
+    collapse(network: Network, reportToServer, auto = false) {
+        this.gClass.pop();
+
+        // Remove child NetGraphItems and NetGraphConnections
+        while (this.childConnections.length > 0) {
+            this.childConnections[0].remove();
+        }
+        while (this.children.length > 0) {
+            this.children[0].remove();
+        }
+
+        if (this.expanded) {
+            this.expanded = false;
+            // if (this.ng.transparentNets) {
+            //     this.view.transparentShape(false);
+            // }
+            // this.gNetworks.removeChild(this.view.g);
+            // this.ng.view.gItems.appendChild(this.view.g);
+            // if (!this.minimap) {
+            //     this.miniItem.collapse(reportToServer, auto);
+            // }
+        } else {
+            console.warn(
+                "collapsed a network that was already collapsed: " + this);
+        }
+
+        if (reportToServer) {
+            // if (auto) {
+            //     // Update the server, but do not place on the undo stack
+            //     this.ng.notify("autoCollapse", {uid: this.uid});
+            // } else {
+            //     this.ng.notify("collapse", {uid: this.uid});
+            // }
+        }
+    }
+
+    connect(pre: Component, post: Component) {
+        const connection = this.components.connect(pre, post);
+        this.view.conns.appendChild(connection.view.root);
+        // TODO: update positions without having to move
+    }
+
     // this will need to be refactored later
     createNode(ngiArg, interArg, dimensions, html) {
         // TODO: fill in the rest of the args
@@ -556,6 +795,40 @@ export class NetGraph {
                     conn.redraw();
                 }
             }
+        }
+    }
+
+    expand(network: Network, returnToServer = true, auto = false) {
+        // Default to true if no parameter is specified
+        if (typeof returnToServer !== "undefined") {
+            returnToServer = true;
+        }
+        auto = typeof auto !== "undefined" ? auto : false;
+
+        this.gClass.push("expanded");
+
+        if (!this.expanded) {
+            this.expanded = true;
+            // if (this.ng.transparentNets) {
+            //     this.view.transparentShape(false);
+            // }
+            // this.ng.view.gItems.removeChild(this.view.g);
+            // this.gNetworks.appendChild(this.view.g);
+            if (!this.minimap) {
+                this.miniItem.expand(returnToServer, auto);
+            }
+        } else {
+            console.warn(
+                "expanded a network that was already expanded: " + this);
+        }
+
+        if (returnToServer) {
+            // if (auto) {
+            //     // Update the server, but do not place on the undo stack
+            //     this.ng.notify("autoExpand", {uid: this.uid});
+            // } else {
+            //     this.ng.notify("expand", {uid: this.uid});
+            // }
         }
     }
 
@@ -648,20 +921,31 @@ export class NetGraph {
     }
 
     remove(component: Component, undoFlag = false, notifyServer = true) {
-        this.components.remove(component);
+        // TODO: unduplicate from add
+        let group: SVGElement = this.view.root;
+        if (component instanceof Widget) {
+            group = this.view.widgets;
+        } else {
+            group = this.view.items;
+            this.components.remove(component);
+        }
+
+        group.removeChild(component.view.root);
+
+        // Call collapse on networks...?
 
         // --- from NetGraphItemView
         // this.gItems.removeChild(this.g);
 
         // --- from Component
 
-        if (notifyServer) {
-            if (undoFlag) {
-                // this.ws.send("removeUndo");
-            } else {
-                // this.ws.send("remove");
-            }
-        }
+        // if (notifyServer) {
+        //     if (undoFlag) {
+        //         // this.ws.send("removeUndo");
+        //     } else {
+        //         // this.ws.send("remove");
+        //     }
+        // }
         // this.parent.removeChild(this.view.root);
         // allComponents.remove(this);
 
@@ -686,76 +970,5 @@ export class NetGraph {
         // if (this.view.depth === 1) {
         //     this.ng.scaleMiniMap();
         // }
-    }
-
-    toCSV(): string {
-        const data = [];
-        const csv = [];
-
-        // Extract all the data from the value components
-        this.values.forEach(value => {
-            data.push(value.datastore.data);
-        });
-
-        // Grabs all the time steps
-        const times = this.values[0].datastore.times;
-
-        // Headers for the csv file
-        csv.push(["Graph Name"]);
-        csv.push(["Times"]);
-
-        // Adds ensemble name and appropriate number of spaces to the header
-        this.values.forEach((value, i) => {
-            csv[0].push(value.label.innerHTML);
-            data[i].forEach(() => {
-                csv[0].push([]);
-            });
-        });
-
-        data.forEach(dims => {
-            dims.forEach((dim, i) => {
-                csv[1].push(`Dimension ${i + 1}`);
-            });
-        });
-
-        // Puts the data at each time step into a row in the csv
-        times.forEach((time, timeIdx) => {
-            const tempArr = [time];
-            data.forEach((dims, dimsIdx) => {
-                dims.forEach((dim, dimIdx) => {
-                    tempArr.push(data[dimsIdx][dimIdx][timeIdx]);
-                });
-            });
-            csv.push(tempArr);
-        });
-
-        // Turns the array into a CSV string
-        csv.forEach((elem, index) => {
-            csv[index] = elem.join(",");
-        });
-        return csv.join("\n");
-    }
-
-    /**
-     * Expand or collapse a network.
-     */
-    toggleNetwork({uid}: {uid: string}) {
-        const item = this.svgObjects[uid];
-        if (item.expanded) {
-            item.collapse(true);
-        } else {
-            item.expand();
-        }
-    }
-
-    updateTransparency() {
-        const opacity = this.transparentNets ? 0.0 : 1.0;
-        Object.keys(this.svgObjects).forEach((key) => {
-            const ngi = this.svgObjects[key];
-            ngi.computeFill();
-            if (ngi.type === "net" && ngi.expanded) {
-                ngi.shape.style["fill-opacity"] = opacity;
-            }
-        });
     }
 }

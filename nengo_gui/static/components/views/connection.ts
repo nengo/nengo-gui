@@ -8,6 +8,14 @@ import * as utils from "../../utils"
 
 import "./connection.css";
 
+function arrowhead(rotate: number = 0): VNode {
+    return h("path.arrow", {
+        d: "M 10,0 L -5,-5 -5,5 z",
+        transform: `translate(0,0) rotate(${rotate})`,
+    });
+}
+
+
 export class ConnectionView {
     static arrowLocation = 0.6;
 
@@ -18,10 +26,7 @@ export class ConnectionView {
     constructor() {
         const node = h("g.connection", [
             h("line", {x1: "0", x2: "10", y1: "0", y2: "10"}),
-            h("path.arrow", {
-                d: "M 10,0 L -5,-5 -5,5 z",
-                transform: "translate(0,0) rotate(0)",
-            }),
+            arrowhead(),
         ]);
         this.root = utils.domCreateSVG(node) as SVGGElement;
         this.arrow = this.root.querySelector("path.arrow") as SVGPathElement;
@@ -82,6 +87,7 @@ export class ConnectionView {
 }
 
 export class RecurrentConnectionView {
+    static arrowRotation = 171; // In degrees
 
     arrow: SVGGElement;
     path: SVGGElement;
@@ -94,11 +100,8 @@ export class RecurrentConnectionView {
             h("g.connection.recurrent", {
                 transform: "translate(0,0)",
             }, [
-                h("path", {d: "M0,0"}),
-                h("path.arrow", {
-                    d: "M6.5,0 L0,5.0 7.5,8.0 z",
-                    transform: "translate(0,0)",
-                }),
+                h("path", {d: ""}),
+                arrowhead(RecurrentConnectionView.arrowRotation),
             ]);
 
         this.root = utils.domCreateSVG(node) as SVGGElement;
@@ -111,36 +114,18 @@ export class RecurrentConnectionView {
     }
 
     set pos(val: [number, number]) {
-        setTranslate(this.root, val[0], val[1]);
+        const [w, h] = [this.width, this.height];
+        const r = RecurrentConnectionView.arrowRotation;
+        setTranslate(this.root, val[0] + w * 0.15, val[1] - h * 1.1);
+        this.arrow.setAttribute("transform", utils.singleline`
+            translate(${-w * 0.13},${h * .1165})
+            rotate(${r - Math.max(30 - h, 0) * 0.8})
+        `);
+    }
 
-        // const height = item.getDisplayedSize()[1];
-
-        // const scale = item.shape.getAttribute("transform");
-        // const scaleValue = parseFloat(scale.split(/[()]+/)[1]);
-
-        // if (this.minimap === false) {
-        //     this.recurrentEllipse.setAttribute(
-        //         "stroke-width", 2 / scaleValue);
-        // } else {
-        //     this.recurrentEllipse.setAttribute(
-        //         "stroke-width", 1 / scaleValue);
-        // }
-
-        // const ex = prePos[0] - scaleValue * 17.5;
-        // const ey = prePos[1] - height - scaleValue * 36;
-
-        // this.recurrentEllipse.setAttribute(
-        //     "transform", "translate(" + ex + "," + ey + ")" + scale);
-
-        // const mx = prePos[0] - 1;
-        // let my;
-        // if (this.minimap === false) {
-        //     my = prePos[1] - height - scaleValue * 32.15 - 5;
-        // } else {
-        //     my = prePos[1] - height - scaleValue * 32 - 2;
-        // }
-        // this.marker.setAttribute(
-        //     "transform", "translate(" + mx + "," + my + ")");
+    get height(): number {
+        // Note: aspect ratio is 1 : 0.675
+        return this._width * 0.675
     }
 
     get width(): number {
@@ -148,14 +133,22 @@ export class RecurrentConnectionView {
     }
 
     set width(val: number) {
-        // Note: aspect ratio is 10 : 6.75
         const w = val;
+        // x goes into the negative because we set the position to be
+        // the center of the object
         const d = utils.singleline`
-            M${w * .1337},${w * .59656}
-            C${w * .0507},${w * .5397} 0,${w * .4645} 0,${w * .3819}
-            C0,${w * .2083} ${w * .22385},${w * .0676} ${w * 0.5},${w * .0676}
-            S${w},${w * .2083} ${w},${w * .3819}
-            C${w},${w * .5156} ${w * 0.867},${w * .63} ${w * 0.68},${w * .675}
+            M${w * -.3663},${w * .59656}
+            C${w * -.4493},${w * .5397}
+            ${w * -.5},${w * .4645}
+            ${w * -.5},${w * .3819}
+            ${w * -.5},${w * .2083}
+            ${w * -.27615},${w * .0676}
+            0,${w * .0676}
+            S${w * .5},${w * .2083}
+            ${w * .5},${w * .3819}
+            C${w * .5},${w * .5156}
+            ${w * 0.367},${w * .63}
+            ${w * 0.18},${w * .675}
         `;
         this.path.setAttribute("d", d);
         this._width = val;

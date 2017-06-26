@@ -14,16 +14,11 @@ import { InputDialogView } from "../views/modal";
 import { FastWSConnection } from "../websocket";
 
 export abstract class Component {
+
     minimap;
     miniItem;
     _labelBelow: boolean;
     menu: Menu;
-
-    // TODO: do we want to track connections here...?
-    childConnections;
-    children;
-    connIn = []; // NetGraphConnections leading into this item
-    connOut = []; // NetGraphConnections leading out of this item
 
     uid: string;
 
@@ -298,6 +293,15 @@ export abstract class Component {
         this.scaleToPixels = 1; // TODO: get from somewhere
     }
 
+    onnetadd(network: Network) {
+        this.interactable.draggable({
+            restrict: {restriction: network.view.root},
+        });
+    }
+
+    onnetgraphadd(netgraph: NetGraph) {
+    }
+
     syncWithView = utils.throttle(() => {
         const [left, top] = this.view.pos;
         this._left = left / this.scaleToPixels;
@@ -313,14 +317,14 @@ export abstract class ResizableComponent extends Component {
         edges: {bottom: true, left: true, right: true, top: true},
         invert: "none",
         margin: 10,
-        restrict: {
-            restriction: {
-                bottom: 600,
-                left: 0,
-                right: 600,
-                top: 0,
-            }
-        }
+        // restrict: {
+        //     restriction: {
+        //         bottom: 600,
+        //         left: 0,
+        //         right: 600,
+        //         top: 0,
+        //     }
+        // }
     };
 
     protected _height: number;
@@ -404,6 +408,12 @@ export abstract class ResizableComponent extends Component {
         return this._width;
     }
 
+    onnetadd(network: Network) {
+        this.interactable.resizable({
+            restrict: {restriction: network.view.root},
+        });
+        super.onnetadd(network);
+    }
 }
 
 export abstract class Widget extends ResizableComponent {
