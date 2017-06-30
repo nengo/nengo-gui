@@ -12,7 +12,8 @@ Nengo.Hotkeys = function () {
     document.addEventListener('keydown', function(ev) {
         if (self.active) {
 
-            var on_editor = (ev.target.className === 'ace_text-input');
+            var is_editable = (ev.target.tagName === 'INPUT' ||
+                ev.target.tagName == 'TEXTAREA');
 
             if (typeof ev.key != 'undefined') {
                 var key = ev.key;
@@ -60,14 +61,15 @@ Nengo.Hotkeys = function () {
                 ev.preventDefault();
             }
             // run model with spacebar or with shift-enter
-            if ((key == ' ' && !on_editor) || (ev.shiftKey && key == 'enter')) {
+            if ((key == ' ' && !is_editable) ||
+                    (ev.shiftKey && key == 'enter')) {
                 if (!ev.repeat) {
                     sim.on_pause_click();
                 }
                 ev.preventDefault();
             }
             // bring up help menu with ?
-            if (key == '?' && !on_editor) {
+            if (key == '?' && !is_editable) {
                 self.callMenu();
                 ev.preventDefault();
             }
@@ -77,7 +79,7 @@ Nengo.Hotkeys = function () {
                 ev.preventDefault();
             }
             // disable backspace navigation
-            if (key == 'backspace' && !on_editor) {
+            if (key == 'backspace' && !is_editable) {
                 ev.preventDefault();
             }
             // toggle auto-updating with TODO: pick a good shortcut
