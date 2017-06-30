@@ -22,6 +22,7 @@ Release History
 0.3.2 (unreleased)
 ==================
 
+- Fixed backspace not working on sliders, search box
 - Added autocomplete to text editor
 - Added visual depiction of modulatory and inhibitory connections
 - Token-based authentication
