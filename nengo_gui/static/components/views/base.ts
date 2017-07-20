@@ -1,7 +1,7 @@
 import { VNode, dom, h } from "maquette";
 
 import {
-    getScale, getTranslate, setScale, setTranslate
+    getScale, getTranslate, setScale, setTranslate,
 } from "../../views/views";
 
 import "./base.css";
@@ -79,7 +79,7 @@ export abstract class ComponentView {
     }
 
     get pos(): [number, number] {
-        return getTranslate(this.root)
+        return getTranslate(this.root);
     }
 
     set pos(val: [number, number]) {
@@ -189,7 +189,7 @@ export class Crosshair {
         return [
             Number(this.xText.textContent),
             Number(this.yText.textContent),
-        ]
+        ];
     }
 
     set value(val: [number, number]) {
@@ -218,7 +218,7 @@ export class Axis {
 
     constructor(xy: "X" | "Y") {
         const node = h(`g.axis.axis${xy}.unselectable`, {
-            transform: "translate(0,0)"
+            transform: "translate(0,0)",
         });
         this.g = utils.domCreateSVG(node) as SVGGElement;
         this.orientation = xy === "X" ? "horizontal" : "vertical";
@@ -269,14 +269,14 @@ export class AxesView {
 }
 
 export class LegendView {
-    colors: Array<string>;
+    colors: string[];
     root: SVGGElement;
 
-    private _labels: Array<SVGTextElement> = [];
-    private _legendItems: Array<SVGGElement> = [];
-    private _values: Array<SVGTextElement> = [];
+    private _labels: SVGTextElement[] = [];
+    private _legendItems: SVGGElement[] = [];
+    private _values: SVGTextElement[] = [];
 
-    constructor(colors: Array<string>) {
+    constructor(colors: string[]) {
         this.colors = colors;
         const dimensions = this.colors.length;
         const node = h("g.legend", {transform: "translate(0,0)"});
@@ -285,11 +285,11 @@ export class LegendView {
         this.labels = [];
     }
 
-    get labels(): Array<string> {
-        return this._labels.map(label => label.textContent);
+    get labels(): string[] {
+        return this._labels.map((label) => label.textContent);
     }
 
-    set labels(val: Array<string>) {
+    set labels(val: string[]) {
         this._labels.forEach((label, i) => {
             if (i >= val.length) {
                 label.textContent = `Dimension ${i + 1}`;
@@ -313,7 +313,7 @@ export class LegendView {
     }
 
     get pos(): [number, number] {
-        return getTranslate(this.root)
+        return getTranslate(this.root);
     }
 
     set pos(val: [number, number]) {
@@ -325,12 +325,12 @@ export class LegendView {
     }
 
     set valuesVisible(val: boolean) {
-        this._values.forEach(value => {
+        this._values.forEach((value) => {
             value.style.display = val ? null : "none";
-        })
+        });
     }
 
-    set values(val: Array<number>) {
+    set values(val: number[]) {
         console.assert(val.length === this.numLabels);
         this._values.forEach((value, i) => {
             value.textContent = val[i].toFixed(2);
@@ -353,17 +353,17 @@ export class LegendView {
                 }),
                 h("text.value", {
                     styles: {display: "none"}, // Hide by default
-                    y: `${i * 20 + 9}`
+                    y: `${i * 20 + 9}`,
                 }),
             ]);
         const legendItem = utils.domCreateSVG(node) as SVGGElement;
         this.root.appendChild(legendItem);
         this._legendItems.push(legendItem);
         this._labels.push(
-            legendItem.querySelector("text.label") as SVGTextElement
+            legendItem.querySelector("text.label") as SVGTextElement,
         );
         this._values.push(
-            legendItem.querySelector("text.value") as SVGTextElement
+            legendItem.querySelector("text.value") as SVGTextElement,
         );
     }
 
@@ -379,7 +379,7 @@ export class LegendView {
 
 export abstract class PlotView extends ResizableComponentView {
     axes: AxesView;
-    colors: Array<string>;
+    colors: string[];
     legend: LegendView;
     plot: SVGGElement;
 
@@ -395,11 +395,11 @@ export abstract class PlotView extends ResizableComponentView {
         this.root.appendChild(this.body);
     }
 
-    get legendLabels(): Array<string> {
+    get legendLabels(): string[] {
         return this.legend.labels;
     }
 
-    set legendLabels(val: Array<string>) {
+    set legendLabels(val: string[]) {
         this.legend.labels = val;
     }
 

@@ -60,8 +60,8 @@ export abstract class Component {
         // TODO: Dicuss: previously, only plots had inertia. Should they all?
         this.interactable.draggable({inertia: true});
         this.interactable.on("dragmove", (event) => {
-            const [left, top] = this.view.pos;
-            this.view.pos = [left + event.dx, top + event.dy];
+            const [vLeft, vTop] = this.view.pos;
+            this.view.pos = [vLeft + event.dx, vTop + event.dy];
 
             // TODO: redraw
             // this.redraw();
@@ -311,8 +311,6 @@ export abstract class Component {
 
 export abstract class ResizableComponent extends Component {
 
-    // TODO: do we need viewport anymore?
-
     static resizeOptions: any = {
         edges: {bottom: true, left: true, right: true, top: true},
         invert: "none",
@@ -353,11 +351,11 @@ export abstract class ResizableComponent extends Component {
         });
         this.interactable.on("resizemove", (event) => {
             const dRect = event.deltaRect;
-            const [left, top] = this.view.pos;
-            const [width, height] = this.view.scale;
+            const [vLeft, vTop] = this.view.pos;
+            const [vWidth, vHeight] = this.view.scale;
 
-            this.view.pos = [left + dRect.left, top + dRect.top];
-            this.view.scale = [width + dRect.width, height + dRect.height];
+            this.view.pos = [vLeft + dRect.left, vTop + dRect.top];
+            this.view.scale = [vWidth + dRect.width, vHeight + dRect.height];
             // this.view.contSize(event);
             // this.redraw();
 
@@ -366,9 +364,9 @@ export abstract class ResizableComponent extends Component {
             // }
         });
         this.interactable.on("resizeend", (event) => {
-            const [width, height] = this.view.scale;
-            this._width = width / this.scaleToPixels;
-            this._height = height / this.scaleToPixels;
+            const [vWidth, vHeight] = this.view.scale;
+            this._width = vWidth / this.scaleToPixels;
+            this._height = vHeight / this.scaleToPixels;
 
             // this.view.constrainPosition();
             // this.redraw();
@@ -440,14 +438,14 @@ export abstract class Widget extends ResizableComponent {
         window.addEventListener(
             "TimeSlider.moveShown", utils.throttle((e: CustomEvent) => {
                 this.currentTime = e.detail.shownTime[1];
-            }, 50) // Update once every 50 ms
+            }, 50), // Update once every 50 ms
         );
     }
 
     /**
      * Receive new line data from the server.
      */
-    add(data: Array<number>) {
+    add(data: number[]) {
         // TODO: handle this in the websocket code
         // const size = this.dimensions + 1;
         // // Since multiple data packets can be sent with a single event,
@@ -476,7 +474,7 @@ export abstract class Widget extends ResizableComponent {
             this.labelVisible = false;
             // see component.interactable.on("dragend resizeend")
             // this.saveLayout();
-        }, () => this.labelVisible)
+        }, () => this.labelVisible);
         this.menu.addAction("Show label", () => {
             this.labelVisible = true;
             // see component.interactable.on("dragend resizeend")
@@ -492,7 +490,7 @@ export abstract class Widget extends ResizableComponent {
         const modal = new InputDialogView(
             String(this.synapse),
             "Synaptic filter time constant (in seconds)",
-            "Input should be a non-negative number"
+            "Input should be a non-negative number",
         );
         modal.title = "Set synaptic filter...";
         modal.ok.addEventListener("click", () => {
@@ -514,7 +512,7 @@ export abstract class Widget extends ResizableComponent {
 
         $(modal).validator({
             custom: {
-                ngvalidator: item => {
+                ngvalidator: (item) => {
                     return utils.isNum(item.value) && Number(item.value) >= 0;
                 },
             },
@@ -540,7 +538,7 @@ export class Axis {
 
     constructor(xy: "X" | "Y", g: SVGGElement, lim: [number, number]) {
         this.scale = d3.scale.linear();
-        this.axis = d3.svg.axis()
+        this.axis = d3.svg.axis();
         this.axis.orient(xy === "X" ? "bottom" : "left");
         this.axis.scale(this.scale);
         this.g = d3.select(g);
@@ -659,7 +657,7 @@ export class Axes {
         this.view.y.pos = [yWidth, 0];
         this.y.pixelLim = [this._height - xHeight, 0];
         this.view.crosshair.scale = [
-            this._width, this._height - xHeight
+            this._width, this._height - xHeight,
         ];
     }
 
@@ -701,9 +699,9 @@ export abstract class Plot extends Widget {
 
         this.interactable.on("resizemove", (event) => {
             // Resizing the view happens in the superclass; we update axes here
-            const [width, height] = this.view.scale;
+            const [vWidth, wHeight] = this.view.scale;
             this.axes.scale = [
-                width * this.scaleToPixels, height * this.scaleToPixels
+                vWidth * this.scaleToPixels, wHeight * this.scaleToPixels,
             ];
             this.syncWithDataStore();
         });
@@ -711,18 +709,18 @@ export abstract class Plot extends Widget {
         window.addEventListener(
             "TimeSlider.moveShown", utils.throttle((e: CustomEvent) => {
                 this.xlim = e.detail.shownTime;
-            }, 50) // Update once every 50 ms
+            }, 50), // Update once every 50 ms
         );
         window.addEventListener("SimControl.reset", (e) => {
             this.reset();
         });
     }
 
-    get legendLabels(): Array<string> {
+    get legendLabels(): string[] {
         return this.view.legendLabels;
     }
 
-    set legendLabels(val: Array<string>) {
+    set legendLabels(val: string[]) {
         this.view.legendLabels = val;
     }
 
@@ -784,7 +782,7 @@ export abstract class Plot extends Widget {
             // Excissive entries get ignored.
             // TODO: Allow escaping of commas
             if ((labelCSV !== null) && (labelCSV !== "")) {
-                this.legendLabels = labelCSV.split(",").map(s => s.trim());
+                this.legendLabels = labelCSV.split(",").map((s) => s.trim());
             }
             $(modal).modal("hide");
         });
