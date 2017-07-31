@@ -1,12 +1,13 @@
 from __future__ import print_function
-import os
+
 import inspect
-import nengo_gui
+import os
 import time
 
+import nengo_gui
 
-def update_editor(driver, nengoCode):
 
+def update_editor(driver, nengo_code):
     """Inserts a string which represents code into ace editor
 
     Example:
@@ -17,15 +18,14 @@ def update_editor(driver, nengoCode):
     Ace editor will update with "print hello world"
     """
 
-    nengoCode = nengoCode.replace("\n", "\\n").replace("\r", "\\r")
-    js = "var editor = ace.edit('editor');editor.setValue('"+nengoCode+"');"
+    nengo_code = nengo_code.replace("\n", "\\n").replace("\r", "\\r")
+    js = "var editor = ace.edit('editor');editor.setValue('%s');" % nengo_code
     driver.execute_script(js)
     time.sleep(1)
 
 
 def reset_page(driver):
-
-    """Resets the Nengo gui page
+    """Resets the GUI page.
 
     Example:
     driver = webdriver.firefox()
@@ -33,8 +33,8 @@ def reset_page(driver):
     reset_page(driver)
     The page then resets
     """
-    driver.execute_script("toolbar.reset_model_layout();");
-    time.sleep(0.3);
+    driver.execute_script("toolbar.reset_model_layout();")
+    time.sleep(0.3)
 
 
 def start_stop_sim(driver):
@@ -44,7 +44,6 @@ def start_stop_sim(driver):
 
 
 def folder_location(var_path, indiv_file=None):
-
     """Returns a list of the raw text from a python file in var_path
 
      Example:
@@ -84,7 +83,6 @@ def folder_location(var_path, indiv_file=None):
 
 
 def mouse_scroll(driver, scroll_y):
-
     """scrolls by scroll_y in the netgraph div"""
 
     element = driver.find_element_by_id('netgraph')
@@ -98,22 +96,3 @@ def mouse_scroll(driver, scroll_y):
                 evt.clientY = %s ;
                 netg.dispatchEvent(evt);'''
     driver.execute_script(script % (scroll_y, mouse_x, mouse_y))
-
-
-def imgur_screenshot(driver):
-
-    """Takes a screenshot, uploads it to imgur, and prints the link"""
-
-    import pyimgur
-    driver.get_screenshot_as_file('test_result.png')
-    client_id = 'ce3e3bc9c9f0af0'
-    client_secret = 'b033592e871bd14ac89d3e7356d8d96691713170'
-    im = pyimgur.Imgur(client_id, client_secret)
-
-    current_folder = os.getcwd()
-    PATH = os.path.join(current_folder, 'test_result.png')
-    uploaded_image = im.upload_image(PATH, title="Uploaded to Imgur")
-    os.remove('test_result.png')
-    print()
-    print(uploaded_image.title)
-    print(uploaded_image.link)

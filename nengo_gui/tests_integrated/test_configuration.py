@@ -2,11 +2,11 @@ import time
 
 from selenium.webdriver import ActionChains
 
-from nengo_gui import testing_tools as tt
+from . import reset_page
 
 
 def test_config_persists(driver):
-    tt.reset_page(driver)
+    reset_page(driver)
     driver.execute_script("$('#Config_menu').click()")
     time.sleep(0.5)
     actions = ActionChains(driver)

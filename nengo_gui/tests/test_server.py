@@ -59,10 +59,11 @@ class SocketMock(object):
 
 class TestHttpWsRequestHandler(object):
     def test_get(self):
-        request = SocketMock('''GET / HTTP/1.1
-Host: localhost
-User-Agent: nengo_gui
-''')
+        request = SocketMock("\n".join([
+            "GET / HTTP/1.1",
+            "Host: localhost",
+            "User-Agent: nengo_gui",
+        ]))
 
         class HandlerClass(server.HttpWsRequestHandler):
             def __init__(self, request, client_address, srv):
@@ -80,14 +81,15 @@ User-Agent: nengo_gui
         assert handler.method_called
 
     def test_upgrade_to_websocket(self):
-        request = SocketMock('''GET /resource_name HTTP/1.1
-Upgrade: websocket
-Connection: Upgrade
-Origin: http://localhost:80
-Host: localhost:80
-Sec-WebSocket-Key: AQIDBAUGBwgJCgsMDQ4PEC==
-Sec-WebSocket-Version: 13
-''')
+        request = SocketMock("\n".join([
+            "GET /resource_name HTTP/1.1",
+            "Upgrade: websocket",
+            "Connection: Upgrade",
+            "Origin: http://localhost:80",
+            "Host: localhost:80",
+            "Sec-WebSocket-Key: AQIDBAUGBwgJCgsMDQ4PEC==",
+            "Sec-WebSocket-Version: 13",
+        ]))
 
         class HandlerClass(server.HttpWsRequestHandler):
             def ws_default(self):
@@ -97,6 +99,7 @@ Sec-WebSocket-Version: 13
                 return ['localhost:80']
 
         handler = HandlerClass(request, 'localhost', ServerMock())
+        assert handler
         # Ignore errors in decoding because binary WebSocket data might follow
         # response.
         response = request.file_io.written_data.decode(
@@ -110,20 +113,22 @@ Sec-WebSocket-Version: 13
             response, re.M)
 
     def test_bad_upgrade_to_websocket(self):
-        request = SocketMock('''GET /resource_name HTTP/1.1
-Upgrade: websocket
-Connection: Upgrade
-Origin: http://localhost:80
-Host: localhost:80
-Sec-WebSocket-Key: null
-Sec-WebSocket-Version: 13
-''')
+        request = SocketMock("\n".join([
+            "GET /resource_name HTTP/1.1",
+            "Upgrade: websocket",
+            "Connection: Upgrade",
+            "Origin: http://localhost:80",
+            "Host: localhost:80",
+            "Sec-WebSocket-Key: null",
+            "Sec-WebSocket-Version: 13",
+        ]))
 
         class HandlerClass(server.HttpWsRequestHandler):
             def get_expected_origins(self):
                 return ['localhost:80']
 
         handler = HandlerClass(request, 'localhost', ServerMock())
+        assert handler
         response = request.file_io.written_data.decode('utf-8')
 
         assert re.match(r'^HTTP\/\d+\.\d+\s+400.*$', response, re.M)
@@ -142,12 +147,13 @@ Sec-WebSocket-Version: 13
 
     def test_parsing_resource_post(self):
         content = 'p2=3&p3=0'
-        request = SocketMock('''POST /res/file?p1=1&p2=2&p1=0 HTTP/1.1
-Content-Type:application/x-www-form-urlencoded; charset=UTF-8
-Content-Length: {len}
-
-{content}
-'''.format(len=len(content), content=content))
+        request = SocketMock("\n".join([
+            "POST /res/file?p1=1&p2=2&p1=0 HTTP/1.1",
+            "Content-Type:application/x-www-form-urlencoded; charset=UTF-8",
+            "Content-Length: {len}",
+            "",
+            "{content}",
+        ]).format(len=len(content), content=content))
 
         class HandlerClass(server.HttpWsRequestHandler):
             def http_default(self):
@@ -173,14 +179,15 @@ Content-Length: {len}
         assert handler.called
 
     def test_ws_dispatch(self):
-        request = SocketMock('''GET /ws HTTP/1.1
-Upgrade: websocket
-Connection: Upgrade
-Origin: http://localhost:80
-Host: localhost:80
-Sec-WebSocket-Key: AQIDBAUGBwgJCgsMDQ4PEC==
-Sec-WebSocket-Version: 13
-''')
+        request = SocketMock("\n".join([
+            "GET /ws HTTP/1.1",
+            "Upgrade: websocket",
+            "Connection: Upgrade",
+            "Origin: http://localhost:80",
+            "Host: localhost:80",
+            "Sec-WebSocket-Key: AQIDBAUGBwgJCgsMDQ4PEC==",
+            "Sec-WebSocket-Version: 13",
+        ]))
 
         class HandlerClass(server.HttpWsRequestHandler):
             called = False

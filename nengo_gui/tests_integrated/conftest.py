@@ -1,12 +1,13 @@
 from __future__ import print_function
+
 import time
+
 import pytest
 from selenium import webdriver
 
 
 @pytest.fixture(scope="module")
 def driver(request):
-
     driver = webdriver.Firefox()
     driver.get('localhost:8080/')
     driver.maximize_window()
