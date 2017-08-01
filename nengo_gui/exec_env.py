@@ -111,6 +111,7 @@ class ExecutionEnvironment(object):
             for mod in discover_backends().values():
                 self.simulators[mod] = mod.Simulator
                 mod.Simulator = make_dummy(mod.Simulator)
+        return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         for mod, cls in self.simulators.items():
