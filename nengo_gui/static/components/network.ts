@@ -1,7 +1,4 @@
-import { Component, ResizableComponent, Plot } from "./base";
-import {
-    ComponentConnection, FeedforwardConnection, RecurrentConnection
-} from "./connection";
+import { ResizableComponent } from "./base";
 import { Menu } from "../menu";
 import { NetGraph } from "../netgraph";
 import * as utils from "../utils";
@@ -12,7 +9,6 @@ export class Network extends ResizableComponent {
     expanded: boolean;
     // spTargets; // Vocab...? Subclass for SPA networks?
     // defaultOutput;
-    gClass: string[];
     gNetworks: SVGElement;
 
     protected _depth: number;
@@ -35,6 +31,12 @@ export class Network extends ResizableComponent {
 
         this.expanded = expanded;
         this.depth = depth;
+
+        // on move
+        // continuously update the children
+        // how to update the children?
+        // can I get interact.js to do the heavy lifting? no
+
         // this.defaultOutput = defaultOutput;
 
         // Do in expanded or depth setter?
@@ -118,6 +120,6 @@ export class Network extends ResizableComponent {
             }
         });
 
-        super.onnetgraphadd(netgraph)
+        super.onnetgraphadd(netgraph);
     }
 }

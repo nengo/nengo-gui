@@ -33,6 +33,7 @@
     "no-unexpected-multiline": true,
     "valid-typeof": true,
 
+    "member-ordering": false,
     "no-banned-terms": true,
     "no-delete-expression": true,
     "no-disable-auto-sanitization": true,
@@ -59,6 +60,8 @@
     "no-unnecessary-override": true,
     "no-with-statement": true,
     "no-var-self": true,
+    "ordered-imports": false,
+    "object-literal-sort-keys": false,
     "prefer-array-literal": true,
     "prefer-const": true,
     "use-named-parameter": true

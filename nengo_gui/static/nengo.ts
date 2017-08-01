@@ -75,7 +75,7 @@ export class NengoDebug {
         } else if (item.category === "component") {
             // Add the item to the last added network.
             let network = null;
-            this.netgraph.components.components.forEach(component => {
+            this.netgraph.components.components.forEach((component) => {
                 if (component instanceof Network) {
                     network = component;
                 }

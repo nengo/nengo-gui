@@ -1,12 +1,8 @@
 import { VNode, dom, h } from "maquette";
 
-import {
-    getScale, getTranslate, setScale, setTranslate
-} from "../../views/views";
-
 import { ComponentView, ResizableComponentView } from "./base";
 
-import * as utils from "../../utils"
+import * as utils from "../../utils";
 
 import "./node.css";
 

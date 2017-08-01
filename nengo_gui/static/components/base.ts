@@ -183,20 +183,6 @@ export abstract class Component {
         });
     }
 
-    // TODO: constrainPosition
-    // constrainPosition() {
-    //     if (this.parent !== null) {
-    //         this.width = Math.min(0.5, this.width);
-    //         this.height = Math.min(0.5, this.height);
-
-    //         this.x = Math.min(this.x, 1.0 - this.width);
-    //         this.x = Math.max(this.x, this.width);
-
-    //         this.y = Math.min(this.y, 1.0 - this.height);
-    //         this.y = Math.max(this.y, this.height);
-    //     }
-    // }
-
     createModal() {
         // this.ng.notify("createModal", {
         //     connInUids: this.connIn.map((c) => {

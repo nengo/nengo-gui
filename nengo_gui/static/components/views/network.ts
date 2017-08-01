@@ -1,7 +1,7 @@
 import { VNode, dom, h } from "maquette";
 
 import { ResizableComponentView } from "./base";
-import * as utils from "../../utils"
+import * as utils from "../../utils";
 
 import "./network.css";
 
@@ -21,7 +21,7 @@ export class NetworkView extends ResizableComponentView {
                 width: "50",
                 x: "0",
                 y: "0",
-            })
+            }),
         ]);
         this.body = utils.domCreateSVG(node) as SVGGElement;
         this.root.appendChild(this.body);

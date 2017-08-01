@@ -21,7 +21,7 @@ export class ControlGroupView {
                 h("div.input-group", [
                     h("input.form-control", {
                         "spellcheck": false,
-                        "type": "text"
+                        "type": "text",
                     }),
                     h("span.input-group-btn", [
                         h("button.btn.btn-default#eval", {"type": "button"}, [
