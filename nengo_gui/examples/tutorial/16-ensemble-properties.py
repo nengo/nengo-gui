@@ -1,21 +1,21 @@
 # Tutorial 16: Ensemble Properties
-
+#
 # In addition to the number of neurons, the number of dimensions, and the
 # radius, there are other parameters that can be specified when creating an
 # Ensemble.  Here are a few that may be useful.
-
+#
 # max_rates
 #    Each neuron has a different maximum firing rate, and this parameter
 #    specifies the random distribution controlling this.  The default is
 #    a uniform distribution between 200Hz and 400Hz.
-
+#
 # encoders
 #    Each neuron has a different preferred stimulus.  For a 1-dimensional
 #    Ensemble, this means that half of the neurons prefer -1 and the other
 #    half prefer +1.  This is why some neurons fire more for large values and
 #    some for small values.  In the example below, we set all the encoders to
 #    be +1.
-
+#
 # intercepts
 #    Each neuron only starts firing when the similarity between the value and
 #    its preferred value reaches a particular limit.  This is normally a

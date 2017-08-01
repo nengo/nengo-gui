@@ -1,5 +1,5 @@
 # Tutorial 23: Binding Concepts
-
+#
 # We now show that you can combine semantic pointers together to store
 # structured information.  One of the standard problems in cognitive science
 # is the Binding Problem: how do different concepts get represented and
@@ -42,7 +42,6 @@
 # longer to run).  We have argued that around 800 dimensions are sufficient for
 # human working memory capacity.
 
-import nengo
 import nengo.spa as spa
 
 D = 32  # the dimensionality of the vectors
@@ -55,6 +54,6 @@ with model:
 
     actions = spa.Actions(
         'memory = color * shape',
-        )
+    )
 
     model.cortical = spa.Cortical(actions)

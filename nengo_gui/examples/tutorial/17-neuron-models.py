@@ -1,5 +1,5 @@
 # Tutorial 17: Neuron Models
-
+#
 # Nengo supports multiple different types of neurons.  The default is the
 # "Leaky Integrate-and-Fire" or LIF neuron.  Other supported ones are shown
 # here.  The LIFRate neuron acts like the LIF neuron, but does not have spikes.
@@ -14,15 +14,15 @@ import nengo
 
 model = nengo.Network()
 with model:
-    
+
     stim = nengo.Node(0)
-    
+
     a = nengo.Ensemble(n_neurons=50, dimensions=1,
                        neuron_type=nengo.LIF(tau_rc=0.02, tau_ref=0.002))
-                       
+
     b = nengo.Ensemble(n_neurons=50, dimensions=1,
                        neuron_type=nengo.LIFRate(tau_rc=0.02, tau_ref=0.002))
-                       
+
     c = nengo.Ensemble(n_neurons=50, dimensions=1,
                        neuron_type=nengo.Sigmoid(tau_ref=0.002))
 
@@ -40,4 +40,4 @@ with model:
     nengo.Connection(stim, b)
     nengo.Connection(stim, c)
     nengo.Connection(stim, d)
-    nengo.Connection(stim, e)    
+    nengo.Connection(stim, e)

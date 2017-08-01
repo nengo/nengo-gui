@@ -1,15 +1,15 @@
-import time
-import os
-import traceback
 import collections
+import os
 import threading
+import time
+import traceback
 
 import nengo
 import json
 
 from nengo_gui.components.component import Component
-from nengo_gui.components.value import Value
 from nengo_gui.components.slider import OverriddenOutput
+from nengo_gui.components.value import Value
 from nengo_gui.modal_js import infomodal
 import nengo_gui.user_action
 import nengo_gui.layout
@@ -152,7 +152,8 @@ class NetGraph(Component):
             elif not same_class:
                 # don't allow changing classes
                 keep_object = False
-            elif self.get_extra_info(new_item) != self.get_extra_info(old_item):
+            elif (self.get_extra_info(new_item) !=
+                  self.get_extra_info(old_item)):
                 keep_object = False
 
             if not keep_object:
@@ -192,7 +193,7 @@ class NetGraph(Component):
         removed_items = list(removed_uids.values())
         for c in self.page.components[:]:
             for item in c.code_python_args(old_default_labels):
-                if item not in self.uids.keys() and item not in collapsed_items:
+                if item not in self.uids and item not in collapsed_items:
 
                     # item is a python string that is an argument to the
                     # constructor for the Component.  So it could be 'a',

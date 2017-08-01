@@ -1,5 +1,4 @@
-"""Classes to instantiate and manage the life cycle of the nengo_gui
-backend."""
+"""Classes to instantiate and manage the life cycle of nengo_gui."""
 
 from __future__ import print_function
 
@@ -15,7 +14,6 @@ from nengo_gui.guibackend import GuiServer
 
 class ServerShutdown(Exception):
     """Causes the server to shutdown when raised."""
-    pass
 
 
 class BaseGUI(object):
@@ -131,7 +129,7 @@ class GUI(InteractiveGUI):
     def __init__(self, filename=None, model=None, locals=None, editor=True):
         if not editor:
             ps = nengo_gui.page.PageSettings(
-                    editor_class=nengo_gui.components.editor.NoEditor)
+                editor_class=nengo_gui.components.editor.NoEditor)
         else:
             ps = nengo_gui.page.PageSettings()
         super(GUI, self).__init__(nengo_gui.guibackend.ModelContext(

@@ -5,7 +5,7 @@
 
 import nengo
 
-tau = 0.1   # Post-synaptic time constant for feedback
+tau = 0.1  # Post-synaptic time constant for feedback
 w_max = 10  # Maximum frequency is w_max/(2*pi)
 
 model = nengo.Network()

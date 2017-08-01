@@ -1,5 +1,5 @@
 # Nengo Example: Inhibitory Gating of Ensembles
-
+#
 # ## Step 1: Create the network
 #
 # Our model consists of two ensembles (called A and B) that receive inputs from

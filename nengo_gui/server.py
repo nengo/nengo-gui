@@ -22,9 +22,7 @@ except ImportError:  # Python 2.7
     import SocketServer as socketserver
     from urlparse import parse_qs, urlparse
 
-
 logger = logging.getLogger(__name__)
-
 
 WS_MAGIC = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
 
@@ -370,7 +368,6 @@ class WebSocket(object):
         except socket.timeout:
             return None
 
-
     def _handle_frame(self, frame):
         if frame.opcode == WebSocketFrame.OP_CLOSE:
             if self.state not in [self.ST_CLOSING, self.ST_CLOSED]:
@@ -424,9 +421,8 @@ def _sendall(socket, data):
         bytes_sent += socket.send(data[bytes_sent:])
 
 
-
 class WebSocketFrame(object):
-    __slots__ = ['fin', 'rsv', 'opcode', 'mask', 'data']
+    __slots__ = ('fin', 'rsv', 'opcode', 'mask', 'data')
 
     OP_CONT = 0x0
     OP_TEXT = 0x1
@@ -476,7 +472,6 @@ class WebSocketFrame(object):
             data = bytearray(unmasked_data)
             if opcode == cls.OP_TEXT:
                 data = data.decode('ascii')
-
 
             return cls(fin, rsv, opcode, mask, data), size
         except IndexError:

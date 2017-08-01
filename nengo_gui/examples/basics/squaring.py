@@ -1,10 +1,11 @@
 # Nengo Example: Squaring the Input
-
+#
 # This demo shows you how to construct a network that squares the value
 # encoded in a first population in the output of a second population.
 
 # Create the model object
 import nengo
+
 model = nengo.Network()
 with model:
     # Create two ensembles of 100 leaky-integrate-and-fire neurons

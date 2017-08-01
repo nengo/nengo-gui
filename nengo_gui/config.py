@@ -4,6 +4,7 @@ import nengo
 
 import nengo_gui.components
 
+
 def make_param(name, default):
     try:
         # the most recent way of making Parameter objects
@@ -12,6 +13,7 @@ def make_param(name, default):
         # this was for older releases of nengo (v2.0.3 and earlier)
         p = nengo.params.Parameter(default=default)
     return p
+
 
 class Config(nengo.Config):
     def __init__(self):

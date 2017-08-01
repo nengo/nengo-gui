@@ -1,5 +1,6 @@
 import nengo
 
+
 class NameFinder(object):
     def __init__(self, terms, net):
         self.base_terms = terms
@@ -35,7 +36,6 @@ class NameFinder(object):
                 elif isinstance(attr, classes):
                     if attr not in self.known_name:
                         self.known_name[attr] = '%s.%s' % (net_name, inst_attr)
-
 
         for obj_type in base_lists:
             for i, obj in enumerate(getattr(net, obj_type)):

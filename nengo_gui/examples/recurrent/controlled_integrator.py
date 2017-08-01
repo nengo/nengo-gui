@@ -6,7 +6,7 @@
 # 2. Control - the control signal to the integrator
 #
 # A controlled integrator accumulates input, but its state can be directly
-# manipulated by the control signal. 
+# manipulated by the control signal.
 #
 # We can use standard network-creation commands to begin creating our
 # controlled integrator. We create a Network, and then we create a population

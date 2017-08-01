@@ -1,5 +1,5 @@
 # Tutorial 22: Controlled Sequence of Semantic Pointer Actions
-
+#
 # Here, we expand on the previous sequence example and define a model
 # that instead of starting from A each time, starts from whatever value
 # is currently seen.  This shows that you can selectively route information
@@ -15,7 +15,6 @@
 # sequence.  This is due to the time needed for the neurons to respond,
 # and is consistent with psychological reaction time data.
 
-import nengo
 import nengo.spa as spa
 
 D = 32  # the dimensionality of the vectors
@@ -32,7 +31,7 @@ with model:
         'dot(memory, D) --> memory=E',
         'dot(memory, E) --> memory=vision',
         '0.5 --> memory=vision'
-        )
+    )
 
     model.bg = spa.BasalGanglia(actions)
     model.thalamus = spa.Thalamus(model.bg)

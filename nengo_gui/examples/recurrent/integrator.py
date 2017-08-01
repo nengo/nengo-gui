@@ -3,13 +3,13 @@
 # This demo implements a one-dimensional neural integrator.
 #
 # This is the first example of a recurrent network in the demos. It shows how
-# neurons can be used to implement stable dynamics. Such dynamics are 
-# important for memory, noise cleanup, statistical inference, and many 
+# neurons can be used to implement stable dynamics. Such dynamics are
+# important for memory, noise cleanup, statistical inference, and many
 # other dynamic transformations.
 #
-# Note that since the integrator constantly sums its input, it will 
-# saturate quickly if you leave the input non-zero. This makes it clear 
-# that neurons have a finite range of representation. Such saturation 
+# Note that since the integrator constantly sums its input, it will
+# saturate quickly if you leave the input non-zero. This makes it clear
+# that neurons have a finite range of representation. Such saturation
 # effects can be exploited to perform useful computations
 # (e.g. soft normalization).
 
@@ -23,8 +23,8 @@ with model:
 
     # Create a piecewise step function for input
     stim = nengo.Node([0])
-    
-    # Connect the population to itself using a long time constant (tau) 
+
+    # Connect the population to itself using a long time constant (tau)
     # for stability
     tau = 0.1
     nengo.Connection(a, a, synapse=tau)

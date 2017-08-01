@@ -1,5 +1,4 @@
 import importlib
-import json
 import logging
 import os
 import threading
@@ -14,7 +13,7 @@ import nengo_gui.config
 
 
 class PageSettings(object):
-    __slots__ = ['backend', 'editor_class', 'filename_cfg']
+    __slots__ = ('backend', 'editor_class', 'filename_cfg')
 
     def __init__(
             self, filename_cfg=None, backend='nengo',

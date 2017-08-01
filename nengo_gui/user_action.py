@@ -138,8 +138,8 @@ class CreateGraph(Action):
         cls = getattr(nengo_gui.components, self.type)
         self.component = cls(self.obj, **kwargs)
 
-        # If only one instance of the component is allowed, and another had to be
-        # destroyed to create this one, keep track of it here so it can be undone
+        # If only one instance of the component is allowed, and another had to
+        # be destroyed to create this one, keep track of it here so we can undo
         self.duplicate = None
 
         # Remove any existing sliders associated with the same node

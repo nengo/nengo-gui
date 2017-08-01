@@ -9,12 +9,12 @@ import mimetypes
 import os
 import os.path
 import pkgutil
+import ssl
+import time
 try:
     from urllib.parse import unquote
 except ImportError:  # Python 2.7
     from urllib import unquote
-import ssl
-import time
 
 import nengo_gui
 import nengo_gui.exec_env
@@ -22,12 +22,11 @@ import nengo_gui.page
 from nengo_gui import server
 from nengo_gui.password import checkpw
 
-
 logger = logging.getLogger(__name__)
 
 
 class Session(object):
-    __slots__ = ['creation_time', 'authenticated', 'login_host']
+    __slots__ = ('creation_time', 'authenticated', 'login_host')
 
     def __init__(self):
         self.creation_time = time.time()
@@ -246,8 +245,11 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         component.finish()
 
     def _handle_ws_msg(self, component, msg):
-        """Handle websocket message. Returns True when further messages should
-        be handled and false when no further messages should be processed."""
+        """Handle websocket message.
+
+        Returns True when further messages should
+        be handled and false when no further messages should be processed.
+        """
         if msg.data.startswith('config:'):
             return self._handle_config_msg(component, msg)
         elif msg.data.startswith('remove'):
@@ -304,11 +306,13 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
 
 
 class ModelContext(object):
-    """Provides context information to a model. This can include the locals
-    dictionary, the filename and whether this model can (or is allowed) to be
-    written to disk."""
+    """Provides context information to a model.
 
-    __slots__ = ['model', 'filename', 'locals', 'writeable']
+    This can include the locals dictionary, the filename and whether
+    this model can (or is allowed) to be written to disk.
+    """
+
+    __slots__ = ('model', 'filename', 'locals', 'writeable')
 
     def __init__(self, model=None, locals=None, filename=None, writeable=True):
         self.filename = filename
@@ -334,9 +338,12 @@ class ModelContext(object):
 
 
 class GuiServerSettings(object):
-    __slots__ = [
-        'listen_addr', 'auto_shutdown', 'password_hash', 'ssl_cert', 'ssl_key',
-        'session_duration']
+    __slots__ = ('listen_addr',
+                 'auto_shutdown',
+                 'password_hash',
+                 'ssl_cert',
+                 'ssl_key',
+                 'session_duration')
 
     def __init__(
             self, listen_addr=('localhost', 8080), auto_shutdown=2,

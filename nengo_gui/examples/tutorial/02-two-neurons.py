@@ -1,11 +1,11 @@
 # Tutorial 2: Two neurons
-
+#
 # Now we show what happens with two neurons.  Notice that the neurons
 # respond very differently to the two inputs.  One neuron responds more
 # strongly to positive values, while the other responds more to negative
 # values.  This is typical of real neurons (sometimes called "on" and "off"
 # neurons).
-
+#
 # Given these two neurons, more information is available about what the input
 # is.  The bottom graph shows the "decoded" value found by taking the output
 # of both neurons and combining them.  Notice that these two neurons do a

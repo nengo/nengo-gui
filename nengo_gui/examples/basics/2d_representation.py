@@ -6,7 +6,6 @@
 # integrate-and-fire neurons.
 
 import nengo
-import numpy as np
 
 model = nengo.Network()
 with model:

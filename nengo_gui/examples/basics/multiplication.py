@@ -1,5 +1,5 @@
 # Nengo Example: Multiplication
-
+#
 # This example will show you how to multiply two values. The model
 # architecture can be thought of as a combination of the combining demo and
 # the squaring demo. Essentially, we project both inputs independently into a
@@ -7,6 +7,7 @@
 # product of the first and second vector elements).
 
 import nengo
+
 model = nengo.Network()
 with model:
     # Create 4 ensembles of leaky integrate-and-fire neurons
@@ -18,12 +19,12 @@ with model:
 
     prod = nengo.Ensemble(n_neurons=100, dimensions=1, radius=1)
 
-    
     # These next two lines make all of the encoders in the Combined population
     # point at the corners of the cube. This improves the quality of the
     # computation.
-    combined.encoders = nengo.dists.Choice([[1,1],[-1,1],[1,-1],[-1,-1]])
-    
+    combined.encoders = nengo.dists.Choice(
+        [[1, 1], [-1, 1], [1, -1], [-1, -1]])
+
     stim_a = nengo.Node([0])
     stim_b = nengo.Node([0])
 

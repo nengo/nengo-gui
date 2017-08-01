@@ -11,19 +11,17 @@
 # reasonable representation of a scalar value.
 
 import nengo
-import numpy as np
 
 model = nengo.Network()
 with model:
     neurons = nengo.Ensemble(n_neurons=2, dimensions=1)
     # Set the intercepts at .5
-    neurons.intercepts=nengo.dists.Uniform(-.5, -.5)
+    neurons.intercepts = nengo.dists.Uniform(-.5, -.5)
     # Set the max firing rate at 100hz
-    neurons.max_rates=nengo.dists.Uniform(100, 100)
+    neurons.max_rates = nengo.dists.Uniform(100, 100)
     # One 'on' and one 'off' neuron
-    neurons.encoders=[[1],[-1]]
-    
-    # make a
+    neurons.encoders = [[1], [-1]]
+
     stim = nengo.Node([0])
 
     nengo.Connection(stim, neurons, synapse=0.01)
