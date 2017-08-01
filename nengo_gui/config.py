@@ -18,15 +18,10 @@ def make_param(name, default):
 class Config(nengo.Config):
     def __init__(self):
         super(Config, self).__init__()
-        for cls in [nengo.Ensemble, nengo.Node]:
+        for cls in [nengo.Ensemble, nengo.Node, nengo.Network]:
             self.configures(cls)
             self[cls].set_param('pos', make_param(name='pos', default=None))
             self[cls].set_param('size', make_param(name='size', default=None))
-        self.configures(nengo.Network)
-        self[nengo.Network].set_param('pos',
-                                      make_param(name='pos', default=None))
-        self[nengo.Network].set_param('size',
-                                      make_param(name='size', default=None))
         self[nengo.Network].set_param('expanded',
                                       make_param(name='expanded',
                                                  default=False))
@@ -34,6 +29,7 @@ class Config(nengo.Config):
                                       make_param(name='has_layout',
                                                  default=False))
 
+        # TODO: register components with config instead of doing it here
         for clsname, cls in inspect.getmembers(nengo_gui.components):
             if inspect.isclass(cls):
                 if issubclass(cls, nengo_gui.components.component.Component):
