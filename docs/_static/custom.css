@@ -1,0 +1,30 @@
+.MathJax .mi, .MathJax .mo {
+    color: inherit;
+}
+
+.container.docutils {
+    margin: inherit;
+    padding: inherit;
+    width: inherit;
+}
+
+.container.docutils.toggle {
+    margin: 0;
+    padding: 0;
+}
+
+.toggle .header {
+    clear: both;
+    cursor: pointer;
+    display: block;
+}
+
+.toggle .header::after {
+    content: " ▼";
+    display: inline;
+}
+
+.toggle .header.open::after {
+    content: " ▲";
+    display: inline;
+}

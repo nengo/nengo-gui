@@ -12,8 +12,6 @@ the model is running.
    :maxdepth: 2
 
    getting_started
-   examples
-   user_guide
    dev_guide
 
 Indices and tables
