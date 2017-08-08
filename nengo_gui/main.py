@@ -6,8 +6,9 @@ import webbrowser
 
 import nengo_gui
 import nengo_gui.gui
-from nengo_gui.guibackend import ModelContext, GuiServerSettings
-from nengo_gui.password import gensalt, hashpw, prompt_pw
+from nengo_gui.config import ServerSettings
+from nengo_gui.gui import ModelContext
+from nengo_gui.server.auth import gensalt, hashpw, prompt_pw
 
 
 def old_main():
@@ -56,13 +57,13 @@ def main():
             password = hashpw(prompt_pw(), gensalt())
         else:
             password = hashpw(args.password, gensalt())
-        server_settings = GuiServerSettings(
+        server_settings = ServerSettings(
             ('', 8080), args.auto_shutdown[0], password_hash=password,
             ssl_cert=args.cert[0], ssl_key=args.key[0])
         if not server_settings.use_ssl:
             raise ValueError("Password protection only allowed with SSL.")
     else:
-        server_settings = GuiServerSettings(
+        server_settings = ServerSettings(
             ('localhost', 8080), args.auto_shutdown[0], ssl_cert=args.cert[0],
             ssl_key=args.key[0])
 

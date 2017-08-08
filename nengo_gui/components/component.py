@@ -13,9 +13,9 @@ class Component(object):
     can add required nengo objects into the model to allow them to gather
     required data or input overriding data (in the case of Pointer and Slider)
     to/from the running model.  Communication from server to
-    client is done via Component.update_client(), which is called regularly
-    by the Server.ws_viz_component handler.  Communication from client to
-    server is via Component.message().
+    client is done via ``Component.update_client()``, which is called regularly
+    by the ``Server.ws_viz_component`` handler.  Communication from client to
+    server is via ``Component.message()``.
     """
 
     # The parameters that will be stored in the .cfg file for this Component
@@ -46,10 +46,13 @@ class Component(object):
     def update_client(self, client):
         """Send any required information to the client.
 
-        This method is called regularly by Server.ws_viz_component().  You
-        send text data to the client-side via a WebSocket as follows:
+        This method is called regularly by ``Server.ws_viz_component()``.
+        You send text data to the client-side via a WebSocket as follows::
+
             client.write_text(data)
-        You send binary data as:
+
+        You send binary data as::
+
             client.write_binary(data)
         """
         pass

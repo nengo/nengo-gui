@@ -12,17 +12,6 @@ import nengo_gui.user_action
 import nengo_gui.config
 
 
-class PageSettings(object):
-    __slots__ = ('backend', 'editor_class', 'filename_cfg')
-
-    def __init__(
-            self, filename_cfg=None, backend='nengo',
-            editor_class=nengo_gui.components.AceEditor):
-        self.filename_cfg = filename_cfg
-        self.backend = backend
-        self.editor_class = editor_class
-
-
 class Page(object):
     """A handler for a single page of the nengo_gui.
 
@@ -36,18 +25,22 @@ class Page(object):
         then it will use the existing gui.model and gui.locals
         (if available).  Otherwise, the file will be executed to generate
         the model
-    settings : PageSettings
-        Configures page behaviour (editor, backend, etc)
-    reset_cfg : bool, optional
+    filename_cfg : str, optional (Default: None)
+    backend : str, optional (Default: 'nengo')
+    editor_class : class, optional (Default: `..AceEditor)
+    reset_cfg : bool, optional (Default: False)
         If True, the existing .cfg file will be erased
     """
 
     # Some Simulators can only have one instance running at a time
     singleton_sims = dict(nengo_spinnaker=None)
 
-    def __init__(self, gui, filename, settings, reset_cfg=False):
+    def __init__(self, gui, filename,
+                 filename_cfg=None,
+                 backend='nengo',
+                 editor_class=nengo_gui.components.AceEditor,
+                 reset_cfg=False):
         self.gui = gui
-        self.settings = settings
 
         self.code = None  # the code for the model
         self.model = None  # the nengo.Network
@@ -98,10 +91,10 @@ class Page(object):
                 self.filename = filename
 
         # determine the .cfg filename
-        if self.settings.filename_cfg is None:
+        if filename_cfg is None:
             self.filename_cfg = self.filename + '.cfg'
         else:
-            self.filename_cfg = self.settings.filename_cfg
+            self.filename_cfg = filename_cfg
 
         if reset_cfg:
             self.clear_config()
@@ -109,7 +102,9 @@ class Page(object):
         self.load()
 
         self.net_graph = self.get_component(nengo_gui.components.NetGraph)
-        self.editor = self.get_component(self.settings.editor_class)
+        self.backend = backend
+        self.editor_class = editor_class
+        self.editor = self.get_component(self.editor_class)
 
         # build and run the model in a separate thread
         t = threading.Thread(target=self.runner)
@@ -270,7 +265,7 @@ class Page(object):
             self.locals['_gui_net_graph'] = c
         # FIXME general editor
         if '_gui_ace_editor' not in self.locals:
-            c = self.settings.editor_class()
+            c = self.editor_class()
             # c = nengo_gui.components.AceEditor()
             self.locals['_gui_ace_editor'] = c
 
@@ -435,9 +430,9 @@ class Page(object):
                 c.add_nengo_objects(self)
 
             # determine the backend to use
-            backend = importlib.import_module(self.settings.backend)
+            backend = importlib.import_module(self.backend)
             # if only one Simulator is allowed at a time, finish the old one
-            old_sim = Page.singleton_sims.get(self.settings.backend, None)
+            old_sim = Page.singleton_sims.get(self.backend, None)
             if old_sim is not None and old_sim is not self:
                 old_sim.sim = None
                 old_sim.finished = True
@@ -455,8 +450,8 @@ class Page(object):
             self.stdout += exec_env.stdout.getvalue()
 
             if self.sim is not None:
-                if self.settings.backend in Page.singleton_sims:
-                    Page.singleton_sims[self.settings.backend] = self
+                if self.backend in Page.singleton_sims:
+                    Page.singleton_sims[self.backend] = self
 
             # remove the temporary components added for visualization
             for c in self.components:

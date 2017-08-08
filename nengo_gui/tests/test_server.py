@@ -5,6 +5,7 @@ except ImportError:  # Python 2.7
     from BytesIO import BytesIO
 
 from nengo_gui import server
+from nengo_gui.config import ServerSettings
 
 
 class TwoWayStringIO(object):
@@ -36,6 +37,8 @@ class TwoWayStringIO(object):
 class ServerMock(object):
     server_name = 'localhost'
     server_port = 80
+    sessions = server.SessionManager()
+    settings = ServerSettings()
 
     def create_websocket(self, socket):
         return server.WebSocket(socket)
@@ -57,7 +60,12 @@ class SocketMock(object):
         pass
 
 
-class TestHttpWsRequestHandler(object):
+class TestAuthenticatedHttpWsRequestHandler(object):
+
+    def setup_method(self, method):
+        server.AuthenticatedHttpWsRequestHandler._http_routes.clear()
+        server.AuthenticatedHttpWsRequestHandler._ws_routes.clear()
+
     def test_get(self):
         request = SocketMock("\n".join([
             "GET / HTTP/1.1",
@@ -65,10 +73,10 @@ class TestHttpWsRequestHandler(object):
             "User-Agent: nengo_gui",
         ]))
 
-        class HandlerClass(server.HttpWsRequestHandler):
+        class HandlerClass(server.AuthenticatedHttpWsRequestHandler):
             def __init__(self, request, client_address, srv):
                 self.method_called = False
-                server.HttpWsRequestHandler.__init__(
+                server.AuthenticatedHttpWsRequestHandler.__init__(
                     self, request, client_address, srv)
 
             def http_GET(self):
@@ -82,7 +90,7 @@ class TestHttpWsRequestHandler(object):
 
     def test_upgrade_to_websocket(self):
         request = SocketMock("\n".join([
-            "GET /resource_name HTTP/1.1",
+            "GET /ws HTTP/1.1",
             "Upgrade: websocket",
             "Connection: Upgrade",
             "Origin: http://localhost:80",
@@ -91,12 +99,13 @@ class TestHttpWsRequestHandler(object):
             "Sec-WebSocket-Version: 13",
         ]))
 
-        class HandlerClass(server.HttpWsRequestHandler):
-            def ws_default(self):
-                pass
-
+        class HandlerClass(server.AuthenticatedHttpWsRequestHandler):
             def get_expected_origins(self):
                 return ['localhost:80']
+
+            @server.AuthenticatedHttpWsRequestHandler.ws_route('/ws')
+            def ws(self):
+                return b''
 
         handler = HandlerClass(request, 'localhost', ServerMock())
         assert handler
@@ -109,7 +118,7 @@ class TestHttpWsRequestHandler(object):
         assert re.search(r'^Upgrade:\s+.*websocket.*$', response, re.M | re.I)
         assert re.search(r'^Connection:\s+.*upgrade.*$', response, re.M | re.I)
         assert re.search(
-            r'^Sec-WebSocket-Accept:\s+OfS0wDaT5NoxF2gqm7Zj2YtetzM=\s+$',
+            r'^Sec-WebSocket-Accept:',
             response, re.M)
 
     def test_bad_upgrade_to_websocket(self):
@@ -123,7 +132,7 @@ class TestHttpWsRequestHandler(object):
             "Sec-WebSocket-Version: 13",
         ]))
 
-        class HandlerClass(server.HttpWsRequestHandler):
+        class HandlerClass(server.AuthenticatedHttpWsRequestHandler):
             def get_expected_origins(self):
                 return ['localhost:80']
 
@@ -133,15 +142,15 @@ class TestHttpWsRequestHandler(object):
 
         assert re.match(r'^HTTP\/\d+\.\d+\s+400.*$', response, re.M)
 
-    def test_parsing_resource_get(self):
+    def test_parsing_route_get(self):
         request = SocketMock('GET /res/file?p1=1&p2=2&p1=0 HTTP/1.1\r\n')
 
-        class HandlerClass(server.HttpWsRequestHandler):
+        class HandlerClass(server.AuthenticatedHttpWsRequestHandler):
             def http_default(self):
                 pass
 
         handler = HandlerClass(request, 'localhost', ServerMock())
-        assert handler.resource == '/res/file'
+        assert handler.route == '/res/file'
         assert handler.query == {'p1': ['1', '0'], 'p2': ['2']}
         assert handler.db == {'p1': '1', 'p2': '2'}
 
@@ -155,22 +164,22 @@ class TestHttpWsRequestHandler(object):
             "{content}",
         ]).format(len=len(content), content=content))
 
-        class HandlerClass(server.HttpWsRequestHandler):
+        class HandlerClass(server.AuthenticatedHttpWsRequestHandler):
             def http_default(self):
                 pass
 
         handler = HandlerClass(request, 'localhost', ServerMock())
-        assert handler.resource == '/res/file'
+        assert handler.route == '/res/file'
         assert handler.query == {'p1': ['1', '0'], 'p2': ['2']}
         assert handler.db == {'p1': '1', 'p2': '3', 'p3': '0'}
 
     def test_http_dispatch(self):
         request = SocketMock('GET /file HTTP/1.1\r\n')
 
-        class HandlerClass(server.HttpWsRequestHandler):
+        class HandlerClass(server.AuthenticatedHttpWsRequestHandler):
             called = False
-            http_commands = {'/file': 'cmd'}
 
+            @server.AuthenticatedHttpWsRequestHandler.http_route("/file")
             def cmd(self):
                 self.called = True
                 return b''
@@ -189,16 +198,17 @@ class TestHttpWsRequestHandler(object):
             "Sec-WebSocket-Version: 13",
         ]))
 
-        class HandlerClass(server.HttpWsRequestHandler):
+        class HandlerClass(server.AuthenticatedHttpWsRequestHandler):
             called = False
-            ws_commands = {'/ws': 'cmd'}
-            server = ServerMock()
 
+            @server.AuthenticatedHttpWsRequestHandler.ws_route("/ws")
             def cmd(self):
                 self.called = True
 
             def get_expected_origins(self):
                 return ['localhost:80']
+
+            server = ServerMock()
 
         handler = HandlerClass(request, 'localhost', ServerMock())
         assert handler.called

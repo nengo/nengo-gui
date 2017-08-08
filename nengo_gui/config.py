@@ -79,3 +79,45 @@ class Config(nengo.Config):
                     lines.append('_gui_config[%s].%s = %s' % (uid, k, val))
 
         return '\n'.join(lines)
+
+
+class ServerSettings(object):
+    __slots__ = ('listen_addr',
+                 'auto_shutdown',
+                 'password_hash',
+                 'ssl_cert',
+                 'ssl_key',
+                 'session_duration')
+
+    def __init__(self,
+                 listen_addr=('localhost', 8080),
+                 auto_shutdown=2,
+                 password_hash=None,
+                 ssl_cert=None,
+                 ssl_key=None,
+                 session_duration=60 * 60 * 24 * 30):
+        self.listen_addr = listen_addr
+        self.auto_shutdown = auto_shutdown
+        self.password_hash = password_hash
+        self.ssl_cert = ssl_cert
+        self.ssl_key = ssl_key
+        self.session_duration = session_duration
+
+    @property
+    def use_ssl(self):
+        if self.ssl_cert is None and self.ssl_key is None:
+            return False
+        elif self.ssl_cert is not None and self.ssl_key is not None:
+            return True
+        else:
+            raise ValueError("SSL needs certificate file and key file.")
+
+
+class PageSettings(object):
+    __slots__ = ('backend', 'editor_class', 'filename_cfg')
+
+    def __init__(self, filename_cfg=None, backend='nengo',
+                 editor_class=nengo_gui.components.AceEditor):
+        self.filename_cfg = filename_cfg
+        self.backend = backend
+        self.editor_class = editor_class
