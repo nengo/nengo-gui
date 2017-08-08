@@ -308,16 +308,18 @@ Nengo.Modal.prototype.main_config = function() {
         Nengo.netgraph.transparent_nets = $('#transparent-nets').prop('checked');
     });
 
-    $('#sync-editor').prop('checked', Nengo.ace.auto_update);
-    $('#sync-editor').change(function () {
-        Nengo.ace.auto_update = $('#sync-editor').prop('checked');
-        Nengo.ace.update_trigger = $('#sync-editor').prop('checked');
-    });
-    $('#autocomplete').prop('checked', Nengo.config.autocomplete);
-    $('#autocomplete').change(function () {
-        Nengo.ace.editor.setOption("enableLiveAutocompletion", $('#autocomplete').prop('checked'));
-	Nengo.config.autocomplete = $('#autocomplete').prop('checked');
-    });
+    if (typeof Nengo.ace != 'undefined') {
+        $('#sync-editor').prop('checked', Nengo.ace.auto_update);
+        $('#sync-editor').change(function () {
+            Nengo.ace.auto_update = $('#sync-editor').prop('checked');
+            Nengo.ace.update_trigger = $('#sync-editor').prop('checked');
+        });
+        $('#autocomplete').prop('checked', Nengo.config.autocomplete);
+        $('#autocomplete').change(function () {
+            Nengo.ace.editor.setOption("enableLiveAutocompletion", $('#autocomplete').prop('checked'));
+            Nengo.config.autocomplete = $('#autocomplete').prop('checked');
+        });
+    }
 
     $('#config-fontsize').val(Nengo.netgraph.font_size);
     $('#config-fontsize').bind('keyup input', function () {
