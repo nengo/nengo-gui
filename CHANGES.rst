@@ -22,6 +22,7 @@ Release History
 0.3.2 (unreleased)
 ==================
 
+- Support for nengo_spa
 - Added --browser option
 - Added --unsecure option
 - Fixed backspace not working on sliders, search box

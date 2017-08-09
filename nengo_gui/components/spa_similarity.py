@@ -1,6 +1,11 @@
 import numpy as np
 import nengo
-from nengo_spa.examine import pairs
+import nengo.spa as spa
+
+try:
+    from nengo_spa.examine import pairs
+except ImportError:
+    pairs = None
 
 from nengo_gui.components.component import Component
 from nengo_gui.components.spa_plot import SpaPlot
@@ -16,9 +21,13 @@ class SpaSimilarity(SpaPlot):
     def __init__(self, obj, **kwargs):
         super(SpaSimilarity, self).__init__(obj, **kwargs)
 
-        self.old_vocab_length = len(self.vocab_out)
+        if isinstance(self.vocab_out, spa.Vocabulary):
+            self.old_vocab_length = len(self.vocab_out.keys)
+            self.labels = self.vocab_out.keys
+        else:
+            self.old_vocab_length = len(self.vocab_out)
+            self.labels = tuple(self.vocab_out.keys())
         self.old_pairs_length = 0
-        self.labels = tuple(self.vocab_out.keys())
         self.previous_pairs = False
 
         # Nengo objects for data collection
@@ -40,7 +49,11 @@ class SpaSimilarity(SpaPlot):
     def gather_data(self, t, x):
         vocab = self.vocab_out
 
-        if self.old_vocab_length != len(vocab):
+        if isinstance(vocab, spa.Vocabulary):
+            length = len(vocab.keys)
+        else:
+            length = len(vocab)
+        if self.old_vocab_length != length:
             self.update_legend(vocab)
 
         # get the similarity and send it
@@ -51,7 +64,10 @@ class SpaSimilarity(SpaPlot):
 
             # briefly there can be no pairs, so catch the error
             try:
-                pair_similarity = (np.dot(vocab.parse(p).v, x) for p in pairs(vocab))
+                if isinstance(vocab, spa.Vocabulary):
+                    pair_similarity = np.dot(vocab.vector_pairs, x)
+                else:
+                    pair_similarity = (np.dot(vocab.parse(p).v, x) for p in pairs(vocab))
                 simi_list += ['{:.2f}'.format(simi) for simi in pair_similarity]
             except TypeError:
                 pass
@@ -63,8 +79,12 @@ class SpaSimilarity(SpaPlot):
     def update_legend(self, vocab):
         # pass all the missing keys
         legend_update = []
-        legend_update += (list(vocab.keys())[self.old_vocab_length:])
-        self.old_vocab_length = len(vocab)
+        if isinstance(vocab, spa.Vocabulary):
+            legend_update += (vocab.keys[self.old_vocab_length:])
+            self.old_vocab_length = len(vocab.keys)
+        else:
+            legend_update += (list(vocab.keys())[self.old_vocab_length:])
+            self.old_vocab_length = len(vocab)
         # and all the missing pairs if we're showing pairs
         if self.config.show_pairs:
             # briefly there can be no pairs, so catch the error
@@ -91,12 +111,24 @@ class SpaSimilarity(SpaPlot):
         # Send the new labels
         if self.config.show_pairs:
             vocab.include_pairs = True
-            self.data.append(
-                '["reset_legend_and_data", "%s"]' % (
-                    '","'.join(set(vocab.keys()) | pairs(vocab))))
-            # if we're starting to show pairs, track pair length
-            self.old_pairs_length = len(pairs(vocab))
+            if isinstance(vocab, spa.Vocabulary):
+                self.data.append(
+                    '["reset_legend_and_data", "%s"]' % (
+                        '","'.join(vocab.keys + vocab.key_pairs)))
+                # if we're starting to show pairs, track pair length
+                self.old_pairs_length = len(vocab.key_pairs)
+
+            else:
+                self.data.append(
+                    '["reset_legend_and_data", "%s"]' % (
+                        '","'.join(set(vocab.keys()) | pairs(vocab))))
+                # if we're starting to show pairs, track pair length
+                self.old_pairs_length = len(pairs(vocab))
         else:
             vocab.include_pairs = False
-            self.data.append('["reset_legend_and_data", "%s"]'
+            if isinstance(vocab, spa.Vocabulary):
+                self.data.append('["reset_legend_and_data", "%s"]'
+                             % ('","'.join(vocab.keys)))
+            else:
+                self.data.append('["reset_legend_and_data", "%s"]'
                              % ('","'.join(vocab)))

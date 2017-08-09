@@ -1,6 +1,10 @@
 import collections
 
-import nengo_spa as spa
+import nengo.spa as spa
+try:
+    import nengo_spa
+except ImportError:
+    nengo_spa = None
 
 from nengo_gui.components.component import Component
 
@@ -31,8 +35,9 @@ class SpaPlot(Component):
     @staticmethod
     def applicable_targets(obj):
         targets = []
-        if isinstance(obj, spa.Network):
-            for target_name, (obj, vocab) in obj.outputs.items():
-                if vocab is not None:
-                    targets.append(target_name)
+        if (isinstance(obj, spa.module.Module) or
+            (nengo_spa is not None and isinstance(obj, nengo_spa.Network))):
+                for target_name, (obj, vocab) in obj.outputs.items():
+                    if vocab is not None:
+                        targets.append(target_name)
         return targets
