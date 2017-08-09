@@ -7,15 +7,12 @@ import time
 import uuid
 import warnings
 import weakref
-try:
-    from urllib.request import urlopen
-except ImportError:
-    from urllib2 import urlopen
 
 from IPython import get_ipython
 from IPython.display import display, HTML
 
 import nengo_gui
+from nengo_gui.compat import urlopen
 
 
 class ConfigReuseWarning(UserWarning):

@@ -7,10 +7,10 @@ import struct
 import warnings
 
 from .auth import AuthenticatedHttpRequestHandler
-from .compat import urlparse
 from .exceptions import (
     BadRequest, Forbidden, InvalidResource, SocketClosedError, UpgradeRequired)
 from .http import ManagedThreadHttpServer
+from ..compat import urlparse
 
 WS_MAGIC = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
 

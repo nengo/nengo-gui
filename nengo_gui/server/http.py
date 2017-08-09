@@ -6,7 +6,6 @@ import threading
 import traceback
 import warnings
 
-from .compat import parse_qs, server, SimpleCookie, socketserver, urlparse
 from .exceptions import (
     BadRequest,
     HttpError,
@@ -14,6 +13,7 @@ from .exceptions import (
     InvalidResource,
 )
 from .session import SessionManager
+from ..compat import parse_qs, server, SimpleCookie, socketserver, urlparse
 
 logger = logging.getLogger(__name__)
 

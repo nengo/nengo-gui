@@ -17,9 +17,9 @@ import webbrowser
 
 import nengo_gui
 from nengo_gui import exec_env, server
+from nengo_gui.compat import unquote
 from nengo_gui.config import PageSettings, ServerSettings
 from nengo_gui.server import HtmlResponse, HttpRedirect
-from nengo_gui.server.compat import unquote
 
 logger = logging.getLogger(__name__)
 
