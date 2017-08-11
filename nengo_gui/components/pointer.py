@@ -45,7 +45,10 @@ class Pointer(SpaPlot):
 
     def add_nengo_objects(self, page):
         with page.model:
-            output = self.obj.outputs[self.target][0]
+            if self.target.startswith('<'):
+                output = getattr(self.obj, self.target[1:-1])
+            else:
+                output = self.obj.outputs[self.target][0]
             self.node = nengo.Node(self.gather_data,
                                    size_in=self.vocab_out.dimensions,
                                    size_out=self.vocab_out.dimensions)

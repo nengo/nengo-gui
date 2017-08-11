@@ -17,7 +17,11 @@ class SpaPlot(Component):
         self.obj = obj
         self.data = collections.deque()
         self.target = kwargs.get('args', 'default')
-        self.vocab_out = obj.outputs[self.target][1]
+        if self.target.startswith('<'):
+            target_obj = getattr(obj, self.target[1:-1])
+            self.vocab_out = obj.get_output_vocab(target_obj)
+        else:
+            self.vocab_out = obj.outputs[self.target][1]
 
     def attach(self, page, config, uid):
         super(SpaPlot, self).attach(page, config, uid)
@@ -37,7 +41,19 @@ class SpaPlot(Component):
         targets = []
         if (isinstance(obj, spa.module.Module) or
             (nengo_spa is not None and isinstance(obj, nengo_spa.Network))):
-                for target_name, (obj, vocab) in obj.outputs.items():
-                    if vocab is not None:
-                        targets.append(target_name)
+
+                if hasattr(obj, 'outputs'):
+                    for target_name, (obj, vocab) in obj.outputs.items():
+                        if vocab is not None:
+                            targets.append(target_name)
+                elif hasattr(obj, 'output'):
+                    # TODO: check for other outputs than obj.output
+                    try:
+                        v = obj.get_output_vocab(obj.output)
+                        if v is not None:
+                            targets.append('<output>')
+                    except KeyError:
+                        # Module has no output vocab
+                        pass
+
         return targets
