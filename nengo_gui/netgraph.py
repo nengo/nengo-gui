@@ -1,61 +1,471 @@
+from collections import defaultdict
 import collections
+import logging
 import os
 import threading
 import time
 import traceback
+import warnings
 
-import nengo
 import json
+import nengo
+from nengo.utils.compat import iteritems
 
-from nengo_gui.components.component import Component
+from nengo_gui import exec_env, user_action
+from nengo_gui.components import Component, Value
 from nengo_gui.components.slider import OverriddenOutput
-from nengo_gui.components.value import Value
+from nengo_gui.components.spa_plot import SpaPlot
+from nengo_gui.config import Config
+from nengo_gui.editor import AceEditor
+from nengo_gui.exceptions import NotAttachedError, raise_
+from nengo_gui.layout import Layout
 from nengo_gui.modal_js import infomodal
-import nengo_gui.user_action
-import nengo_gui.layout
+from nengo_gui.simcontrol import SimControl
+from nengo_gui.threads import RepeatedThread
+
+logger = logging.getLogger(__name__)
 
 
-class NetGraph(Component):
+class NameFinder(object):
+
+    CLASSES = (nengo.Node, nengo.Ensemble, nengo.Network, nengo.Connection)
+    TYPELISTS = ('ensembles', 'nodes', 'connections', 'networks')
+    NETIGNORE = ('all_ensembles', 'all_nodes', 'all_connections',
+                 'all_networks', 'all_objects', 'all_probes') + TYPELISTS
+
+    def __init__(self, autoprefix="_viz_"):
+        self.names = {}
+        self.autoprefix = autoprefix
+        self.autocount = 0
+
+    def __getitem__(self, obj):
+        return self.names[obj]
+
+    def add(self, obj):
+        """Add this object to the name finder and return its name.
+
+        This is used for new Components being created (so they can have
+        a unique identifier in the .cfg file).
+        """
+        name = '%s%d' % (self.autoprefix, self.autocount)
+        used_names = list(self.names.values())
+        while name in used_names:
+            self.autocount += 1
+            name = '%s%d' % (self.autoprefix, self.autocount)
+        self.names[obj] = name
+        return name
+
+    def label(self, obj):
+        """Return a readable label for an object.
+
+        An important difference between a label and a name is that a label
+        does not have to be unique in a namespace.
+
+        If the object has a .label set, this will be used. Otherwise, it
+        uses names, which thanks to the NameFinder will be legal
+        Python code for referring to the object given the current locals()
+        dictionary ("model.ensembles[1]" or "ens" or "model.buffer.state").
+        If it has to use names, it will only use the last part of the
+        label (after the last "."). This avoids redundancy in nested displays.
+        """
+        label = obj.label
+        if label is None:
+            label = self.names[obj]
+            if '.' in label:
+                label = label.rsplit('.', 1)[1]
+        return label
+
+    def update(self, names):
+        nets = []
+        for k, v in iteritems(names):
+            if not k.startswith('_'):
+                try:
+                    self.names[v] = k
+                    if isinstance(v, nengo.Network):
+                        nets.append(v)
+                except TypeError:
+                    pass
+
+        if len(nets) > 1:
+            logger.info("More than one top-level model defined.")
+
+        for net in nets:
+            self._parse_network(net)
+
+    def _parse_network(self, net):
+        net_name = self.names.get(net, None)
+        for inst_attr in dir(net):
+            private = inst_attr.startswith('_')
+            if not private and inst_attr not in self.NETIGNORE:
+                attr = getattr(net, inst_attr)
+                if isinstance(attr, list):
+                    for i, obj in enumerate(attr):
+                        if obj not in self.names:
+                            n = '%s.%s[%d]' % (net_name, inst_attr, i)
+                            self.names[obj] = n
+                elif isinstance(attr, self.CLASSES):
+                    if attr not in self.names:
+                        self.names[attr] = '%s.%s' % (net_name, inst_attr)
+
+        for obj_type in self.TYPELISTS:
+            for i, obj in enumerate(getattr(net, obj_type)):
+                name = self.names.get(obj, None)
+                if name is None:
+                    name = '%s.%s[%d]' % (net_name, obj_type, i)
+                    self.names[obj] = name
+
+        for n in net.networks:
+            self._parse_network(n)
+
+
+class PageComponents(object):
+
+    def __init__(self):
+        self.by_id = {}
+        self.by_type = defaultdict(lambda: None)
+        self.components = []
+
+    def __iter__(self):
+        return iter(self.components)
+
+    def add(self, component, attach=False):
+        """Add a new Component to an existing Page."""
+        self.by_id[id(component)] = component
+        self.components.append(component)
+        component.config = self.config[component]
+
+        component.on_page_add()
+
+    def by_type(self, component_class):
+        return self.components[component_class]
+
+    def from_locals(self, locals):
+        """Get components from a locals dict."""
+        for name, obj in iteritems(locals):
+            if isinstance(obj, Component):
+                self.add(obj)
+
+        # this ensures NetGraph, AceEditor, and SimControl are first
+        self.components.sort(key=lambda x: x.component_order)
+
+    def create_javascript(self):
+        """Generate the javascript for the current network and layout."""
+        assert isinstance(self.components[0], SimControl)
+        main = (NetGraph, SimControl, AceEditor)
+
+        main_js = '\n'.join([c.javascript() for c in self.components
+                             if isinstance(c, main)])
+        component_js = '\n'.join([c.javascript() for c in self.components
+                                  if not isinstance(c, main)])
+        if not self.context.writeable:
+            component_js += "$('#Open_file_button').addClass('deactivated');"
+        return main_js, component_js
+
+    def config_change(self, component, new_cfg, old_cfg):
+        act = ConfigAction(self,
+                           component=component,
+                           new_cfg=new_cfg,
+                           old_cfg=old_cfg)
+        self.undo_stack.append([act])
+
+    def remove_graph(self, component):
+        self.undo_stack.append([
+            RemoveGraph(self.net_graph, component, self.names.uid(component))])
+
+    def remove_component(self, component):
+        """Remove a component from the layout."""
+        del self.component_ids[id(component)]
+        self.remove_uid(component.uid)
+        self.components.remove(component)
+
+    def remove_uid(self, uid):
+        """Remove a generated uid (for when a component is removed)."""
+        if uid in self.locals:
+            obj = self.locals[uid]
+            del self.locals[uid]
+            del self.names[obj]
+        else:
+            warnings.warn("remove_uid called on unknown uid: %s" % uid)
+
+
+class PageNetwork(object):
+
+    def __init__(self, error):
+        self.code = None  # the code for the network
+        self.locals = None  # the locals() dictionary after executing
+        self.filename = None
+        self.obj = None  # the nengo.Network object
+
+        # the locals dict for the last time this script was run without errors
+        self.last_good_locals = None
+
+        self._set_error = lambda: raise_(NotAttachedError())
+
+    def attach(self, client):
+        def set_error(output, line):
+            client.dispatch("error.stderr", output=output, line=line)
+
+        self._set_error = set_error
+
+    def build(self, Simulator):
+        # Build the simulation
+        sim = None
+        env = exec_env.ExecutionEnvironment(self.filename, allow_sim=True)
+        try:
+            with env:
+                sim = Simulator(self.obj)
+        except Exception:
+            self._set_error(output=traceback.format_exc(),
+                            line=exec_env.determine_line_number())
+
+        return sim, env.stdout.getvalue()
+
+    def execute(self, code):
+        """Run the given code to generate self.network and self.locals.
+
+        The code will be stored in self.code, any output to stdout will
+        be a string as self.stdout.
+        """
+        errored = False
+
+        self.locals = {'__file__': self.filename}
+
+        self.code = code
+        self._set_error(output=None, line=None)
+
+        stdout = ''
+
+        env = exec_env.ExecutionEnvironment(self.filename)
+        try:
+            with env:
+                compiled = compile(code, exec_env.compiled_filename, 'exec')
+                exec(compiled, self.locals)
+        except exec_env.StartedSimulatorException:
+            line = exec_env.determine_line_number()
+            env.stdout.write('Warning: Simulators cannot be manually '
+                             'run inside nengo_gui (line %d)\n' % line)
+        except exec_env.StartedGUIException:
+            line = exec_env.determine_line_number()
+            env.stdout.write('Warning: nengo_gui cannot be run inside '
+                             'nengo_gui (line %d)\n' % line)
+        except Exception:
+            self._set_error(output=traceback.format_exc(),
+                            line=exec_env.determine_line_number())
+            errored = True
+        stdout = env.stdout.getvalue()
+
+        # make sure we've defined a nengo.Network
+        self.obj = self.locals.get('model', None)
+        if not isinstance(self.obj, nengo.Network):
+            if not errored:
+                self._set_error(
+                    output='Must declare a nengo.Network called "model"',
+                    line=len(code.split('\n')))
+                errored = True
+            self.obj = None
+
+        if not errored:
+            self.last_good_locals = self.locals
+
+        return stdout
+
+    def load(self, filename):
+        try:
+            with open(filename) as f:
+                code = f.read()
+            self.filename = filename
+        except IOError:
+            code = ''
+
+        return self.execute(code)
+
+
+class PageConfig(object):
+
+    def __init__(self):
+        self.filename = None
+        self.save_needed = False
+        self.save_time = None  # time of last config file save
+        self.save_period = 2.0  # minimum time between saves
+
+    def clear(self):
+        if os.path.isfile(self.filename_cfg):
+            os.remove(self.filename_cfg)
+
+    def load(self, net):
+        """Load the .cfg file"""
+        config = Config()
+        net.locals['_gui_config'] = config
+        if os.path.exists(self.filename):
+            with open(self.filename) as f:
+                config_code = f.readlines()
+            for line in config_code:
+                try:
+                    exec(line, net.locals)
+                except Exception:
+                    # TODO:
+                    # if self.gui.interactive:
+                    logger.debug('error parsing config: %s', line)
+
+        # make sure the required Components exist
+        if '_gui_sim_control' not in net.locals:
+            net.locals['_gui_sim_control'] = SimControl()
+        if '_gui_net_graph' not in net.locals:
+            net.locals['_gui_net_graph'] = NetGraph()
+        if '_gui_ace_editor' not in net.locals:
+            # TODO: general editor
+            net.locals['_gui_ace_editor'] = self.editor_class()
+
+        if net.network is not None:
+            if config[net.network].pos is None:
+                config[net.network].pos = (0, 0)
+            if config[net.network].size is None:
+                config[net.network].size = (1.0, 1.0)
+
+        for k, v in net.locals.items():
+            if isinstance(v, Component):
+                self.default_labels[v] = k
+                # TODO: use components.add(
+                v.attach(page=self, config=config[v], uid=k)
+
+        return config
+
+    def save(self, lazy=False, force=False):
+        """Write the .cfg file to disk.
+
+        Parameters
+        ----------
+        lazy : bool
+            If True, then only save if it has been more than config_save_time
+            since the last save and if config_save_needed
+        force : bool
+            If True, then always save right now
+        """
+        if not force and not self.config_save_needed:
+            return
+
+        now_time = time.time()
+        if not force and lazy and self.config_save_time is not None:
+            if (now_time - self.config_save_time) < self.config_save_period:
+                return
+
+        with self.lock:
+            self.config_save_time = now_time
+            self.config_save_needed = False
+            try:
+                with open(self.filename_cfg, 'w') as f:
+                    f.write(self.config.dumps(uids=self.default_labels))
+            except IOError:
+                print("Could not save %s; permission denied" %
+                      self.filename_cfg)
+
+    def modified(self):
+        """Set a flag that the config file should be saved."""
+        self.save_needed = True
+
+
+class NetGraph(object):
     """Handles computations and communications for NetGraph on the JS side.
 
     Communicates to all NetGraph components for creation, deletion and
     manipulation.
     """
 
-    config_defaults = {}
-    configs = {}
+    RELOAD_EVERY = 0.5  # How often to poll for reload
 
     def __init__(self):
-        # this component must be ordered before all the normal graphs (so that
-        # other graphs are on top of the NetGraph), so its
-        # order is between that of SimControl and the default (0)
-        super(NetGraph, self).__init__(component_order=-5)
 
         # this lock ensures safety between check_for_reload() and update_code()
         self.code_lock = threading.Lock()
+
         self.new_code = None
+        self.layout = None
+
+        self.to_be_expanded = collections.deque()
+        self.networks_to_search = []
+
+        self.undo_stack = []
+        self.redo_stack = []
 
         self.uids = {}
         self.parents = {}
         self.initialized_pan_and_zoom = False
 
-    def attach(self, page, config, uid):
-        super(NetGraph, self).attach(page, config, uid)
-        self.layout = nengo_gui.layout.Layout(self.page.model)
-        self.to_be_expanded = collections.deque([self.page.model])
-        self.to_be_sent = collections.deque()
+        self.config = PageConfig()
+        self.components = PageComponents()
 
-        self.networks_to_search = [self.page.model]
+        self.names = NameFinder()
 
-        try:
-            self.last_modify_time = os.path.getmtime(self.page.filename)
-        except OSError:
-            self.last_modify_time = None
-        except TypeError:  # happens if self.filename is None
-            self.last_modify_time = None
-        self.last_reload_check = time.time()
+        self.net = PageNetwork()
 
-    def check_for_reload(self):
+        self.filethread = RepeatedThread(self.RELOAD_EVERY, self._check_file)
+        self.filethread.start()  # TODO: defer until after load?
+
+    def attach(self, client):
+        # When first attaching, send the pan and zoom
+        pan = self.config[self.net.obj].pos
+        pan = (0, 0) if pan is None else pan
+        zoom = self.config[self.net.obj].size
+        zoom = 1.0 if zoom is None else zoom[0]
+        client.send("netgraph.pan", pan=pan)
+        client.send("netgraph.zoom", zoom=zoom)
+
+        client.bind("netgraph.expand")(self.act_expand)
+        client.bind("netgraph.collapse")(self.act_collapse)
+        client.bind("netgraph.pan")(self.act_pan)
+        client.bind("netgraph.zoom")(self.act_zoom)
+        client.bind("netgraph.create_modal")(self.act_create_modal)
+
+        @client.bind("netgraph.action")
+        def action(action, **kwargs):
+            if action == "expand":
+                act = user_action.ExpandCollapse(self, expand=True, **kwargs)
+            elif action == "collapse":
+                act = user_action.ExpandCollapse(self, expand=False, **kwargs)
+            elif action == "create_graph":
+                act = user_action.CreateGraph(self, **kwargs)
+            elif action == "pos":
+                act = user_action.Pos(self, **kwargs)
+            elif action == "size":
+                act = user_action.Size(self, **kwargs)
+            elif action == "pos_size":
+                act = user_action.PosSize(self, **kwargs)
+            elif action == "feedforward_layout":
+                act = user_action.FeedforwardLayout(self, **kwargs)
+            elif action == "config":
+                act = user_action.ConfigAction(self, **kwargs)
+            else:
+                act = user_action.Action(self, **kwargs)
+
+            self.undo_stack.append([act])
+            del self.redo_stack[:]
+
+        @client.bind("netgraph.undo")
+        def undo(undo):
+            if undo == "1":
+                self.undo()
+            else:
+                self.redo()
+
+        # if len(self.to_be_expanded) > 0:
+        #     with self.page.lock:
+        #         network = self.to_be_expanded.popleft()
+        #         self.expand_network(network, client)
+
+    # TODO: These should be done as part of loading the model
+
+    # def attach(self, page, config):
+    #     super(NetGraph, self).attach(page, config)
+    #     self.layout = Layout(page.net.obj)
+    #     self.to_be_expanded.append(page.net.obj)
+    #     self.networks_to_search.append(page.net.obj)
+
+    #     try:
+    #         self.last_modify_time = os.path.getmtime(page.net.filename)
+    #     except (OSError, TypeError):
+    #         self.last_modify_time = None
+
+    def _check_file(self):
         if self.page.filename is not None:
             try:
                 t = os.path.getmtime(self.page.filename)
@@ -91,6 +501,7 @@ class NetGraph(Component):
         and adding new ones"""
 
         old_locals = self.page.last_good_locals
+        # TODO: ???
         old_default_labels = self.page.default_labels
 
         if code is None:
@@ -108,7 +519,7 @@ class NetGraph(Component):
         if self.page.error is not None:
             return
 
-        name_finder = nengo_gui.NameFinder(self.page.locals, self.page.model)
+        name_finder = NameFinder(self.page.locals, self.page.model)
 
         self.networks_to_search = [self.page.model]
         self.parents = {}
@@ -132,8 +543,7 @@ class NetGraph(Component):
             # not the normal uid for that item.  For example, the uid
             # "ensembles[0]" might still refer to something even after that
             # ensemble is removed.
-            new_uid = self.page.get_uid(new_item,
-                                        default_labels=name_finder.known_name)
+            new_uid = name_finder[new_item]
             if new_uid != uid:
                 new_item = None
 
@@ -178,7 +588,7 @@ class NetGraph(Component):
         self.page.default_labels = name_finder.known_name
         self.page.config = self.page.load_config()
         self.page.uid_prefix_counter = {}
-        self.layout = nengo_gui.layout.Layout(self.page.model)
+        self.layout = Layout(self.page.model)
         self.page.code = code
 
         orphan_components = []
@@ -262,7 +672,7 @@ class NetGraph(Component):
                 #  but is still in the config file, or it has to be
                 #  rebuilt, so let's recover it
                 if name not in component_uids:
-                    self.page.add_component(obj)
+                    self.page.components.add(obj, attach=True)
                     self.to_be_sent.append(dict(type='js',
                                                 code=obj.javascript()))
                     components.append(obj)
@@ -271,15 +681,13 @@ class NetGraph(Component):
                 # otherwise, find the corresponding old Component
                 index = component_uids.index(name)
                 old_component = self.page.components[index]
-                if isinstance(obj, (nengo_gui.components.SimControlTemplate,
-                                    nengo_gui.components.AceEditorTemplate,
-                                    nengo_gui.components.NetGraphTemplate)):
+                if isinstance(obj, (SimControl, AceEditor, NetGraph)):
                     # just keep these ones
                     components.append(old_component)
                 else:
                     # replace these components with the newly generated ones
                     try:
-                        self.page.add_component(obj)
+                        self.page.components.add(obj, attach=True)
                         old_component.replace_with = obj
                         obj.original_id = old_component.original_id
                     except:
@@ -300,9 +708,8 @@ class NetGraph(Component):
         if isinstance(old_item, (nengo.Node,
                                  nengo.Ensemble,
                                  nengo.Network)):
-            old_label = self.page.get_label(old_item)
-            new_label = self.page.get_label(
-                new_item, default_labels=new_name_finder.known_name)
+            old_label = self.page.names.label(old_item)
+            new_label = new_name_finder.label(new_item)
 
             if old_label != new_label:
                 self.to_be_sent.append(dict(
@@ -331,12 +738,11 @@ class NetGraph(Component):
             if isinstance(new_post, nengo.ensemble.Neurons):
                 new_post = new_post.ensemble
 
-            old_pre = self.page.get_uid(old_pre)
-            old_post = self.page.get_uid(old_post)
-            new_pre = self.page.get_uid(
-                new_pre, default_labels=new_name_finder.known_name)
-            new_post = self.page.get_uid(
-                new_post, default_labels=new_name_finder.known_name)
+            old_pre = self.page.names.uid(old_pre)
+            old_post = self.page.names.uid(old_post)
+            new_pre = self.page.names.uid(new_pre, names=new_name_finder.names)
+            new_post = self.page.names.uid(
+                new_post, names=new_name_finder.names)
 
             if new_pre != old_pre or new_post != old_post:
                 # if the connection has changed, tell javascript
@@ -355,15 +761,15 @@ class NetGraph(Component):
     def get_parents(self, uid, default_labels=None):
         while uid not in self.parents:
             net = self.networks_to_search.pop(0)
-            net_uid = self.page.get_uid(net, default_labels=default_labels)
+            net_uid = self.page.names.uid(net, names=default_labels)
             for n in net.nodes:
-                n_uid = self.page.get_uid(n, default_labels=default_labels)
+                n_uid = self.page.names.uid(n, names=default_labels)
                 self.parents[n_uid] = net_uid
             for e in net.ensembles:
-                e_uid = self.page.get_uid(e, default_labels=default_labels)
+                e_uid = self.page.names.uid(e, names=default_labels)
                 self.parents[e_uid] = net_uid
             for n in net.networks:
-                n_uid = self.page.get_uid(n, default_labels=default_labels)
+                n_uid = self.page.names.uid(n, names=default_labels)
                 self.parents[n_uid] = net_uid
                 self.networks_to_search.append(n)
         parents = [uid]
@@ -373,55 +779,6 @@ class NetGraph(Component):
 
     def modified_config(self):
         self.page.modified_config()
-
-    def update_client(self, client):
-        now = time.time()
-        if now > self.last_reload_check + 0.5:
-            self.check_for_reload()
-            self.last_reload_check = now
-
-        if not self.initialized_pan_and_zoom:
-            self.send_pan_and_zoom(client)
-            self.initialized_pan_and_zoom = True
-
-        while len(self.to_be_sent) > 0:
-            info = self.to_be_sent.popleft()
-            client.write_text(json.dumps(info))
-
-        if len(self.to_be_expanded) > 0:
-            with self.page.lock:
-                network = self.to_be_expanded.popleft()
-                self.expand_network(network, client)
-
-    def javascript(self):
-        return 'var netgraphargs = {uid:"%s"};' % id(self)
-
-    def message(self, msg):
-        try:
-            info = json.loads(msg)
-        except ValueError:
-            print('invalid message', repr(msg))
-            return
-        action = info.get('act', None)
-        undo = info.get('undo', None)
-        if action is not None:
-            del info['act']
-            if action in ('auto_expand', 'auto_collapse'):
-                getattr(self, 'act_' + action[5:])(**info)
-            elif action in ('pan', 'zoom', 'create_modal'):
-                # These should not use the undo stack
-                getattr(self, 'act_' + action)(**info)
-            else:
-                act = nengo_gui.user_action.create_action(action, self, **info)
-                self.page.undo_stack.append([act])
-                del self.page.redo_stack[:]
-        elif undo is not None:
-            if undo == '1':
-                self.undo()
-            else:
-                self.redo()
-        else:
-            print('received message', msg)
 
     def undo(self):
         if self.page.undo_stack:
@@ -456,7 +813,7 @@ class NetGraph(Component):
     def remove_uids(self, net):
         for items in [net.ensembles, net.networks, net.nodes, net.connections]:
             for item in items:
-                uid = self.page.get_uid(item)
+                uid = self.page.names.uid(item)
                 if uid in self.uids:
                     del self.uids[uid]
         for n in net.networks:
@@ -486,7 +843,7 @@ class NetGraph(Component):
         if network is self.page.model:
             parent = None
         else:
-            parent = self.page.get_uid(network)
+            parent = self.page.names.uid(network)
         for ens in network.ensembles:
             self.create_object(client, ens, type='ens', parent=parent)
         for node in network.nodes:
@@ -498,7 +855,7 @@ class NetGraph(Component):
         self.page.config[network].expanded = True
 
     def create_object(self, client, obj, type, parent):
-        uid = self.page.get_uid(obj)
+        uid = self.page.names.uid(obj)
         if uid in self.uids:
             return
 
@@ -511,7 +868,7 @@ class NetGraph(Component):
         if size is None:
             size = (0.1, 0.1)
             self.page.config[obj].size = size
-        label = self.page.get_label(obj)
+        label = self.page.names.label(obj)
         self.uids[uid] = obj
         info = dict(uid=uid, label=label, pos=pos, type=type, size=size,
                     parent=parent)
@@ -543,24 +900,11 @@ class NetGraph(Component):
         elif Value.default_output(obj) is not None:
             info['default_output'] = True
 
-        info['sp_targets'] = (
-            nengo_gui.components.spa_plot.SpaPlot.applicable_targets(obj))
+        info['sp_targets'] = (SpaPlot.applicable_targets(obj))
         return info
 
-    def send_pan_and_zoom(self, client):
-        pan = self.page.config[self.page.model].pos
-        if pan is None:
-            pan = 0, 0
-        zoom = self.page.config[self.page.model].size
-        if zoom is None:
-            zoom = 1.0
-        else:
-            zoom = zoom[0]
-        client.write_text(json.dumps(dict(type='pan', pan=pan)))
-        client.write_text(json.dumps(dict(type='zoom', zoom=zoom)))
-
     def create_connection(self, client, conn, parent):
-        uid = self.page.get_uid(conn)
+        uid = self.page.names.uid(conn)
         if uid in self.uids:
             return
         pre = conn.pre_obj
@@ -573,8 +917,8 @@ class NetGraph(Component):
                 post = post.obj
         if isinstance(post, nengo.ensemble.Neurons):
             post = post.ensemble
-        pre = self.page.get_uid(pre)
-        post = self.page.get_uid(post)
+        pre = self.page.names.uid(pre)
+        post = self.page.names.uid(post)
         self.uids[uid] = conn
         pres = self.get_parents(pre)[:-1]
         posts = self.get_parents(post)[:-1]

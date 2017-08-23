@@ -42,6 +42,10 @@ def make_dummy(cls):
             if is_executing():
                 raise StartedSimulatorException()
             super(DummySimulator, self).__init__(*args, **kwargs)
+
+        def __del__(self):
+            pass
+
     return DummySimulator
 
 

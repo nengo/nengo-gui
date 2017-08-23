@@ -14,14 +14,70 @@ import sys
 import threading
 import time
 import webbrowser
+from timeit import default_timer
 
-import nengo_gui
-from nengo_gui import exec_env, server
+from nengo_gui import exec_env, paths, server
 from nengo_gui.compat import unquote
-from nengo_gui.config import PageSettings, ServerSettings
+from nengo_gui.editor import AceEditor, NoEditor
+from nengo_gui.config import ServerSettings
+from nengo_gui.page import Page
 from nengo_gui.server import HtmlResponse, HttpRedirect
+from nengo_gui.simcontrol import SimControl
 
 logger = logging.getLogger(__name__)
+
+
+class Context(object):
+    """Provides context information to the page.
+
+    This can include the locals dictionary, the filename and whether
+    this model can (or is allowed) to be written to disk.
+    """
+
+    __slots__ = (
+        '_filename', 'backend', 'filename_cfg', 'locals', 'model', 'writeable')
+
+    def __init__(self,
+                 model=None,
+                 locals=None,
+                 filename=None,
+                 filename_cfg=None,
+                 writeable=True,
+                 backend="nengo"):
+        self.writeabel = writeable
+        self.filename_cfg = filename_cfg
+        self.filename = filename
+        self.backend = backend
+
+        if model is None and locals is not None:
+            model = locals.get('model', None)
+
+        if model is None and filename is None:
+            raise ValueError("No model.")
+
+        self.model = model
+        self.locals = locals
+
+    @property
+    def filename(self):
+        return self._filename
+
+    @filename.setter
+    def filename(self, value):
+        self._filename = value
+
+        if value is None:
+            self.writeable = False
+        else:
+            try:
+                self._filename = os.path.relpath(value)
+            except ValueError:
+                # happens on Windows if filename is on a different
+                # drive than the current directory
+                pass
+
+        if self.filename_cfg is None:
+            self.filename_cfg = "%s.cfg" % (self._filename,)
 
 
 class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
@@ -40,8 +96,7 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
                      ex_html + b'</a></li>')
             path = root
         elif d.startswith(ex_tag):
-            path = os.path.join(nengo_gui.__path__[0],
-                                'examples', d[len(ex_tag):])
+            path = os.path.join(paths.examples, d[len(ex_tag):])
         else:
             path = os.path.join(root, d)
 
@@ -128,10 +183,36 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
         """Handles ws://host:port/component with a websocket"""
         # figure out what component is being connected to
 
-        gui = self.server
+        # TODO: have a key for the page that client and server know
+        # page = ...
+
+        if "uid" not in self.query:
+            # One of these per page
+            page.attach(self.ws)
+
+            now = default_timer()
+            next_ping_time = now
+
+            # To put in the while true loop...
+            # if now >= self.next_ping_time:
+            #     client.write_frame(WebSocketFrame(
+            #         1, 0, WebSocketFrame.OP_PING, 0, b''))
+            #     next_ping_time = now + 2.0
+
+
+
         uid = int(self.query['uid'][0])
 
-        component = gui.component_uids[uid]
+        # Component could be on any page, so look in all
+        component = None
+        page = None
+        for p in self.pages:
+            if uid in p.component_ids:
+                component = p.component_ids[uid]
+                page = p
+                break
+        assert component is not None
+
         while True:
             try:
                 if component.replace_with is not None:
@@ -158,6 +239,9 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
 
         # After hot loop
         component.finish()
+        if isinstance(component, SimControl) and not page.finished:
+            page.finished = True
+            self.server.remove_page(page)
 
     def log_message(self, format, *args):
         logger.info(format, *args)
@@ -190,8 +274,7 @@ def handle_config_msg(self, component, msg):
         old_cfg[k] = v
     if not cfg == old_cfg:
         # Register config change to the undo stack
-        component.page.config_change(
-            component, cfg, old_cfg)
+        component.page.components.change(component, cfg, old_cfg)
     for k, v in cfg.items():
         setattr(
             component.page.config[component],
@@ -210,9 +293,9 @@ def handle_remove_msg(self, component, msg):
 
 
 class GuiServer(server.ManagedThreadHttpServer):
-    def __init__(self, model_context,
+    def __init__(self, context,
                  server_settings=ServerSettings(),
-                 page_settings=PageSettings()):
+                 editor=True):
         if exec_env.is_executing():
             raise exec_env.StartedGUIException()
         self.settings = server_settings
@@ -232,17 +315,19 @@ class GuiServer(server.ManagedThreadHttpServer):
         # a mapping from uids to Components for all running Pages.
         # this is used to connect the websockets to the appropriate Component
         self.component_uids = {}
+        self.component_ids = {}
 
-        self.model_context = model_context
-        self.page_settings = page_settings
+        self.context = context
+        self.editor_class = AceEditor if editor else NoEditor
 
         self._last_access = time.time()
 
     def create_page(self, filename, reset_cfg=False):
         """Create a new Page with this configuration"""
-        page = nengo_gui.page.Page(
-            self, filename=filename, settings=self.page_settings,
-            reset_cfg=reset_cfg)
+        page = Page(self.editor_class)
+        page.load(filename, self.context)
+        if reset_cfg:
+            page.clear_config()
         self.pages.append(page)
         return page
 
@@ -259,38 +344,6 @@ class GuiServer(server.ManagedThreadHttpServer):
                 self.shutdown()
 
 
-class ModelContext(object):
-    """Provides context information to a model.
-
-    This can include the locals dictionary, the filename and whether
-    this model can (or is allowed) to be written to disk.
-    """
-
-    __slots__ = ('model', 'filename', 'locals', 'writeable')
-
-    def __init__(self, model=None, locals=None, filename=None, writeable=True):
-        self.filename = filename
-        if self.filename is not None:
-            try:
-                self.filename = os.path.relpath(filename)
-            except ValueError:
-                # happens on Windows if filename is on a different
-                # drive than the current directory
-                self.filename = filename
-            self.writeable = writeable
-        else:
-            self.writeable = False
-
-        if model is None and locals is not None:
-            model = locals.get('model', None)
-
-        if model is None and filename is None:
-            raise ValueError("No model.")
-
-        self.model = model
-        self.locals = locals
-
-
 class BaseGUI(object):
     """A basic nengo_gui backend server.
 
@@ -298,24 +351,18 @@ class BaseGUI(object):
 
     Parameters
     ----------
-    model_context : nengo_gui.backend.backend.ModelContext
+    context : Context
         Model and its context served by the backend.
     server_settings : nengo_gui.backend.backend.GuiServerSettings, optional
         Backend settings.
-    page_settings : nengo_gui.page.PageSettings, optional
-        Frontend page settings.
     """
-    def __init__(self, model_context,
-                 server_settings=None, page_settings=None):
+    def __init__(self, context, server_settings=None, editor=True):
         if server_settings is None:
             server_settings = ServerSettings()
-        if page_settings is None:
-            page_settings = PageSettings()
 
-        self.model_context = model_context
+        self.context = context
 
-        self.server = GuiServer(
-            self.model_context, server_settings, page_settings)
+        self.server = GuiServer(self.context, server_settings, editor=editor)
 
     def start(self):
         """Start the backend server and wait until it shuts down."""
@@ -335,10 +382,8 @@ class InteractiveGUI(BaseGUI):
 
     Parameters
     ----------
-    model_context : nengo_gui.backend.backend.ModelContext
+    context : Context
         Model and its context served by the backend.
-    page_settings : nengo_gui.page.PageSettings, optional
-        Frontend page settings.
     port : int
         Port to listen on.
     password : str, optional
@@ -406,14 +451,8 @@ class GUI(InteractiveGUI):
         Whether or not to show the editor
     """
     def __init__(self, filename=None, model=None, locals=None, editor=True):
-        if not editor:
-            ps = nengo_gui.page.PageSettings(
-                editor_class=nengo_gui.components.editor.NoEditor)
-        else:
-            ps = nengo_gui.page.PageSettings()
-        super(GUI, self).__init__(nengo_gui.guibackend.ModelContext(
-            filename=filename, model=model, locals=locals),
-            page_settings=ps)
+        context = Context(filename=filename, model=model, locals=locals)
+        super(GUI, self).__init__(context, editor=editor)
 
     def start(self):
         t = threading.Thread(

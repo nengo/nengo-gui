@@ -37,11 +37,20 @@ class Component(object):
         # the client side
         self.original_id = id(self)
 
-    def attach(self, page, config, uid):
-        """Connect the Component to a Page."""
+        self._config = None
+
+    @property
+    def config(self):
+        return self._config
+
+    @config.setter
+    def config(self, val):
+        self._config = val
+
+    def on_page_add(self, page, config):
+        """An event fired once a component is added to a page."""
         self.config = config  # the nengo.Config[component] for this component
-        self.page = page      # the Page this component is in
-        self.uid = uid        # The Python string referencing this component
+        self.page = page  # the Page this component is in
 
     def update_client(self, client):
         """Send any required information to the client.
@@ -69,7 +78,7 @@ class Component(object):
         """Close this Component"""
         pass
 
-    def add_nengo_objects(self, page):
+    def add_nengo_objects(self, network, config):
         """Add or modify the nengo model before build.
 
         Components may need to modify the underlying nengo.Network by adding
@@ -79,7 +88,7 @@ class Component(object):
         """
         pass
 
-    def remove_nengo_objects(self, page):
+    def remove_nengo_objects(self, network):
         """Undo the effects of add_nengo_objects.
 
         After the build is complete, remove the changes to the nengo.Network

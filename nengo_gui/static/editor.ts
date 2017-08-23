@@ -165,17 +165,6 @@ export class Editor {
             this.redraw();
         });
 
-        conn.bind("editor.stdout", ({stdout}) => {
-            if (this.marker !== null) {
-                this.editor.getSession().removeMarker(this.marker);
-                this.marker = null;
-                this.editor.getSession().clearAnnotations();
-            }
-            this.view.stdout = stdout;
-            this.view.stderr = "";
-            this.view.console.scrollTop = this.view.console.scrollHeight;
-        });
-
         conn.bind("editor.filename", ({filename, error}) => {
             if (error === null) {
                 document.getElementById("filename")[0].innerHTML = filename;
@@ -186,18 +175,38 @@ export class Editor {
             }
         });
 
-        conn.bind("editor.error", ({error, shortMsg, stdout}) => {
-            const line = error.line;
-            this.marker = this.editor.getSession()
-                .addMarker(new Range(line - 1, 0, line - 1, 10),
-                           "highlight", "fullLine", true);
-            this.editor.getSession().setAnnotations([{
-                row: line - 1,
-                text: shortMsg,
-                type: "error",
-            }]);
-            this.view.stdout = stdout;
-            this.view.stderr = error.trace;
+        conn.bind("editor.stderr", ({output, line}) => {
+            const session = this.editor.getSession();
+
+            if (output == null || line == null) {
+                // Clear errors
+                if (this.marker !== null) {
+                    session.removeMarker(this.marker);
+                    session.clearAnnotations();
+                    this.marker = null;
+                }
+                this.view.stderr = "";
+            } else {
+                console.assert(line !== null)
+                this.marker = session.addMarker(
+                    new Range(line - 1, 0, line - 1, 10),
+                    "highlight",
+                    "fullLine",
+                    true
+                );
+                session.setAnnotations([{
+                    row: line - 1,
+                    text: output.split("\n").slice(-2).join("\n"),
+                    type: "error",
+                }]);
+                this.view.stderr = output;
+                this.view.console.scrollTop = this.view.console.scrollHeight;
+            }
+        });
+
+        conn.bind("editor.stdout", ({output, line}) => {
+            console.assert(line == null)
+            this.view.stdout = output;
             this.view.console.scrollTop = this.view.console.scrollHeight;
         });
 

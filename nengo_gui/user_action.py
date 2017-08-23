@@ -5,27 +5,6 @@ from nengo.utils.compat import iteritems
 import nengo_gui.components
 
 
-def create_action(action, net_graph, **kwargs):
-    if action == "expand":
-        return ExpandCollapse(net_graph, expand=True, **kwargs)
-    elif action == "collapse":
-        return ExpandCollapse(net_graph, expand=False, **kwargs)
-    elif action == "create_graph":
-        return CreateGraph(net_graph, **kwargs)
-    elif action == "pos":
-        return Pos(net_graph, **kwargs)
-    elif action == "size":
-        return Size(net_graph, **kwargs)
-    elif action == "pos_size":
-        return PosSize(net_graph, **kwargs)
-    elif action == "feedforward_layout":
-        return FeedforwardLayout(net_graph, **kwargs)
-    elif action == "config":
-        return ConfigAction(net_graph, **kwargs)
-    else:
-        return Action(net_graph, **kwargs)
-
-
 class Action(object):
     """Base object for all user action responses"""
 
@@ -108,18 +87,20 @@ class ExpandCollapse(Action):
 class RemoveGraph(Action):
     """Remove a visualisation component associated to a NetGraph item"""
 
-    def __init__(self, net_graph, component):
+    def __init__(self, net_graph, component, uid):
         super(RemoveGraph, self).__init__(net_graph, id(component))
         self.component = component
+        self.uid = uid
 
     def apply(self):
         self.send('delete_graph')
 
     def undo(self):
         page = self.net_graph.page
-        page.add_component(self.component)
+        page.components.add(self.component, attach=True)
 
-        page.locals[self.component.uid] = self.component
+        # TODO: self.uid?
+        page.locals[self.uid] = self.component
         page.default_labels[self.component] = self.component.uid
 
         page.changed = True
@@ -153,21 +134,20 @@ class CreateGraph(Action):
         self.act_create_graph()
 
     def act_create_graph(self):
+        page = self.net_graph.page
         if self.graph_uid is None:
-            self.net_graph.page.generate_uid(self.component, prefix='_viz_')
-            self.graph_uid = self.net_graph.page.get_uid(self.component)
+            self.graph_uid = page.names.add(self.component, '_viz_')
         else:
-            self.net_graph.page.locals[self.graph_uid] = self.component
-            self.net_graph.page.default_labels[self.component] = (
-                self.graph_uid)
-        self.net_graph.page.config[self.component].x = self.x
-        self.net_graph.page.config[self.component].y = self.y
-        self.net_graph.page.config[self.component].width = self.width
-        self.net_graph.page.config[self.component].height = self.height
+            page.names.names[self.component] = self.graph_uid
+        page.net.locals[self.graph_uid] = self.component
+        page.config[self.component].x = self.x
+        page.config[self.component].y = self.y
+        page.config[self.component].width = self.width
+        page.config[self.component].height = self.height
         self.net_graph.modified_config()
 
-        self.net_graph.page.add_component(self.component)
-        self.net_graph.page.changed = True
+        page.components.add(self.component, attach=True)
+        page.changed = True
         self.send('js', code=self.component.javascript())
 
     def apply(self):
@@ -284,7 +264,7 @@ class FeedforwardLayout(Action):
             obj_cfg.size = (layout['h'] / 2 / self.scale,
                             layout['w'] / 2 / self.scale)
 
-            obj_uid = self.net_graph.page.get_uid(obj)
+            obj_uid = self.net_graph.page.names.uid(obj)
 
             self.send('pos_size',
                       uid=obj_uid, pos=obj_cfg.pos, size=obj_cfg.size)
@@ -296,7 +276,7 @@ class FeedforwardLayout(Action):
         state = []
         for obj, layout in iteritems(self.pos):
             state.append({
-                'uid': self.net_graph.page.get_uid(obj),
+                'uid': self.net_graph.page.names.uid(obj),
                 'pos': self.net_graph.page.config[obj].pos,
                 'size': self.net_graph.page.config[obj].size,
                 'obj': obj,

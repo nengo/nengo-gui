@@ -21,9 +21,9 @@ class XYValue(Component):
         self.node = None
         self.conn = None
 
-    def attach(self, page, config, uid):
-        super(XYValue, self).attach(page, config, uid)
-        self.label = page.get_label(self.obj)
+    @property
+    def label(self):
+        return self.page.names.label(self.obj)
 
     def add_nengo_objects(self, page):
         with page.model:

@@ -11,8 +11,9 @@ import weakref
 from IPython import get_ipython
 from IPython.display import display, HTML
 
-import nengo_gui
 from nengo_gui.compat import urlopen
+from nengo_gui.config import ServerSettings
+from nengo_gui.gui import BaseGUI, Context
 
 
 class ConfigReuseWarning(UserWarning):
@@ -63,16 +64,13 @@ class IPythonViz(object):
                 cls.threads[page.filename_cfg] = server_thread
 
         name = model.label
-        server_settings = nengo_gui.guibackend.GuiServerSettings(
-            ('localhost', 0))
-        model_context = nengo_gui.guibackend.ModelContext(
-            model=model, locals=get_ipython().user_ns, filename=name,
-            writeable=False)
-        page_settings = nengo_gui.page.PageSettings(
-            filename_cfg=cfg,
-            editor_class=nengo_gui.components.editor.NoEditor)
-        server = nengo_gui.gui.BaseGUI(
-            model_context, server_settings, page_settings)
+        server_settings = ServerSettings(listen_addr=('localhost', 0))
+        context = Context(filename_cfg=cfg,
+                          model=model,
+                          locals=get_ipython().user_ns,
+                          filename=name,
+                          writeable=False)
+        server = BaseGUI(context, server_settings, editor=False)
         server_thread = threading.Thread(target=server.start)
         server_thread.start()
         cls.servers[cfg] = server

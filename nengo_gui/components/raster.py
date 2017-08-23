@@ -24,20 +24,20 @@ class Raster(Component):
         self.node = None
         self.chosen = None
 
-    def attach(self, page, config, uid):
-        super(Raster, self).attach(page, config, uid)
-        self.label = page.get_label(self.obj.ensemble)
+    @property
+    def label(self):
+        return self.page.names.label(self.obj.ensemble)
 
-    def add_nengo_objects(self, page):
-        with page.model:
+    def add_nengo_objects(self, network, config):
+        with network:
             self.node = nengo.Node(self.gather_data, size_in=self.max_neurons)
             if 'spikes' in self.neuron_type.probeable:
                 self.conn = nengo.Connection(self.obj, self.node, synapse=None)
 
-    def remove_nengo_objects(self, page):
-        page.model.nodes.remove(self.node)
+    def remove_nengo_objects(self, network):
+        network.nodes.remove(self.node)
         if 'spikes' in self.neuron_type.probeable:
-            page.model.connections.remove(self.conn)
+            network.connections.remove(self.conn)
 
     def gather_data(self, t, x):
         if self.chosen is None:

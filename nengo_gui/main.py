@@ -7,7 +7,7 @@ import webbrowser
 import nengo_gui
 import nengo_gui.gui
 from nengo_gui.config import ServerSettings
-from nengo_gui.gui import ModelContext
+from nengo_gui.gui import Context
 from nengo_gui.server.auth import gensalt, hashpw, prompt_pw
 
 
@@ -73,10 +73,8 @@ def main():
                 nengo_gui.__path__[0], 'examples', 'default.py')
         else:
             filename = args.filename
-        page_settings = nengo_gui.page.PageSettings(backend=args.backend)
         s = nengo_gui.gui.InteractiveGUI(
-            ModelContext(filename=filename), server_settings,
-            page_settings=page_settings)
+            Context(filename=filename, backend=args.backend), server_settings)
         s.server.auto_shutdown = args.auto_shutdown[0]
 
         if args.browser:

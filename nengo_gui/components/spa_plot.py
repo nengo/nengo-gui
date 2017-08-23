@@ -15,10 +15,14 @@ class SpaPlot(Component):
         self.target = kwargs.get('args', 'default')
         self.vocab_out = obj.outputs[self.target][1]
 
-    def attach(self, page, config, uid):
-        super(SpaPlot, self).attach(page, config, uid)
-        self.label = page.get_label(self.obj)
-        self.vocab_out.include_pairs = config.show_pairs
+    @property
+    def label(self):
+        return self.page.names.label(self.obj)
+
+    @Component.config.setter
+    def config(self, val):
+        self._config = val
+        self.vocab_out.include_pairs = val.show_pairs
 
     def update_client(self, client):
         while len(self.data) > 0:

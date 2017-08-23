@@ -2,7 +2,7 @@ import inspect
 
 import nengo
 
-import nengo_gui.components
+from nengo_gui import components
 
 
 def make_param(name, default):
@@ -22,22 +22,20 @@ class Config(nengo.Config):
             self.configures(cls)
             self[cls].set_param('pos', make_param(name='pos', default=None))
             self[cls].set_param('size', make_param(name='size', default=None))
-        self[nengo.Network].set_param('expanded',
-                                      make_param(name='expanded',
-                                                 default=False))
-        self[nengo.Network].set_param('has_layout',
-                                      make_param(name='has_layout',
-                                                 default=False))
+        self[nengo.Network].set_param(
+            'expanded', make_param(name='expanded', default=False))
+        self[nengo.Network].set_param(
+            'has_layout', make_param(name='has_layout', default=False))
 
         # TODO: register components with config instead of doing it here
-        for clsname, cls in inspect.getmembers(nengo_gui.components):
-            if inspect.isclass(cls):
-                if issubclass(cls, nengo_gui.components.component.Component):
-                    if cls != nengo_gui.components.component.Component:
-                        self.configures(cls)
-                        for k, v in cls.config_defaults.items():
-                            p = make_param(name=k, default=v)
-                            self[cls].set_param(k, p)
+        for clsname, cls in inspect.getmembers(components):
+            if (inspect.isclass(cls)
+                    and issubclass(cls, components.Component)
+                    and cls != components.Component):
+                self.configures(cls)
+                for k, v in cls.config_defaults.items():
+                    p = make_param(name=k, default=v)
+                    self[cls].set_param(k, p)
 
     def dumps(self, uids):
         lines = []
@@ -56,7 +54,7 @@ class Config(nengo.Config):
                     lines.append('_gui_config[%s].has_layout=%s'
                                  % (uid, self[obj].has_layout))
 
-            elif isinstance(obj, nengo_gui.components.component.Component):
+            elif isinstance(obj, components.Component):
                 lines.append('%s = %s' % (uid, obj.code_python(uids)))
                 for k in obj.config_defaults.keys():
                     v = getattr(self[obj], k)
@@ -111,13 +109,3 @@ class ServerSettings(object):
             return True
         else:
             raise ValueError("SSL needs certificate file and key file.")
-
-
-class PageSettings(object):
-    __slots__ = ('backend', 'editor_class', 'filename_cfg')
-
-    def __init__(self, filename_cfg=None, backend='nengo',
-                 editor_class=nengo_gui.components.AceEditor):
-        self.filename_cfg = filename_cfg
-        self.backend = backend
-        self.editor_class = editor_class

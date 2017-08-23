@@ -14,15 +14,15 @@ class HTMLView(Component):
         self.obj_output = obj.output
         self.data = collections.deque()
 
-    def attach(self, page, config, uid):
-        super(HTMLView, self).attach(page, config, uid)
-        self.label = page.get_label(self.obj)
+    @property
+    def label(self):
+        return self.page.names.label(self.obj)
 
-    def add_nengo_objects(self, page):
-        with page.model:
+    def add_nengo_objects(self, network, config):
+        with network:
             self.obj.output = self.gather_data
 
-    def remove_nengo_objects(self, page):
+    def remove_nengo_objects(self, network):
         self.obj.output = self.obj_output
 
     def gather_data(self, t, *x):

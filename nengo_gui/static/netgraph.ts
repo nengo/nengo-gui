@@ -619,7 +619,7 @@ export class NetGraph {
 
         // TODO: bind a connection for the creation of each object
         // Node-only first so that I can get something I can test
-        conn.bind("netGraph.createNode", (
+        conn.bind("netgraph.createNode", (
             {ngiArg, interArg, dimensions, html}: {
                 ngiArg: any, // NetGraphItemArg,
             interArg: any, // : InteractableItemArg,
@@ -627,16 +627,16 @@ export class NetGraph {
                 this.createNode(ngiArg, interArg, dimensions, html);
         });
 
-        conn.bind("netGraph.createConnection", ({connArg}) => {
+        conn.bind("netgraph.createConnection", ({connArg}) => {
             this.createConnection(connArg);
         });
 
         // there should probably be a coordinate data type
-        conn.bind("netGraph.pan", ({x, y}: Pos) => {
+        conn.bind("netgraph.pan", ({x, y}: Pos) => {
             this.offset = {x, y};
         });
 
-        conn.bind("netGraph.zoom", ({zoom}: {zoom: number}) => {
+        conn.bind("netgraph.zoom", ({zoom}: {zoom: number}) => {
             this.scale = zoom;
         });
 
@@ -644,17 +644,17 @@ export class NetGraph {
         // Should I check that the uid gives a network or do I just
         // let it throw an error?
         // Or should I make a seperate list of interactables
-        conn.bind("netGraph.expand", ({uid}: {uid: string}) => {
+        conn.bind("netgraph.expand", ({uid}: {uid: string}) => {
             const item = this.svgObjects.net[uid];
             item.expand(true, true);
         });
-        conn.bind("netGraph.collapse", ({uid}: {uid: string}) => {
+        conn.bind("netgraph.collapse", ({uid}: {uid: string}) => {
             const item = this.svgObjects.net[uid];
             item.expand(true, true);
         });
 
         // Should probably make a shape param too
-        conn.bind("netGraph.posSize", (
+        conn.bind("netgraph.posSize", (
             {uid, x, y, width, height}: {uid: string} & Pos & utils.Shape) => {
                 const item = this.svgObjects[uid];
                 item.x = x;
@@ -667,24 +667,24 @@ export class NetGraph {
                 // this.scaleMiniMap();
         });
 
-        conn.bind("netGraph.config", ({uid, config}: {uid: string} & {config: any}) => {
+        conn.bind("netgraph.config", ({uid, config}: {uid: string} & {config: any}) => {
             // Anything about the config of a component has changed
             const component = this.components[uid];
             component.updateLayout(config);
         });
 
-        conn.bind("netGraph.js", ({js: js}) => {
+        conn.bind("netgraph.js", ({js: js}) => {
             // TODO: noooooooo
             eval(js);
         });
 
-        conn.bind("netGraph.rename", (
+        conn.bind("netgraph.rename", (
             {uid, newName}: {uid: string} & {newName: string}) => {
                 const item = this.svgObjects[uid];
                 item.setLabel(newName);
         });
 
-        conn.bind("netGraph.remove", ({uid}) => {
+        conn.bind("netgraph.remove", ({uid}) => {
             // TODO: this feels hacky
             // (which is why TypeScript is complaining)
             let item = this.svgObjects[uid];
@@ -695,7 +695,7 @@ export class NetGraph {
             item.remove();
         });
 
-        conn.bind("netGraph.reconnect",
+        conn.bind("netgraph.reconnect",
                   ({uid, pres, posts}: {uid: string} & any & any) => {
                 const netConn = this.svgConns[uid];
                 netConn.setPres(pres);
@@ -704,7 +704,7 @@ export class NetGraph {
                 netConn.redraw();
         });
 
-        conn.bind("netGraph.reconnect", ({uid, notifyServer}: {uid: string} & any) => {
+        conn.bind("netgraph.reconnect", ({uid, notifyServer}: {uid: string} & any) => {
             const component = this.components[uid];
             // component.remove(true, notifyServer);
         });

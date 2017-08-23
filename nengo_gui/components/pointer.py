@@ -34,8 +34,8 @@ class Pointer(SpaPlot):
         self.conn1 = None
         self.conn2 = None
 
-    def add_nengo_objects(self, page):
-        with page.model:
+    def add_nengo_objects(self, network, config):
+        with network:
             output = self.obj.outputs[self.target][0]
             self.node = nengo.Node(self.gather_data,
                                    size_in=self.vocab_out.dimensions,
@@ -48,10 +48,10 @@ class Pointer(SpaPlot):
             else:
                 self.conn2 = nengo.Connection(self.node, output, synapse=0.01)
 
-    def remove_nengo_objects(self, page):
-        page.model.connections.remove(self.conn1)
-        page.model.connections.remove(self.conn2)
-        page.model.nodes.remove(self.node)
+    def remove_nengo_objects(self, network):
+        network.connections.remove(self.conn1)
+        network.connections.remove(self.conn2)
+        network.nodes.remove(self.node)
 
     def gather_data(self, t, x):
         vocab = self.vocab_out
