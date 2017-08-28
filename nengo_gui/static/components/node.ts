@@ -1,7 +1,7 @@
-import { Component, ResizableComponent } from "./base";
+import { Component, ResizableComponent, Restrict } from "./base";
 import { NodeView, PassthroughNodeView } from "./views/node";
 
-export class PassthroughNode extends Component {
+export class PassthroughNode extends Component implements Restrict {
     fixedHeight: number;
     fixedWidth: number;
 

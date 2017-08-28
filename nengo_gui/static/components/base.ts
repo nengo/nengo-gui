@@ -295,6 +295,10 @@ export abstract class Component {
     }, 20);
 }
 
+export abstract class Restrict {
+    
+}
+
 export abstract class ResizableComponent extends Component {
 
     static resizeOptions: any = {
