@@ -1,6 +1,18 @@
 import nengo
 
-from nengo_gui.netgraph import NameFinder
+from nengo_gui.netgraph import ComponentManager, NameFinder
+
+
+class TestComponentManager(object):
+
+    def test_add_sorted(self):
+        """The add method adds in sorted order."""
+        components = ComponentManager()
+        components.add(10)
+        components.add(1)
+        assert components._components == [1, 10]
+        components.add(5)
+        assert components._components == [1, 5, 10]
 
 
 class TestNameFinder(object):

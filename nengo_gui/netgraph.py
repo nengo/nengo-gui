@@ -1,11 +1,11 @@
-from collections import defaultdict
-import collections
+import bisect
 import logging
 import os
 import threading
 import time
 import traceback
 import warnings
+from collections import defaultdict
 
 import json
 import nengo
@@ -17,13 +17,226 @@ from nengo_gui.components.slider import OverriddenOutput
 from nengo_gui.components.spa_plot import SpaPlot
 from nengo_gui.config import Config
 from nengo_gui.editor import AceEditor
-from nengo_gui.exceptions import NotAttachedError, raise_
+from nengo_gui.exceptions import (
+    NotAttachedError, StartedGUIException, StartedSimulatorException, raise_)
 from nengo_gui.layout import Layout
 from nengo_gui.modal_js import infomodal
 from nengo_gui.simcontrol import SimControl
 from nengo_gui.threads import RepeatedThread
 
 logger = logging.getLogger(__name__)
+
+
+class ComponentManager(object):
+    def __init__(self):
+        self.by_id = {}
+        self._components = []
+
+    def __iter__(self):
+        return iter(self._components)
+
+    def add(self, component):
+        """Add a new Component to an existing Page."""
+        self.by_id[id(component)] = component
+        bisect.insort(self._components, component)
+
+        # component.config = self.config[component]
+        # component.on_page_add()
+
+    def create_javascript(self):
+        """Generate the javascript for the current network and layout."""
+        assert isinstance(self._components[0], SimControl)
+        main = (NetGraph, SimControl, AceEditor)
+
+        main_js = '\n'.join([c.javascript() for c in self._components
+                             if isinstance(c, main)])
+        component_js = '\n'.join([c.javascript() for c in self._components
+                                  if not isinstance(c, main)])
+        if not self.context.writeable:
+            component_js += "$('#Open_file_button').addClass('deactivated');"
+        return main_js, component_js
+
+    def config_change(self, component, new_cfg, old_cfg):
+        act = ConfigAction(self,
+                           component=component,
+                           new_cfg=new_cfg,
+                           old_cfg=old_cfg)
+        self.undo_stack.append([act])
+
+    def remove_graph(self, component):
+        self.undo_stack.append([
+            RemoveGraph(self.net_graph, component, self.names.uid(component))])
+
+    def remove(self, component):
+        """Remove a component from the layout."""
+        del self.component_ids[id(component)]
+        self.remove_uid(component.uid)
+        self._components.remove(component)
+
+    def remove_uid(self, uid):
+        """Remove a generated uid (for when a component is removed)."""
+        if uid in self.locals:
+            obj = self.locals[uid]
+            del self.locals[uid]
+            del self.names[obj]
+        else:
+            warnings.warn("remove_uid called on unknown uid: %s" % uid)
+
+
+class ConfigManager(object):
+    def __init__(self, filename):
+        self.filename = filename
+        self.dirty = False
+        self.last_save = None
+        self.save_period = 2.0  # minimum time between saves
+
+        # TODO: is lock necessary? Throttle save function?
+        self.lock = threading.Lock()
+
+    def clear(self):
+        if os.path.isfile(self.filename):
+            os.remove(self.filename)
+
+    def load(self, model, locals):
+        """Load the .cfg file"""
+        self.cfg = Config()
+        locals['_gui_config'] = self.cfg
+
+        if os.path.exists(self.filename):
+            with open(self.filename) as f:
+                config_code = f.readlines()
+            for line in config_code:
+                try:
+                    exec(line, locals)
+                except Exception:
+                    # TODO:
+                    # if self.gui.interactive:
+                    logger.debug('error parsing config: %s', line)
+
+        # TODO: make sure this is no longer necessary
+        # make sure the required Components exist
+        # if '_gui_sim_control' not in locals:
+        #     locals['_gui_sim_control'] = SimControl()
+        # if '_gui_net_graph' not in locals:
+        #     locals['_gui_net_graph'] = NetGraph()
+        # if '_gui_ace_editor' not in locals:
+        #     # TODO: general editor
+        #     locals['_gui_ace_editor'] = self.editor_class()
+
+        if model is not None:
+            if self.cfg[model].pos is None:
+                self.cfg[model].pos = (0, 0)
+            if self.cfg[model].size is None:
+                self.cfg[model].size = (1.0, 1.0)
+
+        self.dirty = False
+        self.last_save = None
+
+    def save(self, names, force=False):
+        """Write the .cfg file to disk.
+
+        Parameters
+        ----------
+        force : bolo
+            If True, then always save right now, even if dirty.
+        """
+        if not force and not self.dirty:
+            return
+
+        now = time.time()
+        if not force and self.last_save is not None:
+            if (now - self.last_save) < self.save_period:
+                return
+
+        with self.lock:
+            self.last_save = now
+            self.dirty = False
+            try:
+                with open(self.filename, 'w') as f:
+                    f.write(self.config.dumps(uids=names))
+            except IOError:
+                print("Could not save %s; permission denied" %
+                      self.filename)
+
+
+class LiveContext(object):
+    def __init__(self, filename, model, locals):
+        self.model = model
+        self.locals = None
+        if locals is not None:
+            self.locals = locals.copy()
+        self.filename = filename
+        self.code = None  # the code for the network
+
+        self._set_stderr = lambda: raise_(NotAttachedError())
+        self._set_stdout = lambda: raise_(NotAttachedError())
+
+    def attach(self, client):
+        def set_stderr(output, line=None):
+            client.dispatch("editor.stderr", output=output, line=line)
+        self._set_stderr = set_stderr
+
+        def set_stdout(output, line=None):
+            client.dispatch("editor.stdout", output=output, line=line)
+        self._set_stdout = set_stdout
+
+    def execute(self, code):
+        """Run the given code to generate self.network and self.locals.
+
+        The code will be stored in self.code, any output to stdout will
+        be sent to the client.
+        """
+        errored = False
+
+        newlocals = {'__file__': self.filename}
+
+        # Clear any existing errors
+        self._set_stderr(output=None)
+
+        env = exec_env.ExecutionEnvironment(self.filename)
+        try:
+            with env:
+                compiled = compile(code, self.filename, mode='exec')
+                exec(compiled, newlocals)
+        # TODO: Should we actually let these warn and continue?
+        except StartedSimulatorException:
+            line = exec_env.determine_line(self.filename)
+            env.stdout.write('Warning: Simulators cannot be manually '
+                             'run inside nengo_gui (line %d)\n' % line)
+        except StartedGUIException:
+            line = exec_env.determine_line(self.filename)
+            env.stdout.write('Warning: nengo_gui cannot be run inside '
+                             'nengo_gui (line %d)\n' % line)
+        except Exception:
+            self._set_stderr(output=traceback.format_exc(),
+                             line=exec_env.determine_line(self.filename))
+            errored = True
+        self._set_stdout(env.stdout.getvalue())
+
+        # make sure we've defined a nengo.Network
+        self.model = newlocals.get('model', None)
+        if not isinstance(self.model, nengo.Network):
+            if not errored:
+                self._set_stderr('Must declare a nengo.Network called "model"')
+                errored = True
+            self.model = None
+
+        if not errored:
+            self.locals = newlocals
+            self.code = code
+
+    def load(self, filename, force=False):
+        if self.filename == filename and not force:
+            raise ValueError("That file is already loaded")
+        try:
+            with open(filename) as f:
+                code = f.read()
+            self.filename = filename
+        except IOError:
+            code = ''
+
+        if code != self.code:
+            self.execute(code)
 
 
 class NameFinder(object):
@@ -118,252 +331,6 @@ class NameFinder(object):
             self._parse_network(n)
 
 
-class PageComponents(object):
-
-    def __init__(self):
-        self.by_id = {}
-        self.by_type = defaultdict(lambda: None)
-        self.components = []
-
-    def __iter__(self):
-        return iter(self.components)
-
-    def add(self, component, attach=False):
-        """Add a new Component to an existing Page."""
-        self.by_id[id(component)] = component
-        self.components.append(component)
-        component.config = self.config[component]
-
-        component.on_page_add()
-
-    def by_type(self, component_class):
-        return self.components[component_class]
-
-    def from_locals(self, locals):
-        """Get components from a locals dict."""
-        for name, obj in iteritems(locals):
-            if isinstance(obj, Component):
-                self.add(obj)
-
-        # this ensures NetGraph, AceEditor, and SimControl are first
-        self.components.sort(key=lambda x: x.component_order)
-
-    def create_javascript(self):
-        """Generate the javascript for the current network and layout."""
-        assert isinstance(self.components[0], SimControl)
-        main = (NetGraph, SimControl, AceEditor)
-
-        main_js = '\n'.join([c.javascript() for c in self.components
-                             if isinstance(c, main)])
-        component_js = '\n'.join([c.javascript() for c in self.components
-                                  if not isinstance(c, main)])
-        if not self.context.writeable:
-            component_js += "$('#Open_file_button').addClass('deactivated');"
-        return main_js, component_js
-
-    def config_change(self, component, new_cfg, old_cfg):
-        act = ConfigAction(self,
-                           component=component,
-                           new_cfg=new_cfg,
-                           old_cfg=old_cfg)
-        self.undo_stack.append([act])
-
-    def remove_graph(self, component):
-        self.undo_stack.append([
-            RemoveGraph(self.net_graph, component, self.names.uid(component))])
-
-    def remove_component(self, component):
-        """Remove a component from the layout."""
-        del self.component_ids[id(component)]
-        self.remove_uid(component.uid)
-        self.components.remove(component)
-
-    def remove_uid(self, uid):
-        """Remove a generated uid (for when a component is removed)."""
-        if uid in self.locals:
-            obj = self.locals[uid]
-            del self.locals[uid]
-            del self.names[obj]
-        else:
-            warnings.warn("remove_uid called on unknown uid: %s" % uid)
-
-
-class PageNetwork(object):
-
-    def __init__(self, error):
-        self.code = None  # the code for the network
-        self.locals = None  # the locals() dictionary after executing
-        self.filename = None
-        self.obj = None  # the nengo.Network object
-
-        # the locals dict for the last time this script was run without errors
-        self.last_good_locals = None
-
-        self._set_error = lambda: raise_(NotAttachedError())
-
-    def attach(self, client):
-        def set_error(output, line):
-            client.dispatch("error.stderr", output=output, line=line)
-
-        self._set_error = set_error
-
-    def build(self, Simulator):
-        # Build the simulation
-        sim = None
-        env = exec_env.ExecutionEnvironment(self.filename, allow_sim=True)
-        try:
-            with env:
-                sim = Simulator(self.obj)
-        except Exception:
-            self._set_error(output=traceback.format_exc(),
-                            line=exec_env.determine_line_number())
-
-        return sim, env.stdout.getvalue()
-
-    def execute(self, code):
-        """Run the given code to generate self.network and self.locals.
-
-        The code will be stored in self.code, any output to stdout will
-        be a string as self.stdout.
-        """
-        errored = False
-
-        self.locals = {'__file__': self.filename}
-
-        self.code = code
-        self._set_error(output=None, line=None)
-
-        stdout = ''
-
-        env = exec_env.ExecutionEnvironment(self.filename)
-        try:
-            with env:
-                compiled = compile(code, exec_env.compiled_filename, 'exec')
-                exec(compiled, self.locals)
-        except exec_env.StartedSimulatorException:
-            line = exec_env.determine_line_number()
-            env.stdout.write('Warning: Simulators cannot be manually '
-                             'run inside nengo_gui (line %d)\n' % line)
-        except exec_env.StartedGUIException:
-            line = exec_env.determine_line_number()
-            env.stdout.write('Warning: nengo_gui cannot be run inside '
-                             'nengo_gui (line %d)\n' % line)
-        except Exception:
-            self._set_error(output=traceback.format_exc(),
-                            line=exec_env.determine_line_number())
-            errored = True
-        stdout = env.stdout.getvalue()
-
-        # make sure we've defined a nengo.Network
-        self.obj = self.locals.get('model', None)
-        if not isinstance(self.obj, nengo.Network):
-            if not errored:
-                self._set_error(
-                    output='Must declare a nengo.Network called "model"',
-                    line=len(code.split('\n')))
-                errored = True
-            self.obj = None
-
-        if not errored:
-            self.last_good_locals = self.locals
-
-        return stdout
-
-    def load(self, filename):
-        try:
-            with open(filename) as f:
-                code = f.read()
-            self.filename = filename
-        except IOError:
-            code = ''
-
-        return self.execute(code)
-
-
-class PageConfig(object):
-
-    def __init__(self):
-        self.filename = None
-        self.save_needed = False
-        self.save_time = None  # time of last config file save
-        self.save_period = 2.0  # minimum time between saves
-
-    def clear(self):
-        if os.path.isfile(self.filename_cfg):
-            os.remove(self.filename_cfg)
-
-    def load(self, net):
-        """Load the .cfg file"""
-        config = Config()
-        net.locals['_gui_config'] = config
-        if os.path.exists(self.filename):
-            with open(self.filename) as f:
-                config_code = f.readlines()
-            for line in config_code:
-                try:
-                    exec(line, net.locals)
-                except Exception:
-                    # TODO:
-                    # if self.gui.interactive:
-                    logger.debug('error parsing config: %s', line)
-
-        # make sure the required Components exist
-        if '_gui_sim_control' not in net.locals:
-            net.locals['_gui_sim_control'] = SimControl()
-        if '_gui_net_graph' not in net.locals:
-            net.locals['_gui_net_graph'] = NetGraph()
-        if '_gui_ace_editor' not in net.locals:
-            # TODO: general editor
-            net.locals['_gui_ace_editor'] = self.editor_class()
-
-        if net.network is not None:
-            if config[net.network].pos is None:
-                config[net.network].pos = (0, 0)
-            if config[net.network].size is None:
-                config[net.network].size = (1.0, 1.0)
-
-        for k, v in net.locals.items():
-            if isinstance(v, Component):
-                self.default_labels[v] = k
-                # TODO: use components.add(
-                v.attach(page=self, config=config[v], uid=k)
-
-        return config
-
-    def save(self, lazy=False, force=False):
-        """Write the .cfg file to disk.
-
-        Parameters
-        ----------
-        lazy : bool
-            If True, then only save if it has been more than config_save_time
-            since the last save and if config_save_needed
-        force : bool
-            If True, then always save right now
-        """
-        if not force and not self.config_save_needed:
-            return
-
-        now_time = time.time()
-        if not force and lazy and self.config_save_time is not None:
-            if (now_time - self.config_save_time) < self.config_save_period:
-                return
-
-        with self.lock:
-            self.config_save_time = now_time
-            self.config_save_needed = False
-            try:
-                with open(self.filename_cfg, 'w') as f:
-                    f.write(self.config.dumps(uids=self.default_labels))
-            except IOError:
-                print("Could not save %s; permission denied" %
-                      self.filename_cfg)
-
-    def modified(self):
-        """Set a flag that the config file should be saved."""
-        self.save_needed = True
-
-
 class NetGraph(object):
     """Handles computations and communications for NetGraph on the JS side.
 
@@ -373,15 +340,11 @@ class NetGraph(object):
 
     RELOAD_EVERY = 0.5  # How often to poll for reload
 
-    def __init__(self):
+    def __init__(self, context):
+        self.lock = threading.Lock()
 
-        # this lock ensures safety between check_for_reload() and update_code()
-        self.code_lock = threading.Lock()
-
-        self.new_code = None
         self.layout = None
 
-        self.to_be_expanded = collections.deque()
         self.networks_to_search = []
 
         self.undo_stack = []
@@ -389,23 +352,21 @@ class NetGraph(object):
 
         self.uids = {}
         self.parents = {}
-        self.initialized_pan_and_zoom = False
 
-        self.config = PageConfig()
-        self.components = PageComponents()
-
+        self.context = LiveContext(
+            context.filename, context.model, context.locals)
+        self.config = ConfigManager(context.filename_cfg)
+        self.components = ComponentManager()
         self.names = NameFinder()
-
-        self.net = PageNetwork()
 
         self.filethread = RepeatedThread(self.RELOAD_EVERY, self._check_file)
         self.filethread.start()  # TODO: defer until after load?
 
     def attach(self, client):
         # When first attaching, send the pan and zoom
-        pan = self.config[self.net.obj].pos
+        pan = self.config.cfg[self.context.model].pos
         pan = (0, 0) if pan is None else pan
-        zoom = self.config[self.net.obj].size
+        zoom = self.config.cfg[self.context.model].size
         zoom = 1.0 if zoom is None else zoom[0]
         client.send("netgraph.pan", pan=pan)
         client.send("netgraph.zoom", zoom=zoom)
@@ -465,6 +426,15 @@ class NetGraph(object):
     #     except (OSError, TypeError):
     #         self.last_modify_time = None
 
+    def add_nengo_objects(self):
+        for c in self.components:
+            c.add_nengo_objects(self.context.model, self.config.cfg)
+
+    def remove_nengo_objects(self):
+        for c in self.components:
+            c.remove_nengo_objects(self.context.model)
+        # TODO: add checks to make sure everything's been removed
+
     def _check_file(self):
         if self.page.filename is not None:
             try:
@@ -475,7 +445,7 @@ class NetGraph(object):
             except OSError:
                 pass
 
-        with self.code_lock:
+        with self.lock:
             new_code = self.new_code
             # the lock is in case update_code() is called between these lines
             self.new_code = None
@@ -483,22 +453,36 @@ class NetGraph(object):
         if new_code is not None:
             self.reload(code=new_code)
 
+    def load(self, filename, context):
+        # Load the .py file
+        self.context.load(filename)
+        # Load the .cfg file
+        self.config.load(self.context.model, self.context.locals)
+
+        # Figure out good names for objects
+        self.names.update(self.context.locals)
+
+        for name, obj in iteritems(self.context.locals):
+            if isinstance(obj, Component):
+                self.components.add(obj)
+                # TODO: attach?
+                obj.attach(page=self, config=self.config.cfg[name], uid=name)
+
     def update_code(self, code):
         """Set new version of code to display."""
-        with self.code_lock:
+        with self.lock:
             self.new_code = code
 
     def reload(self, code=None):
         """Called when new code has been detected
         checks that the page is not currently being used
         and thus can be updated"""
-        with self.page.lock:
+        with self.lock:
             self._reload(code=code)
 
     def _reload(self, code=None):
         """Loads and executes the code, removing old items,
-        updating changed items
-        and adding new ones"""
+        updating changed items and adding new ones"""
 
         old_locals = self.page.last_good_locals
         # TODO: ???
@@ -582,6 +566,7 @@ class NetGraph(object):
 
                 self.uids[uid] = new_item
 
+        # TODO: just call expand geez
         self.to_be_expanded.append(self.page.model)
 
         self.page.name_finder = name_finder
@@ -716,6 +701,7 @@ class NetGraph(object):
                     type='rename', uid=uid, name=new_label))
                 changed = True
             if isinstance(old_item, nengo.Network):
+                # TODO: just call expand geez
                 if self.page.config[old_item].expanded:
                     self.to_be_expanded.append(new_item)
                     changed = True
@@ -777,9 +763,6 @@ class NetGraph(object):
             parents.append(self.parents[parents[-1]])
         return parents
 
-    def modified_config(self):
-        self.page.modified_config()
-
     def undo(self):
         if self.page.undo_stack:
             action = self.page.undo_stack.pop()
@@ -800,15 +783,16 @@ class NetGraph(object):
 
     def act_expand(self, uid):
         net = self.uids[uid]
+        # TODO: just call expand geez
         self.to_be_expanded.append(net)
         self.page.config[net].expanded = True
-        self.modified_config()
+        self.config.dirty = True
 
     def act_collapse(self, uid):
         net = self.uids[uid]
         self.page.config[net].expanded = False
         self.remove_uids(net)
-        self.modified_config()
+        self.config.dirty = True
 
     def remove_uids(self, net):
         for items in [net.ensembles, net.networks, net.nodes, net.connections]:
@@ -821,12 +805,12 @@ class NetGraph(object):
 
     def act_pan(self, x, y):
         self.page.config[self.page.model].pos = x, y
-        self.modified_config()
+        self.config.dirty = True
 
     def act_zoom(self, scale, x, y):
         self.page.config[self.page.model].size = scale, scale
         self.page.config[self.page.model].pos = x, y
-        self.modified_config()
+        self.config.dirty = True
 
     def act_create_modal(self, uid, **info):
         js = infomodal(self, uid, **info)

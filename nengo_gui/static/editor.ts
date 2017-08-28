@@ -178,7 +178,7 @@ export class Editor {
         conn.bind("editor.stderr", ({output, line}) => {
             const session = this.editor.getSession();
 
-            if (output == null || line == null) {
+            if (output == null) {
                 // Clear errors
                 if (this.marker !== null) {
                     session.removeMarker(this.marker);
@@ -187,7 +187,9 @@ export class Editor {
                 }
                 this.view.stderr = "";
             } else {
-                console.assert(line !== null)
+                if (line == null) {
+                    line = session.getLength() - 1;
+                }
                 this.marker = session.addMarker(
                     new Range(line - 1, 0, line - 1, 10),
                     "highlight",

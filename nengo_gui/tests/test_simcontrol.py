@@ -1,40 +1,38 @@
 import time
 
-import pytest
-
-from nengo_gui.simcontrol import SimRunner
+from nengo_gui.simcontrol import SimControl
 
 
-@pytest.yield_fixture
-def runner():
-    class MockSimulator(object):
-        def __init__(self):
-            self.step_calls = 0
-            self.run_steps_calls = 0
-            self.n_steps = 0
+class MockSimulator(object):
+    def __init__(self):
+        self.step_calls = 0
+        self.run_steps_calls = 0
+        self.n_steps = 0
 
-        def run_steps(self, n_steps):
-            self.n_steps = n_steps
-            self.run_steps_calls += 1
+    def run_steps(self, n_steps):
+        self.n_steps = n_steps
+        self.run_steps_calls += 1
 
-        def step(self):
-            self.step_calls += 1
-
-    r = SimRunner(MockSimulator())
-    yield r
-    r.stop()
-    r.join()
+    def step(self):
+        self.step_calls += 1
 
 
-class TestSimRunner(object):
+class TestSimControl(object):
 
-    def test_max_steps(self, runner):
-        runner.sim.max_steps = 5
+    def test_max_steps(self):
+        simcontrol = SimControl()
+        simcontrol.sim = MockSimulator()
+        assert simcontrol.sim.step_calls == 0
+        assert simcontrol.sim.run_steps_calls == 0
 
-        runner.start()
+        simcontrol.simthread.play()
         time.sleep(0.01)
-        runner.pause()
+        simcontrol.simthread.pause()
+        assert simcontrol.sim.step_calls > 0
+
+        simcontrol.sim.max_steps = 5
+        simcontrol.simthread.play()
         time.sleep(0.01)
-        assert runner.sim.step_calls == 0
-        assert runner.sim.run_steps_calls > 0
-        assert runner.sim.n_steps == 5
+        simcontrol.simthread.pause()
+        assert simcontrol.sim.run_steps_calls > 0
+        simcontrol.simthread.stop()

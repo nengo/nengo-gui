@@ -6,6 +6,7 @@ import traceback
 
 from nengo.utils.compat import StringIO
 
+from nengo_gui.exceptions import StartedSimulatorException
 
 # list of Simulators to check for
 known_modules = ['nengo', 'nengo_ocl', 'nengo_distilled',
@@ -26,14 +27,6 @@ def discover_backends():
     return found_modules
 
 
-class StartedSimulatorException(Exception):
-    pass
-
-
-class StartedGUIException(Exception):
-    pass
-
-
 # create a wrapper class that will throw an exception if we are
 # currently executing a script
 def make_dummy(cls):
@@ -52,14 +45,12 @@ def make_dummy(cls):
 # thread local storage for storing whether we are executing a script
 flag = threading.local()
 
-compiled_filename = '<nengo_gui_compiled>'
-
 
 def is_executing():
     return getattr(flag, 'executing', False)
 
 
-def determine_line_number():
+def determine_line(filename):
     """Checks stack trace to determine the line number we are currently at.
 
     The filename argument should be the filename given to the code when
@@ -70,14 +61,14 @@ def determine_line_number():
     if exc_traceback is not None:
         ex_tb = traceback.extract_tb(exc_traceback)
         for fn, line, function, code in reversed(ex_tb):
-            if fn == compiled_filename:
+            if fn == filename:
                 return line
 
     # if we can't find it that way, parse the text of the stack trace
     #  note that this is required for indentation errors and other syntax
     #  problems
     trace = traceback.format_exc()
-    pattern = 'File "%s", line ' % compiled_filename
+    pattern = 'File "%s", line ' % filename
     index = trace.find(pattern)
     if index >= 0:
         text = trace[index + len(pattern):].split('\n', 1)[0]

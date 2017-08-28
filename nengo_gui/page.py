@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 class ClientConnection(object):
-
     def __init__(self, ws):
         self.ws = ws
         self.callbacks = defaultdict(list)
@@ -50,80 +49,32 @@ class Page(object):
     editor_class : class, optional (Default: `.AceEditor`)
     """
 
-    def __init__(self, editor_class=AceEditor):
-
+    def __init__(self, context, editor_class=AceEditor):
         self.lock = threading.Lock()
 
         self.editor = editor_class()
-        self.netgraph = NetGraph()
-        self.simcontrol = SimControl()
-        # self.client = None
+        self.netgraph = NetGraph(context)
+        self.simcontrol = SimControl(backend=context.backend)
 
     def attach(self, websocket):
         client = ClientConnection(websocket)
-
         self.editor.attach(client)
         self.netgraph.attach(client)
         self.simcontrol.attach(client)
-
-        client.bind("page.save", self.save)
-
-        # self.client = client
+        client.bind("page.save")(self.save)
 
     def build(self):
         """Build the network."""
-
         # use the lock to make sure only one Simulator is building at a time
         # TODO: should there be a master lock in the GUI?
         with self.lock:
-
-            # Pause the runner thread
-            self.runner.pause()
-
-            # Remove the current simulator
-            self.runner.sim = None
-
-            # Modify the network for the various Components
-            for c in self.components:
-                c.add_nengo_objects(self.net.ojb, self.config)
-
-            # Determine the backend to use
-            backend = importlib.import_module(self.backend)
-
-            self.runner.sim, stdout = self.net.build(backend.Simulator)
-            self.stdout += stdout
-
-            # remove the temporary components added for visualization
-            for c in self.components:
-                c.remove_nengo_objects(self.net.obj)
-
-            # TODO: add checks to make sure everything's been removed
-
-            # TODO: should we play this now or elsewhere?
-            self.runner.play()
+            self.netgraph.add_nengo_objects()
+            self.simcontrol.build(self.netgraph.net)
+            self.netgraph.remove_nengo_objects()
 
     def load(self, filename, context):
-        self.backend = context.backend
-        if context.filename == filename:
-            # Load up from context
-            self.net.filename = filename
-            self.net.obj = context.network
-            if context.locals is not None:
-                self.net.locals = context.locals.copy()
-        else:
-            # Load from file
-            self.stdout = self.net.load(filename)
-
-        # Figure out good names for objects
-        self.names.update(self.net.locals)
-
-        # Load the .cfg file
-        self.config = self.load_config()
-        self.config_save_needed = False
-        self.config_save_time = None   # time of last config file save
-
-        # Get handles to components
-        self.components.from_locals(self.net.locals)
+        self.simcontrol.backend = context.backend
+        self.netgraph.load(filename, context)
 
     def save(self, filename):
         rename = filename != self.netgraph.filename
@@ -151,8 +102,8 @@ class Page(object):
                 filename, "Could not save %s: permission denied" %
                 (filename,))
 
-        # TODO: why this?
-        self.netgraph.update_code(self.code)
+        # TODO: why this? Can we just not?
+        self.netgraph.reload(self.editor.code)
 
     def shutdown(self):
         # TODO: call shutdown methods on these instead?

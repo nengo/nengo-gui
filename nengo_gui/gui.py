@@ -34,9 +34,6 @@ class Context(object):
     this model can (or is allowed) to be written to disk.
     """
 
-    __slots__ = (
-        '_filename', 'backend', 'filename_cfg', 'locals', 'model', 'writeable')
-
     def __init__(self,
                  model=None,
                  locals=None,
@@ -45,8 +42,8 @@ class Context(object):
                  writeable=True,
                  backend="nengo"):
         self.writeabel = writeable
-        self.filename_cfg = filename_cfg
         self.filename = filename
+        self.filename_cfg = filename_cfg
         self.backend = backend
 
         if model is None and locals is not None:
@@ -247,6 +244,7 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
         logger.info(format, *args)
 
 
+# TODO: this shouldn't happen
 def handle_ws_msg(component, msg):
     """Handle websocket message.
 
@@ -265,6 +263,7 @@ def handle_ws_msg(component, msg):
             logging.exception('Error processing: %s', repr(msg.data))
 
 
+# TODO: this shouldn't happen
 def handle_config_msg(self, component, msg):
     cfg = json.loads(msg.data[7:])
     old_cfg = {}
@@ -283,6 +282,7 @@ def handle_config_msg(self, component, msg):
     return True
 
 
+# TODO: this shouldn't happen
 def handle_remove_msg(self, component, msg):
     if msg.data != 'remove_undo':
         # Register graph removal to the undo stack
@@ -324,8 +324,8 @@ class GuiServer(server.ManagedThreadHttpServer):
 
     def create_page(self, filename, reset_cfg=False):
         """Create a new Page with this configuration"""
-        page = Page(self.editor_class)
-        page.load(filename, self.context)
+        page = Page(self.context, self.editor_class)
+        page.load(filename)
         if reset_cfg:
             page.clear_config()
         self.pages.append(page)

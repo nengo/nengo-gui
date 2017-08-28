@@ -1,6 +1,6 @@
+import importlib
 import time
 import timeit
-import threading
 import traceback
 
 import nengo
@@ -45,7 +45,8 @@ class SimControl(object):
         self.simthread.start()
 
         # Defined in `attach`
-        self._set_error = lambda: raise_(NotAttachedError())
+        self._set_stderr = lambda: raise_(NotAttachedError())
+        self._set_stdout = lambda: raise_(NotAttachedError())
         self.send_rate = lambda: raise_(NotAttachedError())
         self.send_status = lambda: raise_(NotAttachedError())
 
@@ -59,6 +60,9 @@ class SimControl(object):
         if self._sim is not None and self._sim is not value:
             self._sim.close()
         self._sim = value
+        if self._sim is not None:
+            # TODO: play here, or elsewhere?
+            self.simthread.play()
 
     @property
     def status(self):
@@ -144,15 +148,18 @@ class SimControl(object):
                 self._sim.step()
         except Exception as err:
             self.status = 'build_error'
-            self._set_error(output=traceback.format_exc(),
-                            line=exec_env.determine_line_number())
+            self._set_stderr(output=traceback.format_exc())
             self.sim = None
 
     def attach(self, client):
 
-        def set_error(output, line):
-            client.dispatch("error.stderr", output=output, line=line)
-        self._set_error = set_error
+        def set_stderr(output, line=None):
+            client.dispatch("editor.stderr", output=output, line=line)
+        self._set_stderr = set_stderr
+
+        def set_stdout(output, line=None):
+            client.dispatch("editor.stdout", output=output, line=line)
+        self._set_stdout = set_stdout
 
         def send_rate():
             client.send("simcontrol.rate",
@@ -221,6 +228,24 @@ class SimControl(object):
         #     self.paused = True
         #     self.page.sim = None
         #     self.page.changed = False
+
+    def build(self, network):
+        # Remove the current simulator
+        self.sim = None
+
+        # Build the simulation
+        Simulator = importlib.import_module(self.backend).Simulator
+
+        sim = None
+        env = exec_env.ExecutionEnvironment(self.filename, allow_sim=True)
+        try:
+            with env:
+                # TODO: make it possible to pass args to the simulator
+                sim = Simulator(network)
+        except Exception:
+            self._set_stderr(output=traceback.format_exc())
+        self._set_stdout(output=env.stdout.getvalue())
+        self.sim = sim
 
     def sleep(self, delay_time):
         """Attempt to sleep for an amount of time without a busy loop.

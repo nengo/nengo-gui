@@ -1,6 +1,8 @@
+import functools
 import json
 
 
+@functools.total_ordering
 class Component(object):
     """Abstract handler for a particular Component of the user interface.
 
@@ -38,6 +40,16 @@ class Component(object):
         self.original_id = id(self)
 
         self._config = None
+
+    def __eq__(self, other):
+        if not isinstance(other, Component):
+            return False
+        return self.component_order == other.component_order
+
+    def __lt__(self, other):
+        if not isinstance(other, Component):
+            return False
+        return self.component_order < other.component_order
 
     @property
     def config(self):
