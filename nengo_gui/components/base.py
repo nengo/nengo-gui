@@ -1,9 +1,11 @@
 import functools
 import json
 
+from nengo_gui.client import ExposedToClient
+
 
 @functools.total_ordering
-class Component(object):
+class Component(ExposedToClient):
     """Abstract handler for a particular Component of the user interface.
 
     Each part of the user interface has part of the code on the server-side
@@ -24,32 +26,39 @@ class Component(object):
     # Subclasses should override this as needed.
     config_defaults = dict(x=0, y=0, width=100, height=100, label_visible=True)
 
-    def __init__(self, component_order=0):
+    def __init__(self, client, uid, order=0):
+        super(Component, self).__init__(client)
+        self._uid = uid
+
         # when generating Javascript for all the Components in a Page, they
         # will be sorted by component_order.  This way some Components can
         # be defined before others.
-        self.component_order = component_order
+        self.order = order
 
         # If we have reloaded the model (while typing in the editor), we need
         # to swap out the old Component with the new one.
         self.replace_with = None
 
+        # TODO: use UID for everything, not id
+
         # If we have been swapped out, keep track of the id of the original
         # component, since that's the identifier needed to refer to it on
         # the client side
-        self.original_id = id(self)
+        # self.original_id = id(self)
 
         self._config = None
+
+        # TODO: put the bind method here?
 
     def __eq__(self, other):
         if not isinstance(other, Component):
             return False
-        return self.component_order == other.component_order
+        return self.order == other.order
 
     def __lt__(self, other):
         if not isinstance(other, Component):
             return False
-        return self.component_order < other.component_order
+        return self.order < other.order
 
     @property
     def config(self):
@@ -59,12 +68,40 @@ class Component(object):
     def config(self, val):
         self._config = val
 
+    @property
+    def uid(self):
+        return self._uid
+
     def on_page_add(self, page, config):
         """An event fired once a component is added to a page."""
         self.config = config  # the nengo.Config[component] for this component
         self.page = page  # the Page this component is in
 
-    def update_client(self, client):
+    def create(self):
+        """Instruct the client to create this object."""
+        raise NotImplementedError("Components must implement `create`")
+
+    def similar(self, other):
+        """Determine whether this component is similar to another component.
+
+        Similar, in this case, means that the `.diff` method can be used to
+        mutate the other component to be the same as this component.
+        """
+        return self.uid == other.uid and type(self) == type(other)
+
+    def delete(self):
+        """Instruct the client to delete this object."""
+        raise NotImplementedError("Components must implement `create`")
+
+    def update(self, other):
+        """Determine differences between this and other component.
+
+        If differences exist, the requisite changes should be sent through
+        the client.
+        """
+        raise NotImplementedError("Components must implement `update`")
+
+    def update_client(self):
         """Send any required information to the client.
 
         This method is called regularly by ``Server.ws_viz_component()``.
@@ -85,10 +122,6 @@ class Component(object):
         this method.
         """
         print('unhandled message', msg)
-
-    def finish(self):
-        """Close this Component"""
-        pass
 
     def add_nengo_objects(self, network, config):
         """Add or modify the nengo model before build.
@@ -146,3 +179,11 @@ class Component(object):
         refer to those Python objects (the reverse of the locals() dictionary)
         """
         return []
+
+
+class Widget(Component):
+    pass
+
+
+class Plot(Widget):
+    pass

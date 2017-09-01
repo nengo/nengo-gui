@@ -19,8 +19,8 @@ class MockSimulator(object):
 
 class TestSimControl(object):
 
-    def test_max_steps(self):
-        simcontrol = SimControl()
+    def test_max_steps(self, client):
+        simcontrol = SimControl(client)
         simcontrol.sim = MockSimulator()
         assert simcontrol.sim.step_calls == 0
         assert simcontrol.sim.run_steps_calls == 0

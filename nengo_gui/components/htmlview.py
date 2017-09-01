@@ -1,6 +1,6 @@
 import collections
 
-from nengo_gui.components.component import Component
+from .base import Component
 
 
 class HTMLView(Component):

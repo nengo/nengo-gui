@@ -3,7 +3,7 @@ import struct
 import nengo
 from nengo import spa
 
-from nengo_gui.components.component import Component
+from .base import Component
 
 
 class Value(Component):
@@ -103,7 +103,4 @@ class Value(Component):
         if isinstance(obj, spa.module.Module):
             if 'default' in obj.outputs.keys():
                 output = obj.outputs['default'][0]
-        elif isinstance(obj, nengo.network.Network):
-            if hasattr(obj, 'output'):
-                output = obj.output
         return output

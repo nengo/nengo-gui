@@ -2,7 +2,7 @@ import collections
 
 from nengo.spa.module import Module
 
-from nengo_gui.components.component import Component
+from .base import Component
 
 
 class SpaPlot(Component):

@@ -1,6 +1,6 @@
 import pytest
 
-from nengo_gui.page import ClientConnection
+from nengo_gui.client import ClientConnection
 
 
 @pytest.fixture

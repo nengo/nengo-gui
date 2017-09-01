@@ -43,15 +43,15 @@ class Config(nengo.Config):
 
             if isinstance(obj, (nengo.Ensemble, nengo.Node, nengo.Network)):
                 if self[obj].pos is not None:
-                    lines.append('_gui_config[%s].pos=%s' % (uid,
-                                                             self[obj].pos))
+                    lines.append('_gui_config[%s].pos = %s'
+                                 % (uid, self[obj].pos))
                 if self[obj].size is not None:
-                    lines.append('_gui_config[%s].size=%s' % (uid,
-                                                              self[obj].size))
+                    lines.append('_gui_config[%s].size = %s'
+                                 % (uid, self[obj].size))
                 if isinstance(obj, nengo.Network):
-                    lines.append('_gui_config[%s].expanded=%s'
+                    lines.append('_gui_config[%s].expanded = %s'
                                  % (uid, self[obj].expanded))
-                    lines.append('_gui_config[%s].has_layout=%s'
+                    lines.append('_gui_config[%s].has_layout = %s'
                                  % (uid, self[obj].has_layout))
 
             elif isinstance(obj, components.Component):

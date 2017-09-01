@@ -1,44 +1,13 @@
-from collections import defaultdict
-import importlib
-import json
 import logging
 import os
 import threading
-import warnings
 
+from nengo_gui.client import ClientConnection
 from nengo_gui.editor import AceEditor
 from nengo_gui.netgraph import NetGraph
 from nengo_gui.simcontrol import SimControl
 
 logger = logging.getLogger(__name__)
-
-
-class ClientConnection(object):
-    def __init__(self, ws):
-        self.ws = ws
-        self.callbacks = defaultdict(list)
-
-    def bind(self, name):
-        """Define a function name that the client can call."""
-        def _bind(endpoint):
-            self.callbacks[name].append(endpoint)
-            return endpoint
-        return _bind
-
-    def is_bound(self, name):
-        return name in self.callbacks
-
-    def dispatch(self, name, **kwargs):
-        """Call a function bound to this page."""
-        if not self.is_bound(name):
-            warnings.warn("Nothing bound for %r" % (name,))
-        for cb in self.callbacks[name]:
-            cb(**kwargs)
-
-    def send(self, name, **kwargs):
-        """Send a message to the client."""
-        assert self.ws is not None
-        self.ws.write_text(json.dumps([name, kwargs]))
 
 
 class Page(object):
@@ -49,19 +18,15 @@ class Page(object):
     editor_class : class, optional (Default: `.AceEditor`)
     """
 
-    def __init__(self, context, editor_class=AceEditor):
+    def __init__(self, websocket, context, editor_class=AceEditor):
         self.lock = threading.Lock()
 
-        self.editor = editor_class()
-        self.netgraph = NetGraph(context)
-        self.simcontrol = SimControl(backend=context.backend)
+        self.client = ClientConnection(websocket)
+        self.editor = editor_class(self.client)
+        self.netgraph = NetGraph(self.client, context)
+        self.simcontrol = SimControl(self.client, backend=context.backend)
 
-    def attach(self, websocket):
-        client = ClientConnection(websocket)
-        self.editor.attach(client)
-        self.netgraph.attach(client)
-        self.simcontrol.attach(client)
-        client.bind("page.save")(self.save)
+        self.client.bind("page.save", self.save)
 
     def build(self):
         """Build the network."""

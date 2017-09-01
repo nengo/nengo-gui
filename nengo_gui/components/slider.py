@@ -11,7 +11,7 @@ except ImportError:
 
 from nengo.utils.compat import is_iterable
 
-from nengo_gui.components.component import Component
+from .base import Component
 
 
 class OverriddenOutput(Process):

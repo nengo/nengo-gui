@@ -697,11 +697,11 @@ export class NetGraph {
 
         conn.bind("netgraph.reconnect",
                   ({uid, pres, posts}: {uid: string} & any & any) => {
-                const netConn = this.svgConns[uid];
-                netConn.setPres(pres);
-                netConn.setPosts(posts);
-                netConn.setRecurrent(pres[0] === posts[0]);
-                netConn.redraw();
+            const netConn = this.svgConns[uid];
+            netConn.setPres(pres);
+            netConn.setPosts(posts);
+            netConn.setRecurrent(pres[0] === posts[0]);
+            netConn.redraw();
         });
 
         conn.bind("netgraph.reconnect", ({uid, notifyServer}: {uid: string} & any) => {

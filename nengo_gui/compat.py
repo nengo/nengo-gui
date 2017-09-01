@@ -11,6 +11,7 @@ if PY2:
     import SocketServer as socketserver
     from urllib2 import urlopen
     from urlparse import parse_qs, unquote, urlparse
+
 else:
     from http import server
     from http.cookies import SimpleCookie

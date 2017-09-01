@@ -7,11 +7,11 @@ import nengo
 import numpy as np
 
 from nengo_gui import exec_env
-from nengo_gui.exceptions import NotAttachedError, raise_
+from nengo_gui.client import bind, ExposedToClient
 from nengo_gui.threads import ControlledThread
 
 
-class SimControl(object):
+class SimControl(ExposedToClient):
     """Controls the simulation.
 
     Also instantiates and communicates with the SimControl and the Toolbar
@@ -20,7 +20,8 @@ class SimControl(object):
 
     RATE_TAU = 0.5
 
-    def __init__(self, shown_time=0.5, kept_time=4.0, backend="nengo"):
+    def __init__(self, client, shown_time=0.5, kept_time=4.0, backend="nengo"):
+        super(SimControl, self).__init__(client)
         self.shown_time = shown_time
         self.kept_time = kept_time
         self.backend = backend
@@ -44,11 +45,11 @@ class SimControl(object):
         self.simthread.pause()
         self.simthread.start()
 
-        # Defined in `attach`
-        self._set_stderr = lambda: raise_(NotAttachedError())
-        self._set_stdout = lambda: raise_(NotAttachedError())
-        self.send_rate = lambda: raise_(NotAttachedError())
-        self.send_status = lambda: raise_(NotAttachedError())
+        # TODO: Make sure this is handled
+        # if self.page.changed:
+        #     self.paused = True
+        #     self.page.sim = None
+        #     self.page.changed = False
 
     @property
     def sim(self):
@@ -139,6 +140,9 @@ class SimControl(object):
             time.sleep(0.01)
             self.last_time = None
 
+    def _set_stream(self, name, output, line=None):
+        self.client.dispatch("editor.%s" % (name,), output=output, line=line)
+
     def _step(self):
         try:
             if hasattr(self._sim, 'max_steps'):
@@ -148,86 +152,8 @@ class SimControl(object):
                 self._sim.step()
         except Exception as err:
             self.status = 'build_error'
-            self._set_stderr(output=traceback.format_exc())
+            self._set_stream("stderr", traceback.format_exc())
             self.sim = None
-
-    def attach(self, client):
-
-        def set_stderr(output, line=None):
-            client.dispatch("editor.stderr", output=output, line=line)
-        self._set_stderr = set_stderr
-
-        def set_stdout(output, line=None):
-            client.dispatch("editor.stdout", output=output, line=line)
-        self._set_stdout = set_stdout
-
-        def send_rate():
-            client.send("simcontrol.rate",
-                        time=self.time,
-                        rate=self.rate,
-                        proportion=self.rate_proportion)
-        self.send_rate = send_rate
-
-        def send_status():
-            client.send("simcontrol.status", status=self.status)
-        self.send_status = send_status
-
-        @client.bind("simcontrol.pause")
-        def pause():
-            self.paused = True
-            self.status = "paused"
-
-        @client.bind("simcontrol.config")
-        def config():
-            client.send("simcontrol.config",
-                        sims=[exec_env.discover_backends()],
-                        current=self.backend)
-            # TODO: Move to typescript
-            # client.write_text('confignengo.toolbar.config_modal_show();')
-            # def backend_options_html(self):
-            #     items = []
-            #     for module in exec_env.discover_backends():
-            #         if module == self.page.settings.backend:
-            #             selected = ' selected'
-            #         else:
-            #             selected = ''
-            #         item = '<option %s>%s</option>' % (selected, module)
-            #         items.append(item)
-            #     return ''.join(items)
-
-        @client.bind("simcontrol.play")
-        def play():
-            if self._sim is None:
-                self.status = 'building'
-                client.dispatch("page.rebuild")  # ???
-            self.paused = False
-            self.status = "running"
-
-        @client.bind("simcontrol.reset")
-        def reset():
-            self.paused = True
-            self.simthread.pause()
-            self.sim = None
-            self.time = 0
-            self.rate = 0
-            self.rate_proportion = 1.0
-            self.send_rate()
-
-        @client.bind("simcontrol.backend")
-        def set_backend(backend):
-            self.backend = backend
-            client.dispatch("page.rebuild")  # ??? also reset ???
-
-        @client.bind("simcontrol.target_scale")
-        def target_scale(target):
-            self.target_scale = float(target)
-            self.target_rate = None
-
-        # TODO: Make sure this is handled
-        # if self.page.changed:
-        #     self.paused = True
-        #     self.page.sim = None
-        #     self.page.changed = False
 
     def build(self, network):
         # Remove the current simulator
@@ -243,9 +169,69 @@ class SimControl(object):
                 # TODO: make it possible to pass args to the simulator
                 sim = Simulator(network)
         except Exception:
-            self._set_stderr(output=traceback.format_exc())
-        self._set_stdout(output=env.stdout.getvalue())
+            self._set_stream("stderr", traceback.format_exc())
+        self._set_stream("stdout", env.stdout.getvalue())
         self.sim = sim
+
+    def send_rate(self):
+        self.client.send("simcontrol.rate",
+                         time=self.time,
+                         rate=self.rate,
+                         proportion=self.rate_proportion)
+
+    def send_status(self):
+        self.client.send("simcontrol.status", status=self.status)
+
+    @bind("simcontrol.pause")
+    def pause(self):
+        self.paused = True
+        self.status = "paused"
+
+    @bind("simcontrol.config")
+    def config(self):
+        self.client.send("simcontrol.config",
+                         sims=[exec_env.discover_backends()],
+                         current=self.backend)
+        # TODO: Move to typescript
+        # client.write_text('confignengo.toolbar.config_modal_show();')
+        # def backend_options_html(self):
+        #     items = []
+        #     for module in exec_env.discover_backends():
+        #         if module == self.page.settings.backend:
+        #             selected = ' selected'
+        #         else:
+        #             selected = ''
+        #         item = '<option %s>%s</option>' % (selected, module)
+        #         items.append(item)
+        #     return ''.join(items)
+
+    @bind("simcontrol.play")
+    def play(self):
+        if self._sim is None:
+            self.status = 'building'
+            self.client.dispatch("page.rebuild")  # ???
+        self.paused = False
+        self.status = "running"
+
+    @bind("simcontrol.reset")
+    def reset(self):
+        self.paused = True
+        self.simthread.pause()
+        self.sim = None
+        self.time = 0
+        self.rate = 0
+        self.rate_proportion = 1.0
+        self.send_rate()
+
+    @bind("simcontrol.backend")
+    def set_backend(self, backend):
+        self.backend = backend
+        self.client.dispatch("page.rebuild")  # ??? also reset ???
+
+    @bind("simcontrol.target_scale")
+    def target_scale(self, target):
+        self.target_scale = float(target)
+        self.target_rate = None
 
     def sleep(self, delay_time):
         """Attempt to sleep for an amount of time without a busy loop.

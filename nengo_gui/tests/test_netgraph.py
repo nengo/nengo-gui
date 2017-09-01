@@ -1,5 +1,6 @@
 import nengo
 
+from nengo_gui.components import Component
 from nengo_gui.netgraph import ComponentManager, NameFinder
 
 
@@ -8,11 +9,33 @@ class TestComponentManager(object):
     def test_add_sorted(self):
         """The add method adds in sorted order."""
         components = ComponentManager()
-        components.add(10)
-        components.add(1)
-        assert components._components == [1, 10]
-        components.add(5)
-        assert components._components == [1, 5, 10]
+        c1 = Component("c1", order=1)
+        c2 = Component("c2", order=2)
+        c3 = Component("c3", order=3)
+        components.add(c3)
+        components.add(c1)
+        assert components._components == [c1, c3]
+        components.add(c2)
+        assert components._components == [c1, c2, c3]
+
+    def test_update(self):
+        names = NameFinder()
+        with nengo.Network() as net:
+            e1 = nengo.Ensemble(10, 1, label="ensemble")
+            net.e2 = nengo.Ensemble(10, 1)
+            nengo.Connection(e1, net.e2)
+            net.e3 = nengo.Ensemble(10, 1, label="ensemble")
+        c1 = Component("c1", order=1)
+        c2 = Component("c2", order=2)
+        c3 = Component("c3", order=3)
+        names.update(locals())
+
+        components = ComponentManager()
+        components.update(locals(), names)
+        assert set(e.uid for e in components) == set([
+            "c1", "c2", "c3",
+            "net", "e1", "net.e2", "net.e3", "net.connections[0]",
+        ])
 
 
 class TestNameFinder(object):

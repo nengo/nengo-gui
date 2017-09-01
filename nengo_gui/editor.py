@@ -1,16 +1,14 @@
-from nengo_gui.exceptions import NotAttachedError, raise_
+from nengo_gui.client import bind, ExposedToClient
 
 
-class Stream(object):
+class Stream(ExposedToClient):
     """A stream that only sends when output has changed."""
 
-    def __init__(self, name):
+    def __init__(self, name, client):
+        super(Stream, self).__init__(client)
         self.name = name
         self._output = None
         self._line = None
-
-    def attach(self, client):
-        pass
 
     def clear(self):
         if self._output is not None or self._line is not None:
@@ -21,6 +19,7 @@ class Stream(object):
     def send(self):
         raise NotImplementedError()
 
+    @bind("editor.{self.name}")
     def set(self, output, line=None):
         if output != self._output or line != self._line:
             self._output = output
@@ -29,9 +28,6 @@ class Stream(object):
 
 
 class TerminalStream(Stream):
-    def attach(self, client):
-        client.bind("editor.%s" % (self.name,))(self.set)
-
     def send(self):
         if self._line is not None:
             print("L%d: %s" % (self._line, self._output))
@@ -40,23 +36,16 @@ class TerminalStream(Stream):
 
 
 class NetworkStream(Stream):
-    def __init__(self, name):
-        super(NetworkStream, self).__init__(name)
-        self.send = lambda: raise_(NotAttachedError())
-
-    def attach(self, client):
-        def send():
-            client.send("editor.%s" % (self.name,),
-                        output=self._output, line=self._line)
-        self.send = send
-
-        client.bind("editor.%s" % (self.name,))(self.set)
+    def send(self):
+        self.client.send("editor.%s" % (self.name,),
+                         output=self._output, line=self._line)
 
 
-class Editor(object):
-    def __init__(self, stdout, stderr):
-        self.stdout = stdout
-        self.stderr = stderr
+class Editor(ExposedToClient):
+    def __init__(self, client):
+        super(Editor, self).__init__(client)
+        self.stdout = None
+        self.stderr = None
 
     @property
     def code(self):
@@ -70,44 +59,33 @@ class Editor(object):
 
 
 class NoEditor(Editor):
-    def __init__(self):
-        super(NoEditor, self).__init__(
-            TerminalStream("stdout"), TerminalStream("stderr"))
+    def __init__(self, client):
+        super(NoEditor, self).__init__(client)
+        self.stdout = TerminalStream("stdout", self.client)
+        self.stderr = TerminalStream("stderr", self.client)
 
 
 class AceEditor(Editor):
 
-    def __init__(self):
-        super(AceEditor, self).__init__(
-            NetworkStream("stdout"), NetworkStream("stderr"))
+    def __init__(self, client):
+        super(AceEditor, self).__init__(client)
+        self.stdout = NetworkStream("stdout", self.client)
+        self.stderr = NetworkStream("stderr", self.client)
 
         self._code = None
-
-        # Defined in `attach`
-        self._send_code = lambda: raise_(NotAttachedError())
-        self.send_filename = lambda: raise_(NotAttachedError())
 
     @property
     def code(self):
         return self._code
 
-    def attach(self, client):
-        self.stdout.attach(client)
-        self.stderr.attach(client)
+    def send_filename(self, filename, error=None):
+        self.client.send("editor.filename",
+                         filename=filename, error=error)
 
-        def send_code():
-            client.send("editor.code", code=self.code)
-        self._send_code = send_code
-
-        def send_filename(filename, error=None):
-            client.send("editor.filename",
-                        filename=filename, error=error)
-        self.send_filename = send_filename
-
-        @client.bind("editor.code")
-        def _code(code):
-            self._code = code
+    @bind("editor.code")
+    def set_code(self, code):
+        self._code = code
 
     def update(self, code):
         self._code = code
-        self._send_code()
+        self.client.send("editor.code", code=self.code)

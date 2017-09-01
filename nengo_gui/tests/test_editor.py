@@ -5,8 +5,7 @@ from nengo_gui.editor import AceEditor, NetworkStream, TerminalStream
 
 class TestNetworkStream(object):
     def test_set(self, client):
-        stdout = NetworkStream("stdout")
-        stdout.attach(client)
+        stdout = NetworkStream("stdout", client)
         stdout.set("Testing")
         print(client.ws.text)
         assert json.loads(client.ws.text) == ["editor.stdout", {
@@ -14,16 +13,14 @@ class TestNetworkStream(object):
         }]
 
     def test_set_with_line(self, client):
-        stdout = NetworkStream("stdout")
-        stdout.attach(client)
+        stdout = NetworkStream("stdout", client)
         stdout.set("Test with line", line=24)
         assert json.loads(client.ws.text) == ["editor.stdout", {
             "output": "Test with line", "line": 24,
         }]
 
     def test_set_no_dupes(self, client):
-        stdout = NetworkStream("stdout")
-        stdout.attach(client)
+        stdout = NetworkStream("stdout", client)
 
         stdout.set("Test no dupes", line=1)
         assert json.loads(client.ws.text) == ["editor.stdout", {
@@ -51,16 +48,15 @@ class TestNetworkStream(object):
         assert client.ws.text is None  # No new message
 
     def test_dispatch(self, client):
-        stdout = NetworkStream("stdout")
-        stdout.attach(client)
+        stdout = NetworkStream("stdout", client)
+        assert stdout
         client.dispatch("editor.stdout", output="Dispatch test", line=12)
         assert json.loads(client.ws.text) == ["editor.stdout", {
             "output": "Dispatch test", "line": 12,
         }]
 
     def test_clear(self, client):
-        stdout = NetworkStream("stdout")
-        stdout.attach(client)
+        stdout = NetworkStream("stdout", client)
         stdout.clear()
         assert client.ws.text is None
 
@@ -76,18 +72,18 @@ class TestNetworkStream(object):
 
 
 class TestTerminalStream(object):
-    def test_set(self, capsys):
-        stdout = TerminalStream("stdout")
+    def test_set(self, capsys, client):
+        stdout = TerminalStream("stdout", client)
         stdout.set("Testing")
         assert capsys.readouterr() == ("Testing\n", "")
 
-    def test_set_with_line(self, capsys):
-        stdout = TerminalStream("stdout")
+    def test_set_with_line(self, capsys, client):
+        stdout = TerminalStream("stdout", client)
         stdout.set("Test with line", line=24)
         assert capsys.readouterr() == ("L24: Test with line\n", "")
 
-    def test_set_no_dupes(self, capsys):
-        stdout = TerminalStream("stdout")
+    def test_set_no_dupes(self, capsys, client):
+        stdout = TerminalStream("stdout", client)
         stdout.set("Test no dupes", line=1)
         assert capsys.readouterr() == ("L1: Test no dupes\n", "")
         stdout.set("Test no dupes", line=1)
@@ -99,14 +95,14 @@ class TestTerminalStream(object):
         stdout.set("Test no dupes")
         assert capsys.readouterr() == ("", "")
 
-    def test_dispatch(self, client, capsys):
-        stdout = TerminalStream("stdout")
-        stdout.attach(client)
+    def test_dispatch(self, capsys, client):
+        stdout = TerminalStream("stdout", client)
+        assert stdout
         client.dispatch("editor.stdout", output="Dispatch test", line=12)
         assert capsys.readouterr() == ("L12: Dispatch test\n", "")
 
-    def test_clear(self, client, capsys):
-        stdout = TerminalStream("stdout")
+    def test_clear(self, capsys, client):
+        stdout = TerminalStream("stdout", client)
         stdout.clear()
         assert capsys.readouterr() == ("", "")
         stdout.set("Test")
@@ -117,23 +113,20 @@ class TestTerminalStream(object):
 
 class TestAceEditor(object):
     def test_code_update(self, client):
-        editor = AceEditor()
-        editor.attach(client)
+        editor = AceEditor(client)
         assert editor.code is None
         editor.update("Test code")
         assert editor.code == "Test code"
         assert client.ws.text == '["editor.code", {"code": "Test code"}]'
 
     def test_dispatch(self, client):
-        editor = AceEditor()
-        editor.attach(client)
+        editor = AceEditor(client)
         assert editor.code is None
         client.dispatch("editor.code", code="Test code")
         assert editor.code == "Test code"
 
     def test_send_filename(self, client):
-        editor = AceEditor()
-        editor.attach(client)
+        editor = AceEditor(client)
         editor.send_filename("test.py")
         assert json.loads(client.ws.text) == [
             "editor.filename", {"filename": "test.py", "error": None}

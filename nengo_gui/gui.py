@@ -151,23 +151,24 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
         if self.route != '/':
             raise server.InvalidResource(self.route)
 
+        # TODO: This should do very little,
+        #       just sending across an HTML that will connect to websocket
+        #       and start the process
+
         filename = self.query.get('filename', [None])[0]
         reset_cfg = self.query.get('reset', [False])[0]
-        page = self.server.create_page(filename, reset_cfg=reset_cfg)
 
         # read the template for the main page
         html = pkgutil.get_data('nengo_gui', 'templates/page.html')
         if isinstance(html, bytes):
             html = html.decode("utf-8")
 
-        # fill in the javascript needed and return the complete page
-        main_components, components = page.create_javascript()
+        # data = html % dict(
+        #     main_components=main_components, components=components)
+        # data = data.encode('utf-8')
 
-        data = html % dict(
-            main_components=main_components, components=components)
-        data = data.encode('utf-8')
-
-        return server.HttpResponse(data)
+        # return server.HttpResponse(data)
+        return server.HttpResponse(html.encode("utf-8"))
 
     @server.AuthenticatedHttpWsRequestHandler.http_route('/favicon.ico')
     def serve_favicon(self):
@@ -180,8 +181,11 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
         """Handles ws://host:port/component with a websocket"""
         # figure out what component is being connected to
 
-        # TODO: have a key for the page that client and server know
-        # page = ...
+        page = self.server.create_page(self.ws, filename, reset_cfg=reset_cfg)
+        # fill in the javascript needed and return the complete page
+        # TODO: create_javascript should be replaced to be more like
+        #       and init that calls TS methods
+        main_components, components = page.create_javascript()
 
         if "uid" not in self.query:
             # One of these per page
@@ -195,8 +199,6 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
             #     client.write_frame(WebSocketFrame(
             #         1, 0, WebSocketFrame.OP_PING, 0, b''))
             #     next_ping_time = now + 2.0
-
-
 
         uid = int(self.query['uid'][0])
 
@@ -213,7 +215,6 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
         while True:
             try:
                 if component.replace_with is not None:
-                    component.finish()
                     component = component.replace_with
 
                 # read all data coming from the component
@@ -235,7 +236,6 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
                 logger.exception("Error during websocket communication.")
 
         # After hot loop
-        component.finish()
         if isinstance(component, SimControl) and not page.finished:
             page.finished = True
             self.server.remove_page(page)

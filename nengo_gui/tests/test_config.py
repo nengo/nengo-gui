@@ -30,16 +30,16 @@ def test_dumps():
     config[subnet].has_layout = True
 
     assert config.dumps(objs) == "\n".join([
-        "_gui_config[ens].pos=(0, 0)",
-        "_gui_config[ens].size=1.0",
-        "_gui_config[net].pos=(0, 0)",
-        "_gui_config[net].size=1.0",
-        "_gui_config[net].expanded=False",
-        "_gui_config[net].has_layout=False",
-        "_gui_config[node].pos=(0, 0)",
-        "_gui_config[node].size=1.0",
-        "_gui_config[subnet].pos=(0, 0)",
-        "_gui_config[subnet].size=1.0",
-        "_gui_config[subnet].expanded=True",
-        "_gui_config[subnet].has_layout=True",
+        "_gui_config[ens].pos = (0, 0)",
+        "_gui_config[ens].size = 1.0",
+        "_gui_config[net].pos = (0, 0)",
+        "_gui_config[net].size = 1.0",
+        "_gui_config[net].expanded = False",
+        "_gui_config[net].has_layout = False",
+        "_gui_config[node].pos = (0, 0)",
+        "_gui_config[node].size = 1.0",
+        "_gui_config[subnet].pos = (0, 0)",
+        "_gui_config[subnet].size = 1.0",
+        "_gui_config[subnet].expanded = True",
+        "_gui_config[subnet].has_layout = True",
     ])

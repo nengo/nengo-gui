@@ -1,8 +1,8 @@
 import numpy as np
 import nengo
 
-from nengo_gui.components.component import Component
-from nengo_gui.components.spa_plot import SpaPlot
+from .base import Component
+from .spa_plot import SpaPlot
 
 
 class SpaSimilarity(SpaPlot):

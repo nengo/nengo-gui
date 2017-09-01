@@ -55,8 +55,8 @@ target/
 # Mac OS X stuff
 .DS_Store
 
-# nengo_viz specific
-*.py.cfg
+# nengo_gui specific
+# *.py.cfg
 .ipynb_checkpoints
 
 # Vagrant

@@ -5,8 +5,8 @@ import nengo
 import nengo.spa as spa
 import numpy as np
 
-from nengo_gui.components.component import Component
-from nengo_gui.components.spa_plot import SpaPlot
+from .base import Component
+from .spa_plot import SpaPlot
 
 
 class Pointer(SpaPlot):

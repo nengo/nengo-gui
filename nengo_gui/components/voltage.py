@@ -4,7 +4,7 @@ import nengo
 import numpy as np
 import struct
 
-from nengo_gui.components.component import Component
+from .base import Component
 
 
 class Voltage(Component):
