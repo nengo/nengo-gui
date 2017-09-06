@@ -17,6 +17,11 @@ class Node(Component):
                 and hasattr(self.node.output, '_nengo_html_'))
 
     @property
+    def output(self):
+        """Used in value plots"""
+        return self.node
+
+    @property
     def passthrough(self):
         return self.node.output is None or (
             isinstance(self.node.output, OverriddenOutput)

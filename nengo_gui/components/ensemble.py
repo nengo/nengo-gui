@@ -8,6 +8,11 @@ class Ensemble(Component):
         self.ens = ens
 
     @property
+    def output(self):
+        """Used in value plots"""
+        return self.ens
+
+    @property
     def dimensions(self):
         return self.ens.dimensions
 

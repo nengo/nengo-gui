@@ -17,12 +17,13 @@ import webbrowser
 from timeit import default_timer
 
 from nengo_gui import exec_env, paths, server
+from nengo_gui.client import ClientConnection, FastClientConnection
 from nengo_gui.compat import unquote
 from nengo_gui.editor import AceEditor, NoEditor
 from nengo_gui.config import ServerSettings
 from nengo_gui.page import Page
-from nengo_gui.server import HtmlResponse, HttpRedirect
-from nengo_gui.simcontrol import SimControl
+from nengo_gui.server import HtmlResponse, HttpRedirect, WebSocketFrame
+
 
 logger = logging.getLogger(__name__)
 
@@ -181,115 +182,74 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
         """Handles ws://host:port/component with a websocket"""
         # figure out what component is being connected to
 
-        page = self.server.create_page(self.ws, filename, reset_cfg=reset_cfg)
-        # fill in the javascript needed and return the complete page
-        # TODO: create_javascript should be replaced to be more like
-        #       and init that calls TS methods
-        main_components, components = page.create_javascript()
-
         if "uid" not in self.query:
             # One of these per page
-            page.attach(self.ws)
+            client = ClientConnection(self.ws)
+            page = self.server.create_page(client, filename, reset_cfg=reset_cfg)
+            component = None
+            # fill in the javascript needed and return the complete page
+            # TODO: create_javascript should be replaced to be more like
+            #       and init that calls TS methods
+            # main_components, components = page.create_javascript()
 
-            now = default_timer()
-            next_ping_time = now
+        else:
+            client = FastClientConnection(self.ws)
+            page = self.pages[int(self.query['page'][0])]
+            uid = self.query['uid']
+            print(uid)
+            component = page.components.by_uid[uid]
+            # TODO: isinstance better?
+            assert hasattr(component, "attach"), (
+                "Do not make a WS connection for a non-Widget component")
+            component.attach(client)
 
-            # To put in the while true loop...
-            # if now >= self.next_ping_time:
-            #     client.write_frame(WebSocketFrame(
-            #         1, 0, WebSocketFrame.OP_PING, 0, b''))
-            #     next_ping_time = now + 2.0
-
-        uid = int(self.query['uid'][0])
-
-        # Component could be on any page, so look in all
-        component = None
-        page = None
-        for p in self.pages:
-            if uid in p.component_ids:
-                component = p.component_ids[uid]
-                page = p
-                break
-        assert component is not None
+        now = default_timer()
+        next_ping_time = now
 
         while True:
             try:
-                if component.replace_with is not None:
-                    component = component.replace_with
-
-                # read all data coming from the component
-                msg = self.ws.read_frame()
-                while msg is not None:
-                    if not handle_ws_msg(component, msg):
-                        return
+                # Main connection
+                if component is None:
+                    # Read all data coming from the component
                     msg = self.ws.read_frame()
+                    while msg is not None:
+                        route, kwargs = json.loads(msg)
+                        page.client.dispatch(route, **kwargs)
+                        msg = self.ws.read_frame()
 
-                # send data to the component
-                component.update_client(self.ws)
-                component.page.save_config(lazy=True)
+                    # TODO: make sure not required
+                    # if component.replace_with is not None:
+                    #     component = component.replace_with
+                    # component.update_client(self.ws)
+
+                    # TODO: really...?
+                    page.config.save(lazy=True)
+
+                # Fast connections have no additional steps (one way)
+
+                # Keep connection alive
+                now = default_timer()
+                if next_ping_time is None or now > next_ping_time:
+                    self.ws.write_frame(WebSocketFrame(
+                        1, 0, WebSocketFrame.OP_PING, 0, b''))
+                next_ping_time = now + 2.0
                 time.sleep(0.01)
             except server.SocketClosedError:
                 # This error means the server has shut down
-                component.page.save_config(lazy=False)  # Stop nicely
-                break
-            except:
-                logger.exception("Error during websocket communication.")
+                if component is None:
+                    page.save_config(lazy=False)  # Stop nicely
+                    break
+            except Exception as e:
+                logger.exception("Error during websocket communication: %s", e)
 
         # After hot loop
-        if isinstance(component, SimControl) and not page.finished:
+        if component is None:
             page.finished = True
+            # Do page cleanup?
             self.server.remove_page(page)
 
     def log_message(self, format, *args):
         logger.info(format, *args)
-
-
-# TODO: this shouldn't happen
-def handle_ws_msg(component, msg):
-    """Handle websocket message.
-
-    Returns True when further messages should
-    be handled and false when no further messages should be processed.
-    """
-    if msg.data.startswith('config:'):
-        return handle_config_msg(component, msg)
-    elif msg.data.startswith('remove'):
-        return handle_remove_msg(component, msg)
-    else:
-        try:
-            component.message(msg.data)
-            return True
-        except:
-            logging.exception('Error processing: %s', repr(msg.data))
-
-
-# TODO: this shouldn't happen
-def handle_config_msg(self, component, msg):
-    cfg = json.loads(msg.data[7:])
-    old_cfg = {}
-    for k in component.config_defaults.keys():
-        v = getattr(
-            component.page.config[component], k)
-        old_cfg[k] = v
-    if not cfg == old_cfg:
-        # Register config change to the undo stack
-        component.page.components.change(component, cfg, old_cfg)
-    for k, v in cfg.items():
-        setattr(
-            component.page.config[component],
-            k, v)
-    component.page.modified_config()
-    return True
-
-
-# TODO: this shouldn't happen
-def handle_remove_msg(self, component, msg):
-    if msg.data != 'remove_undo':
-        # Register graph removal to the undo stack
-        component.page.remove_graph(component)
-    component.page.remove_component(component)
-    component.page.modified_config()
-    return False
 
 
 class GuiServer(server.ManagedThreadHttpServer):

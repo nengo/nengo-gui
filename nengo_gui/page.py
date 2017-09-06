@@ -2,7 +2,6 @@ import logging
 import os
 import threading
 
-from nengo_gui.client import ClientConnection
 from nengo_gui.editor import AceEditor
 from nengo_gui.netgraph import NetGraph
 from nengo_gui.simcontrol import SimControl
@@ -18,10 +17,10 @@ class Page(object):
     editor_class : class, optional (Default: `.AceEditor`)
     """
 
-    def __init__(self, websocket, context, editor_class=AceEditor):
+    def __init__(self, client, context, editor_class=AceEditor):
         self.lock = threading.Lock()
 
-        self.client = ClientConnection(websocket)
+        self.client = client
         self.editor = editor_class(self.client)
         self.netgraph = NetGraph(self.client, context)
         self.simcontrol = SimControl(self.client, backend=context.backend)

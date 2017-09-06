@@ -1,3 +1,5 @@
+from nengo.spa.module import Module
+
 from .base import Component
 
 
@@ -7,8 +9,13 @@ class Network(Component):
         self.net = net
 
     @property
-    def default_output(self):
-        return "output" if hasattr(self.net, "output") else None
+    def output(self):
+        """Used in value plots"""
+        if isinstance(self.net, Module) and "default" in self.net.outputs:
+            return self.net.outputs["default"][0]
+        elif hasattr(self.net, "output"):
+            return self.net.output
+        return self.net
 
     def create(self):
         # TODO: figure out args to pass to this

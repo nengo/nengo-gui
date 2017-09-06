@@ -15,9 +15,10 @@ class Connection(Component):
         self.pre_uid = namefinder[self.pre]
         self.post_uid = namefinder[self.post]
 
-    # @property
-    # def uid(self):
-    #     return "%s -> %s" % (self.pre_uid, self.post_uid)
+    @property
+    def output(self):
+        """Used in value plots"""
+        return self.conn
 
     def create(self):
         # TODO: figure out args to pass to this

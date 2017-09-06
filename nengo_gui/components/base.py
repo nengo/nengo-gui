@@ -2,6 +2,21 @@ import functools
 import json
 
 from nengo_gui.client import ExposedToClient
+from nengo_gui.exceptions import NotAttachedError
+
+
+class Position(object):
+    __slots__ = ("x", "y", "width", "height")
+
+    def __init__(self, x=0, y=0, width=100, height=100):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+    def __repr__(self):
+        return "Position(x={!r}, y={!r}, width={!r}, height={!r})".format(
+            self.x, self.y, self.width, self.height)
 
 
 @functools.total_ordering
@@ -22,12 +37,9 @@ class Component(ExposedToClient):
     server is via ``Component.message()``.
     """
 
-    # The parameters that will be stored in the .cfg file for this Component
-    # Subclasses should override this as needed.
-    config_defaults = dict(x=0, y=0, width=100, height=100, label_visible=True)
-
-    def __init__(self, client, uid, order=0):
+    def __init__(self, client, uid, order=0, pos=None, label=None):
         super(Component, self).__init__(client)
+        self.pos = Position() if pos is None else pos
         self._uid = uid
 
         # when generating Javascript for all the Components in a Page, they
@@ -59,6 +71,10 @@ class Component(ExposedToClient):
         if not isinstance(other, Component):
             return False
         return self.order < other.order
+
+    def __repr__(self):
+        """Important to do correctly, as it's used in the config file."""
+        raise NotImplementedError("Must implement for config file.")
 
     @property
     def config(self):
@@ -182,7 +198,15 @@ class Component(ExposedToClient):
 
 
 class Widget(Component):
-    pass
+
+    def __getattribute__(self, name):
+        if name == "fast_client" and not hasattr(self, "fast_client"):
+            raise NotAttachedError("This Widget is not yet attached.")
+        else:
+            super(Widget, self).__getattribute__(name)
+
+    def attach(self, fast_client):
+        self.fast_client = fast_client
 
 
 class Plot(Widget):

@@ -1,25 +1,30 @@
 import collections
 
-from .base import Component
+from .base import Widget
 
 
-class HTMLView(Component):
+class HTMLView(Widget):
     """Arbitrary HTML display taking input from a Node
 
-    See nengo_gui/examples/basics/html.py for example usage"""
+    See nengo_gui/examples/basics/html.py for example usage.
+    """
 
-    def __init__(self, obj):
-        super(HTMLView, self).__init__()
+    def __init__(self, client, obj, uid, pos=None, label=None):
+        super(HTMLView, self).__init__(
+            client, uid, order=0, pos=pos, label=label)
         self.obj = obj
-        self.obj_output = obj.output
         self.data = collections.deque()
 
     @property
     def label(self):
         return self.page.names.label(self.obj)
 
-    def add_nengo_objects(self, network, config):
-        with network:
+    def add_nengo_objects(self, model):
+
+        def fast_send_to_client(t, *x):
+
+
+        with model:
             self.obj.output = self.gather_data
 
     def remove_nengo_objects(self, network):

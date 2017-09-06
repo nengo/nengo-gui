@@ -1,106 +1,81 @@
-import struct
-
+import numpy as np
 import nengo
-from nengo import spa
+import nengo.spa
 
-from .base import Component
+from ..client import bind
+from .base import Widget
 
 
-class Value(Component):
+class Value(Widget):
     """The server-side system for a Value plot."""
 
-    # the parameters to be stored in the .cfg file
-    config_defaults = dict(max_value=1, min_value=-1,
-                           show_legend=False, legend_labels=[],
-                           synapse=0.01,
-                           **Component.config_defaults)
+    def __init__(self, client, obj, uid,
+                 ylim=(-1, 1), legend_labels=None, synapse=0.01, legend=False,
+                 pos=None, label=None):
+        super(Value, self).__init__(client, uid, order=0, pos=pos, label=label)
 
-    def __init__(self, obj):
-        super(Value, self).__init__()
+        self.ylim = ylim
+        self.legend_labels = [] if legend_labels is None else legend_labels
+        self.synapse = synapse
+        self.legend = legend
+
         # the object whose decoded value should be displayed
+        # TODO: make sure `obj` is a component
         self.obj = obj
 
-        # the pending data to be sent to the client
-        self.data = []
-
-        # grab the output of the object
-        self.output = obj
-        default_out = Value.default_output(self.obj)
-        if default_out is not None:
-            self.output = default_out
-
         # the number of data values to send
-        self.n_lines = int(self.output.size_out)
+        self.n_lines = int(self.obj.output.size_out)
 
-        # the binary data format to sent in.  In this case, it is a list of
-        # floats, with the first float being the time stamp and the rest
-        # being the vector values, one per dimension.
-        self.struct = struct.Struct('<%df' % (1 + self.n_lines))
+        # the pending data to be sent to the client
+        self.data = np.zeros(1 + self.n_lines, dtype=np.float64)
 
         # Nengo objects for data collection
         self.node = None
         self.conn = None
 
-    @property
-    def label(self):
-        return self.page.names.label(self.obj)
+    def __repr__(self):
+        """Important to do correctly, as it's used in the config file."""
+        return ("Value(client, {self.obj.uid}, {self.uid}, ylim={self.ylim}, "
+                "legend_labels={self.legend_labels}, synapse={self.synapse}, "
+                "legend={self.legend}, pos={self.pos}, "
+                "label={self.label}".format(self=self))
 
-    def add_nengo_objects(self, page):
+    def add_nengo_objects(self, model):
         # create a Node and a Connection so the Node will be given the
         # data we want to show while the model is running.
-        with page.model:
-            self.node = nengo.Node(self.gather_data,
-                                   size_in=self.n_lines)
-            synapse = self.page.config[self].synapse
-            self.conn = nengo.Connection(self.output, self.node,
-                                         synapse=synapse)
 
-    def remove_nengo_objects(self, page):
+        def fast_send_to_client(t, x):
+            self.data[0] = t
+            self.data[1:] = x
+            self.fast_client.send(self.data)
+
+        with model:
+            self.node = nengo.Node(fast_send_to_client, size_in=self.n_lines)
+            self.conn = nengo.Connection(
+                self.obj.output, self.node, synapse=self.synapse)
+
+    def remove_nengo_objects(self, model):
         # undo the changes made by add_nengo_objects
-        page.model.connections.remove(self.conn)
-        page.model.nodes.remove(self.node)
+        model.connections.remove(self.conn)
+        model.nodes.remove(self.node)
 
-    def gather_data(self, t, x):
-        """This is the Node function for the Node created in add_nengo_objects
-        It will be called by the running model, and will store the data
-        that should be sent to the client"""
-        self.data.append(self.struct.pack(t, *x))
+    def create(self):
+        self.client.send("create_value",
+                         uid=self.uid, label=self.label, n_lines=self.n_lines)
 
-    def update_client(self, client):
-        length = len(self.data)
-        if length > 0:
-            # we do this slicing because self.gather_data is concurrently
-            # appending things to self.data.  This means that self.data may
-            # increase in length during this call, so we do the slicing
-            # and deletion to maintain thread safety
-            item = bytes().join(self.data[:length])
-            del self.data[:length]
-            client.write_binary(item)
+    # TODO: make sure code_python_args never needed
+    # def code_python_args(self, uids):
+    #     # generate the list of strings for the .cfg file to save this Component
+    #     # (this is the text that would be passed in to the constructor)
+    #     return [uids[self.obj]]
 
-    def javascript(self):
-        # generate the javascript that will create the client-side object
-        info = dict(uid=id(self), label=self.label,
-                    n_lines=self.n_lines)
-        json = self.javascript_config(info)
-        return 'new Value.default(nengo.main, nengo.sim, %s);' % json
+    @bind("{self.uid}.synapse")
+    def set_synapse(self, synapse):
+        self.synapse = synapse
 
-    def code_python_args(self, uids):
-        # generate the list of strings for the .cfg file to save this Component
-        # (this is the text that would be passed in to the constructor)
-        return [uids[self.obj]]
-
-    def message(self, msg):
-        if msg.startswith('synapse:'):
-            synapse = float(msg[8:])
-            self.page.config[self].synapse = synapse
-            self.page.modified_config()
-            self.page.sim = None
-
-    @staticmethod
-    def default_output(obj):
-        """Find default output object for the input object if it exists"""
-        output = None
-        if isinstance(obj, spa.module.Module):
-            if 'default' in obj.outputs.keys():
-                output = obj.outputs['default'][0]
-        return output
+        # TODO: when GUI sets synapse, should also rebuild sim (don't do it here)
+        # if msg.startswith('synapse:'):
+        #     synapse = float(msg[8:])
+        #     self.page.config[self].synapse = synapse
+        #     self.page.modified_config()
+        #     self.page.sim = None

@@ -1,10 +1,11 @@
 from collections import defaultdict
 import inspect
 import json
+import struct
 import warnings
 import weakref
 
-from nengo.utils.compat import with_metaclass
+from nengo.utils.compat import is_array, with_metaclass
 
 
 def bind(name):
@@ -84,3 +85,12 @@ class Bindable(type):
 class ExposedToClient(with_metaclass(Bindable)):
     def __init__(self, client):
         self.client = client
+
+
+class FastClientConnection(object):
+    def __init__(self, ws):
+        self.ws = ws
+
+    def send(self, data):
+        assert is_array(data)
+        self.ws.write_binary(data.tobytes())
