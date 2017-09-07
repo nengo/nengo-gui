@@ -1,4 +1,3 @@
-import bisect
 import logging
 import os
 import threading
@@ -43,23 +42,25 @@ class ComponentManager(object):
     def add(self, component):
         """Add a new Component to an existing Page."""
         self.by_uid[component.uid] = component
-        bisect.insort(self._components, component)
+        self._components.append(component)
+
+        # TODO: do we call component.create here?
 
         # component.config = self.config[component]
         # component.on_page_add()
 
-    def create_javascript(self):
-        """Generate the javascript for the current network and layout."""
-        assert isinstance(self._components[0], SimControl)
-        main = (NetGraph, SimControl, AceEditor)
+    # def create_javascript(self):
+    #     """Generate the javascript for the current network and layout."""
+    #     assert isinstance(self._components[0], SimControl)
+    #     main = (NetGraph, SimControl, AceEditor)
 
-        main_js = '\n'.join([c.javascript() for c in self._components
-                             if isinstance(c, main)])
-        component_js = '\n'.join([c.javascript() for c in self._components
-                                  if not isinstance(c, main)])
-        if not self.context.writeable:
-            component_js += "$('#Open_file_button').addClass('deactivated');"
-        return main_js, component_js
+    #     main_js = '\n'.join([c.javascript() for c in self._components
+    #                          if isinstance(c, main)])
+    #     component_js = '\n'.join([c.javascript() for c in self._components
+    #                               if not isinstance(c, main)])
+    #     if not self.context.writeable:
+    #         component_js += "$('#Open_file_button').addClass('deactivated');"
+    #     return main_js, component_js
 
     def config_change(self, component, new_cfg, old_cfg):
         act = ConfigAction(self,

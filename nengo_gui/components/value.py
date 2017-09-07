@@ -12,19 +12,21 @@ class Value(Widget):
     def __init__(self, client, obj, uid,
                  ylim=(-1, 1), legend_labels=None, synapse=0.01, legend=False,
                  pos=None, label=None):
-        super(Value, self).__init__(client, uid, order=0, pos=pos, label=label)
+        super(Value, self).__init__(client, obj, uid, pos=pos, label=label)
 
         self.ylim = ylim
         self.legend_labels = [] if legend_labels is None else legend_labels
         self.synapse = synapse
         self.legend = legend
 
-        # the object whose decoded value should be displayed
         # TODO: make sure `obj` is a component
-        self.obj = obj
 
         # the number of data values to send
-        self.n_lines = int(self.obj.output.size_out)
+        self.output = self.obj
+        if hasattr(self.obj, "output"):
+            self.output = self.obj.output
+
+        self.n_lines = int(self.output.size_out)
 
         # the pending data to be sent to the client
         self.data = np.zeros(1 + self.n_lines, dtype=np.float64)
@@ -52,7 +54,7 @@ class Value(Widget):
         with model:
             self.node = nengo.Node(fast_send_to_client, size_in=self.n_lines)
             self.conn = nengo.Connection(
-                self.obj.output, self.node, synapse=self.synapse)
+                self.output, self.node, synapse=self.synapse)
 
     def remove_nengo_objects(self, model):
         # undo the changes made by add_nengo_objects

@@ -1,50 +1,37 @@
-import collections
-
-from .base import Widget
+from .base import Component
 
 
-class HTMLView(Widget):
-    """Arbitrary HTML display taking input from a Node
+class HTMLView(Component):
+    """Arbitrary HTML display taking input from a Node.
 
     See nengo_gui/examples/basics/html.py for example usage.
+
+    Note that, because the HTML to send across the websocket is text, this
+    component is not a widget as it does not benefit from a fast binary
+    websocket connection.
     """
 
     def __init__(self, client, obj, uid, pos=None, label=None):
-        super(HTMLView, self).__init__(
-            client, uid, order=0, pos=pos, label=label)
-        self.obj = obj
-        self.data = collections.deque()
-
-    @property
-    def label(self):
-        return self.page.names.label(self.obj)
+        super(HTMLView, self).__init__(client, obj, uid, pos=pos, label=label)
+        self._old_output = None
 
     def add_nengo_objects(self, model):
 
-        def fast_send_to_client(t, *x):
+        def send_to_client(t, *x):
+            value = self.obj.output(t, *x)
+            self.client.send("%s.html" % (self.uid,),
+                             t=t, html=self.obj.output._nengo_html_)
+            return value
 
-
+        self._old_output = self.obj.output
         with model:
-            self.obj.output = self.gather_data
+            self.obj.output = send_to_client
 
     def remove_nengo_objects(self, network):
-        self.obj.output = self.obj_output
+        self.obj.output = self._old_output
 
-    def gather_data(self, t, *x):
-        value = self.obj_output(t, *x)
-        data = '%g %s' % (t, self.obj_output._nengo_html_)
-        self.data.append(data)
-        return value
+    def create(self):
+        self.client.send("create_htmlview", uid=self.uid, label=self.label)
 
-    def update_client(self, client):
-        while len(self.data) > 0:
-            item = self.data.popleft()
-            client.write_text(item)
-
-    def javascript(self):
-        info = dict(uid=id(self), label=self.label)
-        json = self.javascript_config(info)
-        return 'new HTMLView.default(nengo.main, nengo.sim, %s);' % json
-
-    def code_python_args(self, uids):
-        return [uids[self.obj]]
+    # def code_python_args(self, uids):
+    #     return [uids[self.obj]]

@@ -3,22 +3,13 @@ from .base import Component
 
 class Ensemble(Component):
 
-    def __init__(self, client, ens, uid):
-        super(Ensemble, self).__init__(client, uid, order=11)
-        self.ens = ens
-
-    @property
-    def output(self):
-        """Used in value plots"""
-        return self.ens
-
     @property
     def dimensions(self):
-        return self.ens.dimensions
+        return self.obj.dimensions
 
     @property
     def n_neurons(self):
-        return self.ens.n_neurons
+        return self.obj.n_neurons
 
     def create(self):
         # TODO: figure out args to pass to this

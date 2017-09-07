@@ -1,4 +1,3 @@
-import functools
 import json
 
 from nengo_gui.client import ExposedToClient
@@ -19,7 +18,6 @@ class Position(object):
             self.x, self.y, self.width, self.height)
 
 
-@functools.total_ordering
 class Component(ExposedToClient):
     """Abstract handler for a particular Component of the user interface.
 
@@ -37,15 +35,11 @@ class Component(ExposedToClient):
     server is via ``Component.message()``.
     """
 
-    def __init__(self, client, uid, order=0, pos=None, label=None):
+    def __init__(self, client, obj, uid, pos=None, label=None):
         super(Component, self).__init__(client)
+        self.obj = obj
         self.pos = Position() if pos is None else pos
         self._uid = uid
-
-        # when generating Javascript for all the Components in a Page, they
-        # will be sorted by component_order.  This way some Components can
-        # be defined before others.
-        self.order = order
 
         # If we have reloaded the model (while typing in the editor), we need
         # to swap out the old Component with the new one.
@@ -62,16 +56,6 @@ class Component(ExposedToClient):
 
         # TODO: put the bind method here?
 
-    def __eq__(self, other):
-        if not isinstance(other, Component):
-            return False
-        return self.order == other.order
-
-    def __lt__(self, other):
-        if not isinstance(other, Component):
-            return False
-        return self.order < other.order
-
     def __repr__(self):
         """Important to do correctly, as it's used in the config file."""
         raise NotImplementedError("Must implement for config file.")
@@ -87,57 +71,6 @@ class Component(ExposedToClient):
     @property
     def uid(self):
         return self._uid
-
-    def on_page_add(self, page, config):
-        """An event fired once a component is added to a page."""
-        self.config = config  # the nengo.Config[component] for this component
-        self.page = page  # the Page this component is in
-
-    def create(self):
-        """Instruct the client to create this object."""
-        raise NotImplementedError("Components must implement `create`")
-
-    def similar(self, other):
-        """Determine whether this component is similar to another component.
-
-        Similar, in this case, means that the `.diff` method can be used to
-        mutate the other component to be the same as this component.
-        """
-        return self.uid == other.uid and type(self) == type(other)
-
-    def delete(self):
-        """Instruct the client to delete this object."""
-        raise NotImplementedError("Components must implement `create`")
-
-    def update(self, other):
-        """Determine differences between this and other component.
-
-        If differences exist, the requisite changes should be sent through
-        the client.
-        """
-        raise NotImplementedError("Components must implement `update`")
-
-    def update_client(self):
-        """Send any required information to the client.
-
-        This method is called regularly by ``Server.ws_viz_component()``.
-        You send text data to the client-side via a WebSocket as follows::
-
-            client.write_text(data)
-
-        You send binary data as::
-
-            client.write_binary(data)
-        """
-        pass
-
-    def message(self, msg):
-        """Receive data from the client.
-
-        Any data sent by the client ove the WebSocket will be passed into
-        this method.
-        """
-        print('unhandled message', msg)
 
     def add_nengo_objects(self, network, config):
         """Add or modify the nengo model before build.
@@ -156,6 +89,30 @@ class Component(ExposedToClient):
         so that it is all set to be built again in the future.
         """
         pass
+
+    def create(self):
+        """Instruct the client to create this object."""
+        raise NotImplementedError("Components must implement `create`")
+
+    def delete(self):
+        """Instruct the client to delete this object."""
+        raise NotImplementedError("Components must implement `create`")
+
+    def similar(self, other):
+        """Determine whether this component is similar to another component.
+
+        Similar, in this case, means that the `.diff` method can be used to
+        mutate the other component to be the same as this component.
+        """
+        return self.uid == other.uid and type(self) == type(other)
+
+    def update(self, other):
+        """Determine differences between this and other component.
+
+        If differences exist, the requisite changes should be sent through
+        the client.
+        """
+        raise NotImplementedError("Components must implement `update`")
 
     def javascript_config(self, cfg):
         """Convert the nengo.Config information into javascript.

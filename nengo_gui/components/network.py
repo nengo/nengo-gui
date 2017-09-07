@@ -4,18 +4,15 @@ from .base import Component
 
 
 class Network(Component):
-    def __init__(self, client, net, uid):
-        super(Network, self).__init__(client, uid, order=10)
-        self.net = net
 
     @property
     def output(self):
         """Used in value plots"""
-        if isinstance(self.net, Module) and "default" in self.net.outputs:
-            return self.net.outputs["default"][0]
-        elif hasattr(self.net, "output"):
-            return self.net.output
-        return self.net
+        if isinstance(self.obj, Module) and "default" in self.obj.outputs:
+            return self.obj.outputs["default"][0]
+        elif hasattr(self.obj, "output"):
+            return self.obj.output
+        return None
 
     def create(self):
         # TODO: figure out args to pass to this

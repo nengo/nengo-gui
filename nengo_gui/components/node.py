@@ -3,29 +3,21 @@ from .slider import OverriddenOutput
 
 
 class Node(Component):
-    def __init__(self, client, node, uid):
-        super(Node, self).__init__(client, uid, order=12)
-        self.node = node
 
     @property
     def dimensions(self):
-        return self.node.size_out
+        return self.obj.size_out
 
     @property
     def html(self):
-        return (callable(self.node.output)
-                and hasattr(self.node.output, '_nengo_html_'))
-
-    @property
-    def output(self):
-        """Used in value plots"""
-        return self.node
+        return (callable(self.obj.output)
+                and hasattr(self.obj.output, '_nengo_html_'))
 
     @property
     def passthrough(self):
-        return self.node.output is None or (
-            isinstance(self.node.output, OverriddenOutput)
-            and self.node.output.base_output is None)
+        return self.obj.output is None or (
+            isinstance(self.obj.output, OverriddenOutput)
+            and self.obj.output.base_output is None)
 
     def create(self):
         # TODO: figure out args to pass to this
