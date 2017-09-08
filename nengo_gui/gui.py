@@ -225,7 +225,12 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
                     # TODO: really...?
                     page.config.save(lazy=True)
 
-                # Fast connections have no additional steps (one way)
+                # Fast connections
+                if component is not None:
+                    msg = self.ws.read_frame()
+                    while msg is not None:
+
+                        client.
 
                 # Keep connection alive
                 now = default_timer()

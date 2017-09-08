@@ -4,33 +4,60 @@ import collections
 import nengo
 import numpy as np
 
-from .base import Component
+from ..client import bind
+from .base import Widget
 
 
-class Raster(Component):
+class Raster(Widget):
     """Plot showing spike events over time."""
 
-    config_defaults = dict(n_neurons=10,
-                           **Component.config_defaults)
+    def __init__(self, client, obj, uid, n_neurons=10, pos=None, label=None):
+        super(Raster, self).__init__(client, obj, uid, pos, label)
+        self.neuron_type = self.obj.obj.neuron_type
 
-    def __init__(self, obj):
-        super(Raster, self).__init__()
-        self.neuron_type = obj.neuron_type
-        self.obj = obj.neurons
-        self.data = collections.deque()
-        self.max_neurons = obj.n_neurons
+        self.data = None  # Filled in when n_neurons set
+        self.chosen = None  # Filled in when n_neurons set
+
+        self.n_neurons = n_neurons
 
         self.conn = None
         self.node = None
-        self.chosen = None
 
     @property
-    def label(self):
-        return self.page.names.label(self.obj.ensemble)
+    def max_neurons(self):
+        return self.obj.obj.n_neurons
+
+    @property
+    def n_neurons(self):
+        return self._n_neurons
+
+    @n_neurons.setter
+    @bind("{self.uid}.n_neurons")
+    def n_neurons(self, n_neurons):
+        self._n_neurons = min(n_neurons, self.max_neurons)
+        self.chosen = np.linspace(
+            0, self.max_neurons-1, self._n_neurons).astype(int)
+
+    @property
+    def neurons(self):
+        return self.obj.obj.neurons
+
+    @property
+    def neuron_type(self):
+        return self.obj.obj.neuron_type
 
     def add_nengo_objects(self, network, config):
+
+        def fast_send_to_client(t, x):
+            indices = np.nonzero(x[self.chosen])[0]
+            # TODO: check
+            print(indices)
+            print(indices.shape)
+            self.fast_client.send(np.hstack([t], indices))
+
         with network:
-            self.node = nengo.Node(self.gather_data, size_in=self.max_neurons)
+            self.node = nengo.Node(fast_send_to_client,
+                                   size_in=self.max_neurons)
             if 'spikes' in self.neuron_type.probeable:
                 self.conn = nengo.Connection(self.obj, self.node, synapse=None)
 
@@ -39,36 +66,9 @@ class Raster(Component):
         if 'spikes' in self.neuron_type.probeable:
             network.connections.remove(self.conn)
 
-    def gather_data(self, t, x):
-        if self.chosen is None:
-            self.compute_chosen_neurons()
-        indices = np.nonzero(x[self.chosen])[0]
-        data = struct.pack('<f%dH' % len(indices), t, *indices)
-        self.data.append(data)
+    def create(self):
+        self.client.send("create_raster",
+                         label=self.label, max_neurons=self.max_neurons)
 
-    def compute_chosen_neurons(self):
-        n_neurons = self.page.config[self].n_neurons
-        n_neurons = min(n_neurons, self.max_neurons)
-        self.chosen = np.linspace(0, self.max_neurons-1,
-                                  n_neurons).astype(int)
-
-    def update_client(self, client):
-        while len(self.data) > 0:
-            data = self.data.popleft()
-            client.write_binary(data)
-
-    def javascript(self):
-        info = dict(uid=id(self), label=self.label,
-                    max_neurons=self.max_neurons)
-        json = self.javascript_config(info)
-        return 'new Raster.default(nengo.main, nengo.sim, %s);' % json
-
-    def code_python_args(self, uids):
-        return [uids[self.obj.ensemble]]
-
-    def message(self, msg):
-        if msg.startswith('n_neurons:'):
-            n_neurons = min(int(msg[10:]), self.max_neurons)
-            self.page.config[self].n_neurons = n_neurons
-            self.compute_chosen_neurons()
-            self.page.modified_config()
+    # def code_python_args(self, uids):
+    #     return [uids[self.obj.ensemble]]

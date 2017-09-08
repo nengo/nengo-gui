@@ -1,77 +1,81 @@
 import nengo
 import numpy as np
-import struct
 
-from .base import Component
+from .base import Widget
 
 
-class SpikeGrid(Component):
+class SpikeGrid(Widget):
     """Represents an ensemble of neurons as squares in a grid.
 
     The color of the squares corresponds to the neuron spiking.
     """
 
-    def __init__(self, obj, n_neurons=None):
-        super(SpikeGrid, self).__init__()
-        self.obj = obj
-        self.data = []
-        self.max_neurons = self.obj.neurons.size_out
-        if n_neurons is None:
-            n_neurons = self.max_neurons
-        self.n_neurons = n_neurons
-        self.pixels_x = np.ceil(np.sqrt(self.n_neurons))
-        self.pixels_y = np.ceil(float(self.n_neurons) / self.pixels_x)
-        self.n_pixels = self.pixels_x * self.pixels_y
-        self.struct = struct.Struct('<f%dB' % (self.n_pixels))
+    def __init__(self, client, obj, uid, n_neurons=None, pos=None, label=None):
+        super(SpikeGrid, self).__init__(client, obj, uid, pos=pos, label=label)
+        self.n_neurons = self.max_neuron if n_neurons is None else n_neurons
+
         self.max_value = 1.0
         self.node = None
         self.conn = None
 
     @property
-    def label(self):
-        return self.page.names.label(self.obj)
+    def max_neurons(self):
+        return self.obj.obj.neurons.size_out
 
-    def add_nengo_objects(self, page):
-        with page.model:
-            self.node = nengo.Node(self.gather_data,
-                                   size_in=self.obj.neurons.size_out)
-            self.conn = nengo.Connection(self.obj.neurons,
-                                         self.node, synapse=0.01)
+    @property
+    def n_pixels(self):
+        return self.pixels_x * self.pixels_y
 
-    def remove_nengo_objects(self, page):
-        page.model.connections.remove(self.conn)
-        page.model.nodes.remove(self.node)
+    @property
+    def pixels_x(self):
+        return int(np.ceil(np.sqrt(self.n_neurons)))
 
-    def gather_data(self, t, x):
-        self.max_value = max(self.max_value, np.max(x))
-        if len(x) > self.n_neurons:
-            x = x[:self.n_neurons]
-        y = np.zeros(int(self.n_pixels), dtype=np.uint8)
-        if self.max_value > 0:
-            y[:x.size] = x * 255 / self.max_value
-        data = self.struct.pack(t, *y)
-        self.data.append(data)
+    @property
+    def pixels_y(self):
+        return int(np.ceil(float(self.n_neurons) // self.pixels_x))
 
-    def update_client(self, client):
-        length = len(self.data)
-        if length > 0:
-            item = bytes().join(self.data[:length])
-            del self.data[:length]
-            try:
-                client.write_binary(item)
-            except:
-                # if there is a communication problem, just drop the frames
-                # (this usually happens when there is too much data to send)
-                pass
+    def add_nengo_objects(self, model):
 
-    def javascript(self):
-        info = dict(uid=id(self), label=self.label,
-                    pixels_x=self.pixels_x, pixels_y=self.pixels_y)
-        json = self.javascript_config(info)
-        return 'new Image.default(nengo.main, nengo.sim, %s);' % json
+        def fast_send_to_client(t, x):
+            self.max_value = max(self.max_value, np.max(x))
 
-    def code_python_args(self, uids):
-        args = [uids[self.obj]]
-        if self.n_neurons != self.max_neurons:
-            args.append('n_neurons=%d' % self.n_neurons)
-        return args
+            # TODO: Does this every happen? Can it???
+            # if x.size > self.n_neurons:
+            #     x = x[:self.n_neurons]
+            y = (x * 255 / self.max_value).astype(np.uint8)
+            self.fast_client.send(y)
+
+            # try:
+            #     client.write_binary(item)
+            # except:
+            #     # if there is a communication problem, just drop the frames
+            #     # (this usually happens when there is too much data to send)
+            #     pass
+
+            # y = np.zeros(int(self.n_pixels), dtype=np.uint8)
+            # if self.max_value > 0:
+            #     y[:x.size] = x * 255 / self.max_value
+            # data = self.struct.pack(t, *y)
+            # self.data.append(data)
+
+        with model:
+            self.node = nengo.Node(
+                fast_send_to_client, size_in=self.obj.obj.neurons.size_out)
+            self.conn = nengo.Connection(
+                self.obj.obj.neurons, self.node, synapse=0.01)
+
+    def remove_nengo_objects(self, model):
+        model.connections.remove(self.conn)
+        model.nodes.remove(self.node)
+
+    def create(self):
+        self.client.send("create_spike_grid",
+                         label=self.label,
+                         pixels_x=self.pixels_x,
+                         pixels_y=self.pixels_y
+
+    # def code_python_args(self, uids):
+    #     args = [uids[self.obj]]
+    #     if self.n_neurons != self.max_neurons:
+    #         args.append('n_neurons=%d' % self.n_neurons)
+    #     return args

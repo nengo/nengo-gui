@@ -156,11 +156,11 @@ class Component(ExposedToClient):
 
 class Widget(Component):
 
-    def __getattribute__(self, name):
-        if name == "fast_client" and not hasattr(self, "fast_client"):
+    def __getattr__(self, name):
+        # NB: This method will only be called is `name` is not an attribute
+        if name == "fast_client":
             raise NotAttachedError("This Widget is not yet attached.")
-        else:
-            super(Widget, self).__getattribute__(name)
+        super(Widget, self).__getattr__(name)
 
     def attach(self, fast_client):
         self.fast_client = fast_client

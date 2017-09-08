@@ -2,6 +2,9 @@ import logging
 import os
 import threading
 
+
+# TODO: remove hack!
+from nengo_gui.components import Voltage
 from nengo_gui.editor import AceEditor
 from nengo_gui.netgraph import NetGraph
 from nengo_gui.simcontrol import SimControl
@@ -33,6 +36,11 @@ class Page(object):
         # TODO: should there be a master lock in the GUI?
         with self.lock:
             self.netgraph.add_nengo_objects()
+            # TODO: Remove hack!
+            del self.simcontrol.voltage_probes[:]
+            for c in self.netgraph.components:
+                if isinstance(c, Voltage):
+                    self.simcontrol.voltage_comps.append(c)
             self.simcontrol.build(self.netgraph.net)
             self.netgraph.remove_nengo_objects()
 

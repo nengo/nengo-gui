@@ -1,52 +1,43 @@
-import struct
-import collections
-
 import nengo
+import numpy as np
 
-from .base import Component
+from .base import Widget
 
 
-class XYValue(Component):
+# TODO: does this need a separate widget from value?
+class XYValue(Widget):
     """Represents two values as co-ordinates on an x-y plot."""
 
-    config_defaults = dict(max_value=1, min_value=-1, index_x=0, index_y=1,
-                           **Component.config_defaults)
-
-    def __init__(self, obj):
-        super(XYValue, self).__init__()
-        self.obj = obj
-        self.data = collections.deque()
-        self.n_lines = int(obj.size_out)
-        self.struct = struct.Struct('<%df' % (1 + self.n_lines))
+    def __init__(self, client, obj, uid,
+                 xlim=(-1, 1), ylim=(-1, 1), index_x=0, index_y=1,
+                 pos=None, label=None):
+        super(XYValue, self).__init__(client, obj, uid, post=pos, label=label)
+        self.data = np.zeros(self.n_lines)
         self.node = None
         self.conn = None
 
     @property
-    def label(self):
-        return self.page.names.label(self.obj)
+    def n_lines(self):
+        return int(self.obj.obj.size_out)
 
-    def add_nengo_objects(self, page):
-        with page.model:
-            self.node = nengo.Node(self.gather_data,
+    def add_nengo_objects(self, model):
+
+        def fast_send_to_client(t, x):
+            self.fast_client.send(np.hstack([t], x))
+
+        with model:
+            self.node = nengo.Node(fast_send_to_client,
                                    size_in=self.obj.size_out)
+            # TODO: make synapse modifiable?
             self.conn = nengo.Connection(self.obj, self.node, synapse=0.01)
 
     def remove_nengo_objects(self, page):
         page.model.connections.remove(self.conn)
         page.model.nodes.remove(self.node)
 
-    def gather_data(self, t, x):
-        self.data.append(self.struct.pack(t, *x))
+    def create(self):
+        self.client.send("create_xyvalue",
+                         uid=self.uid, n_lines=self.n_lines, label=self.label)
 
-    def update_client(self, client):
-        while len(self.data) > 0:
-            data = self.data.popleft()
-            client.write_binary(data)
-
-    def javascript(self):
-        info = dict(uid=id(self), n_lines=self.n_lines, label=self.label)
-        json = self.javascript_config(info)
-        return 'new XYValue.default(nengo.main, nengo.sim, %s);' % json
-
-    def code_python_args(self, uids):
-        return [uids[self.obj]]
+    # def code_python_args(self, uids):
+    #     return [uids[self.obj]]

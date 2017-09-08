@@ -40,6 +40,9 @@ class SimControl(ExposedToClient):
         self.rate_proportion = 1.0  # current proportion of full speed
         self.sleep_offset = 0.0  # difference from actual sleep time
 
+        # TODO: really need a better way to do this
+        self.voltage_comps = []
+
         self._sim = None
         self.simthread = ControlledThread(self._step)
         self.simthread.pause()
@@ -50,6 +53,17 @@ class SimControl(ExposedToClient):
         #     self.paused = True
         #     self.page.sim = None
         #     self.page.changed = False
+
+    @bind("simcontrol.get_backend")
+    @property
+    def backend(self):
+        return self._backend
+
+    @bind("simcontrol.set_backend")
+    @backend.setter
+    def backend(self, backend):
+        self._backend = backend
+        self.client.dispatch("page.rebuild")  # ??? also reset ???
 
     @property
     def sim(self):
@@ -90,6 +104,17 @@ class SimControl(ExposedToClient):
 
         Sleeps while the simulation is paused.
         """
+
+        # TODO: this is a hack too far!
+        for v in self.voltage_comps:
+            # This should happen once per timestep...
+            assert len(self._sim.data.raw[v.probe]) == 1
+
+            data = self._sim.data.raw[v.probe][0]
+            assert data.shape == (v.n_neurons,)
+            del self._sim.data.raw[v.probe][:]  # clear the data
+            v.fast_client.send(np.hstack([t, data]))
+        # OK hack over
 
         actual_dt = t - self.time
         self.time = t
@@ -222,11 +247,6 @@ class SimControl(ExposedToClient):
         self.rate = 0
         self.rate_proportion = 1.0
         self.send_rate()
-
-    @bind("simcontrol.backend")
-    def set_backend(self, backend):
-        self.backend = backend
-        self.client.dispatch("page.rebuild")  # ??? also reset ???
 
     @bind("simcontrol.target_scale")
     def target_scale(self, target):

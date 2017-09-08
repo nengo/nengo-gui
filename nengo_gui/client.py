@@ -1,10 +1,10 @@
 from collections import defaultdict
 import inspect
 import json
-import struct
 import warnings
 import weakref
 
+import numpy as np
 from nengo.utils.compat import is_array, with_metaclass
 
 
@@ -90,6 +90,16 @@ class ExposedToClient(with_metaclass(Bindable)):
 class FastClientConnection(object):
     def __init__(self, ws):
         self.ws = ws
+        self.callback = None
+        self.dtype = None
+
+    def bind(self, callback, dtype=np.float64):
+        self.callback = callback
+        self.dtype = None
+
+    def receive(self, data):
+        if self.callback is not None:
+            self.callback(np.frombuffer(data, dtype=self.dtype))
 
     def send(self, data):
         assert is_array(data)
