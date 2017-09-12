@@ -12,6 +12,8 @@ from nengo.utils.compat import is_iterable
 from ..client import bind
 from .base import Widget
 
+# XXX next
+
 
 class OverriddenOutput(Process):
     def __init__(self, base_output, fast_client):

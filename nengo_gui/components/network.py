@@ -20,7 +20,4 @@ class Network(Component):
 
     def similar(self, other):
         return (super(Network, self).similar(other)
-                and self.default_output == other.default_output)
-
-    def update(self, other):
-        pass
+                and self.output == other.output)

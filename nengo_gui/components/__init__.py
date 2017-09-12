@@ -5,8 +5,7 @@ from .value import Value
 from .xyvalue import XYValue
 from .raster import Raster
 from .voltage import Voltage
-from .pointer import Pointer
-from .spa_similarity import SpaSimilarity
+from .spa import SpaPointer, SpaSimilarity
 from .htmlview import HTMLView
 from .spike_grid import SpikeGrid
 
@@ -23,4 +22,5 @@ ValueTemplate = Value
 XYValueTemplate = XYValue
 RasterTemplate = Raster
 VoltageTemplate = Voltage
-PointerTemplate = Pointer
+Pointer = SpaPointer
+PointerTemplate = SpaPointer

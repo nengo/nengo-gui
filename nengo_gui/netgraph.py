@@ -12,7 +12,6 @@ from nengo.utils.compat import iteritems
 from nengo_gui import components, exec_env, user_action
 from nengo_gui.client import bind, ExposedToClient
 from nengo_gui.components import Component
-from nengo_gui.components.spa_plot import SpaPlot
 from nengo_gui.config import Config
 from nengo_gui.editor import AceEditor
 from nengo_gui.exceptions import StartedGUIException, StartedSimulatorException
@@ -88,7 +87,7 @@ class ComponentManager(object):
         else:
             warnings.warn("remove_uid called on unknown uid: %s" % uid)
 
-    def update(self, locals, namefinder):
+    def update(self, locals, namefinder, client):
         # Add any components from locals
         for name, obj in iteritems(locals):
             if isinstance(obj, components.Component):
@@ -99,10 +98,10 @@ class ComponentManager(object):
         # Make components for Nengo objects
         for obj, name in iteritems(namefinder.names):
             if isinstance(obj, nengo.Connection):
-                comp = components.Connection(obj, namefinder[obj], namefinder)
-                self.add(comp)
+                self.add(components.Connection(
+                    client, obj, namefinder[obj], namefinder))
             elif isinstance(obj, tuple(self.NENGO_MAP)):
-                comp = self.NENGO_MAP[type(obj)](obj, namefinder[obj])
+                comp = self.NENGO_MAP[type(obj)](client, obj, namefinder[obj])
                 self.add(comp)
 
 
@@ -450,7 +449,7 @@ class NetGraph(ExposedToClient):
         self.names.update(self.context.locals)
 
         # Add everything to the component manager
-        self.components.update(self.context.locals, self.names)
+        self.components.update(self.context.locals, self.names, self.client)
 
     def reload(self, code=None):
         """Called when new code has been detected
@@ -900,19 +899,6 @@ class NetGraph(ExposedToClient):
         info.update(self.get_extra_info(obj))
 
         client.write_text(json.dumps(info))
-
-    def get_extra_info(self, obj):
-        '''Determine helper information for each nengo object.
-
-        This is used by the client side to configure the display.  It is also
-        used by the reload() code to determine if a NetGraph object should
-        be recreated.
-        '''
-        info = {}
-        if Value.default_output(obj) is not None:
-            info['default_output'] = True
-        info['sp_targets'] = (SpaPlot.applicable_targets(obj))
-        return info
 
     def create_connection(self, client, conn, parent):
         uid = self.page.names.uid(conn)

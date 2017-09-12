@@ -1,5 +1,3 @@
-import json
-
 from nengo_gui.client import ExposedToClient
 from nengo_gui.exceptions import NotAttachedError
 
@@ -38,40 +36,19 @@ class Component(ExposedToClient):
     def __init__(self, client, obj, uid, pos=None, label=None):
         super(Component, self).__init__(client)
         self.obj = obj
-        self.pos = Position() if pos is None else pos
         self._uid = uid
-
-        # If we have reloaded the model (while typing in the editor), we need
-        # to swap out the old Component with the new one.
-        self.replace_with = None
-
-        # TODO: use UID for everything, not id
-
-        # If we have been swapped out, keep track of the id of the original
-        # component, since that's the identifier needed to refer to it on
-        # the client side
-        # self.original_id = id(self)
-
-        self._config = None
-
-        # TODO: put the bind method here?
+        self.pos = Position() if pos is None else pos
+        self.label = label
 
     def __repr__(self):
         """Important to do correctly, as it's used in the config file."""
         raise NotImplementedError("Must implement for config file.")
 
     @property
-    def config(self):
-        return self._config
-
-    @config.setter
-    def config(self, val):
-        self._config = val
-
-    @property
     def uid(self):
         return self._uid
 
+    # TODO: rename
     def add_nengo_objects(self, network, config):
         """Add or modify the nengo model before build.
 
@@ -82,6 +59,15 @@ class Component(ExposedToClient):
         """
         pass
 
+    def create(self):
+        """Instruct the client to create this object."""
+        raise NotImplementedError("Components must implement `create`")
+
+    def delete(self):
+        """Instruct the client to delete this object."""
+        raise NotImplementedError("Components must implement `delete`")
+
+    # TODO: rename
     def remove_nengo_objects(self, network):
         """Undo the effects of add_nengo_objects.
 
@@ -89,14 +75,6 @@ class Component(ExposedToClient):
         so that it is all set to be built again in the future.
         """
         pass
-
-    def create(self):
-        """Instruct the client to create this object."""
-        raise NotImplementedError("Components must implement `create`")
-
-    def delete(self):
-        """Instruct the client to delete this object."""
-        raise NotImplementedError("Components must implement `create`")
 
     def similar(self, other):
         """Determine whether this component is similar to another component.
@@ -107,51 +85,48 @@ class Component(ExposedToClient):
         return self.uid == other.uid and type(self) == type(other)
 
     def update(self, other):
-        """Determine differences between this and other component.
+        """Update the client based on another version of this component."""
+        if self.label != other.label:
+            self.client.send("%s.label" % self.uid, label=self.label)
 
-        If differences exist, the requisite changes should be sent through
-        the client.
-        """
-        raise NotImplementedError("Components must implement `update`")
+    # def javascript_config(self, cfg):
+    #     """Convert the nengo.Config information into javascript.
 
-    def javascript_config(self, cfg):
-        """Convert the nengo.Config information into javascript.
+    #     This is needed so we can send that config information to the client.
+    #     """
+    #     for attr in self.config._clsparams.params:
+    #         if attr in cfg:
+    #             raise AttributeError("Value for %s is already set in the "
+    #                                  "config of this component. Do not try to "
+    #                                  "modify it via this function. Instead "
+    #                                  "modify the config directly." % (attr))
+    #         else:
+    #             cfg[attr] = getattr(self.config, attr)
+    #     return json.dumps(cfg)
 
-        This is needed so we can send that config information to the client.
-        """
-        for attr in self.config._clsparams.params:
-            if attr in cfg:
-                raise AttributeError("Value for %s is already set in the "
-                                     "config of this component. Do not try to "
-                                     "modify it via this function. Instead "
-                                     "modify the config directly." % (attr))
-            else:
-                cfg[attr] = getattr(self.config, attr)
-        return json.dumps(cfg)
+    # def code_python(self, uids):
+    #     """Generate Python code for this Component.
 
-    def code_python(self, uids):
-        """Generate Python code for this Component.
+    #     This is used in the .cfg file to generate a valid Python expression
+    #     that re-creates this Component.
 
-        This is used in the .cfg file to generate a valid Python expression
-        that re-creates this Component.
+    #     The input uids is a dictionary from Python objects to strings that
+    #     refer to those Python objects (the reverse of the locals() dictionary)
+    #     """
+    #     args = self.code_python_args(uids)
+    #     name = self.__class__.__name__
+    #     return 'nengo_gui.components.%s(%s)' % (name, ','.join(args))
 
-        The input uids is a dictionary from Python objects to strings that
-        refer to those Python objects (the reverse of the locals() dictionary)
-        """
-        args = self.code_python_args(uids)
-        name = self.__class__.__name__
-        return 'nengo_gui.components.%s(%s)' % (name, ','.join(args))
+    # def code_python_args(self, uids):
+    #     """Return a list of strings giving the constructor arguments.
 
-    def code_python_args(self, uids):
-        """Return a list of strings giving the constructor arguments.
+    #     This is used by code_python to re-create the Python string that
+    #     generated this Component, so it can be saved in the .cfg file.
 
-        This is used by code_python to re-create the Python string that
-        generated this Component, so it can be saved in the .cfg file.
-
-        The input uids is a dictionary from Python objects to strings that
-        refer to those Python objects (the reverse of the locals() dictionary)
-        """
-        return []
+    #     The input uids is a dictionary from Python objects to strings that
+    #     refer to those Python objects (the reverse of the locals() dictionary)
+    #     """
+    #     return []
 
 
 class Widget(Component):
@@ -164,7 +139,3 @@ class Widget(Component):
 
     def attach(self, fast_client):
         self.fast_client = fast_client
-
-
-class Plot(Widget):
-    pass

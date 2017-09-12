@@ -72,7 +72,7 @@ class SpikeGrid(Widget):
         self.client.send("create_spike_grid",
                          label=self.label,
                          pixels_x=self.pixels_x,
-                         pixels_y=self.pixels_y
+                         pixels_y=self.pixels_y)
 
     # def code_python_args(self, uids):
     #     args = [uids[self.obj]]

@@ -18,20 +18,18 @@ class HTMLView(Component):
     def add_nengo_objects(self, model):
 
         def send_to_client(t, *x):
-            value = self.obj.output(t, *x)
+            value = self._old_output(t, *x)
             self.client.send("%s.html" % (self.uid,),
-                             t=t, html=self.obj.output._nengo_html_)
+                             t=t, html=self._old_output._nengo_html_)
             return value
 
-        self._old_output = self.obj.output
-        with model:
-            self.obj.output = send_to_client
-
-    def remove_nengo_objects(self, network):
-        self.obj.output = self._old_output
+        self._old_output = self.obj.obj.output
+        self.obj.obj.output = send_to_client
 
     def create(self):
-        self.client.send("create_htmlview", uid=self.uid, label=self.label)
+        self.client.send("netgraph.create_htmlview",
+                         uid=self.uid, label=self.label)
 
-    # def code_python_args(self, uids):
-    #     return [uids[self.obj]]
+    def remove_nengo_objects(self, network):
+        self.obj.obj.output = self._old_output
+        self._old_output = None

@@ -19,6 +19,7 @@ else:
     from urllib.parse import parse_qs, unquote, urlparse
     from urllib.request import urlopen
 
+
 assert parse_qs
 assert server
 assert SimpleCookie

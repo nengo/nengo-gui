@@ -3,6 +3,15 @@ import nengo
 from nengo_gui.components import Ensemble
 
 
+def test_create(client):
+    with nengo.Network():
+        a = nengo.Ensemble(10, 1)
+
+    comp = Ensemble(client, a, "a")
+    comp.create()
+    assert client.ws.text == '["netgraph.create_ensemble", {}]'
+
+
 def test_similar(client):
     with nengo.Network():
         a = nengo.Ensemble(10, 1)

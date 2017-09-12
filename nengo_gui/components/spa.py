@@ -35,8 +35,8 @@ class SpaWidget(Widget):
     def show_pairs(self):
         return self.vocab.include_pairs
 
-    @bind("{self.uid}.show_pairs")
     @show_pairs.setter
+    @bind("{self.uid}.show_pairs")
     def show_pairs(self, val):
         if val != self.vocab.include_pairs:
             self.vocab.include_pairs = val

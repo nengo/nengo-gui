@@ -1,6 +1,3 @@
-import struct
-import collections
-
 import nengo
 import numpy as np
 
@@ -13,9 +10,7 @@ class Raster(Widget):
 
     def __init__(self, client, obj, uid, n_neurons=10, pos=None, label=None):
         super(Raster, self).__init__(client, obj, uid, pos, label)
-        self.neuron_type = self.obj.obj.neuron_type
 
-        self.data = None  # Filled in when n_neurons set
         self.chosen = None  # Filled in when n_neurons set
 
         self.n_neurons = n_neurons
@@ -46,29 +41,26 @@ class Raster(Widget):
     def neuron_type(self):
         return self.obj.obj.neuron_type
 
-    def add_nengo_objects(self, network, config):
+    def add_nengo_objects(self, model):
 
         def fast_send_to_client(t, x):
             indices = np.nonzero(x[self.chosen])[0]
-            # TODO: check
-            print(indices)
-            print(indices.shape)
-            self.fast_client.send(np.hstack([t], indices))
+            self.fast_client.send(np.hstack((t, indices)))
 
-        with network:
+        with model:
             self.node = nengo.Node(fast_send_to_client,
                                    size_in=self.max_neurons)
             if 'spikes' in self.neuron_type.probeable:
-                self.conn = nengo.Connection(self.obj, self.node, synapse=None)
-
-    def remove_nengo_objects(self, network):
-        network.nodes.remove(self.node)
-        if 'spikes' in self.neuron_type.probeable:
-            network.connections.remove(self.conn)
+                self.conn = nengo.Connection(
+                    self.neurons, self.node, synapse=None)
 
     def create(self):
-        self.client.send("create_raster",
+        self.client.send("netgraph.create_raster",
                          label=self.label, max_neurons=self.max_neurons)
 
-    # def code_python_args(self, uids):
-    #     return [uids[self.obj.ensemble]]
+    def remove_nengo_objects(self, model):
+        model.nodes.remove(self.node)
+        self.node = None
+        if self.conn is not None:
+            model.connections.remove(self.conn)
+            self.conn = None

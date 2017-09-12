@@ -28,14 +28,14 @@ class Config(nengo.Config):
             'has_layout', make_param(name='has_layout', default=False))
 
         # TODO: register components with config instead of doing it here
-        for clsname, cls in inspect.getmembers(components):
-            if (inspect.isclass(cls)
-                    and issubclass(cls, components.Component)
-                    and cls != components.Component):
-                self.configures(cls)
-                for k, v in cls.config_defaults.items():
-                    p = make_param(name=k, default=v)
-                    self[cls].set_param(k, p)
+        # for clsname, cls in inspect.getmembers(components):
+        #     if (inspect.isclass(cls)
+        #             and issubclass(cls, components.Component)
+        #             and cls != components.Component):
+        #         self.configures(cls)
+        #         for k, v in cls.config_defaults.items():
+        #             p = make_param(name=k, default=v)
+        #             self[cls].set_param(k, p)
 
     def dumps(self, uids):
         lines = []
@@ -55,26 +55,27 @@ class Config(nengo.Config):
                                  % (uid, self[obj].has_layout))
 
             elif isinstance(obj, components.Component):
-                lines.append('%s = %s' % (uid, obj.code_python(uids)))
-                for k in obj.config_defaults.keys():
-                    v = getattr(self[obj], k)
-                    val = repr(v)
+                lines.append('%s = %s' % (uid, repr(obj)))
 
-                    try:
-                        recovered_v = eval(val, {})
-                    except:
-                        raise ValueError("Cannot save %s to config. Only "
-                                         "values that can be successfully "
-                                         "evaluated are allowed." % (val))
+                # for k in obj.config_defaults.keys():
+                #     v = getattr(self[obj], k)
+                #     val = repr(v)
 
-                    if recovered_v != v:
-                        raise ValueError("Cannot save %s to config, recovery "
-                                         "failed. Only "
-                                         "values that can be recovered after "
-                                         "being entered into the config file "
-                                         "can be saved." % (val))
+                #     try:
+                #         recovered_v = eval(val, {})
+                #     except:
+                #         raise ValueError("Cannot save %s to config. Only "
+                #                          "values that can be successfully "
+                #                          "evaluated are allowed." % (val))
 
-                    lines.append('_gui_config[%s].%s = %s' % (uid, k, val))
+                #     if recovered_v != v:
+                #         raise ValueError("Cannot save %s to config, recovery "
+                #                          "failed. Only "
+                #                          "values that can be recovered after "
+                #                          "being entered into the config file "
+                #                          "can be saved." % (val))
+
+                #     lines.append('_gui_config[%s].%s = %s' % (uid, k, val))
 
         return '\n'.join(lines)
 

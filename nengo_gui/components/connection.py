@@ -7,7 +7,8 @@ class Connection(Component):
 
     # TODO: would be nice to not have to get namefinder here
     def __init__(self, client, obj, uid, namefinder, pos=None, label=None):
-        super(Connection, self).__init__(client, uid, pos=pos, label=label)
+        super(Connection, self).__init__(
+            client, obj, uid, pos=pos, label=label)
         self.pre = self._get_pre(self.obj)
         self.post = self._get_post(self.obj)
         self.pre_uid = namefinder[self.pre]
@@ -18,6 +19,7 @@ class Connection(Component):
         self.client.send("netgraph.create_connection")
 
     def update(self, other):
+        super(Connection, self).update(other)
         if self.pre_uid != other.pre_uid or self.post_uid != other.post_uid:
             self.client.send("%s.reconnect" % self.uid,
                              pre=self.pre_uid, post=self.post_uid)

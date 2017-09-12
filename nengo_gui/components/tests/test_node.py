@@ -3,6 +3,15 @@ import nengo
 from nengo_gui.components import Node
 
 
+def test_create(client):
+    with nengo.Network():
+        n = nengo.Node([0])
+
+    comp = Node(client, n, "n")
+    comp.create()
+    assert client.ws.text == '["netgraph.create_node", {}]'
+
+
 def test_similar(client):
     with nengo.Network():
         node1 = nengo.Node(None, size_in=1)

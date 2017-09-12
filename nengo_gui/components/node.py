@@ -28,6 +28,3 @@ class Node(Component):
                 and self.dimensions == other.dimensions
                 and self.passthrough == other.passthrough
                 and self.html == other.html)
-
-    def update(self, other):
-        pass

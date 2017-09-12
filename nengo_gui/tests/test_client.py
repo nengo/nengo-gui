@@ -1,5 +1,132 @@
 import pytest
 
+from nengo_gui.client import bind, ExposedToClient
+
+
+class TestBindDecorator(object):
+
+    def test_bind_staticmethod(self, client):
+
+        class Test(ExposedToClient):
+            n_calls = 0
+
+            @staticmethod
+            @bind("test")
+            def test1():
+                Test.n_calls += 1
+
+            @staticmethod
+            @bind("test")
+            def test2():
+                Test.n_calls += 1
+
+        test = Test(client)
+        assert test and Test.n_calls == 0
+        client.dispatch("test")
+        assert Test.n_calls == 2
+
+    def test_bind_classmethod(self, client):
+
+        class Test(ExposedToClient):
+            n_calls = 0
+
+            @classmethod
+            @bind("test")
+            def test1(cls):
+                cls.n_calls += 1
+
+            @bind("test")
+            @classmethod
+            def test2(cls):
+                cls.n_calls += 1
+
+        test = Test(client)
+        assert test and Test.n_calls == 0
+        client.dispatch("test")
+        assert Test.n_calls == 2
+
+    def test_bind_method(self, client):
+
+        class Test(ExposedToClient):
+            @bind("test")
+            def test(self):
+                self.called = True
+
+        test = Test(client)
+        assert not hasattr(test, "called")
+        client.dispatch("test")
+        assert test.called
+
+    def test_bind_property_ok(self, client):
+
+        class Test(ExposedToClient):
+            @property
+            @bind("test")
+            def test(self):
+                return "test"
+
+        test = Test(client)
+        assert test
+        assert client.dispatch("test") == "test"
+
+    def test_bind_property_bad(self, client):
+
+        with pytest.raises(RuntimeError):
+
+            # This must fail because when binding to the property, we can't
+            # tell if we're trying to bind the getter, setter, or deleter.
+            class Test(ExposedToClient):
+                @bind("test")
+                @property
+                def test(self):
+                    return "test"
+
+    def _test_autoprune(self, client, Test):
+        t = Test(client)
+        assert client.is_bound("test")
+        del t
+        with pytest.warns(UserWarning):
+            client.dispatch("test")
+        assert not client.is_bound("test")
+
+    def test_autoprune_method(self, client):
+
+        class Test(ExposedToClient):
+            @bind("test")
+            def test_method(self):
+                pass
+        self._test_autoprune(client, Test)
+
+    @pytest.mark.xfail(reason="Not implemented yet")
+    def test_autoprune_staticmethod(self, client):
+
+        class Test(ExposedToClient):
+            @staticmethod
+            @bind("test")
+            def test_staticmethod():
+                pass
+        self._test_autoprune(client, Test)
+
+    @pytest.mark.xfail(reason="Not implemented yet")
+    def test_autoprune_classmethod(self, client):
+
+        class Test(ExposedToClient):
+            @classmethod
+            @bind("test")
+            def test_classmethod(cls):
+                pass
+        self._test_autoprune(client, Test)
+
+    @pytest.mark.xfail(reason="Not implemented yet")
+    def test_autoprune_property(self, client):
+
+        class Test(ExposedToClient):
+            @property
+            @bind("test.get")
+            def test(self):
+                pass
+        self._test_autoprune(client, Test)
+
 
 class TestClientConnection(object):
 

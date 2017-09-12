@@ -54,13 +54,13 @@ class SimControl(ExposedToClient):
         #     self.page.sim = None
         #     self.page.changed = False
 
-    @bind("simcontrol.get_backend")
     @property
+    @bind("simcontrol.get_backend")
     def backend(self):
         return self._backend
 
-    @bind("simcontrol.set_backend")
     @backend.setter
+    @bind("simcontrol.set_backend")
     def backend(self, backend):
         self._backend = backend
         self.client.dispatch("page.rebuild")  # ??? also reset ???

@@ -6,7 +6,22 @@ from nengo_gui.components import Connection
 from nengo_gui.netgraph import NameFinder
 
 
-def test_update(client):
+def test_create(client):
+    with nengo.Network():
+        a = nengo.Ensemble(10, 1)
+        b = nengo.Ensemble(10, 1)
+        c = nengo.Connection(a, b)
+
+    names = NameFinder()
+    names.update(locals())
+
+    comp = Connection(client, c, names[c], names)
+    comp.create()
+
+    assert client.ws.text == '["netgraph.create_connection", {}]'
+
+
+def test_similar_update(client):
     with nengo.Network():
         a = nengo.Ensemble(10, 1)
         b = nengo.Ensemble(10, 1)

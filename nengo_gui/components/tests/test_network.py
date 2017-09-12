@@ -3,6 +3,14 @@ import nengo
 from nengo_gui.components import Network
 
 
+def test_create(client):
+    n = nengo.Network()
+
+    comp = Network(client, n, "n")
+    comp.create()
+    assert client.ws.text == '["netgraph.create_network", {}]'
+
+
 def test_similar(client):
     with nengo.Network() as net1:
         net2 = nengo.Network()

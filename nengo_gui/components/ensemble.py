@@ -19,6 +19,3 @@ class Ensemble(Component):
         return (super(Ensemble, self).similar(other)
                 and self.dimensions == other.dimensions
                 and self.n_neurons == other.n_neurons)
-
-    def update(self, other):
-        pass

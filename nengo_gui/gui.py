@@ -229,8 +229,7 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
                 if component is not None:
                     msg = self.ws.read_frame()
                     while msg is not None:
-
-                        client.
+                        client.receive(msg)
 
                 # Keep connection alive
                 now = default_timer()
