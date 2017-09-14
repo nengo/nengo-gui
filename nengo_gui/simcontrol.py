@@ -66,6 +66,11 @@ class SimControl(ExposedToClient):
         self.client.dispatch("page.rebuild")  # ??? also reset ???
 
     @property
+    @bind("simcontrol.get_dt")
+    def dt(self):
+        return self._sim.dt
+
+    @property
     def sim(self):
         return self._sim
 

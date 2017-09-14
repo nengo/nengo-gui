@@ -1,6 +1,8 @@
 from .base import Component
 
 
+# TODO: .obj.obj is pretty ugly...
+
 class HTMLView(Component):
     """Arbitrary HTML display taking input from a Node.
 

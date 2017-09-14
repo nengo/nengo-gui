@@ -135,7 +135,8 @@ class Widget(Component):
         # NB: This method will only be called is `name` is not an attribute
         if name == "fast_client":
             raise NotAttachedError("This Widget is not yet attached.")
-        super(Widget, self).__getattr__(name)
+        raise AttributeError("%r object has no attribute %r"
+                             % (type(self).__name__, name))
 
     def attach(self, fast_client):
         self.fast_client = fast_client

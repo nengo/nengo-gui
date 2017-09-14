@@ -12,8 +12,6 @@ from nengo.utils.compat import is_iterable
 from ..client import bind
 from .base import Widget
 
-# XXX next
-
 
 class OverriddenOutput(Process):
     def __init__(self, base_output, fast_client):
@@ -47,23 +45,24 @@ class OverriddenOutput(Process):
                 self.from_client[...] = data
             self.fast_client.bind(set_from_client)
 
-            # Values is [t, *other]
-            self.value = np.zeros(size_out + 1, dtype=np.float64) * np.nan
+            self.value = np.zeros(size_out, dtype=np.float64) * np.nan
+            self.t = 0.0
 
         def __call__(self, t, *args):
             # Stop overriding if we've reset
-            if np.isnan(self.value[0]) or t < self.value[0]:
-                self.from_client[:] = np.nan
+            if t < self.t:
+                self.from_client[...] = np.nan
+            self.t = t
 
-            val_idx = np.isnan(self.from_client)
             if callable(self.f):
-                self.value[1:] = np.atleast_1d(self.f(t, *args))
+                self.value[...] = np.atleast_1d(self.f(t, *args))
                 # TODO: is this only needed when callable?
                 self.fast_client.send(self.value)
             else:
-                self.value[1:] = self.f
+                self.value[...] = self.f
 
             # Override values from the client
+            val_idx = np.isnan(self.from_client)
             self.value[~val_idx] = self.from_client[~val_idx]
             return self.value
 
@@ -73,10 +72,11 @@ class Slider(Widget):
 
     def __init__(self, client, obj, uid, ylim=(-1, 1), pos=None, label=None):
         super(Slider, self).__init__(client, obj, uid, pos, label)
-        self.base_output = self.obj.output
+        self.base_output = self.obj.obj.output
 
-    def add_nengo_objects(self, network, config):
+    def add_nengo_objects(self, model):
         backend = self.client.dispatch("simcontrol.get_backend")
+        dt = self.client.dispatch("simcontrol.get_dt")
         supports_process = (Process.__module__ != "nengo_gui.components.slider"
                             and backend != "nengo_spinnaker")
         override_output = OverriddenOutput(self.base_output, self.fast_client)
@@ -84,34 +84,34 @@ class Slider(Widget):
         # If we're using a version of Nengo without Process support,
         # or a backend without Process support...
         if not supports_process or backend == 'nengo_spinnaker':
-            self.node.output = override_output.make_step(
-                shape_in=None, shape_out=self.node.size_out, dt=None, rng=None)
+            self.obj.obj.output = override_output.make_step(
+                shape_in=(self.obj.obj.size_in,),
+                shape_out=(self.obj.obj.size_out,),
+                dt=dt,
+                rng=np.random)
         else:
-            self.node.output = self.override_output
-
-    def remove_nengo_objects(self, page):
-        self.node.output = self.base_output
+            self.obj.obj.output = override_output
 
     def create(self):
-        start_value = np.zeros(self.obj.size_out, dtype=np.float64)
+        start_value = np.zeros(self.obj.obj.size_out, dtype=np.float64)
         if not (self.base_output is None or
                 callable(self.base_output) or
                 isinstance(self.base_output, Process)):
             start_value[...] = self.base_output
-        start_value = [float(x) for x in self.start_value]
-        self.client.send("create_slider",
-                         uid=self.uid, n_sliders=self.obj.size_out,
+        start_value = [float(x) for x in start_value]
+        self.client.send("netgraph.create_slider",
+                         uid=self.uid, n_sliders=self.obj.obj.size_out,
                          label=self.label, start_value=start_value)
+
+    def remove_nengo_objects(self, model):
+        self.obj.obj.output = self.base_output
 
     @bind("{self.uid}.reset")
     def reset(self):
         # Make sure we're currently running
-        if self.node.output != self.base_output:
+        if self.obj.obj.output is not self.base_output:
             # A bit of a hack, but to reset we set all of the values to nan
             # as nan values are not overridden.
-            nans = np.zeros(self.obj.size_out) * np.nan
+            nans = np.zeros(self.obj.obj.size_out) * np.nan
             # Send directly to the fast client
             self.fast_client.receive(nans.tobytes())
-
-    # def code_python_args(self, uids):
-    #     return [uids[self.node]]
