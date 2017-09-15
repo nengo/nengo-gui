@@ -9,6 +9,7 @@ from nengo.utils.compat import StringIO
 
 # list of Simulators to check for
 known_modules = ['nengo', 'nengo_ocl', 'nengo_distilled',
+                 'nengo_dl', 'nengo_mpi',
                  'nengo_brainstorm', 'nengo_spinnaker']
 
 
