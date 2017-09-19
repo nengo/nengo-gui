@@ -25,7 +25,7 @@ def test_add_remove(client, fast_client):
     raster.attach(fast_client)
     raster.add_nengo_objects(net)
     assert raster.node is not None and raster.conn is not None
-    assert client.ws.binary is None
+    assert fast_client.ws.binary is None
 
     # Spike in indices 1 and 3
     raster.node.output(0.0, np.array([0, 1, 0, 1, 0, 0, 0, 0, 0, 0]))

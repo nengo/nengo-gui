@@ -12,7 +12,7 @@ class SpikeGrid(Widget):
 
     def __init__(self, client, obj, uid, n_neurons=None, pos=None, label=None):
         super(SpikeGrid, self).__init__(client, obj, uid, pos=pos, label=label)
-        self.n_neurons = self.max_neuron if n_neurons is None else n_neurons
+        self.n_neurons = self.max_neurons if n_neurons is None else n_neurons
 
         self.max_value = 1.0
         self.node = None
@@ -32,7 +32,7 @@ class SpikeGrid(Widget):
 
     @property
     def pixels_y(self):
-        return int(np.ceil(float(self.n_neurons) // self.pixels_x))
+        return int(np.ceil(float(self.n_neurons) / self.pixels_x))
 
     def add_nengo_objects(self, model):
 
@@ -60,22 +60,19 @@ class SpikeGrid(Widget):
 
         with model:
             self.node = nengo.Node(
-                fast_send_to_client, size_in=self.obj.obj.neurons.size_out)
+                fast_send_to_client,
+                size_in=self.obj.obj.neurons.size_out,
+                size_out=0)
             self.conn = nengo.Connection(
                 self.obj.obj.neurons, self.node, synapse=0.01)
 
-    def remove_nengo_objects(self, model):
-        model.connections.remove(self.conn)
-        model.nodes.remove(self.node)
-
     def create(self):
-        self.client.send("create_spike_grid",
+        self.client.send("netgraph.create_spike_grid",
                          label=self.label,
                          pixels_x=self.pixels_x,
                          pixels_y=self.pixels_y)
 
-    # def code_python_args(self, uids):
-    #     args = [uids[self.obj]]
-    #     if self.n_neurons != self.max_neurons:
-    #         args.append('n_neurons=%d' % self.n_neurons)
-    #     return args
+    def remove_nengo_objects(self, model):
+        model.connections.remove(self.conn)
+        model.nodes.remove(self.node)
+        self.conn, self.node = None, None

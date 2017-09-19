@@ -16,20 +16,8 @@ class Value(Widget):
 
         self.ylim = ylim
         self.legend_labels = [] if legend_labels is None else legend_labels
-        self.synapse = synapse
         self.legend = legend
-
-        # TODO: make sure `obj` is a component
-
-        # the number of data values to send
-        self.output = self.obj
-        if hasattr(self.obj, "output"):
-            self.output = self.obj.output
-
-        self.n_lines = int(self.output.size_out)
-
-        # the pending data to be sent to the client
-        self.data = np.zeros(1 + self.n_lines, dtype=np.float64)
+        self.synapse = synapse
 
         # Nengo objects for data collection
         self.node = None
@@ -42,38 +30,25 @@ class Value(Widget):
                 "legend={self.legend}, pos={self.pos}, "
                 "label={self.label}".format(self=self))
 
-    def add_nengo_objects(self, model):
-        # create a Node and a Connection so the Node will be given the
-        # data we want to show while the model is running.
+    @property
+    def n_lines(self):
+        return self.output.size_out
 
-        def fast_send_to_client(t, x):
-            self.data[0] = t
-            self.data[1:] = x
-            self.fast_client.send(self.data)
+    @property
+    def output(self):
+        if hasattr(self.obj.obj, "output"):
+            return self.obj.obj.output
+        else:
+            return self.obj.obj
 
-        with model:
-            self.node = nengo.Node(fast_send_to_client, size_in=self.n_lines)
-            self.conn = nengo.Connection(
-                self.output, self.node, synapse=self.synapse)
+    @property
+    def synapse(self):
+        return self._synapse
 
-    def remove_nengo_objects(self, model):
-        # undo the changes made by add_nengo_objects
-        model.connections.remove(self.conn)
-        model.nodes.remove(self.node)
-
-    def create(self):
-        self.client.send("create_value",
-                         uid=self.uid, label=self.label, n_lines=self.n_lines)
-
-    # TODO: make sure code_python_args never needed
-    # def code_python_args(self, uids):
-    #     # generate the list of strings for the .cfg file to save this Component
-    #     # (this is the text that would be passed in to the constructor)
-    #     return [uids[self.obj]]
-
+    @synapse.setter
     @bind("{self.uid}.synapse")
-    def set_synapse(self, synapse):
-        self.synapse = synapse
+    def synapse(self, synapse):
+        self._synapse = synapse
 
         # TODO: when GUI sets synapse, should also rebuild sim (don't do it here)
         # if msg.startswith('synapse:'):
@@ -81,3 +56,36 @@ class Value(Widget):
         #     self.page.config[self].synapse = synapse
         #     self.page.modified_config()
         #     self.page.sim = None
+
+    def add_nengo_objects(self, model):
+        # create a Node and a Connection so the Node will be given the
+        # data we want to show while the model is running.
+
+        data = np.zeros(1 + self.n_lines, dtype=np.float64)
+
+        def fast_send_to_client(t, x):
+            data[0] = t
+            data[1:] = x
+            self.fast_client.send(data)
+
+        with model:
+            self.node = nengo.Node(
+                fast_send_to_client, size_in=self.n_lines, size_out=0)
+            self.conn = nengo.Connection(
+                self.output, self.node, synapse=self.synapse)
+
+    def create(self):
+        self.client.send("netgraph.create_value",
+                         uid=self.uid, label=self.label, n_lines=self.n_lines)
+
+    def remove_nengo_objects(self, model):
+        # undo the changes made by add_nengo_objects
+        model.connections.remove(self.conn)
+        model.nodes.remove(self.node)
+        self.conn, self.node = None, None
+
+    # TODO: make sure code_python_args never needed
+    # def code_python_args(self, uids):
+    #     # generate the list of strings for the .cfg file to save this Component
+    #     # (this is the text that would be passed in to the constructor)
+    #     return [uids[self.obj]]

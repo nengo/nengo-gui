@@ -24,7 +24,10 @@ def test_passthrough(client, fast_client):
     with nengo.Network() as net:
         n = nengo.Node(None, size_in=2)
 
-    client.bind("simcontrol.get_backend", lambda: "nengo")
+    dummy_backend = lambda: "nengo"
+    dummy_dt = lambda: 0.001
+    client.bind("simcontrol.get_backend", dummy_backend)
+    client.bind("simcontrol.get_dt", dummy_dt)
 
     slider = Slider(client, Node(client, n, "n"), "slider")
     slider.attach(fast_client)
@@ -70,7 +73,10 @@ def test_value(client, fast_client):
     with nengo.Network() as net:
         n = nengo.Node([1.0])
 
-    client.bind("simcontrol.get_backend", lambda: "nengo")
+    dummy_backend = lambda: "nengo"
+    dummy_dt = lambda: 0.001
+    client.bind("simcontrol.get_backend", dummy_backend)
+    client.bind("simcontrol.get_dt", dummy_dt)
 
     slider = Slider(client, Node(client, n, "n"), "slider")
     slider.attach(fast_client)
@@ -106,7 +112,10 @@ def test_callable(client, fast_client):
     with nengo.Network() as net:
         n = nengo.Node(lambda t: t)
 
-    client.bind("simcontrol.get_backend", lambda: "nengo")
+    dummy_backend = lambda: "nengo"
+    dummy_dt = lambda: 0.001
+    client.bind("simcontrol.get_backend", dummy_backend)
+    client.bind("simcontrol.get_dt", dummy_dt)
 
     slider = Slider(client, Node(client, n, "n"), "slider")
     slider.attach(fast_client)
@@ -147,7 +156,10 @@ def test_process(client, fast_client):
             inputs=[[0.1, 0.1], [0.2, 0.2]], presentation_time=0.01,
         ), size_out=2)
 
-    client.bind("simcontrol.get_backend", lambda: "nengo")
+    dummy_backend = lambda: "nengo"
+    dummy_dt = lambda: 0.001
+    client.bind("simcontrol.get_backend", dummy_backend)
+    client.bind("simcontrol.get_dt", dummy_dt)
 
     slider = Slider(client, Node(client, n, "n"), "slider")
     slider.attach(fast_client)

@@ -104,6 +104,10 @@ class Slider(Widget):
                          label=self.label, start_value=start_value)
 
     def remove_nengo_objects(self, model):
+        # If we're setting the output back to None, clear size_out
+        # to avoid a warning when size_out is automatically set
+        if self.base_output is None:
+            self.obj.obj.size_out = None
         self.obj.obj.output = self.base_output
 
     @bind("{self.uid}.reset")

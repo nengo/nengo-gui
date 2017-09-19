@@ -49,7 +49,8 @@ class Raster(Widget):
 
         with model:
             self.node = nengo.Node(fast_send_to_client,
-                                   size_in=self.max_neurons)
+                                   size_in=self.max_neurons,
+                                   size_out=0)
             if 'spikes' in self.neuron_type.probeable:
                 self.conn = nengo.Connection(
                     self.neurons, self.node, synapse=None)
