@@ -20,7 +20,7 @@ import nengo_gui
 import nengo_gui.exec_env
 import nengo_gui.page
 from nengo_gui import server
-from nengo_gui.password import checkpw
+from nengo_gui.password import checkpw, gensalt
 
 
 logger = logging.getLogger(__name__)
@@ -86,10 +86,14 @@ class RequireAuthentication(object):
     def __call__(self, fn):
         def auth_checked(inst):
             session = inst.get_session()
-            has_password = inst.server.settings.password_hash is not None
-            if has_password and not session.authenticated:
-                return server.HttpRedirect(self.login_page)
-            return fn(inst)
+            if session.authenticated:
+                return fn(inst)
+            elif ('token' in inst.db and
+                    inst.db['token'] == inst.server.settings.auth_token):
+                session.authenticated = True
+                session.login_host = inst.headers.get('host', None)
+                return fn(inst)
+            return server.HttpRedirect(self.login_page)
         return auth_checked
 
 
@@ -118,18 +122,25 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         session = self.get_session()
         content = b''
 
+        if session.authenticated:
+            return server.HttpRedirect('/')
+
+        if self.server.settings.password_hash is None:
+            return server.HtmlResponse(content + b'''
+                <p>Password authentication not enabled, please use the token
+                link.</p>
+            ''')
+
         if 'pw' in self.db:
             if checkpw(self.db['pw'], self.server.settings.password_hash):
                 session.authenticated = True
                 session.login_host = self.headers.get('host', None)
+                return server.HttpRedirect('/')
             else:
                 content += b'<p><strong>Invalid password. Try again.'
                 content += b'</strong></p>'
         else:
             content += b'<p>Please enter the password:</p>'
-
-        if session.authenticated:
-            return server.HttpRedirect('/')
 
         return server.HtmlResponse(content + b'''
             <form method="POST"><p>
@@ -330,8 +341,14 @@ class ModelContext(object):
 
 class GuiServerSettings(object):
     __slots__ = [
-        'listen_addr', 'auto_shutdown', 'password_hash', 'ssl_cert', 'ssl_key',
-        'session_duration']
+        'listen_addr',
+        'auto_shutdown',
+        'password_hash',
+        'auth_token',
+        'ssl_cert',
+        'ssl_key',
+        'session_duration',
+    ]
 
     def __init__(
             self, listen_addr=('localhost', 8080), auto_shutdown=2,
@@ -340,6 +357,7 @@ class GuiServerSettings(object):
         self.listen_addr = listen_addr
         self.auto_shutdown = auto_shutdown
         self.password_hash = password_hash
+        self.auth_token = gensalt(24).decode('ascii')
         self.ssl_cert = ssl_cert
         self.ssl_key = ssl_key
         self.session_duration = session_duration
