@@ -40,13 +40,16 @@ class IPythonViz(object):
         self._server_thread, server = self.start_server(cfg, model)
         self.port = server.server.server_port
 
-        self.url = self.get_url(self.host, self.port)
+        self.url = self.get_url(
+            self.host, self.port, token=server.server.settings.auth_token)
 
     @staticmethod
-    def get_url(host, port, action=None):
-        url = 'http://{host}:{port}'.format(host=host, port=port)
+    def get_url(host, port, action=None, token=None):
+        url = 'http://{host}:{port}/'.format(host=host, port=port)
         if action is not None:
-            url += '/' + action
+            url += action
+        if token is not None:
+            url += '?token=' + token
         return url
 
     @classmethod

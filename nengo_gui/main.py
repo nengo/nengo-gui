@@ -103,7 +103,8 @@ def main():
             port = s.server.server_port
             t = threading.Thread(
                 target=webbrowser.open,
-                args=('%s//%s:%d' % (protocol, host, port),))
+                args=('%s//%s:%d/?token=%s' % (
+                    protocol, host, port, server_settings.auth_token),))
             t.start()
 
         s.start()
