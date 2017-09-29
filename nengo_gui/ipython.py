@@ -12,8 +12,7 @@ from IPython import get_ipython
 from IPython.display import display, HTML
 
 from nengo_gui.compat import urlopen
-from nengo_gui.config import ServerSettings
-from nengo_gui.gui import BaseGUI, Context
+from nengo_gui.gui import BaseGUI, Context, ServerSettings
 
 
 class ConfigReuseWarning(UserWarning):

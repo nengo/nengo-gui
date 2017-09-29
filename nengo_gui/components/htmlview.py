@@ -1,8 +1,6 @@
 from .base import Component
 
 
-# TODO: .obj.obj is pretty ugly...
-
 class HTMLView(Component):
     """Arbitrary HTML display taking input from a Node.
 
@@ -25,13 +23,13 @@ class HTMLView(Component):
                              t=t, html=self._old_output._nengo_html_)
             return value
 
-        self._old_output = self.obj.obj.output
-        self.obj.obj.output = send_to_client
+        self._old_output = self.obj.output
+        self.obj.output = send_to_client
 
     def create(self):
         self.client.send("netgraph.create_htmlview",
                          uid=self.uid, label=self.label)
 
     def remove_nengo_objects(self, network):
-        self.obj.obj.output = self._old_output
+        self.obj.output = self._old_output
         self._old_output = None

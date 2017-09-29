@@ -3,14 +3,14 @@ import json
 import nengo
 import numpy as np
 
-from nengo_gui.components import Ensemble, SpikeGrid
+from nengo_gui.components import SpikeGrid
 
 
 def test_create(client):
     with nengo.Network():
         e = nengo.Ensemble(10, 1)
 
-    grid = SpikeGrid(client, Ensemble(client, e, "e"), "grid")
+    grid = SpikeGrid(client, e, "grid")
     grid.create()
     assert json.loads(client.ws.text) == ["netgraph.create_spike_grid", {
         "label": None, "pixels_x": 4, "pixels_y": 3,
@@ -21,7 +21,7 @@ def test_add_remove(client, fast_client):
     with nengo.Network() as net:
         e = nengo.Ensemble(5, 1)
 
-    grid = SpikeGrid(client, Ensemble(client, e, "e"), "grid", n_neurons=10)
+    grid = SpikeGrid(client, e, "grid", n_neurons=10)
     grid.attach(fast_client)
     grid.add_nengo_objects(net)
     assert grid.node is not None and grid.conn is not None

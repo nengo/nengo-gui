@@ -1,112 +1,102 @@
-import inspect
+import json
+import re
+import warnings
 
-import nengo
+from nengo.utils.compat import iteritems
 
-from nengo_gui import components
-
-
-def make_param(name, default):
-    try:
-        # the most recent way of making Parameter objects
-        p = nengo.params.Parameter(name=name, default=default)
-    except TypeError:
-        # this was for older releases of nengo (v2.0.3 and earlier)
-        p = nengo.params.Parameter(default=default)
-    return p
+from nengo_gui.components import Position
 
 
-class Config(nengo.Config):
-    def __init__(self):
-        super(Config, self).__init__()
-        for cls in [nengo.Ensemble, nengo.Node, nengo.Network]:
-            self.configures(cls)
-            self[cls].set_param('pos', make_param(name='pos', default=None))
-            self[cls].set_param('size', make_param(name='size', default=None))
-        self[nengo.Network].set_param(
-            'expanded', make_param(name='expanded', default=False))
-        self[nengo.Network].set_param(
-            'has_layout', make_param(name='has_layout', default=False))
-
-        # TODO: register components with config instead of doing it here
-        # for clsname, cls in inspect.getmembers(components):
-        #     if (inspect.isclass(cls)
-        #             and issubclass(cls, components.Component)
-        #             and cls != components.Component):
-        #         self.configures(cls)
-        #         for k, v in cls.config_defaults.items():
-        #             p = make_param(name=k, default=v)
-        #             self[cls].set_param(k, p)
-
-    def dumps(self, uids):
-        lines = []
-        for obj, uid in sorted(uids.items(), key=lambda x: x[1]):
-
-            if isinstance(obj, (nengo.Ensemble, nengo.Node, nengo.Network)):
-                if self[obj].pos is not None:
-                    lines.append('_gui_config[%s].pos = %s'
-                                 % (uid, self[obj].pos))
-                if self[obj].size is not None:
-                    lines.append('_gui_config[%s].size = %s'
-                                 % (uid, self[obj].size))
-                if isinstance(obj, nengo.Network):
-                    lines.append('_gui_config[%s].expanded = %s'
-                                 % (uid, self[obj].expanded))
-                    lines.append('_gui_config[%s].has_layout = %s'
-                                 % (uid, self[obj].has_layout))
-
-            elif isinstance(obj, components.Component):
-                lines.append('%s = %s' % (uid, repr(obj)))
-
-                # for k in obj.config_defaults.keys():
-                #     v = getattr(self[obj], k)
-                #     val = repr(v)
-
-                #     try:
-                #         recovered_v = eval(val, {})
-                #     except:
-                #         raise ValueError("Cannot save %s to config. Only "
-                #                          "values that can be successfully "
-                #                          "evaluated are allowed." % (val))
-
-                #     if recovered_v != v:
-                #         raise ValueError("Cannot save %s to config, recovery "
-                #                          "failed. Only "
-                #                          "values that can be recovered after "
-                #                          "being entered into the config file "
-                #                          "can be saved." % (val))
-
-                #     lines.append('_gui_config[%s].%s = %s' % (uid, k, val))
-
-        return '\n'.join(lines)
+class NengoGUIConfig(json.JSONEncoder):
+    def default(self, obj):
+        if hasattr(obj, "to_json"):
+            return obj.to_json()
+        return super(NengoGUIConfig, self).default(obj)
 
 
-class ServerSettings(object):
-    __slots__ = ('listen_addr',
-                 'auto_shutdown',
-                 'password_hash',
-                 'ssl_cert',
-                 'ssl_key',
-                 'session_duration')
+def upgrade(old_text, locals):
+    """Upgrades a .cfg file from the old format (GUI 0.2)."""
 
-    def __init__(self,
-                 listen_addr=('localhost', 8080),
-                 auto_shutdown=2,
-                 password_hash=None,
-                 ssl_cert=None,
-                 ssl_key=None,
-                 session_duration=60 * 60 * 24 * 30):
-        self.listen_addr = listen_addr
-        self.auto_shutdown = auto_shutdown
-        self.password_hash = password_hash
-        self.ssl_cert = ssl_cert
-        self.ssl_key = ssl_key
-        self.session_duration = session_duration
+    new_config = {}
 
-    @property
-    def use_ssl(self):
-        if self.ssl_cert is None and self.ssl_key is None:
-            return False
-        elif self.ssl_cert is not None and self.ssl_key is not None:
-            return True
+    # All lines in the old files were assignments, so we won't
+    # use a full-fledged Python parser for this
+    cfgline = re.compile(r"(?P<cfg>\S+)\[(?P<obj>\S+)\]\.(?P<kw>\S+)")
+    compline = re.compile(
+        r"nengo_gui\.components\.(?P<cls>\S+)\((?P<arg>\S+)\)")
+
+    for line in old_text.splitlines():
+        left, right = line.split("=")
+        left, right = left.strip(), right.strip()
+
+        # AceEditor, NetGraph and SimControl are no longer in cfg file
+        removed = ["AceEditor", "NetGraph", "SimControl"]
+        if any(r in right for r in removed) or "sim_control" in left:
+            continue
+
+        # Setting a value on a config item
+        elif "]." in left:
+            # Use a regex to parse left
+            match = cfgline.match(left)
+            if match is None:
+                raise ValueError("Could not parse %r" % left)
+
+            # TODO: some sanity checking on cfg group
+            obj = match.group("obj")
+            kw = match.group("kw")
+            if obj not in new_config:
+                # Could be a Nengo object with position / size.
+                # Try to figure out what type of object and add it.
+                try:
+                    cls = type(locals[obj]).__name__
+                    new_config[obj] = {"cls": cls}
+                except KeyError:
+                    warnings.warn("Object %r not found in model; skipping"
+                                  % (obj,))
+            if obj in new_config:
+                new_config[obj][kw] = eval(right)
+
+        # Making a new component
         else:
-            raise ValueError("SSL needs certificate file and key file.")
+            assert "nengo_gui.components" in right
+            obj = left
+            match = compline.match(right)
+            if match is None:
+                raise ValueError("Could not parse %r" % right)
+            new_config[obj] = {
+                "cls": match.group("cls").replace("Template", ""),
+                "obj": match.group("arg"),
+            }
+
+    # Additional changes
+    for obj, kwargs in iteritems(new_config):
+        # pos and size now one object
+        if "size" in kwargs:
+            pos = kwargs.pop("pos")
+            size = kwargs.pop("size")
+            kwargs["pos"] = Position(
+                x=pos[0], y=pos[1], width=size[0], height=size[1])
+
+        # x, y, width, height now one object
+        if "width" in kwargs:
+            kwargs["pos"] = Position(x=kwargs.pop("x"),
+                                     y=kwargs.pop("y"),
+                                     width=kwargs.pop("width"),
+                                     height=kwargs.pop("height"))
+
+        # label_visible now label is not None
+        if "label_visible" in kwargs:
+            visible = kwargs.pop("label_visible")
+            kwargs["label"] = obj if visible else None
+
+        # show_legend now legend
+        if "show_legend" in kwargs:
+            kwargs["legend"] = kwargs.pop("show_legend")
+
+        # max_value, min_value now ylim
+        if "max_value" in kwargs:
+            maxval = kwargs.pop("max_value")
+            minval = kwargs.pop("min_value")
+            kwargs["ylim"] = (minval, maxval)
+
+    return json.dumps(new_config, cls=NengoGUIConfig, indent=2, sort_keys=True)

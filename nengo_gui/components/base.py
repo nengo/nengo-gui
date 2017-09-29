@@ -11,6 +11,12 @@ class Position(object):
         self.width = width
         self.height = height
 
+    def to_json(self):
+        return {"x": self.x,
+                "y": self.y,
+                "width": self.width,
+                "height": self.height}
+
     def __repr__(self):
         return "Position(x={!r}, y={!r}, width={!r}, height={!r})".format(
             self.x, self.y, self.width, self.height)
@@ -40,10 +46,6 @@ class Component(ExposedToClient):
         self.pos = Position() if pos is None else pos
         self.label = label
 
-    def __repr__(self):
-        """Important to do correctly, as it's used in the config file."""
-        raise NotImplementedError("Must implement for config file.")
-
     @property
     def uid(self):
         return self._uid
@@ -67,7 +69,11 @@ class Component(ExposedToClient):
         """Instruct the client to delete this object."""
         raise NotImplementedError("Components must implement `delete`")
 
-    # TODO: rename
+    def dumps(self, names):
+        """Important to do correctly, as it's used in the config file."""
+        raise NotImplementedError("Components must implement `dumps`")
+
+     # TODO: rename
     def remove_nengo_objects(self, network):
         """Undo the effects of add_nengo_objects.
 
@@ -83,6 +89,11 @@ class Component(ExposedToClient):
         mutate the other component to be the same as this component.
         """
         return self.uid == other.uid and type(self) == type(other)
+
+    def to_json(self):
+        d = self.__dict__.copy()
+        d["cls"] = type(self).__name__
+        return d
 
     def update(self, other):
         """Update the client based on another version of this component."""

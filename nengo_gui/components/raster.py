@@ -20,7 +20,7 @@ class Raster(Widget):
 
     @property
     def max_neurons(self):
-        return self.obj.obj.n_neurons
+        return self.obj.n_neurons
 
     @property
     def n_neurons(self):
@@ -35,11 +35,11 @@ class Raster(Widget):
 
     @property
     def neurons(self):
-        return self.obj.obj.neurons
+        return self.obj.neurons
 
     @property
     def neuron_type(self):
-        return self.obj.obj.neuron_type
+        return self.obj.neuron_type
 
     def add_nengo_objects(self, model):
 

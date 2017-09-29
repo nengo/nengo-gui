@@ -20,7 +20,6 @@ from nengo_gui import exec_env, paths, server
 from nengo_gui.client import ClientConnection, FastClientConnection
 from nengo_gui.compat import unquote
 from nengo_gui.editor import AceEditor, NoEditor
-from nengo_gui.config import ServerSettings
 from nengo_gui.page import Page
 from nengo_gui.server import HtmlResponse, HttpRedirect, WebSocketFrame
 
@@ -76,6 +75,38 @@ class Context(object):
 
         if self.filename_cfg is None:
             self.filename_cfg = "%s.cfg" % (self._filename,)
+
+
+class ServerSettings(object):
+    __slots__ = ('listen_addr',
+                 'auto_shutdown',
+                 'password_hash',
+                 'ssl_cert',
+                 'ssl_key',
+                 'session_duration')
+
+    def __init__(self,
+                 listen_addr=('localhost', 8080),
+                 auto_shutdown=2,
+                 password_hash=None,
+                 ssl_cert=None,
+                 ssl_key=None,
+                 session_duration=60 * 60 * 24 * 30):
+        self.listen_addr = listen_addr
+        self.auto_shutdown = auto_shutdown
+        self.password_hash = password_hash
+        self.ssl_cert = ssl_cert
+        self.ssl_key = ssl_key
+        self.session_duration = session_duration
+
+    @property
+    def use_ssl(self):
+        if self.ssl_cert is None and self.ssl_key is None:
+            return False
+        elif self.ssl_cert is not None and self.ssl_key is not None:
+            return True
+        else:
+            raise ValueError("SSL needs certificate file and key file.")
 
 
 class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):

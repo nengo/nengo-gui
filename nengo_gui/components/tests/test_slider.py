@@ -3,14 +3,14 @@ import json
 import nengo
 import numpy as np
 
-from nengo_gui.components import Node, Slider
+from nengo_gui.components import Slider
 
 
 def test_create(client):
     with nengo.Network():
         n = nengo.Node(None, size_in=2)
 
-    slider = Slider(client, Node(client, n, "n"), "slider")
+    slider = Slider(client, n, "slider")
     slider.create()
     assert json.loads(client.ws.text) == ["netgraph.create_slider", {
         "label": None,
@@ -29,7 +29,7 @@ def test_passthrough(client, fast_client):
     client.bind("simcontrol.get_backend", dummy_backend)
     client.bind("simcontrol.get_dt", dummy_dt)
 
-    slider = Slider(client, Node(client, n, "n"), "slider")
+    slider = Slider(client, n, "slider")
     slider.attach(fast_client)
     slider.add_nengo_objects(net)
 
@@ -78,7 +78,7 @@ def test_value(client, fast_client):
     client.bind("simcontrol.get_backend", dummy_backend)
     client.bind("simcontrol.get_dt", dummy_dt)
 
-    slider = Slider(client, Node(client, n, "n"), "slider")
+    slider = Slider(client, n, "slider")
     slider.attach(fast_client)
     slider.add_nengo_objects(net)
 
@@ -117,7 +117,7 @@ def test_callable(client, fast_client):
     client.bind("simcontrol.get_backend", dummy_backend)
     client.bind("simcontrol.get_dt", dummy_dt)
 
-    slider = Slider(client, Node(client, n, "n"), "slider")
+    slider = Slider(client, n, "slider")
     slider.attach(fast_client)
     slider.add_nengo_objects(net)
 
@@ -161,7 +161,7 @@ def test_process(client, fast_client):
     client.bind("simcontrol.get_backend", dummy_backend)
     client.bind("simcontrol.get_dt", dummy_dt)
 
-    slider = Slider(client, Node(client, n, "n"), "slider")
+    slider = Slider(client, n, "slider")
     slider.attach(fast_client)
     slider.add_nengo_objects(net)
 

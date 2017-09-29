@@ -20,7 +20,7 @@ class SpikeGrid(Widget):
 
     @property
     def max_neurons(self):
-        return self.obj.obj.neurons.size_out
+        return self.obj.neurons.size_out
 
     @property
     def n_pixels(self):
@@ -61,10 +61,10 @@ class SpikeGrid(Widget):
         with model:
             self.node = nengo.Node(
                 fast_send_to_client,
-                size_in=self.obj.obj.neurons.size_out,
+                size_in=self.obj.neurons.size_out,
                 size_out=0)
             self.conn = nengo.Connection(
-                self.obj.obj.neurons, self.node, synapse=0.01)
+                self.obj.neurons, self.node, synapse=0.01)
 
     def create(self):
         self.client.send("netgraph.create_spike_grid",

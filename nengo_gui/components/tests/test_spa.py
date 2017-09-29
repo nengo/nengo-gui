@@ -3,7 +3,6 @@ import json
 import nengo.spa
 import numpy as np
 
-from nengo_gui.components import Network
 from nengo_gui.components.spa import SpaPointer, SpaSimilarity, SpaWidget
 
 
@@ -13,8 +12,7 @@ class TestSpaWidget(object):
         with nengo.spa.SPA() as model:
             model.state = nengo.spa.State(16)
 
-        widget = SpaWidget(
-            client, Network(client, model.state, "model.state"), "widget")
+        widget = SpaWidget(client, model.state, "widget")
         widget.vocab.parse("A+B")
         assert not widget.show_pairs
         assert widget.keys == ["A", "B"]
@@ -35,8 +33,7 @@ class TestSpaPointer(object):
         with nengo.spa.SPA() as model:
             model.state = nengo.spa.State(16)
 
-        pointer = SpaPointer(
-            client, Network(client, model.state, "model.state"), "pointer")
+        pointer = SpaPointer(client, model.state, "pointer")
         assert pointer.override is None
         pointer.create()
         assert json.loads(client.ws.text) == [
@@ -47,8 +44,7 @@ class TestSpaPointer(object):
         with nengo.spa.SPA() as model:
             model.state = nengo.spa.State(16)
 
-        pointer = SpaPointer(
-            client, Network(client, model.state, "model.state"), "pointer")
+        pointer = SpaPointer(client, model.state, "pointer")
         assert pointer.override is None
         pointer.vocab.add("A", np.ones(16))
         pointer.add_nengo_objects(model)
@@ -82,8 +78,7 @@ class TestSpaSimilarity(object):
         with nengo.spa.SPA() as model:
             model.state = nengo.spa.State(16)
 
-        similarity = SpaSimilarity(
-            client, Network(client, model.state, "model.state"), "similarity")
+        similarity = SpaSimilarity(client, model.state, "similarity")
         similarity.vocab.parse("A+B+C")
         similarity.create()
         assert json.loads(client.ws.text) == [
@@ -98,8 +93,7 @@ class TestSpaSimilarity(object):
         with nengo.spa.SPA() as model:
             model.state = nengo.spa.State(2)
 
-        similarity = SpaSimilarity(
-            client, Network(client, model.state, "model.state"), "similarity")
+        similarity = SpaSimilarity(client, model.state, "similarity")
         similarity.attach(fast_client)
         similarity.vocab.add("A", np.ones(2))
         similarity.add_nengo_objects(model)

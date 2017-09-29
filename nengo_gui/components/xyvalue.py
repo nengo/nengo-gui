@@ -17,7 +17,7 @@ class XYValue(Widget):
 
     @property
     def n_lines(self):
-        return int(self.obj.obj.size_out)
+        return int(self.obj.size_out)
 
     def add_nengo_objects(self, model):
 
@@ -30,14 +30,15 @@ class XYValue(Widget):
 
         with model:
             self.node = nengo.Node(fast_send_to_client,
-                                   size_in=self.obj.obj.size_out,
+                                   size_in=self.obj.size_out,
                                    size_out=0)
             # TODO: make synapse modifiable?
-            self.conn = nengo.Connection(self.obj.obj, self.node, synapse=0.01)
+            self.conn = nengo.Connection(self.obj, self.node, synapse=0.01)
 
     def create(self):
         self.client.send("netgraph.create_xyvalue",
                          uid=self.uid, n_lines=self.n_lines, label=self.label)
+
     def remove_nengo_objects(self, model):
         model.connections.remove(self.conn)
         model.nodes.remove(self.node)

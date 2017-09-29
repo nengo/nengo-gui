@@ -11,6 +11,7 @@ if PY2:
     import SocketServer as socketserver
     from urllib2 import urlopen
     from urlparse import parse_qs, unquote, urlparse
+    execfile = execfile
 
 else:
     from http import server
@@ -19,7 +20,18 @@ else:
     from urllib.parse import parse_qs, unquote, urlparse
     from urllib.request import urlopen
 
+    def execfile(path, globals, locals):
+        if globals is None:
+            globals = sys._getframe(1).f_globals
+        if locals is None:
+            locals = sys._getframe(1).f_locals
+        with open(path, "r") as fp:
+            code = fp.read()
+        compiled = compile(code, path, mode="exec")
+        exec(compiled, globals, locals)
 
+
+assert execfile
 assert parse_qs
 assert server
 assert SimpleCookie

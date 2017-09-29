@@ -5,6 +5,12 @@ from .base import Component
 
 class Network(Component):
 
+    def __init__(self, client, obj, uid,
+                 pos=None, label=None, expanded=False, has_layout=False):
+        super(Network, self).__init__(client, obj, uid, pos, label)
+        self.expanded = expanded
+        self.has_layout = has_layout
+
     @property
     def output(self):
         """Used in value plots"""

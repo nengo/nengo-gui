@@ -1,5 +1,4 @@
-# flake8: noqa
-from .base import Component
+from .base import Component, Position
 from .slider import Slider
 from .value import Value
 from .xyvalue import XYValue
@@ -13,14 +12,3 @@ from .connection import Connection
 from .ensemble import Ensemble
 from .network import Network
 from .node import Node
-
-# Old versions of the .cfg files used Templates which had slightly different
-# names than the Components currently use.  This code allows us to
-# successfully parse those old .cfg files
-SliderTemplate = Slider
-ValueTemplate = Value
-XYValueTemplate = XYValue
-RasterTemplate = Raster
-VoltageTemplate = Voltage
-Pointer = SpaPointer
-PointerTemplate = SpaPointer

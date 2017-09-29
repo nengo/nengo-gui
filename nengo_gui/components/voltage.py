@@ -15,14 +15,14 @@ class Voltage(Widget):
 
     @property
     def max_neurons(self):
-        return self.obj.obj.neurons.size_out
+        return self.obj.neurons.size_out
 
     def add_nengo_objects(self, model):
         with model:
             # Note: this probe is read in simcontrol.control, which is a
             # huge terrible hack.
             self.probe = nengo.Probe(
-                self.obj.obj.neurons[:self.n_neurons], 'voltage')
+                self.obj.neurons[:self.n_neurons], 'voltage')
 
     def create(self):
         self.client.send("netgraph.create_voltage",

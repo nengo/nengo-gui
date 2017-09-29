@@ -54,7 +54,7 @@ class SpaWidget(Widget):
 
     @property
     def vocab(self):
-        return self.obj.obj.outputs[self.target][1]
+        return self.obj.outputs[self.target][1]
 
 
 class SpaPointer(SpaWidget):
@@ -122,14 +122,14 @@ class SpaPointer(SpaWidget):
                 return (self.override.v - x) * 3
 
         with network:
-            output = self.obj.obj.outputs[self.target][0]
+            output = self.obj.outputs[self.target][0]
             self.node = nengo.Node(send_to_client,
                                    size_in=self.vocab.dimensions,
                                    size_out=self.vocab.dimensions)
             self.conn1 = nengo.Connection(output, self.node, synapse=0.01)
-            loop_in = type(self.obj.obj) in self.CAN_LOOP_IN
+            loop_in = type(self.obj) in self.CAN_LOOP_IN
             if loop_in and self.target == 'default':
-                input = self.obj.obj.inputs[self.target][0]
+                input = self.obj.inputs[self.target][0]
                 self.conn2 = nengo.Connection(self.node, input, synapse=0.01)
             else:
                 self.conn2 = nengo.Connection(self.node, output, synapse=0.01)
@@ -177,7 +177,7 @@ class SpaSimilarity(SpaWidget):
             self.fast_client.send(data)
 
         with model:
-            output = self.obj.obj.outputs[self.target][0]
+            output = self.obj.outputs[self.target][0]
             self.node = nengo.Node(
                 fast_send_to_client, size_in=self.vocab.dimensions)
             self.conn = nengo.Connection(output, self.node, synapse=0.01)

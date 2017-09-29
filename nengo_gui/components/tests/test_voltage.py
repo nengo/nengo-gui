@@ -3,7 +3,7 @@ import json
 import nengo
 import numpy as np
 
-from nengo_gui.components import Ensemble, Voltage
+from nengo_gui.components import Voltage
 
 
 # TODO: test the horrible hack
@@ -12,7 +12,7 @@ def test_create(client):
     with nengo.Network():
         e = nengo.Ensemble(10, 1)
 
-    voltage = Voltage(client, Ensemble(client, e, "e"), "voltage")
+    voltage = Voltage(client, e, "voltage")
     voltage.create()
     # Note: n_neurons defaults to 5
     assert json.loads(client.ws.text) == ["netgraph.create_voltage", {
@@ -24,7 +24,7 @@ def test_add_remove(client, fast_client):
     with nengo.Network() as net:
         e = nengo.Ensemble(10, 1)
 
-    voltage = Voltage(client, Ensemble(client, e, "e"), "voltage")
+    voltage = Voltage(client, e, "voltage")
     voltage.add_nengo_objects(net)
     assert voltage.probe is not None
 

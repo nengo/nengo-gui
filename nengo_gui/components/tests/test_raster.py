@@ -3,14 +3,14 @@ import json
 import nengo
 import numpy as np
 
-from nengo_gui.components import Ensemble, Raster
+from nengo_gui.components import Raster
 
 
 def test_create(client):
     with nengo.Network():
         e = nengo.Ensemble(10, 1)
 
-    raster = Raster(client, Ensemble(client, e, "e"), "raster")
+    raster = Raster(client, e, "raster")
     raster.create()
     assert json.loads(client.ws.text) == ["netgraph.create_raster", {
         "max_neurons": 10, "label": None,
@@ -21,7 +21,7 @@ def test_add_remove(client, fast_client):
     with nengo.Network() as net:
         e = nengo.Ensemble(10, 1)
 
-    raster = Raster(client, Ensemble(client, e, "e"), "raster", n_neurons=10)
+    raster = Raster(client, e, "raster", n_neurons=10)
     raster.attach(fast_client)
     raster.add_nengo_objects(net)
     assert raster.node is not None and raster.conn is not None

@@ -23,23 +23,16 @@ class Value(Widget):
         self.node = None
         self.conn = None
 
-    def __repr__(self):
-        """Important to do correctly, as it's used in the config file."""
-        return ("Value(client, {self.obj.uid}, {self.uid}, ylim={self.ylim}, "
-                "legend_labels={self.legend_labels}, synapse={self.synapse}, "
-                "legend={self.legend}, pos={self.pos}, "
-                "label={self.label}".format(self=self))
-
     @property
     def n_lines(self):
         return self.output.size_out
 
     @property
     def output(self):
-        if hasattr(self.obj.obj, "output"):
-            return self.obj.obj.output
+        if hasattr(self.obj, "output"):
+            return self.obj.output
         else:
-            return self.obj.obj
+            return self.obj
 
     @property
     def synapse(self):
@@ -77,6 +70,14 @@ class Value(Widget):
     def create(self):
         self.client.send("netgraph.create_value",
                          uid=self.uid, label=self.label, n_lines=self.n_lines)
+
+    def dumps(self, names):
+        """Important to do correctly, as it's used in the config file."""
+        return ("Value(client, {names[self.obj]}, {self.uid}, "
+                "ylim={self.ylim}, legend_labels={self.legend_labels}, "
+                "synapse={self.synapse}, legend={self.legend}, "
+                "pos={self.pos}, label={self.label}".format(
+                    names=names, self=self))
 
     def remove_nengo_objects(self, model):
         # undo the changes made by add_nengo_objects

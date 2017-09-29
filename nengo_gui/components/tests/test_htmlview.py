@@ -2,14 +2,14 @@ import json
 
 import nengo
 
-from nengo_gui.components import HTMLView, Node
+from nengo_gui.components import HTMLView
 
 
 def test_create(client):
     with nengo.Network():
         n = nengo.Node(None)
 
-    html = HTMLView(client, Node(client, n, "n"), "htmlview")
+    html = HTMLView(client, n, "htmlview")
     html.create()
     assert json.loads(client.ws.text) == ["netgraph.create_htmlview", {
         "label": None, "uid": "htmlview",
@@ -23,7 +23,7 @@ def test_add_remove(client):
     with nengo.Network() as net:
         n = nengo.Node(output=f)
 
-    html = HTMLView(client, Node(client, n, "n"), "htmlview")
+    html = HTMLView(client, n, "htmlview")
     html.add_nengo_objects(net)
     assert n.output is not f
     assert html._old_output is f

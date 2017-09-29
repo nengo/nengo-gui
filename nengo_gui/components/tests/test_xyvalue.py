@@ -3,14 +3,14 @@ import json
 import nengo
 import numpy as np
 
-from nengo_gui.components import Ensemble, XYValue
+from nengo_gui.components import XYValue
 
 
 def test_create(client):
     with nengo.Network():
         e = nengo.Ensemble(10, 2)
 
-    xyvalue = XYValue(client, Ensemble(client, e, "e"), "xyvalue")
+    xyvalue = XYValue(client, e, "xyvalue")
 
     xyvalue.create()
     assert json.loads(client.ws.text) == ["netgraph.create_xyvalue", {
@@ -22,7 +22,7 @@ def test_add_remove(client, fast_client):
     with nengo.Network() as net:
         e = nengo.Ensemble(5, 2)
 
-    xyvalue = XYValue(client, Ensemble(client, e, "e"), "xyvalue")
+    xyvalue = XYValue(client, e, "xyvalue")
     xyvalue.attach(fast_client)
     xyvalue.add_nengo_objects(net)
     assert xyvalue.node is not None and xyvalue.conn is not None

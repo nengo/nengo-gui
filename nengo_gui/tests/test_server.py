@@ -5,7 +5,7 @@ except ImportError:  # Python 2.7
     from BytesIO import BytesIO
 
 from nengo_gui import server
-from nengo_gui.config import ServerSettings
+from nengo_gui.gui import ServerSettings
 
 
 class TwoWayStringIO(object):

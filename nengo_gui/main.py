@@ -6,8 +6,7 @@ import webbrowser
 
 import nengo_gui
 import nengo_gui.gui
-from nengo_gui.config import ServerSettings
-from nengo_gui.gui import Context
+from nengo_gui.gui import Context, ServerSettings
 from nengo_gui.server.auth import gensalt, hashpw, prompt_pw
 
 
