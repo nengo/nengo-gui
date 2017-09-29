@@ -70,8 +70,9 @@ class InteractiveGUI(BaseGUI):
 
     def start(self):
         protocol = 'https:' if self.server.settings.use_ssl else 'http:'
-        print("Starting nengo server at %s//%s:%d" %
-              (protocol, 'localhost', self.server.server_port))
+        print("Starting nengo server accessible at:\n  %s//%s:%d/?token=%s" % (
+            protocol, 'localhost', self.server.server_port,
+            self.server.settings.auth_token))
 
         if not sys.platform.startswith('win'):
             signal.signal(signal.SIGINT, self._confirm_shutdown)
@@ -141,7 +142,9 @@ class GUI(InteractiveGUI):
     def start(self):
         t = threading.Thread(
             target=webbrowser.open,
-            args=('http://localhost:%d' % self.server.server_port,))
+            args=('http://localhost:%d/?token=%s' % (
+                self.server.server_port,
+                self.server.settings.auth_token,)))
         t.start()
 
         super(GUI, self).start()
