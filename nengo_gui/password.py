@@ -19,6 +19,7 @@ def hashpw(password, salt, algorithm='sha1'):
     return algorithm + ':' + salt + ':' + h.hexdigest()
 
 
+
 def checkpw(password, hashed):
     algorithm, salt, _ = hashed.split(':')
     return hashpw(password, salt, algorithm) == hashed
