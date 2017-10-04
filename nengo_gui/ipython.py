@@ -91,7 +91,7 @@ class IPythonViz(object):
             try:
                 s = socket.create_connection((self.host, self.port), 0.1)
                 self._started = True
-            except:
+            except Exception:
                 pass
             else:
                 s.close()
