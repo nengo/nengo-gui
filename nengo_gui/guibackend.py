@@ -98,6 +98,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         '/': 'serve_main',
         '/login': 'login_page',
         '/static': 'serve_static',
+        '/local': 'serve_local',
         '/browse': 'browse',
         '/favicon.ico': 'serve_favicon',
     }
@@ -145,6 +146,15 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         fn = os.path.join('static', self.resource)
         mimetype, encoding = mimetypes.guess_type(fn)
         data = pkgutil.get_data('nengo_gui', fn)
+        return server.HttpResponse(data, mimetype)
+
+    @RequireAuthentication('/login')
+    def serve_local(self):
+        """Handles http://host:port/local/* by returning pkg data"""
+        fn = os.path.join('local', self.resource)
+        mimetype, encoding = mimetypes.guess_type(fn)
+        with open(fn[1:], 'rb') as f:
+            data = f.read()
         return server.HttpResponse(data, mimetype)
 
     @RequireAuthentication('/login')
