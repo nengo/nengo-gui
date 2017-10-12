@@ -5,13 +5,27 @@ var webpackConfig = require("./webpack.config");
 
 module.exports = env => {
     var config = webpackConfig(env);
+
     config.devtool = "source-map";
-    config.entry = { debug: "./nengo_gui/static/debug/main.ts" };
+    config.entry.debug = "./nengo_gui/static/debug/main.ts";
     config.output.pathinfo = true;
     config.output.publicPath = "/";
     config.plugins.push(
         new HtmlWebpackPlugin({
+            chunks: ["common", "debug"],
             title: "Nengo Debug"
+        })
+    );
+    config.plugins.push(
+        new HtmlWebpackPlugin({
+            chunks: ["common", "nengo"],
+            filename: "nengo.html",
+            title: "Nengo"
+        })
+    );
+    config.plugins.push(
+        new webpack.optimize.CommonsChunkPlugin({
+            name: "common"
         })
     );
     config.module.rules.forEach(rule => {
@@ -30,7 +44,9 @@ module.exports = env => {
                         "2345",
                         "1109",
                         "1005",
-                        "2341"
+                        "2341",
+                        "2554",
+                        "2551"
                     ]
                 }
             };

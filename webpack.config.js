@@ -7,7 +7,7 @@ var config = {
     // Putting the entry point in a list is a workaround for this error:
     // Error: a dependency to an entry point is not allowed
     entry: {
-        nengo: "./nengo_gui/static/nengo.ts"
+        nengo: "./nengo_gui/static/main.ts"
     },
     output: {
         path: path.resolve(__dirname, "./nengo_gui/static/dist"),
