@@ -12,13 +12,12 @@ import "imports-loader?$=jquery,jQuery=jquery!jqueryfiletree/src/jQueryFileTree"
 
 import "../favicon.ico";
 
+import { NengoWindow } from "../main";
+import { Network } from "../components/network";
+import { NetGraph } from "../netgraph";
+import { MockConnection } from "../websocket";
 import * as items from "./items";
-import { DebugItem, NengoDebug, NengoWindow } from "../nengo";
 import { DebugView } from "./view";
-
-if (typeof localStorage === "undefined" || localStorage === null) {
-    console.error("localStorage not available. Please update your browser!");
-}
 
 export class CommandHistory {
     history: string[];
@@ -59,6 +58,104 @@ export class CommandHistory {
     }
 }
 
+export class DebugItem {
+    category: string;
+    name: string;
+    obj: any;
+    root: HTMLDivElement;
+
+    constructor(category: string, name: string) {
+        this.category = category;
+        this.name = name;
+        this.obj = items[category][name]();
+
+        if ("view" in this.obj) {
+            this.root = this.obj.view.root;
+        } else if ("root" in this.obj) {
+            this.root = this.obj.root;
+        } else {
+            console.error("Cannot find root.");
+        }
+    }
+
+    eval(command: string) {
+        const obj = this.obj;
+        const retval = eval(command);
+        if (retval) {
+            console.log(retval);
+        }
+        return retval;
+    }
+}
+
+export class NengoDebug {
+    items: Array<DebugItem> = [];
+    netgraph: NetGraph = new NetGraph("debug");
+
+    constructor() {
+        this.netgraph.attach(new MockConnection());
+        this.netgraph.view.root.style.outline = "red solid 1px";
+        document.body.appendChild(this.netgraph.view.root);
+    }
+
+    add(category: string, name: string) {
+        const item = new DebugItem(category, name);
+        if (item.category === "componentview") {
+            this.netgraph.view.root.appendChild(item.root);
+            if ("ondomadd" in item.obj) {
+                item.obj.ondomadd();
+            }
+        } else if (item.category === "component") {
+            // Add the item to the last added network.
+            let network = null;
+            this.netgraph.components.components.forEach(component => {
+                if (component instanceof Network) {
+                    network = component;
+                }
+            });
+            this.netgraph.add(item.obj, network);
+        } else {
+            document.body.appendChild(item.root);
+        }
+        this.items.push(item);
+        return item;
+    }
+
+    remove(item: DebugItem) {
+        if (item.category === "componentview") {
+            this.netgraph.view.root.removeChild(item.root);
+        } else if (item.category === "component") {
+            this.netgraph.remove(item.obj);
+        } else {
+            document.body.removeChild(item.root);
+        }
+        // Bootstrap modals can leave behind a backdrop. Annoying!
+        const backdrop = document.body.querySelector(".modal-backdrop");
+        if (backdrop !== null) {
+            document.body.classList.remove("modal-open");
+            document.body.removeChild(backdrop);
+        }
+        this.items.splice(this.items.indexOf(item), 1);
+    }
+
+    toggleLog() {
+        MockConnection.verbose = !MockConnection.verbose;
+    }
+
+    toggleOutline() {
+        const stylesheet = document.styleSheets[0] as CSSStyleSheet;
+        const rule = stylesheet.cssRules[0];
+        const ruleText = "* { outline: red solid 1px; }";
+        const active = rule.cssText === ruleText;
+
+        if (active) {
+            stylesheet.deleteRule(0);
+        } else {
+            stylesheet.insertRule(ruleText, 0);
+        }
+    }
+}
+
 export class Debug {
     nengoDebug: NengoDebug;
     nengoWindow: NengoWindow;
@@ -87,7 +184,7 @@ export class Debug {
                         this.nengoWindow.dispatchEvent(new Event("resize"));
                     };
                 });
-            }
+            };
             attach("main");
             attach("view");
             attach("component");
@@ -101,9 +198,10 @@ export class Debug {
             const connectButton = group.addConnectButton();
             connectButton.addEventListener("click", event => {
                 const ng = this.nengoDebug.netgraph;
-                const randomObj = ng.components.components[
-                    Math.floor(Math.random() * ng.components.length)
-                ];
+                const randomObj =
+                    ng.components.components[
+                        Math.floor(Math.random() * ng.components.length)
+                    ];
                 console.log(`Connecting to ${randomObj.uid}`);
                 ng.connect(item.obj, randomObj);
             });
@@ -114,7 +212,7 @@ export class Debug {
         const autocomplete = new Awesomplete(group.input, {
             list: inputHistory.history,
             minChars: 1,
-            maxItems: 4,
+            maxItems: 4
         });
         Object.getOwnPropertyNames(item.obj).forEach(key => {
             inputHistory.add("obj." + key);
@@ -176,6 +274,5 @@ if (typeof document !== "undefined") {
 //         {miniItem: 1, label: "test_node"}, 1, null);
 //     console.log("stuff is loaded");
 // });
-
 
 // obj.createNode({ng: obj, width: 0.2, height: 0.2, posX: 0.5, posY: 0.5, parent: null, uid: "node2"}, {miniItem: 1, label: "test_node"}, 1, null);

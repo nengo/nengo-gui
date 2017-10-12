@@ -11,7 +11,7 @@ from nengo.utils.compat import iteritems
 
 from nengo_gui import components, exec_env, user_action
 from nengo_gui.client import bind, ExposedToClient
-from nengo_gui.components import Component, Network
+from nengo_gui.components import Component, Network, Position
 from nengo_gui.config import NengoGUIConfig, upgrade
 from nengo_gui.editor import AceEditor
 from nengo_gui.exceptions import StartedGUIException, StartedSimulatorException
@@ -31,7 +31,8 @@ class ComponentManager(object):
         nengo.Node: components.Node,
     }
 
-    def __init__(self, save_period=2.0):
+    def __init__(self, client, save_period=2.0):
+        self.client = client
         self.save_period = save_period  # minimum time between saves
 
         self.by_uid = {}
@@ -77,10 +78,10 @@ class ComponentManager(object):
         for comp in self._components:
             comp.create()
 
-    def load(self, filename, client, model, locals):
+    def load(self, filename, model, locals):
         """Load from a JSON file"""
 
-        if filename.endswith(".py.cfg"):
+        if filename is not None and filename.endswith(".py.cfg"):
             old_filename = filename
             filename = "%s.json" % (old_filename[:-len(".py.cfg")],)
             print("Upgrading %r to new format, %r" % (old_filename, filename))
@@ -93,24 +94,24 @@ class ComponentManager(object):
             os.remove(old_filename)
 
         config = {}
-        if os.path.exists(filename):
+        if filename is not None and os.path.exists(filename):
             with open(filename, "r") as fp:
                 config = json.load(fp)
 
         if "model" not in config and model is not None:
             self.add(Network(
-                client, model, "model", pos=(0, 0), size=(1.0, 1.0)))
+                self.client, model, "model", pos=Position(0, 0, 1.0, 1.0)))
 
         for obj, kwargs in iteritems(config):
             print(obj, kwargs)
             cls = getattr(components, kwargs.pop("cls"))
             if "obj" in kwargs:
                 # For most components
-                kwargs["obj"] = locals[kwargs["obj"]]
+                kwargs["obj"] = eval(kwargs["obj"], locals)
             else:
                 # For components corresponding to Nengo objects
-                kwargs["obj"] = locals[obj]
-            self.add(cls(client=client, uid=obj, **kwargs))
+                kwargs["obj"] = eval(obj, locals)
+            self.add(cls(client=self.client, uid=obj, **kwargs))
 
         self.dirty = False
         self.last_save = (filename, None)
@@ -168,7 +169,7 @@ class ComponentManager(object):
             except IOError:
                 print("Could not save %s; permission denied" % (filename,))
 
-    def update(self, locals, namefinder, client):
+    def update(self, locals, namefinder):
         # Add any components from locals
         for name, obj in iteritems(locals):
             if isinstance(obj, components.Component):
@@ -180,22 +181,26 @@ class ComponentManager(object):
         for obj, name in iteritems(namefinder.names):
             if isinstance(obj, nengo.Connection):
                 self.add(components.Connection(
-                    client, obj, namefinder[obj], namefinder))
+                    self.client, obj, namefinder[obj], namefinder))
             elif isinstance(obj, tuple(self.NENGO_MAP)):
-                comp = self.NENGO_MAP[type(obj)](client, obj, namefinder[obj])
-                self.add(comp)
+                for nengocls, compcls in iteritems(self.NENGO_MAP):
+                    if isinstance(obj, nengocls):
+                        comp = compcls(self.client, obj, namefinder[obj])
+                        self.add(comp)
+                        break
 
 
 class LiveContext(object):
-    def __init__(self, filename=None, model=None, locals=None):
-        self.filename = filename
+    def __init__(self, client, model=None, locals=None):
+        self.client = client
         self.model = model
         self.locals = locals
         if locals is not None:
             self.locals = locals.copy()
         self.code = None  # the code for the network
+        self.filename = None  # filename corresponding to code
 
-    def execute(self, code, client):
+    def execute(self, code):
         """Run the given code to generate self.network and self.locals.
 
         The code will be stored in self.code, any output to stdout will
@@ -203,10 +208,13 @@ class LiveContext(object):
         """
         errored = False
 
-        newlocals = {'__file__': self.filename}
+        newlocals = {}
+
+        if self.filename is not None:
+            newlocals['__file__'] = self.filename
 
         # Clear any existing errors
-        client.dispatch("editor.stderr", output=None, line=None)
+        self.client.dispatch("editor.stderr", output=None, line=None)
 
         env = exec_env.ExecutionEnvironment(self.filename)
         try:
@@ -223,19 +231,19 @@ class LiveContext(object):
             env.stdout.write('Warning: nengo_gui cannot be run inside '
                              'nengo_gui (line %d)\n' % line)
         except Exception:
-            client.dispatch("editor.stderr",
-                            output=traceback.format_exc(),
-                            line=exec_env.determine_line(self.filename))
+            self.client.dispatch("editor.stderr",
+                                 output=traceback.format_exc(),
+                                 line=exec_env.determine_line(self.filename))
             errored = True
-        client.dispatch("editor.stdout",
-                        output=env.stdout.getvalue(),
-                        line=None)
+        self.client.dispatch("editor.stdout",
+                             output=env.stdout.getvalue(),
+                             line=None)
 
         # make sure we've defined a nengo.Network
         self.model = newlocals.get('model', None)
         if not isinstance(self.model, nengo.Network):
             if not errored:
-                client.dispatch(
+                self.client.dispatch(
                     "editor.stderr",
                     output="Must declare a nengo.Network called 'model'",
                     line=None)
@@ -246,18 +254,20 @@ class LiveContext(object):
             self.locals = newlocals
             self.code = code
 
-    def load(self, filename, client, force=False):
+    def load(self, filename, force=False):
         if self.filename == filename and not force:
             raise ValueError("That file is already loaded")
         try:
             with open(filename) as f:
                 code = f.read()
             self.filename = filename
-        except IOError:
+        except IOError as e:
+            logger.error("IOError loading %r: %s", filename, e)
             code = ''
+            self.filename = None
 
         if code != self.code:
-            self.execute(code, client)
+            self.execute(code)
 
 
 class NameFinder(object):
@@ -380,16 +390,15 @@ class NetGraph(ExposedToClient):
         self.uids = {}
         self.parents = {}
 
-        self.context = LiveContext(filename, model, locals)
-        self.components = ComponentManager()
+        self.context = LiveContext(client, model, locals)
+        self.components = ComponentManager(client)
         self.names = NameFinder()
 
-        # TODO: should we load here?
-        self.load(filename, force=True)
+        # TODO: should we load here? If not, change init args
+        self.load(filename, filename_cfg, force=True)
 
         self.filethread = RepeatedThread(self.RELOAD_EVERY, self._check_file)
         self.filethread.start()  # TODO: defer until after load?
-
 
     # TODO: These should be done as part of loading the model
 
@@ -435,17 +444,19 @@ class NetGraph(ExposedToClient):
         # if new_code is not None:
         #     self.reload(code=new_code)
 
-    def load(self, filename, force=False):
+    def load(self, filename, filename_cfg, force=False):
         # Load the .py file
-        self.context.load(filename, self.client, force=force)
+        self.context.load(filename, force=force)
         # Load the .cfg file
-        # self.components.load(self.context.model, self.context.locals)
+        self.components.load(filename_cfg,
+                             self.context.model,
+                             self.context.locals)
 
         # Figure out good names for objects
         self.names.update(self.context.locals)
 
         # Add everything to the component manager
-        self.components.update(self.context.locals, self.names, self.client)
+        self.components.update(self.context.locals, self.names)
 
         # When first attaching, send the pan and zoom
         # TODO: update

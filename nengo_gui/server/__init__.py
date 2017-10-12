@@ -8,6 +8,7 @@ from .exceptions import (
     HttpError,
     InternalServerError,
     InvalidResource,
+    ServerShutdown,
     SocketClosedError,
     UpgradeRequired,
 )

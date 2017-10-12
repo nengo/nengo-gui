@@ -21,7 +21,8 @@ from nengo_gui.client import ClientConnection, FastClientConnection
 from nengo_gui.compat import unquote
 from nengo_gui.editor import AceEditor, NoEditor
 from nengo_gui.page import Page
-from nengo_gui.server import HtmlResponse, HttpRedirect, WebSocketFrame
+from nengo_gui.server import (
+    HtmlResponse, HttpRedirect, ServerShutdown, WebSocketFrame)
 
 
 logger = logging.getLogger(__name__)
@@ -42,8 +43,8 @@ class Context(object):
                  writeable=True,
                  backend="nengo"):
         self.writeabel = writeable
-        self.filename = filename
         self.filename_cfg = filename_cfg
+        self.filename = filename
         self.backend = backend
 
         if model is None and locals is not None:
@@ -182,25 +183,16 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
     def serve_main(self):
         if self.route != '/':
             raise server.InvalidResource(self.route)
-
-        # TODO: This should do very little,
-        #       just sending across an HTML that will connect to websocket
-        #       and start the process
-
-        filename = self.query.get('filename', [None])[0]
-        reset_cfg = self.query.get('reset', [False])[0]
-
-        # read the template for the main page
-        html = pkgutil.get_data('nengo_gui', 'templates/page.html')
-        if isinstance(html, bytes):
-            html = html.decode("utf-8")
-
-        # data = html % dict(
-        #     main_components=main_components, components=components)
-        # data = data.encode('utf-8')
-
-        # return server.HttpResponse(data)
-        return server.HttpResponse(html.encode("utf-8"))
+        return server.HttpResponse(r"""
+<html>
+  <head>
+    <link rel="icon" href="static/dist/favicon.ico" type="image/x-icon">
+  </head>
+  <body id="body">
+    <script src="static/dist/nengo.js" type="text/javascript" charset="utf-8"></script>
+  </body>
+</html>
+      """.strip().encode("utf-8"))
 
     @server.AuthenticatedHttpWsRequestHandler.http_route('/favicon.ico')
     def serve_favicon(self):
@@ -295,8 +287,8 @@ class GuiServer(server.ManagedThreadHttpServer):
             raise exec_env.StartedGUIException()
         self.settings = server_settings
 
-        super(server.ManagedThreadHttpServer, self).__init__(
-            self.settings.listen_addr, GuiRequestHandler)
+        server.ManagedThreadHttpServer.__init__(
+            self, self.settings.listen_addr, GuiRequestHandler)
         if self.settings.use_ssl:
             self.socket = ssl.wrap_socket(
                 self.socket, certfile=self.settings.ssl_cert,
@@ -354,16 +346,14 @@ class BaseGUI(object):
     def __init__(self, context, server_settings=None, editor=True):
         if server_settings is None:
             server_settings = ServerSettings()
-
         self.context = context
-
         self.server = GuiServer(self.context, server_settings, editor=editor)
 
     def start(self):
         """Start the backend server and wait until it shuts down."""
         try:
             self.server.serve_forever(poll_interval=0.02)
-        except server.ServerShutdown:
+        except ServerShutdown:
             self.server.shutdown()
         finally:
             self.server.wait_for_shutdown(0.05)
@@ -387,7 +377,7 @@ class InteractiveGUI(BaseGUI):
 
     def start(self):
         protocol = 'https:' if self.server.settings.use_ssl else 'http:'
-        print("Starting nengo server at %s//%s:%d" %
+        print("Starting Nengo server at %s//%s:%d" %
               (protocol, 'localhost', self.server.server_port))
 
         if not sys.platform.startswith('win'):
@@ -395,8 +385,8 @@ class InteractiveGUI(BaseGUI):
 
         try:
             self.server.serve_forever(poll_interval=0.02)
-            print("No connections remaining to the nengo_gui server.")
-        except server.ServerShutdown:
+            print("No connections remaining to the Nengo server.")
+        except ServerShutdown:
             self.server.shutdown()
         finally:
             print("Shutting down server...")
@@ -409,13 +399,13 @@ class InteractiveGUI(BaseGUI):
 
     def _confirm_shutdown(self, signum, frame):
         signal.signal(signal.SIGINT, self._immediate_shutdown)
-        sys.stdout.write("\nShut-down this web server (y/[n])? ")
+        sys.stdout.write("\nShutdown this Nengo server (y/[n])? ")
         sys.stdout.flush()
         rlist, _, _ = select.select([sys.stdin], [], [], 10)
         if rlist:
             line = sys.stdin.readline()
             if line[0].lower() == 'y':
-                raise server.ServerShutdown()
+                raise ServerShutdown()
             else:
                 print("Resuming...")
         else:
@@ -423,7 +413,7 @@ class InteractiveGUI(BaseGUI):
         signal.signal(signal.SIGINT, self._confirm_shutdown)
 
     def _immediate_shutdown(self, signum, frame):
-        raise server.ServerShutdown()
+        raise ServerShutdown()
 
 
 class GUI(InteractiveGUI):

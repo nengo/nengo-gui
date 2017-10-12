@@ -2,6 +2,7 @@ import json
 import re
 import warnings
 
+import nengo
 from nengo.utils.compat import iteritems
 
 from nengo_gui.components import Position
@@ -21,12 +22,12 @@ def upgrade(old_text, locals):
 
     # All lines in the old files were assignments, so we won't
     # use a full-fledged Python parser for this
-    cfgline = re.compile(r"(?P<cfg>\S+)\[(?P<obj>\S+)\]\.(?P<kw>\S+)")
+    cfgline = re.compile(r"(?P<cfg>\S+?)\[(?P<obj>\S+)\]\.(?P<kw>\S+)")
     compline = re.compile(
         r"nengo_gui\.components\.(?P<cls>\S+)\((?P<arg>\S+)\)")
 
     for line in old_text.splitlines():
-        left, right = line.split("=")
+        left, right = line.split("=", 1)
         left, right = left.strip(), right.strip()
 
         # AceEditor, NetGraph and SimControl are no longer in cfg file
@@ -48,11 +49,14 @@ def upgrade(old_text, locals):
                 # Could be a Nengo object with position / size.
                 # Try to figure out what type of object and add it.
                 try:
-                    cls = type(locals[obj]).__name__
+                    o = eval(obj, locals)
+                    if isinstance(o, nengo.Network):
+                        cls = "Network"
+                    else:
+                        cls = type(o).__name__
                     new_config[obj] = {"cls": cls}
-                except KeyError:
-                    warnings.warn("Object %r not found in model; skipping"
-                                  % (obj,))
+                except Exception as e:
+                    warnings.warn("Skipping %r: %s" % (obj, e))
             if obj in new_config:
                 new_config[obj][kw] = eval(right)
 
@@ -63,10 +67,18 @@ def upgrade(old_text, locals):
             match = compline.match(right)
             if match is None:
                 raise ValueError("Could not parse %r" % right)
+            args = match.group("arg").split(",")
             new_config[obj] = {
                 "cls": match.group("cls").replace("Template", ""),
-                "obj": match.group("arg"),
+                "obj": args[0],
             }
+            for arg in args[1:]:
+                key, val = arg.split("=")
+                new_config[obj][key] = eval(val)
+
+            # Some components have been renamed
+            if new_config[obj]["cls"] == "Pointer":
+                new_config[obj]["cls"] = "SpaPointer"
 
     # Additional changes
     for obj, kwargs in iteritems(new_config):

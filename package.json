@@ -21,6 +21,9 @@
     "test": "webpack --config webpack.test.js --env.noDocs",
     "postinstall": "typings install"
   },
+  "prettier": {
+    "tabWidth": 4
+  },
   "stylelint": {
     "extends": "stylelint-config-standard"
   },

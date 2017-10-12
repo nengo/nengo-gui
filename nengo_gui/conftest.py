@@ -1,3 +1,4 @@
+import os
 from pkg_resources import resource_filename
 
 import pytest
@@ -34,3 +35,17 @@ def fast_client():
 @pytest.fixture
 def example():
     return lambda ex: resource_filename("nengo_gui", "examples/%s" % (ex,))
+
+
+def pytest_generate_tests(metafunc):
+    examples = []
+    example_dir = resource_filename("nengo_gui", "examples")
+    for subdir, _, files in os.walk(example_dir):
+        if (os.path.sep + '.') in subdir:
+            continue
+        examples.extend([
+            os.path.join(subdir, f) for f in files if f.endswith(".py")
+        ])
+
+    if "all_examples" in metafunc.funcargnames:
+        metafunc.parametrize("all_examples", examples)
