@@ -4,12 +4,12 @@ import io
 import os
 
 try:
-    from setuptools import setup
+    from setuptools import find_packages, setup
 except ImportError:
-    from ez_setup import use_setuptools
-    use_setuptools()
-
-from setuptools import find_packages, setup
+    raise ImportError(
+        "'setuptools' is required but not installed. To install it, "
+        "follow the instructions at "
+        "https://pip.pypa.io/en/stable/installing/#installing-with-get-pip-py")
 
 
 def read(*filenames, **kwargs):
