@@ -19,10 +19,11 @@ Release History
    - Bugfixes
    - Documentation
 
-0.3.1 (unreleased)
-==================
+0.3.1 (October 17, 2017)
+========================
 
-
+- Improved some error messages.
+- Fixed an issue with Safari compatibility.
 
 0.3.0 (February 22, 2017)
 =========================
