@@ -1,6 +1,12 @@
 /** namespace for all Nengo visualization */
 /** root functions contain miscelaneous utility functions */
 
+// Expose jquery globally
+var $ = require('expose?$!./jquery');
+
+require('./nengo.css');
+var d3 = require('d3');
+
 var Nengo = {};
 
 Nengo.user_settings = [];
@@ -119,3 +125,58 @@ Nengo.draw_legend = function(parent, labels, color_func, uid) {
 
     return legend_svg;
 };
+
+module.exports = Nengo;  // Have to do this first due to circular dependency
+
+// Require all of the files that make up the Nengo JS app
+
+require('./favicon.ico');
+require('bootstrap/dist/css/bootstrap.min.css');
+require('jqueryfiletree/dist/jQueryFileTree.min.css');
+
+require('./ace.css');
+require('brace');
+require('brace/mode/python');
+require('imports?Nengo=./nengo,ace=brace,interact=interact.js!./ace');
+require('imports?Nengo=./nengo!./config');
+// Exposing data_to_csv for testing
+require('expose?data_to_csv!imports?Nengo=./nengo!./data_to_csv');
+require('imports?Nengo=./nengo!./datastore');
+require('imports?Nengo=./nengo!./hotkeys');
+require('./menu.css');
+require('imports?Nengo=./nengo!./menu');
+require('./modal.css');
+require('imports?Nengo=./nengo,d3!./modal');
+require('./side_menu.css');
+require('imports?Nengo=./nengo!./side_menu');
+require('./sim_control.css');
+require('imports?Nengo=./nengo,d3,interact=interact.js!./sim_control');
+require('./tooltips.css');
+require('imports?Nengo=./nengo!./tooltips');
+require('./top_toolbar.css');
+require('imports?Nengo=./nengo,interact=interact.js!./top_toolbar');
+require('imports?Nengo=./nengo!./viewport');
+require('imports?Nengo=../nengo,interact=interact.js!./components/component');
+require('./components/value.css');
+require('imports?Nengo=../nengo,d3!./components/value');
+require('imports?Nengo=../nengo,d3!./components/2d_axes');
+require('imports?Nengo=../nengo!./components/htmlview');
+require('imports?Nengo=../nengo,d3!./components/image');
+require('./components/netgraph.css');
+require('imports?Nengo=../nengo,interact=interact.js!./components/netgraph');
+require('imports?Nengo=../nengo!./components/netgraph_conn');
+require('imports?Nengo=../nengo,interact=interact.js!./components/netgraph_item');
+require('./components/pointer.css');
+require('imports?Nengo=../nengo!./components/pointer');
+require('./components/raster.css');
+require('imports?Nengo=../nengo,d3!./components/raster');
+require('./components/slider.css');
+require('imports?Nengo=../nengo!./components/slider');
+require('imports?Nengo=../nengo,d3,interact=interact.js!./components/slidercontrol');
+require('./components/spa_similarity.css');
+// Must go after value
+require('imports?Nengo=../nengo,d3!./components/spa_similarity');
+require('imports?Nengo=../nengo!./components/time_axes');
+require('imports?Nengo=../nengo!./components/xy_axes');
+require('./components/xyvalue.css');
+require('imports?Nengo=../nengo,d3!./components/xyvalue');

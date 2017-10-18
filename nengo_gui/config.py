@@ -1,8 +1,14 @@
 import inspect
+import logging
+from pkg_resources import iter_entry_points
 
 import nengo
 
 import nengo_gui.components
+
+
+logger = logging.getLogger(__name__)
+
 
 def make_param(name, default):
     try:
@@ -32,7 +38,15 @@ class Config(nengo.Config):
                                       make_param(name='has_layout',
                                                  default=False))
 
-        for clsname, cls in inspect.getmembers(nengo_gui.components):
+        external_components = {
+            ep.name: ep.load()
+            for ep in iter_entry_points(group='nengo_gui.components')}
+        logger.info(
+            'Components added to config: %s', external_components.keys())
+
+        components = inspect.getmembers(nengo_gui.components)
+        components += external_components.items()
+        for clsname, cls in components:
             if inspect.isclass(cls):
                 if issubclass(cls, nengo_gui.components.component.Component):
                     if cls != nengo_gui.components.component.Component:

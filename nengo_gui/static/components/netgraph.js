@@ -144,10 +144,7 @@ Nengo.NetGraph = function(parent, args) {
      *  this is needed for saving the SVG plot to disk*/
 
     /** load contents of the CSS file as string */
-    var file = document.getElementById('netgraphcss');
-    var css = Array.prototype.map.call(file.sheet.cssRules, function
-            css_text(x) {return x.cssText; } ).join('\n');
-
+    var css = require('!!css-loader!./netgraph.css').toString();
     /** embed CSS code into SVG tag */
     var s = document.createElement('style');
     s.setAttribute('type', 'text/css');

@@ -352,6 +352,8 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
     };
 };
 
+Nengo.NetGraphItem.prototype.menu_extensions = []
+
 Nengo.NetGraphItem.prototype.set_label = function(label) {
     this.label.innerHTML = label;
 }
@@ -408,7 +410,12 @@ Nengo.NetGraphItem.prototype.generate_menu = function () {
                     function() {self.create_graph('Pointer', self.sp_targets[0]);}]);
         items.push(['Semantic pointer plot',
             function() {self.create_graph('SpaSimilarity', self.sp_targets[0]);}]);
+
     }
+    for (fn in this.menu_extensions) {
+        items = items.concat(this.menu_extensions[fn](this));
+    }
+
     // TODO: Enable input and output value plots for basal ganglia network
     items.push(['Details ...', function() {self.create_modal();}]);
     return items;
