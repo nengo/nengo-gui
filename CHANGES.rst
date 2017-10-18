@@ -19,6 +19,11 @@ Release History
    - Bugfixes
    - Documentation
 
+0.3.2 (unreleased)
+==================
+
+
+
 0.3.1 (October 17, 2017)
 ========================
 
