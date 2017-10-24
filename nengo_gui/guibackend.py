@@ -35,10 +35,6 @@ class Session(object):
         self.login_host = None
 
 
-class SessionExpiredError(Exception):
-    pass
-
-
 class SessionManager(object):
     def __init__(self, time_to_live):
         self.time_to_live = time_to_live
@@ -49,17 +45,16 @@ class SessionManager(object):
         if (session is None or
                 session.creation_time + self.time_to_live < time.time()):
             del self._sessions[session_id]
-            raise SessionExpiredError()
+            raise KeyError("Session expired")
         return session
 
     def __len__(self):
         return len(self._sessions)
 
-    def new_session(self, request):
+    def add_session(self, request, session):
         session_id = self._new_session_id(request)
-        session = Session()
         self._sessions[session_id] = session
-        return session_id, session
+        return session_id
 
     def _new_session_id(self, request):
         try:
@@ -92,6 +87,7 @@ class RequireAuthentication(object):
                     inst.db['token'] == inst.server.settings.auth_token):
                 session.authenticated = True
                 session.login_host = inst.headers.get('host', None)
+                inst.persist_session(session)
                 return fn(inst)
             return server.HttpRedirect(self.login_page)
         return auth_checked
@@ -135,6 +131,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
             if checkpw(self.db['pw'], self.server.settings.password_hash):
                 session.authenticated = True
                 session.login_host = self.headers.get('host', None)
+                self.persist_session(session)
                 return server.HttpRedirect('/')
             else:
                 content += b'<p><strong>Invalid password. Try again.'
@@ -296,14 +293,12 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
             session_id = self.cookie['_session_id'].value
             session = self.server.sessions[session_id]
         except KeyError:
-            session_id, session = self.server.sessions.new_session(
-                self.request)
-        except SessionExpiredError:
-            session_id, session = self.server.sessions.new_session(
-                self.request)
-
-        self.cookie['_session_id'] = session_id
+            session = Session()
         return session
+
+    def persist_session(self, session):
+        session_id = self.server.sessions.add_session(self.request, session)
+        self.cookie['_session_id'] = session_id
 
     def log_message(self, format, *args):
         logger.info(format, *args)
