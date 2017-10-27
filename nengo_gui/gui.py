@@ -199,60 +199,47 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
         self.route = '/static/favicon.ico'
         return self.serve_static()
 
+    @server.AuthenticatedHttpWsRequestHandler.http_route('/bootstrap.min.css.map')
+    def serve_bootstrap_map(self):
+        # TODO: should we actually do this ...?
+        try:
+            root = os.path.realpath(os.path.join(paths.rootdir, ".."))
+            fn = os.path.join(
+                root, 'node_modules/bootstrap/dist/css/bootstrap.min.css.map')
+            mimetype, encoding = mimetypes.guess_type(fn)
+            with open(fn, 'rb') as fp:
+                data = fp.read()
+            return server.HttpResponse(data, mimetype)
+        except Exception:
+            raise server.InvalidResource(self.route)
+
     @server.AuthenticatedHttpWsRequestHandler.ws_route('/')
     @server.RequireAuthentication('/login')
     def ws_default(self):
         """Handles ws://host:port/component with a websocket"""
         # figure out what component is being connected to
 
-        if "uid" not in self.query:
-            # One of these per page
-            client = ClientConnection(self.ws)
-            page = self.server.create_page(client, filename, reset_cfg=reset_cfg)
-            component = None
-            # fill in the javascript needed and return the complete page
-            # TODO: create_javascript should be replaced to be more like
-            #       and init that calls TS methods
-            # main_components, components = page.create_javascript()
+        filename = self.query.get('filename', [None])[0]
+        reset_cfg = self.query.get('reset', [False])[0]
 
-        else:
-            client = FastClientConnection(self.ws)
-            page = self.pages[int(self.query['page'][0])]
-            uid = self.query['uid']
-            print(uid)
-            component = page.components.by_uid[uid]
-            # TODO: isinstance better?
-            assert hasattr(component, "attach"), (
-                "Do not make a WS connection for a non-Widget component")
-            component.attach(client)
+        # One of these per page
+        client = ClientConnection(self.ws)
+        page = self.server.create_page(client, filename, reset_cfg=reset_cfg)
 
         now = default_timer()
         next_ping_time = now
 
         while True:
             try:
-                # Main connection
-                if component is None:
-                    # Read all data coming from the component
+                # Read all data
+                msg = self.ws.read_frame()
+                while msg is not None:
+                    route, kwargs = json.loads(msg.data)
+                    page.client.dispatch(route, **kwargs)
                     msg = self.ws.read_frame()
-                    while msg is not None:
-                        route, kwargs = json.loads(msg)
-                        page.client.dispatch(route, **kwargs)
-                        msg = self.ws.read_frame()
 
-                    # TODO: make sure not required
-                    # if component.replace_with is not None:
-                    #     component = component.replace_with
-                    # component.update_client(self.ws)
-
-                    # TODO: really...?
-                    page.config.save(lazy=True)
-
-                # Fast connections
-                if component is not None:
-                    msg = self.ws.read_frame()
-                    while msg is not None:
-                        client.receive(msg)
+                # TODO: really...?
+                # page.config.save(lazy=True)
 
                 # Keep connection alive
                 now = default_timer()
@@ -263,23 +250,58 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
                 time.sleep(0.01)
             except server.SocketClosedError:
                 # This error means the server has shut down
-                if component is None:
-                    page.save_config(lazy=False)  # Stop nicely
-                    break
+                page.save(force=True)  # Stop nicely
+                break
             except Exception as e:
                 logger.exception("Error during websocket communication: %s", e)
 
-        # After hot loop
-        if component is None:
-            page.finished = True
-            # Do page cleanup?
-            self.server.remove_page(page)
+        self.server.remove_page(page)
+
+    @server.AuthenticatedHttpWsRequestHandler.ws_route('/fast')
+    @server.RequireAuthentication('/login')
+    def fast_ws(self):
+        """Handles ws://host:port/fast with a websocket"""
+        # figure out what component is being connected to
+
+        client = FastClientConnection(self.ws)
+        page = self.server.pages[int(self.query['page'][0])]
+        uid = self.query['uid']
+        print(uid)
+        component = page.components.by_uid[uid]
+        # TODO: isinstance better?
+        assert hasattr(component, "attach"), (
+            "Do not make a WS connection for a non-Widget component")
+        component.attach(client)
+
+        # now = default_timer()
+        # next_ping_time = now
+
+        while True:
+            try:
+                msg = self.ws.read_frame()
+                while msg is not None:
+                    client.receive(msg.data)
+
+                # TODO: do we need to keep alive?
+                # Keep connection alive
+                # now = default_timer()
+                # if next_ping_time is None or now > next_ping_time:
+                #     self.ws.write_frame(WebSocketFrame(
+                #         1, 0, WebSocketFrame.OP_PING, 0, b''))
+                # next_ping_time = now + 5.0
+                # time.sleep(0.001)
+            except server.SocketClosedError:
+                # This error means the server has shut down
+                logger.debug("Shutting down fast connection for %r", uid)
+                break
+            except Exception as e:
+                logger.exception("Error in fast connection for %r: %s", uid, e)
 
     def log_message(self, format, *args):
         logger.info(format, *args)
 
 
-class GuiServer(server.ManagedThreadHttpServer):
+class GuiServer(server.ManagedThreadHttpWsServer):
     def __init__(self, context,
                  server_settings=ServerSettings(),
                  editor=True):
@@ -287,7 +309,7 @@ class GuiServer(server.ManagedThreadHttpServer):
             raise exec_env.StartedGUIException()
         self.settings = server_settings
 
-        server.ManagedThreadHttpServer.__init__(
+        server.ManagedThreadHttpWsServer.__init__(
             self, self.settings.listen_addr, GuiRequestHandler)
         if self.settings.use_ssl:
             self.socket = ssl.wrap_socket(
@@ -309,16 +331,16 @@ class GuiServer(server.ManagedThreadHttpServer):
 
         self._last_access = time.time()
 
-    def create_page(self, filename, reset_cfg=False):
+    def create_page(self, client, filename, reset_cfg=False):
         """Create a new Page with this configuration"""
-        page = Page(self.context, self.editor_class)
-        page.load(filename)
+        page = Page(client, self.context, self.editor_class)
         if reset_cfg:
             page.clear_config()
         self.pages.append(page)
         return page
 
     def remove_page(self, page):
+        page.finished = True
         self._last_access = time.time()
         self.pages.remove(page)
         if (not self._shutting_down and self.settings.auto_shutdown > 0 and
@@ -381,7 +403,26 @@ class InteractiveGUI(BaseGUI):
               (protocol, 'localhost', self.server.server_port))
 
         if not sys.platform.startswith('win'):
-            signal.signal(signal.SIGINT, self._confirm_shutdown)
+
+            def immediate_shutdown(signum, frame):
+                raise ServerShutdown()
+
+            def confirm_shutdown(signum, frame):
+                signal.signal(signal.SIGINT, immediate_shutdown)
+                sys.stdout.write("\nShutdown this Nengo server (y/[n])? ")
+                sys.stdout.flush()
+                rlist, _, _ = select.select([sys.stdin], [], [], 10)
+                if rlist:
+                    line = sys.stdin.readline()
+                    if line[0].lower() == 'y':
+                        immediate_shutdown(signum, frame)
+                    else:
+                        print("Resuming...")
+                else:
+                    print("No confirmation received. Resuming...")
+                signal.signal(signal.SIGINT, confirm_shutdown)
+
+            signal.signal(signal.SIGINT, confirm_shutdown)
 
         try:
             self.server.serve_forever(poll_interval=0.02)
@@ -397,29 +438,9 @@ class InteractiveGUI(BaseGUI):
             if n_zombie > 0:
                 print("%d zombie threads will close abruptly" % n_zombie)
 
-    def _confirm_shutdown(self, signum, frame):
-        signal.signal(signal.SIGINT, self._immediate_shutdown)
-        sys.stdout.write("\nShutdown this Nengo server (y/[n])? ")
-        sys.stdout.flush()
-        rlist, _, _ = select.select([sys.stdin], [], [], 10)
-        if rlist:
-            line = sys.stdin.readline()
-            if line[0].lower() == 'y':
-                raise ServerShutdown()
-            else:
-                print("Resuming...")
-        else:
-            print("No confirmation received. Resuming...")
-        signal.signal(signal.SIGINT, self._confirm_shutdown)
 
-    def _immediate_shutdown(self, signum, frame):
-        raise ServerShutdown()
-
-
-class GUI(InteractiveGUI):
+class GUI(object):
     """Starts an InteractiveGUI.
-
-    Provides an easier instantiation syntax for the use in scripts.
 
     Parameters
     ----------
@@ -437,12 +458,14 @@ class GUI(InteractiveGUI):
     """
     def __init__(self, filename=None, model=None, locals=None, editor=True):
         context = Context(filename=filename, model=model, locals=locals)
-        super(GUI, self).__init__(context, editor=editor)
+        self.gui = InteractiveGUI(context, editor=editor)
 
     def start(self):
+        # TODO: https?
         t = threading.Thread(
             target=webbrowser.open,
             args=('http://localhost:%d' % self.server.server_port,))
+        # TODO: daemon? does this get closed?
+        # t.daemon = True
         t.start()
-
-        super(GUI, self).start()
+        self.gui.start()

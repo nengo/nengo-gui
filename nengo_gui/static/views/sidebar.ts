@@ -4,11 +4,27 @@ import "./sidebar.css";
 import * as utils from "../utils";
 
 export class SidebarView {
+    actions: {[name: string]: HTMLDivElement};
+    groups: Array<{content: HTMLDivElement, heading: HTMLDivElement}> = [];
     root: HTMLDivElement;
 
     constructor() {
-        const node = h("div.sidebar");
+        const node = h("div.sidebar", [
+            h("div.filebrowser"),
+            h("div.accrodion-container"),
+        ]);
         this.root = dom.create(node).domNode as HTMLDivElement;
+
+        this.actions = {
+            "config": this.addAction("Configure settings", "cog"),
+            "minimap": this.addAction("Toggle minimap", "credit-card"),
+        };
+        [this.actions["data"], this.actions["svg"]] = this.addActionGroup(
+            "Download...", [
+                {label: "Simulation data as CSV", icon: "signal"},
+                {label: "Network layout as SVG", icon: "picture"},
+            ]
+        );
     }
 
     get width(): number {
@@ -25,37 +41,6 @@ export class SidebarView {
         } else {
             this.root.classList.remove("hidden");
         }
-    }
-}
-
-export class FilebrowserView extends SidebarView {
-    filebrowser: HTMLDivElement;
-
-    constructor() {
-        super();
-        this.root.classList.add("filebrowser");
-    }
-
-}
-
-export class UtilitiesView extends SidebarView {
-    actions: {[name: string]: HTMLDivElement};
-    groups: Array<{content: HTMLDivElement, heading: HTMLDivElement}> = [];
-
-    constructor() {
-        super();
-        this.root.classList.add("accordion-container");
-
-        this.actions = {
-            "config": this.addAction("Configure settings", "cog"),
-            "minimap": this.addAction("Toggle minimap", "credit-card"),
-        };
-        [this.actions["data"], this.actions["svg"]] = this.addActionGroup(
-            "Download...", [
-                {label: "Simulation data as CSV", icon: "signal"},
-                {label: "Network layout as SVG", icon: "picture"},
-            ]
-        );
     }
 
     private action(label: string, icon: string, indent: boolean = false): VNode {

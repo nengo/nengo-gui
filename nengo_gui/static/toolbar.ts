@@ -13,49 +13,45 @@ import * as interact from "interact.js";
 import { config } from "./config";
 import { Editor } from "./editor";
 import { Menu } from "./menu";
+import { Connection } from "./server";
 import { SimControl } from "./sim-control";
 import * as utils from "./utils";
 import { AlertDialogView, InputDialogView } from "./views/modal";
 import { ToolbarView } from "./views/toolbar";
-import { Connection } from "./websocket";
 
 export class Toolbar {
     view = new ToolbarView();
 
-    private attached: Connection[] = [];
+    private server: Connection;
 
-    constructor(filename: string) {
+    constructor(server: Connection) {
+        this.server = server;
+
         this.view.buttons["reset"].addEventListener("click", () => {
             this.askResetLayout();
         });
         this.view.buttons["undo"].addEventListener("click", () => {
-            // TODO: connect netgraph
+            this.server.dispatch("netgraph.undo");
             // this.netgraph.notify({undo: "1"});
         });
         this.view.buttons["redo"].addEventListener("click", () => {
-            // TODO: connect netgraph
+            this.server.dispatch("netgraph.redo");
             // this.netgraph.notify({undo: "0"});
         });
-        // TODO: is this in side-menu now?
         this.view.buttons["utils"].addEventListener("click", () => {
             // TODO: show UtilitiesSidebar
+            this.server.dispatch("sidebar.toggle");
         });
         this.view.buttons["sync"].addEventListener("click", () => {
-            // TODO: connect editor
-            // this.editor.syncWithServer();
+            this.server.dispatch("editor.syncWithServer");
         });
         this.view.buttons["hotkeys"].addEventListener("click", () => {
             // TODO: hotkeys menu func
-            // hotkeys.callMenu();
+            this.server.dispatch("hotkeys.show")
         });
         this.view.buttons["filename"].addEventListener("click", () => {
             this.askSaveAs();
         });
-
-        this.filename = filename;
-
-        // Update the URL so reload and bookmarks work as expected
-        history.pushState({}, filename, "/?filename=" + filename);
 
         interact(this.view.root).on("tap", () => {
             Menu.hideShown();
@@ -67,12 +63,43 @@ export class Toolbar {
     }
 
     set filename(val: string) {
-        this.view.filename = val;
+        const old_filename = this.view.filename;
+        if (val !== old_filename) {
+            this.view.filename = val;
+            // Update the URL so reload and bookmarks work as expected
+            history.pushState({}, val, `/?filename=${val}`);
+        }
     }
 
-    attach(conn: Connection) {
-        this.attached.push(conn);
-    }
+    /**
+     * Determines which tab should be in view when clicked.
+     *
+     * @param {HTMLElement|string} it - The element
+     * @param {number} posNum - Which tab it corresponds to
+     * @param {boolean} closeIfSelected - Whether to close the tab
+     * @returns {function} Function to call on tab click
+     */
+    // TODO: Move to toolbar
+    // menuTabClick(it, posNum, closeIfSelected) {
+    //     return () => {
+    //         if ($(it).hasClass("deactivated")) {
+    //             return;
+    //         }
+    //         if (closeIfSelected
+    //                 && this.menuOpen
+    //                 && $(it).hasClass("selected")) {
+    //             this.hideSideNav();
+    //             this.focusReset();
+    //         } else {
+    //             this.showSideNav();
+    //             const element = document.getElementById("MenuContent");
+    //             const transVal = String(-this.view.width * posNum);
+    //             element.style.transform = "translate(" + transVal + "px)";
+    //             this.focusReset();
+    //             $(it).addClass("selected");
+    //         }
+    //     };
+    // }
 
     askResetLayout() {
         const modal = new AlertDialogView(

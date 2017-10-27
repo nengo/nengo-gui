@@ -31,7 +31,8 @@ class HttpResponse(object):
 
     def send(self, request):
         request.send_response(self.code)
-        request.send_header('Content-type', self.mimetype)
+        if self.mimetype is not None:
+            request.send_header('Content-type', self.mimetype)
         if hasattr(request, 'flush_headers'):
             request.flush_headers()
         request.wfile.write(request.cookie.output().encode('utf-8'))
@@ -39,7 +40,8 @@ class HttpResponse(object):
         for header in self.headers:
             request.send_header(*header)
         request.end_headers()
-        request.wfile.write(self.data)
+        if self.data is not None:
+            request.wfile.write(self.data)
 
 
 class HttpRedirect(HttpResponse):

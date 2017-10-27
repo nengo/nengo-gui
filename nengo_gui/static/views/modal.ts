@@ -134,7 +134,7 @@ export class InputDialogView extends ModalView {
 // Change the global defaults of the modal validator
 if (typeof document !== "undefined") {
     document.addEventListener("DOMContentLoaded", () => {
-        const validator = $.fn.validator.Constructor.DEFAULTS;
+        const validator = (<any> $.fn.validator).Constructor.DEFAULTS;
         // Change the delay before showing errors
         validator.delay = 5000;
         // Leave the ok button on

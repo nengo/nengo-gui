@@ -16,9 +16,9 @@ import * as $ from "jquery";
 
 import { config } from "./config";
 import { HotkeyManager } from "./hotkeys";
+import { Connection } from "./server";
 import * as utils from "./utils";
 import { EditorView } from "./views/editor";
-import { Connection } from "./websocket";
 
 const Range = ace.acequire("ace/range").Range;
 
@@ -33,13 +33,9 @@ export class Editor {
     view = new EditorView();
     ws;
 
-    private attached: Connection[] = [];
+    private server: Connection;
 
-    constructor(netgraph) {
-        // if (uid[0] === "<") {
-        //     console.error("invalid uid for Editor: " + uid);
-        // }
-
+    constructor(server: Connection) {
         this.maxWidth = window.innerWidth - 100;
 
         this.currentCode = "";
@@ -51,8 +47,6 @@ export class Editor {
         this.marker = null;
         this.view.consoleHeight = this.consoleHeight;
 
-        this.redraw();
-
         // Sync with server every 200 ms
         if (this.autoUpdate) {
             this.syncIntervalID = window.setInterval(() => {
@@ -61,35 +55,44 @@ export class Editor {
         }
 
         // Add event handlers
-        window.addEventListener("resize", utils.throttle(() => {
-            this.onresize();
-        }, 66)); // 66 ms throttle = 15 FPS update
+        window.addEventListener(
+            "resize",
+            utils.throttle(() => {
+                this.onresize();
+            }, 66)
+        ); // 66 ms throttle = 15 FPS update
 
         interact(this.view.editor)
             .resizable({
-                edges: { bottom: false, left: true, right: false, top: false },
-            }).on("resizemove", (event) => {
+                edges: { bottom: false, left: true, right: false, top: false }
+            })
+            .on("resizemove", event => {
                 this.width -= event.deltaRect.left;
             });
 
         interact(this.view.console)
             .resizable({
-                edges: { bottom: false, left: true, right: false, top: true },
-            }).on("resizemove", (event) => {
+                edges: { bottom: false, left: true, right: false, top: true }
+            })
+            .on("resizemove", event => {
                 const max = this.view.height - 40;
                 const min = 20;
                 const height = this.consoleHeight - event.deltaRect.top;
                 this.consoleHeight = utils.clip(height, min, max);
                 this.width -= event.deltaRect.left;
             }); // .on("resizeend", () {
-            //     this.consoleHeight = this.consoleHeight;
-            // });
+        //     this.consoleHeight = this.consoleHeight;
+        // });
 
+        // Add config change handlers
         document.addEventListener("nengoConfigChange", (event: CustomEvent) => {
             const key = event.detail;
             if (key === "editorWidth") {
-                this.view.width =
-                    utils.clip(this.width, this.minWidth, this.maxWidth);
+                this.view.width = utils.clip(
+                    this.width,
+                    this.minWidth,
+                    this.maxWidth
+                );
                 this.redraw();
             } else if (key === "consoleHeight") {
                 this.view.consoleHeight = this.consoleHeight;
@@ -109,6 +112,75 @@ export class Editor {
                 }
             }
         });
+
+        // Add server-callables
+        server.bind("editor.code", ({ code }) => {
+            if (code !== null) {
+                this.editor.setValue(code);
+                this.currentCode = code;
+                this.editor.gotoLine(1);
+                this.redraw();
+            }
+        });
+
+        server.bind("editor.filename", ({ filename, error }) => {
+            if (error === null) {
+                document.getElementById("filename")[0].innerHTML = filename;
+                // Update the URL so reload and bookmarks work as expected
+                history.pushState({}, filename, "/?filename=" + filename);
+            } else {
+                alert(error); // TODO: modal instead of alert
+            }
+        });
+
+        server.bind("editor.stderr", ({ output, line }) => {
+            const session = this.editor.getSession();
+
+            if (output == null) {
+                // Clear errors
+                if (this.marker !== null) {
+                    session.removeMarker(this.marker);
+                    session.clearAnnotations();
+                    this.marker = null;
+                }
+                this.view.stderr = "";
+            } else {
+                if (line == null) {
+                    line = session.getLength() - 1;
+                }
+                this.marker = session.addMarker(
+                    new Range(line - 1, 0, line - 1, 10),
+                    "highlight",
+                    "fullLine",
+                    true
+                );
+                session.setAnnotations([
+                    {
+                        row: line - 1,
+                        text: output
+                            .split("\n")
+                            .slice(-2)
+                            .join("\n"),
+                        type: "error"
+                    }
+                ]);
+                this.view.stderr = output;
+                this.view.console.scrollTop = this.view.console.scrollHeight;
+            }
+        });
+
+        server.bind("editor.stdout", ({ output, line }) => {
+            console.assert(line == null);
+            this.view.stdout = output;
+            this.view.console.scrollTop = this.view.console.scrollHeight;
+        });
+
+        server.bind("editor.syncWithServer", () => { this.syncWithServer(); });
+
+        server.send("editor.sync");
+
+        this.server = server;
+        this.redraw();
     }
 
     // Automatically update the model based on the text
@@ -156,65 +228,6 @@ export class Editor {
         config.editorWidth = val;
     }
 
-    attach(conn: Connection) {
-
-        conn.bind("editor.code", ({code}) => {
-            this.editor.setValue(code);
-            this.currentCode = code;
-            this.editor.gotoLine(1);
-            this.redraw();
-        });
-
-        conn.bind("editor.filename", ({filename, error}) => {
-            if (error === null) {
-                document.getElementById("filename")[0].innerHTML = filename;
-                // Update the URL so reload and bookmarks work as expected
-                history.pushState({}, filename, "/?filename=" + filename);
-            } else {
-                alert(error); // TODO: modal instead of alert
-            }
-        });
-
-        conn.bind("editor.stderr", ({output, line}) => {
-            const session = this.editor.getSession();
-
-            if (output == null) {
-                // Clear errors
-                if (this.marker !== null) {
-                    session.removeMarker(this.marker);
-                    session.clearAnnotations();
-                    this.marker = null;
-                }
-                this.view.stderr = "";
-            } else {
-                if (line == null) {
-                    line = session.getLength() - 1;
-                }
-                this.marker = session.addMarker(
-                    new Range(line - 1, 0, line - 1, 10),
-                    "highlight",
-                    "fullLine",
-                    true
-                );
-                session.setAnnotations([{
-                    row: line - 1,
-                    text: output.split("\n").slice(-2).join("\n"),
-                    type: "error",
-                }]);
-                this.view.stderr = output;
-                this.view.console.scrollTop = this.view.console.scrollHeight;
-            }
-        });
-
-        conn.bind("editor.stdout", ({output, line}) => {
-            console.assert(line == null)
-            this.view.stdout = output;
-            this.view.console.scrollTop = this.view.console.scrollHeight;
-        });
-
-        this.attached.push(conn);
-    }
-
     attachToolbar(toolbar: any) {
         // TODO: get handles
         // Setup the button to toggle the code editor
@@ -239,19 +252,22 @@ export class Editor {
     }
 
     hotkeys(manager: HotkeyManager) {
-        manager.add("Toggle editor", "e", {ctrl: true}, () => {
+        manager.add("Toggle editor", "e", { ctrl: true }, () => {
             this.toggleHidden();
         });
-        manager.add("Save", "s", {ctrl: true}, () => {
+        manager.add("Save", "s", { ctrl: true }, () => {
             this.saveFile();
         });
         // TODO: pick better shortcuts
         manager.add(
-            "Toggle auto-update", "1", {ctrl: true, shift: true}, () => {
+            "Toggle auto-update",
+            "1",
+            { ctrl: true, shift: true },
+            () => {
                 this.autoUpdate = !this.autoUpdate;
             }
         );
-        manager.add("Update display", "1", {ctrl: true}, () => {
+        manager.add("Update display", "1", { ctrl: true }, () => {
             this.syncWithServer();
         });
     }
@@ -279,7 +295,7 @@ export class Editor {
     // syncWithServer called at most once per 150 ms
     syncWithServer = utils.throttle((save: boolean = false) => {
         if (this.editorCode !== this.currentCode) {
-            this.ws.send(JSON.stringify({code: this.editorCode, save}));
+            this.ws.send(JSON.stringify({ code: this.editorCode, save }));
             this.currentCode = this.editorCode;
             this.view.editor.dispatchEvent(new Event("saved"));
         }

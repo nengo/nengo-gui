@@ -97,7 +97,7 @@ class Bindable(type):
     def __call__(cls, *args, **kwargs):
         """Override default __call__ behavior so that methods get bound."""
         inst = type.__call__(cls, *args, **kwargs)
-        assert isinstance(inst.client, ClientConnection)
+        assert isinstance(inst.client, ClientConnection), inst.client
 
         # Bind methods and static functions
         def bindable(f):

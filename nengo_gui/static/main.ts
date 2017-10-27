@@ -10,11 +10,16 @@ import "imports-loader?$=jquery,jQuery=jquery!jqueryfiletree/src/jQueryFileTree"
 import "jqueryfiletree/dist/jQueryFileTree.min.css";
 
 import "./favicon.ico";
-import "./nengo.css";
+import "./main.css";
 
 import * as items from "./debug/items";
+import { Editor } from "./editor";
+import { HotkeyManager } from "./hotkeys";
 import { NetGraph } from "./netgraph";
-import { MockConnection } from "./websocket";
+import { MockConnection, ServerConnection } from "./server";
+import { Sidebar } from "./sidebar";
+import { SimControl } from "./sim-control";
+import { Toolbar } from "./toolbar";
 import { Network } from "./components/network";
 
 export interface NengoWindow extends Window {
@@ -54,10 +59,9 @@ export class DebugItem {
 
 export class NengoDebug {
     items: Array<DebugItem> = [];
-    netgraph: NetGraph = new NetGraph("debug");
+    netgraph: NetGraph = new NetGraph(new MockConnection());
 
     constructor() {
-        this.netgraph.attach(new MockConnection());
         this.netgraph.view.root.style.outline = "red solid 1px";
         document.body.appendChild(this.netgraph.view.root);
     }
@@ -128,40 +132,41 @@ export class Nengo {
     main;
     modal;
     netgraph;
-    sidemenu;
+    sidebar;
     sim;
     toolbar;
-    // private ws: WSConnection;
+    private server: ServerConnection;
 
-    constructor() {
-        document.title = this.filename;
+    constructor(server: ServerConnection) {
+        this.editor = new Editor(server);
+        this.sim = new SimControl(server);
+        this.toolbar = new Toolbar(server);
+        this.sidebar = new UtilitiesSidebar(server);
+        this.netgraph = new NetGraph(server);
+        this.hotkeys = new HotkeyManager(server);
 
+        // TODO: Order matters! but it shouldn't
+        document.body.appendChild(this.toolbar.view.root);
+        document.body.appendChild(this.netgraph.view.root);
+        document.body.appendChild(this.sidebar.view.root);
+        document.body.appendChild(this.editor.view.root);
         document.body.appendChild(this.sim.view.root);
-
-        // In case anything needs to be adjusted
         window.dispatchEvent(new Event("resize"));
 
-        // body = document.getElementById("body");
-        // body.removeChild(document.getElementById("loading-div"));
-        // %(main_components)s
-        // nengo = new Nengo.default(simargs, filename, editoruid, netgraphargs);
-        // %(components)s
+        server.bind("netgraph.update", (cfg) => {
+            // TODO
+            // this.filename = filename;
+            // this.toolbar.filename = filename
+            // document.title = this.filename;
+            // document.body.appendChild(this.sim.view.root);
 
-        // this.filename = filename;
+            // In case anything needs to be adjusted
+            window.dispatchEvent(new Event("resize"));
+        })
 
-        // this.main = document.getElementById("main");
-        // this.control = document.getElementById("control");
-        // this.ws = new WSConnection("main");
-
-        // this.netgraph = new NetGraph("uid");
-        // this.editor = new Editor(editoruid, this.netgraph);
-        // this.sim = new SimControl("uid", 4.0, 0.5);
-        // this.sim.attach(this.ws);
-        // this.sidemenu = new SideMenu(this.sim);
-        // this.toolbar = new Toolbar(filename, this.sim);
-
-        // this.modal = this.sim.modal;
-        // this.hotkeys = this.modal.hotkeys;
+        // Request config and update accordingly
+        server.send("netgraph.request_update")
+        this.server = server;
     }
 }
 
@@ -171,10 +176,20 @@ if (typeof localStorage === "undefined" || localStorage === null) {
 
 if (typeof document !== "undefined") {
     document.addEventListener("DOMContentLoaded", () => {
-        // (<NengoWindow>window).nengo = new Nengo();
-
-        // Set a function in the window for debug purposes
-        (<NengoWindow>window).nengoDebug = new NengoDebug();
+        // Attempt to make a connection with the server
+        const server = new ServerConnection();
+        server.bind("open", () => {
+            console.log("Server connection opened successfully");
+            (<NengoWindow>window).nengo = new Nengo(server);
+            server.send("page.ready");
+        });
+        setTimeout(() => {
+            if (!server.isReady()) {
+                server.close();
+                console.log("Server connection timeout, entering debug mode");
+                (<NengoWindow>window).nengoDebug = new NengoDebug();
+            }
+        }, 1000); // Time out after 1 second
     });
 }
 

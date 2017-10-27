@@ -1,18 +1,23 @@
-function getURL(uid: string, typename: string = "component"): string {
+function getURL(uid: string = null): string {
     const hostname = window.location.hostname;
+    const port = window.location.port;
     let wsProto;
     if (window.location.protocol === "https:") {
         wsProto = "wss:";
     } else {
         wsProto = "ws:";
     }
-    return wsProto + "//" + hostname + "/" + typename + "?uid=" + uid;
+    let url = `${wsProto}//${hostname}`;
+    if (port != "") {
+        url += `:${port}`;
+    }
+    if (uid != null) {
+        url += `/?uid=${uid}`;
+    }
+    return url
 }
 
 export interface Connection {
-    typename: string;
-    uid: string;
-
     bind(name: string, callback: (kwargs: any) => any): Connection;
     isBound(name: string): boolean;
     dispatch(name: string, kwargs?: any): Connection;
@@ -20,7 +25,7 @@ export interface Connection {
 }
 
 /**
- * Create a WebSocket connection to the given uid.
+ * Create a WebSocket connection to the server.
  *
  * This extends the normal WebSocket class with convenience methods
  * for binding and dispatching events to and from other clients
@@ -29,17 +34,15 @@ export interface Connection {
  * @param {string} uid - The uid for the WebSocket.
  * @returns {WebSocket} The created WebSocket.
  */
-export class WSConnection implements Connection {
+export class ServerConnection implements Connection {
     typename: string;
     uid: string;
 
-    private callbacks: {[name: string]: ((kwargs: any) => any)[]};
+    private callbacks: { [name: string]: ((kwargs: any) => any)[] } = {};
     private ws: WebSocket;
 
-    constructor(uid: string, typename: string = "component") {
-        this.uid = uid;
-        this.typename = typename;
-        this.ws = new WebSocket(getURL(uid, typename));
+    constructor() {
+        this.ws = new WebSocket(getURL());
         this.ws.onmessage = (event: MessageEvent) => {
             const json = JSON.parse(event.data);
             this.dispatch(json[0], json[1]);
@@ -54,7 +57,7 @@ export class WSConnection implements Connection {
         };
     }
 
-    bind(name: string, callback: (any) => any): WSConnection {
+    bind(name: string, callback: (any) => any): ServerConnection {
         if (!(name in this.callbacks)) {
             this.callbacks[name] = [];
         }
@@ -62,22 +65,30 @@ export class WSConnection implements Connection {
         return this;
     }
 
+    close() {
+        this.ws.close();
+    }
+
     isBound(name: string) {
         return name in this.callbacks;
     }
 
-    dispatch(name: string, kwargs: any = {}): WSConnection {
+    isReady() {
+        return this.ws.readyState === WebSocket.OPEN;
+    }
+
+    dispatch(name: string, kwargs: any = {}): ServerConnection {
         if (name in this.callbacks) {
             this.callbacks[name].forEach(callback => {
                 callback(kwargs);
             });
         } else {
-            console.warn("Nothing bound for '" + name + "'");
+            console.warn(`Nothing bound for '${name}'`);
         }
         return this;
     }
 
-    send(name: string, kwargs: any = {}): WSConnection {
+    send(name: string, kwargs: any = {}): ServerConnection {
         const payload = JSON.stringify([name, kwargs]);
         this.ws.send(payload);
         return this;
@@ -89,8 +100,6 @@ export class MockConnection implements Connection {
 
     lastSentName: string;
     lastSent: any;
-    typename: string = "mock";
-    uid: string = "mock";
 
     private bound: string[] = [];
 
@@ -136,7 +145,7 @@ export interface FastConnection {
  * @param {string} uid - The uid for the WebSocket.
  * @returns {WebSocket} The created WebSocket.
  */
-export class FastWSConnection implements FastConnection {
+export class FastServerConnection implements FastConnection {
     static typename: string = "fast";
     uid: string;
     private ws: WebSocket;
@@ -144,11 +153,11 @@ export class FastWSConnection implements FastConnection {
     constructor(
         uid: string,
         destructure: (data: ArrayBuffer) => any[],
-        step: (...args: any[]) => void,
+        step: (...args: any[]) => void
     ) {
         this.uid = uid;
 
-        this.ws = new WebSocket(getURL(uid, FastWSConnection.typename));
+        this.ws = new WebSocket(getURL(this.uid));
         this.ws.binaryType = "arraybuffer";
         this.ws.onmessage = (event: MessageEvent) => {
             console.assert(event.data instanceof ArrayBuffer);

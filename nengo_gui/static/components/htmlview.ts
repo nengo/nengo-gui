@@ -10,20 +10,28 @@
 
 import { DataStore } from "../datastore";
 // import * as utils from "../utils";
-import { Plot } from "./base";
+import { Widget } from "./base";
 import { ValueView } from "./views/value";
 
-export class HTMLView extends Plot {
+export class HTMLView extends Widget {
     dataStore;
     pdiv;
     sim;
 
     protected _view: ValueView;
 
-    constructor(parent, sim, args) {
-        super(parent, args);
-
-        this.sim = sim;
+    constructor(
+        left: number,
+        top: number,
+        width: number,
+        height: number,
+        parent: string,
+        uid: string,
+        dimensions: number,
+        synapse: number,
+        miniItem = null,
+    ) {
+        super(left, top, width, height, parent, uid, dimensions, miniItem);
 
         this.pdiv = document.createElement("div");
         this.pdiv.style.width = "100%";
@@ -31,20 +39,20 @@ export class HTMLView extends Plot {
         // utils.setTransform(this.pdiv, 0, 0);
         this.pdiv.style.position = "fixed";
         this.pdiv.classList.add("htmlview");
-        this.div.appendChild(this.pdiv);
+        // this.div.appendChild(this.pdiv);
 
         // For storing the accumulated data.
-        this.dataStore = new DataStore(1, this.sim, 0);
+        this.dataStore = new DataStore(1, 0);
 
         // Call scheduleUpdate whenever the time is adjusted in the SimControl
         window.addEventListener("TimeSlider.moveShown", e => {
-            this.scheduleUpdate();
+            // this.scheduleUpdate();
         });
 
-        this.onresize(
-            this.viewPort.scaleWidth(this.w),
-            this.viewPort.scaleHeight(this.h)
-        );
+        // this.onresize(
+        //     this.viewPort.scaleWidth(this.w),
+        //     this.viewPort.scaleHeight(this.h)
+        // );
     }
 
     get view(): ValueView {
@@ -88,16 +96,16 @@ export class HTMLView extends Plot {
      * Adjust the graph layout due to changed size
      */
     onresize(width, height) {
-        if (width < this.minWidth) {
-            width = this.minWidth;
-        }
-        if (height < this.minHeight) {
-            height = this.minHeight;
-        }
+        // if (width < this.minWidth) {
+        //     width = this.minWidth;
+        // }
+        // if (height < this.minHeight) {
+        //     height = this.minHeight;
+        // }
 
         // this.width = width;
         // this.height = height;
-        this.label.style.width = width;
+        // this.label.style.width = width;
 
         this.update();
     }

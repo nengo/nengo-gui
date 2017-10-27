@@ -14,7 +14,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "webpack --debug --devtool source-map --output-pathinfo --env.noDocs",
+    "build": "webpack --debug --devtool source-map --output-pathinfo --env.noDocs --watch",
     "debug": "webpack-dev-server --config webpack.debug.js --env.noDocs --inline",
     "release": "webpack --optimize-minimize --optimize-occurence-order",
     "style": "tslint 'nengo_gui/**/*.ts' && stylelint 'nengo_gui/**/*.css'",

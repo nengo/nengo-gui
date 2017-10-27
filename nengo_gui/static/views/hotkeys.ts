@@ -1,10 +1,10 @@
 import { VNode, dom, h } from "maquette";
 
-import { HotkeyManager } from "../hotkeys";
+import { Hotkey } from "../hotkeys";
 import { ModalView } from "./modal";
 
 export class HotkeysDialogView extends ModalView {
-    constructor(manager: HotkeyManager) {
+    constructor(hotkeys: Array<Hotkey>) {
         super();
 
         this.title = "Hotkeys list";
@@ -20,7 +20,7 @@ export class HotkeysDialogView extends ModalView {
         const node =
             h("table.table-striped", {width: "100%"}, [
                 h("tbody", [
-                    manager.hotkeys.map(hk => {
+                    hotkeys.map(hk => {
                         if (hk.name !== null) {
                             return row(hk.name, hk.shortcut);
                         }

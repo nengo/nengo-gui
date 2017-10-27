@@ -25,6 +25,7 @@ from .session import (
 )
 from .ws import (
     AuthenticatedHttpWsRequestHandler,
+    ManagedThreadHttpWsServer,
     WebSocket,
     WebSocketFrame,
 )

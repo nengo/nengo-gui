@@ -16,7 +16,7 @@ import * as items from "./items";
 import { DebugItem, NengoDebug, NengoWindow } from "../main";
 import { Network } from "../components/network";
 import { NetGraph } from "../netgraph";
-import { MockConnection } from "../websocket";
+import { MockConnection } from "../server";
 import { DebugView } from "./view";
 
 export class CommandHistory {
@@ -59,14 +59,12 @@ export class CommandHistory {
 }
 
 export class Debug {
-    nengoDebug: NengoDebug;
     nengoWindow: NengoWindow;
     view: DebugView = new DebugView();
 
     constructor() {
         this.view.iframe.addEventListener("load", () => {
             this.nengoWindow = this.view.iframe.contentWindow as NengoWindow;
-            this.nengoDebug = this.nengoWindow.nengoDebug;
 
             this.view.outline.onclick = () => {
                 this.nengoDebug.toggleOutline();
@@ -92,6 +90,10 @@ export class Debug {
             attach("component");
             attach("componentview");
         });
+    }
+
+    get nengoDebug() {
+        return this.nengoWindow.nengoDebug;
     }
 
     attachControlGroup(item: DebugItem) {

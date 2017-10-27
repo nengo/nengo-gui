@@ -1,9 +1,12 @@
 import * as interact from "interact.js";
 import * as d3 from "d3";
 
+import { Network } from "./network";
 import { config } from "../config";
 import { DataStore } from "../datastore";
 import { Menu } from "../menu";
+import { NetGraph } from "../netgraph";
+import { FastServerConnection } from "../server";
 import * as utils from "../utils";
 import {
     AxesView, ComponentView, ResizableComponentView, PlotView,
@@ -11,7 +14,6 @@ import {
 import { LegendView } from "./views/base";
 
 import { InputDialogView } from "../views/modal";
-import { FastWSConnection } from "../websocket";
 
 export abstract class Component {
 

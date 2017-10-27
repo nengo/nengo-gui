@@ -1,4 +1,4 @@
-import { MockConnection } from "../websocket";
+import { MockConnection } from "../server";
 
 // main
 import { ConfigDialog, configItems } from "../config";
@@ -31,15 +31,16 @@ import { XYValue } from "../components/xyvalue";
 
 // component views
 import {
-    ConnectionView, RecurrentConnectionView
+    ConnectionView,
+    RecurrentConnectionView
 } from "../components/views/connection";
 import { EnsembleView } from "../components/views/ensemble";
 import { NetworkView } from "../components/views/network";
 import { NodeView, PassthroughNodeView } from "../components/views/node";
 
 export const listeners = {
-    ConfigDialog: null,
-}
+    ConfigDialog: null
+};
 
 export const main = {
     ConfigDialog: () => {
@@ -49,14 +50,15 @@ export const main = {
                 console.log(e.detail + " changed");
             };
             document.addEventListener(
-                "nengoConfigChange", this.listeners.ConfigDialog,
+                "nengoConfigChange",
+                this.listeners.ConfigDialog
             );
         }
         cd.show();
         return cd;
     },
     Editor: () => {
-        return new Editor(null);
+        return new Editor(new MockConnection());
     },
     Menu: () => {
         const menu = new Menu();
@@ -68,14 +70,14 @@ export const main = {
         menu.show(0, 0);
         return menu;
     },
-    SimControl: () => {
-        const sc = new SimControl("uid", 4.0, [-1.0, 0.0]);
-        sc.attach(new MockConnection());
-        return sc;
+    SimControl: () => new SimControl(new MockConnection(), 4.0, [-1.0, 0.0]),
+    Toolbar: () => {
+        const tb = new Toolbar(new MockConnection());
+        tb.filename = "test.py";
+        return tb;
     },
-    Toolbar: () => new Toolbar("test.py"),
-    UtilitiesSidebar: () => new UtilitiesSidebar(),
-}
+    UtilitiesSidebar: () => new UtilitiesSidebar(new MockConnection())
+};
 
 export const view = {
     AlertDialogView: () => {
@@ -93,11 +95,11 @@ export const view = {
     },
     FilebrowserView: () => new FilebrowserView(),
     HotkeysDialogView: () => {
-        const m = new HotkeyManager();
-        m.add("Test ctrl", "a", {ctrl: true}, () => {});
-        m.add("Test shift", "b", {shift: true}, () => {});
-        m.add("Test both", "c", {ctrl: true, shift: true}, () => {});
-        const hk = new HotkeysDialogView(m);
+        const m = new HotkeyManager(new MockConnection());
+        m.add("Test ctrl", "a", { ctrl: true }, () => {});
+        m.add("Test shift", "b", { shift: true }, () => {});
+        m.add("Test both", "c", { ctrl: true, shift: true }, () => {});
+        const hk = new HotkeysDialogView(m.hotkeys);
         hk.show();
         return hk;
     },
@@ -123,7 +125,7 @@ export const view = {
     },
     ToolbarView: () => new ToolbarView(),
     SimControlView: () => new SimControlView(),
-    UtilitiesView: () => new UtilitiesView(),
+    UtilitiesView: () => new UtilitiesView()
 };
 
 export const component = {
@@ -133,8 +135,8 @@ export const component = {
     PassthroughNode: () => new PassthroughNode(20, 20, "", "Passthrough", 1),
     Raster: () => new Raster(20, 20, 100, 100, "", "Value", 20, 0.005),
     Value: () => new Value(20, 20, 100, 100, "", "Value", 2, 1.0, 0.005),
-    XYValue: () => new XYValue(20, 20, 100, 100, "", "Value", 2, 1.0, 0.005),
-}
+    XYValue: () => new XYValue(20, 20, 100, 100, "", "Value", 2, 1.0, 0.005)
+};
 
 export const componentview = {
     ConnectionView: () => new ConnectionView(),
@@ -142,5 +144,5 @@ export const componentview = {
     NetworkView: () => new NetworkView("Network"),
     NodeView: () => new NodeView("Node"),
     PassthroughNodeView: () => new PassthroughNodeView("PassthroughNode"),
-    RecurrentConnectionView: () => new RecurrentConnectionView(),
-}
+    RecurrentConnectionView: () => new RecurrentConnectionView()
+};

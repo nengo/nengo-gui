@@ -84,14 +84,16 @@ class ComponentManager(object):
         if filename is not None and filename.endswith(".py.cfg"):
             old_filename = filename
             filename = "%s.json" % (old_filename[:-len(".py.cfg")],)
-            print("Upgrading %r to new format, %r" % (old_filename, filename))
-            with open(old_filename, "r") as fp:
-                old_text = fp.read()
-            new_text = upgrade(old_text, locals=locals)
-            with open(filename, "w") as fp:
-                fp.write(new_text)
-            # TODO: safer remove
-            os.remove(old_filename)
+            if os.path.exists(old_filename):
+                print("Upgrading %r to new format, %r"
+                      % (old_filename, filename))
+                with open(old_filename, "r") as fp:
+                    old_text = fp.read()
+                new_text = upgrade(old_text, locals=locals)
+                with open(filename, "w") as fp:
+                    fp.write(new_text)
+                # TODO: safer remove
+                os.remove(old_filename)
 
         config = {}
         if filename is not None and os.path.exists(filename):
@@ -103,7 +105,6 @@ class ComponentManager(object):
                 self.client, model, "model", pos=Position(0, 0, 1.0, 1.0)))
 
         for obj, kwargs in iteritems(config):
-            print(obj, kwargs)
             cls = getattr(components, kwargs.pop("cls"))
             if "obj" in kwargs:
                 # For most components
@@ -200,6 +201,16 @@ class LiveContext(object):
         self.code = None  # the code for the network
         self.filename = None  # filename corresponding to code
 
+    @property
+    def code(self):
+        return self._code
+
+    @code.setter
+    def code(self, val):
+        if val is not None and val != self._code:
+            self.client.dispatch("editor.set_code", code=val)
+        self._code = val
+
     def execute(self, code):
         """Run the given code to generate self.network and self.locals.
 
@@ -250,9 +261,9 @@ class LiveContext(object):
                 errored = True
             self.model = None
 
+        self.code = code  # TODO: do we definitely want to set code here?
         if not errored:
             self.locals = newlocals
-            self.code = code
 
     def load(self, filename, force=False):
         if self.filename == filename and not force:
@@ -413,6 +424,10 @@ class NetGraph(ExposedToClient):
     #     except (OSError, TypeError):
     #         self.last_modify_time = None
 
+    @property
+    def filename(self):
+        return self.context.filename
+
     def set_editor_code(self, code):
         self.client.dispatch("editor.code", code=code)
 
@@ -457,6 +472,8 @@ class NetGraph(ExposedToClient):
 
         # Add everything to the component manager
         self.components.update(self.context.locals, self.names)
+
+        self.components.create()
 
         # When first attaching, send the pan and zoom
         # TODO: update

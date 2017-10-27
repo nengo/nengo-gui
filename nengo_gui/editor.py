@@ -51,6 +51,10 @@ class Editor(ExposedToClient):
     def code(self):
         return ""
 
+    @bind("editor.ready")
+    def ready(self):
+        pass
+
     def send_filename(self):
         pass
 
@@ -75,17 +79,20 @@ class AceEditor(Editor):
         self._code = None
 
     @property
+    @bind("editor.get_code")
     def code(self):
         return self._code
+
+    @code.setter
+    @bind("editor.set_code")
+    def code(self, code):
+        if code != self._code:
+            self._code = code
+
+    @bind("editor.sync")
+    def sync(self):
+        self.client.send("editor.code", code=self.code)
 
     def send_filename(self, filename, error=None):
         self.client.send("editor.filename",
                          filename=filename, error=error)
-
-    @bind("editor.code")
-    def set_code(self, code):
-        self._code = code
-
-    def update(self, code):
-        self._code = code
-        self.client.send("editor.code", code=self.code)

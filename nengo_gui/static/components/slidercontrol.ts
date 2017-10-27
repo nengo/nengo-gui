@@ -155,7 +155,7 @@ export class SliderControl {
             "<input id='valueInField' style='border:0; outline:0;'></input>"
         );
 
-        const elem = this.handle.querySelector("#valueInField");
+        const elem = this.handle.querySelector("#valueInField") as HTMLInputElement;
         elem.value = this.formatValue(this.value);
         elem.focus();
         elem.select();
@@ -198,7 +198,8 @@ export class SliderControl {
         const key = event.which;
 
         if (key === enterKeycode) {
-            const input = this.handle.querySelector("#valueInField").value;
+            const input = (<HTMLInputElement>
+                           this.handle.querySelector("#valueInField")).value;
             if (utils.isNum(input)) {
                 this.deactivateTypeMode(null);
                 this.setValue(parseFloat(input));

@@ -4,11 +4,11 @@ import * as test from "tape";
 import * as fixtures from "./fixtures";
 
 import { SimControl } from "../sim-control";
-import { MockConnection } from "../websocket";
+import { MockConnection } from "../server";
 
 test("SimControl.status", assert => {
     const dom = new fixtures.DOM(assert);
-    const sim = new SimControl("uid", 4.0, [-0.5, 0.0]);
+    const sim = new SimControl(new MockConnection(), 4.0, [-0.5, 0.0]);
 
     assert.equal(sim.status, "paused");
     assert.equal(sim.paused, true);
@@ -26,51 +26,47 @@ test("SimControl.status", assert => {
 
 test("SimControl.attach", assert => {
     const dom = new fixtures.DOM(assert);
-    const sim = new SimControl("uid", 4.0, [-0.5, 0.0]);
+    const server = new MockConnection();
+    const sim = new SimControl(new MockConnection(), 4.0, [-0.5, 0.0]);
 
-    const conn = new MockConnection();
-    sim.attach(conn);
-
-    assert.ok(conn.isBound("close"));
-    assert.ok(conn.isBound("simcontrol.status"));
-    assert.ok(conn.isBound("simcontrol.simulator"));
-    assert.ok(conn.isBound("simcontrol.config"));
+    assert.ok(server.isBound("close"));
+    assert.ok(server.isBound("simcontrol.status"));
+    assert.ok(server.isBound("simcontrol.simulator"));
+    assert.ok(server.isBound("simcontrol.config"));
 
     fixtures.teardown(assert, dom);
 });
 
 test("SimControl sends", assert => {
     const dom = new fixtures.DOM(assert);
-    const sim = new SimControl("uid", 4.0, [-0.5, 0.0]);
+    const server = new MockConnection();
+    const sim = new SimControl(server, 4.0, [-0.5, 0.0]);
 
-    const conn = new MockConnection();
-    sim.attach(conn);
+    sim.setBackend("test");
+    assert.equal(server.lastSentName, "simcontrol.set_backend");
+    assert.deepEqual(server.lastSent, { backend: "test" });
 
-    sim.setBackend("test")
-    assert.equal(conn.lastSentName, "simcontrol.set_backend");
-    assert.deepEqual(conn.lastSent, {backend: "test"});
-
-    sim.play()
-    assert.equal(conn.lastSentName, "simcontrol.play");
-    assert.deepEqual(conn.lastSent, {});
+    sim.play();
+    assert.equal(server.lastSentName, "simcontrol.play");
+    assert.deepEqual(server.lastSent, {});
 
     sim.status = "running";
     sim.pause();
-    assert.equal(conn.lastSentName, "simcontrol.pause");
-    assert.deepEqual(conn.lastSent, {});
+    assert.equal(server.lastSentName, "simcontrol.pause");
+    assert.deepEqual(server.lastSent, {});
 
     sim.reset();
     assert.equal(sim.status, "paused");
     assert.ok(sim.paused);
-    assert.equal(conn.lastSentName, "simcontrol.reset");
-    assert.deepEqual(conn.lastSent, {});
+    assert.equal(server.lastSentName, "simcontrol.reset");
+    assert.deepEqual(server.lastSent, {});
 
     fixtures.teardown(assert, dom);
 });
 
 test("TimeSlider.addTime", assert => {
     const dom = new fixtures.DOM(assert);
-    const ts = new SimControl("uid", 4.0, [-0.5, 0.0]).timeSlider;
+    const ts = new SimControl(new MockConnection(), 4.0, [-0.5, 0.0]).timeSlider;
     const tolerance = 1e-5;
 
     let firstShown = ts.shownTime[0];
@@ -91,7 +87,7 @@ test("TimeSlider.addTime", assert => {
 
 test("TimeSlider.reset", assert => {
     const dom = new fixtures.DOM(assert);
-    const sim = new SimControl("uid", 4.0, [-0.5, 0.0]);
+    const sim = new SimControl(new MockConnection(), 4.0, [-0.5, 0.0]);
     const ts = sim.timeSlider;
 
     ts.addTime(0.1);

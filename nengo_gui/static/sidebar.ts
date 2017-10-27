@@ -6,107 +6,18 @@
  */
 
 import { config, ConfigDialog } from "./config";
+import { Connection } from "./server";
 import * as utils from "./utils";
 import { AlertDialogView } from "./views/modal";
-import { SidebarView, UtilitiesView } from "./views/sidebar";
+import { SidebarView } from "./views/sidebar";
 
 export class Sidebar {
-    static visible: Sidebar = null;
-
-    topButtons;
-    view: SidebarView;
-
-    static hideVisible() {
-        Sidebar.visible.hide();
-    }
-
-    get width(): number {
-        return this.view.width;
-    }
-
-    /**
-     * Finds all menu tabs and creates handlers.
-     */
-    // TODO: Move to toolbar
-    // initializeButtonHandlers() {
-    //     // Handles Menu tab switching
-    //     for (let x = 0; x < this.topButtons.length; x++) {
-    //         $(this.topButtons[x]).click(
-    //             this.menuTabClick(
-    //                 this.topButtons[x], x, true
-    //             )
-    //         );
-    //     }
-    // }
-
-    show() {
-        if (this.view.hidden) {
-            Sidebar.hideVisible();
-            this.view.hidden = false;
-            Sidebar.visible = this;
-        } else {
-            console.assert(Sidebar.visible === this);
-        }
-    }
-
-    hide() {
-        if (!this.view.hidden) {
-            console.assert(Sidebar.visible === this);
-            this.view.hidden = true;
-            Sidebar.visible = null;
-        }
-    }
-
-    /**
-     * Determines which tab should be in view when clicked.
-     *
-     * @param {HTMLElement|string} it - The element
-     * @param {number} posNum - Which tab it corresponds to
-     * @param {boolean} closeIfSelected - Whether to close the tab
-     * @returns {function} Function to call on tab click
-     */
-    // TODO: Move to toolbar
-    // menuTabClick(it, posNum, closeIfSelected) {
-    //     return () => {
-    //         if ($(it).hasClass("deactivated")) {
-    //             return;
-    //         }
-    //         if (closeIfSelected
-    //                 && this.menuOpen
-    //                 && $(it).hasClass("selected")) {
-    //             this.hideSideNav();
-    //             this.focusReset();
-    //         } else {
-    //             this.showSideNav();
-    //             const element = document.getElementById("MenuContent");
-    //             const transVal = String(-this.view.width * posNum);
-    //             element.style.transform = "translate(" + transVal + "px)";
-    //             this.focusReset();
-    //             $(it).addClass("selected");
-    //         }
-    //     };
-    // }
-
-    /**
-     * Deselects all menu tabs.
-     */
-    // TODO: Move to toolbar
-    // focusReset() {
-    //     this.topButtons.forEach(button => {
-    //         $(button).removeClass("selected");
-    //     });
-    // }
-
-}
-
-export class UtilitiesSidebar extends Sidebar {
     configDialog: ConfigDialog = new ConfigDialog();
-    view: UtilitiesView;
+    view: SidebarView = new SidebarView();
 
-    constructor() {
-        super();
-        this.view = new UtilitiesView();
+    private server: Connection;
 
+    constructor(server: Connection) {
         this.view.actions["config"].addEventListener("click", () => {
             this.askConfig();
         });
@@ -129,7 +40,37 @@ export class UtilitiesSidebar extends Sidebar {
                 otherGroups.forEach(other => $(other["content"]).slideUp());
             });
         });
+
+        server.bind("sidebar.show", () => { this.hidden = false; });
+        server.bind("sidebar.hide", () => { this.hidden = true; });
+        server.bind("sidebar.toggle", () => { this.hidden = !this.hidden; });
+
+        this.server = server;
     }
+
+    get hidden(): boolean {
+        return this.view.hidden;
+    }
+
+    set hidden(val: boolean) {
+        if (val !== this.view.hidden) {
+            this.view.hidden = val;
+        }
+    }
+
+    get width(): number {
+        return this.view.width;
+    }
+
+    /**
+     * Deselects all menu tabs.
+     */
+    // TODO: Move to toolbar
+    // focusReset() {
+    //     this.topButtons.forEach(button => {
+    //         $(button).removeClass("selected");
+    //     });
+    // }
 
     /**
      * Launch the config modal.
@@ -153,24 +94,26 @@ export class UtilitiesSidebar extends Sidebar {
             // TODO: remove jquery
             // TODO: move logic elsewhere? events?
 
-            const csv = allComponents.toCSV();
+            // const csv = allComponents.toCSV();
             // Extract filename from the path
             const path = $("#filename")[0].textContent;
             let filename = path.split("/").pop();
             filename = filename.split(".")[0];
 
-            const uri =
-                "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+            // TODO
+            // const uri =
+            //     "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
 
-            const link = document.createElement("a");
-            link.href = uri;
-            link.style.visibility = "hidden";
+            // const link = document.createElement("a");
+            // link.href = uri;
+            // link.style.visibility = "hidden";
+
             // Experimental future feature; uncomment when finalized.
             // link.download = filename + ".csv";
             // Adding element to the DOM (needed for Firefox)
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // document.body.appendChild(link);
+            // link.click();
+            // document.body.removeChild(link);
             $(modal).modal("hide");
         });
         $(modal.root).on("hidden.bs.modal", () => {
@@ -224,5 +167,4 @@ export class UtilitiesSidebar extends Sidebar {
         document.body.appendChild(modal.root);
         modal.show();
     }
-
 }

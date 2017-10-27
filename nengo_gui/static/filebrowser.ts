@@ -3,7 +3,7 @@ import * as $ from "jquery";
 import { config } from "./config";
 import { Sidebar } from "./sidebar";
 import { FilebrowserView } from "./views/sidebar";
-import { Connection } from "./websocket";
+import { Connection } from "./server";
 
 export class Filebrowser extends Sidebar {
     private attached: Connection[] = [];

@@ -15,11 +15,13 @@ import * as interact from "interact.js";
 import { config } from "./config";
 import { HotkeyManager } from "./hotkeys";
 import { Menu } from "./menu";
+import { Connection } from "./server";
 import * as utils from "./utils";
-import { Connection } from "./websocket";
 import { Component, ResizableComponent, Widget } from "./components/base";
 import {
-    ComponentConnection, FeedforwardConnection, RecurrentConnection
+    ComponentConnection,
+    FeedforwardConnection,
+    RecurrentConnection
 } from "./components/connection";
 import { Network } from "./components/network";
 import { Value } from "./components/value";
@@ -58,7 +60,7 @@ export class ActionStack {
     }
 
     get canRedo(): boolean {
-        return (this.index + 1) < this.actions.length;
+        return this.index + 1 < this.actions.length;
     }
 
     get lastAction(): Action {
@@ -85,8 +87,8 @@ export class ActionStack {
 }
 
 export class ConnectionManager {
-    byComponent: {[uid: string]: Array<ComponentConnection>} = {};
-    connections: {[uids: string]: ComponentConnection} = {};
+    byComponent: { [uid: string]: Array<ComponentConnection> } = {};
+    connections: { [uids: string]: ComponentConnection } = {};
 
     private static removeFromArray(
         array: Array<ComponentConnection>,
@@ -145,7 +147,7 @@ export class ConnectionManager {
 
 export class ComponentManager {
     components: Array<Component> = [];
-    networks: {[uid: string]: Network} = {};
+    networks: { [uid: string]: Network } = {};
     widgets: Array<Widget> = [];
 
     get length(): number {
@@ -180,15 +182,18 @@ export class ComponentManager {
     //     return w;
     // }
 
-    onresize = utils.throttle((widthScale: number, heightScale: number): void => {
-        // for (const uid in this.components) {
-        //     const component = this.components[uid];
-        //     // TODO: Set component scaleToPixels
-        //     // component.onresize(
-        //     //     component.width * widthScale, component.height * heightScale,
-        //     // );
-        // }
-    }, 66);
+    onresize = utils.throttle(
+        (widthScale: number, heightScale: number): void => {
+            // for (const uid in this.components) {
+            //     const component = this.components[uid];
+            //     // TODO: Set component scaleToPixels
+            //     // component.onresize(
+            //     //     component.width * widthScale, component.height * heightScale,
+            //     // );
+            // }
+        },
+        66
+    );
 
     remove(component: Component) {
         // First, remove all children ???
@@ -253,7 +258,6 @@ export class ComponentManager {
 }
 
 export class NetGraph {
-
     actions: ActionStack = new ActionStack();
     components: ComponentManager = new ComponentManager();
     connections: ConnectionManager = new ConnectionManager();
@@ -285,22 +289,15 @@ export class NetGraph {
     // ConnDict
     svgConns: any = {};
     // SvgObjecs
-    svgObjects: any = {net: {}, ens: {}, node: {}, passthrough: {}};
-    uid: string;
+    svgObjects: any = { net: {}, ens: {}, node: {}, passthrough: {} };
     view: NetGraphView;
 
-    private attached: Connection[] = [];
+    private server: Connection;
 
     private _scale: number = 1;
 
-    constructor(uid: string) {
-        this.uid = uid;
-
+    constructor(server: Connection) {
         // TODO: greatly improve this validation
-        // where is uid defined?
-        if (uid[0] === "<") {
-            console.warn("invalid uid for NetGraph: " + uid);
-        }
 
         // this.minimap = new Minimap();
         this.view = new NetGraphView();
@@ -310,7 +307,7 @@ export class NetGraph {
 
         // Set up interactivity
         this.interactable = interact(this.view.root);
-        this.interactable.styleCursor(false)
+        this.interactable.styleCursor(false);
         this.interactable.draggable(true);
 
         // Dragging the background pans the full area by changing offsetX,Y
@@ -326,13 +323,13 @@ export class NetGraph {
         this.interactable.on("mouseup", () => {
             document.documentElement.style.cursor = "default";
         });
-        this.interactable.on("dragend", (event) => {
+        this.interactable.on("dragend", event => {
             // Update internal state of components
             this.components.components.forEach(component => {
                 component.syncWithView();
             });
         });
-        this.interactable.on("dragmove", (event) => {
+        this.interactable.on("dragmove", event => {
             console.assert(this.scaledWidth !== 0);
             console.assert(this.scaledHeight !== 0);
             this.offsetX += event.dx / this.scaledWidth;
@@ -350,20 +347,20 @@ export class NetGraph {
         this.interactable.on("dragstart", () => {
             Menu.hideShown();
         });
-        this.interactable.on("wheel", (event) => {
+        this.interactable.on("wheel", event => {
             event.preventDefault();
 
             Menu.hideShown();
 
-            const x = (event.clientX) / this.view.width;
-            const y = (event.clientY) / this.view.height;
+            const x = event.clientX / this.view.width;
+            const y = event.clientY / this.view.height;
 
             let delta;
 
             if (event.deltaMode === 1) {
                 // DOMDELTALINE
                 if (event.deltaY !== 0) {
-                    delta = Math.log(1. + Math.abs(event.deltaY)) * 60;
+                    delta = Math.log(1 + Math.abs(event.deltaY)) * 60;
                     if (event.deltaY < 0) {
                         delta *= -1;
                     }
@@ -379,9 +376,9 @@ export class NetGraph {
                 delta = event.deltaY;
             }
 
-            let zScale = 1. + Math.abs(delta) / 600.;
+            let zScale = 1 + Math.abs(delta) / 600;
             if (delta > 0) {
-                zScale = 1. / zScale;
+                zScale = 1 / zScale;
             }
 
             this.components.saveLayouts();
@@ -398,9 +395,10 @@ export class NetGraph {
             this.redraw();
 
             // Let the server know what happened
-            this.attached.forEach((conn) => {
-                conn.send("netgraph.zoom",
-                          {scale: this.scale, x: this.offsetX, y: this.offsetY});
+            this.server.send("netgraph.zoom", {
+                scale: this.scale,
+                x: this.offsetX,
+                y: this.offsetY
             });
         });
         //this.interactable.on("click", (event) => {
@@ -412,7 +410,8 @@ export class NetGraph {
         // point in the space
 
         // Determine when to pull up the menu
-        this.interactable.on("hold", (event) => { // Change to "tap" for right click
+        this.interactable.on("hold", event => {
+            // Change to "tap" for right click
             if (event.button === 0) {
                 if (Menu.shown !== null) {
                     Menu.hideShown();
@@ -422,7 +421,8 @@ export class NetGraph {
                 event.stopPropagation();
             }
         });
-        this.interactable.on("tap", (event) => { // Get rid of menus when clicking off
+        this.interactable.on("tap", event => {
+            // Get rid of menus when clicking off
             if (event.button === 0) {
                 Menu.hideShown();
             }
@@ -437,8 +437,126 @@ export class NetGraph {
             }
         });
 
+        // TODO: bind a connection for the creation of each object
+        // Node-only first so that I can get something I can test
+        server.bind(
+            "netgraph.createNode",
+            ({
+                ngiArg,
+                interArg,
+                dimensions,
+                html
+            }: {
+                ngiArg: any; // NetGraphItemArg,
+                interArg: any; // : InteractableItemArg,
+                dimensions: number;
+                html: string;
+            }) => {
+                this.createNode(ngiArg, interArg, dimensions, html);
+            }
+        );
+
+        // Attach to connection
+
+        server.bind("netgraph.createConnection", ({ connArg }) => {
+            this.createConnection(connArg);
+        });
+
+        // there should probably be a coordinate data type
+        server.bind("netgraph.pan", ({ x, y }) => {
+            this.offset = { x, y };
+        });
+
+        server.bind("netgraph.zoom", ({ zoom }: { zoom: number }) => {
+            this.scale = zoom;
+        });
+
+        // TODO: How much error checking are we supposed to do?
+        // Should I check that the uid gives a network or do I just
+        // let it throw an error?
+        // Or should I make a seperate list of interactables
+        server.bind("netgraph.expand", ({ uid }: { uid: string }) => {
+            const item = this.svgObjects.net[uid];
+            item.expand(true, true);
+        });
+        server.bind("netgraph.collapse", ({ uid }: { uid: string }) => {
+            const item = this.svgObjects.net[uid];
+            item.expand(true, true);
+        });
+
+        // Should probably make a shape param too
+        server.bind(
+            "netgraph.posSize",
+            () => {}
+            // {uid, x, y, width, height}: {uid: string} & utils.Shape) => {
+            //     const item = this.svgObjects[uid];
+            //     item.x = x;
+            //     item.y = y;
+            //     item.width = width;
+            //     item.height = height;
+
+            //     item.redraw();
+
+            //     // this.scaleMiniMap();
+            // }
+        );
+
+        server.bind(
+            "netgraph.config",
+            ({ uid, config }: { uid: string } & { config: any }) => {
+                // Anything about the config of a component has changed
+                const component = this.components[uid];
+                component.updateLayout(config);
+            }
+        );
+
+        server.bind("netgraph.js", ({ js: js }) => {
+            // TODO: noooooooo
+            eval(js);
+        });
+
+        server.bind(
+            "netgraph.rename",
+            ({ uid, newName }: { uid: string } & { newName: string }) => {
+                const item = this.svgObjects[uid];
+                item.setLabel(newName);
+            }
+        );
+
+        server.bind("netgraph.remove", ({ uid }) => {
+            // TODO: this feels hacky
+            // (which is why TypeScript is complaining)
+            let item = this.svgObjects[uid];
+            if (item === undefined) {
+                item = this.svgConns[uid];
+            }
+
+            item.remove();
+        });
+
+        server.bind(
+            "netgraph.reconnect",
+            ({ uid, pres, posts }: { uid: string } & any & any) => {
+                const netConn = this.svgConns[uid];
+                netConn.setPres(pres);
+                netConn.setPosts(posts);
+                netConn.setRecurrent(pres[0] === posts[0]);
+                netConn.redraw();
+            }
+        );
+
+        server.bind(
+            "netgraph.reconnect",
+            ({ uid, notifyServer }: { uid: string } & any) => {
+                const component = this.components[uid];
+                // component.remove(true, notifyServer);
+            }
+        );
+
+        this.server = server;
+
         // Respond to resize events
-        window.addEventListener("resize", (event) => this.onresize(event));
+        window.addEventListener("resize", event => this.onresize(event));
 
         // this.createMinimap();
         this.menu = new Menu();
@@ -469,7 +587,7 @@ export class NetGraph {
             bottom: this.offsetY + this.scaledHeight,
             left: this.offsetX,
             right: this.offsetX + this.scaledWidth,
-            top: this.offsetY,
+            top: this.offsetY
         });
     }
 
@@ -498,7 +616,7 @@ export class NetGraph {
     /**
      * Pan the screen (and redraw accordingly)
      */
-    set offset({x, y}) {
+    set offset({ x, y }) {
         this.offsetX = x;
         this.offsetY = y;
         this.redraw();
@@ -592,7 +710,7 @@ export class NetGraph {
         component.view.root.addEventListener("touchstart", raiseToTop);
 
         // -- Record moves and resizes
-        this.interactable.on("dragend resizeend", (event) => {
+        this.interactable.on("dragend resizeend", event => {
             // const info = {
             //     height: this.h,
             //     labelVisible: this.labelVisible,
@@ -606,170 +724,64 @@ export class NetGraph {
 
     addMenuItems() {
         this.menu.addAction("Auto-layout", () => {
-            this.attached.forEach((conn) => {
-                conn.send("netgraph.feedforwardLayout");
-            });
+            this.server.send("netgraph.feedforwardLayout");
         });
     }
 
-    /**
-     * Event handler for received WebSocket messages
-     */
-    attach(conn: Connection) {
-
-        // TODO: bind a connection for the creation of each object
-        // Node-only first so that I can get something I can test
-        conn.bind("netgraph.createNode", (
-            {ngiArg, interArg, dimensions, html}: {
-                ngiArg: any, // NetGraphItemArg,
-            interArg: any, // : InteractableItemArg,
-            dimensions: number, html: string}) => {
-                this.createNode(ngiArg, interArg, dimensions, html);
-        });
-
-        conn.bind("netgraph.createConnection", ({connArg}) => {
-            this.createConnection(connArg);
-        });
-
-        // there should probably be a coordinate data type
-        conn.bind("netgraph.pan", ({x, y}: Pos) => {
-            this.offset = {x, y};
-        });
-
-        conn.bind("netgraph.zoom", ({zoom}: {zoom: number}) => {
-            this.scale = zoom;
-        });
-
-        // TODO: How much error checking are we supposed to do?
-        // Should I check that the uid gives a network or do I just
-        // let it throw an error?
-        // Or should I make a seperate list of interactables
-        conn.bind("netgraph.expand", ({uid}: {uid: string}) => {
-            const item = this.svgObjects.net[uid];
-            item.expand(true, true);
-        });
-        conn.bind("netgraph.collapse", ({uid}: {uid: string}) => {
-            const item = this.svgObjects.net[uid];
-            item.expand(true, true);
-        });
-
-        // Should probably make a shape param too
-        conn.bind("netgraph.posSize", (
-            {uid, x, y, width, height}: {uid: string} & Pos & utils.Shape) => {
-                const item = this.svgObjects[uid];
-                item.x = x;
-                item.y = y;
-                item.width = width;
-                item.height = height;
-
-                item.redraw();
-
-                // this.scaleMiniMap();
-        });
-
-        conn.bind("netgraph.config", ({uid, config}: {uid: string} & {config: any}) => {
-            // Anything about the config of a component has changed
-            const component = this.components[uid];
-            component.updateLayout(config);
-        });
-
-        conn.bind("netgraph.js", ({js: js}) => {
-            // TODO: noooooooo
-            eval(js);
-        });
-
-        conn.bind("netgraph.rename", (
-            {uid, newName}: {uid: string} & {newName: string}) => {
-                const item = this.svgObjects[uid];
-                item.setLabel(newName);
-        });
-
-        conn.bind("netgraph.remove", ({uid}) => {
-            // TODO: this feels hacky
-            // (which is why TypeScript is complaining)
-            let item = this.svgObjects[uid];
-            if (item === undefined) {
-                item = this.svgConns[uid];
-            }
-
-            item.remove();
-        });
-
-        conn.bind("netgraph.reconnect",
-                  ({uid, pres, posts}: {uid: string} & any & any) => {
-            const netConn = this.svgConns[uid];
-            netConn.setPres(pres);
-            netConn.setPosts(posts);
-            netConn.setRecurrent(pres[0] === posts[0]);
-            netConn.redraw();
-        });
-
-        conn.bind("netgraph.reconnect", ({uid, notifyServer}: {uid: string} & any) => {
-            const component = this.components[uid];
-            // component.remove(true, notifyServer);
-        });
-
-        this.attached.push(conn);
-    }
-
-    collapse(network: Network, reportToServer, auto = false) {
-        this.gClass.pop();
-
+    collapse(network: Network, reportToServer = false, auto = false) {
+        // this.gClass.pop();
         // Remove child NetGraphItems and NetGraphConnections
-        while (this.childConnections.length > 0) {
-            this.childConnections[0].remove();
-        }
-        while (this.children.length > 0) {
-            this.children[0].remove();
-        }
-
-        if (this.expanded) {
-            this.expanded = false;
-            // if (this.ng.transparentNets) {
-            //     this.view.transparentShape(false);
-            // }
-            // this.gNetworks.removeChild(this.view.g);
-            // this.ng.view.gItems.appendChild(this.view.g);
-            // if (!this.minimap) {
-            //     this.miniItem.collapse(reportToServer, auto);
-            // }
-        } else {
-            console.warn(
-                "collapsed a network that was already collapsed: " + this);
-        }
-
-        if (reportToServer) {
-            // if (auto) {
-            //     // Update the server, but do not place on the undo stack
-            //     this.ng.notify("autoCollapse", {uid: this.uid});
-            // } else {
-            //     this.ng.notify("collapse", {uid: this.uid});
-            // }
-        }
+        // while (this.childConnections.length > 0) {
+        //     this.childConnections[0].remove();
+        // }
+        // while (this.children.length > 0) {
+        //     this.children[0].remove();
+        // }
+        // if (this.expanded) {
+        //     this.expanded = false;
+        // if (this.ng.transparentNets) {
+        //     this.view.transparentShape(false);
+        // }
+        // this.gNetworks.removeChild(this.view.g);
+        // this.ng.view.gItems.appendChild(this.view.g);
+        // if (!this.minimap) {
+        //     this.miniItem.collapse(reportToServer, auto);
+        // }
+        // } else {
+        //     console.warn(
+        //         "collapsed a network that was already collapsed: " + this);
+        // }
+        // if (reportToServer) {
+        // if (auto) {
+        //     // Update the server, but do not place on the undo stack
+        //     this.ng.notify("autoCollapse", {uid: this.uid});
+        // } else {
+        //     this.ng.notify("collapse", {uid: this.uid});
+        // }
+        // }
     }
 
     connect(pre: Component, post: Component) {
-        const connection = this.components.connect(pre, post);
-        this.view.conns.appendChild(connection.view.root);
+        // const connection = this.components.connect(pre, post);
+        // this.view.conns.appendChild(connection.view.root);
         // TODO: update positions without having to move
     }
 
     // this will need to be refactored later
     createNode(ngiArg, interArg, dimensions, html) {
         // TODO: fill in the rest of the args
-        const item = new NodeItem(ngiArg, interArg, dimensions, html);
-        this.svgObjects.node[ngiArg.uid] = item;
-
-        this.detectCollapsedConns(item.uid);
+        // const item = new NodeItem(ngiArg, interArg, dimensions, html);
+        // this.svgObjects.node[ngiArg.uid] = item;
+        // this.detectCollapsedConns(item.uid);
     }
 
     /**
      * Create a new NetGraphConnection.
      */
     createConnection(info) {
-        const connMini = new NetGraphConnection(this, info, true, null);
-        this.svgConns[info.uid] = new NetGraphConnection(
-            this, info, false, connMini);
+        // const connMini = new NetGraphConnection(this, info, true, null);
+        // this.svgConns[info.uid] = new NetGraphConnection(
+        //     this, info, false, connMini);
     }
 
     /**
@@ -805,44 +817,44 @@ export class NetGraph {
         }
         auto = typeof auto !== "undefined" ? auto : false;
 
-        this.gClass.push("expanded");
+        // this.gClass.push("expanded");
 
-        if (!this.expanded) {
-            this.expanded = true;
-            // if (this.ng.transparentNets) {
-            //     this.view.transparentShape(false);
-            // }
-            // this.ng.view.gItems.removeChild(this.view.g);
-            // this.gNetworks.appendChild(this.view.g);
-            if (!this.minimap) {
-                this.miniItem.expand(returnToServer, auto);
-            }
-        } else {
-            console.warn(
-                "expanded a network that was already expanded: " + this);
-        }
+        // if (!this.expanded) {
+        //     this.expanded = true;
+        //     // if (this.ng.transparentNets) {
+        //     //     this.view.transparentShape(false);
+        //     // }
+        //     // this.ng.view.gItems.removeChild(this.view.g);
+        //     // this.gNetworks.appendChild(this.view.g);
+        //     if (!this.minimap) {
+        //         this.miniItem.expand(returnToServer, auto);
+        //     }
+        // } else {
+        //     console.warn(
+        //         "expanded a network that was already expanded: " + this);
+        // }
 
-        if (returnToServer) {
-            // if (auto) {
-            //     // Update the server, but do not place on the undo stack
-            //     this.ng.notify("autoExpand", {uid: this.uid});
-            // } else {
-            //     this.ng.notify("expand", {uid: this.uid});
-            // }
-        }
+        // if (returnToServer) {
+        //     // if (auto) {
+        //     //     // Update the server, but do not place on the undo stack
+        //     //     this.ng.notify("autoExpand", {uid: this.uid});
+        //     // } else {
+        //     //     this.ng.notify("expand", {uid: this.uid});
+        //     // }
+        // }
     }
 
     hotkeys(manager: HotkeyManager) {
-        manager.add("Undo", "z", {ctrl: true}, () => {
-            this.notify("undo", "1");
+        manager.add("Undo", "z", { ctrl: true }, () => {
+            // this.notify("undo", "1");
         });
-        manager.add("Redo", "z", {ctrl: true, shift: true}, () => {
-            this.notify("undo", "0");
+        manager.add("Redo", "z", { ctrl: true, shift: true }, () => {
+            // this.notify("undo", "0");
         });
-        manager.add("Redo", "y", {ctrl: true}, () => {
-            this.notify("undo", "0");
+        manager.add("Redo", "y", { ctrl: true }, () => {
+            // this.notify("undo", "0");
         });
-        manager.add("Toggle minimap", "m", {ctrl: true}, () => {
+        manager.add("Toggle minimap", "m", { ctrl: true }, () => {
             this.minimap.toggle();
         });
     }
@@ -857,25 +869,25 @@ export class NetGraph {
     /**
      * Handler for resizing the full SVG.
      */
-    onresize = utils.throttle((event) => {
+    onresize = utils.throttle(event => {
         const width = this.view.width;
         const height = this.view.height;
         console.assert(width !== 0);
         console.assert(height !== 0);
 
         if (this.aspectResize) {
-            Object.keys(this.svgObjects).forEach((objType) => {
-                Object.keys(this.svgObjects[objType]).forEach((key) => {
+            Object.keys(this.svgObjects).forEach(objType => {
+                Object.keys(this.svgObjects[objType]).forEach(key => {
                     const item = this.svgObjects[objType][key];
                     // TODO: this is the only thing ViewPort is being used for,
                     // so it can probably be removed
                     if (item.depth === 1) {
-                        const newWidth =
-                            this.viewPort.scaleWidth(item.width) / this.scale;
-                        const newHeight =
-                            this.viewPort.scaleHeight(item.height) / this.scale;
-                        item.width = newWidth / (2 * width);
-                        item.height = newHeight / (2 * height);
+                        // const newWidth =
+                        //     this.viewPort.scaleWidth(item.width) / this.scale;
+                        // const newHeight =
+                        //     this.viewPort.scaleHeight(item.height) / this.scale;
+                        // item.width = newWidth / (2 * width);
+                        // item.height = newHeight / (2 * height);
                     }
                 });
             });
@@ -892,12 +904,12 @@ export class NetGraph {
      * Redraw all elements
      */
     redraw() {
-        Object.keys(this.svgObjects).forEach((objType) => {
-            Object.keys(this.svgObjects[objType]).forEach((key) => {
-                    this.svgObjects[objType][key].redraw();
+        Object.keys(this.svgObjects).forEach(objType => {
+            Object.keys(this.svgObjects[objType]).forEach(key => {
+                this.svgObjects[objType][key].redraw();
             });
         });
-        Object.keys(this.svgConns).forEach((key) => {
+        Object.keys(this.svgConns).forEach(key => {
             this.svgConns[key].redraw();
         });
     }

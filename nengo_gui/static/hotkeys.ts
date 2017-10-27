@@ -6,6 +6,7 @@
 
 import { Editor } from "./editor";
 import { NetGraph } from "./netgraph";
+import { Connection } from "./server";
 import { SimControl } from "./sim-control"
 import { HotkeysDialogView } from "./views/hotkeys";
 
@@ -65,22 +66,20 @@ export class HotkeyManager {
 
     active: boolean = true;
 
-    constructor() {
+    private server: Connection;
+
+    constructor(server: Connection) {
         document.addEventListener("keydown", event => {
             this.onkeydown(event);
         });
 
         // Bring up help menu with ?
-        this.add("Show hotkeys", "?", () => {
-            const modal = new HotkeysDialogView(this);
-            $(modal.root).on("hidden.bs.modal", () => {
-                document.body.removeChild(modal.root);
-            });
-            document.body.appendChild(modal.root);
-            modal.show();
-        });
+        this.add("Show hotkeys", "?", () => { this.show();  });
         // Prevent going back in history.
         this.add(null, "backspace", () => {});
+
+        server.bind("hotkeys.show", () => { this.show(); });
+        this.server = server;
     }
 
     add(name: string, key: string, ...args: (Modifiers | HotkeyCallback)[]) {
@@ -139,5 +138,14 @@ export class HotkeyManager {
             }
             return check
         });
+    }
+
+    show() {
+        const modal = new HotkeysDialogView(this.hotkeys);
+        $(modal.root).on("hidden.bs.modal", () => {
+            document.body.removeChild(modal.root);
+        });
+        document.body.appendChild(modal.root);
+        modal.show();
     }
 }

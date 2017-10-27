@@ -13,7 +13,7 @@
  */
 
 import * as $ from "jquery";
-import { dom, h  } from "maquette";
+import { dom, h } from "maquette";
 
 import { DataStore } from "../datastore";
 import { Menu } from "../menu";
@@ -34,20 +34,30 @@ export class Slider extends Widget {
     nSliders: number;
     notifyMsgs;
     resetValue: number[];
-    sim;
+    scale: [number, number];
     sliderHeight: number;
     sliders: SliderControl[];
     startValue: number[];
 
     protected _view: ValueView;
 
-    constructor(parent, sim, args) {
-        super(parent, args);
-        this.sim = sim;
+    constructor(
+        left: number,
+        top: number,
+        width: number,
+        height: number,
+        parent: string,
+        uid: string,
+        dimensions: number,
+        synapse: number,
+        startValue: number[] = [0],
+        lim: [number, number] = [-1, 1]
+    ) {
+        super(left, top, width, height, parent, uid, dimensions, synapse);
 
         // Check if user is filling in a number into a slider
         this.fillingSliderValue = false;
-        this.nSliders = args.nSliders;
+        this.nSliders = dimensions;
 
         this.dataStore = null;
 
@@ -58,42 +68,47 @@ export class Slider extends Widget {
 
         this.setAxesGeometry(this.width, this.height);
 
-        this.minHeight = 40;
+        // this.minHeight = 40;
 
-        const gg = h("div", {position: "relative", style: {
-            height: this.sliderHeight,
-            marginTop: this.axTop,
-            whiteSpace: "nowrap"},
+        const gg = h("div", {
+            position: "relative",
+            style: {
+                height: this.sliderHeight,
+                marginTop: this.axTop,
+                whiteSpace: "nowrap"
+            }
         });
         this.group = dom.create(gg).domNode as HTMLDivElement;
-        this.div.appendChild(this.group);
+        // this.div.appendChild(this.group);
 
         // Make the sliders
         // The value to use when releasing from user control
-        this.resetValue = args.startValue;
+        this.resetValue = startValue;
         // The value to use when restarting the simulation from beginning
-        this.startValue = args.startValue;
+        this.startValue = startValue;
 
         this.sliders = [];
-        for (let i = 0; i < args.nSliders; i++) {
+        for (let i = 0; i < dimensions; i++) {
             // Creating a SliderControl object for every slider handle required
-            const slider = new SliderControl(args.minValue, args.maxValue);
-            slider.container.style.width = (100 / args.nSliders) + "%";
+            const slider = new SliderControl(lim[0], lim[1]);
+            slider.container.style.width = 100 / dimensions + "%";
             // slider.displayValue(args.startValue[i]);
             slider.index = i;
             slider.fixed = false;
 
-            slider.on("change", event => {
-                event.target.fixed = true;
-                this.sendValue(event.target.index, event.value);
-            }).on("changestart", function(event) {
-                Menu.hideShown();
-                for (let i = 0; i < this.sliders.length; i++) {
-                    if (this.sliders[i] !== event.target) {
-                        this.sliders[i].deactivateTypeMode(null);
+            slider
+                .on("change", event => {
+                    event.target.fixed = true;
+                    this.sendValue(event.target.index, event.value);
+                })
+                .on("changestart", function(event) {
+                    Menu.hideShown();
+                    for (let i = 0; i < this.sliders.length; i++) {
+                        if (this.sliders[i] !== event.target) {
+                            this.sliders[i].deactivateTypeMode(null);
+                        }
                     }
-                }
-            });
+                });
 
             this.group.appendChild(slider.container);
             this.sliders.push(slider);
@@ -101,13 +116,12 @@ export class Slider extends Widget {
 
         // Call scheduleUpdate whenever the time is adjusted in the SimControl
         window.addEventListener("TimeSlider.moveShown", e => {
-            this.scheduleUpdate();
+            // this.scheduleUpdate();
         });
 
         window.addEventListener("SimControl.reset", e => {
             this.onResetSim();
         });
-
     }
 
     get view(): ValueView {
@@ -118,7 +132,7 @@ export class Slider extends Widget {
     }
 
     setAxesGeometry(width, height) {
-        this.scale = [width, height]
+        this.scale = [width, height];
         const scale = parseFloat($("#main").css("font-size"));
         this.borderSize = 1;
         this.axTop = 1.75 * scale;
@@ -130,11 +144,11 @@ export class Slider extends Widget {
         console.assert(typeof value === "number");
 
         if (this.immediateNotify) {
-            this.ws.send(sliderIndex + "," + value);
+            // this.ws.send(sliderIndex + "," + value);
         } else {
             this.notify(sliderIndex + "," + value);
         }
-        this.sim.timeSlider.jumpToEnd();
+        // this.sim.timeSlider.jumpToEnd();
     }
 
     onResetSim() {
@@ -162,7 +176,7 @@ export class Slider extends Widget {
                 data[i + 1] = this.sliders[i].value;
             }
         }
-        this.dataStore.push(data);
+        this.dataStore.add(Array.prototype.slice.call(data));
 
         // this.scheduleUpdate(event);
     }
@@ -174,25 +188,27 @@ export class Slider extends Widget {
         console.assert(typeof width === "number");
         console.assert(typeof height === "number");
 
-        if (width < this.minWidth) {
-            width = this.minWidth;
-        }
-        if (height < this.minHeight) {
-            height = this.minHeight;
-        }
+        // if (width < this.minWidth) {
+        //     width = this.minWidth;
+        // }
+        // if (height < this.minHeight) {
+        //     height = this.minHeight;
+        // }
 
         this.setAxesGeometry(width, height);
 
-        this.group.style.height = String(height - this.axTop - 2 * this.borderSize);
+        this.group.style.height = String(
+            height - this.axTop - 2 * this.borderSize
+        );
         this.group.style.marginTop = String(this.axTop);
 
         for (let i = 0; i < this.sliders.length; i++) {
-            this.sliders[i].onresize();
+            // this.sliders[i].onresize();
         }
 
-        this.label.style.width = String(this.width);
-        this.div.style.width = String(this.width);
-        this.div.style.height = String(this.height);
+        // this.label.style.width = String(this.width);
+        // this.div.style.width = String(this.width);
+        // this.div.style.height = String(this.height);
     }
 
     addMenuItems() {
@@ -232,7 +248,7 @@ export class Slider extends Widget {
      */
     sendNotifyMsg() {
         const msg = this.notifyMsgs[0];
-        this.ws.send(msg);
+        // this.ws.send(msg);
         if (this.notifyMsgs.length > 1) {
             window.setTimeout(() => {
                 this.sendNotifyMsg();
@@ -244,25 +260,29 @@ export class Slider extends Widget {
     update() {
         // Let the data store clear out old values
         if (this.dataStore !== null) {
-            this.dataStore.update();
+            // this.dataStore.update();
 
-            const data = this.dataStore.getLastData();
+            // const data = this.dataStore.getLastData();
 
-            for (let i = 0; i < this.sliders.length; i++) {
-                if (!this.sim.timeSlider.isAtEnd || !this.sliders[i].fixed) {
-                    this.sliders[i].displayValue(data[i]);
-                }
-            }
+            // for (let i = 0; i < this.sliders.length; i++) {
+            //     if (!this.sim.timeSlider.isAtEnd || !this.sliders[i].fixed) {
+            //         this.sliders[i].displayValue(data[i]);
+            //     }
+            // }
         }
     }
 
     userValue() {
-        const prompt = this.sliders.map(slider => {
-            return slider.value.toFixed(2);
-        }).join(", ");
+        const prompt = this.sliders
+            .map(slider => {
+                return slider.value.toFixed(2);
+            })
+            .join(", ");
 
         const modal = new InputDialogView(
-            prompt, "New value(s)", "Input should be one comma-separated " +
+            prompt,
+            "New value(s)",
+            "Input should be one comma-separated " +
                 "numerical value for each slider."
         );
         modal.title = "Set slider value(s)...";
@@ -296,8 +316,8 @@ export class Slider extends Widget {
                     return nums.every(num => {
                         return utils.isNum(num);
                     });
-                },
-            },
+                }
+            }
         });
         $(modal.root).on("hidden.bs.modal", () => {
             document.body.removeChild(modal.root);
@@ -318,8 +338,10 @@ export class Slider extends Widget {
     setRange() {
         const range = this.sliders[0].scale.domain();
         const modal = new InputDialogView(
-            String([range[1], range[0]]), "New range",
-            "Input should be in the form '<min>,<max>'.");
+            String([range[1], range[0]]),
+            "New range",
+            "Input should be in the form '<min>,<max>'."
+        );
         modal.title = "Set slider range...";
         modal.ok.addEventListener("click", () => {
             const validator = $(modal).data("bs.validator");
@@ -334,7 +356,7 @@ export class Slider extends Widget {
                 for (let i = 0; i < this.sliders.length; i++) {
                     this.sliders[i].setRange(min, max);
                 }
-                this.saveLayout();
+                // this.saveLayout();
             }
             $(modal).modal("hide");
         });
@@ -351,9 +373,9 @@ export class Slider extends Widget {
                             valid = true;
                         }
                     }
-                    return (nums.length === 2 && valid);
-                },
-            },
+                    return nums.length === 2 && valid;
+                }
+            }
         });
         $(modal.root).on("hidden.bs.modal", () => {
             document.body.removeChild(modal.root);
@@ -363,10 +385,10 @@ export class Slider extends Widget {
     }
 
     layoutInfo() {
-        const info = Component.prototype.layoutInfo.call(this);
-        info.minValue = this.sliders[0].scale.domain()[1];
-        info.maxValue = this.sliders[0].scale.domain()[0];
-        return info;
+        // const info = Component.prototype.layoutInfo.call(this);
+        // info.minValue = this.sliders[0].scale.domain()[1];
+        // info.maxValue = this.sliders[0].scale.domain()[0];
+        // return info;
     }
 
     updateLayout(config) {
@@ -374,6 +396,6 @@ export class Slider extends Widget {
         for (let i = 0; i < this.sliders.length; i++) {
             this.sliders[i].setRange(config.minValue, config.maxValue);
         }
-        Component.prototype.updateLayout.call(this, config);
+        // Component.prototype.updateLayout.call(this, config);
     }
 }

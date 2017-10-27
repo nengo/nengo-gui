@@ -2,9 +2,8 @@ import logging
 import os
 import threading
 
-
-# TODO: remove hack!
-from nengo_gui.components import Voltage
+from nengo_gui.client import bind, ExposedToClient
+from nengo_gui.components import Voltage  # TODO: remove hack!
 from nengo_gui.editor import AceEditor
 from nengo_gui.netgraph import NetGraph
 from nengo_gui.simcontrol import SimControl
@@ -12,7 +11,7 @@ from nengo_gui.simcontrol import SimControl
 logger = logging.getLogger(__name__)
 
 
-class Page(object):
+class Page(ExposedToClient):
     """A handler for a single page of the nengo_gui.
 
     Parameters
@@ -21,14 +20,18 @@ class Page(object):
     """
 
     def __init__(self, client, context, editor_class=AceEditor):
-        self.lock = threading.Lock()
+        super(Page, self).__init__(client)
 
         self.client = client
         self.editor = editor_class(self.client)
-        self.netgraph = NetGraph(self.client, context)
         self.simcontrol = SimControl(self.client, backend=context.backend)
+        self.simcontrol.backend = context.backend
+        self.netgraph = NetGraph(
+            self.client, context.filename, context.filename_cfg)
 
         self.client.bind("page.save", self.save)
+
+        self.lock = threading.Lock()
 
     def build(self):
         """Build the network."""
@@ -44,11 +47,13 @@ class Page(object):
             self.simcontrol.build(self.netgraph.net)
             self.netgraph.remove_nengo_objects()
 
-    def load(self, filename, context):
-        self.simcontrol.backend = context.backend
-        self.netgraph.load(filename, context)
+    @bind("page.ready")
+    def ready(self):
+        pass
 
-    def save(self, filename):
+    @bind("page.save")
+    def save(self, filename=None, force=False):
+        filename = self.netgraph.filename if filename is None else filename
         rename = filename != self.netgraph.filename
 
         if rename and os.path.exists(filename):
@@ -63,8 +68,9 @@ class Page(object):
             self.page.filename = filename
 
         try:
-            with open(filename, 'w') as f:
-                f.write(self.editor.code)
+            if self.editor.code is not None:
+                with open(filename, 'w') as f:
+                    f.write(self.editor.code)
 
             if rename:
                 self.editor.send_filename(filename)
@@ -75,7 +81,7 @@ class Page(object):
                 (filename,))
 
         # TODO: why this? Can we just not?
-        self.netgraph.reload(self.editor.code)
+        # self.netgraph.reload(self.editor.code)
 
     def shutdown(self):
         # TODO: call shutdown methods on these instead?

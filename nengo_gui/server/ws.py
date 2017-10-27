@@ -207,7 +207,7 @@ class ManagedThreadHttpWsServer(ManagedThreadHttpServer):
     """Threaded HTTP and WebSocket server."""
 
     def __init__(self, *args, **kwargs):
-        ManagedThreadHttpWsServer.__init__(self, *args, **kwargs)
+        ManagedThreadHttpServer.__init__(self, *args, **kwargs)
         self._websockets = []
 
     @property
@@ -222,7 +222,7 @@ class ManagedThreadHttpWsServer(ManagedThreadHttpServer):
     def _shutdown(self):
         for ws in self.websockets:
             ws.close()
-        ManagedThreadHttpWsServer._shutdown(self)
+        ManagedThreadHttpServer._shutdown(self)
 
 
 class AuthenticatedHttpWsRequestHandler(AuthenticatedHttpRequestHandler):
@@ -252,14 +252,14 @@ class AuthenticatedHttpWsRequestHandler(AuthenticatedHttpRequestHandler):
         upgrade = self.headers.get('Upgrade').lower()
         if upgrade == 'websocket':
             self.upgrade_to_ws()
-        AuthenticatedHttpRequestHandler.handle_upgrade(self)
 
     def upgrade_to_ws(self):
-        response = "\n".join([
+        response = "\r\n".join([
             "HTTP/1.1 101 Switching Protocols",
             "Upgrade: websocket",
             "Connection: Upgrade",
             "Sec-WebSocket-Accept: {sec}",
+            "",
             ""
         ])
 
