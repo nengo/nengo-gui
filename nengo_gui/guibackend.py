@@ -84,7 +84,8 @@ class RequireAuthentication(object):
             elif inst.server.verify_token(self.get_token(inst)):
                 self.authenticate(inst)
                 return fn(inst)
-            return server.HttpRedirect(self.login_page)
+            return server.HttpRedirect(
+                inst.server.settings.prefix + self.login_page)
         return auth_checked
 
     @classmethod
@@ -115,12 +116,18 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         login_host = self.get_session().login_host
         return [login_host] if login_host is not None else []
 
+    def http_GET(self):
+        if not self.resource.startswith(self.server.settings.prefix):
+            raise server.InvalidResource(self.resource)
+        self.resource = self.resource[len(self.server.settings.prefix):]
+        server.HttpWsRequestHandler.http_GET(self)
+
     def login_page(self):
         session = self.get_session()
         content = b''
 
         if session.authenticated:
-            return server.HttpRedirect('/')
+            return server.HttpRedirect(self.server.settings.prefix + '/')
 
         if 'pw' in self.db:
             valid_pw = (
@@ -129,7 +136,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
             valid_token = self.server.verify_token(self.db['pw'])
             if valid_pw or valid_token:
                 RequireAuthentication.authenticate(self)
-                return server.HttpRedirect('/')
+                return server.HttpRedirect(self.server.settings.prefix + '/')
             else:
                 content += b'<p><strong>Invalid password. Try again.'
                 content += b'</strong></p>'
@@ -325,6 +332,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         sid = self.server.sessions.add_session(self.request, session)
         sid_key = '_sid_' + str(self.server.server_port)
         self.cookie[sid_key] = sid
+        self.cookie[sid_key]['path'] = self.server.settings.prefix
         self.cookie[sid_key]['httponly'] = True
         self.cookie[sid_key]['max-age'] = self.server.settings.session_duration
         self.cookie[sid_key]['version'] = 1
@@ -371,18 +379,20 @@ class GuiServerSettings(object):
         'ssl_cert',
         'ssl_key',
         'session_duration',
+        'prefix'
     ]
 
     def __init__(
             self, listen_addr=('localhost', 8080), auto_shutdown=2,
             password_hash=None, ssl_cert=None, ssl_key=None,
-            session_duration=60 * 60 * 24 * 30):
+            session_duration=60 * 60 * 24 * 30, prefix=''):
         self.listen_addr = listen_addr
         self.auto_shutdown = auto_shutdown
         self.password_hash = password_hash
         self.ssl_cert = ssl_cert
         self.ssl_key = ssl_key
         self.session_duration = session_duration
+        self.prefix = prefix
 
     @property
     def use_ssl(self):

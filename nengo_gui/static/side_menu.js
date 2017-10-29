@@ -138,10 +138,12 @@ Nengo.SideMenu.prototype.file_browser = function() {
     fb = $('#filebrowser');
     fb.fileTree({
             root: Nengo.config.scriptdir,
-            script: '/browse?root=' + Nengo.config.scriptdir
+            script: window.location.pathname + 'browse?root=' +
+                Nengo.config.scriptdir
         },
         function(file) {
-            window.location.assign('/?filename=' + file);
+            window.location.assign(
+                window.location.pathname + '?filename=' + file);
         }
     );
 

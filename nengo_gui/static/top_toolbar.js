@@ -45,7 +45,8 @@ Nengo.Toolbar = function(filename) {
     $('#filename')[0].innerHTML = filename;
 
     // update the URL so reload and bookmarks work as expected
-    history.pushState({}, filename, '/?filename=' + filename);
+    history.pushState(
+        {}, filename, window.location.pathname + '?filename=' + filename);
 
     this.toolbar = $('#toolbar_object')[0];
 
@@ -67,7 +68,9 @@ Nengo.Toolbar.prototype.file_name = function() {
 /** Tells the server to reset the model layout to the default,
  *  by deleting the config file and reloading the script */
 Nengo.Toolbar.prototype.reset_model_layout = function () {
-    window.location.assign('/?reset=True&filename=' + $("#filename")[0].innerHTML);
+    window.location.assign(
+        window.location.pathname + '?reset=True&filename=' +
+        $("#filename")[0].innerHTML);
 }
 
 /** Function called by event handler in order to launch modal.

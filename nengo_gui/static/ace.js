@@ -215,7 +215,9 @@ Nengo.Ace.prototype.on_message = function (event) {
         if (msg.valid) {
             $('#filename')[0].innerHTML = msg.filename;
             // update the URL so reload and bookmarks work as expected
-            history.pushState({}, msg.filename, '/?filename=' + msg.filename);
+            history.pushState(
+                {}, msg.filename,
+                window.location.pathname + '?filename=' + msg.filename);
         } else {
             alert(msg.error);
         }

@@ -135,8 +135,9 @@ def main():
                     raise
             t = threading.Thread(
                 target=wb.open,
-                args=('%s//%s:%d/?token=%s' % (
-                    protocol, host, port, s.server.gen_one_time_token()),))
+                args=('%s//%s:%d%s/?token=%s' % (
+                    protocol, host, port, s.server.settings.prefix,
+                    s.server.gen_one_time_token()),))
             t.start()
 
         s.start()

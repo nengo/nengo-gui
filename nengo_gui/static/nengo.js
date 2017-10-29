@@ -39,7 +39,8 @@ Nengo.create_websocket = function(uid) {
     } else{
         var ws_proto = 'ws:';
     }
-    var ws_url = ws_proto + '//' + parser.host + '/viz_component?uid=' + uid;
+    var ws_url = ws_proto + '//' + parser.host + window.location.pathname +
+        'viz_component?uid=' + uid;
     var ws = new WebSocket(ws_url);
     ws.binaryType = "arraybuffer";
     return ws;
