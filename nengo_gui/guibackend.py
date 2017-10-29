@@ -91,7 +91,7 @@ class RequireAuthentication(object):
             session = inst.get_session()
             if session.authenticated:
                 return fn(inst)
-            elif self.get_token(inst) == inst.server.settings.auth_token:
+            elif inst.server.verify_token(self.get_token(inst)):
                 session.authenticated = True
                 session.login_host = inst.headers.get('host', None)
                 inst.persist_session(session)
@@ -132,7 +132,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
             valid_pw = (
                 self.server.settings.password_hash is not None and
                 checkpw(self.db['pw'], self.server.settings.password_hash))
-            valid_token = self.db['pw'] == self.server.settings.auth_token
+            valid_token = self.server.verify_token(self.db['pw'])
             if valid_pw or valid_token:
                 session.authenticated = True
                 session.login_host = self.headers.get('host', None)
@@ -345,7 +345,6 @@ class GuiServerSettings(object):
         'listen_addr',
         'auto_shutdown',
         'password_hash',
-        'auth_token',
         'ssl_cert',
         'ssl_key',
         'session_duration',
@@ -358,7 +357,6 @@ class GuiServerSettings(object):
         self.listen_addr = listen_addr
         self.auto_shutdown = auto_shutdown
         self.password_hash = password_hash
-        self.auth_token = gensalt(24).decode('ascii')
         self.ssl_cert = ssl_cert
         self.ssl_key = ssl_key
         self.session_duration = session_duration
@@ -389,6 +387,8 @@ class GuiServer(server.ManagedThreadHttpServer):
                     b.socket, certfile=self.settings.ssl_cert,
                     keyfile=self.settings.ssl_key, server_side=True)
 
+        self.auth_token = gensalt(24)
+        self._one_time_auth_tokens = set()
         self.sessions = SessionManager(self.settings.session_duration)
 
         # the list of running Pages
@@ -422,3 +422,17 @@ class GuiServer(server.ManagedThreadHttpServer):
                 logging.info(
                     "No connections remaining to the nengo_gui server.")
                 self.shutdown()
+
+    def verify_token(self, token):
+        if token in self._one_time_auth_tokens:
+            self._one_time_auth_tokens.remove(token)
+            return True
+        elif token == self.auth_token:
+            return True
+        else:
+            return False
+
+    def gen_one_time_token(self):
+        token = gensalt(24)
+        self._one_time_auth_tokens.add(token)
+        return token
