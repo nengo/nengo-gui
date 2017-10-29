@@ -99,8 +99,10 @@ class HttpResponse(object):
         request.send_header('Content-Length', len(self.data))
         if hasattr(request, 'flush_headers'):
             request.flush_headers()
-        request.wfile.write(request.cookie.output().encode('utf-8'))
-        request.wfile.write(b'\r\n')
+        cookie = request.cookie.output().encode('utf-8')
+        if len(cookie) > 0:
+            request.wfile.write(cookie)
+            request.wfile.write(b'\r\n')
         for header in self.headers:
             request.send_header(*header)
         request.end_headers()
