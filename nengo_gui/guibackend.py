@@ -78,13 +78,20 @@ class RequireAuthentication(object):
     def __init__(self, login_page):
         self.login_page = login_page
 
+    def get_token(self, inst):
+        if 'token' in inst.db:
+            return inst.db['token']
+        elif inst.headers.get('Authorization', '').lower().startswith(
+                'token '):
+            return inst.headers.get('Authorization').split(' ')[1]
+        return None
+
     def __call__(self, fn):
         def auth_checked(inst):
             session = inst.get_session()
             if session.authenticated:
                 return fn(inst)
-            elif ('token' in inst.db and
-                    inst.db['token'] == inst.server.settings.auth_token):
+            elif self.get_token(inst) == inst.server.settings.auth_token:
                 session.authenticated = True
                 session.login_host = inst.headers.get('host', None)
                 inst.persist_session(session)
@@ -121,14 +128,12 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         if session.authenticated:
             return server.HttpRedirect('/')
 
-        if self.server.settings.password_hash is None:
-            return server.HtmlResponse(content + b'''
-                <p>Password authentication not enabled, please use the token
-                link.</p>
-            ''')
-
         if 'pw' in self.db:
-            if checkpw(self.db['pw'], self.server.settings.password_hash):
+            valid_pw = (
+                self.server.settings.password_hash is not None and
+                checkpw(self.db['pw'], self.server.settings.password_hash))
+            valid_token = self.db['pw'] == self.server.settings.auth_token
+            if valid_pw or valid_token:
                 session.authenticated = True
                 session.login_host = self.headers.get('host', None)
                 self.persist_session(session)
@@ -137,7 +142,8 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
                 content += b'<p><strong>Invalid password. Try again.'
                 content += b'</strong></p>'
         else:
-            content += b'<p>Please enter the password:</p>'
+            content += b'<p>Please enter the password or the security token '
+            content += b'shown by Nengo when it was started:</p>'
 
         return server.HtmlResponse(content + b'''
             <form method="POST"><p>
