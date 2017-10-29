@@ -322,8 +322,12 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         return session
 
     def persist_session(self, session):
-        session_id = self.server.sessions.add_session(self.request, session)
-        self.cookie['_sid_' + str(self.server.server_port)] = session_id
+        sid = self.server.sessions.add_session(self.request, session)
+        sid_key = '_sid_' + str(self.server.server_port)
+        self.cookie[sid_key] = sid
+        self.cookie[sid_key]['httponly'] = True
+        self.cookie[sid_key]['max-age'] = self.server.settings.session_duration
+        self.cookie[sid_key]['version'] = 1
 
     def log_message(self, format, *args):
         logger.info(format, *args)
