@@ -28,11 +28,12 @@ logger = logging.getLogger(__name__)
 
 
 class Session(object):
-    __slots__ = ['creation_time', 'authenticated', 'login_host']
+    __slots__ = ['creation_time', 'authenticated', 'peer_name', 'login_host']
 
     def __init__(self):
         self.creation_time = time.time()
         self.authenticated = False
+        self.peer_name = None
         self.login_host = None
 
 
@@ -79,12 +80,23 @@ class RequireAuthentication(object):
             if session.authenticated:
                 return fn(inst)
             elif inst.server.verify_token(self.get_token(inst)):
-                session.authenticated = True
-                session.login_host = inst.headers.get('host', None)
-                inst.persist_session(session)
+                self.authenticate(inst)
                 return fn(inst)
             return server.HttpRedirect(self.login_page)
         return auth_checked
+
+    @classmethod
+    def authenticate(cls, request_handler):
+        session = request_handler.get_session()
+        session.authenticated = True
+        session.login_host = request_handler.headers.get('host', None)
+        try:
+            session.peer_name = request_handler.request.getpeername()[0]
+        except Exception:
+            logger.warning(
+                    "Cannot get peer name. Session will not be tied to "
+                    "client.", exc_info=True)
+        request_handler.persist_session(session)
 
 
 class GuiRequestHandler(server.HttpWsRequestHandler):
@@ -114,9 +126,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
                 checkpw(self.db['pw'], self.server.settings.password_hash))
             valid_token = self.server.verify_token(self.db['pw'])
             if valid_pw or valid_token:
-                session.authenticated = True
-                session.login_host = self.headers.get('host', None)
-                self.persist_session(session)
+                RequireAuthentication.authenticate(self)
                 return server.HttpRedirect('/')
             else:
                 content += b'<p><strong>Invalid password. Try again.'
@@ -292,8 +302,18 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
 
     def get_session(self):
         try:
+            peer_name = self.request.getpeername()[0]
+        except Exception:
+            peer_name = None
+
+        try:
             session_id = self.cookie['_session_id'].value
             session = self.server.sessions[session_id]
+            if session.peer_name != peer_name:
+                logger.warning(
+                    "Session peer name mismatch: %s, %s", peer_name,
+                    session.peer_name)
+                raise KeyError()
         except KeyError:
             session = Session()
         return session
