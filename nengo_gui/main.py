@@ -104,7 +104,7 @@ def main():
             t = threading.Thread(
                 target=webbrowser.open,
                 args=('%s//%s:%d/?token=%s' % (
-                    protocol, host, port, server_settings.auth_token),))
+                    protocol, host, port, s.server.gen_one_time_token()),))
             t.start()
 
         s.start()

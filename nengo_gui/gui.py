@@ -72,7 +72,7 @@ class InteractiveGUI(BaseGUI):
         protocol = 'https:' if self.server.settings.use_ssl else 'http:'
         print("Starting nengo server accessible at:\n  %s//%s:%d/?token=%s" % (
             protocol, 'localhost', self.server.server_port,
-            self.server.settings.auth_token))
+            self.server.auth_token))
 
         if not sys.platform.startswith('win'):
             signal.signal(signal.SIGINT, self._confirm_shutdown)
