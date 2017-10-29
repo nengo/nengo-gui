@@ -95,7 +95,8 @@ class HttpResponse(object):
 
     def send(self, request):
         request.send_response(self.code)
-        request.send_header('Content-type', self.mimetype)
+        request.send_header('Content-Type', self.mimetype)
+        request.send_header('Content-Length', len(self.data))
         if hasattr(request, 'flush_headers'):
             request.flush_headers()
         request.wfile.write(request.cookie.output().encode('utf-8'))
