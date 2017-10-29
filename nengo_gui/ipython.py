@@ -39,13 +39,14 @@ class IPythonViz(object):
 
         self._server_thread, server = self.start_server(cfg, model)
         self.port = server.server.server_port
+        server.server.settings.prefix = '/nengo/' + str(self.port)
 
         self.url = self.get_url(
             self.host, self.port, token=server.server.auth_token)
 
     @staticmethod
     def get_url(host, port, action=None, token=None):
-        url = 'http://{host}:{port}/'.format(host=host, port=port)
+        url = 'http://{host}:{port}/nengo/{port}/'.format(host=host, port=port)
         if action is not None:
             url += action
         if token is not None:
