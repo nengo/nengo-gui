@@ -99,6 +99,7 @@ class HttpResponse(object):
         self.headers = headers
 
     def send(self, request):
+        request.protocol_version = 'HTTP/1.1'
         request.send_response(self.code)
         request.send_header('Content-Type', self.mimetype)
         request.send_header('Content-Length', len(self.data))
