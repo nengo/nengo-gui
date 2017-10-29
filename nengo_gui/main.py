@@ -24,6 +24,10 @@ def main():
         nargs='?', default=False, const=True, type=str,
         help='password for remote access')
     parser.add_argument(
+        '-l', '--listen', nargs=1, default=['localhost'], type=str,
+        help="Network interface to listen on for incoming connections. Set to "
+        "'*' to allow connections on all network interfaces.")
+    parser.add_argument(
         '--cert', nargs=1, default=[None], type=str,
         help="SSL certificate file")
     parser.add_argument(
@@ -59,19 +63,21 @@ def main():
 
     if args.password:
         if args.password is True:
-            password = hashpw(prompt_pw(), gensalt())
+            password_hash = hashpw(prompt_pw(), gensalt())
         else:
-            password = hashpw(args.password, gensalt())
-        server_settings = GuiServerSettings(
-            ('', port), args.auto_shutdown[0], password_hash=password,
-            ssl_cert=args.cert[0], ssl_key=args.key[0])
-        if not server_settings.use_ssl:
-            raise ValueError("Password protection only allowed with SSL.")
+            password_hash = hashpw(args.password, gensalt())
     else:
-        server_settings = GuiServerSettings(
-            ('localhost', port), args.auto_shutdown[0], ssl_cert=args.cert[0],
-            ssl_key=args.key[0])
-    host = server_settings.listen_addr[0]
+        password_hash = None
+
+    host = args.listen[0]
+    if host == '*':
+        host = ''
+    server_settings = GuiServerSettings(
+        (host, port), args.auto_shutdown[0], password_hash=password_hash,
+        ssl_cert=args.cert[0], ssl_key=args.key[0])
+    if host != 'localhost' and not server_settings.use_ssl:
+        raise ValueError(
+            "Listening on external network interfaces only allowed with SSL.")
 
     try:
         if args.filename is None:
