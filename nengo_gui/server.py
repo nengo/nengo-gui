@@ -19,14 +19,14 @@ import warnings
 
 try:
     from http import server
-    from http.cookies import SimpleCookie
     import socketserver
     from urllib.parse import parse_qs, urlparse
 except ImportError:  # Python 2.7
     import BaseHTTPServer as server
-    from Cookie import SimpleCookie
     import SocketServer as socketserver
     from urlparse import parse_qs, urlparse
+
+from cookies import Cookies
 
 
 logger = logging.getLogger(__name__)
@@ -105,10 +105,8 @@ class HttpResponse(object):
         request.send_header('Content-Length', len(self.data))
         if hasattr(request, 'flush_headers'):
             request.flush_headers()
-        cookie = request.cookie.output().encode('utf-8')
-        if len(cookie) > 0:
-            request.wfile.write(cookie)
-            request.wfile.write(b'\r\n')
+        for cookie in request.response_cookies.render_response():
+            request.send_header('Set-Cookie', cookie)
         for header in self.headers:
             request.send_header(*header)
         request.end_headers()
@@ -385,7 +383,8 @@ class HttpWsRequestHandler(server.BaseHTTPRequestHandler):
         self.resource = None
         self.query = None
         self.db = {}
-        self.cookie = SimpleCookie()
+        self.request_cookies = Cookies()
+        self.response_cookies = Cookies()
         self.ws = None
         server.BaseHTTPRequestHandler.__init__(self, *args, **kwargs)
 
@@ -407,8 +406,7 @@ class HttpWsRequestHandler(server.BaseHTTPRequestHandler):
         self.db.update(
             {k: v[0] for k, v in self.query.items() if k not in self.db})
         if 'Cookie' in self.headers:
-            self.cookie.load(self.headers['Cookie'])
-
+            self.request_cookies.parse_request(self.headers.get('Cookie'))
         try:
             connection = self.headers.get('Connection', 'close').lower()
             if 'upgrade' in connection:
