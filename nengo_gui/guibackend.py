@@ -58,21 +58,7 @@ class SessionManager(object):
         return session_id
 
     def _new_session_id(self, request):
-        try:
-            peer = request.getpeername()  # not supported on some systems
-        except:
-            logger.warning(
-                "Cannot get peer name. Sessions will not be tied to client.",
-                exc_info=True)
-            peer = ''
-
-        session_id = hashlib.sha1()
-        session_id.update(os.urandom(16))
-        for elem in peer:
-            if isinstance(elem, str):
-                elem = elem.encode('utf-8')
-            session_id.update(bytes(elem))
-        return session_id.hexdigest()
+        return gensalt(16)
 
 
 class RequireAuthentication(object):
