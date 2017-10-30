@@ -28,6 +28,19 @@ logger = logging.getLogger(__name__)
 WS_MAGIC = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
 
 
+if socket.has_ipv6:
+    if hasattr(socket, 'IPPROTO_IPV6'):
+        IPPROTO_IPV6 = socket.IPPROTO_IPV6
+    elif sys.platform.startswith('win'):
+        # See <https://bugs.python.org/issue29515>.
+        IPPROTO_IPV6 = 41
+    else:
+        raise RuntimeError(
+            "System does not define IPPROTO_IPV6 despite IPv6 support.")
+else:
+    IPPROTO_IPV6 = None
+
+
 class SocketClosedError(IOError):
     pass
 
@@ -120,7 +133,7 @@ class DualStackHttpServer(object):
                 self.address_family, socket.SOCK_STREAM)
             if self.address_family is socket.AF_INET6:
                 self.socket.setsockopt(
-                    socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 1)
+                    IPPROTO_IPV6, socket.IPV6_V6ONLY, 1)
 
         def bind(self):
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
