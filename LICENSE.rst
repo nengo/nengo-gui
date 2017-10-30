@@ -31,6 +31,8 @@ Nengo GUI depends on several open source libraries.
   `EPL license <https://github.com/bdcht/grandalf/blob/master/LICENSE>`_
 * `Validator <https://github.com/1000hz/bootstrap-validator>`_ - Used under
   `MIT license <https://github.com/1000hz/bootstrap-validator/blob/master/LICENSE>`_
+* `cookies <https://github.com/>`_ -Used under
+  `MIT license <https://github.com/sashahart/cookies/blob/master/LICENSE>`_
 
 ********************************
 Contributor Assignment Agreement

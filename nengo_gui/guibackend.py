@@ -18,9 +18,8 @@ except ImportError:  # for Python without ssl support
     from . import nossl as ssl
 import time
 
-from cookies import Cookie
-
 import nengo_gui
+from nengo_gui._vendor.cookies import Cookie
 from nengo_gui.completion import get_completions
 import nengo_gui.exec_env
 import nengo_gui.page

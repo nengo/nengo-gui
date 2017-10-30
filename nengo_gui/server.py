@@ -26,7 +26,7 @@ except ImportError:  # Python 2.7
     import SocketServer as socketserver
     from urlparse import parse_qs, urlparse
 
-from cookies import Cookies
+from nengo_gui._vendor.cookies import Cookies
 
 
 logger = logging.getLogger(__name__)
