@@ -8,8 +8,10 @@ import uuid
 import warnings
 import weakref
 try:
+    from http.client import BadStatusLine
     from urllib.request import urlopen
 except ImportError:
+    from httplib import BadStatusLine
     from urllib2 import urlopen
 
 from IPython import get_ipython
@@ -31,6 +33,8 @@ class ConfigReuseWarning(UserWarning):
 
 
 class IPythonViz(object):
+    shutdown_hook_registered = False
+
     servers = weakref.WeakValueDictionary()
     threads = weakref.WeakValueDictionary()
     configs = set()
@@ -71,6 +75,10 @@ class IPythonViz(object):
 
     @classmethod
     def start_server(cls, cfg, model):
+        if not cls.shutdown_hook_registered:
+            atexit.register(IPythonViz.shutdown_all, timeout=5)
+            cls.shutdown_hook_registered = True
+
         # Make sure only one server is writing the same config.
         server_thread = cls.threads.get(cfg, None)
         server = cls.servers.get(cfg, None)
@@ -97,6 +105,7 @@ class IPythonViz(object):
         server = nengo_gui.gui.BaseGUI(
             model_context, server_settings, page_settings)
         server_thread = threading.Thread(target=server.start)
+        server_thread.daemon = True
         server_thread.start()
         cls.servers[cfg] = server
         cls.threads[cfg] = server_thread
@@ -111,6 +120,7 @@ class IPythonViz(object):
             except Exception:
                 pass
             else:
+                s.shutdown(socket.SHUT_RDWR)
                 s.close()
 
     @classmethod
@@ -124,11 +134,19 @@ class IPythonViz(object):
         for cfg in cls.configs:
             server = cls.servers.get(cfg, None)
             server_thread = cls.threads.get(cfg, None)
-            if server_thread is not None and server_thread.is_alive():
-                if server is not None:
+            needs_shutdown = (
+                server_thread is not None and server_thread.is_alive() and
+                server is not None)
+            if needs_shutdown:
+                try:
                     urlopen(
-                        cls.get_url(cls.host, server.server_port, 'shutdown'),
+                        cls.get_url(
+                            cls.host, server.server.server_port, 'shutdown',
+                            token=server.server.auth_token),
                         timeout=get_timeout()).read()
+                except BadStatusLine:
+                    # no response expected as server was just shutdown
+                    pass
                 server_thread.join(get_timeout())
 
     def _ipython_display_(self):
@@ -151,7 +169,6 @@ class IPythonViz(object):
             print("Server is not alive.")
 
 
-atexit.register(IPythonViz.shutdown_all, timeout=5)
 
 
 class NengoGuiHandler(IPythonHandler):

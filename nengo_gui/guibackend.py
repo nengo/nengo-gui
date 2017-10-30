@@ -110,6 +110,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         '/static': 'serve_static',
         '/browse': 'browse',
         '/complete': 'complete',
+        '/shutdown': 'request_shutdown',
         '/favicon.ico': 'serve_favicon',
     }
 
@@ -229,6 +230,10 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         components = page.create_javascript()
         data = (html % dict(components=components)).encode('utf-8')
         return server.HttpResponse(data)
+
+    @RequireAuthentication('/login')
+    def request_shutdown(self):
+        self.server.shutdown()
 
     def serve_favicon(self):
         self.resource = '/static/favicon.ico'
