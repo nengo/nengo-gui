@@ -150,6 +150,28 @@ class IPythonViz(object):
                 server_thread.join(get_timeout())
 
     def _ipython_display_(self):
+        display(HTML(r'''
+            <script type="text/javascript" id="{uuid}">
+            {{
+                let req = new XMLHttpRequest();
+                req.addEventListener("load", function() {{
+                    if (this.status != 200 && this.response != 'OK') {{
+                        let p = document.getElementById('{uuid}').parentNode;
+                        p.innerHTML +=
+                            'The nengo_gui.ipython notebook server ' +
+                            'extension was not loaded. Please activate it ' +
+                            'with the following command:' +
+                            '<pre>jupyter serverextension enable ' +
+                            'nengo_gui.ipython</pre>';
+                        p.classList.add('output_stderr');
+                    }}
+                }});
+                req.open('GET', '/nengo/check', true);
+                req.send();
+            }}
+            </script>
+        '''.format(uuid=uuid.uuid4())))
+
         self.wait_for_startup()
         if self._server_thread.is_alive():
             display(HTML('''
@@ -167,8 +189,6 @@ class IPythonViz(object):
                 url=self.resource, id=uuid.uuid4(), height=self.height)))
         else:
             print("Server is not alive.")
-
-
 
 
 class NengoGuiHandler(IPythonHandler):
@@ -254,14 +274,22 @@ class NengoGuiWSHandler(IPythonHandler, WebSocketHandler):
             self.write_message(message)
 
 
+class AvailabilityCheckHandler(IPythonHandler):
+    def get(self):
+        self.finish('OK')
+
+
 def load_jupyter_server_extension(nb_server_app):
     web_app = nb_server_app.web_app
     host_pattern = '.*$'
+    availability_check_pattern = url_path_join(
+        web_app.settings['base_url'], '/nengo/check')
     ws_route_pattern = url_path_join(
         web_app.settings['base_url'], '/nengo/(\\d+)/viz_component(\\?.*)?$')
     route_pattern = url_path_join(
         web_app.settings['base_url'], '/nengo/(\\d+)/.*$')
     web_app.add_handlers(host_pattern, [
+        (availability_check_pattern, AvailabilityCheckHandler),
         (ws_route_pattern, NengoGuiWSHandler),
         (route_pattern, NengoGuiHandler),
     ])
