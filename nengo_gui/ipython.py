@@ -193,8 +193,8 @@ class NengoGuiHandler(IPythonHandler):
         self.write(data)
 
     def async_callback(self, response):
-        if response.error:
-            print('err', response.error)  # TODO error handling
+        if response.error is not None:
+            response.rethrow()
         else:
             self.finish()
 
@@ -226,11 +226,12 @@ class NengoGuiWSHandler(IPythonHandler, WebSocketHandler):
             self.ws.write_message(message)
 
     def on_close(self):
-        self.ws.close()
+        self.ws.close(self.close_code, self.close_reason)
 
     def on_message_callback(self, message):
-        # FIXME websocket might already be closed
-        if isinstance(message, bytes):
+        if message is None:
+            self.close()
+        elif isinstance(message, bytes):
             self.write_message(message, binary=True)
         else:
             self.write_message(message)
