@@ -1,5 +1,7 @@
 svg.netgraph {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    flex: 1 1 auto;
+    order: 2;
 
     text {
         cursor: default;

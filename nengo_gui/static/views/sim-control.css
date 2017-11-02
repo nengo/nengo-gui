@@ -12,14 +12,11 @@
     background-color: var(--light);
     border-top: 1px solid var(--dark);
     display: flex;
-    flex: {
-        grow: 0;
-        shrink: 0;
-        basis: auto;
-    }
+    flex: 0 0 auto;
     height: 80px;
     justify-content: space-around;
     min-width: 600px;
+    order: 3;
     overflow: hidden;
     width: 100%;
     z-index: 99999999;

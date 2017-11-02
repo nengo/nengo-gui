@@ -11,7 +11,6 @@
 import * as interact from "interact.js";
 
 import { config } from "./config";
-import { Editor } from "./editor";
 import { Menu } from "./menu";
 import { Connection } from "./server";
 import { SimControl } from "./sim-control";
@@ -27,6 +26,26 @@ export class Toolbar {
     constructor(server: Connection) {
         this.server = server;
 
+        this.view.buttons["open"].addEventListener("click", () => {
+            if (this.view.is_active("open")) {
+                this.view.deactivate("open");
+                this.server.dispatch("sidebar.hide");
+            } else {
+                this.server.dispatch("sidebar.filebrowser");
+                this.view.deactivate("utils")
+                this.view.activate("open")
+            }
+        });
+        this.view.buttons["utils"].addEventListener("click", () => {
+            if (this.view.is_active("utils")) {
+                this.view.deactivate("utils");
+                this.server.dispatch("sidebar.hide");
+            } else {
+                this.server.dispatch("sidebar.utilities");
+                this.view.deactivate("open")
+                this.view.activate("utils")
+            }
+        });
         this.view.buttons["reset"].addEventListener("click", () => {
             this.askResetLayout();
         });
@@ -38,23 +57,55 @@ export class Toolbar {
             this.server.dispatch("netgraph.redo");
             // this.netgraph.notify({undo: "0"});
         });
-        this.view.buttons["utils"].addEventListener("click", () => {
-            // TODO: show UtilitiesSidebar
-            this.server.dispatch("sidebar.toggle");
+        this.view.buttons["filename"].addEventListener("click", () => {
+            this.askSaveAs();
         });
         this.view.buttons["sync"].addEventListener("click", () => {
             this.server.dispatch("editor.syncWithServer");
+        });
+        this.view.buttons["save"].addEventListener("click", () => {
+            this.server.dispatch("editor.save");
+        });
+        this.view.buttons["fontDown"].addEventListener("click", () => {
+            this.server.dispatch("editor.fontDown");
+        });
+        this.view.buttons["fontUp"].addEventListener("click", () => {
+            this.server.dispatch("editor.fontUp");
+        });
+        this.view.buttons["editor"].addEventListener("click", () => {
+            this.server.dispatch("editor.toggle");
         });
         this.view.buttons["hotkeys"].addEventListener("click", () => {
             // TODO: hotkeys menu func
             this.server.dispatch("hotkeys.show")
         });
-        this.view.buttons["filename"].addEventListener("click", () => {
-            this.askSaveAs();
-        });
 
         interact(this.view.root).on("tap", () => {
             Menu.hideShown();
+        });
+
+        // document.addEventListener("nengo.editor", (event: CustomEvent) => {
+        //     const hidden = event.detail;
+        // });
+        document.addEventListener("nengo.editor.dirty", () => {
+            this.view.enable("sync");
+            this.view.enable("save");
+        });
+
+        document.addEventListener("nengo.editor.saved", () => {
+            this.view.disable("sync");
+            this.view.disable("save");
+        });
+
+        document.addEventListener("nengoConfigChange", (event: CustomEvent) => {
+            const key = event.detail;
+            if (key === "editorFontSize") {
+                if (config.editorFontSize <= 6) {
+                    this.view.disable("fontDown");
+                } else {
+                    this.view.enable("fontDown");
+                }
+            }
         });
     }
 

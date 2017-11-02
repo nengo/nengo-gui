@@ -10,7 +10,6 @@ import "imports-loader?$=jquery,jQuery=jquery!jqueryfiletree/src/jQueryFileTree"
 import "jqueryfiletree/dist/jQueryFileTree.min.css";
 
 import "./favicon.ico";
-import "./main.css";
 
 import * as items from "./debug/items";
 import { Editor } from "./editor";
@@ -21,6 +20,7 @@ import { Sidebar } from "./sidebar";
 import { SimControl } from "./sim-control";
 import { Toolbar } from "./toolbar";
 import { Network } from "./components/network";
+import { MainView } from "./views/main";
 
 export interface NengoWindow extends Window {
     nengo: Nengo;
@@ -135,22 +135,29 @@ export class Nengo {
     sidebar;
     sim;
     toolbar;
+
     private server: ServerConnection;
+    private view: MainView = new MainView();
 
     constructor(server: ServerConnection) {
         this.editor = new Editor(server);
         this.sim = new SimControl(server);
         this.toolbar = new Toolbar(server);
-        this.sidebar = new UtilitiesSidebar(server);
+        this.sidebar = new Sidebar(server);
         this.netgraph = new NetGraph(server);
-        this.hotkeys = new HotkeyManager(server);
 
-        // TODO: Order matters! but it shouldn't
+        // Add hotkeys
+        this.hotkeys = new HotkeyManager(server);
+        this.sim.hotkeys(this.hotkeys);
+        this.netgraph.hotkeys(this.hotkeys);
+        this.editor.hotkeys(this.hotkeys);
+
         document.body.appendChild(this.toolbar.view.root);
-        document.body.appendChild(this.netgraph.view.root);
-        document.body.appendChild(this.sidebar.view.root);
-        document.body.appendChild(this.editor.view.root);
+        document.body.appendChild(this.view.root);
         document.body.appendChild(this.sim.view.root);
+        this.view.root.appendChild(this.editor.view.root);
+        this.view.root.appendChild(this.netgraph.view.root);
+        this.view.root.appendChild(this.sidebar.view.root);
         window.dispatchEvent(new Event("resize"));
 
         server.bind("netgraph.update", (cfg) => {

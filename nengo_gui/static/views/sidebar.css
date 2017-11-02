@@ -5,119 +5,149 @@
     --dark: gray(40%);
     --darker: gray(30%);
     --darkest: gray(20%);
+    --width: 250px;
 }
 
 div.sidebar {
     background-color: var(--lightest);
     border-right: 1px solid var(--darker);
     color: var(--darkest);
+    flex: 0 1 auto;
     font-size: 15px;
-    height: 100%;
+    order: 1;
     overflow: {
         x: hidden;
         y: hidden;
     }
-    transition: 0.5s;
-    width: 250px;
+    position: relative;
+    transition: width 0.5s;
+    width: var(--width);
     z-index: 9999;
 
     &.hidden {
+        /* !important needed because carousel.less sets .hidden
+           to display: none!important */
         display: block!important;
-        transform: translate(-250px);
+        width: 0;
     }
 
-    .accordion-content {
-        display: none;
+    .accordion-container {
 
-        &.default {
-            display: block;
-        }
-    }
+        border-left: 1px solid var(--darker);
+        height: 100%;
+        left: var(--width);
+        position: absolute;
+        transition: left 0.3s;
+        width: var(--width);
 
-    .accordion-toggle {
-
-    }
-
-    .sidebar-item {
-        align-items: center;
-        background: none;
-        border: {
-            bottom: solid var(--light) 1px;
-        }
-        color: inherit;
-        cursor: pointer;
-        display: flex;
-        height: 40px;
-        justify-content: space-between;
-        width: 100%;
-
-        span {
-            font-size: 14px;
-            padding: 8px;
+        &.active {
+            border-left: none;
+            left: 0;
         }
 
-        &:hover {
-            background: var(--dark);
-            color: var(--lightest);
+        .accordion-content {
+            display: none;
+
+            &.default {
+                display: block;
+            }
         }
 
-        &.indent {
-            background: var(--lighter);
-            border: 0;
-            padding-top: 1px;
+        .sidebar-item {
+            align-items: center;
+            background: none;
+            border: {
+                bottom: solid var(--light) 1px;
+            }
+            color: inherit;
+            cursor: pointer;
+            display: flex;
+            height: 40px;
+            justify-content: space-between;
+            width: 100%;
+
+            span {
+                font-size: 14px;
+                padding: 8px;
+            }
 
             &:hover {
                 background: var(--dark);
                 color: var(--lightest);
             }
 
-            .title {
-                float: left;
+            &.indent {
+                background: var(--lighter);
+                border: 0;
+                padding-top: 1px;
+
+                &:hover {
+                    background: var(--dark);
+                    color: var(--lightest);
+                }
+
+                .title {
+                    float: left;
+                    font-size: 14px;
+                    padding: {
+                        left: 23px;
+                        top: 8px;
+                    }
+                }
+            }
+
+            .icon {
+                float: right;
                 font-size: 14px;
                 padding: {
-                    left: 23px;
-                    top: 8px;
+                    right: 8px;
+                    top: 12px;
                 }
             }
         }
+    }
 
-        .icon {
-            float: right;
-            font-size: 14px;
-            padding: {
-                right: 8px;
-                top: 12px;
+    .filebrowser {
+        border-right: 1px solid var(--darker);
+        height: 100%;
+        left: -var(--width);
+        padding-left: 2px;
+        position: absolute;
+        transition: left 0.3s;
+        width: var(--width);
+
+        &.active {
+            border-right: none;
+            left: 0;
+        }
+
+        a {
+            color: inherit;
+            display: block;
+            font-size: 15px;
+            transition: 0.3s;
+
+            &:hover {
+                background: var(--dark);
+                color: var(--lightest);
             }
         }
-    }
 
-    a {
-        color: inherit;
-        display: block;
-        font-size: 15px;
-        transition: 0.3s
-    }
-}
+        li.examples_dir {
+            background-color: var(--lighter);
+            cursor: pointer;
 
-div.filebrowser {
-    a {
-        color: inherit;
-
-        &:hover {
-            background: var(--dark);
-            color: var(--lightest);
+            > a {
+                font-style: italic;
+            }
         }
-    }
 
-    li.examples_dir {
-        background-color: var(--lighter);
-        cursor: pointer;
-
-        > a {
-            font-style: italic;
+        ul.jqueryFileTree {
+            line-height: 20px;
         }
     }
 }
+
 
 @media screen and (max-height: 450px) {
     .sidebar {

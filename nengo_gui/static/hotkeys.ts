@@ -38,11 +38,14 @@ export class Hotkey {
 
     get shortcut(): string {
         let shortcut = this.key;
-        if (this.modifiers.shift) {
+        if (this.modifiers.shift && this.key !== "?") {
             shortcut = Hotkey.shift + "-" + shortcut;
         }
         if (this.modifiers.ctrl) {
             shortcut = Hotkey.ctrl + "-" + shortcut;
+        }
+        if (this.key === " ") {
+            shortcut = "Spacebar";
         }
         return shortcut;
     }
@@ -74,7 +77,9 @@ export class HotkeyManager {
         });
 
         // Bring up help menu with ?
-        this.add("Show hotkeys", "?", () => { this.show();  });
+        this.add("Show hotkeys", "?", { shift: true }, () => {
+            this.show();
+        });
         // Prevent going back in history.
         this.add(null, "backspace", () => {});
 

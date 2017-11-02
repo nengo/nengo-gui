@@ -26,9 +26,9 @@ export class NetGraphView {
         // )]);
 
         // Create the master SVG element
-        const svg = h("svg.netgraph", {styles: {
-            height: "600", position: "absolute", width: "600"
-        }}, [h("g.widgets"), h("g.nets"), h("g.conns"), h("g.items")]); // defs,
+        const svg = h("svg.netgraph", [
+            h("g.widgets"), h("g.nets"), h("g.conns"), h("g.items")
+        ]); // defs,
 
         this.root = dom.create(svg).domNode as SVGSVGElement;
 

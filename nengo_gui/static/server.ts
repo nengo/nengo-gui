@@ -12,7 +12,15 @@ function getURL(uid: string = null): string {
         url += `:${port}`;
     }
     if (uid != null) {
+        // If requesting UID, only send along UID
         url += `/?uid=${uid}`;
+    } else {
+        // If not requesting UID, send along query params
+        const href = window.location.href.split("?");
+        if (href.length > 1) {
+            url += `/?${href[1]}`;
+            console.log(url)
+        }
     }
     return url
 }

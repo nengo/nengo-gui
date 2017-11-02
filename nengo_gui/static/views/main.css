@@ -1,5 +1,6 @@
 html {
     height: 100%;
+    overflow-x: hidden;
 }
 
 body {
@@ -24,6 +25,12 @@ body {
     flex: 1 1 auto;
     flex-direction: row;
     position: relative;
+}
+
+div.main {
+    display: flex;
+    flex: 1 1 auto;
+    order: 2;
 }
 
 div.minimap {

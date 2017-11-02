@@ -41,11 +41,45 @@ export class Sidebar {
             });
         });
 
-        server.bind("sidebar.show", () => { this.hidden = false; });
-        server.bind("sidebar.hide", () => { this.hidden = true; });
-        server.bind("sidebar.toggle", () => { this.hidden = !this.hidden; });
+        server.bind("sidebar.show", () => {
+            this.hidden = false;
+        });
+        server.bind("sidebar.hide", () => {
+            this.hidden = true;
+        });
+        server.bind("sidebar.toggle", () => {
+            this.hidden = !this.hidden;
+        });
+        server.bind("sidebar.filebrowser", () => {
+            this.hidden = false;
+            this.active = "filebrowser";
+            // TODO: Do we sync the filebrowser here?
+        });
+        server.bind("sidebar.utilities", () => {
+            this.hidden = false;
+            this.active = "utilities";
+        });
+
+        document.addEventListener("nengoConfigChange", (event: CustomEvent) => {
+            const key = event.detail;
+            if (key === "scriptdir") {
+                this.syncFilebrowser();
+            }
+        });
 
         this.server = server;
+        this.hidden = true; // Always start hidden
+        this.syncFilebrowser();  // Do a first sync
+    }
+
+    get active(): string {
+        return this.view.active;
+    }
+
+    set active(val: string) {
+        if (val !== this.view.active) {
+            this.view.active = val;
+        }
     }
 
     get hidden(): boolean {
@@ -136,7 +170,7 @@ export class Sidebar {
             const svg = $("#main svg")[0];
 
             // Serialize SVG as XML
-            const svgXml = (new XMLSerializer()).serializeToString(svg);
+            const svgXml = new XMLSerializer().serializeToString(svg);
             let source = "<?xml version='1.0' standalone='no'?>" + svgXml;
             source = source.replace("&lt;", "<");
             source = source.replace("&gt;", ">");
@@ -166,5 +200,18 @@ export class Sidebar {
         });
         document.body.appendChild(modal.root);
         modal.show();
+    }
+
+    syncFilebrowser() {
+        this.server.send("filebrowser.browse");
+        $(this.view.filebrowser).fileTree(
+            {
+                script: "/browse?root=" + config.scriptdir,
+                root: config.scriptdir
+            },
+            file => {
+                window.location.assign("/?filename=" + file);
+            }
+        );
     }
 }

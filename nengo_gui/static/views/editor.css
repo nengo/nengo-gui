@@ -1,11 +1,15 @@
 div.editor-container {
     display: flex;
-    flex: 0 0 auto {
+    flex: 0 1 auto {
         direction: column;
     }
-    margin-left: auto;
-    height: 100%;
-    width: 400px;
+    order: 3;
+    transition: width 0.5s;
+
+    &.hidden {
+        display: flex!important;
+        width: 0!important; /* Requires because width is set on element */
+    }
 
     .editor {
         border-left: 5px solid #606060;
@@ -20,8 +24,9 @@ div.editor-container {
             radius: 0px;
         }
         display: block;
-        flex: 0 0 auto;
+        flex: 0 1 auto;
         min-height: 20px;
+        min-width: 100px;
         overflow: auto;
         padding: 0.5em;
         user-select: text;

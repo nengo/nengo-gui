@@ -7,6 +7,8 @@
 
 div.toolbar {
     border-bottom: 1px solid var(--dark);
+    flex: 0 1 auto;
+    order: 1;
     width: 100%;
     z-index: 99999;
 
@@ -43,6 +45,8 @@ div.toolbar {
 
             &.deactivated a, &.disabled a {
                 color: var(--light);
+                cursor: default;
+                pointer-events: none;
 
                 &:hover {
                     background: none;

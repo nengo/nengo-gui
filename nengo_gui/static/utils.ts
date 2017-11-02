@@ -69,10 +69,10 @@ export function endsWith(str: string, suffix: string) {
  */
 export function clip(x: number, low: number, high: number) {
     if (x < low) {
-        x = low;
+        return low;
     }
-    if (x > high) {
-        x = high;
+    else if (x > high) {
+        return high;
     }
     return x;
 }

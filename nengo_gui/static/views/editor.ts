@@ -2,6 +2,7 @@ import * as $ from "jquery";
 import { VNode, dom, h } from "maquette";
 
 import "./editor.css";
+import * as utils from "../utils";
 import * as views from "./views";
 
 export class EditorView {
@@ -37,16 +38,30 @@ export class EditorView {
         this.console.style.height = val + "px";
     }
 
+    get bottom(): number {
+        return this.root.getBoundingClientRect().bottom;
+    }
+
     get height(): number {
         return this.root.offsetHeight;
     }
 
     get hidden(): boolean {
-        return this.root.style.display === "none";
+        return this.root.classList.contains("hidden");
     }
 
     set hidden(val: boolean) {
-        this.root.style.display = val ? "none" : "flex";
+        if (val) {
+            this.root.classList.add("hidden");
+        } else {
+            this.root.classList.remove("hidden");
+        }
+    }
+
+    get maxWidth(): number {
+        const parent = this.root.parentNode as HTMLDivElement;
+        // 250 gives room for sidebar, but still somewhat arbitrary
+        return Math.max(580, parent.clientWidth - 250);
     }
 
     get stderr(): string {
@@ -65,12 +80,15 @@ export class EditorView {
         this._stdout.textContent = val;
     }
 
+    get top(): number {
+        return this.root.getBoundingClientRect().top;
+    }
+
     get width(): number {
         return this.root.clientWidth;
     }
 
     set width(val: number) {
-        // TODO: probably these widths are not the same
-        this.root.style.width = val + "px";
+        this.root.style.width = `${val}px`;
     }
 }

@@ -92,6 +92,8 @@ class AceEditor(Editor):
     @bind("editor.sync")
     def sync(self):
         self.client.send("editor.code", code=self.code)
+        self.stdout.send()
+        self.stderr.send()
 
     def send_filename(self, filename, error=None):
         self.client.send("editor.filename",

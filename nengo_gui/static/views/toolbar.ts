@@ -39,6 +39,36 @@ export class ToolbarView {
         this.buttons["filename"].textContent = val;
     }
 
+    activate(button: string) {
+        const li = this.buttons[button].parentNode as HTMLLIElement;
+        li.classList.add("selected");
+    }
+
+    is_active(button: string) {
+        const li = this.buttons[button].parentNode as HTMLLIElement;
+        return li.classList.contains("selected");
+    }
+
+    is_enabled(button: string) {
+        const li = this.buttons[button].parentNode as HTMLLIElement;
+        return !li.classList.contains("disabled");
+    }
+
+    deactivate(button: string) {
+        const li = this.buttons[button].parentNode as HTMLLIElement;
+        li.classList.remove("selected");
+    }
+
+    disable(button: string) {
+        const li = this.buttons[button].parentNode as HTMLLIElement;
+        li.classList.add("disabled");
+    }
+
+    enable(button: string) {
+        const li = this.buttons[button].parentNode as HTMLLIElement;
+        li.classList.remove("disabled");
+    }
+
     addButton(
         title: string,
         icon: string | null,
@@ -57,5 +87,4 @@ export class ToolbarView {
         this.ul.appendChild(spacer);
         return spacer;
     }
-
 }

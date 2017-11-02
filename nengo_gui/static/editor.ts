@@ -23,29 +23,28 @@ import { EditorView } from "./views/editor";
 const Range = ace.acequire("ace/range").Range;
 
 export class Editor {
+    consoleInteract;
     currentCode;
     editor;
-    marker;
-    maxWidth;
-    minWidth: number = 50;
+    marker = null;
+    interactConsole;
+    interactEditor;
     saveDisabled: boolean = true;
     syncIntervalID: number = null;
     view = new EditorView();
-    ws;
 
     private server: Connection;
 
     constructor(server: Connection) {
-        this.maxWidth = window.innerWidth - 100;
-
         this.currentCode = "";
 
         // Set up Ace editor
         this.editor = ace.edit(this.view.editor);
         this.editor.getSession().setMode("ace/mode/python");
         this.editor.gotoLine(1);
-        this.marker = null;
+        this.editor.setFontSize(this.fontSize);
         this.view.consoleHeight = this.consoleHeight;
+        this.view.width = this.width;
 
         // Sync with server every 200 ms
         if (this.autoUpdate) {
@@ -55,52 +54,56 @@ export class Editor {
         }
 
         // Add event handlers
-        window.addEventListener(
-            "resize",
-            utils.throttle(() => {
-                this.onresize();
-            }, 66)
-        ); // 66 ms throttle = 15 FPS update
+        window.addEventListener("resize", () => {
+            this.onresize();
+        });
 
-        interact(this.view.editor)
-            .resizable({
-                edges: { bottom: false, left: true, right: false, top: false }
-            })
-            .on("resizemove", event => {
-                this.width -= event.deltaRect.left;
-            });
+        this.interactEditor = interact(this.view.editor);
+        this.interactEditor.resizable({
+            edges: { bottom: false, left: true, right: false, top: false },
+        });
+        this.interactEditor.on("resizestart", event => {
+            this.view.root.style.transition = "none";
+        });
+        this.interactEditor.on("resizemove", event => {
+            this.view.width -= event.deltaRect.left;
+            this.editor.resize();
+        });
+        this.interactEditor.on("resizeend", event => {
+            this.width = this.view.width;
+            this.view.root.style.transition = null;
+        });
 
-        interact(this.view.console)
-            .resizable({
-                edges: { bottom: false, left: true, right: false, top: true }
-            })
-            .on("resizemove", event => {
-                const max = this.view.height - 40;
-                const min = 20;
-                const height = this.consoleHeight - event.deltaRect.top;
-                this.consoleHeight = utils.clip(height, min, max);
-                this.width -= event.deltaRect.left;
-            }); // .on("resizeend", () {
-        //     this.consoleHeight = this.consoleHeight;
-        // });
+        this.interactConsole = interact(this.view.console);
+        this.interactConsole.resizable({
+            edges: { bottom: false, left: true, right: false, top: true },
+        });
+        this.interactConsole.on("resizestart", event => {
+            this.view.root.style.transition = "none";
+        });
+        this.interactConsole.on("resizemove", event => {
+            this.view.width -= event.deltaRect.left;
+            this.view.consoleHeight -= event.deltaRect.top;
+            this.editor.resize();
+        });
+        this.interactConsole.on("resizeend", event => {
+            this.width = this.view.width;
+            this.consoleHeight = this.view.consoleHeight;
+            this.view.root.style.transition = null;
+        });
 
         // Add config change handlers
         document.addEventListener("nengoConfigChange", (event: CustomEvent) => {
             const key = event.detail;
             if (key === "editorWidth") {
-                this.view.width = utils.clip(
-                    this.width,
-                    this.minWidth,
-                    this.maxWidth
-                );
-                this.redraw();
+                this.view.width = this.width;
+                this.editor.resize();
             } else if (key === "consoleHeight") {
                 this.view.consoleHeight = this.consoleHeight;
-                this.redraw();
             } else if (key === "hideEditor") {
                 this.view.hidden = this.hidden;
             } else if (key === "editorFontSize") {
-                this.editor.setFontSize(Math.max(this.fontSize, 6));
+                this.editor.setFontSize(this.fontSize);
             } else if (key === "autoUpdate") {
                 if (this.autoUpdate && this.syncIntervalID === null) {
                     this.syncIntervalID = window.setInterval(() => {
@@ -119,7 +122,8 @@ export class Editor {
                 this.editor.setValue(code);
                 this.currentCode = code;
                 this.editor.gotoLine(1);
-                this.redraw();
+                // TODO: only when set by server
+                document.dispatchEvent(new Event("nengo.editor.saved"));
             }
         });
 
@@ -131,6 +135,10 @@ export class Editor {
             } else {
                 alert(error); // TODO: modal instead of alert
             }
+        });
+
+        server.bind("editor.save", () => {
+            this.saveFile();
         });
 
         server.bind("editor.stderr", ({ output, line }) => {
@@ -175,12 +183,34 @@ export class Editor {
             this.view.console.scrollTop = this.view.console.scrollHeight;
         });
 
-        server.bind("editor.syncWithServer", () => { this.syncWithServer(); });
+        server.bind("editor.syncWithServer", () => {
+            this.syncWithServer();
+        });
+
+        server.bind("editor.fontDown", () => {
+            this.fontSize -= 1;
+        });
+
+        server.bind("editor.fontUp", () => {
+            this.fontSize += 1;
+        });
+
+        server.bind("editor.toggle", () => {
+            this.toggleHidden();
+        });
+
+        this.editor.on("change", () => {
+            document.dispatchEvent(new Event("nengo.editor.dirty"));
+        });
+
+        this.view.editor.addEventListener("saved", () => {
+            document.dispatchEvent(new Event("nengo.editor.saved"));
+        });
 
         server.send("editor.sync");
 
         this.server = server;
-        this.redraw();
+        this.onresize();
     }
 
     // Automatically update the model based on the text
@@ -228,29 +258,6 @@ export class Editor {
         config.editorWidth = val;
     }
 
-    attachToolbar(toolbar: any) {
-        // TODO: get handles
-        // Setup the button to toggle the code editor
-        $("#Toggle_ace").on("click", () => {
-            this.toggleHidden();
-        });
-        $("#Save_file").on("click", () => {
-            this.saveFile();
-        });
-        $("#Font_increase").on("click", () => {
-            this.fontSize += 1;
-        });
-        $("#Font_decrease").on("click", () => {
-            this.fontSize -= 1;
-        });
-        this.editor.on("change", () => {
-            $("#Sync_editor_button").removeClass("disabled");
-        });
-        this.view.editor.addEventListener("saved", () => {
-            $("#Sync_editor_button").addClass("disabled");
-        });
-    }
-
     hotkeys(manager: HotkeyManager) {
         manager.add("Toggle editor", "e", { ctrl: true }, () => {
             this.toggleHidden();
@@ -273,20 +280,20 @@ export class Editor {
     }
 
     onresize = utils.throttle(() => {
-        this.maxWidth = window.innerWidth - 100;
-        if (this.width > this.maxWidth) {
-            this.width = this.maxWidth;
-        }
-        this.redraw();
-    }, 66);
-
-    redraw = utils.throttle(() => {
+        [this.interactConsole, this.interactEditor].forEach(i => {
+            i.resizable({
+                restrict: {
+                    restriction: {
+                        bottom: this.view.bottom - 20,
+                        left: 250,
+                        right: window.innerWidth - 100,
+                        top: this.view.top + 40,
+                    }
+                }
+            });
+        });
         this.editor.resize();
-        // if (this.netgraph !== undefined && this.netgraph !== null) {
-        //     this.netgraph.onresize();
-        // }
-        // viewport.onresize();
-    }, 66);
+    }, 33); // 33 = 30 FPS update
 
     saveFile() {
         this.syncWithServer(true);
@@ -295,18 +302,18 @@ export class Editor {
     // syncWithServer called at most once per 150 ms
     syncWithServer = utils.throttle((save: boolean = false) => {
         if (this.editorCode !== this.currentCode) {
-            this.ws.send(JSON.stringify({ code: this.editorCode, save }));
+            // TODO: figure out what to do with this...
+            // this.server.send("editor.set_code",
+            // this.ws.send(JSON.stringify({ code: this.editorCode, save }));
             this.currentCode = this.editorCode;
             this.view.editor.dispatchEvent(new Event("saved"));
         }
     }, 150);
 
     toggleHidden() {
-        if (this.hidden) {
-            this.hidden = false;
-        } else {
-            this.hidden = true;
-        }
-        this.redraw();
+        this.hidden = !this.hidden;
+        // document.dispatchEvent(new CustomEvent("nengo.editor", {
+        //     detail: this.hidden,
+        // }));
     }
 }

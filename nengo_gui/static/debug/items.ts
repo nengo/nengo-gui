@@ -6,7 +6,7 @@ import { Editor } from "../editor";
 import { HotkeyManager } from "../hotkeys";
 import { Menu } from "../menu";
 import { NetGraph } from "../netgraph";
-import { UtilitiesSidebar } from "../sidebar";
+import { Sidebar } from "../sidebar";
 import { SimControl } from "../sim-control";
 import { Toolbar } from "../toolbar";
 
@@ -17,7 +17,7 @@ import { EditorView } from "../views/editor";
 import { HotkeysDialogView } from "../views/hotkeys";
 import { MenuView } from "../views/menu";
 import { AlertDialogView, InputDialogView, ModalView } from "../views/modal";
-import { FilebrowserView, UtilitiesView } from "../views/sidebar";
+import { SidebarView } from "../views/sidebar";
 import { SimControlView } from "../views/sim-control";
 import { ToolbarView } from "../views/toolbar";
 
@@ -70,13 +70,13 @@ export const main = {
         menu.show(0, 0);
         return menu;
     },
+    Sidebar: () => new Sidebar(new MockConnection()),
     SimControl: () => new SimControl(new MockConnection(), 4.0, [-1.0, 0.0]),
     Toolbar: () => {
         const tb = new Toolbar(new MockConnection());
         tb.filename = "test.py";
         return tb;
-    },
-    UtilitiesSidebar: () => new UtilitiesSidebar(new MockConnection())
+    }
 };
 
 export const view = {
@@ -93,7 +93,6 @@ export const view = {
     EditorView: () => {
         return new EditorView();
     },
-    FilebrowserView: () => new FilebrowserView(),
     HotkeysDialogView: () => {
         const m = new HotkeyManager(new MockConnection());
         m.add("Test ctrl", "a", { ctrl: true }, () => {});
@@ -124,8 +123,8 @@ export const view = {
         return mv;
     },
     ToolbarView: () => new ToolbarView(),
-    SimControlView: () => new SimControlView(),
-    UtilitiesView: () => new UtilitiesView()
+    SidebarView: () => new SidebarView(),
+    SimControlView: () => new SimControlView()
 };
 
 export const component = {

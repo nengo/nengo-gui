@@ -333,6 +333,9 @@ class GuiServer(server.ManagedThreadHttpWsServer):
 
     def create_page(self, client, filename, reset_cfg=False):
         """Create a new Page with this configuration"""
+        if filename is not None:
+            self.context.filename = filename
+            self.context.filename_cfg = "{}.cfg".format(filename)
         page = Page(client, self.context, self.editor_class)
         if reset_cfg:
             page.clear_config()

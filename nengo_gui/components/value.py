@@ -29,7 +29,7 @@ class Value(Widget):
 
     @property
     def output(self):
-        if hasattr(self.obj, "output"):
+        if isinstance(self.obj, nengo.Network) and hasattr(self.obj, "output"):
             return self.obj.output
         else:
             return self.obj

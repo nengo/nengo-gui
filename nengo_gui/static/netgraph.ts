@@ -261,7 +261,7 @@ export class NetGraph {
     actions: ActionStack = new ActionStack();
     components: ComponentManager = new ComponentManager();
     connections: ConnectionManager = new ConnectionManager();
-    interactable;
+    interactRoot;
     widgets: Array<Widget>;
 
     /**
@@ -306,30 +306,30 @@ export class NetGraph {
         this.view.zoomFonts = this.zoomFonts;
 
         // Set up interactivity
-        this.interactable = interact(this.view.root);
-        this.interactable.styleCursor(false);
-        this.interactable.draggable(true);
+        this.interactRoot = interact(this.view.root);
+        this.interactRoot.styleCursor(false);
+        this.interactRoot.draggable(true);
 
         // Dragging the background pans the full area by changing offsetX,Y
         // Define cursor behaviour for background
         // TODO: Is this really what we want?? Doesn't interact do this already?
-        this.interactable.on("mousedown", () => {
+        this.interactRoot.on("mousedown", () => {
             const cursor = document.documentElement.style.cursor;
             // Don't change resize cursor
             if (!utils.endsWith(cursor, "resize")) {
                 document.documentElement.style.cursor = "move";
             }
         });
-        this.interactable.on("mouseup", () => {
+        this.interactRoot.on("mouseup", () => {
             document.documentElement.style.cursor = "default";
         });
-        this.interactable.on("dragend", event => {
+        this.interactRoot.on("dragend", event => {
             // Update internal state of components
             this.components.components.forEach(component => {
                 component.syncWithView();
             });
         });
-        this.interactable.on("dragmove", event => {
+        this.interactRoot.on("dragmove", event => {
             console.assert(this.scaledWidth !== 0);
             console.assert(this.scaledHeight !== 0);
             this.offsetX += event.dx / this.scaledWidth;
@@ -344,10 +344,10 @@ export class NetGraph {
                 this.connections.connections[uid].syncWithComponents();
             }
         });
-        this.interactable.on("dragstart", () => {
+        this.interactRoot.on("dragstart", () => {
             Menu.hideShown();
         });
-        this.interactable.on("wheel", event => {
+        this.interactRoot.on("wheel", event => {
             event.preventDefault();
 
             Menu.hideShown();
@@ -401,7 +401,7 @@ export class NetGraph {
                 y: this.offsetY
             });
         });
-        //this.interactable.on("click", (event) => {
+        //this.interactRoot.on("click", (event) => {
         //     document.querySelector(".aceText-input")
         //         .dispatchEvent(new Event("blur"));
         // })
@@ -410,7 +410,7 @@ export class NetGraph {
         // point in the space
 
         // Determine when to pull up the menu
-        this.interactable.on("hold", event => {
+        this.interactRoot.on("hold", event => {
             // Change to "tap" for right click
             if (event.button === 0) {
                 if (Menu.shown !== null) {
@@ -421,7 +421,7 @@ export class NetGraph {
                 event.stopPropagation();
             }
         });
-        this.interactable.on("tap", event => {
+        this.interactRoot.on("tap", event => {
             // Get rid of menus when clicking off
             if (event.button === 0) {
                 Menu.hideShown();
@@ -710,7 +710,7 @@ export class NetGraph {
         component.view.root.addEventListener("touchstart", raiseToTop);
 
         // -- Record moves and resizes
-        this.interactable.on("dragend resizeend", event => {
+        this.interactRoot.on("dragend resizeend", event => {
             // const info = {
             //     height: this.h,
             //     labelVisible: this.labelVisible,

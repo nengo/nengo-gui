@@ -152,14 +152,18 @@ class Config {
     }
 
     private getString(key: string, defaultVal: string = null) {
-        return this.storage.getItem("ng." + key) || defaultVal;
+        return this.storage.getItem(`ng.${key}`) || defaultVal;
     }
 
     private setAny(key: string, val: any) {
-        this.storage.setItem("ng." + key, val);
-        document.dispatchEvent(new CustomEvent("nengoConfigChange", {
-            detail: key,
-        }));
+        if (this.getString(key) !== String(val)) {
+            this.storage.setItem(`ng.${key}`, val);
+            document.dispatchEvent(new CustomEvent("nengoConfigChange", {
+                detail: key,
+            }));
+        } else {
+            console.log(`'${key}' already set to ${val}`);
+        }
     }
 }
 
@@ -300,7 +304,8 @@ export const configItems = [
             placeholder: "Current directory"
         }
     ),
-    new ComboboxItem("backend", "Select backend", ["nengo"]), // TODO: this.sim.simulatorOptions
+    new ComboboxItem("backend", "Select backend", ["nengo"]),
+    // TODO: this.sim.simulatorOptions
 ];
 
 export class ConfigDialog {
