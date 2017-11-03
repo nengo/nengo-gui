@@ -237,10 +237,14 @@ Nengo.NetGraph = function(parent, args) {
             // first DOM element (i.e. nodeType == 1) which either has a
             // "data-object-type" attribute or is the parent container.
             let obj = event.target;
-            while (obj !== self.svg && (obj.nodeType !== 1
+            while (obj && obj !== self.svg && (obj.nodeType !== 1
                     || !obj.hasAttribute('data-object-type'))) {
                 obj = obj.parentNode;
             }
+            if (!obj) {
+                return false;
+            }
+
             const object_type = obj.getAttribute('data-object-type');
             if (in_resize) {
                 Nengo.status_bar.set_caption(
