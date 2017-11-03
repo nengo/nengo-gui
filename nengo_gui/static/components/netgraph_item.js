@@ -141,11 +141,14 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
         } else {
             this.shape = this.ng.createSVGElement('rect');
         }
+        g.setAttribute('data-object-type', 'node')
     } else if (info.type === 'net') {
         this.shape = this.ng.createSVGElement('rect');
+        g.setAttribute('data-object-type', 'network')
     } else if (info.type === 'ens') {
         this.aspect = 1.;
         this.shape = this.ensemble_svg();
+        g.setAttribute('data-object-type', 'ensemble')
     } else {
         console.log("Unknown NetGraphItem type");
         console.log(item);

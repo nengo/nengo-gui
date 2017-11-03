@@ -38,6 +38,7 @@ Nengo.Component = function(parent, args) {
     this.redraw_pos();
 
     this.div.style.position = 'absolute';
+    this.div.setAttribute('data-object-type', 'graph')
     this.div.classList.add('graph');
     parent.appendChild(this.div);
     this.parent = parent;
