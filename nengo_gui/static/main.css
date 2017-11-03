@@ -63,7 +63,7 @@ div.status_bar {
 }
 
 div.status_bar:before {
-    content: '\200B' /* Zero-width space */
+    content: '\200B'; /* Zero-width space */
 }
 
 .graph {
