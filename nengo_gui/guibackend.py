@@ -110,16 +110,8 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
     }
 
     def get_expected_origins(self):
-        session = self.get_session()
-        has_password = self.server.settings.password_hash is not None
-        origins = []
-        if not has_password:
-            origins.append('localhost:' + str(self.server.server_port))
-            if self.server.server_port in [80, 443]:
-                origins.append('localhost')
-        elif session.login_host is not None:
-            return [session.login_host]
-        return origins
+        login_host = self.get_session().login_host
+        return [login_host] if login_host is not None else []
 
     def login_page(self):
         session = self.get_session()
