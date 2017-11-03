@@ -10,8 +10,9 @@ from nengo_gui.components.component import Component
 class Voltage(Component):
     """Represents neuron voltage over time."""
 
-    config_defaults = dict(
-        max_value=5.0, min_value=0.0, **Component.config_defaults)
+    config_defaults = dict(max_value=5.0, min_value=0.0,
+                           show_legend=False, legend_labels=[],
+                           **Component.config_defaults)
 
     def __init__(self, obj, n_neurons=5):
         super(Voltage, self).__init__()
