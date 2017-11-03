@@ -42,6 +42,7 @@ Nengo.SliderControl = function(min, max) {
 
 
     this.handle = document.createElement('div');
+    this.handle.setAttribute('data-object-type', 'slider_handle')
     this.handle.classList.add('btn');
     this.handle.classList.add('btn-default');
     this.handle.innerHTML = 'n/a';
