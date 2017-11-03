@@ -49,6 +49,23 @@ div.minimap {
     z-index: 99999999;
 }
 
+div.status_bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #eee;
+    z-index: 99999999; /* This should be in front of the control panel */
+    padding: 0.25em 1em;
+    font-size: 85%;
+    box-shadow: 0px -2px 4px 0px #999;
+    text-shadow: -1px -1px white;
+}
+
+div.status_bar:before {
+    content: '\200B' /* Zero-width space */
+}
+
 .graph {
     background: #eeeeee;
 }
