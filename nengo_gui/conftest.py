@@ -20,6 +20,7 @@ def gui():
         filename=os.path.join(nengo_gui.__path__[0], 'examples', 'default.py'))
     gui = BaseGUI(model_context, server_settings)
     server_thread = threading.Thread(target=gui.start)
+    server_thread.daemon = True
     server_thread.start()
     port = gui.server.server_port
 
