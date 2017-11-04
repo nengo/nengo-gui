@@ -38,6 +38,7 @@ Nengo.NetGraphConnection = function(ng, info, minimap, mini_conn) {
      *  until it finds one that does exist. */
     this.pres = info.pre;
     this.posts = info.post;
+    this.kind = info.kind;
 
     this.recurrent = this.pres[0] === this.posts[0];
 
@@ -57,6 +58,7 @@ Nengo.NetGraphConnection = function(ng, info, minimap, mini_conn) {
 
     /** create the line and its arrowhead marker */
     this.g = ng.createSVGElement('g');
+    this.g.classList.add(this.kind);
 
     this.create_line();
 
@@ -88,7 +90,18 @@ Nengo.NetGraphConnection.prototype.create_line = function() {
         this.g.appendChild(this.marker);
 
         if (this.minimap == false) {
-            this.marker.setAttribute('d', "M 6.5 0 L 0 5.0 L 7.5 8.0 z");
+            switch (this.kind) {
+                case "inhibitory":
+                    this.marker.setAttribute('d', "M 7,7 C 10.5,3.5 7,0 7,0 L 0,7 c 0,0 3.5,3.5 7,0 z");
+                    break;
+                case "modulatory":
+                    this.marker.setAttribute('d', "M 7.5,0 0,-5 -7.5,0 0,5 z");
+                    break;
+                case "normal":
+                default:
+                    this.marker.setAttribute('d', "M 6.5 0 L 0 5.0 L 7.5 8.0 z");
+                    break;
+            }
         } else {
             this.marker.setAttribute('d', "M 4 0 L 0 2 L 4 4 z");
         }
@@ -98,7 +111,18 @@ Nengo.NetGraphConnection.prototype.create_line = function() {
         this.g.appendChild(this.line);
         this.marker = this.ng.createSVGElement('path');
         if (this.minimap == false) {
-            this.marker.setAttribute('d', "M 10 0 L -5 -5 L -5 5 z");
+            switch (this.kind) {
+                case "inhibitory":
+                    this.marker.setAttribute('d', "M 4,0 C 4,-8 -4,-8 -4,-8 V 8 c 0,0 8,0 8,-8 z");
+                    break;
+                case "modulatory":
+                    this.marker.setAttribute('d', "M 7.5,0 0,-5 -7.5,0 0,5 z");
+                    break;
+                case "normal":
+                default:
+                    this.marker.setAttribute('d', "M 10 0 L -5 -5 L -5 5 z");
+                    break;
+            }
         } else {
             this.marker.setAttribute('d', "M 3 0 L -2.5 -2.5 L -2.5 2.5 z");
         }
