@@ -53,6 +53,9 @@ class SocketMock(object):
         self.file_io.write(data)
         return len(data)
 
+    def sendall(self, data):
+        self.send(data)
+
     def setblocking(self, value):
         pass
 
