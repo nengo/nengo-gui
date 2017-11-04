@@ -144,6 +144,13 @@ Nengo.Ace = function (uid, args) {
         .on('resizeend', function (event) {
             Nengo.config.console_height = self.console_height;
         });
+
+    let lang_tools = ace.require('ace/ext/language_tools');
+    lang_tools.setCompleters([this.completer]);
+    this.editor.setOptions({
+        enableBasicAutocompletion: true,
+        enableLiveAutocompletion: true
+    });
 }
 
 //Send changes to the code to server every 100ms
@@ -265,4 +272,18 @@ Nengo.Ace.prototype.redraw = function () {
         Nengo.netgraph.on_resize();
     }
     viewport.on_resize();
+}
+
+
+Nengo.Ace.prototype.completer = {
+    getCompletions: function (editor, session, pos, prefix, callback) {
+        $.getJSON('complete', {
+            filename: $('#filename')[0].innerHTML,
+            row: pos.row,
+            col: pos.column,
+            code: editor.getValue()
+        }, function (completions) {
+            callback(null, completions);
+        });
+    }
 }

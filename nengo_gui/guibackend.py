@@ -17,6 +17,7 @@ import ssl
 import time
 
 import nengo_gui
+from nengo_gui.completion import get_completions
 import nengo_gui.exec_env
 import nengo_gui.page
 from nengo_gui import server
@@ -106,6 +107,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         '/login': 'login_page',
         '/static': 'serve_static',
         '/browse': 'browse',
+        '/complete': 'complete',
         '/favicon.ico': 'serve_favicon',
     }
 
@@ -186,6 +188,18 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
                              f + b'</a></li>')
         r.append(b'</ul>')
         return server.HtmlResponse(b''.join(r))
+
+    @RequireAuthentication('/login')
+    def complete(self):
+        completions = get_completions(
+            self.db['code'], int(self.db['row']) + 1, int(self.db['col']),
+            self.db['filename'])
+        return server.JsonResponse([{
+            'name': c.name,
+            'value': c.name,
+            'score': 1,
+            'meta': c.type,
+        } for c in completions])
 
     @RequireAuthentication('/login')
     def serve_main(self):
