@@ -4,6 +4,7 @@ import base64
 import errno
 import hashlib
 import logging
+import json
 import select
 import socket
 import struct
@@ -123,6 +124,13 @@ class HtmlResponse(HttpResponse):
     def __init__(self, body, code=200, headers=()):
         data = b'<html><body>' + body + b'</body></html>'
         super(HtmlResponse, self).__init__(data, code=code, headers=headers)
+
+
+class JsonResponse(HttpResponse):
+    def __init__(self, data, code=200, headers=()):
+        super(JsonResponse, self).__init__(
+            json.dumps(data).encode('utf-8'), code=code, headers=headers,
+            mimetype='application/json')
 
 
 class DualStackHttpServer(object):

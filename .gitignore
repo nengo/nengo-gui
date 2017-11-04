@@ -62,3 +62,6 @@ target/
 # Vagrant
 .vagrant
 Vagrantfile
+
+# Vim
+*.swp
