@@ -25,9 +25,11 @@ Nengo.NetGraphConnection = function(ng, info, minimap, mini_conn) {
     if (!minimap) {
         this.g_conns = ng.g_conns;
         this.objects = ng.svg_objects;
+        this.connections = ng.svg_conns;
     } else {
         this.g_conns = ng.g_conns_mini;
         this.objects = ng.minimap_objects;
+        this.connections = ng.minimap_conns;
     }
 
     /** the uids for the pre and post items in the connection
@@ -166,18 +168,43 @@ Nengo.NetGraphConnection.prototype.set_pre = function(pre) {
 
 /** set the item connecting to */
 Nengo.NetGraphConnection.prototype.set_post = function(post) {
-    if (this.post !== null) {
-        /** if we're currently connected, disconnect */
-        var index = this.post.conn_in.indexOf(this);
-        if (index === -1) {
-            console.log('error removing in set_pre');
+    // Normally connections have just one post ensemble -- the one that is
+    // stored in this.post. However, modulatory connections must be registered
+    // in both the pre and the post ensemble of the target connection (stored in
+    // this.post). This helper function fetches the relevant post ensembles and
+    // calls a callback function f for each non-null ensemble.
+    let self = this;
+    let for_each_post_ensemble = function(f) {
+        let enss = [self.post]
+        if (self.post instanceof Nengo.NetGraphConnection) {
+            enss = [self.post.pre, self.post.post]
         }
-        this.post.conn_in.splice(index, 1);
+        for (let ens of enss) {
+            if (ens !== null) {
+               f(ens);
+            }
+        }
     }
+
+    // Remove this connection from the input connection list of the
+    // post-ensembles.
+    if (this.post !== null) {
+        for_each_post_ensemble(function (ens) {
+            var index = ens.conn_in.indexOf(self);
+            if (index === -1) {
+                console.log('error removing in set_post');
+            }
+            ens.conn_in.splice(index, 1);
+        });
+    }
+
+    // Update the post ensemble/connection target and notify the post ensembles
+    // about the incoming connection.
     this.post = post;
     if (this.post !== null) {
-        /** add myself to post's input connections list */
-        this.post.conn_in.push(this);
+        for_each_post_ensemble(function (ens) {
+                ens.conn_in.push(self);
+        });
     }
 }
 
@@ -185,7 +212,7 @@ Nengo.NetGraphConnection.prototype.set_post = function(post) {
 /** determine the best available item to connect from */
 Nengo.NetGraphConnection.prototype.find_pre = function() {
     for (var i in this.pres) {
-        var pre = this.objects[this.pres[i]];
+        var pre = this.objects[this.pres[i]] || this.connections[this.pres[i]];
         if (pre !== undefined) {
             return pre;
         } else {
@@ -200,7 +227,7 @@ Nengo.NetGraphConnection.prototype.find_pre = function() {
 /** determine the best available item to connect to */
 Nengo.NetGraphConnection.prototype.find_post = function() {
     for (var i in this.posts) {
-        var post = this.objects[this.posts[i]];
+        var post = this.objects[this.posts[i]] || this.connections[this.posts[i]];
         if (post !== undefined) {
             return post;
         } else {
@@ -240,19 +267,11 @@ Nengo.NetGraphConnection.prototype.remove = function() {
     }
 
     if (this.pre != null) {
-        var index = this.pre.conn_out.indexOf(this);
-        if (index === -1) {
-            console.log('error removing from conn_out');
-        }
-        this.pre.conn_out.splice(index, 1);
+        this.set_pre(null);
     }
 
     if (this.post != null) {
-        var index = this.post.conn_in.indexOf(this);
-        if (index === -1) {
-            console.log('error removing from conn_in');
-        }
-        this.post.conn_in.splice(index, 1);
+        this.set_post(null);
     }
 
 
@@ -404,3 +423,38 @@ Nengo.NetGraphConnection.prototype.intersect_length = function(theta, alpha, wid
 
     return [x,y];
 }
+
+/*
+ * The following functions provide part of the NetGraphItem get_* interface
+ * for the NetGraphConnection class. This way NetGraphConnection can be used
+ * as a connection target.
+ */
+
+Nengo.NetGraphConnection.prototype.get_bounding_box = function () {
+    let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+
+    if (this.line.hasAttribute('x1') && this.line.hasAttribute('x2') &&
+        this.line.hasAttribute('y1') && this.line.hasAttribute('y2')) {
+        x1 = parseFloat(this.line.getAttribute('x1'))
+        x2 = parseFloat(this.line.getAttribute('x2'))
+        y1 = parseFloat(this.line.getAttribute('y1'))
+        y2 = parseFloat(this.line.getAttribute('y2'))
+    }
+    return [x1, y1, x2, y2];
+}
+
+Nengo.NetGraphConnection.prototype.get_screen_location = function() {
+    let [x1, y1, x2, y2] = this.get_bounding_box();
+    return [0.5 * (x1 + x2), 0.5 * (y1 + y2)];
+}
+
+Nengo.NetGraphConnection.prototype.get_screen_width = function() {
+    let [x1, y1, x2, y2] = this.get_bounding_box();
+    return x2 - x1;
+}
+
+Nengo.NetGraphConnection.prototype.get_screen_height = function() {
+    let [x1, y1, x2, y2] = this.get_bounding_box();
+    return y2 - y1;
+}
+
