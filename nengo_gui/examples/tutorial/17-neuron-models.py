@@ -24,7 +24,8 @@ with model:
                        neuron_type=nengo.LIFRate(tau_rc=0.02, tau_ref=0.002))
                        
     c = nengo.Ensemble(n_neurons=50, dimensions=1,
-                       neuron_type=nengo.Sigmoid(tau_ref=0.002))
+                       neuron_type=nengo.Sigmoid(tau_ref=0.002),
+                       max_rates=nengo.dists.Uniform(250., 400.))
 
     d = nengo.Ensemble(n_neurons=50, dimensions=1,
                        neuron_type=nengo.RectifiedLinear())
