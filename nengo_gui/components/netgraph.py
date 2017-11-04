@@ -3,6 +3,7 @@ import os
 import traceback
 import collections
 import threading
+import numpy as np
 
 import nengo
 import json
@@ -558,6 +559,8 @@ class NetGraph(Component):
             if callable(obj.output) and hasattr(obj.output, '_nengo_html_'):
                 info['html'] = True
             info['dimensions'] = int(obj.size_out)
+        elif isinstance(obj, nengo.Connection):
+            info['kind'] = NetGraph.connection_kind(obj)
         elif isinstance(obj, nengo.Ensemble):
             info['dimensions'] = int(obj.size_out)
             info['n_neurons'] = int(obj.n_neurons)
@@ -580,13 +583,27 @@ class NetGraph(Component):
         client.write_text(json.dumps(dict(type='pan', pan=pan)))
         client.write_text(json.dumps(dict(type='zoom', zoom=zoom)))
 
-    def create_connection(self, client, conn, parent):
-        uid = self.page.get_uid(conn)
-        if uid in self.uids:
-            return
+    @staticmethod
+    def connection_pre_obj(conn):
+        """
+        Returns the pre-object of the given connection. Tries to make sure that
+        the pre-object is an Ensemble. For example, if the connection originates
+        from the ".neurons" object, the ensemble corresponding to the raw
+        neurons is returned.
+        """
         pre = conn.pre_obj
         if isinstance(pre, nengo.ensemble.Neurons):
             pre = pre.ensemble
+        return pre
+
+    @staticmethod
+    def connection_post_obj(conn):
+        """
+        Returns the post-object relevant to the visualisation of the given
+        connection. If the connection is a learning rule, returns the
+        post-ensemble of that connection. If the connection ends in a
+        ".neurons" object, returns the corresponding ensemble.
+        """
         post = conn.post_obj
         if isinstance(post, nengo.connection.LearningRule):
             post = post.connection.post
@@ -594,10 +611,59 @@ class NetGraph(Component):
                 post = post.obj
         if isinstance(post, nengo.ensemble.Neurons):
             post = post.ensemble
-        pre = self.page.get_uid(pre)
-        post = self.page.get_uid(post)
+        return post
+
+    @staticmethod
+    def connection_kind(conn):
+        """
+        Categorises the given connection into one of three kinds: modulatory,
+        inhibitory, and normal.
+        """
+        if isinstance(conn.post_obj, nengo.connection.LearningRule):
+            return "modulatory"
+        if isinstance(conn.post_obj, nengo.ensemble.Neurons):
+            trafo = conn.transform
+            if trafo.size > 0 and (np.all(trafo <= 0.0) and
+                    not np.all(np.isclose(trafo, 0.0))):
+                return "inhibitory"
+        return "normal"
+
+    def create_connection(self, client, conn, parent):
+        """
+        Assembles the a JSON description of the given connection object and
+        sends it to the client.
+
+        Parameters
+        ----------
+        client : WebSocket
+                 Websocket object to which the assembled JSON description is
+                 sent.
+        conn : nengo.Connection
+               Connection object for which the description should be generated.
+        parent : str
+                 UID of the parent network the connection belongs to.
+        """
+
+        # Generate a uid for the connection
+        uid = self.page.get_uid(conn)
+        if uid in self.uids:
+            return
         self.uids[uid] = conn
+
+        # Fetch the uid for the pre and post connection objects
+        pre = self.page.get_uid(NetGraph.connection_pre_obj(conn))
+        post = self.page.get_uid(NetGraph.connection_post_obj(conn))
+
+        # Fetch the network hierarchy up to the post- and pre-connection object
         pres = self.get_parents(pre)[:-1]
         posts = self.get_parents(post)[:-1]
-        info = dict(uid=uid, pre=pres, post=posts, type='conn', parent=parent)
+
+        # If this is a modulatory connection, connect to the connection that
+        # is being trained
+        if isinstance(conn.post_obj, nengo.connection.LearningRule):
+            posts[0] = self.page.get_uid(conn.post_obj.connection)
+
+        # Serialise the connection descriptor and send it to the client
+        info = dict(uid=uid, pre=pres, post=posts, type='conn', parent=parent,
+                    kind=NetGraph.connection_kind(conn))
         client.write_text(json.dumps(info))
