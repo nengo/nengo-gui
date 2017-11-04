@@ -343,24 +343,32 @@ Nengo.NetGraphConnection.prototype.redraw = function() {
         if (post_to_pre_angle < -Math.PI) {post_to_pre_angle+=2*Math.PI;}
         var post_length = this.intersect_length(post_to_pre_angle, a2, w2, h2);
 
-        var mx = (pre_pos[0]+pre_length[0]) * 0.4
-                    + (post_pos[0]+post_length[0]) * 0.6;
-        var my = (pre_pos[1]+pre_length[1]) * 0.4
-                    + (post_pos[1]+post_length[1]) * 0.6;
+        let mx, my;
+        if (this.kind == 'modulatory') {
+            // Just centre modulatory connection markers on the post object
+            mx = post_pos[0]
+            my = post_pos[1]
+        } else {
+            mx = (pre_pos[0]+pre_length[0]) * 0.4
+                        + (post_pos[0]+post_length[0]) * 0.6;
+            my = (pre_pos[1]+pre_length[1]) * 0.4
+                        + (post_pos[1]+post_length[1]) * 0.6;
 
-        //Check to make sure the marker doesn't go past either endpoint
-        vec1 = [post_pos[0]-pre_pos[0], post_pos[1]-pre_pos[1]];
-        vec2 = [mx-pre_pos[0], my-pre_pos[1]];
-        dot_prod = (vec1[0]*vec2[0] + vec1[1]*vec2[1])
-            / (vec1[0]*vec1[0]+vec1[1]*vec1[1]);
+            //Check to make sure the marker doesn't go past either endpoint
+            vec1 = [post_pos[0]-pre_pos[0], post_pos[1]-pre_pos[1]];
+            vec2 = [mx-pre_pos[0], my-pre_pos[1]];
+            dot_prod = (vec1[0]*vec2[0] + vec1[1]*vec2[1])
+                / (vec1[0]*vec1[0]+vec1[1]*vec1[1]);
 
-        if (dot_prod < 0) {
-            mx = pre_pos[0];
-            my = pre_pos[1];
-        } else if (dot_prod>1){
-            mx = post_pos[0];
-            my = post_pos[1];
+            if (dot_prod < 0) {
+                mx = pre_pos[0];
+                my = pre_pos[1];
+            } else if (dot_prod>1){
+                mx = post_pos[0];
+                my = post_pos[1];
+            }
         }
+
         angle = 180 / Math.PI * angle;
         this.marker.setAttribute('transform',
                           'translate(' + mx + ',' + my + ') rotate('+ angle +')');
