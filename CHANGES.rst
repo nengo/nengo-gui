@@ -22,6 +22,7 @@ Release History
 0.3.2 (unreleased)
 ==================
 
+- Added visual depiction of modulatory and inhibitory connections
 - Token-based authentication
 - Dual-stack IPv4/IPv6 support
 

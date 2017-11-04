@@ -29,6 +29,23 @@ g.net rect{
     stroke-width: 2px;
 }
 
+.netgraph g.inhibitory > line {
+    stroke: #c00000;
+}
+
+.netgraph g.inhibitory > path {
+    fill: #c00000;
+}
+
+.netgraph g.modulatory > line {
+    stroke: #8eb627;
+    stroke-dasharray: 1em;
+}
+
+.netgraph g.modulatory > path {
+    fill: #8eb627;
+}
+
 .minimap {
     border-radius: 10px/60px;
     height: 100%;
