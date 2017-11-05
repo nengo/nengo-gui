@@ -39,7 +39,7 @@ def reset_page(driver):
     """
     print(driver.execute_script("toolbar.reset_model_layout();document.readyState"))
     time.sleep(1.)
-    WebDriverWait(driver, 10).until(lambda x: x.find_element_by_id('editor'))
+    WebDriverWait(driver, 30).until(lambda x: x.find_element_by_id('editor'))
 
 
 def start_stop_sim(driver):
