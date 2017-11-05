@@ -28,6 +28,7 @@ before_install:
   - mkdir geckodriver
   - tar -xzf "geckodriver-$GECKODRIVER_VER-linux64.tar.gz" -C geckodriver
   - export PATH=$PATH:$PWD/geckodriver
+  - export MOZ_CRASHREPORTER_SHUTDOWN=1
   - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1920x1080x16
 
 install:
