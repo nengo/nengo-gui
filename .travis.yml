@@ -2,8 +2,7 @@ language: c
 sudo: false
 
 addons:
-  # 2.x Selenium WebDriver only works for Firefox <= 47.0.1
-  firefox: "47.0.1"
+  firefox: "latest"
 
 env:
   global:
@@ -39,4 +38,4 @@ before_script:
 
 script:
   - python setup.py -q develop
-  - py.test
+  - pytest -s
