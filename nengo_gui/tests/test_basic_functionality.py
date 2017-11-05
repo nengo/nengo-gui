@@ -19,7 +19,7 @@ def test_basic_functionality(driver, test_file):
         # Test page response by clicking the reset button and applying
         # new code to ace-editor
         tt.reset_page(driver)
-        time.sleep(0.5)
+        time.sleep(2.)
         tt.update_editor(driver, code)
         tt.mouse_scroll(driver, 500)
         ens_elements = driver.find_elements_by_xpath('//*[@class="ens"]')
