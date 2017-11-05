@@ -49,4 +49,4 @@ bfore_script:
 
 script:
   - python setup.py -q develop
-  - pytest -v -x
+  - pytest -v -x -s
