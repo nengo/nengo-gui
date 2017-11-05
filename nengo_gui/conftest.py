@@ -48,10 +48,10 @@ def driver(gui):
     print('b')
     driver = webdriver.Firefox()
     driver.get('http://localhost:{port}/'.format(port=gui.server.server_port))
-    driver.maximize_window()
+    # driver.maximize_window()
 
     print('c')
-    assert False
+    # assert False
     assert driver.title != "Problem loading page"
     yield driver
 
