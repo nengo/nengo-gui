@@ -329,8 +329,6 @@ class ManagedThreadHttpServer(
 
         for ws in self.websockets:
             ws.close()
-        for _, request in self.requests:
-            self.shutdown_request(request)
 
         DualStackHttpServer.shutdown(self)
 
