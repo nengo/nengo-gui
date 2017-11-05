@@ -36,7 +36,6 @@ def gui():
         else:
             s.close()
     print('xxx')
-    assert False
 
     yield gui
 
@@ -47,6 +46,7 @@ def gui():
 @pytest.yield_fixture(scope="session")
 def driver(gui):
     print('b')
+    assert False
     driver = webdriver.Firefox()
     driver.get('http://localhost:{port}/'.format(port=gui.server.server_port))
     driver.maximize_window()
