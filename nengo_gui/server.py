@@ -386,6 +386,7 @@ class HttpWsRequestHandler(server.BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         self.resource = parsed.path
+        print('>', self.resource)
         self.query = parse_qs(parsed.query)
         self.db.update(
             {k: v[0] for k, v in self.query.items() if k not in self.db})
