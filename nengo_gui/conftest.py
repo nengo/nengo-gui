@@ -12,6 +12,11 @@ import nengo_gui
 from nengo_gui import guibackend
 from nengo_gui.gui import BaseGUI
 
+import logging
+
+if __name__ == '__main__':
+    logging.basicConfig(level='info')
+
 
 @pytest.yield_fixture(scope="session")
 def gui():
