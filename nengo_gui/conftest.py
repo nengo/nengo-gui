@@ -15,6 +15,7 @@ from nengo_gui.gui import BaseGUI
 @pytest.yield_fixture(scope="session")
 def gui():
     print('a')
+    assert False
     host, port = ('localhost', 0)
     server_settings = guibackend.GuiServerSettings((host, port))
     model_context = guibackend.ModelContext(
