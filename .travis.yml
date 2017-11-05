@@ -32,8 +32,8 @@ before_install:
   - /sbin/start-stop-daemon --start --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- 127.0.0.1:99 -ac -screen 0 1920x1080x16
   - sleep 3
   - echo "$GDK_BACKEND"
-  - firefox -marionette
   - export GDK_BACKEND=xvfb
+  - echo "$GDK_BACKEND"
   - firefox -marionette
 
 install:
