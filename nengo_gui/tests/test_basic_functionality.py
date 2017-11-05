@@ -63,6 +63,6 @@ def test_basic_functionality(driver, test_file):
 
     except:
         # Travis Only: On fail takes screenshot and uploads it to imgur
-        if('TRAVIS' in os.environ):
-            tt.imgur_screenshot(driver)
+        # if('TRAVIS' in os.environ):
+            # tt.imgur_screenshot(driver)
         raise
