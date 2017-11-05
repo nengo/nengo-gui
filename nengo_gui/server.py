@@ -176,12 +176,8 @@ class DualStackHttpServer(object):
                 self.bindings.append(self.Binding(
                     socket.AF_INET6, ('::', self.server_port)))
         else:
-            print('AF_INET', socket.AF_INET)
-            print('AF_INET6', socket.AF_INET6)
-            print('SOCK_STREAM', socket.SOCK_STREAM)
             for fam, socktype, _, _, addr in socket.getaddrinfo(
                     *server_address):
-                print('>>>>>', fam, socktype)
                 if (fam in (socket.AF_INET, socket.AF_INET6) and
                         socktype in (0, socket.SOCK_STREAM)):
                     self.bindings.append(self.Binding(fam, addr))
@@ -216,7 +212,7 @@ class DualStackHttpServer(object):
         else:
             for err in errors:
                 warnings.warn("Could not bind server to address {}.".format(
-                    err['binding']))
+                    err['binding'].address))
 
     def server_activate(self):
         for b in self.bindings:

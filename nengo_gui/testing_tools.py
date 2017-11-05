@@ -77,9 +77,6 @@ def folder_location(var_path, indiv_file=None):
         test_files = filter((lambda x: (x == indiv_file)), test_files)
     test_files = map((lambda file_: os.path.join(test_folder, file_)),
                      test_files)
-    test_files = map((lambda file_: open(file_, 'r').read()), test_files)
-    test_files = map((lambda raw_file: raw_file.replace("'", r"\'")),
-                     test_files)
     return test_files
 
 

@@ -14,7 +14,6 @@ from nengo_gui.gui import BaseGUI
 
 @pytest.yield_fixture(scope="session")
 def gui():
-    print('a')
     host, port = ('localhost', 0)
     server_settings = guibackend.GuiServerSettings((host, port))
     model_context = guibackend.ModelContext(
@@ -26,7 +25,6 @@ def gui():
     port = gui.server.server_port
 
     started = False
-    print('waiting for conn', host, port)
     while server_thread.is_alive() and not started:
         try:
             s = socket.create_connection((host, port), .1)
@@ -35,7 +33,6 @@ def gui():
             pass
         else:
             s.close()
-    print('xxx')
 
     yield gui
 
@@ -45,13 +42,10 @@ def gui():
 
 @pytest.yield_fixture(scope="session")
 def driver(gui):
-    print('b')
     driver = webdriver.Firefox()
     driver.get('http://localhost:{port}/'.format(port=gui.server.server_port))
     # driver.maximize_window()
 
-    print('c')
-    # assert False
     assert driver.title != "Problem loading page"
     yield driver
 
