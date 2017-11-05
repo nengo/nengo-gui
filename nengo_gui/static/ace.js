@@ -33,7 +33,7 @@ Nengo.Ace = function (uid, args) {
     code_div.id = 'editor'
     $('#rightpane').append(code_div);
     this.editor = ace.edit('editor')
-    this.editor.getSession().setMode("ace/mode/python");
+    this.editor.getSession().setMode("ace/mode/spa");
     this.editor.gotoLine(1);
     this.marker = null;
 
