@@ -2,7 +2,7 @@ language: c
 sudo: false
 
 addons:
-  firefox: "latest"
+  firefox: latest
 
 env:
   global:
