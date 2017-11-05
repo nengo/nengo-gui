@@ -177,6 +177,7 @@ class DualStackHttpServer(object):
         else:
             for fam, socktype, _, _, addr in socket.getaddrinfo(
                     *server_address):
+                print('>>>>>', fam, socktype)
                 if (fam in (socket.AF_INET, socket.AF_INET6) and
                         socktype in (0, socket.SOCK_STREAM)):
                     self.bindings.append(self.Binding(fam, addr))
