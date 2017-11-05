@@ -56,7 +56,7 @@ var SpaHighlightRules = function() {
     }];
 
     this.embedRules(PythonHighlightRules, "spa_q_", [{
-        token: "constant.languag.escape",
+        token: "constant.language.escape",
         regex: stringEscape,
     }]);
     this.$rules.spa_q_start = spa_rules.concat([{
@@ -65,7 +65,7 @@ var SpaHighlightRules = function() {
         next: "start",
     }].concat(this.$rules.spa_q_start));
     this.embedRules(PythonHighlightRules, "spa_qq_", [{
-        token: "constant.languag.escape",
+        token: "constant.language.escape",
         regex: stringEscape,
         }]);
     this.$rules.spa_qq_start = spa_rules.concat([{
@@ -74,7 +74,7 @@ var SpaHighlightRules = function() {
         next: "start",
     }].concat(this.$rules.spa_qq_start));
     this.embedRules(PythonHighlightRules, "spa_q3_", [{
-        token: "constant.languag.escape",
+        token: "constant.language.escape",
         regex: stringEscape,
     }]);
     this.$rules.spa_q3_start = spa_rules.concat([{
@@ -83,7 +83,7 @@ var SpaHighlightRules = function() {
         next: "start",
     }].concat(this.$rules.spa_q3_start));
     this.embedRules(PythonHighlightRules, "spa_qq3_", [{
-        token: "constant.languag.escape",
+        token: "constant.language.escape",
         regex: stringEscape,
     }]);
     this.$rules.spa_qq3_start = spa_rules.concat([{
