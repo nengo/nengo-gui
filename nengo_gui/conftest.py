@@ -15,7 +15,6 @@ from nengo_gui.gui import BaseGUI
 @pytest.yield_fixture(scope="session")
 def gui():
     print('a')
-    assert False
     host, port = ('localhost', 0)
     server_settings = guibackend.GuiServerSettings((host, port))
     model_context = guibackend.ModelContext(
@@ -28,6 +27,7 @@ def gui():
 
     started = False
     print('waiting for conn', host, port)
+    assert False
     while server_thread.is_alive() and not started:
         try:
             s = socket.create_connection((host, port), .1)
