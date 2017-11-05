@@ -194,13 +194,28 @@ class DualStackHttpServer(object):
         self.server_activate()
 
     def server_bind(self):
+        errors = []
         for b in self.bindings:
-            # if b.port == 0 and self.server_port != 0:
-                # # Use same port for all automatically chosen ports
-                # b.port = self.server_port
-            b.bind()
-            if self.server_port == 0:
-                self.server_port = b.port
+            if b.port == 0 and self.server_port != 0:
+                # Use same port for all automatically chosen ports
+                b.port = self.server_port
+            try:
+                b.bind()
+                if self.server_port == 0:
+                    self.server_port = b.port
+            except OSError as err:
+                errors.append({
+                    'binding': b,
+                    'err': err,
+                })
+
+        all_bindings_failed = len(errors) >= len(self.bindings)
+        if all_bindings_failed:
+            raise errors[0]['err']
+        else:
+            for err in errors:
+                warnings.warn("Could not bind server to address {}.".format(
+                    err['binding']))
 
     def server_activate(self):
         for b in self.bindings:
