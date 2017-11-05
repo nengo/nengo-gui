@@ -25,14 +25,16 @@ def gui():
     port = gui.server.server_port
 
     started = False
+    print('waiting for conn', host, port)
     while server_thread.is_alive() and not started:
         try:
-            s = socket.create_connection((host, port), 0.1)
+            s = socket.create_connection((host, port), .1)
             started = True
         except:
             pass
         else:
             s.close()
+    print('xxx')
 
     yield gui
 
