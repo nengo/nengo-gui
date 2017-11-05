@@ -37,7 +37,8 @@ def reset_page(driver):
     reset_page(driver)
     The page then resets
     """
-    driver.execute_script("toolbar.reset_model_layout();");
+    print(driver.execute_script("toolbar.reset_model_layout();document.readyState");
+    time.sleep(1.)
     WebDriverWait(driver, 10).until(lambda x: x.find_element_by_id('editor'))
 
 
