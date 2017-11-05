@@ -191,9 +191,9 @@ class DualStackHttpServer(object):
 
     def server_bind(self):
         for b in self.bindings:
-            if b.port == 0 and self.server_port != 0:
-                # Use same port for all automatically chosen ports
-                b.port = self.server_port
+            # if b.port == 0 and self.server_port != 0:
+                # # Use same port for all automatically chosen ports
+                # b.port = self.server_port
             b.bind()
             if self.server_port == 0:
                 self.server_port = b.port
