@@ -29,8 +29,11 @@ before_install:
   - tar -xzf "geckodriver-$GECKODRIVER_VER-linux64.tar.gz" -C geckodriver
   - export PATH=$PATH:$PWD/geckodriver
   - export MOZ_CRASHREPORTER_SHUTDOWN=1
-  - firefox -marionette
   - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1920x1080x16
+  - echo "$GDK_BACKEND"
+  - firefox -marionette
+  - export GDK_BACKEND=xvfb
+  - firefox -marionette
 
 install:
   - eval conda install "$CONDA_DEPS"
