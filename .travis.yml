@@ -29,12 +29,10 @@ before_install:
   - tar -xzf "geckodriver-$GECKODRIVER_VER-linux64.tar.gz" -C geckodriver
   - export PATH=$PATH:$PWD/geckodriver
   - export MOZ_CRASHREPORTER_SHUTDOWN=1
-  - /sbin/start-stop-daemon --start --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- 127.0.0.1:99 -ac -screen 0 1920x1080x16
+  - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1920x1080x16
   - sleep 3
-  - echo "$GDK_BACKEND"
-  - export GDK_BACKEND=xvfb
-  - echo "$GDK_BACKEND"
-  - firefox -marionette
+  - echo $DISPLAY
+  - xvfb-run firefox -marionette
 
 install:
   - eval conda install "$CONDA_DEPS"
@@ -43,7 +41,7 @@ install:
 bfore_script:
   #- wget http://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.1.jar
   #- java -jar selenium-server-standalone-2.53.1.jar > /dev/null &
-  - export DISPLAY=127.0.0.1:99.0
+  - export DISPLAY=:99.0
   #- sh -e /etc/init.d/xvfb start
   #- sleep 3  # give xvfb and some time to start
 
