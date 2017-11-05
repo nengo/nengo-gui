@@ -8,6 +8,7 @@ env:
   global:
     - CONDA_DEPS="numpy pytest"
     - PIP_DEPS="selenium pyimgur"
+    - GECKODRIVER_VER="v0.19.1"
 
 matrix:
   include:
@@ -23,6 +24,10 @@ before_install:
   - conda info -a
   - conda create -q -n test python="$PYTHON" pip
   - source activate test
+  - wget "https://github.com/mozilla/geckodriver/releases/download/v0.19.1/geckodriver-$GECKODRIVER_VER-linux64.tar.gz"
+  - mkdir geckodriver
+  - tar -xzf "geckodriver-$GECKODRIVER_VER-linux64.tar.gz" -C geckodriver
+  - export PATH=$PATH:$PWD/geckodriver
   #- /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1920x1080x16
 
 install:
