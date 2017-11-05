@@ -47,8 +47,8 @@ def gui():
 def driver(gui):
     print('b')
     driver = webdriver.Firefox()
-    assert False
     driver.get('http://localhost:{port}/'.format(port=gui.server.server_port))
+    assert False
     driver.maximize_window()
 
     print('c')
