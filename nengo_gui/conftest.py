@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import os.path
 import socket
+import time
 import threading
 
 import pytest
@@ -44,6 +45,7 @@ def gui():
 def driver(gui):
     driver = webdriver.Firefox()
     driver.get('http://localhost:{port}/'.format(port=gui.server.server_port))
+    time.sleep(1.)
     # driver.maximize_window()
 
     assert driver.title != "Problem loading page"
