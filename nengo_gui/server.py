@@ -9,6 +9,7 @@ import socket
 import struct
 import ssl
 import sys
+import time
 import threading
 import traceback
 import warnings
@@ -384,7 +385,7 @@ class HttpWsRequestHandler(server.BaseHTTPRequestHandler):
         self.do_GET()
 
     def do_GET(self):
-        print('>', self.path)
+        print('>', self.path, time.time())
         parsed = urlparse(self.path)
         self.resource = parsed.path
         self.query = parse_qs(parsed.query)
