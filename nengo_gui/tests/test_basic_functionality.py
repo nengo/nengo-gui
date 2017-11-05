@@ -13,12 +13,10 @@ test_files = tt.folder_location('examples/basics')
 
 @pytest.mark.parametrize('test_file', test_files)
 def test_basic_functionality(driver, test_file):
-    with open(test_file, 'r') as f:
-        code = f.read().replace("'", r"\'")
+    code = tt.load_code(test_file)
     try:
         # Test page response by clicking the reset button and applying
         # new code to ace-editor
-        tt.reset_page(driver)
         # if('TRAVIS' in os.environ):
             # tt.imgur_screenshot(driver)
         tt.update_editor(driver, code)

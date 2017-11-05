@@ -386,7 +386,6 @@ class HttpWsRequestHandler(server.BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         self.resource = parsed.path
-        print('>', self.path)
         self.query = parse_qs(parsed.query)
         self.db.update(
             {k: v[0] for k, v in self.query.items() if k not in self.db})
@@ -400,12 +399,10 @@ class HttpWsRequestHandler(server.BaseHTTPRequestHandler):
             else:
                 self.http_GET()
         except HttpError as err:
-            print('httperr')
             logger.warning(
                 'Error response (%i): %s', err.code, err.msg, exc_info=True)
             err.to_response().send(self)
         except Exception as err:
-            print('exc')
             logger.exception('Error response')
             err = InternalServerError(
                 '<pre>' + traceback.format_exc() + '</pre>')

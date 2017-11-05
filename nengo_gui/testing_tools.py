@@ -27,19 +27,20 @@ def update_editor(driver, nengoCode):
     time.sleep(1)
 
 
-def reset_page(driver):
+# def reset_page(driver):
 
-    """Resets the Nengo gui page
+    # """Resets the Nengo gui page
 
-    Example:
-    driver = webdriver.firefox()
-    driver.get(localhost:8080/)
-    reset_page(driver)
-    The page then resets
-    """
-    print(driver.execute_script("toolbar.reset_model_layout();document.readyState"))
-    time.sleep(1.)
-    WebDriverWait(driver, 30).until(lambda x: x.find_element_by_id('editor'))
+    # Example:
+    # driver = webdriver.firefox()
+    # driver.get(localhost:8080/)
+    # reset_page(driver)
+    # The page then resets
+    # """
+    # driver.get('/?reset=True');
+    # print(driver.execute_script("toolbar.reset_model_layout();document.readyState"))
+    # time.sleep(1.)
+    # WebDriverWait(driver, 30).until(lambda x: x.find_element_by_id('editor'))
 
 
 def start_stop_sim(driver):
@@ -84,6 +85,10 @@ def folder_location(var_path, indiv_file=None):
                      test_files)
     return test_files
 
+
+def load_code(path):
+    with open(path, 'r') as f:
+        return f.read().replace("'", r"\'")
 
 def mouse_scroll(driver, scroll_y):
 
