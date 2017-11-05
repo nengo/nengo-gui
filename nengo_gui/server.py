@@ -11,6 +11,7 @@ import ssl
 import sys
 import threading
 import traceback
+import warnings
 
 try:
     from http import server
@@ -203,8 +204,7 @@ class DualStackHttpServer(object):
                 b.bind()
                 if self.server_port == 0:
                     self.server_port = b.port
-            except Exception as err:
-                print(type(err), err)
+            except socket.error as err:
                 errors.append({
                     'binding': b,
                     'err': err,
