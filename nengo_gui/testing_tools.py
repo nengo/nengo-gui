@@ -1,8 +1,12 @@
 from __future__ import print_function
+
 import os
 import inspect
-import nengo_gui
 import time
+
+from selenium.webdriver.support.wait import WebDriverWait
+
+import nengo_gui
 
 
 def update_editor(driver, nengoCode):
@@ -34,7 +38,7 @@ def reset_page(driver):
     The page then resets
     """
     driver.execute_script("toolbar.reset_model_layout();");
-    time.sleep(0.3);
+    WebDriverWait(driver, 10).until(lambda x: x.find_element_by_id('editor'))
 
 
 def start_stop_sim(driver):

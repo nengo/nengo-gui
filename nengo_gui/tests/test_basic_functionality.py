@@ -19,7 +19,6 @@ def test_basic_functionality(driver, test_file):
         # Test page response by clicking the reset button and applying
         # new code to ace-editor
         tt.reset_page(driver)
-        time.sleep(2.)
         if('TRAVIS' in os.environ):
             tt.imgur_screenshot(driver)
         tt.update_editor(driver, code)
