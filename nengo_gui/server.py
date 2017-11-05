@@ -203,7 +203,8 @@ class DualStackHttpServer(object):
                 b.bind()
                 if self.server_port == 0:
                     self.server_port = b.port
-            except OSError as err:
+            except Exception as err:
+                print(type(err), err)
                 errors.append({
                     'binding': b,
                     'err': err,
