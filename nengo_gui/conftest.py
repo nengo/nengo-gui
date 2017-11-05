@@ -27,7 +27,6 @@ def gui():
 
     started = False
     print('waiting for conn', host, port)
-    assert False
     while server_thread.is_alive() and not started:
         try:
             s = socket.create_connection((host, port), .1)
@@ -37,6 +36,7 @@ def gui():
         else:
             s.close()
     print('xxx')
+    assert False
 
     yield gui
 
