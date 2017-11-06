@@ -319,22 +319,10 @@ class NetGraph(Component):
                     changed = True
 
         elif isinstance(old_item, nengo.Connection):
-            old_pre = old_item.pre_obj
-            old_post = old_item.post_obj
-            new_pre = new_item.pre_obj
-            new_post = new_item.post_obj
-            if isinstance(old_pre, nengo.ensemble.Neurons):
-                old_pre = old_pre.ensemble
-            if isinstance(old_post, nengo.connection.LearningRule):
-                old_post = old_post.connection.post_obj
-            if isinstance(old_post, nengo.ensemble.Neurons):
-                old_post = old_post.ensemble
-            if isinstance(new_pre, nengo.ensemble.Neurons):
-                new_pre = new_pre.ensemble
-            if isinstance(new_post, nengo.connection.LearningRule):
-                new_post = new_post.connection.post_obj
-            if isinstance(new_post, nengo.ensemble.Neurons):
-                new_post = new_post.ensemble
+            old_pre = NetGraph.connection_pre_obj(old_item)
+            old_post = NetGraph.connection_post_obj(old_item)
+            new_pre = NetGraph.connection_pre_obj(new_item)
+            new_post = NetGraph.connection_post_obj(new_item)
 
             old_pre = self.page.get_uid(old_pre)
             old_post = self.page.get_uid(old_post)
@@ -345,12 +333,8 @@ class NetGraph(Component):
 
             if new_pre != old_pre or new_post != old_post:
                 # if the connection has changed, tell javascript
-                pres = self.get_parents(
-                    new_pre,
-                    default_labels=new_name_finder.known_name)[:-1]
-                posts = self.get_parents(
-                    new_post,
-                    default_labels=new_name_finder.known_name)[:-1]
+                pres, posts = self.get_connection_hierarchy(new_item,
+                    default_labels=new_name_finder.known_name)
                 self.to_be_sent.append(dict(
                     type='reconnect', uid=uid,
                     pres=pres, posts=posts))
@@ -628,6 +612,52 @@ class NetGraph(Component):
                 return "inhibitory"
         return "normal"
 
+    def get_connection_hierarchy(self, conn, default_labels=None):
+        """
+        For the given connection returns the pre and post objects and their
+        hierarchy within the sub-network stack. Connection targets may either
+        be ensembles or other connections (in the case of a connection
+        targeting a learning rule.
+
+        Parameters
+        ----------
+        conn : nengo.Connection
+               Connection object for which the hierarchy should be computed.
+        default_labels: nengo_gui.NameFinder
+                        NameFinder instance used to derive the uids that are
+                        being returned. If null, the default NameFinder instance
+                        of this NetGraph instance is used.
+
+        Returns
+        -------
+        (list, list)
+            The first list contains the hierarchy for the pre-connection, the
+            second list the hierarchy for the post-connection. The first element
+            in either list corresponds to the actual target object, the
+            remaining lists to the parent networks. All list elements are UIDs.
+        """
+
+        # Fetch the uid for the pre and post connection objects
+        pre = self.page.get_uid(
+                NetGraph.connection_pre_obj(conn),
+                default_labels=default_labels)
+        post = self.page.get_uid(
+                NetGraph.connection_post_obj(conn),
+                default_labels=default_labels)
+
+        # Fetch the network hierarchy up to the post- and pre-connection object
+        pres = self.get_parents(pre, default_labels=default_labels)[:-1]
+        posts = self.get_parents(post, default_labels=default_labels)[:-1]
+
+        # If this is a modulatory connection, connect to the connection that
+        # is being trained
+        if isinstance(conn.post_obj, nengo.connection.LearningRule):
+            posts[0] = self.page.get_uid(
+                    conn.post_obj.connection,
+                    default_labels=default_labels)
+
+        return pres, posts
+
     def create_connection(self, client, conn, parent):
         """
         Assembles the a JSON description of the given connection object and
@@ -650,18 +680,8 @@ class NetGraph(Component):
             return
         self.uids[uid] = conn
 
-        # Fetch the uid for the pre and post connection objects
-        pre = self.page.get_uid(NetGraph.connection_pre_obj(conn))
-        post = self.page.get_uid(NetGraph.connection_post_obj(conn))
-
-        # Fetch the network hierarchy up to the post- and pre-connection object
-        pres = self.get_parents(pre)[:-1]
-        posts = self.get_parents(post)[:-1]
-
-        # If this is a modulatory connection, connect to the connection that
-        # is being trained
-        if isinstance(conn.post_obj, nengo.connection.LearningRule):
-            posts[0] = self.page.get_uid(conn.post_obj.connection)
+        # Fetch the pre and post object hierarchy
+        pres, posts = self.get_connection_hierarchy(conn)
 
         # Serialise the connection descriptor and send it to the client
         info = dict(uid=uid, pre=pres, post=posts, type='conn', parent=parent,
