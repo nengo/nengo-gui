@@ -2,7 +2,8 @@ language: c
 sudo: false
 
 addons:
-  firefox: latest
+  chrome: stable
+  #firefox: latest
 
 env:
   global:
@@ -24,10 +25,14 @@ before_install:
   - conda info -a
   - conda create -q -n test python="$PYTHON" pip
   - source activate test
-  - wget "https://github.com/mozilla/geckodriver/releases/download/v0.19.1/geckodriver-$GECKODRIVER_VER-linux64.tar.gz"
-  - mkdir geckodriver
-  - tar -xzf "geckodriver-$GECKODRIVER_VER-linux64.tar.gz" -C geckodriver
-  - export PATH=$PATH:$PWD/geckodriver
+  #- wget "https://github.com/mozilla/geckodriver/releases/download/v0.19.1/geckodriver-$GECKODRIVER_VER-linux64.tar.gz"
+  #- mkdir geckodriver
+  #- tar -xzf "geckodriver-$GECKODRIVER_VER-linux64.tar.gz" -C geckodriver
+  #- export PATH=$PATH:$PWD/geckodriver
+  - wget "https://chromedriver.storage.googleapis.com/2.33/chromedriver_linux64.zip"
+  - mkdir chromedriver
+  - unzip chromedriver_linux64.zip
+  - export PATH=$PATH:$PWD/chromedriver
   - export MOZ_CRASHREPORTER_SHUTDOWN=1
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
