@@ -43,10 +43,13 @@ def gui():
     gui.server.wait_for_shutdown(0.05)
 
 
-@pytest.yield_fixture(scope="session")
-def session_driver():
+# @pytest.yield_fixture(scope="session")
+@pytest.yield_fixture
+def driver(gui):
     driver = webdriver.Firefox()
     driver.implicitly_wait(10)
+    driver.get('http://localhost:{port}/?reset=True'.format(
+        port=gui.server.server_port))
     # driver.get('http://localhost:{port}/'.format(port=gui.server.server_port))
     # driver.maximize_window()
 
@@ -56,8 +59,9 @@ def session_driver():
     driver.quit()
 
 
-@pytest.fixture
-def driver(session_driver, gui):
-    session_driver.get('http://localhost:{port}/?reset=True'.format(
-        port=gui.server.server_port))
-    return session_driver
+# @pytest.fixture
+# def driver(session_driver, gui):
+    # session_driver.close()
+    # session_driver.get('http://localhost:{port}/?reset=True'.format(
+        # port=gui.server.server_port))
+    # return session_driver
