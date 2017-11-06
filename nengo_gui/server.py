@@ -257,7 +257,7 @@ class DualStackHttpServer(object):
     def shutdown_request(self, request):
         try:
             request.shutdown(socket.SHUT_WR)
-        except OSError:
+        except (OSError, socket.error):
             pass
         self.close_request(request)
 
