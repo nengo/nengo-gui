@@ -409,7 +409,7 @@ class HttpWsRequestHandler(server.BaseHTTPRequestHandler):
             err = InternalServerError(
                 '<pre>' + traceback.format_exc() + '</pre>')
             err.to_response().send(self)
-        print('<', self.path)
+        print('<', self.path, time.time())
 
     def http_GET(self):
         command = self._get_command(self.http_commands, self.resource)
