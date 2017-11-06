@@ -22,6 +22,7 @@ Release History
 0.3.2 (unreleased)
 ==================
 
+- Added --browser option
 - Added --unsecure option
 - Fixed backspace not working on sliders, search box
 - Added autocomplete to text editor

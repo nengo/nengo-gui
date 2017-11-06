@@ -44,7 +44,9 @@ def main():
     parser.add_argument(
         '-b', '--backend', metavar='BACKEND',
         default='nengo', type=str, help='default backend to use')
-    parser.add_argument('--browser', dest='browser', action='store_true')
+    parser.add_argument('--browser', dest='browser', type=str,
+        metavar='BROWSER', default=True,
+        help='browser to use (e.g. chrome, firefox)')
     parser.add_argument('--no-browser', dest='browser', action='store_false')
     parser.add_argument(
         '--auto-shutdown', nargs=1, type=float,
@@ -110,8 +112,12 @@ def main():
             protocol = 'https:' if server_settings.use_ssl else 'http:'
             host = 'localhost'
             port = s.server.server_port
+            if args.browser is True:
+                wb = webbrowser.get()
+            else:
+                wb = webbrowser.get(args.browser)
             t = threading.Thread(
-                target=webbrowser.open,
+                target=wb.open,
                 args=('%s//%s:%d/?token=%s' % (
                     protocol, host, port, s.server.gen_one_time_token()),))
             t.start()
