@@ -1,8 +1,12 @@
 from __future__ import print_function
+
 import os
 import inspect
-import nengo_gui
 import time
+
+from selenium.webdriver.support.wait import WebDriverWait
+
+import nengo_gui
 
 
 def update_editor(driver, nengoCode):
@@ -23,18 +27,20 @@ def update_editor(driver, nengoCode):
     time.sleep(1)
 
 
-def reset_page(driver):
+# def reset_page(driver):
 
-    """Resets the Nengo gui page
+    # """Resets the Nengo gui page
 
-    Example:
-    driver = webdriver.firefox()
-    driver.get(localhost:8080/)
-    reset_page(driver)
-    The page then resets
-    """
-    driver.execute_script("toolbar.reset_model_layout();");
-    time.sleep(0.3);
+    # Example:
+    # driver = webdriver.firefox()
+    # driver.get(localhost:8080/)
+    # reset_page(driver)
+    # The page then resets
+    # """
+    # driver.get('/?reset=True');
+    # print(driver.execute_script("toolbar.reset_model_layout();document.readyState"))
+    # time.sleep(1.)
+    # WebDriverWait(driver, 30).until(lambda x: x.find_element_by_id('editor'))
 
 
 def start_stop_sim(driver):
@@ -77,11 +83,12 @@ def folder_location(var_path, indiv_file=None):
         test_files = filter((lambda x: (x == indiv_file)), test_files)
     test_files = map((lambda file_: os.path.join(test_folder, file_)),
                      test_files)
-    test_files = map((lambda file_: open(file_, 'r').read()), test_files)
-    test_files = map((lambda raw_file: raw_file.replace("'", r"\'")),
-                     test_files)
     return test_files
 
+
+def load_code(path):
+    with open(path, 'r') as f:
+        return f.read().replace("'", r"\'")
 
 def mouse_scroll(driver, scroll_y):
 

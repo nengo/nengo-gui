@@ -13,12 +13,13 @@ test_files = tt.folder_location('examples/basics')
 
 @pytest.mark.parametrize('test_file', test_files)
 def test_basic_functionality(driver, test_file):
+    code = tt.load_code(test_file)
     try:
         # Test page response by clicking the reset button and applying
         # new code to ace-editor
-        tt.reset_page(driver)
-        time.sleep(0.5)
-        tt.update_editor(driver, test_file)
+        # if('TRAVIS' in os.environ):
+            # tt.imgur_screenshot(driver)
+        tt.update_editor(driver, code)
         tt.mouse_scroll(driver, 500)
         ens_elements = driver.find_elements_by_xpath('//*[@class="ens"]')
         assert (len(ens_elements) > 0)
@@ -60,6 +61,6 @@ def test_basic_functionality(driver, test_file):
 
     except:
         # Travis Only: On fail takes screenshot and uploads it to imgur
-        if('TRAVIS' in os.environ):
-            tt.imgur_screenshot(driver)
+        # if('TRAVIS' in os.environ):
+            # tt.imgur_screenshot(driver)
         raise

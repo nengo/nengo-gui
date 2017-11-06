@@ -15,13 +15,12 @@ test_files = [f for f in test_files if not any(i in f for i in ignore)]
 def test_tutorial_basic(driver, test_file):
     # Tests the first 18 tutorials. These are the tutorials that do not
     # utilize networks or SPA which require a different format of test
+    code = tt.load_code(test_file)
 
     try:
         # Test page response by clicking the reset button and applying
         # new code to ace-editor
-        tt.reset_page(driver)
-        time.sleep(1)
-        tt.update_editor(driver, test_file)
+        tt.update_editor(driver, code)
         tt.mouse_scroll(driver, 500)
         time.sleep(2)
         side_script = ("var right = document.getElementById('rightpane');\n"
@@ -31,8 +30,8 @@ def test_tutorial_basic(driver, test_file):
         node_objects = driver.find_elements_by_xpath('//*[@class="node"]')
         ens_objects = driver.find_elements_by_xpath('//*[@class="ens"]')
 
-        node_number = test_file.count("nengo.Node")
-        ens_number = test_file.count("nengo.Ensemble")
+        node_number = code.count("nengo.Node")
+        ens_number = code.count("nengo.Ensemble")
 
         # Makes sure the correct number of ensembles and nodes were rendered
         assert(len(node_objects)/2 == node_number)

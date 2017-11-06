@@ -39,7 +39,7 @@ with model:
             actions.perform()
 
             time.sleep(0.5)
-    driver.execute_script("""
+    result = driver.execute_script("""
 a = function() {
     var data_set = Nengo.Component.components;
     data_set.forEach(function(data, index) {
@@ -50,11 +50,9 @@ a = function() {
     });
     return data_to_csv(data_set);
 };
+return a();
     """)
 
-    time.sleep(1)
-
-    result = driver.execute_script("return a();")
     test_data = ("Graph Name,stim,a\n"
                  "Times,Dimension1,Dimension1\n"
                  "1,11,12")

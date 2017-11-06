@@ -9,8 +9,10 @@ import socket
 import struct
 import ssl
 import sys
+import time
 import threading
 import traceback
+import warnings
 
 try:
     from http import server
@@ -148,6 +150,22 @@ class DualStackHttpServer(object):
         def activate(self):
             self.socket.listen(self.request_queue_size)
 
+        @property
+        def host(self):
+            return self.address[0]
+
+        @host.setter
+        def host(self, value):
+            self.address = (value, self.port)
+
+        @property
+        def port(self):
+            return self.address[1]
+
+        @port.setter
+        def port(self, value):
+            self.address = (self.host, value)
+
     def __init__(self, server_address, RequestHandlerClass):
         self.server_name, self.server_port = server_address
 
@@ -174,8 +192,28 @@ class DualStackHttpServer(object):
         self.server_activate()
 
     def server_bind(self):
+        errors = []
         for b in self.bindings:
-            b.bind()
+            if b.port == 0 and self.server_port != 0:
+                # Use same port for all automatically chosen ports
+                b.port = self.server_port
+            try:
+                b.bind()
+                if self.server_port == 0:
+                    self.server_port = b.port
+            except socket.error as err:
+                errors.append({
+                    'binding': b,
+                    'err': err,
+                })
+
+        all_bindings_failed = len(errors) >= len(self.bindings)
+        if all_bindings_failed:
+            raise errors[0]['err']
+        else:
+            for err in errors:
+                warnings.warn("Could not bind server to address {}.".format(
+                    err['binding'].address))
 
     def server_activate(self):
         for b in self.bindings:
@@ -292,8 +330,6 @@ class ManagedThreadHttpServer(
 
         for ws in self.websockets:
             ws.close()
-        for _, request in self.requests:
-            self.shutdown_request(request)
 
         DualStackHttpServer.shutdown(self)
 
