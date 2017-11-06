@@ -46,7 +46,7 @@ def gui():
 # @pytest.yield_fixture(scope="session")
 @pytest.yield_fixture
 def driver(gui):
-    driver = webdriver.Firefox()
+    driver = webdriver.Firefox(logpath=os.path.devnull)
     driver.implicitly_wait(10)
     driver.get('http://localhost:{port}/?reset=True'.format(
         port=gui.server.server_port))

@@ -385,7 +385,6 @@ class HttpWsRequestHandler(server.BaseHTTPRequestHandler):
         self.do_GET()
 
     def do_GET(self):
-        print('>', self.path, time.time())
         parsed = urlparse(self.path)
         self.resource = parsed.path
         self.query = parse_qs(parsed.query)
@@ -409,7 +408,6 @@ class HttpWsRequestHandler(server.BaseHTTPRequestHandler):
             err = InternalServerError(
                 '<pre>' + traceback.format_exc() + '</pre>')
             err.to_response().send(self)
-        print('<', self.path, time.time())
 
     def http_GET(self):
         command = self._get_command(self.http_commands, self.resource)
