@@ -31,7 +31,7 @@ before_install:
   #- export PATH=$PATH:$PWD/geckodriver
   - wget "https://chromedriver.storage.googleapis.com/2.33/chromedriver_linux64.zip"
   - mkdir chromedriver
-  - unzip chromedriver_linux64.zip
+  - unzip chromedriver_linux64.zip -d chromedriver
   - export PATH=$PATH:$PWD/chromedriver
   - export MOZ_CRASHREPORTER_SHUTDOWN=1
   - export DISPLAY=:99.0
