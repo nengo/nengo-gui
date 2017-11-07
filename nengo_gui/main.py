@@ -18,6 +18,13 @@ def old_main():
 
 
 def main():
+    try:
+        browser_help = ('browser to use (options: "%s")' % 
+                        '", "'.join(webbrowser._tryorder))
+    except (AttributeError, TypeError):
+        # just in case the undocumented webbrowser._tryorder changes
+        browser_help='browser to use (e.g. chrome, firefox)'
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-p', '--password', dest='password', metavar='PASS',
@@ -46,7 +53,7 @@ def main():
         default='nengo', type=str, help='default backend to use')
     parser.add_argument('--browser', dest='browser', type=str,
         metavar='BROWSER', default=True,
-        help='browser to use (e.g. chrome, firefox)')
+        help=browser_help)
     parser.add_argument('--no-browser', dest='browser', action='store_false')
     parser.add_argument(
         '--auto-shutdown', nargs=1, type=float,
@@ -115,7 +122,17 @@ def main():
             if args.browser is True:
                 wb = webbrowser.get()
             else:
-                wb = webbrowser.get(args.browser)
+                try:
+                    wb = webbrowser.get(args.browser)
+                except webbrowser.Error:
+                    try:
+                        print('Known browsers: \n  %s' % 
+                              '\n  '.join(webbrowser._tryorder))
+                    except (AttributeError, TypeError):
+                        # just in case the undocumented webbrowser._tryorder
+                        #  changes
+                        print('Could not determine the list of known browsers.')
+                    raise
             t = threading.Thread(
                 target=wb.open,
                 args=('%s//%s:%d/?token=%s' % (
