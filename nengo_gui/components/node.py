@@ -20,8 +20,11 @@ class Node(Component):
             and self.obj.output.base_output is None)
 
     def create(self):
-        # TODO: figure out args to pass to this
-        self.client.send("netgraph.create_node")
+        # TODO: differentiate passthrough from normal?
+        self.client.send("netgraph.create_node",
+                         uid=self.uid,
+                         pos=self.pos,
+                         dimensions=self.dimensions)
 
     def similar(self, other):
         return (super(Node, self).similar(other)

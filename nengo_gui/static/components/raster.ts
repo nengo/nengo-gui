@@ -19,38 +19,40 @@ import { DataStore } from "../datastore";
 import * as utils from "../utils";
 import { InputDialogView } from "../views/modal";
 import { RasterView } from "./views/raster";
-import { Axes, Plot } from "./base";
+import { Axes, Plot, Position } from "./base";
+import { registerComponent } from "./registry";
+import { Connection } from "../server";
 
 export class Raster extends Plot {
-
     protected _nNeurons: number;
     protected _view: RasterView;
 
-    constructor(
-        left: number,
-        top: number,
-        width: number,
-        height: number,
-        parent: string,
-        uid: string,
-        dimensions: number,
-        synapse: number,
-        miniItem = null,
-        xlim: [number, number] = [-0.5, 0],
-        nNeurons: number = 1,
-    ) {
+    constructor({
+        server,
+        uid,
+        pos,
+        synapse,
+        nNeurons,
+        xlim = [-0.5, 0],
+    }: {
+        server: Connection;
+        uid: string;
+        pos: Position;
+        synapse: number;
+        nNeurons: number;
+        xlim?: [number, number];
+    }) {
         super(
-            left,
-            top,
-            width,
-            height,
-            parent,
+            server,
             uid,
+            pos.left,
+            pos.top,
+            pos.width,
+            pos.height,
             nNeurons,
             synapse,
-            miniItem,
             xlim,
-            [0, nNeurons],
+            [0, nNeurons]
         );
         this.nNeurons = nNeurons;
     }
@@ -104,8 +106,8 @@ export class Raster extends Plot {
             custom: {
                 ngvalidator: item => {
                     return utils.isInt(item.value);
-                },
-            },
+                }
+            }
         });
         $(modal.root).on("hidden.bs.modal", () => {
             document.body.removeChild(modal.root);
@@ -136,3 +138,5 @@ export class Raster extends Plot {
         this.view.line = path.join("");
     }, 20);
 }
+
+registerComponent("raster", Raster);

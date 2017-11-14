@@ -1,4 +1,5 @@
-import { Component, ResizableComponent } from "./base";
+import { Component, Position, ResizableComponent } from "./base";
+import { registerComponent } from "./registry";
 import { NodeView, PassthroughNodeView } from "./views/node";
 
 export class PassthroughNode extends Component {
@@ -6,6 +7,18 @@ export class PassthroughNode extends Component {
     fixedWidth: number;
 
     protected _view: PassthroughNodeView;
+
+    constructor({
+        uid,
+        pos,
+        dimensions
+    }: {
+        uid: string;
+        pos: Position;
+        dimensions: number;
+    }) {
+        super(uid, pos.left, pos.top, dimensions);
+    }
 
     get view(): PassthroughNodeView {
         if (this._view === null) {
@@ -20,6 +33,18 @@ export class Node extends ResizableComponent {
 
     protected _view: NodeView;
 
+    constructor({
+        uid,
+        pos,
+        dimensions
+    }: {
+        uid: string;
+        pos: Position;
+        dimensions: number;
+    }) {
+        super(uid, pos.left, pos.top, pos.width, pos.height, dimensions);
+    }
+
     get view(): NodeView {
         if (this._view === null) {
             this._view = new NodeView("?");
@@ -31,17 +56,32 @@ export class Node extends ResizableComponent {
         this.menu.addAction("Slider", () => {
             this.createGraph("Slider");
         });
-        this.menu.addAction("Value", () => {
-            this.createGraph("Value");
-        }, () => this.dimensions > 0);
-        this.menu.addAction("XY-value", () => {
-            this.createGraph("XYValue");
-        }, () => this.dimensions > 1);
-        this.menu.addAction("HTML", () => {
-            this.createGraph("HTMLView");
-        }, () => this.htmlNode);
+        this.menu.addAction(
+            "Value",
+            () => {
+                this.createGraph("Value");
+            },
+            () => this.dimensions > 0
+        );
+        this.menu.addAction(
+            "XY-value",
+            () => {
+                this.createGraph("XYValue");
+            },
+            () => this.dimensions > 1
+        );
+        this.menu.addAction(
+            "HTML",
+            () => {
+                this.createGraph("HTMLView");
+            },
+            () => this.htmlNode
+        );
         this.menu.addAction("Details ...", () => {
-            this.createModal();
+            // TODO
+            // this.createModal();
         });
     }
 }
+
+registerComponent("node", Node);

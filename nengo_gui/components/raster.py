@@ -57,7 +57,9 @@ class Raster(Widget):
 
     def create(self):
         self.client.send("netgraph.create_raster",
-                         label=self.label, max_neurons=self.max_neurons)
+                         uid=self.uid,
+                         pos=self.pos,
+                         nNeurons=self.n_neurons)
 
     def remove_nengo_objects(self, model):
         model.nodes.remove(self.node)

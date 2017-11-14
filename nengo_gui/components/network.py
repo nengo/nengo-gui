@@ -3,6 +3,7 @@ from nengo.spa.module import Module
 from .base import Component
 
 
+# TODO: has_layout?
 class Network(Component):
 
     def __init__(self, client, obj, uid,
@@ -22,7 +23,11 @@ class Network(Component):
 
     def create(self):
         # TODO: figure out args to pass to this
-        self.client.send("netgraph.create_network")
+        self.client.send("netgraph.create_network",
+                         uid=self.uid,
+                         pos=self.pos,
+                         dimensions=1,  # TODO
+                         expanded=self.expanded)
 
     def similar(self, other):
         return (super(Network, self).similar(other)

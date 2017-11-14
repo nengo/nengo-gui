@@ -5,7 +5,7 @@
  */
 
 import { Editor } from "./editor";
-import { NetGraph } from "./netgraph";
+import { NetGraph } from "./netgraph/main";
 import { Connection } from "./server";
 import { SimControl } from "./sim-control"
 import { HotkeysDialogView } from "./views/hotkeys";

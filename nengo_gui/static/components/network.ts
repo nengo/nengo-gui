@@ -1,14 +1,17 @@
-import { Component, ResizableComponent, Plot } from "./base";
+import { Component, ResizableComponent, Plot, Position } from "./base";
+import { config } from "../config";
 import {
-    ComponentConnection, FeedforwardConnection, RecurrentConnection
+    ComponentConnection,
+    FeedforwardConnection,
+    RecurrentConnection
 } from "./connection";
 import { Menu } from "../menu";
-import { NetGraph } from "../netgraph";
+import { NetGraph } from "../netgraph/main";
 import * as utils from "../utils";
+import { registerComponent } from "./registry";
 import { NetworkView } from "./views/network";
 
 export class Network extends ResizableComponent {
-
     expanded: boolean;
     // spTargets; // Vocab...? Subclass for SPA networks?
     // defaultOutput;
@@ -18,27 +21,37 @@ export class Network extends ResizableComponent {
     protected _depth: number;
     protected _view: NetworkView;
 
-    constructor(
-        left: number,
-        top: number,
-        width: number,
-        height: number,
-        parent: string,
-        uid: string,
-        dimensions: number,
-        miniItem = null,
+    constructor({
+        uid,
+        pos,
+        dimensions,
         expanded = false,
         depth = 0,
-        defaultOutput = null,
-    ) {
-        super(left, top, width, height, parent, uid, dimensions, miniItem);
+        defaultOutput = null
+    }: {
+        uid: string;
+        pos: Position;
+        dimensions: number;
+        expanded?: boolean;
+        depth?: number;
+        defaultOutput?: string;
+    }) {
+        super(uid, pos.left, pos.top, pos.width, pos.height, dimensions);
 
         this.expanded = expanded;
         this.depth = depth;
         // this.defaultOutput = defaultOutput;
+        this.transparent = config.transparentNets;
 
         // Do in expanded or depth setter?
         // this.computeFill();
+
+        document.addEventListener("nengoConfigChange", (event: CustomEvent) => {
+            const key = event.detail;
+            if (key === "transparentNets") {
+                this.transparent = config.transparentNets;
+            }
+        });
     }
 
     get depth(): number {
@@ -57,7 +70,7 @@ export class Network extends ResizableComponent {
         return this.view.transparent;
     }
 
-    set transparent(val: boolean ) {
+    set transparent(val: boolean) {
         this.view.transparent = val;
     }
 
@@ -79,7 +92,8 @@ export class Network extends ResizableComponent {
         //     this.createGraph("SpaSimilarity", this.spTargets[0]);
         // }, () => this.spTargets.length > 0);
         this.menu.addAction("Details ...", () => {
-            this.createModal();
+            // TODO
+            // this.createModal();
         });
     }
 
@@ -93,17 +107,30 @@ export class Network extends ResizableComponent {
     }
 
     onnetgraphadd(netgraph: NetGraph) {
-        this.menu.addAction("Collapse network", () => {
-            netgraph.collapse(this);
-        }, () => this.expanded);
-        this.menu.addAction("Auto-layout", () => {
-            this.requestFeedforwardLayout();
-        }, () => this.expanded);
-        this.menu.addAction("Expand network", () => {
-            netgraph.expand(this);
-        }, () => !this.expanded);
+        this.menu.addAction(
+            "Collapse network",
+            () => {
+                netgraph.collapse(this);
+            },
+            () => this.expanded
+        );
+        this.menu.addAction(
+            "Auto-layout",
+            () => {
+                // TODO: server?
+                this.server.send("netgraph.autolayout");
+            },
+            () => this.expanded
+        );
+        this.menu.addAction(
+            "Expand network",
+            () => {
+                netgraph.expand(this);
+            },
+            () => !this.expanded
+        );
 
-        this.interactable.on("doubletap", (event) => {
+        this.interactRoot.on("doubletap", event => {
             // Get rid of menus when clicking off
             if (event.button === 0) {
                 if (Menu.shown !== null) {
@@ -118,6 +145,8 @@ export class Network extends ResizableComponent {
             }
         });
 
-        super.onnetgraphadd(netgraph)
+        super.onnetgraphadd(netgraph);
     }
 }
+
+registerComponent("network", Network);

@@ -5,49 +5,66 @@ import { Network } from "./network";
 import { config } from "../config";
 import { DataStore } from "../datastore";
 import { Menu } from "../menu";
-import { NetGraph } from "../netgraph";
-import { FastServerConnection } from "../server";
+import { NetGraph } from "../netgraph/main";
+import { Connection, FastServerConnection } from "../server";
 import * as utils from "../utils";
 import {
-    AxesView, ComponentView, ResizableComponentView, PlotView,
+    AxesView,
+    ComponentView,
+    ResizableComponentView,
+    PlotView
 } from "./views/base";
 import { LegendView } from "./views/base";
 
 import { InputDialogView } from "../views/modal";
 
-export abstract class Component {
+export class Position {
+    left: number;
+    top: number;
+    width: number | null;
+    height: number | null;
 
-    minimap;
-    miniItem;
-    _labelBelow: boolean;
+    constructor(
+        left: number = 0,
+        top: number = 0,
+        width: number = null,
+        height: number = null
+    ) {
+        this.left = left;
+        this.top = top;
+        this.width = width;
+        this.height = height;
+    }
+}
+
+export abstract class Component {
     menu: Menu;
 
     uid: string;
 
     dimensions;
 
-    interactable;
+    interactRoot;
 
+    protected server: Connection;
     protected _left: number;
     protected _scaleToPixels: number;
     protected _top: number;
     protected _view: ComponentView = null;
 
     constructor(
+        server: Connection,
+        uid: string,
         left: number,
         top: number,
-        parent: string,
-        uid: string,
-        dimensions: number,
-        miniItem = null,
+        dimensions: number
     ) {
+        this.server = server;
         this.uid = uid;
         this._left = left;
         this._top = top;
 
         this.dimensions = dimensions;
-
-        this.miniItem = miniItem;
 
         this.menu = new Menu();
         this.addMenuItems();
@@ -57,31 +74,26 @@ export abstract class Component {
         //     this.view.parent.children.push(this);
         // }
 
-        this.interactable = interact(this.view.overlay);
+        this.interactRoot = interact(this.view.overlay);
 
         // TODO: Dicuss: previously, only plots had inertia. Should they all?
-        this.interactable.draggable({inertia: true});
-        this.interactable.on("dragmove", (event) => {
+        this.interactRoot.draggable({ inertia: true });
+        this.interactRoot.on("dragmove", event => {
             const [vLeft, vTop] = this.view.pos;
             this.view.pos = [vLeft + event.dx, vTop + event.dy];
 
             // TODO: redraw
             // this.redraw();
-
-            // TODO: minimap
-            // if (this.view.depth === 1) {
-            //     this.ng.scaleMiniMap();
-            // }
         });
-        this.interactable.on("dragstart", () => {
+        this.interactRoot.on("dragstart", () => {
             Menu.hideShown();
         });
-        this.interactable.on("dragend", () => {
+        this.interactRoot.on("dragend", () => {
             this.syncWithView();
         });
 
         // --- Menu
-        const toggleMenu = (event) => {
+        const toggleMenu = event => {
             if (Menu.shown !== null) {
                 Menu.hideShown();
             } else {
@@ -89,15 +101,15 @@ export abstract class Component {
             }
             event.stopPropagation();
         };
-        this.interactable.on("hold", (event) => {
+        this.interactRoot.on("hold", event => {
             if (event.button === 0) {
                 toggleMenu(event);
             }
         });
-        // this.interactable.on("tap doubletap", (event) => {
+        // this.interactRoot.on("tap doubletap", (event) => {
         //     Menu.hideShown();
         // });
-        this.interactable.on("contextmenu", (event) => {
+        this.interactRoot.on("contextmenu", event => {
             event.preventDefault();
             toggleMenu(event);
         });
@@ -154,16 +166,7 @@ export abstract class Component {
     //             this.y * hScale + parentShiftY + ngDims.offsetY];
     // }
 
-    // TODO: minimap
-    // get minMaxXY() {
-    //     const minX = this.x - this.width;
-    //     const maxX = this.x + this.width;
-    //     const minY = this.y - this.height;
-    //     const maxY = this.y + this.height;
-    //     return [minX, maxX, minY, maxY];
-    // }
-
-    get scales(){
+    get scales() {
         // let hScale = this.ng.scaledWidth;
         // let vScale = this.ng.scaledHeight;
         // let parent = this.parent;
@@ -178,12 +181,7 @@ export abstract class Component {
         return "todo";
     }
 
-    addMenuItems() {
-        // TODO: only for network?
-        this.menu.addAction("Auto-layout", () => {
-            this.requestFeedforwardLayout();
-        });
-    }
+    addMenuItems() {}
 
     // TODO: constrainPosition
     // constrainPosition() {
@@ -199,28 +197,6 @@ export abstract class Component {
     //     }
     // }
 
-    createModal() {
-        // this.ng.notify("createModal", {
-        //     connInUids: this.connIn.map((c) => {
-        //         return c.uid;
-        //     }),
-        //     connOutUids: this.connOut.map((c) => {
-        //         return c.uid;
-        //     }),
-        //     uid: this.uid,
-        // });
-    }
-
-    // TODO: redraw
-    // redrawConnections() {
-    //     for (const conn of this.connIn) {
-    //         conn.redraw();
-    //     }
-    //     for (const conn of this.connOut) {
-    //         conn.redraw();
-    //     }
-    // }
-
     requestFeedforwardLayout() {
         // this.ng.notify("feedforwardLayout", {uid: this.uid});
     }
@@ -231,34 +207,13 @@ export abstract class Component {
         //     const index = this.view.parent.children.indexOf(this);
         //     this.view.parent.children.splice(index, 1);
         // }
-
         // super.remove();
-
         // this.miniItem.remove();
     }
 
-    // TODO: redraw
-    // redraw() {
-    //     this.view.redrawSize();
-    //     if (this.ng.mmDisplay) {
-    //         this.miniItem.redraw();
-    //     }
-
-    //     this.view.redrawPosition();
-    //     this.redrawConnections();
-    // }
-
-    set labelBelow(flag) {
-        // if (flag && !this._labelBelow) {
-        //     const screenH = this.view.screenHeight;
-        //     this.view.moveLabel(screenH / 2);
-        // } else if (!flag && this._labelBelow) {
-        //     this.view.moveLabel(0);
-        // }
-    }
-
     // TODO: rename to createComponent?
-    createGraph(graphType, args=null) { // tslint:disable-line
+    createGraph(graphType, args = null) {
+        // tslint:disable-line
         // TODO: get nested implemented this
         // const w = this.nestedWidth;
         // const h = this.nestedHeight;
@@ -296,13 +251,12 @@ export abstract class Component {
     }
 
     onnetadd(network: Network) {
-        this.interactable.draggable({
-            restrict: {restriction: network.view.root},
+        this.interactRoot.draggable({
+            restrict: { restriction: network.view.root }
         });
     }
 
-    onnetgraphadd(netgraph: NetGraph) {
-    }
+    onnetgraphadd(netgraph: NetGraph) {}
 
     syncWithView = utils.throttle(() => {
         const [left, top] = this.view.pos;
@@ -312,11 +266,10 @@ export abstract class Component {
 }
 
 export abstract class ResizableComponent extends Component {
-
     static resizeOptions: any = {
-        edges: {bottom: true, left: true, right: true, top: true},
+        edges: { bottom: true, left: true, right: true, top: true },
         invert: "none",
-        margin: 10,
+        margin: 10
         // restrict: {
         //     restriction: {
         //         bottom: 600,
@@ -333,25 +286,24 @@ export abstract class ResizableComponent extends Component {
 
     // TODO: Add all things to constructor
     constructor(
+        server: Connection,
+        uid: string,
         left: number,
         top: number,
         width: number,
         height: number,
-        parent: string,
-        uid: string,
-        dimensions: number,
-        miniItem = null,
+        dimensions: number
     ) {
-        super(left, top, parent, uid, dimensions, miniItem);
+        super(server, uid, left, top, dimensions);
 
         this._height = height;
         this._width = width;
 
-        this.interactable.resizable(this.resizeOptions);
-        this.interactable.on("resizestart", (event) => {
+        this.interactRoot.resizable(this.resizeOptions);
+        this.interactRoot.on("resizestart", event => {
             Menu.hideShown();
         });
-        this.interactable.on("resizemove", (event) => {
+        this.interactRoot.on("resizemove", event => {
             const dRect = event.deltaRect;
             const [vLeft, vTop] = this.view.pos;
             const [vWidth, vHeight] = this.view.scale;
@@ -360,12 +312,8 @@ export abstract class ResizableComponent extends Component {
             this.view.scale = [vWidth + dRect.width, vHeight + dRect.height];
             // this.view.contSize(event);
             // this.redraw();
-
-            // if (this.view.depth === 1) {
-            //     this.ng.scaleMiniMap();
-            // }
         });
-        this.interactable.on("resizeend", (event) => {
+        this.interactRoot.on("resizeend", event => {
             const [vWidth, vHeight] = this.view.scale;
             this._width = vWidth / this.scaleToPixels;
             this._height = vHeight / this.scaleToPixels;
@@ -409,38 +357,37 @@ export abstract class ResizableComponent extends Component {
     }
 
     onnetadd(network: Network) {
-        this.interactable.resizable({
-            restrict: {restriction: network.view.root},
+        this.interactRoot.resizable({
+            restrict: { restriction: network.view.root }
         });
         super.onnetadd(network);
     }
 }
 
 export abstract class Widget extends ResizableComponent {
-
     currentTime: number = 0.0;
     datastore: DataStore;
     synapse: number;
 
     constructor(
+        server: Connection,
+        uid: string,
         left: number,
         top: number,
         width: number,
         height: number,
-        parent: string,
-        uid: string,
         dimensions: number,
-        synapse: number,
-        miniItem = null,
+        synapse: number
     ) {
-        super(left, top, width, height, parent, uid, dimensions, miniItem);
+        super(server, uid, left, top, width, height, dimensions);
         this.synapse = synapse;
         this.datastore = new DataStore(this.dimensions, 0.0);
 
         window.addEventListener(
-            "TimeSlider.moveShown", utils.throttle((e: CustomEvent) => {
+            "TimeSlider.moveShown",
+            utils.throttle((e: CustomEvent) => {
                 this.currentTime = e.detail.shownTime[1];
-            }, 50), // Update once every 50 ms
+            }, 50) // Update once every 50 ms
         );
     }
 
@@ -460,8 +407,10 @@ export abstract class Widget extends ResizableComponent {
         //     console.warn("extra data: " + data.length);
         // }
         if (data.length !== this.dimensions + 1) {
-            console.error(`Got data with ${data.length - 1} dimensions; ` +
-                          `should be ${this.dimensions} dimensions.`);
+            console.error(
+                `Got data with ${data.length - 1} dimensions; ` +
+                    `should be ${this.dimensions} dimensions.`
+            );
         } else {
             this.datastore.add(data);
             this.syncWithDataStore();
@@ -472,16 +421,24 @@ export abstract class Widget extends ResizableComponent {
         this.menu.addAction("Set synapse...", () => {
             this.askSynapse();
         });
-        this.menu.addAction("Hide label", () => {
-            this.labelVisible = false;
-            // see component.interactable.on("dragend resizeend")
-            // this.saveLayout();
-        }, () => this.labelVisible);
-        this.menu.addAction("Show label", () => {
-            this.labelVisible = true;
-            // see component.interactable.on("dragend resizeend")
-            // this.saveLayout();
-        }, () => !this.labelVisible);
+        this.menu.addAction(
+            "Hide label",
+            () => {
+                this.labelVisible = false;
+                // see component.interactRoot.on("dragend resizeend")
+                // this.saveLayout();
+            },
+            () => this.labelVisible
+        );
+        this.menu.addAction(
+            "Show label",
+            () => {
+                this.labelVisible = true;
+                // see component.interactRoot.on("dragend resizeend")
+                // this.saveLayout();
+            },
+            () => !this.labelVisible
+        );
         // TODO: attachNetGraph
         // this.menu.addAction("Remove", () => { this.remove(); });
 
@@ -492,7 +449,7 @@ export abstract class Widget extends ResizableComponent {
         const modal = new InputDialogView(
             String(this.synapse),
             "Synaptic filter time constant (in seconds)",
-            "Input should be a non-negative number",
+            "Input should be a non-negative number"
         );
         modal.title = "Set synaptic filter...";
         modal.ok.addEventListener("click", () => {
@@ -514,10 +471,10 @@ export abstract class Widget extends ResizableComponent {
 
         $(modal).validator({
             custom: {
-                ngvalidator: (item) => {
+                ngvalidator: item => {
                     return utils.isNum(item.value) && Number(item.value) >= 0;
-                },
-            },
+                }
+            }
         });
         $(modal.root).on("hidden.bs.modal", () => {
             document.body.removeChild(modal.root);
@@ -608,7 +565,7 @@ export class Axes {
         width,
         height,
         xlim: [number, number] = [-0.5, 0.0],
-        ylim: [number, number] = [-1, 1],
+        ylim: [number, number] = [-1, 1]
     ) {
         this.view = valueView.axes;
         this._width = width;
@@ -658,9 +615,7 @@ export class Axes {
         this.x.pixelLim = [yWidth, this._width];
         this.view.y.pos = [yWidth, 0];
         this.y.pixelLim = [this._height - xHeight, 0];
-        this.view.crosshair.scale = [
-            this._width, this._height - xHeight,
-        ];
+        this.view.crosshair.scale = [this._width, this._height - xHeight];
     }
 
     get width(): number {
@@ -682,38 +637,39 @@ export abstract class Plot extends Widget {
     protected _view: PlotView;
 
     constructor(
+        server: Connection,
+        uid: string,
         left: number,
         top: number,
         width: number,
         height: number,
-        parent: string,
-        uid: string,
         dimensions: number,
         synapse: number,
-        miniItem = null,
         xlim: [number, number] = [-0.5, 0],
-        ylim: [number, number] = [-1, 1],
+        ylim: [number, number] = [-1, 1]
     ) {
-        super(left, top, width, height, parent, uid, dimensions, synapse, miniItem);
+        super(server, uid, left, top, width, height, dimensions, synapse);
         this.synapse = synapse;
 
         this.addAxes(width, height, xlim, ylim);
 
-        this.interactable.on("resizemove", (event) => {
+        this.interactRoot.on("resizemove", event => {
             // Resizing the view happens in the superclass; we update axes here
             const [vWidth, wHeight] = this.view.scale;
             this.axes.scale = [
-                vWidth * this.scaleToPixels, wHeight * this.scaleToPixels,
+                vWidth * this.scaleToPixels,
+                wHeight * this.scaleToPixels
             ];
             this.syncWithDataStore();
         });
 
         window.addEventListener(
-            "TimeSlider.moveShown", utils.throttle((e: CustomEvent) => {
+            "TimeSlider.moveShown",
+            utils.throttle((e: CustomEvent) => {
                 this.xlim = e.detail.shownTime;
-            }, 50), // Update once every 50 ms
+            }, 50) // Update once every 50 ms
         );
-        window.addEventListener("SimControl.reset", (e) => {
+        window.addEventListener("SimControl.reset", e => {
             this.reset();
         });
     }
@@ -755,20 +711,32 @@ export abstract class Plot extends Widget {
     }
 
     addAxes(width, height, xlim, ylim) {
-        this.axes = new Axes(this.view, width, height, xlim,  ylim);
+        this.axes = new Axes(this.view, width, height, xlim, ylim);
     }
 
     addMenuItems() {
-        this.menu.addAction("Hide legend", () => {
-            this.legendVisible = false;
-        }, () => this.legendVisible);
-        this.menu.addAction("Show legend", () => {
-            this.legendVisible = true;
-        }, () => !this.legendVisible);
+        this.menu.addAction(
+            "Hide legend",
+            () => {
+                this.legendVisible = false;
+            },
+            () => this.legendVisible
+        );
+        this.menu.addAction(
+            "Show legend",
+            () => {
+                this.legendVisible = true;
+            },
+            () => !this.legendVisible
+        );
         // TODO: give the legend its own context menu
-        this.menu.addAction("Set legend labels", () => {
-            this.askLegend();
-        }, () => this.legendVisible);
+        this.menu.addAction(
+            "Set legend labels",
+            () => {
+                this.askLegend();
+            },
+            () => this.legendVisible
+        );
         this.menu.addSeparator();
         super.addMenuItems();
     }
@@ -783,8 +751,8 @@ export abstract class Plot extends Widget {
             // Long strings okay.
             // Excissive entries get ignored.
             // TODO: Allow escaping of commas
-            if ((labelCSV !== null) && (labelCSV !== "")) {
-                this.legendLabels = labelCSV.split(",").map((s) => s.trim());
+            if (labelCSV !== null && labelCSV !== "") {
+                this.legendLabels = labelCSV.split(",").map(s => s.trim());
             }
             $(modal).modal("hide");
         });

@@ -28,7 +28,6 @@ export class ToolbarView {
             editor: this.addButton("Open code editor", "list-alt", "right"),
             hotkeys: this.addButton("Hotkey list", "question-sign", "right"),
         };
-        this.filename = "filename";
     }
 
     get filename(): string {

@@ -10,7 +10,9 @@
 
 import { DataStore } from "../datastore";
 // import * as utils from "../utils";
-import { Widget } from "./base";
+import { Position, Widget } from "./base";
+import { registerComponent } from "./registry";
+import { Connection } from "../server";
 import { ValueView } from "./views/value";
 
 export class HTMLView extends Widget {
@@ -20,18 +22,29 @@ export class HTMLView extends Widget {
 
     protected _view: ValueView;
 
-    constructor(
-        left: number,
-        top: number,
-        width: number,
-        height: number,
-        parent: string,
-        uid: string,
-        dimensions: number,
-        synapse: number,
-        miniItem = null,
-    ) {
-        super(left, top, width, height, parent, uid, dimensions, miniItem);
+    constructor({
+        server,
+        uid,
+        pos,
+        dimensions,
+        synapse
+    }: {
+        server: Connection;
+        uid: string;
+        pos: Position;
+        dimensions: number;
+        synapse: number;
+    }) {
+        super(
+            server,
+            uid,
+            pos.left,
+            pos.top,
+            pos.width,
+            pos.height,
+            dimensions,
+            synapse
+        );
 
         this.pdiv = document.createElement("div");
         this.pdiv.style.width = "100%";
@@ -89,7 +102,6 @@ export class HTMLView extends Widget {
         }
 
         this.pdiv.innerHTML = data;
-
     }
 
     /**
@@ -110,3 +122,5 @@ export class HTMLView extends Widget {
         this.update();
     }
 }
+
+registerComponent("html_view", HTMLView);

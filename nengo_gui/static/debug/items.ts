@@ -5,14 +5,14 @@ import { ConfigDialog, configItems } from "../config";
 import { Editor } from "../editor";
 import { HotkeyManager } from "../hotkeys";
 import { Menu } from "../menu";
-import { NetGraph } from "../netgraph";
+import { NetGraph } from "../netgraph/main";
 import { Sidebar } from "../sidebar";
 import { SimControl } from "../sim-control";
 import { Toolbar } from "../toolbar";
 
 // views
 import { ConfigDialogView } from "../views/config";
-import { NetGraphView } from "../views/netgraph";
+import { NetGraphView } from "../netgraph/view";
 import { EditorView } from "../views/editor";
 import { HotkeysDialogView } from "../views/hotkeys";
 import { MenuView } from "../views/menu";
@@ -22,10 +22,12 @@ import { SimControlView } from "../views/sim-control";
 import { ToolbarView } from "../views/toolbar";
 
 // components
+import { Position } from "../components/base";
 import { Ensemble } from "../components/ensemble";
 import { Network } from "../components/network";
 import { Node, PassthroughNode } from "../components/node";
 import { Raster } from "../components/raster";
+import { Slider } from "../components/slider";
 import { Value } from "../components/value";
 import { XYValue } from "../components/xyvalue";
 
@@ -128,13 +130,58 @@ export const view = {
 };
 
 export const component = {
-    Ensemble: () => new Ensemble(20, 20, 50, 50, "", "Ensemble", 1),
-    Network: () => new Network(20, 20, 50, 50, "", "Network", 1),
-    Node: () => new Node(20, 20, 50, 50, "", "Node", 1),
-    PassthroughNode: () => new PassthroughNode(20, 20, "", "Passthrough", 1),
-    Raster: () => new Raster(20, 20, 100, 100, "", "Value", 20, 0.005),
-    Value: () => new Value(20, 20, 100, 100, "", "Value", 2, 1.0, 0.005),
-    XYValue: () => new XYValue(20, 20, 100, 100, "", "Value", 2, 1.0, 0.005)
+    Ensemble: () =>
+        new Ensemble({
+            uid: "Ensemble",
+            pos: new Position(20, 20, 50, 50),
+            dimensions: 1
+        }),
+    Network: () =>
+        new Network({
+            uid: "Network",
+            pos: new Position(20, 20, 50, 50),
+            dimensions: 1
+        }),
+    Node: () =>
+        new Node({
+            uid: "Node",
+            pos: new Position(20, 20, 50, 50),
+            dimensions: 1
+        }),
+    PassthroughNode: () =>
+        new PassthroughNode({
+            uid: "Passthrough",
+            pos: new Position(20, 20),
+            dimensions: 1
+        }),
+    Raster: () =>
+        new Raster({
+            uid: "Raster",
+            pos: new Position(20, 20, 100, 100),
+            nNeurons: 2,
+            synapse: 0.005
+        }),
+    Slider: () =>
+        new Slider({
+            uid: "Slider",
+            pos: new Position(20, 20, 100, 100),
+            dimensions: 2,
+            synapse: 0.005
+        }),
+    Value: () =>
+        new Value({
+            uid: "Value",
+            pos: new Position(20, 20, 100, 100),
+            dimensions: 2,
+            synapse: 0.005
+        }),
+    XYValue: () =>
+        new XYValue({
+            uid: "XY Value",
+            pos: new Position(20, 20, 100, 100),
+            dimensions: 2,
+            synapse: 0.005
+        })
 };
 
 export const componentview = {

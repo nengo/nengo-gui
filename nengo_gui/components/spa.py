@@ -1,5 +1,4 @@
 import copy
-import itertools
 
 import numpy as np
 import nengo
@@ -136,7 +135,11 @@ class SpaPointer(SpaWidget):
 
     def create(self):
         self.client.send("netgraph.create_spa_pointer",
-                         uid=self.uid, label=self.label)
+                         uid=self.uid,
+                         pos=self.pos,
+                         dimensions=1,  # TODO
+                         synapse=0.005,  # TODO
+                         showPairs=self.show_pairs)
 
     def remove_nengo_objects(self, model):
         model.connections.remove(self.conn1)
@@ -185,7 +188,12 @@ class SpaSimilarity(SpaWidget):
     def create(self):
         # TODO: get n_lines from this.labels.length
         self.client.send("netgraph.create_spa_similarity",
-                         uid=self.uid, label=self.label, keys=self.keys)
+                         uid=self.uid,
+                         pos=self.pos,
+                         dimensions=1,  # TODO
+                         synapse=0.005,  # TODO
+                         xlim=[-0.5, 0],  # TODO
+                         ylim=[-1, 1])  # TODO
 
     def remove_nengo_objects(self, model):
         """Undo the changes made by add_nengo_objects."""

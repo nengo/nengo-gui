@@ -100,8 +100,11 @@ class Slider(Widget):
             start_value[...] = self.base_output
         start_value = [float(x) for x in start_value]
         self.client.send("netgraph.create_slider",
-                         uid=self.uid, n_sliders=self.obj.size_out,
-                         label=self.label, start_value=start_value)
+                         uid=self.uid,
+                         pos=self.pos,
+                         dimensions=self.obj.size_out,
+                         synapse=0.005,  # TODO
+                         startValue=start_value)
 
     def remove_nengo_objects(self, model):
         # If we're setting the output back to None, clear size_out

@@ -13,7 +13,10 @@ class Ensemble(Component):
 
     def create(self):
         # TODO: figure out args to pass to this
-        self.client.send("netgraph.create_ensemble")
+        self.client.send("netgraph.create_ensemble",
+                         uid=self.uid,
+                         pos=self.pos,
+                         dimensions=self.dimensions)
 
     def similar(self, other):
         return (super(Ensemble, self).similar(other)

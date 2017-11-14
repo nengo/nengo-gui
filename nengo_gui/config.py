@@ -5,14 +5,8 @@ import warnings
 import nengo
 from nengo.utils.compat import iteritems
 
+from nengo_gui.client import NengoGUIConfig
 from nengo_gui.components import Position
-
-
-class NengoGUIConfig(json.JSONEncoder):
-    def default(self, obj):
-        if hasattr(obj, "to_json"):
-            return obj.to_json()
-        return super(NengoGUIConfig, self).default(obj)
 
 
 def upgrade(old_text, locals):
@@ -87,12 +81,12 @@ def upgrade(old_text, locals):
             pos = kwargs.pop("pos")
             size = kwargs.pop("size")
             kwargs["pos"] = Position(
-                x=pos[0], y=pos[1], width=size[0], height=size[1])
+                left=pos[0], top=pos[1], width=size[0], height=size[1])
 
         # x, y, width, height now one object
         if "width" in kwargs:
-            kwargs["pos"] = Position(x=kwargs.pop("x"),
-                                     y=kwargs.pop("y"),
+            kwargs["pos"] = Position(left=kwargs.pop("x"),
+                                     top=kwargs.pop("y"),
                                      width=kwargs.pop("width"),
                                      height=kwargs.pop("height"))
 

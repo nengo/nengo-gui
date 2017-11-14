@@ -1,6 +1,9 @@
 import { Component } from "./base";
 import { ConnectionView, RecurrentConnectionView } from "./views/connection";
 
+// Note: connections are not registered in the component registry because
+// they're handled differently by the netgraph; see ../netgraph.ts
+
 export abstract class ComponentConnection {
     view: ConnectionView | RecurrentConnectionView;
 
@@ -29,10 +32,10 @@ export class FeedforwardConnection extends ComponentConnection {
         this.view = new ConnectionView();
         this.syncWithComponents();
 
-        this.pre.interactable.on("dragmove resizemove", () => {
+        this.pre.interactRoot.on("dragmove resizemove", () => {
             this.view.startPos = this.pre.view.centerPos;
         });
-        this.post.interactable.on("dragmove resizemove", () => {
+        this.post.interactRoot.on("dragmove resizemove", () => {
             this.view.endPos = this.post.view.centerPos;
         });
     }
@@ -107,7 +110,7 @@ export class RecurrentConnection extends ComponentConnection {
         this.view = new RecurrentConnectionView();
         this.syncWithComponents();
 
-        this.component.interactable.on(
+        this.component.interactRoot.on(
             "dragmove resizemove", () => this.syncWithComponents()
         );
     }

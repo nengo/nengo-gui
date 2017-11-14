@@ -405,7 +405,6 @@ class NetGraph(ExposedToClient):
         self.components = ComponentManager(client)
         self.names = NameFinder()
 
-        # TODO: should we load here? If not, change init args
         self.load(filename, filename_cfg, force=True)
 
         self.filethread = RepeatedThread(self.RELOAD_EVERY, self._check_file)
@@ -472,18 +471,6 @@ class NetGraph(ExposedToClient):
 
         # Add everything to the component manager
         self.components.update(self.context.locals, self.names)
-
-        self.components.create()
-
-        # When first attaching, send the pan and zoom
-        # TODO: update
-
-        # pan = self.config.cfg[self.context.model].pos
-        # pan = (0, 0) if pan is None else pan
-        # zoom = self.config.cfg[self.context.model].size
-        # zoom = 1.0 if zoom is None else zoom[0]
-        # self.client.send("netgraph.pan", pan=pan)
-        # self.client.send("netgraph.zoom", zoom=zoom)
 
         # if len(self.to_be_expanded) > 0:
         #     with self.page.lock:
@@ -959,3 +946,19 @@ class NetGraph(ExposedToClient):
         posts = self.get_parents(post)[:-1]
         info = dict(uid=uid, pre=pres, post=posts, type='conn', parent=parent)
         client.write_text(json.dumps(info))
+
+    @bind("netgraph.request_update")
+    def update_client(self, initialize=False):
+        if initialize:
+            self.client.send("toolbar.filename", filename=self.filename)
+            self.components.create()
+
+            # When first attaching, send the pan and zoom
+            # TODO: update
+
+            # pan = self.config.cfg[self.context.model].pos
+            # pan = (0, 0) if pan is None else pan
+            # zoom = self.config.cfg[self.context.model].size
+            # zoom = 1.0 if zoom is None else zoom[0]
+            # self.client.send("netgraph.pan", pan=pan)
+            # self.client.send("netgraph.zoom", zoom=zoom)

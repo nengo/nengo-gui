@@ -3,23 +3,23 @@ from nengo_gui.exceptions import NotAttachedError
 
 
 class Position(object):
-    __slots__ = ("x", "y", "width", "height")
+    __slots__ = ("left", "top", "width", "height")
 
-    def __init__(self, x=0, y=0, width=100, height=100):
-        self.x = x
-        self.y = y
+    def __init__(self, left=0, top=0, width=100, height=100):
+        self.left = left
+        self.top = top
         self.width = width
         self.height = height
 
     def to_json(self):
-        return {"x": self.x,
-                "y": self.y,
+        return {"left": self.left,
+                "top": self.top,
                 "width": self.width,
                 "height": self.height}
 
     def __repr__(self):
-        return "Position(x={!r}, y={!r}, width={!r}, height={!r})".format(
-            self.x, self.y, self.width, self.height)
+        return "Position(left={!r}, top={!r}, width={!r}, height={!r})".format(
+            self.left, self.top, self.width, self.height)
 
 
 class Component(ExposedToClient):

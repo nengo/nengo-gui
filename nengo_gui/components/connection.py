@@ -16,7 +16,9 @@ class Connection(Component):
 
     def create(self):
         # TODO: figure out args to pass to this
-        self.client.send("netgraph.create_connection")
+        self.client.send("netgraph.create_connection",
+                         pre=self.pre_uid,
+                         post=self.post_uid)
 
     def update(self, other):
         super(Connection, self).update(other)

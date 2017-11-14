@@ -14,7 +14,7 @@ import "./favicon.ico";
 import * as items from "./debug/items";
 import { Editor } from "./editor";
 import { HotkeyManager } from "./hotkeys";
-import { NetGraph } from "./netgraph";
+import { NetGraph } from "./netgraph/main";
 import { MockConnection, ServerConnection } from "./server";
 import { Sidebar } from "./sidebar";
 import { SimControl } from "./sim-control";
@@ -62,6 +62,8 @@ export class NengoDebug {
     netgraph: NetGraph = new NetGraph(new MockConnection());
 
     constructor() {
+        this.netgraph.view.root.style.width = "600px";
+        this.netgraph.view.root.style.height = "600px";
         this.netgraph.view.root.style.outline = "red solid 1px";
         document.body.appendChild(this.netgraph.view.root);
     }
@@ -172,7 +174,7 @@ export class Nengo {
         })
 
         // Request config and update accordingly
-        server.send("netgraph.request_update")
+        server.send("netgraph.request_update", { initialize: true })
         this.server = server;
     }
 }

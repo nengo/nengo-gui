@@ -28,7 +28,10 @@ class HTMLView(Component):
 
     def create(self):
         self.client.send("netgraph.create_htmlview",
-                         uid=self.uid, label=self.label)
+                         uid=self.uid,
+                         pos=self.pos,
+                         dimensions=1,  # TODO
+                         syanpse=0.005)  # TODO
 
     def remove_nengo_objects(self, network):
         self.obj.output = self._old_output

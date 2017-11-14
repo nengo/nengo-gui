@@ -4,7 +4,6 @@ import "./netgraph.css";
 import * as utils from "../utils";
 
 export class NetGraphView {
-
     conns: SVGGElement;
     items: SVGGElement;
     networks: SVGGElement;
@@ -12,6 +11,7 @@ export class NetGraphView {
     widgets: SVGGElement;
 
     private _fontSize: number = 16;
+    private _offset: [number, number] = [0, 0];
     private _scale: number = 1;
     private _zoomFonts: boolean = false;
 
@@ -27,7 +27,10 @@ export class NetGraphView {
 
         // Create the master SVG element
         const svg = h("svg.netgraph", [
-            h("g.widgets"), h("g.nets"), h("g.conns"), h("g.items")
+            h("g.widgets"),
+            h("g.nets"),
+            h("g.conns"),
+            h("g.items")
         ]); // defs,
 
         this.root = dom.create(svg).domNode as SVGSVGElement;
@@ -47,11 +50,20 @@ export class NetGraphView {
 
     set fontSize(val: number) {
         this._fontSize = val;
-        this.update();
+        this.updateFontsize();
     }
 
     get height(): number {
         return this.root.getBoundingClientRect().height;
+    }
+
+    get offset(): [number, number] {
+        return this._offset;
+    }
+
+    set offset(val: [number, number]) {
+        this._offset = val;
+        this.updateOffset();
     }
 
     get scale(): number {
@@ -60,7 +72,7 @@ export class NetGraphView {
 
     set scale(val: number) {
         this._scale = val;
-        this.update();
+        this.updateFontsize();
     }
 
     get width(): number {
@@ -73,12 +85,25 @@ export class NetGraphView {
 
     set zoomFonts(val: boolean) {
         this._zoomFonts = val;
-        this.update();
+        this.updateFontsize();
     }
 
-    private update() {
-        this.root.style.fontSize = this.zoomFonts ?
-            `${3 * this.scale * this.fontSize / 100}em` :
-            `${this.fontSize / 100}em`;
+    pan(dleft, dtop) {
+        this._offset[0] -= dleft;
+        this._offset[1] -= dtop;
+        this.updateOffset();
+    }
+
+    private updateFontsize() {
+        this.root.style.fontSize = this.zoomFonts
+            ? `${3 * this.scale * this.fontSize / 100}em`
+            : `${this.fontSize / 100}em`;
+    }
+
+    private updateOffset() {
+        this.root.setAttribute(
+            "viewBox",
+            `${this._offset.join(" ")} ${this.width} ${this.height}`
+        );
     }
 }

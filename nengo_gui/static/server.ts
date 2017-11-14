@@ -19,7 +19,6 @@ function getURL(uid: string = null): string {
         const href = window.location.href.split("?");
         if (href.length > 1) {
             url += `/?${href[1]}`;
-            console.log(url)
         }
     }
     return url

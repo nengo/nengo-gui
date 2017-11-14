@@ -20,46 +20,51 @@ import * as $ from "jquery";
 import * as utils from "../utils";
 import { InputDialogView } from "../views/modal";
 import { ValueView } from "./views/value";
-import { Axes, Plot } from "./base";
+import { Axes, Plot, Position } from "./base";
+import { registerComponent } from "./registry";
+import { Connection } from "../server";
 
 export class Value extends Plot {
-
     lines: Array<d3.svg.Line<Array<number>>>;
     protected _view: ValueView;
 
-    constructor(
-        left: number,
-        top: number,
-        width: number,
-        height: number,
-        parent: string,
-        uid: string,
-        dimensions: number,
-        synapse: number,
-        miniItem = null,
-        xlim: [number, number] = [-0.5, 0],
-        ylim: [number, number] = [-1, 1],
-    ) {
+    constructor({
+        server,
+        uid,
+        pos,
+        dimensions,
+        synapse,
+        xlim = [-0.5, 0],
+        ylim = [-1, 1]
+    }: {
+        server: Connection;
+        uid: string;
+        pos: Position;
+        dimensions: number;
+        synapse: number;
+        xlim?: [number, number];
+        ylim?: [number, number];
+    }) {
         super(
-            left,
-            top,
-            width,
-            height,
-            parent,
+            server,
             uid,
+            pos.left,
+            pos.top,
+            pos.width,
+            pos.height,
             dimensions,
             synapse,
-            miniItem,
             xlim,
             ylim
         );
 
         // Create the lines on the plots
-        this.lines = utils.emptyArray(this.dimensions).map(
-            (_, i) => d3.svg.line()
-                .x((d) => this.axes.x.pixelAt(d[0]))
-                .y((d) => this.axes.y.pixelAt(d[i + 1]))
-                .defined((d) => d[i + 1] != null)
+        this.lines = utils.emptyArray(this.dimensions).map((_, i) =>
+            d3.svg
+                .line()
+                .x(d => this.axes.x.pixelAt(d[0]))
+                .y(d => this.axes.y.pixelAt(d[i + 1]))
+                .defined(d => d[i + 1] != null)
         );
     }
 
@@ -111,9 +116,9 @@ export class Value extends Plot {
                             valid = true;
                         }
                     }
-                    return (nums.length === 2 && valid);
-                },
-            },
+                    return nums.length === 2 && valid;
+                }
+            }
         });
         $(modal.root).on("hidden.bs.modal", () => {
             document.body.removeChild(modal.root);
@@ -137,3 +142,5 @@ export class Value extends Plot {
         }
     }, 20);
 }
+
+registerComponent("value", Value);

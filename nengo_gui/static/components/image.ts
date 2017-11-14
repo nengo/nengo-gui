@@ -13,7 +13,9 @@
 import * as d3 from "d3";
 
 import { DataStore } from "../datastore";
-import { Plot } from "./base";
+import { Plot, Position } from "./base";
+import { registerComponent } from "./registry";
+import { Connection } from "../server";
 import { ValueView } from "./views/value";
 
 export class Image extends Plot {
@@ -27,29 +29,32 @@ export class Image extends Plot {
     svg;
     _view: ValueView;
 
-    constructor(
-        left: number,
-        top: number,
-        width: number,
-        height: number,
-        parent: string,
-        uid: string,
-        dimensions: number,
-        synapse: number,
-        miniItem = null,
-        xlim: [number, number] = [-0.5, 0],
-        ylim: [number, number] = [-1, 1],
-    ) {
+    constructor({
+        server,
+        uid,
+        pos,
+        dimensions,
+        synapse,
+        xlim = [-0.5, 0],
+        ylim = [-1, 1]
+    }: {
+        server: Connection;
+        uid: string;
+        pos: Position;
+        dimensions: number;
+        synapse: number;
+        xlim?: [number, number];
+        ylim?: [number, number];
+    }) {
         super(
-            left,
-            top,
-            width,
-            height,
-            parent,
+            server,
             uid,
+            pos.left,
+            pos.top,
+            pos.width,
+            pos.height,
             dimensions,
             synapse,
-            miniItem,
             xlim,
             ylim
         );
@@ -63,12 +68,12 @@ export class Image extends Plot {
         this.dataStore = new DataStore(this.nPixels, 0);
 
         // Draw the plot as an SVG
-        this.svg = d3.select("this.div").append("svg")
+        this.svg = d3
+            .select("this.div")
+            .append("svg")
             .attr("width", "100%")
             .attr("height", "100%")
-            .attr("style", [
-                "padding-top:", "2em",
-            ].join(""));
+            .attr("style", ["padding-top:", "2em"].join(""));
 
         // Call schedule_update whenever the time is adjusted in the SimControl
         window.addEventListener("TimeSlider.moveShown", e => {
@@ -76,21 +81,24 @@ export class Image extends Plot {
         });
 
         // Create the image
-        this.image = this.svg.append("image")
+        this.image = this.svg
+            .append("image")
             .attr("x", 0)
             .attr("y", 0)
             .attr("width", "100%")
             .attr("height", "100%")
-            .attr("style", [
-                "image-rendering: -webkit-optimize-contrast;",
-                "image-rendering: -moz-crisp-edges;",
-                "image-rendering: pixelated;",
-            ].join(""));
+            .attr(
+                "style",
+                [
+                    "image-rendering: -webkit-optimize-contrast;",
+                    "image-rendering: -moz-crisp-edges;",
+                    "image-rendering: pixelated;"
+                ].join("")
+            );
 
         this.canvas = document.createElement("CANVAS");
         this.canvas.width = this.pixelsX;
         this.canvas.height = this.pixelsY;
-
     }
 
     get view(): ValueView {
@@ -122,7 +130,6 @@ export class Image extends Plot {
     update() {
         // Let the data store clear out old values
         // this.dataStore.update();
-
         // const data = this.dataStore.getLastData();
         // const ctx = this.canvas.getContext("2d");
         // const imgData = ctx.getImageData(0, 0, this.pixelsX, this.pixelsY);
@@ -134,7 +141,6 @@ export class Image extends Plot {
         // }
         // ctx.putImageData(imgData, 0, 0);
         // const dataURL = this.canvas.toDataURL("image/png");
-
         // this.image.attr("xlink:href", dataURL);
     }
 
@@ -149,9 +155,7 @@ export class Image extends Plot {
         //     height = this.minHeight;
         // }
 
-        this.svg
-            .attr("width", width)
-            .attr("height", height);
+        this.svg.attr("width", width).attr("height", height);
 
         this.update();
 
@@ -163,3 +167,5 @@ export class Image extends Plot {
         // this.div.style.height = height;
     }
 }
+
+registerComponent("spike_grid", Image);

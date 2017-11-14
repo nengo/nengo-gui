@@ -25,6 +25,9 @@ export class Toolbar {
 
     constructor(server: Connection) {
         this.server = server;
+        this.server.bind("toolbar.filename", ({ filename }) => {
+            this.filename = filename;
+        });
 
         this.view.buttons["open"].addEventListener("click", () => {
             if (this.view.is_active("open")) {

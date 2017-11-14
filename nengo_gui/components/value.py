@@ -69,7 +69,12 @@ class Value(Widget):
 
     def create(self):
         self.client.send("netgraph.create_value",
-                         uid=self.uid, label=self.label, n_lines=self.n_lines)
+                         uid=self.uid,
+                         pos=self.pos,
+                         dimensions=self.n_lines,
+                         synapse=0.005,  # TODO
+                         xlim=[-0.5, 0],  # TODO
+                         ylim=[-1, 1])  #TODO
 
     def dumps(self, names):
         """Important to do correctly, as it's used in the config file."""

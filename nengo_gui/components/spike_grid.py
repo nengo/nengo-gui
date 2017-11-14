@@ -68,9 +68,12 @@ class SpikeGrid(Widget):
 
     def create(self):
         self.client.send("netgraph.create_spike_grid",
-                         label=self.label,
-                         pixels_x=self.pixels_x,
-                         pixels_y=self.pixels_y)
+                         uid=self.uid,
+                         pos=self.pos,
+                         dimensions=1,  # TODO
+                         synapse=0.005,  # TODO
+                         xlim=[-0.5, 0],  # TODO
+                         ylim=[-1, 1])  # TODO
 
     def remove_nengo_objects(self, model):
         model.connections.remove(self.conn)

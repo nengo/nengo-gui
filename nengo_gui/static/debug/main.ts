@@ -15,7 +15,7 @@ import "../favicon.ico";
 import * as items from "./items";
 import { DebugItem, NengoDebug, NengoWindow } from "../main";
 import { Network } from "../components/network";
-import { NetGraph } from "../netgraph";
+import { NetGraph } from "../netgraph/main";
 import { MockConnection } from "../server";
 import { DebugView } from "./view";
 

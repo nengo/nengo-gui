@@ -9,6 +9,13 @@ import numpy as np
 from nengo.utils.compat import is_array, with_metaclass
 
 
+class NengoGUIConfig(json.JSONEncoder):
+    def default(self, obj):
+        if hasattr(obj, "to_json"):
+            return obj.to_json()
+        return super(NengoGUIConfig, self).default(obj)
+
+
 def bind(name):
     def _bind(method):
         if isinstance(method, property):
@@ -79,7 +86,7 @@ class ClientConnection(object):
     def send(self, name, **kwargs):
         """Send a message to the client."""
         assert self.ws is not None
-        self.ws.write_text(json.dumps([name, kwargs]))
+        self.ws.write_text(json.dumps([name, kwargs], cls=NengoGUIConfig))
 
     def unbind(self, name, callback=None):
         if callback is None:
