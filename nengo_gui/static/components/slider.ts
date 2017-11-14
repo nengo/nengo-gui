@@ -17,15 +17,17 @@ import * as $ from "jquery";
 import * as interact from "interact.js";
 import { dom, h } from "maquette";
 
+import "./slider.css";
+
 import { DataStore } from "../datastore";
 import { Menu } from "../menu";
 import * as utils from "../utils";
-import { InputDialogView } from "../views/modal";
-import { ValueView } from "./views/value";
-import { Widget, Position } from "./base";
+import { InputDialogView } from "../modal";
+import { ValueView } from "./value";
+import { Position } from "./position";
 import { registerComponent } from "./registry";
 import { Connection } from "../server";
-import "./slider.css";
+import { Widget } from "./widget";
 
 export class Slider extends Widget {
     axTop: number;

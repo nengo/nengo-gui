@@ -13,22 +13,23 @@
 
 import * as $ from "jquery";
 import * as d3 from "d3";
+import { VNode, dom, h } from "maquette";
 
+import { Component, ResizableComponentView } from "./component";
 import { DataStore } from "../datastore";
-import * as utils from "../utils";
-import { Component, Position, Widget } from "./base";
 import { Menu } from "../menu";
+import { InputDialogView } from "../modal";
+import { Position } from "./position";
 import { registerComponent } from "./registry";
 import { Connection } from "../server";
-import "./spa-similarity.css";
-import { InputDialogView } from "../views/modal";
-import { PointerView } from "./views/pointer";
+import * as utils from "../utils";
 import { Value } from "./value";
+import { Widget } from "./widget";
 
 export class SpaPointer extends Widget {
     protected _fixedValue: string = null;
     protected _showPairs: boolean;
-    protected _view: PointerView;
+    protected _view: SpaPointerView;
 
     constructor({
         server,
@@ -79,10 +80,10 @@ export class SpaPointer extends Widget {
         }
     }
 
-    get view(): PointerView {
+    get view(): SpaPointerView {
         if (this._view === null) {
             // TODO: how to get numItems?
-            this._view = new PointerView("?", 1);
+            this._view = new SpaPointerView("?", 1);
         }
         return this._view;
     }
@@ -167,6 +168,101 @@ export class SpaPointer extends Widget {
             this.view.values = data;
         }
     }, 20);
+}
+
+export class SpaPointerView extends ResizableComponentView {
+
+    root: SVGGElement;
+
+    private _items: Array<SVGGElement> = [];
+    private _values: Array<number>;
+
+    constructor(label:string, numItems: number) {
+        super(label);
+        const node = h("g.widget");
+        this.root = utils.domCreateSVG(node) as SVGGElement;
+        this.numItems = numItems;
+    }
+
+    get labels(): Array<string> {
+        return this._items.map(item => item.textContent);
+    }
+
+    set labels(val: Array<string>) {
+        console.assert(val.length === this.numItems);
+        this._items.forEach((item, i) => {
+            item.textContent = val[i];
+        });
+    }
+
+    get numItems(): number {
+        return this._items.length;
+    }
+
+    set numItems(val: number) {
+        while (this._items.length - val < 0) {
+            this.addItem();
+        }
+        while (this._items.length - val > 0) {
+            this.removeItem();
+        }
+    }
+
+    get scale(): [number, number] {
+        return this.overlayScale;
+    }
+
+    set scale(val: [number, number]) {
+        const width = Math.max(ResizableComponentView.minWidth, val[0]);
+        const height = Math.max(ResizableComponentView.minHeight, val[1]);
+        this.overlayScale = [width, height];
+    }
+
+    get values(): Array<number> {
+        return this._values;
+    }
+
+    set values(val: Array<number>) {
+        console.assert(val.length === this.numItems);
+        const height = this.scale[1];
+        const total = val.reduce((a, b) => a + b, 0);
+
+        let y = 0;
+        this._items.forEach((item, i) => {
+            item.setAttribute("y", `${y}`);
+
+            const hex = utils.clip(val[i] * 255, 0, 255);
+            item.setAttribute("stroke", `rgb(${hex},${hex},${hex})`);
+
+            const itemHeight = (val[i] / total) * height;
+            item.setAttribute("font-size", `${itemHeight}`);
+            y += itemHeight;
+        });
+
+        // Keep these around so we resize
+        this._values = val;
+    }
+
+    private addItem() {
+        const width = this.scale[0];
+        const i = this._items.length;
+        const node = h("text.pointer", {
+            "font-size": "12",
+            "stroke": "rgb(255, 255, 255)",
+            "x": `${width * 0.5}`,
+            "y": `${i * 12}`,
+        });
+        const item = utils.domCreateSVG(node) as SVGGElement;
+        this.root.appendChild(item);
+        this._items.push(item);
+    }
+
+    private removeItem() {
+        const item = this._items.pop();
+        if (item != null) {
+            this.root.removeChild(item);
+        }
+    }
 }
 
 registerComponent("spa_pointer", SpaPointer);

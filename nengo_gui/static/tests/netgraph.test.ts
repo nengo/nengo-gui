@@ -1,10 +1,10 @@
 // import { dom, h } from "maquette";
 import * as test from "tape";
 
-import * as fixtures from "../../tests/fixtures";
+import * as fixtures from "./fixtures";
 
-import { NetGraph } from "../main";
-import { MockConnection } from "../../server";
+import { NetGraph } from "../netgraph/main";
+import { MockConnection } from "../server";
 
 test("NetGraph.createNode", assert => {
     const dom = new fixtures.DOM(assert);

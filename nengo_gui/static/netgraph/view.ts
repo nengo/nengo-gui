@@ -1,6 +1,7 @@
 import { dom, h, VNode } from "maquette";
 
-import "./netgraph.css";
+import "./view.css";
+
 import * as utils from "../utils";
 
 export class NetGraphView {

@@ -13,10 +13,11 @@
 import * as d3 from "d3";
 
 import { DataStore } from "../datastore";
-import { Plot, Position } from "./base";
+import { Plot } from "./plot";
+import { Position } from "./position";
 import { registerComponent } from "./registry";
 import { Connection } from "../server";
-import { ValueView } from "./views/value";
+import { ValueView } from "./value";
 
 export class Image extends Plot {
     canvas;

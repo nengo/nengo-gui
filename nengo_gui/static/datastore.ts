@@ -22,7 +22,8 @@ export class DataStore {
 
         // Listen for updates to the TimeSlider
         window.addEventListener(
-            "TimeSlider.addTime", utils.throttle((event: CustomEvent) => {
+            "TimeSlider.addTime",
+            utils.throttle((event: CustomEvent) => {
                 // How much has the most recent time exceeded how much is kept?
                 const limit = event.detail.currentTime - event.detail.keptTime;
                 const extra = DataStore.nearestIndex(this.times, limit);
@@ -75,11 +76,11 @@ export class DataStore {
 
         while (high > low) {
             // Note: | 0 is a faster Math.floor
-            const ix = (high + low) / 2 | 0;
+            const ix = ((high + low) / 2) | 0;
 
             if (array[ix] <= element) {
                 if (array[ix + 1] > element || ix + 1 === array.length) {
-                    return ix
+                    return ix;
                 } else {
                     low = ix + 1;
                 }
@@ -106,7 +107,7 @@ export class DataStore {
 
         // Compute lowpass filter (value = value*decay + newValue*(1-decay)
         let decay = 0.0;
-        if ((this.times.length > 0) && (this.synapse > 0)) {
+        if (this.times.length > 0 && this.synapse > 0) {
             const dt = time - this.times[this.times.length - 1];
             decay = Math.exp(-dt / this.synapse);
         }
@@ -164,8 +165,9 @@ export class DataStore {
 
     timeSlice(beginTime: number, endTime?: number) {
         const beginIndex = DataStore.nearestIndex(this.times, beginTime);
-        const endIndex = endTime ?
-            DataStore.nearestIndex(this.times, endTime) + 1 : undefined;
+        const endIndex = endTime
+            ? DataStore.nearestIndex(this.times, endTime) + 1
+            : undefined;
         return this.slice(beginIndex, endIndex);
     }
 }

@@ -1,4 +1,5 @@
-import { ConfigDialogView } from "./views/config";
+import { VNode, dom, h } from "maquette";
+import { ModalView } from "./modal";
 
 /**
  * A class that takes the place of localStorage if it doesn't exist.
@@ -8,9 +9,8 @@ import { ConfigDialogView } from "./views/config";
  * only exist for the current session and will not persist across sessions.
  */
 class MockLocalStorage implements Storage {
-
     [key: string]: any;
-    items: {[key: string]: string} = {};
+    items: { [key: string]: string } = {};
 
     get length(): number {
         return Object.keys(this.items).length;
@@ -158,9 +158,11 @@ class Config {
     private setAny(key: string, val: any) {
         if (this.getString(key) !== String(val)) {
             this.storage.setItem(`ng.${key}`, val);
-            document.dispatchEvent(new CustomEvent("nengoConfigChange", {
-                detail: key,
-            }));
+            document.dispatchEvent(
+                new CustomEvent("nengoConfigChange", {
+                    detail: key
+                })
+            );
         } else {
             console.log(`'${key}' already set to ${val}`);
         }
@@ -188,17 +190,21 @@ export class ConfigItem {
         this.label = label;
         this.update = update;
         if (this.update === null) {
-            this.update = (event: Event) => { this.defaultUpdate(event); };
+            this.update = (event: Event) => {
+                this.defaultUpdate(event);
+            };
         }
     }
 
     defaultUpdate(event: Event) {
         const el = event.target as HTMLElement;
         const eltype = el.getAttribute("type");
-        if (el instanceof HTMLInputElement &&  eltype === "checkbox") {
+        if (el instanceof HTMLInputElement && eltype === "checkbox") {
             config[this.key] = el.checked;
-        } else if (el instanceof HTMLInputElement ||
-                   el instanceof HTMLSelectElement) {
+        } else if (
+            el instanceof HTMLInputElement ||
+            el instanceof HTMLSelectElement
+        ) {
             config[this.key] = el.value;
         }
     }
@@ -239,7 +245,7 @@ export class TextItem extends ConfigItem {
         label: string,
         update: (event: Event) => void = null,
         help: string = null,
-        attributes: any = {},
+        attributes: any = {}
     ) {
         super(key, label, update, help);
         this.attributes = attributes;
@@ -256,7 +262,7 @@ export class NumberItem extends TextItem {
         unit: string = "",
         update: (event: Event) => void = null,
         help: string = null,
-        attributes: any = {},
+        attributes: any = {}
     ) {
         super(key, label, update, help, attributes);
         this.unit = unit;
@@ -273,11 +279,11 @@ export const configItems = [
         "As a percentage of base size",
         {
             "data-error": "Must be within 20–999 percent base size",
-            "max": 999,
-            "maxlength": 3,
-            "min": 20,
-            "required": true,
-            "step": 1,
+            max: 999,
+            maxlength: 3,
+            min: 20,
+            required: true,
+            step: 1
         }
     ),
     new CheckboxItem("zoomFonts", "Scale text when zooming"),
@@ -288,7 +294,7 @@ export const configItems = [
     new CheckboxItem(
         "autoUpdate",
         "Automatically synchronize model with editor",
-        (event) => {
+        event => {
             const el = event.target as HTMLInputElement;
             config["autoUpdate"] = el.checked;
             // Also modify editor.updateTrigger?
@@ -304,7 +310,7 @@ export const configItems = [
             placeholder: "Current directory"
         }
     ),
-    new ComboboxItem("backend", "Select backend", ["nengo"]),
+    new ComboboxItem("backend", "Select backend", ["nengo"])
     // TODO: this.sim.simulatorOptions
 ];
 
@@ -336,15 +342,18 @@ export class ConfigDialog {
             // Allow the enter key to submit on text/number inputs
             const inputType = configItem.getAttribute("type");
             if (inputType === "text" || inputType === "number") {
-                configItem.addEventListener("keydown", (event: KeyboardEvent) => {
-                    if (event.which === 13) {
-                        event.preventDefault();
-                        this.view.ok.click();
+                configItem.addEventListener(
+                    "keydown",
+                    (event: KeyboardEvent) => {
+                        if (event.which === 13) {
+                            event.preventDefault();
+                            this.view.ok.click();
+                        }
                     }
-                });
+                );
             }
             // All inputs get updated live
-            configItem.addEventListener("change", (event) => {
+            configItem.addEventListener("change", event => {
                 const validator = $(this.view.form).data("bs.validator");
                 validator.validate();
                 if (!validator.hasErrors()) {
@@ -360,7 +369,11 @@ export class ConfigDialog {
         // Save values from before showing the modal for restoring after cancel
         for (const option in config) {
             const vType = typeof config[option];
-            if (vType === "number" || vType === "boolean" || vType === "string") {
+            if (
+                vType === "number" ||
+                vType === "boolean" ||
+                vType === "string"
+            ) {
                 this.saved[option] = config[option];
             }
         }
@@ -372,5 +385,102 @@ export class ConfigDialog {
         const validator = $(this.view.form).data("bs.validator");
         validator.validate();
         this.view.show();
+    }
+}
+
+export class ConfigDialogView extends ModalView {
+    cancel: HTMLButtonElement;
+    configItems: (HTMLInputElement | HTMLSelectElement)[];
+    form: HTMLFormElement;
+    ok: HTMLButtonElement;
+
+    constructor(configItems: ConfigItem[]) {
+        super();
+
+        const checkboxGroup = (configItem: CheckboxItem) => {
+            return h("div.form-group.checkbox", [
+                h("label.control-label", [
+                    h("input", {
+                        type: "checkbox"
+                    }),
+                    configItem.label
+                ]),
+                h("span.help-block.with-errors", [configItem.help])
+            ]);
+        };
+
+        const comboboxGroup = (configItem: ComboboxItem) => {
+            return h("div.form-group", [
+                h("label.control-label", [
+                    configItem.label,
+                    h("select.form-control", configItem.options)
+                ]),
+                h("span.help-block.with-errors", [configItem.help])
+            ]);
+        };
+
+        const numberGroup = (configItem: NumberItem) => {
+            return h("div.form-group", [
+                h("label.control-label", [
+                    configItem.label,
+                    h("div.input-group.col-xs-3", [
+                        h("input.form-control", configItem.attributes),
+                        h("span.input-group-addon", [configItem.unit])
+                    ])
+                ]),
+                h("span.help-block.with-errors", [configItem.help])
+            ]);
+        };
+
+        const textGroup = (configItem: TextItem) => {
+            return h("div.form-group", [
+                h("label.control-label", [
+                    configItem.label,
+                    h("input.form-control", configItem.attributes)
+                ]),
+                h("span.help-block.with-errors", [configItem.help])
+            ]);
+        };
+
+        const node = h("form.form-horizontal", [
+            configItems.map(configItem => {
+                if (configItem instanceof CheckboxItem) {
+                    return checkboxGroup(configItem);
+                } else if (configItem instanceof ComboboxItem) {
+                    return comboboxGroup(configItem);
+                } else if (configItem instanceof NumberItem) {
+                    // Must check NumberItem first as it extends TextItem
+                    return numberGroup(configItem);
+                } else if (configItem instanceof TextItem) {
+                    return textGroup(configItem);
+                } else {
+                    throw new TypeError("ConfigItem not recognized.");
+                }
+            })
+        ]);
+
+        this.form = dom.create(node).domNode as HTMLFormElement;
+        this.body.appendChild(this.form);
+
+        this.title = "Configure options";
+        this.ok = this.addFooterButton("OK");
+        this.cancel = this.addCloseButton("Cancel");
+
+        const groups = this.body.getElementsByClassName("form-group");
+        this.configItems = [];
+        for (let i = 0; i < groups.length; i++) {
+            this.configItems[i] = groups[i].querySelector("input");
+            if (this.configItems[i] === null) {
+                this.configItems[i] = groups[i].querySelector("select");
+            }
+            console.assert(this.configItems[i] !== null);
+        }
+    }
+
+    show() {
+        $(this.root).modal("show");
+        $(this.root).on("shown.bs.modal", () => {
+            this.configItems[0].focus();
+        });
     }
 }

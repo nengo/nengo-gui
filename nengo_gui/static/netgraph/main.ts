@@ -16,8 +16,9 @@ import { ActionStack } from "./actions";
 import { ComponentManager } from "./components";
 import { ConnectionManager } from "./connections";
 
-import { Component, Widget } from "../components/base";
+import { Component } from "../components/component";
 import { Network } from "../components/network";
+import { Widget } from "../components/widget";
 import { config } from "../config";
 import { HotkeyManager } from "../hotkeys";
 import { Menu } from "../menu";
@@ -75,7 +76,7 @@ export class NetGraph {
             enum DeltaMode {
                 DOM_DELTA_PIXEL = 0,
                 DOM_DELTA_LINE = 1,
-                DOM_DELTA_PAGE = 2,
+                DOM_DELTA_PAGE = 2
             }
 
             // How much we scrolled, according to the browser
@@ -189,17 +190,17 @@ export class NetGraph {
         // server.bind(
         //     "netgraph.posSize",
         //     () => {}
-            // {uid, x, y, width, height}: {uid: string} & utils.Shape) => {
-            //     const item = this.svgObjects[uid];
-            //     item.x = x;
-            //     item.y = y;
-            //     item.width = width;
-            //     item.height = height;
+        // {uid, x, y, width, height}: {uid: string} & utils.Shape) => {
+        //     const item = this.svgObjects[uid];
+        //     item.x = x;
+        //     item.y = y;
+        //     item.width = width;
+        //     item.height = height;
 
-            //     item.redraw();
+        //     item.redraw();
 
-            //     // this.scaleMiniMap();
-            // }
+        //     // this.scaleMiniMap();
+        // }
         // );
 
         server.bind(
@@ -241,7 +242,7 @@ export class NetGraph {
         );
 
         for (const compName in ComponentRegistry) {
-            server.bind(`netgraph.create_${compName}`, (argobj) => {
+            server.bind(`netgraph.create_${compName}`, argobj => {
                 argobj.server = this.server;
                 this.add(createComponent(compName, argobj));
             });

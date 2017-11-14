@@ -15,13 +15,15 @@
 import * as d3 from "d3";
 import * as $ from "jquery";
 
+import { VNode, dom, h } from "maquette";
+
 import { DataStore } from "../datastore";
-import * as utils from "../utils";
-import { InputDialogView } from "../views/modal";
-import { RasterView } from "./views/raster";
-import { Axes, Plot, Position } from "./base";
+import { InputDialogView } from "../modal";
+import { Axes, Plot, PlotView  } from "./plot";
+import { Position } from "./position";
 import { registerComponent } from "./registry";
 import { Connection } from "../server";
+import * as utils from "../utils";
 
 export class Raster extends Plot {
     protected _nNeurons: number;
@@ -137,6 +139,22 @@ export class Raster extends Plot {
         }
         this.view.line = path.join("");
     }, 20);
+}
+
+export class RasterView extends PlotView {
+    // All the lines are implemented as a single path element
+    path: SVGPathElement;
+
+    constructor(label: string) {
+        super(label, 1);
+        const node = h("path.line", {stroke: this.colors[0]});
+        this.path = utils.domCreateSVG(node) as SVGPathElement;
+        this.body.appendChild(this.path);
+    }
+
+    set line(val: string) {
+        this.path.setAttribute("d", val);
+    }
 }
 
 registerComponent("raster", Raster);

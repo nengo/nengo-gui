@@ -1,5 +1,6 @@
-import { Component, ResizableComponent, Widget } from "../components/base";
+import { Component, ResizableComponent } from "../components/component";
 import { Network } from "../components/network";
+import { Widget } from "../components/widget";
 import * as utils from "../utils";
 
 export class ComponentManager {

@@ -1,4 +1,4 @@
-import { Component } from "../components/base";
+import { Component } from "../components/component";
 import {
     ComponentConnection,
     FeedforwardConnection,

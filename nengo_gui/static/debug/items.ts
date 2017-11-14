@@ -11,21 +11,21 @@ import { SimControl } from "../sim-control";
 import { Toolbar } from "../toolbar";
 
 // views
-import { ConfigDialogView } from "../views/config";
+import { ConfigDialogView } from "../config";
 import { NetGraphView } from "../netgraph/view";
-import { EditorView } from "../views/editor";
-import { HotkeysDialogView } from "../views/hotkeys";
-import { MenuView } from "../views/menu";
-import { AlertDialogView, InputDialogView, ModalView } from "../views/modal";
-import { SidebarView } from "../views/sidebar";
-import { SimControlView } from "../views/sim-control";
-import { ToolbarView } from "../views/toolbar";
+import { EditorView } from "../editor";
+import { HotkeysDialogView } from "../hotkeys";
+import { MenuView } from "../menu";
+import { AlertDialogView, InputDialogView, ModalView } from "../modal";
+import { SidebarView } from "../sidebar";
+import { SimControlView } from "../sim-control";
+import { ToolbarView } from "../toolbar";
 
 // components
-import { Position } from "../components/base";
 import { Ensemble } from "../components/ensemble";
 import { Network } from "../components/network";
 import { Node, PassthroughNode } from "../components/node";
+import { Position } from "../components/position";
 import { Raster } from "../components/raster";
 import { Slider } from "../components/slider";
 import { Value } from "../components/value";
@@ -35,10 +35,10 @@ import { XYValue } from "../components/xyvalue";
 import {
     ConnectionView,
     RecurrentConnectionView
-} from "../components/views/connection";
-import { EnsembleView } from "../components/views/ensemble";
-import { NetworkView } from "../components/views/network";
-import { NodeView, PassthroughNodeView } from "../components/views/node";
+} from "../components/connection";
+import { EnsembleView } from "../components/ensemble";
+import { NetworkView } from "../components/network";
+import { NodeView, PassthroughNodeView } from "../components/node";
 
 export const listeners = {
     ConfigDialog: null
@@ -132,30 +132,35 @@ export const view = {
 export const component = {
     Ensemble: () =>
         new Ensemble({
+            server: new MockConnection(),
             uid: "Ensemble",
             pos: new Position(20, 20, 50, 50),
             dimensions: 1
         }),
     Network: () =>
         new Network({
+            server: new MockConnection(),
             uid: "Network",
             pos: new Position(20, 20, 50, 50),
             dimensions: 1
         }),
     Node: () =>
         new Node({
+            server: new MockConnection(),
             uid: "Node",
             pos: new Position(20, 20, 50, 50),
             dimensions: 1
         }),
     PassthroughNode: () =>
         new PassthroughNode({
+            server: new MockConnection(),
             uid: "Passthrough",
             pos: new Position(20, 20),
             dimensions: 1
         }),
     Raster: () =>
         new Raster({
+            server: new MockConnection(),
             uid: "Raster",
             pos: new Position(20, 20, 100, 100),
             nNeurons: 2,
@@ -163,6 +168,7 @@ export const component = {
         }),
     Slider: () =>
         new Slider({
+            server: new MockConnection(),
             uid: "Slider",
             pos: new Position(20, 20, 100, 100),
             dimensions: 2,
@@ -170,6 +176,7 @@ export const component = {
         }),
     Value: () =>
         new Value({
+            server: new MockConnection(),
             uid: "Value",
             pos: new Position(20, 20, 100, 100),
             dimensions: 2,
@@ -177,6 +184,7 @@ export const component = {
         }),
     XYValue: () =>
         new XYValue({
+            server: new MockConnection(),
             uid: "XY Value",
             pos: new Position(20, 20, 100, 100),
             dimensions: 2,

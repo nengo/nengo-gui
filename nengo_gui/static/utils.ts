@@ -3,12 +3,12 @@
  */
 
 import * as d3 from "d3";
-import { VNode, dom } from "maquette";
+import { VNode, dom, h } from "maquette";
 
-import { InputDialogView } from "./views/modal";
+import { InputDialogView } from "./modal";
 
 export function handleTabs(dialog: InputDialogView) {
-    dialog.input.addEventListener("keydown", (event) => {
+    dialog.input.addEventListener("keydown", event => {
         // Allow the enter key to submit
         if (event.which === 13) {
             event.preventDefault();
@@ -37,10 +37,8 @@ export function handleTabs(dialog: InputDialogView) {
                 }
                 // If the last character is a comma or there are no
                 // characters, fill in the next default value
-                if (curVal.length === 0 ||
-                    curVal.trim().slice(-1) === ",") {
-                    dialog.input.value += (
-                        pre + values[curIndex].trim() + post);
+                if (curVal.length === 0 || curVal.trim().slice(-1) === ",") {
+                    dialog.input.value += pre + values[curIndex].trim() + post;
                     event.preventDefault();
                 } else if (curIndex < values.length) {
                     dialog.input.value += ", ";
@@ -70,8 +68,7 @@ export function endsWith(str: string, suffix: string) {
 export function clip(x: number, low: number, high: number) {
     if (x < low) {
         return low;
-    }
-    else if (x > high) {
+    } else if (x > high) {
         return high;
     }
     return x;
@@ -96,7 +93,7 @@ export class Rect implements ClientRect {
     right: number;
     top: number;
 
-    constructor({bottom, left, right, top}) {
+    constructor({ bottom, left, right, top }) {
         this.bottom = bottom;
         this.left = left;
         this.right = right;
@@ -113,8 +110,8 @@ export class Rect implements ClientRect {
 }
 
 export function domCreateSVG(shape: VNode): SVGElement {
-    return dom.create(shape,
-            {namespace: "http://www.w3.org/2000/svg"}).domNode as SVGElement;
+    return dom.create(shape, { namespace: "http://www.w3.org/2000/svg" })
+        .domNode as SVGElement;
 }
 
 export function disable_editor() {
@@ -141,7 +138,6 @@ export function isInt(value) {
     return (num | 0) === num;
 }
 
-
 /**
  * Check if a string value represents a number.
  *
@@ -149,7 +145,7 @@ export function isInt(value) {
  * @returns {boolean} Whether the value is a number.
  */
 export function isNum(value) {
-    return !(isNaN(value)) && !(value.trim() === "");
+    return !isNaN(value) && !(value.trim() === "");
 }
 
 export function now() {
@@ -175,7 +171,12 @@ export function now() {
 export function makeColors(nColors) {
     // Color blind palette with blue, green, red, magenta, yellow, cyan
     const palette = [
-        "#1c73b3", "#039f74", "#d65e00", "#cd79a7", "#f0e542", "#56b4ea",
+        "#1c73b3",
+        "#039f74",
+        "#d65e00",
+        "#cd79a7",
+        "#f0e542",
+        "#56b4ea"
     ];
     const colors = [];
 
@@ -216,7 +217,7 @@ export var nextZindex = (() => {
 export function throttle(
     func: Function,
     wait: number,
-    {leading: leading = true, trailing: trailing = true} = {}
+    { leading: leading = true, trailing: trailing = true } = {}
 ) {
     let timeout;
     let context;
@@ -289,7 +290,7 @@ export function delay(func: Function, wait: number, ...args) {
 export function debounce(
     func: Function,
     wait: number,
-    {immediate: immediate = false} = {}
+    { immediate: immediate = false } = {}
 ) {
     let timeout;
     let result;
@@ -338,13 +339,14 @@ export function lerp(v0: number, v1: number, t: number) {
 /**
  * Angle of the vector between two points, in degrees.
  */
-export function angle(x1: number, x2: number, y1: number, y2:number) {
+export function angle(x1: number, x2: number, y1: number, y2: number) {
     return Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
 }
 
 // from http://jsbin.com/yiliwu/4/edit?js,console
 export function singleline(
-    inStrings: TemplateStringsArray | string, ...values: any[]
+    inStrings: TemplateStringsArray | string,
+    ...values: any[]
 ) {
     const strings = typeof inStrings === "string" ? [inStrings] : inStrings;
     console.assert(strings.length === values.length + 1);
@@ -359,15 +361,19 @@ export function singleline(
     var lines = output.split(/(?:\r\n|\n|\r)/);
 
     // Rip out the leading whitespace.
-    return lines.map((line) => line.replace(/^\s+/gm, "")).join(" ").trim();
+    return lines
+        .map(line => line.replace(/^\s+/gm, ""))
+        .join(" ")
+        .trim();
 }
 
 // From https://github.com/MartinKolarik/dedent-js/blob/master/src/index.ts
 export function dedent(
-    inStrings: TemplateStringsArray | string, ...values: any[]
+    inStrings: TemplateStringsArray | string,
+    ...values: any[]
 ) {
-    let strings = typeof inStrings === "string" ?
-        [inStrings] : inStrings.slice();
+    let strings =
+        typeof inStrings === "string" ? [inStrings] : inStrings.slice();
     console.assert(strings.length === values.length + 1);
 
     // Remove trailing whitespace.
@@ -378,7 +384,7 @@ export function dedent(
     let matches = [];
     let match;
     for (let i = 0; i < strings.length; i++) {
-        if (match = strings[i].match(/\n[\t ]+/g)) {
+        if ((match = strings[i].match(/\n[\t ]+/g))) {
             matches.push(...match);
         }
     }
@@ -401,4 +407,176 @@ export function dedent(
     }
 
     return output;
+}
+
+/**
+ * Utility functions for views.
+ */
+
+export type AlertLevel = "danger" | "info" | "success" | "warning";
+
+export function bsAlert(text: string, level: AlertLevel = "info"): VNode {
+    return h("div.alert.alert-" + level, { role: "alert" }, [
+        h("p", [
+            h("span.glyphicon.glyphicon-exclamation-sign", {
+                "aria-hidden": true
+            }),
+            text
+        ])
+    ]);
+}
+
+export function bsActivatePopovers(parent: Element) {
+    $(parent)
+        .find("[data-toggle=popover]")
+        .popover({ trigger: "hover" });
+}
+
+export function bsActivateTooltips(parent: Element) {
+    $(parent)
+        .find("[data-toggle=tooltip]")
+        .tooltip();
+}
+
+export function bsPopover(
+    title: string,
+    content: string,
+    placement = "bottom"
+): VNode {
+    return h(
+        "a",
+        {
+            href: "#",
+            "data-content": content,
+            "data-placement": placement,
+            "data-toggle": "popover",
+            title: title
+        },
+        [h("sup", ["?"])]
+    );
+}
+
+export function bsTooltip(
+    content: string,
+    placement: string = "bottom"
+): VNode {
+    return h(
+        "a",
+        {
+            href: "#",
+            "data-toggle": "tooltip",
+            "data-placement": placement,
+            title: content
+        },
+        [h("sup", ["?"])]
+    );
+}
+
+/**
+ * Safely sets the content of an element to the given text.
+ *
+ * This should be used instead of `element.innerHTML = text`.
+ *
+ * @param {HTMLElement} element - The element to set.
+ * @param {string} text - The text to set on the element.
+ */
+export function safeSetText(element: HTMLElement, text: string) {
+    // First remove all children
+    while (element.firstChild) {
+        element.removeChild(element.firstChild);
+    }
+    element.appendChild(document.createTextNode(text));
+}
+
+function getTransformNums(element: Element) {
+    let transform: string;
+    if (element instanceof SVGElement) {
+        transform = element.getAttribute("transform");
+    } else if (element instanceof HTMLElement) {
+        transform = element.style.transform;
+    } else {
+        console.error("'element' is not HTML or SVG");
+    }
+
+    return transform
+        .replace(/[^0-9\.,]/g, "")
+        .split(",")
+        .map(s => Number(s));
+}
+
+export function getMatrix(element: Element): Array<number> {
+    const nums = getTransformNums(element);
+    console.assert(nums.length === 6);
+    return nums;
+}
+
+export function getScale(element: Element): [number, number] {
+    const nums = getTransformNums(element);
+    if (nums.length === 2) {
+        return [nums[0], nums[1]];
+    } else if (nums.length === 6) {
+        return [nums[0], nums[3]];
+    }
+}
+
+export function getTranslate(element: Element): [number, number] {
+    const nums = getTransformNums(element);
+    if (nums.length === 2) {
+        return [nums[0], nums[1]];
+    } else if (nums.length === 6) {
+        return [nums[4], nums[5]];
+    }
+}
+
+/**
+ * Set the transform of an element.
+ *
+ * @param {HTMLElement} element - The HTML element to set.
+ * @param {number} x - Shift on the x-axis.
+ * @param {number} y - Shift on the y-axis.
+ * @param {number}
+ */
+function setTransform(element: Element, transform: string, nums: Number[]) {
+    let unit = "";
+    if (element instanceof HTMLElement) {
+        unit = "px";
+    }
+    const sep = `${unit},`;
+    const str = `${transform}(${nums.join(sep)}${unit})`;
+
+    // let transform;
+    // if (w === null && h === null) {
+    //     transform = `translate(${xy})`;
+    // } else {
+    //     console.assert(w !== null && h !== null);
+    //     transform = `matrix(${w}${unit},0,0,${h}${unit},${xy})`;
+    // }
+
+    if (element instanceof SVGElement) {
+        element.setAttribute("transform", str);
+    } else if (element instanceof HTMLElement) {
+        element.style.webkitTransform = element.style.transform = str;
+    } else {
+        console.error("'element' is not HTML or SVG in 'setTransform'");
+    }
+}
+
+export function setMatrix(
+    element: Element,
+    a: number,
+    b: number,
+    c: number,
+    d: number,
+    e: number,
+    f: number
+) {
+    setTransform(element, "matrix", [a, b, c, d, e, f]);
+}
+
+export function setScale(element: Element, x: number, y: number) {
+    setTransform(element, "scale", [x, y]);
+}
+
+export function setTranslate(element: Element, x: number, y: number) {
+    setTransform(element, "translate", [x, y]);
 }

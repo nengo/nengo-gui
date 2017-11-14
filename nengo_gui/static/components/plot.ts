@@ -1,126 +1,295 @@
+import * as d3 from "d3";
 import { VNode, dom, h } from "maquette";
 
-import {
-    getScale, getTranslate, setScale, setTranslate,
-} from "../../views/views";
+import "./plot.css";
 
-import "./base.css";
-import * as utils from "../../utils";
+import { ResizableComponentView } from "./component";
+import { InputDialogView } from "../modal";
+import { Connection } from "../server";
+import * as utils from "../utils";
+import { Widget } from "./widget";
 
-export abstract class ComponentView {
-    static labelPad: number = 3;
+export class Axis {
+    private axis: d3.svg.Axis;
+    private g: d3.Selection<SVGGElement>;
+    private scale: d3.scale.Linear<number, number>;
 
-    baseHeight: number;
-    baseWidth: number;
-    body: SVGGElement;
-    overlay: SVGRectElement;
-    root: SVGGElement;
-
-    protected _label: SVGTextElement;
-    protected _width: number;
-
-    constructor(label: string) {
-        const node = h("g", {transform: "translate(0,0)"}, [
-            h("text", {transform: "translate(0,0)"}, [label]),
-            h("rect.overlay"),
-        ]);
-
-        // Create the SVG group to hold this item's shape and it's label
-        this.root = utils.domCreateSVG(node) as SVGGElement;
-        this.overlay = this.root.querySelector(".overlay") as SVGRectElement;
-        this._label = this.root.querySelector("text") as SVGTextElement;
+    constructor(xy: "X" | "Y", g: SVGGElement, lim: [number, number]) {
+        this.scale = d3.scale.linear();
+        this.axis = d3.svg.axis();
+        this.axis.orient(xy === "X" ? "bottom" : "left");
+        this.axis.scale(this.scale);
+        this.g = d3.select(g);
+        this.lim = lim;
     }
 
-    get centerPos(): [number, number] {
-        const pos = this.pos;
-        return [pos[0] + this.width * 0.5, pos[1] + this.height * 0.5];
+    get lim(): [number, number] {
+        const lim = this.scale.domain() as [number, number];
+        console.assert(lim.length === 2);
+        return lim;
     }
 
-    get height(): number {
-        return this.baseHeight;
+    set lim(val: [number, number]) {
+        this.scale.domain(val);
+        this.axis.tickValues(val);
+        this.axis(this.g);
     }
 
-    get label(): string {
-        return this._label.textContent;
+    get pixelLim(): [number, number] {
+        const scale = this.scale.range() as [number, number];
+        console.assert(scale.length === 2);
+        return scale;
     }
 
-    set label(val: string) {
-        this._label.textContent = val;
+    set pixelLim(val: [number, number]) {
+        this.scale.range(val);
+        this.axis(this.g);
     }
 
-    get labelVisible(): boolean {
-        return this._label.style.display === "";
+    get tickSize(): number {
+        return this.axis.outerTickSize();
     }
 
-    set labelVisible(val: boolean) {
-        if (val) {
-            this._label.style.display = "";
-        } else {
-            this._label.style.display = "none";
-        }
+    set tickSize(val: number) {
+        // .tickPadding(val * 0.5)
+        this.axis.outerTickSize(val);
     }
 
-    get left(): number {
-        return this.pos[0];
+    pixelAt(value: number) {
+        return this.scale(value);
     }
 
-    get overlayScale(): [number, number] {
-        return [
-            Number(this.overlay.getAttribute("width")),
-            Number(this.overlay.getAttribute("height")),
-        ];
-    }
-
-    set overlayScale(val: [number, number]) {
-        const [width, height] = val;
-        this.overlay.setAttribute("width", `${width}`);
-        this.overlay.setAttribute("height", `${height}`);
-        setTranslate(this._label, width * 0.5, height + ComponentView.labelPad);
-    }
-
-    get pos(): [number, number] {
-        return getTranslate(this.root);
-    }
-
-    set pos(val: [number, number]) {
-        setTranslate(this.root, val[0], val[1]);
-    }
-
-    get top(): number {
-        return this.pos[1];
-    }
-
-    get width(): number {
-        return this.baseWidth;
-    }
-
-    ondomadd() {
-        const rect = this.body.getBoundingClientRect();
-        this.baseHeight = rect.height;
-        this.baseWidth = rect.width;
-        this.overlayScale = [this.baseWidth, this.baseHeight];
-        // Ensure that overlay is on top
-        this.root.appendChild(this.overlay);
+    valueAt(pixel: number) {
+        return this.scale.invert(pixel);
     }
 }
 
-export abstract class ResizableComponentView extends ComponentView {
+export class Axes {
+    // TODO: what should these actually be?
     static minHeight: number = 20;
     static minWidth: number = 20;
 
+    x: Axis;
+    y: Axis;
+    view: AxesView;
+
+    protected _height: number;
+    protected _width: number;
+
+    // TODO: have left xtick disappear if too close to right xtick?
+
+    // TODO: probably don't have width, height passed in? get from view?
+    constructor(
+        valueView: PlotView,
+        width,
+        height,
+        xlim: [number, number] = [-0.5, 0.0],
+        ylim: [number, number] = [-1, 1]
+    ) {
+        this.view = valueView.axes;
+        this._width = width;
+        this._height = height;
+
+        // TODO: better initial values for x?
+        this.x = new Axis("X", this.view.x.g, xlim);
+        this.y = new Axis("Y", this.view.y.g, ylim);
+
+        // Set up mouse handlers for crosshairs
+        valueView.overlay.addEventListener("mouseover", () => {
+            this.view.crosshair.visible = true;
+        });
+        valueView.overlay.addEventListener("mouseout", () => {
+            this.view.crosshair.visible = false;
+        });
+        valueView.overlay.addEventListener("mousemove", (event: MouseEvent) => {
+            const [offsetX, offsetY] = valueView.pos;
+            const [x, y] = [event.x - offsetX, event.y - offsetY];
+            this.view.crosshair.pos = [x, y];
+            this.view.crosshair.value = [this.x.valueAt(x), this.y.valueAt(y)];
+        });
+
+        // TODO: previosly, we hid on mouse wheel... should we?
+        // this.view.root.addEventListener("mousewheel", () => {
+        //     this.view.crosshairPos = ;
+        // });
+    }
+
     get height(): number {
-        return this.scale[1];
+        return this._height;
+    }
+
+    get padding(): [number, number] {
+        return [5, 5];
+    }
+
+    set scale(val: [number, number]) {
+        this._width = Math.max(Axes.minWidth, val[0]);
+        this._height = Math.max(Axes.minHeight, val[1]);
+
+        const [xWidth, xHeight] = this.view.x.scale;
+        const [yWidth, yHeight] = this.view.y.scale;
+
+        // TOOD: why 0 and not yWidth?
+        this.view.x.pos = [0, this._height - xHeight];
+        this.x.pixelLim = [yWidth, this._width];
+        this.view.y.pos = [yWidth, 0];
+        this.y.pixelLim = [this._height - xHeight, 0];
+        this.view.crosshair.scale = [this._width, this._height - xHeight];
     }
 
     get width(): number {
-        return this.scale[0];
+        return this._width;
     }
 
-    abstract get scale(): [number, number];
-    abstract set scale(val: [number, number]);
+    ondomadd() {
+        this.scale = [this._width, this._height];
+        const yWidth = this.view.y.scale[0];
+        this.view.crosshair.offset = [0, yWidth];
+        this.x.tickSize = 0.4 * yWidth;
+        this.y.tickSize = 0.4 * yWidth;
+    }
 }
 
-export class Crosshair {
+export abstract class Plot extends Widget {
+    axes: Axes;
+
+    protected _view: PlotView;
+
+    constructor(
+        server: Connection,
+        uid: string,
+        left: number,
+        top: number,
+        width: number,
+        height: number,
+        dimensions: number,
+        synapse: number,
+        xlim: [number, number] = [-0.5, 0],
+        ylim: [number, number] = [-1, 1]
+    ) {
+        super(server, uid, left, top, width, height, dimensions, synapse);
+        this.synapse = synapse;
+
+        this.addAxes(width, height, xlim, ylim);
+
+        this.interactRoot.on("resizemove", event => {
+            // Resizing the view happens in the superclass; we update axes here
+            const [vWidth, wHeight] = this.view.scale;
+            this.axes.scale = [
+                vWidth * this.scaleToPixels,
+                wHeight * this.scaleToPixels
+            ];
+            this.syncWithDataStore();
+        });
+
+        window.addEventListener(
+            "TimeSlider.moveShown",
+            utils.throttle((e: CustomEvent) => {
+                this.xlim = e.detail.shownTime;
+            }, 50) // Update once every 50 ms
+        );
+        window.addEventListener("SimControl.reset", e => {
+            this.reset();
+        });
+    }
+
+    get legendLabels(): string[] {
+        return this.view.legendLabels;
+    }
+
+    set legendLabels(val: string[]) {
+        this.view.legendLabels = val;
+    }
+
+    get legendVisible(): boolean {
+        return this.view.legendVisible;
+    }
+
+    set legendVisible(val: boolean) {
+        this.view.legendVisible = val;
+    }
+
+    abstract get view(): PlotView;
+
+    get xlim(): [number, number] {
+        return this.axes.x.lim;
+    }
+
+    set xlim(val: [number, number]) {
+        this.axes.x.lim = val;
+        this.syncWithDataStore();
+    }
+
+    get ylim(): [number, number] {
+        return this.axes.y.lim;
+    }
+
+    set ylim(val: [number, number]) {
+        this.axes.y.lim = val;
+        this.syncWithDataStore();
+    }
+
+    addAxes(width, height, xlim, ylim) {
+        this.axes = new Axes(this.view, width, height, xlim, ylim);
+    }
+
+    addMenuItems() {
+        this.menu.addAction(
+            "Hide legend",
+            () => {
+                this.legendVisible = false;
+            },
+            () => this.legendVisible
+        );
+        this.menu.addAction(
+            "Show legend",
+            () => {
+                this.legendVisible = true;
+            },
+            () => !this.legendVisible
+        );
+        // TODO: give the legend its own context menu
+        this.menu.addAction(
+            "Set legend labels",
+            () => {
+                this.askLegend();
+            },
+            () => this.legendVisible
+        );
+        this.menu.addSeparator();
+        super.addMenuItems();
+    }
+
+    askLegend() {
+        const modal = new InputDialogView("Legend labels", "New value");
+        modal.title = "Enter comma separated legend labels";
+        modal.ok.addEventListener("click", () => {
+            const labelCSV = modal.input.value;
+            // No validation to do.
+            // Empty entries assumed to be indication to skip modification.
+            // Long strings okay.
+            // Excissive entries get ignored.
+            // TODO: Allow escaping of commas
+            if (labelCSV !== null && labelCSV !== "") {
+                this.legendLabels = labelCSV.split(",").map(s => s.trim());
+            }
+            $(modal).modal("hide");
+        });
+        utils.handleTabs(modal);
+        $(modal.root).on("hidden.bs.modal", () => {
+            document.body.removeChild(modal.root);
+        });
+        document.body.appendChild(modal.root);
+        modal.show();
+    }
+
+    ondomadd() {
+        super.ondomadd();
+        this.axes.ondomadd();
+    }
+}
+
+export class CrosshairView {
 
     x: SVGGElement;
     xLine: SVGLineElement;
@@ -212,7 +381,7 @@ export class Crosshair {
     }
 }
 
-export class Axis {
+export class AxisView {
     g: SVGGElement;
     orientation: "horizontal" | "vertical";
 
@@ -225,11 +394,11 @@ export class Axis {
     }
 
     get pos(): [number, number] {
-        return getTranslate(this.g);
+        return utils.getTranslate(this.g);
     }
 
     set pos(val: [number, number]) {
-        setTranslate(this.g, val[0], val[1]);
+        utils.setTranslate(this.g, val[0], val[1]);
     }
 
     get scale(): [number, number] {
@@ -239,19 +408,19 @@ export class Axis {
 }
 
 export class AxesView {
-    x: Axis;
-    y: Axis;
-    crosshair: Crosshair;
+    x: AxisView;
+    y: AxisView;
+    crosshair: CrosshairView;
     root: SVGGElement;
 
     constructor() {
         const node = h("g.axes");
         this.root = utils.domCreateSVG(node) as SVGGElement;
-        this.x = new Axis("X");
-        this.y = new Axis("Y");
+        this.x = new AxisView("X");
+        this.y = new AxisView("Y");
         this.root.appendChild(this.x.g);
         this.root.appendChild(this.y.g);
-        this.crosshair = new Crosshair();
+        this.crosshair = new CrosshairView();
         this.root.appendChild(this.crosshair.x);
         this.root.appendChild(this.crosshair.y);
     }
@@ -313,11 +482,11 @@ export class LegendView {
     }
 
     get pos(): [number, number] {
-        return getTranslate(this.root);
+        return utils.getTranslate(this.root);
     }
 
     set pos(val: [number, number]) {
-        setTranslate(this.root, val[0], val[1]);
+        utils.setTranslate(this.root, val[0], val[1]);
     }
 
     get valuesVisible(): boolean {

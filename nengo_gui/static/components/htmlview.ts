@@ -10,10 +10,11 @@
 
 import { DataStore } from "../datastore";
 // import * as utils from "../utils";
-import { Position, Widget } from "./base";
 import { registerComponent } from "./registry";
 import { Connection } from "../server";
-import { ValueView } from "./views/value";
+import { Position } from "./position";
+import { ValueView } from "./value";
+import { Widget } from "./widget";
 
 export class HTMLView extends Widget {
     dataStore;

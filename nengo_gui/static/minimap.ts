@@ -15,7 +15,6 @@ export class Minimap {
     width;
 
     constructor() {
-
         // this.minimapDiv = document.createElement("div");
         // this.minimapDiv.className = "minimap";
         // this.parent.appendChild(this.minimapDiv);
@@ -44,19 +43,16 @@ export class Minimap {
         // Default display minimap
         // this.mmDisplay = true;
         this.toggle();
-
     }
 
     scale() {
         // if (!this.mmDisplay) {
         //     return;
         // }
-
         // const keys = Object.keys(this.svgObjects);
         // if (keys.length === 0) {
         //     return;
         // }
-
         // // TODO: Could also store the items at the four min max values
         // // and only compare against those, or check against all items
         // // in the lists when they move. Might be important for larger
@@ -68,7 +64,6 @@ export class Minimap {
         //     if (item.depth > 1) {
         //         return;
         //     }
-
         //     const minmaxXy = item.getMinMaxXY();
         //     if (firstItem === true) {
         //         this.mmMinX = minmaxXy[0];
@@ -78,7 +73,6 @@ export class Minimap {
         //         firstItem = false;
         //         return;
         //     }
-
         //     if (this.mmMinX > minmaxXy[0]) {
         //         this.mmMinX = minmaxXy[0];
         //     }
@@ -92,10 +86,8 @@ export class Minimap {
         //         this.mmMaxY = minmaxXy[3];
         //     }
         // });
-
         // this.mmScale = 1 / Math.max(this.mmMaxX - this.mmMinX,
         //                              this.mmMaxY - this.mmMinY);
-
         // // Give a bit of a border
         // this.mmMinX -= this.mmScale * .05;
         // this.mmMaxX += this.mmScale * .05;
@@ -104,7 +96,6 @@ export class Minimap {
         // // TODO: there is a better way to do this than recalculate
         // this.mmScale = 1 / Math.max(this.mmMaxX - this.mmMinX,
         //                              this.mmMaxY - this.mmMinY);
-
         // this.redraw();
         // this.scaleMiniMapViewBox();
     }
@@ -113,21 +104,16 @@ export class Minimap {
         // if (!this.mmDisplay) {
         //     return;
         // }
-
         // const mmW = this.mmWidth;
         // const mmH = this.mmHeight;
-
         // const w = mmW * this.mmScale;
         // const h = mmH * this.mmScale;
-
         // const dispW = (this.mmMaxX - this.mmMinX) * w;
         // const dispH = (this.mmMaxY - this.mmMinY) * h;
-
         // const viewOffsetX = -(this.mmMinX + this.offsetX) *
         //     w + (mmW - dispW) / 2.;
         // const viewOffsetY = -(this.mmMinY + this.offsetY) *
         //     h + (mmH - dispH) / 2.;
-
         // this.view.setAttributeNS(null, "x", viewOffsetX);
         // this.view.setAttributeNS(null, "y", viewOffsetY);
         // this.view.setAttribute("width", w / this.scale);

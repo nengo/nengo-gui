@@ -1,4 +1,4 @@
-import { Component } from "./base";
+import { Component } from "./component";
 import { Connection } from "../server";
 
 type C = new (argobj) => Component;

@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "/static/dist/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 116);
+/******/ 	return __webpack_require__(__webpack_require__.s = 102);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -10718,7 +10718,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-
+/* WEBPACK VAR INJECTION */(function($) {
 /**
  * Miscellaneous utilities used in various parts of the Nengo GUI.
  */
@@ -10755,9 +10755,8 @@ function handleTabs(dialog) {
                 }
                 // If the last character is a comma or there are no
                 // characters, fill in the next default value
-                if (curVal.length === 0 ||
-                    curVal.trim().slice(-1) === ",") {
-                    dialog.input.value += (pre + values[curIndex].trim() + post);
+                if (curVal.length === 0 || curVal.trim().slice(-1) === ",") {
+                    dialog.input.value += pre + values[curIndex].trim() + post;
                     event.preventDefault();
                 }
                 else if (curIndex < values.length) {
@@ -10829,7 +10828,8 @@ var Rect = /** @class */ (function () {
 }());
 exports.Rect = Rect;
 function domCreateSVG(shape) {
-    return maquette_1.dom.create(shape, { namespace: "http://www.w3.org/2000/svg" }).domNode;
+    return maquette_1.dom.create(shape, { namespace: "http://www.w3.org/2000/svg" })
+        .domNode;
 }
 exports.domCreateSVG = domCreateSVG;
 function disable_editor() {
@@ -10863,7 +10863,7 @@ exports.isInt = isInt;
  * @returns {boolean} Whether the value is a number.
  */
 function isNum(value) {
-    return !(isNaN(value)) && !(value.trim() === "");
+    return !isNaN(value) && !(value.trim() === "");
 }
 exports.isNum = isNum;
 function now() {
@@ -10887,7 +10887,12 @@ exports.now = now;
 function makeColors(nColors) {
     // Color blind palette with blue, green, red, magenta, yellow, cyan
     var palette = [
-        "#1c73b3", "#039f74", "#d65e00", "#cd79a7", "#f0e542", "#56b4ea",
+        "#1c73b3",
+        "#039f74",
+        "#d65e00",
+        "#cd79a7",
+        "#f0e542",
+        "#56b4ea"
     ];
     var colors = [];
     for (var i = 0; i < nColors; i++) {
@@ -11063,7 +11068,10 @@ function singleline(inStrings) {
     // Split on newlines.
     var lines = output.split(/(?:\r\n|\n|\r)/);
     // Rip out the leading whitespace.
-    return lines.map(function (line) { return line.replace(/^\s+/gm, ""); }).join(" ").trim();
+    return lines
+        .map(function (line) { return line.replace(/^\s+/gm, ""); })
+        .join(" ")
+        .trim();
 }
 exports.singleline = singleline;
 // From https://github.com/MartinKolarik/dedent-js/blob/master/src/index.ts
@@ -11072,8 +11080,7 @@ function dedent(inStrings) {
     for (var _i = 1; _i < arguments.length; _i++) {
         values[_i - 1] = arguments[_i];
     }
-    var strings = typeof inStrings === "string" ?
-        [inStrings] : inStrings.slice();
+    var strings = typeof inStrings === "string" ? [inStrings] : inStrings.slice();
     console.assert(strings.length === values.length + 1);
     // Remove trailing whitespace.
     var last = strings.length - 1;
@@ -11082,7 +11089,7 @@ function dedent(inStrings) {
     var matches = [];
     var match;
     for (var i = 0; i < strings.length; i++) {
-        if (match = strings[i].match(/\n[\t ]+/g)) {
+        if ((match = strings[i].match(/\n[\t ]+/g))) {
             matches.push.apply(matches, match);
         }
     }
@@ -11102,7 +11109,155 @@ function dedent(inStrings) {
     return output;
 }
 exports.dedent = dedent;
+function bsAlert(text, level) {
+    if (level === void 0) { level = "info"; }
+    return maquette_1.h("div.alert.alert-" + level, { role: "alert" }, [
+        maquette_1.h("p", [
+            maquette_1.h("span.glyphicon.glyphicon-exclamation-sign", {
+                "aria-hidden": true
+            }),
+            text
+        ])
+    ]);
+}
+exports.bsAlert = bsAlert;
+function bsActivatePopovers(parent) {
+    $(parent)
+        .find("[data-toggle=popover]")
+        .popover({ trigger: "hover" });
+}
+exports.bsActivatePopovers = bsActivatePopovers;
+function bsActivateTooltips(parent) {
+    $(parent)
+        .find("[data-toggle=tooltip]")
+        .tooltip();
+}
+exports.bsActivateTooltips = bsActivateTooltips;
+function bsPopover(title, content, placement) {
+    if (placement === void 0) { placement = "bottom"; }
+    return maquette_1.h("a", {
+        href: "#",
+        "data-content": content,
+        "data-placement": placement,
+        "data-toggle": "popover",
+        title: title
+    }, [maquette_1.h("sup", ["?"])]);
+}
+exports.bsPopover = bsPopover;
+function bsTooltip(content, placement) {
+    if (placement === void 0) { placement = "bottom"; }
+    return maquette_1.h("a", {
+        href: "#",
+        "data-toggle": "tooltip",
+        "data-placement": placement,
+        title: content
+    }, [maquette_1.h("sup", ["?"])]);
+}
+exports.bsTooltip = bsTooltip;
+/**
+ * Safely sets the content of an element to the given text.
+ *
+ * This should be used instead of `element.innerHTML = text`.
+ *
+ * @param {HTMLElement} element - The element to set.
+ * @param {string} text - The text to set on the element.
+ */
+function safeSetText(element, text) {
+    // First remove all children
+    while (element.firstChild) {
+        element.removeChild(element.firstChild);
+    }
+    element.appendChild(document.createTextNode(text));
+}
+exports.safeSetText = safeSetText;
+function getTransformNums(element) {
+    var transform;
+    if (element instanceof SVGElement) {
+        transform = element.getAttribute("transform");
+    }
+    else if (element instanceof HTMLElement) {
+        transform = element.style.transform;
+    }
+    else {
+        console.error("'element' is not HTML or SVG");
+    }
+    return transform
+        .replace(/[^0-9\.,]/g, "")
+        .split(",")
+        .map(function (s) { return Number(s); });
+}
+function getMatrix(element) {
+    var nums = getTransformNums(element);
+    console.assert(nums.length === 6);
+    return nums;
+}
+exports.getMatrix = getMatrix;
+function getScale(element) {
+    var nums = getTransformNums(element);
+    if (nums.length === 2) {
+        return [nums[0], nums[1]];
+    }
+    else if (nums.length === 6) {
+        return [nums[0], nums[3]];
+    }
+}
+exports.getScale = getScale;
+function getTranslate(element) {
+    var nums = getTransformNums(element);
+    if (nums.length === 2) {
+        return [nums[0], nums[1]];
+    }
+    else if (nums.length === 6) {
+        return [nums[4], nums[5]];
+    }
+}
+exports.getTranslate = getTranslate;
+/**
+ * Set the transform of an element.
+ *
+ * @param {HTMLElement} element - The HTML element to set.
+ * @param {number} x - Shift on the x-axis.
+ * @param {number} y - Shift on the y-axis.
+ * @param {number}
+ */
+function setTransform(element, transform, nums) {
+    var unit = "";
+    if (element instanceof HTMLElement) {
+        unit = "px";
+    }
+    var sep = unit + ",";
+    var str = transform + "(" + nums.join(sep) + unit + ")";
+    // let transform;
+    // if (w === null && h === null) {
+    //     transform = `translate(${xy})`;
+    // } else {
+    //     console.assert(w !== null && h !== null);
+    //     transform = `matrix(${w}${unit},0,0,${h}${unit},${xy})`;
+    // }
+    if (element instanceof SVGElement) {
+        element.setAttribute("transform", str);
+    }
+    else if (element instanceof HTMLElement) {
+        element.style.webkitTransform = element.style.transform = str;
+    }
+    else {
+        console.error("'element' is not HTML or SVG in 'setTransform'");
+    }
+}
+function setMatrix(element, a, b, c, d, e, f) {
+    setTransform(element, "matrix", [a, b, c, d, e, f]);
+}
+exports.setMatrix = setMatrix;
+function setScale(element, x, y) {
+    setTransform(element, "scale", [x, y]);
+}
+exports.setScale = setScale;
+function setTranslate(element, x, y) {
+    setTransform(element, "translate", [x, y]);
+}
+exports.setTranslate = setTranslate;
 
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
 /* 3 */
@@ -11189,7 +11344,7 @@ function toComment(sourceMap) {
   return '/*# ' + data + ' */';
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./../../buffer/index.js */ 71).Buffer))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./../../buffer/index.js */ 63).Buffer))
 
 /***/ }),
 /* 4 */
@@ -11452,9 +11607,9 @@ function updateLink(linkElement, obj) {
 /* 5 */
 /* no static exports found */
 /* all exports used */
-/*!*****************************************!*\
-  !*** ./nengo_gui/static/views/modal.ts ***!
-  \*****************************************/
+/*!***********************************!*\
+  !*** ./nengo_gui/static/modal.ts ***!
+  \***********************************/
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11472,8 +11627,38 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var $ = __webpack_require__(/*! jquery */ 0);
 var maquette_1 = __webpack_require__(/*! maquette */ 1);
-__webpack_require__(/*! ./modal.css */ 102);
-var views = __webpack_require__(/*! ./views */ 16);
+__webpack_require__(/*! ./modal.css */ 93);
+var utils = __webpack_require__(/*! ./utils */ 2);
+var Modal = /** @class */ (function () {
+    function Modal($div, editor, sim) {
+        this.view = null; // Created in this.show
+        // this.$div = $div;
+        // this.$title = this.$div.find(".modal-title").first();
+        // this.$footer = this.$div.find(".modal-footer").first();
+        // this.$body = this.$div.find(".modal-body").first();
+        this.editor = editor;
+        this.sim = sim;
+        this.netgraph = this.editor.netgraph;
+        this.simWasRunning = false;
+        // This listener is triggered when the modal is closed
+        this.$div.on("hidden.bs.modal", function () {
+            if (this.simWasRunning) {
+                this.sim.play();
+            }
+            this.hotkeys.setActive(true);
+        });
+    }
+    Modal.prototype.show = function () {
+        // TODO: get the hotkeys and deactivate
+        // this.hotkeys.setActive(false);
+        this.simWasRunning = !this.sim.paused;
+        this.sim.pause();
+        this.view = new ModalView();
+        this.view.show();
+    };
+    return Modal;
+}());
+exports.Modal = Modal;
 var ModalView = /** @class */ (function () {
     function ModalView() {
         var node = maquette_1.h("div.modal.fade", [
@@ -11481,25 +11666,21 @@ var ModalView = /** @class */ (function () {
                 maquette_1.h("div.modal-content", [
                     maquette_1.h("div.modal-header", [
                         maquette_1.h("button.close", {
-                            "type": "button",
+                            type: "button",
                             "data-dismiss": "modal",
-                            "aria-label": "Close",
-                        }, [
-                            maquette_1.h("span", { "aria-hidden": "true" }, ["×"]),
-                        ]),
-                        maquette_1.h("h4.modal-title"),
+                            "aria-label": "Close"
+                        }, [maquette_1.h("span", { "aria-hidden": "true" }, ["×"])]),
+                        maquette_1.h("h4.modal-title")
                     ]),
                     maquette_1.h("div.modal-body"),
-                    maquette_1.h("div.modal-footer"),
-                ]),
-            ]),
+                    maquette_1.h("div.modal-footer")
+                ])
+            ])
         ]);
         this.root = maquette_1.dom.create(node).domNode;
         this.dialog = this.root.querySelector(".modal-dialog");
-        this._title =
-            this.root.querySelector(".modal-title");
-        this.footer =
-            this.root.querySelector(".modal-footer");
+        this._title = this.root.querySelector(".modal-title");
+        this.footer = this.root.querySelector(".modal-footer");
         this.body = this.root.querySelector(".modal-body");
     }
     Object.defineProperty(ModalView.prototype, "title", {
@@ -11514,7 +11695,7 @@ var ModalView = /** @class */ (function () {
     });
     ModalView.prototype.addFooterButton = function (label, style) {
         if (style === void 0) { style = "primary"; }
-        var node = maquette_1.h("button.btn.btn-" + style, { "type": "button" }, [label]);
+        var node = maquette_1.h("button.btn.btn-" + style, { type: "button" }, [label]);
         var button = maquette_1.dom.create(node).domNode;
         this.footer.appendChild(button);
         return button;
@@ -11539,7 +11720,7 @@ var AlertDialogView = /** @class */ (function (_super) {
     function AlertDialogView(text, level) {
         if (level === void 0) { level = "info"; }
         var _this = _super.call(this) || this;
-        _this.body.appendChild(maquette_1.dom.create(views.bsAlert(text, level)).domNode);
+        _this.body.appendChild(maquette_1.dom.create(utils.bsAlert(text, level)).domNode);
         _this.close = _this.addCloseButton();
         return _this;
     }
@@ -11559,13 +11740,13 @@ var InputDialogView = /** @class */ (function (_super) {
                         maquette_1.h("input", {
                             "data-error": errorText,
                             "data-ngvalidator": "custom",
-                            "placeholder": initialValues,
-                            "type": "text",
-                        }),
+                            placeholder: initialValues,
+                            type: "text"
+                        })
                     ]),
-                    maquette_1.h("div.help-block.with-errors"),
-                ]),
-            ]),
+                    maquette_1.h("div.help-block.with-errors")
+                ])
+            ])
         ]);
         _this.form = maquette_1.dom.create(node).domNode;
         _this.body.appendChild(_this.form);
@@ -11604,9 +11785,32 @@ if (typeof document !== "undefined") {
 /* 6 */
 /* no static exports found */
 /* all exports used */
-/*!*********************************************!*\
-  !*** ./nengo_gui/static/components/base.ts ***!
-  \*********************************************/
+/*!*************************************************!*\
+  !*** ./nengo_gui/static/components/registry.ts ***!
+  \*************************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ComponentRegistry = {};
+function registerComponent(name, compClass) {
+    exports.ComponentRegistry[name] = compClass;
+}
+exports.registerComponent = registerComponent;
+function createComponent(name, argobj) {
+    return new exports.ComponentRegistry[name](argobj);
+}
+exports.createComponent = createComponent;
+
+
+/***/ }),
+/* 7 */
+/* no static exports found */
+/* all exports used */
+/*!************************************!*\
+  !*** ./nengo_gui/static/config.ts ***!
+  \************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11622,752 +11826,626 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var interact = __webpack_require__(/*! interact.js */ 9);
-var d3 = __webpack_require__(/*! d3 */ 15);
-var datastore_1 = __webpack_require__(/*! ../datastore */ 32);
-var menu_1 = __webpack_require__(/*! ../menu */ 12);
-var utils = __webpack_require__(/*! ../utils */ 2);
-var modal_1 = __webpack_require__(/*! ../views/modal */ 5);
-var Position = /** @class */ (function () {
-    function Position(left, top, width, height) {
-        if (left === void 0) { left = 0; }
-        if (top === void 0) { top = 0; }
-        if (width === void 0) { width = null; }
-        if (height === void 0) { height = null; }
-        this.left = left;
-        this.top = top;
-        this.width = width;
-        this.height = height;
+var maquette_1 = __webpack_require__(/*! maquette */ 1);
+var modal_1 = __webpack_require__(/*! ./modal */ 5);
+/**
+ * A class that takes the place of localStorage if it doesn't exist.
+ *
+ * Note that this does not aim to implements the whole localStorage spec;
+ * it only implements what Config uses. The values set in this object will
+ * only exist for the current session and will not persist across sessions.
+ */
+var MockLocalStorage = /** @class */ (function () {
+    function MockLocalStorage() {
+        this.items = {};
     }
-    return Position;
+    Object.defineProperty(MockLocalStorage.prototype, "length", {
+        get: function () {
+            return Object.keys(this.items).length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    MockLocalStorage.prototype.clear = function () {
+        this.items = {};
+    };
+    MockLocalStorage.prototype.getItem = function (name) {
+        return this.items[name];
+    };
+    MockLocalStorage.prototype.key = function (index) {
+        return Object.keys(this.items)[index];
+    };
+    MockLocalStorage.prototype.removeItem = function (name) {
+        delete this.items[name];
+    };
+    MockLocalStorage.prototype.setItem = function (name, val) {
+        this.items[name] = String(val);
+    };
+    return MockLocalStorage;
 }());
-exports.Position = Position;
-var Component = /** @class */ (function () {
-    function Component(uid, left, top, dimensions) {
-        var _this = this;
-        this._view = null;
-        this.syncWithView = utils.throttle(function () {
-            var _a = _this.view.pos, left = _a[0], top = _a[1];
-            _this._left = left / _this.scaleToPixels;
-            _this._top = top / _this.scaleToPixels;
-        }, 20);
-        this.uid = uid;
-        this._left = left;
-        this._top = top;
-        this.dimensions = dimensions;
-        this.menu = new menu_1.Menu();
-        this.addMenuItems();
-        // TODO: nesting
-        // if (parent !== null) {
-        //     this.view.parent.children.push(this);
-        // }
-        this.interactRoot = interact(this.view.overlay);
-        // TODO: Dicuss: previously, only plots had inertia. Should they all?
-        this.interactRoot.draggable({ inertia: true });
-        this.interactRoot.on("dragmove", function (event) {
-            var _a = _this.view.pos, vLeft = _a[0], vTop = _a[1];
-            _this.view.pos = [vLeft + event.dx, vTop + event.dy];
-            // TODO: redraw
-            // this.redraw();
-            // TODO: minimap
-            // if (this.view.depth === 1) {
-            //     this.ng.scaleMiniMap();
-            // }
-        });
-        this.interactRoot.on("dragstart", function () {
-            menu_1.Menu.hideShown();
-        });
-        this.interactRoot.on("dragend", function () {
-            _this.syncWithView();
-        });
-        // --- Menu
-        var toggleMenu = function (event) {
-            if (menu_1.Menu.shown !== null) {
-                menu_1.Menu.hideShown();
-            }
-            else {
-                _this.menu.show(event.clientX, event.clientY);
-            }
-            event.stopPropagation();
-        };
-        this.interactRoot.on("hold", function (event) {
-            if (event.button === 0) {
-                toggleMenu(event);
-            }
-        });
-        // this.interactRoot.on("tap doubletap", (event) => {
-        //     Menu.hideShown();
-        // });
-        this.interactRoot.on("contextmenu", function (event) {
-            event.preventDefault();
-            toggleMenu(event);
-        });
-    }
-    Object.defineProperty(Component.prototype, "labelVisible", {
-        get: function () {
-            return this.view.labelVisible;
-        },
-        set: function (val) {
-            this.view.labelVisible = val;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Component.prototype, "left", {
-        get: function () {
-            return this._left;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Component.prototype, "scaleToPixels", {
-        get: function () {
-            return this._scaleToPixels;
-        },
-        set: function (val) {
-            this._scaleToPixels = val;
-            this.view.pos = [this._left * val, this._top * val];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Component.prototype, "top", {
-        get: function () {
-            return this._top;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Component.prototype, "scales", {
-        // get screenLocation() {
-        //     const ngDims = this.ng.rect();
-        //     let parentShiftX = 0;
-        //     let parentShiftY = 0;
-        //     let parent = this.parent;
-        //     while (parent !== null) {
-        //         parentShiftX = ((parentShiftX * parent.view.width * 2)
-        //                             + (parent.view.x - parent.view.width));
-        //         parentShiftY = ((parentShiftY * parent.view.height * 2)
-        //                             + (parent.view.y - parent.view.height));
-        //         parent = parent.view.parent;
-        //     }
-        //     parentShiftX *= ngDims.w;
-        //     parentShiftY *= ngDims.h;
-        //     let wScale = ngDims.w;
-        //     let hScale = ngDims.h;
-        //     if (this.parent !== null) {
-        //         wScale *= this.parent.view.nestedWidth * 2;
-        //         hScale *= this.parent.view.nestedHeight * 2;
-        //     }
-        //     return [this.x * wScale + parentShiftX + ngDims.offsetX,
-        //             this.y * hScale + parentShiftY + ngDims.offsetY];
-        // }
-        // TODO: minimap
-        // get minMaxXY() {
-        //     const minX = this.x - this.width;
-        //     const maxX = this.x + this.width;
-        //     const minY = this.y - this.height;
-        //     const maxY = this.y + this.height;
-        //     return [minX, maxX, minY, maxY];
-        // }
-        get: function () {
-            // let hScale = this.ng.scaledWidth;
-            // let vScale = this.ng.scaledHeight;
-            // let parent = this.parent;
-            // while (parent !== null) {
-            //     hScale *= parent.view.width * 2;
-            //     vScale *= parent.view.height * 2;
-            //     parent = parent.view.parent;
-            // }
-            // console.assert(!isNaN(hScale));
-            // console.assert(!isNaN(vScale));
-            // return {hor: hScale, vert: vScale};
-            return "todo";
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Component.prototype.addMenuItems = function () {
-        var _this = this;
-        // TODO: only for network?
-        this.menu.addAction("Auto-layout", function () {
-            _this.requestFeedforwardLayout();
-        });
-    };
-    // TODO: constrainPosition
-    // constrainPosition() {
-    //     if (this.parent !== null) {
-    //         this.width = Math.min(0.5, this.width);
-    //         this.height = Math.min(0.5, this.height);
-    //         this.x = Math.min(this.x, 1.0 - this.width);
-    //         this.x = Math.max(this.x, this.width);
-    //         this.y = Math.min(this.y, 1.0 - this.height);
-    //         this.y = Math.max(this.y, this.height);
-    //     }
-    // }
-    Component.prototype.createModal = function () {
-        // this.ng.notify("createModal", {
-        //     connInUids: this.connIn.map((c) => {
-        //         return c.uid;
-        //     }),
-        //     connOutUids: this.connOut.map((c) => {
-        //         return c.uid;
-        //     }),
-        //     uid: this.uid,
-        // });
-    };
-    // TODO: redraw
-    // redrawConnections() {
-    //     for (const conn of this.connIn) {
-    //         conn.redraw();
-    //     }
-    //     for (const conn of this.connOut) {
-    //         conn.redraw();
-    //     }
-    // }
-    Component.prototype.requestFeedforwardLayout = function () {
-        // this.ng.notify("feedforwardLayout", {uid: this.uid});
-    };
-    Component.prototype.remove = function () {
-        // Remove the item from the parent's children list
-        // if (this.view.parent !== null) {
-        //     const index = this.view.parent.children.indexOf(this);
-        //     this.view.parent.children.splice(index, 1);
-        // }
-        // super.remove();
-        // this.miniItem.remove();
-    };
-    Object.defineProperty(Component.prototype, "labelBelow", {
-        // TODO: redraw
-        // redraw() {
-        //     this.view.redrawSize();
-        //     if (this.ng.mmDisplay) {
-        //         this.miniItem.redraw();
-        //     }
-        //     this.view.redrawPosition();
-        //     this.redrawConnections();
-        // }
-        set: function (flag) {
-            // if (flag && !this._labelBelow) {
-            //     const screenH = this.view.screenHeight;
-            //     this.view.moveLabel(screenH / 2);
-            // } else if (!flag && this._labelBelow) {
-            //     this.view.moveLabel(0);
-            // }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    // TODO: rename to createComponent?
-    Component.prototype.createGraph = function (graphType, args) {
-        if (args === void 0) { args = null; }
-        // tslint:disable-line
-        // TODO: get nested implemented this
-        // const w = this.nestedWidth;
-        // const h = this.nestedHeight;
-        // const pos = this.view.screenLocation;
-        var w = this.view.width;
-        var h = this.view.height;
-        // TODO: implement an interface for this and rename it
-        var info = {};
-        if (args !== null) {
-            info.args = args;
-        }
-        if (info.type === "Slider") {
-            info.width /= 2;
-        }
-        // TODO: change this to an actual function call
-        // this.ng.notify("createGraph", info);
-    };
-    Component.prototype.ondomadd = function () {
-        this.view.ondomadd();
-        this.scaleToPixels = 1; // TODO: get from somewhere
-    };
-    Component.prototype.onnetadd = function (network) {
-        this.interactRoot.draggable({
-            restrict: { restriction: network.view.root }
-        });
-    };
-    Component.prototype.onnetgraphadd = function (netgraph) { };
-    return Component;
-}());
-exports.Component = Component;
-var ResizableComponent = /** @class */ (function (_super) {
-    __extends(ResizableComponent, _super);
-    // TODO: Add all things to constructor
-    function ResizableComponent(uid, left, top, width, height, dimensions) {
-        var _this = _super.call(this, uid, left, top, dimensions) || this;
-        _this._height = height;
-        _this._width = width;
-        _this.interactRoot.resizable(_this.resizeOptions);
-        _this.interactRoot.on("resizestart", function (event) {
-            menu_1.Menu.hideShown();
-        });
-        _this.interactRoot.on("resizemove", function (event) {
-            var dRect = event.deltaRect;
-            var _a = _this.view.pos, vLeft = _a[0], vTop = _a[1];
-            var _b = _this.view.scale, vWidth = _b[0], vHeight = _b[1];
-            _this.view.pos = [vLeft + dRect.left, vTop + dRect.top];
-            _this.view.scale = [vWidth + dRect.width, vHeight + dRect.height];
-            // this.view.contSize(event);
-            // this.redraw();
-            // if (this.view.depth === 1) {
-            //     this.ng.scaleMiniMap();
-            // }
-        });
-        _this.interactRoot.on("resizeend", function (event) {
-            var _a = _this.view.scale, vWidth = _a[0], vHeight = _a[1];
-            _this._width = vWidth / _this.scaleToPixels;
-            _this._height = vHeight / _this.scaleToPixels;
-            // this.view.constrainPosition();
-            // this.redraw();
-            // TODO: turn this into an actual function call
-            // this.ng.notify("posSize", {
-            //     height: this.view.height,
-            //     uid: this.uid,
-            //     width: this.view.width,
-            //     x: this.view.x,
-            //     y: this.view.y,
-            // });
-        });
-        return _this;
-    }
-    Object.defineProperty(ResizableComponent.prototype, "height", {
-        get: function () {
-            return this._height;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ResizableComponent.prototype, "resizeOptions", {
-        get: function () {
-            return ResizableComponent.resizeOptions;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ResizableComponent.prototype, "scaleToPixels", {
-        get: function () {
-            return this._scaleToPixels;
-        },
-        set: function (val) {
-            this._scaleToPixels = val;
-            this.view.pos = [this._left * val, this._top * val];
-            this.view.scale = [this._width * val, this._height * val];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ResizableComponent.prototype, "width", {
-        get: function () {
-            return this._width;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ResizableComponent.prototype.onnetadd = function (network) {
-        this.interactRoot.resizable({
-            restrict: { restriction: network.view.root }
-        });
-        _super.prototype.onnetadd.call(this, network);
-    };
-    ResizableComponent.resizeOptions = {
-        edges: { bottom: true, left: true, right: true, top: true },
-        invert: "none",
-        margin: 10
-        // restrict: {
-        //     restriction: {
-        //         bottom: 600,
-        //         left: 0,
-        //         right: 600,
-        //         top: 0,
-        //     }
-        // }
-    };
-    return ResizableComponent;
-}(Component));
-exports.ResizableComponent = ResizableComponent;
-var Widget = /** @class */ (function (_super) {
-    __extends(Widget, _super);
-    function Widget(uid, left, top, width, height, dimensions, synapse) {
-        var _this = _super.call(this, uid, left, top, width, height, dimensions) || this;
-        _this.currentTime = 0.0;
-        _this.synapse = synapse;
-        _this.datastore = new datastore_1.DataStore(_this.dimensions, 0.0);
-        window.addEventListener("TimeSlider.moveShown", utils.throttle(function (e) {
-            _this.currentTime = e.detail.shownTime[1];
-        }, 50) // Update once every 50 ms
-        );
-        return _this;
-    }
-    /**
-     * Receive new line data from the server.
-     */
-    Widget.prototype.add = function (data) {
-        // TODO: handle this in the websocket code
-        // const size = this.dimensions + 1;
-        // // Since multiple data packets can be sent with a single event,
-        // // make sure to process all the packets.
-        // while (data.length >= size) {
-        //     this.datastore.push(data.slice(0, size));
-        //     data = data.slice(size);
-        // }
-        // if (data.length > 0) {
-        //     console.warn("extra data: " + data.length);
-        // }
-        if (data.length !== this.dimensions + 1) {
-            console.error("Got data with " + (data.length - 1) + " dimensions; " +
-                ("should be " + this.dimensions + " dimensions."));
+var Config = /** @class */ (function () {
+    function Config() {
+        if (typeof localStorage === "undefined" || localStorage === null) {
+            this.storage = new MockLocalStorage();
         }
         else {
-            this.datastore.add(data);
-            this.syncWithDataStore();
+            this.storage = localStorage;
+        }
+    }
+    Object.defineProperty(Config.prototype, "aspectResize", {
+        get: function () {
+            return this.getBool("aspectResize", false);
+        },
+        set: function (val) {
+            this.setAny("aspectResize", val);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Config.prototype, "autoUpdate", {
+        get: function () {
+            return this.getBool("autoUpdate", true);
+        },
+        set: function (val) {
+            this.setAny("autoUpdate", val);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Config.prototype, "backend", {
+        get: function () {
+            return this.getString("backend", "nengo");
+        },
+        set: function (val) {
+            this.setAny("backend", val);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Config.prototype, "consoleHeight", {
+        get: function () {
+            return this.getNumber("consoleHeight", 100);
+        },
+        set: function (val) {
+            this.setAny("consoleHeight", val);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Config.prototype, "editorFontSize", {
+        get: function () {
+            return this.getNumber("editorFontSize", 12);
+        },
+        set: function (val) {
+            this.setAny("editorFontSize", val);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Config.prototype, "editorWidth", {
+        get: function () {
+            return this.getNumber("editorWidth", 580);
+        },
+        set: function (val) {
+            this.setAny("editorWidth", val);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Config.prototype, "fontSize", {
+        get: function () {
+            return this.getNumber("fontSize", 100);
+        },
+        set: function (val) {
+            this.setAny("fontSize", val);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Config.prototype, "hideEditor", {
+        get: function () {
+            return this.getBool("hideEditor", false);
+        },
+        set: function (val) {
+            this.setAny("hideEditor", val);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Config.prototype, "scriptdir", {
+        get: function () {
+            return this.getString("scriptdir", ".");
+        },
+        set: function (val) {
+            this.setAny("scriptdir", val);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Config.prototype, "transparentNets", {
+        get: function () {
+            return this.getBool("transparentNets", false);
+        },
+        set: function (val) {
+            this.setAny("transparentNets", val);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Config.prototype, "zoomFonts", {
+        get: function () {
+            return this.getBool("zoomFonts", false);
+        },
+        set: function (val) {
+            this.setAny("zoomFonts", val);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Config.prototype.restoreDefaults = function () {
+        var _this = this;
+        Object.keys(this).forEach(function (option) {
+            _this.storage.removeItem("ng." + option);
+        });
+    };
+    Config.prototype.getBool = function (key, defaultVal) {
+        if (defaultVal === void 0) { defaultVal = null; }
+        var val = this.getString(key) || defaultVal;
+        return val === "true" || val === true;
+    };
+    Config.prototype.getNumber = function (key, defaultVal) {
+        if (defaultVal === void 0) { defaultVal = null; }
+        return Number(this.getString(key) || defaultVal);
+    };
+    Config.prototype.getString = function (key, defaultVal) {
+        if (defaultVal === void 0) { defaultVal = null; }
+        return this.storage.getItem("ng." + key) || defaultVal;
+    };
+    Config.prototype.setAny = function (key, val) {
+        if (this.getString(key) !== String(val)) {
+            this.storage.setItem("ng." + key, val);
+            document.dispatchEvent(new CustomEvent("nengoConfigChange", {
+                detail: key
+            }));
+        }
+        else {
+            console.log("'" + key + "' already set to " + val);
         }
     };
-    Widget.prototype.addMenuItems = function () {
+    return Config;
+}());
+exports.config = new Config();
+// The following classes deal with the rendering of config items in the UI
+var ConfigItem = /** @class */ (function () {
+    function ConfigItem(key, label, update, help) {
+        if (update === void 0) { update = null; }
+        if (help === void 0) { help = null; }
         var _this = this;
-        this.menu.addAction("Set synapse...", function () {
-            _this.askSynapse();
-        });
-        this.menu.addAction("Hide label", function () {
-            _this.labelVisible = false;
-            // see component.interactRoot.on("dragend resizeend")
-            // this.saveLayout();
-        }, function () { return _this.labelVisible; });
-        this.menu.addAction("Show label", function () {
-            _this.labelVisible = true;
-            // see component.interactRoot.on("dragend resizeend")
-            // this.saveLayout();
-        }, function () { return !_this.labelVisible; });
-        // TODO: attachNetGraph
-        // this.menu.addAction("Remove", () => { this.remove(); });
-        _super.prototype.addMenuItems.call(this);
+        this.help = help;
+        this.key = key;
+        this.label = label;
+        this.update = update;
+        if (this.update === null) {
+            this.update = function (event) {
+                _this.defaultUpdate(event);
+            };
+        }
+    }
+    ConfigItem.prototype.defaultUpdate = function (event) {
+        var el = event.target;
+        var eltype = el.getAttribute("type");
+        if (el instanceof HTMLInputElement && eltype === "checkbox") {
+            exports.config[this.key] = el.checked;
+        }
+        else if (el instanceof HTMLInputElement ||
+            el instanceof HTMLSelectElement) {
+            exports.config[this.key] = el.value;
+        }
     };
-    Widget.prototype.askSynapse = function () {
+    ConfigItem.prototype.setView = function (element) {
+        element.value = exports.config[this.key];
+    };
+    return ConfigItem;
+}());
+exports.ConfigItem = ConfigItem;
+var CheckboxItem = /** @class */ (function (_super) {
+    __extends(CheckboxItem, _super);
+    function CheckboxItem() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    CheckboxItem.prototype.setView = function (element) {
+        if (element instanceof HTMLInputElement) {
+            element.checked = exports.config[this.key];
+        }
+    };
+    return CheckboxItem;
+}(ConfigItem));
+exports.CheckboxItem = CheckboxItem;
+var ComboboxItem = /** @class */ (function (_super) {
+    __extends(ComboboxItem, _super);
+    function ComboboxItem(key, label, options, update, help) {
+        if (update === void 0) { update = null; }
+        if (help === void 0) { help = null; }
+        var _this = _super.call(this, key, label, update, help) || this;
+        _this.options = options;
+        return _this;
+    }
+    return ComboboxItem;
+}(ConfigItem));
+exports.ComboboxItem = ComboboxItem;
+var TextItem = /** @class */ (function (_super) {
+    __extends(TextItem, _super);
+    function TextItem(key, label, update, help, attributes) {
+        if (update === void 0) { update = null; }
+        if (help === void 0) { help = null; }
+        if (attributes === void 0) { attributes = {}; }
+        var _this = _super.call(this, key, label, update, help) || this;
+        _this.attributes = attributes;
+        _this.attributes["type"] = "text";
+        return _this;
+    }
+    return TextItem;
+}(ConfigItem));
+exports.TextItem = TextItem;
+var NumberItem = /** @class */ (function (_super) {
+    __extends(NumberItem, _super);
+    function NumberItem(key, label, unit, update, help, attributes) {
+        if (unit === void 0) { unit = ""; }
+        if (update === void 0) { update = null; }
+        if (help === void 0) { help = null; }
+        if (attributes === void 0) { attributes = {}; }
+        var _this = _super.call(this, key, label, update, help, attributes) || this;
+        _this.unit = unit;
+        _this.attributes["type"] = "number";
+        return _this;
+    }
+    return NumberItem;
+}(TextItem));
+exports.NumberItem = NumberItem;
+exports.configItems = [
+    new NumberItem("fontSize", "Font size", "%", null, "As a percentage of base size", {
+        "data-error": "Must be within 20–999 percent base size",
+        max: 999,
+        maxlength: 3,
+        min: 20,
+        required: true,
+        step: 1
+    }),
+    new CheckboxItem("zoomFonts", "Scale text when zooming"),
+    new CheckboxItem("aspectResize", "Fix aspect ratio of elements on canvas resize"),
+    new CheckboxItem("autoUpdate", "Automatically synchronize model with editor", function (event) {
+        var el = event.target;
+        exports.config["autoUpdate"] = el.checked;
+        // Also modify editor.updateTrigger?
+    }),
+    new CheckboxItem("transparentNets", "Expanded networks are transparent"),
+    new TextItem("scriptdir", "Script directory", null, "Enter a full absolute path, or '.' to use the current directory.", {
+        placeholder: "Current directory"
+    }),
+    new ComboboxItem("backend", "Select backend", ["nengo"])
+    // TODO: this.sim.simulatorOptions
+];
+var ConfigDialog = /** @class */ (function () {
+    function ConfigDialog() {
         var _this = this;
-        var modal = new modal_1.InputDialogView(String(this.synapse), "Synaptic filter time constant (in seconds)", "Input should be a non-negative number");
-        modal.title = "Set synaptic filter...";
-        modal.ok.addEventListener("click", function () {
-            var validator = $(modal).data("bs.validator");
+        this.saved = {};
+        this.view = new ConfigDialogView(exports.configItems);
+        this.view.ok.addEventListener("click", function () {
+            var validator = $(_this.view.form).data("bs.validator");
             validator.validate();
             if (validator.hasErrors() || validator.isIncomplete()) {
                 return;
             }
-            if (modal.input.value !== null) {
-                var newSynapse = parseFloat(modal.input.value);
-                if (newSynapse !== _this.synapse) {
-                    _this.synapse = newSynapse;
-                    // this.ws.send("synapse:" + this.synapse);
+            // Set the data-dismiss attribute and let event propagate
+            $(_this.view).modal("hide");
+        });
+        this.view.cancel.addEventListener("click", function () {
+            // Roll back any changes
+            Object.keys(_this.saved).forEach(function (option) {
+                if (exports.config[option] !== _this.saved[option]) {
+                    exports.config[option] = _this.saved[option];
                 }
-            }
-            $(modal).modal("hide");
+            });
         });
-        utils.handleTabs(modal);
-        $(modal).validator({
-            custom: {
-                ngvalidator: function (item) {
-                    return utils.isNum(item.value) && Number(item.value) >= 0;
+        this.view.configItems.forEach(function (configItem, i) {
+            // Allow the enter key to submit on text/number inputs
+            var inputType = configItem.getAttribute("type");
+            if (inputType === "text" || inputType === "number") {
+                configItem.addEventListener("keydown", function (event) {
+                    if (event.which === 13) {
+                        event.preventDefault();
+                        _this.view.ok.click();
+                    }
+                });
+            }
+            // All inputs get updated live
+            configItem.addEventListener("change", function (event) {
+                var validator = $(_this.view.form).data("bs.validator");
+                validator.validate();
+                if (!validator.hasErrors()) {
+                    exports.configItems[i].update(event);
                 }
-            }
+            });
         });
-        $(modal.root).on("hidden.bs.modal", function () {
-            document.body.removeChild(modal.root);
-        });
-        document.body.appendChild(modal.root);
-        modal.show();
-    };
-    Widget.prototype.reset = function () {
-        this.datastore.reset();
-    };
-    return Widget;
-}(ResizableComponent));
-exports.Widget = Widget;
-var Axis = /** @class */ (function () {
-    function Axis(xy, g, lim) {
-        this.scale = d3.scale.linear();
-        this.axis = d3.svg.axis();
-        this.axis.orient(xy === "X" ? "bottom" : "left");
-        this.axis.scale(this.scale);
-        this.g = d3.select(g);
-        this.lim = lim;
+        $(this.view.form).validator();
     }
-    Object.defineProperty(Axis.prototype, "lim", {
-        get: function () {
-            var lim = this.scale.domain();
-            console.assert(lim.length === 2);
-            return lim;
-        },
-        set: function (val) {
-            this.scale.domain(val);
-            this.axis.tickValues(val);
-            this.axis(this.g);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Axis.prototype, "pixelLim", {
-        get: function () {
-            var scale = this.scale.range();
-            console.assert(scale.length === 2);
-            return scale;
-        },
-        set: function (val) {
-            this.scale.range(val);
-            this.axis(this.g);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Axis.prototype, "tickSize", {
-        get: function () {
-            return this.axis.outerTickSize();
-        },
-        set: function (val) {
-            // .tickPadding(val * 0.5)
-            this.axis.outerTickSize(val);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Axis.prototype.pixelAt = function (value) {
-        return this.scale(value);
-    };
-    Axis.prototype.valueAt = function (pixel) {
-        return this.scale.invert(pixel);
-    };
-    return Axis;
-}());
-exports.Axis = Axis;
-var Axes = /** @class */ (function () {
-    // TODO: have left xtick disappear if too close to right xtick?
-    // TODO: probably don't have width, height passed in? get from view?
-    function Axes(valueView, width, height, xlim, ylim) {
-        if (xlim === void 0) { xlim = [-0.5, 0.0]; }
-        if (ylim === void 0) { ylim = [-1, 1]; }
+    ConfigDialog.prototype.show = function () {
         var _this = this;
-        this.view = valueView.axes;
-        this._width = width;
-        this._height = height;
-        // TODO: better initial values for x?
-        this.x = new Axis("X", this.view.x.g, xlim);
-        this.y = new Axis("Y", this.view.y.g, ylim);
-        // Set up mouse handlers for crosshairs
-        valueView.overlay.addEventListener("mouseover", function () {
-            _this.view.crosshair.visible = true;
+        // Save values from before showing the modal for restoring after cancel
+        for (var option in exports.config) {
+            var vType = typeof exports.config[option];
+            if (vType === "number" ||
+                vType === "boolean" ||
+                vType === "string") {
+                this.saved[option] = exports.config[option];
+            }
+        }
+        // Set values as of current config state
+        exports.configItems.forEach(function (configItem, i) {
+            configItem.setView(_this.view.configItems[i]);
         });
-        valueView.overlay.addEventListener("mouseout", function () {
-            _this.view.crosshair.visible = false;
-        });
-        valueView.overlay.addEventListener("mousemove", function (event) {
-            var _a = valueView.pos, offsetX = _a[0], offsetY = _a[1];
-            var _b = [event.x - offsetX, event.y - offsetY], x = _b[0], y = _b[1];
-            _this.view.crosshair.pos = [x, y];
-            _this.view.crosshair.value = [_this.x.valueAt(x), _this.y.valueAt(y)];
-        });
-        // TODO: previosly, we hid on mouse wheel... should we?
-        // this.view.root.addEventListener("mousewheel", () => {
-        //     this.view.crosshairPos = ;
-        // });
-    }
-    Object.defineProperty(Axes.prototype, "height", {
-        get: function () {
-            return this._height;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Axes.prototype, "padding", {
-        get: function () {
-            return [5, 5];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Axes.prototype, "scale", {
-        set: function (val) {
-            this._width = Math.max(Axes.minWidth, val[0]);
-            this._height = Math.max(Axes.minHeight, val[1]);
-            var _a = this.view.x.scale, xWidth = _a[0], xHeight = _a[1];
-            var _b = this.view.y.scale, yWidth = _b[0], yHeight = _b[1];
-            // TOOD: why 0 and not yWidth?
-            this.view.x.pos = [0, this._height - xHeight];
-            this.x.pixelLim = [yWidth, this._width];
-            this.view.y.pos = [yWidth, 0];
-            this.y.pixelLim = [this._height - xHeight, 0];
-            this.view.crosshair.scale = [this._width, this._height - xHeight];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Axes.prototype, "width", {
-        get: function () {
-            return this._width;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Axes.prototype.ondomadd = function () {
-        this.scale = [this._width, this._height];
-        var yWidth = this.view.y.scale[0];
-        this.view.crosshair.offset = [0, yWidth];
-        this.x.tickSize = 0.4 * yWidth;
-        this.y.tickSize = 0.4 * yWidth;
+        var validator = $(this.view.form).data("bs.validator");
+        validator.validate();
+        this.view.show();
     };
-    // TODO: what should these actually be?
-    Axes.minHeight = 20;
-    Axes.minWidth = 20;
-    return Axes;
+    return ConfigDialog;
 }());
-exports.Axes = Axes;
-var Plot = /** @class */ (function (_super) {
-    __extends(Plot, _super);
-    function Plot(uid, left, top, width, height, dimensions, synapse, xlim, ylim) {
-        if (xlim === void 0) { xlim = [-0.5, 0]; }
-        if (ylim === void 0) { ylim = [-1, 1]; }
-        var _this = _super.call(this, uid, left, top, width, height, dimensions, synapse) || this;
-        _this.synapse = synapse;
-        _this.addAxes(width, height, xlim, ylim);
-        _this.interactRoot.on("resizemove", function (event) {
-            // Resizing the view happens in the superclass; we update axes here
-            var _a = _this.view.scale, vWidth = _a[0], wHeight = _a[1];
-            _this.axes.scale = [
-                vWidth * _this.scaleToPixels,
-                wHeight * _this.scaleToPixels
-            ];
-            _this.syncWithDataStore();
-        });
-        window.addEventListener("TimeSlider.moveShown", utils.throttle(function (e) {
-            _this.xlim = e.detail.shownTime;
-        }, 50) // Update once every 50 ms
-        );
-        window.addEventListener("SimControl.reset", function (e) {
-            _this.reset();
-        });
+exports.ConfigDialog = ConfigDialog;
+var ConfigDialogView = /** @class */ (function (_super) {
+    __extends(ConfigDialogView, _super);
+    function ConfigDialogView(configItems) {
+        var _this = _super.call(this) || this;
+        var checkboxGroup = function (configItem) {
+            return maquette_1.h("div.form-group.checkbox", [
+                maquette_1.h("label.control-label", [
+                    maquette_1.h("input", {
+                        type: "checkbox"
+                    }),
+                    configItem.label
+                ]),
+                maquette_1.h("span.help-block.with-errors", [configItem.help])
+            ]);
+        };
+        var comboboxGroup = function (configItem) {
+            return maquette_1.h("div.form-group", [
+                maquette_1.h("label.control-label", [
+                    configItem.label,
+                    maquette_1.h("select.form-control", configItem.options)
+                ]),
+                maquette_1.h("span.help-block.with-errors", [configItem.help])
+            ]);
+        };
+        var numberGroup = function (configItem) {
+            return maquette_1.h("div.form-group", [
+                maquette_1.h("label.control-label", [
+                    configItem.label,
+                    maquette_1.h("div.input-group.col-xs-3", [
+                        maquette_1.h("input.form-control", configItem.attributes),
+                        maquette_1.h("span.input-group-addon", [configItem.unit])
+                    ])
+                ]),
+                maquette_1.h("span.help-block.with-errors", [configItem.help])
+            ]);
+        };
+        var textGroup = function (configItem) {
+            return maquette_1.h("div.form-group", [
+                maquette_1.h("label.control-label", [
+                    configItem.label,
+                    maquette_1.h("input.form-control", configItem.attributes)
+                ]),
+                maquette_1.h("span.help-block.with-errors", [configItem.help])
+            ]);
+        };
+        var node = maquette_1.h("form.form-horizontal", [
+            configItems.map(function (configItem) {
+                if (configItem instanceof CheckboxItem) {
+                    return checkboxGroup(configItem);
+                }
+                else if (configItem instanceof ComboboxItem) {
+                    return comboboxGroup(configItem);
+                }
+                else if (configItem instanceof NumberItem) {
+                    // Must check NumberItem first as it extends TextItem
+                    return numberGroup(configItem);
+                }
+                else if (configItem instanceof TextItem) {
+                    return textGroup(configItem);
+                }
+                else {
+                    throw new TypeError("ConfigItem not recognized.");
+                }
+            })
+        ]);
+        _this.form = maquette_1.dom.create(node).domNode;
+        _this.body.appendChild(_this.form);
+        _this.title = "Configure options";
+        _this.ok = _this.addFooterButton("OK");
+        _this.cancel = _this.addCloseButton("Cancel");
+        var groups = _this.body.getElementsByClassName("form-group");
+        _this.configItems = [];
+        for (var i = 0; i < groups.length; i++) {
+            _this.configItems[i] = groups[i].querySelector("input");
+            if (_this.configItems[i] === null) {
+                _this.configItems[i] = groups[i].querySelector("select");
+            }
+            console.assert(_this.configItems[i] !== null);
+        }
         return _this;
     }
-    Object.defineProperty(Plot.prototype, "legendLabels", {
-        get: function () {
-            return this.view.legendLabels;
-        },
-        set: function (val) {
-            this.view.legendLabels = val;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Plot.prototype, "legendVisible", {
-        get: function () {
-            return this.view.legendVisible;
-        },
-        set: function (val) {
-            this.view.legendVisible = val;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Plot.prototype, "xlim", {
-        get: function () {
-            return this.axes.x.lim;
-        },
-        set: function (val) {
-            this.axes.x.lim = val;
-            this.syncWithDataStore();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Plot.prototype, "ylim", {
-        get: function () {
-            return this.axes.y.lim;
-        },
-        set: function (val) {
-            this.axes.y.lim = val;
-            this.syncWithDataStore();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Plot.prototype.addAxes = function (width, height, xlim, ylim) {
-        this.axes = new Axes(this.view, width, height, xlim, ylim);
-    };
-    Plot.prototype.addMenuItems = function () {
+    ConfigDialogView.prototype.show = function () {
         var _this = this;
-        this.menu.addAction("Hide legend", function () {
-            _this.legendVisible = false;
-        }, function () { return _this.legendVisible; });
-        this.menu.addAction("Show legend", function () {
-            _this.legendVisible = true;
-        }, function () { return !_this.legendVisible; });
-        // TODO: give the legend its own context menu
-        this.menu.addAction("Set legend labels", function () {
-            _this.askLegend();
-        }, function () { return _this.legendVisible; });
-        this.menu.addSeparator();
-        _super.prototype.addMenuItems.call(this);
-    };
-    Plot.prototype.askLegend = function () {
-        var _this = this;
-        var modal = new modal_1.InputDialogView("Legend labels", "New value");
-        modal.title = "Enter comma separated legend labels";
-        modal.ok.addEventListener("click", function () {
-            var labelCSV = modal.input.value;
-            // No validation to do.
-            // Empty entries assumed to be indication to skip modification.
-            // Long strings okay.
-            // Excissive entries get ignored.
-            // TODO: Allow escaping of commas
-            if (labelCSV !== null && labelCSV !== "") {
-                _this.legendLabels = labelCSV.split(",").map(function (s) { return s.trim(); });
-            }
-            $(modal).modal("hide");
+        $(this.root).modal("show");
+        $(this.root).on("shown.bs.modal", function () {
+            _this.configItems[0].focus();
         });
-        utils.handleTabs(modal);
-        $(modal.root).on("hidden.bs.modal", function () {
-            document.body.removeChild(modal.root);
-        });
-        document.body.appendChild(modal.root);
-        modal.show();
     };
-    Plot.prototype.ondomadd = function () {
-        _super.prototype.ondomadd.call(this);
-        this.axes.ondomadd();
-    };
-    return Plot;
-}(Widget));
-exports.Plot = Plot;
+    return ConfigDialogView;
+}(modal_1.ModalView));
+exports.ConfigDialogView = ConfigDialogView;
 
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 7 */
+/* 8 */
 /* no static exports found */
 /* all exports used */
-/*!*************************************************!*\
-  !*** ./nengo_gui/static/components/registry.ts ***!
-  \*************************************************/
+/*!**********************************!*\
+  !*** ./nengo_gui/static/menu.ts ***!
+  \**********************************/
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+/**
+ * Create a menu that will appear inside the given div
+ *
+ * Each element that has a menu makes a call to Menu constructor
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ComponentRegistry = {};
-function registerComponent(name, compClass) {
-    exports.ComponentRegistry[name] = compClass;
-}
-exports.registerComponent = registerComponent;
-function createComponent(name) {
-    var args = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        args[_i - 1] = arguments[_i];
+var maquette_1 = __webpack_require__(/*! maquette */ 1);
+__webpack_require__(/*! ./menu.css */ 92);
+var utils = __webpack_require__(/*! ./utils */ 2);
+var MenuAction = /** @class */ (function () {
+    function MenuAction(element, active) {
+        if (active === void 0) { active = null; }
+        this.element = element;
+        this.active = active;
     }
-    return new ((_a = exports.ComponentRegistry[name]).bind.apply(_a, [void 0].concat(args)))();
-    var _a;
-}
-exports.createComponent = createComponent;
+    MenuAction.prototype.isActive = function () {
+        if (this.active === null) {
+            return true;
+        }
+        else {
+            return this.active();
+        }
+    };
+    return MenuAction;
+}());
+exports.MenuAction = MenuAction;
+var Menu = /** @class */ (function () {
+    function Menu() {
+        this.actions = [];
+        this.view = new MenuView();
+    }
+    Menu.prototype.addAction = function (label, callback, active) {
+        if (active === void 0) { active = null; }
+        var element = this.view.addAction(label);
+        element.addEventListener("click", function (event) {
+            callback(event);
+            Menu.hideShown();
+        });
+        element.addEventListener("contextmenu", function (event) {
+            event.preventDefault();
+            callback(event);
+            Menu.hideShown();
+        });
+        this.actions.push(new MenuAction(element, active));
+    };
+    Menu.prototype.addHeader = function (label) {
+        this.view.addHeader(label);
+    };
+    Menu.prototype.addSeparator = function () {
+        this.view.addSeparator();
+    };
+    /**
+     * Show this menu at the given (x,y) location.
+     *
+     * Automatically hides any menu with the same parent.
+     *
+     * Called by a listener from netgraph.js
+     */
+    Menu.prototype.show = function (x, y) {
+        var _this = this;
+        // TODO: have to get toolbar height somehow...
+        // For now, we know it's always 35 px
+        var toolbarHeight = 35;
+        var correctedY = y - toolbarHeight;
+        var h = this.view.height;
+        var w = this.view.width;
+        // TODO: mainH and mainW: get from viewport...?
+        var mainH = 600;
+        var mainW = 600;
+        if (correctedY + h > mainH) {
+            y = mainH - h;
+        }
+        if (x + w > mainW) {
+            x = mainW - w;
+        }
+        Menu.hideShown();
+        this.actions.forEach(function (action, i) {
+            if (action.isActive()) {
+                _this.view.showAction(action.element);
+            }
+            else {
+                _this.view.hideAction(action.element);
+            }
+        });
+        this.view.show(x, y);
+        document.body.appendChild(this.view.root);
+        Menu.shown = this;
+    };
+    Menu.shown = null;
+    Menu.hideShown = utils.debounce(function () {
+        if (Menu.shown !== null) {
+            document.body.removeChild(Menu.shown.view.root);
+            Menu.shown = null;
+        }
+    }, 50, { immediate: true });
+    return Menu;
+}());
+exports.Menu = Menu;
+var MenuView = /** @class */ (function () {
+    function MenuView() {
+        var node = maquette_1.h("div.menu", [maquette_1.h("ul.dropdown-menu", { role: "menu" })]);
+        this.root = maquette_1.dom.create(node).domNode;
+        this.menu = this.root.firstChild;
+    }
+    Object.defineProperty(MenuView.prototype, "height", {
+        get: function () {
+            return this.root.offsetHeight;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(MenuView.prototype, "width", {
+        get: function () {
+            return this.root.offsetWidth;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    MenuView.prototype.addAction = function (label) {
+        var node = maquette_1.h("li", [maquette_1.h("a.menu-item", { href: "#" }, [label])]);
+        var li = maquette_1.dom.create(node).domNode;
+        this.menu.appendChild(li);
+        return li;
+    };
+    MenuView.prototype.addHeader = function (label) {
+        var node = maquette_1.h("li.dropdown-header", [label]);
+        this.menu.appendChild(maquette_1.dom.create(node).domNode);
+    };
+    MenuView.prototype.addSeparator = function () {
+        var node = maquette_1.h("li.divider", { role: "separator" });
+        this.menu.appendChild(maquette_1.dom.create(node).domNode);
+    };
+    MenuView.prototype.hideAction = function (element) {
+        element.style.display = "none";
+    };
+    MenuView.prototype.showAction = function (element) {
+        element.style.display = null;
+    };
+    MenuView.prototype.show = function (x, y) {
+        this.root.style.left = x + "px";
+        this.root.style.top = y + "px";
+        this.root.style.zIndex = String(utils.nextZindex());
+    };
+    return MenuView;
+}());
+exports.MenuView = MenuView;
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /* no static exports found */
 /* all exports used */
 /*!***********************************************!*\
@@ -12378,7 +12456,7 @@ exports.createComponent = createComponent;
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAHtSURBVDjLjZM9T9tQFIYpQ5eOMBKlW6eWIQipa8RfQKQghEAKqZgKFQgmFn5AWyVDCipVQZC2EqBWlEqdO2RCpAssQBRsx1+1ndix8wFvfW6wcUhQsfTI0j33PD7n+N4uAF2E+/S5RFwG/8Njl24/LyCIOI6j1+v1y0ajgU64cSSTybdBSVAwSMmmacKyLB/DMKBpGkRRZBJBEJBKpXyJl/yABLTBtm1Uq1X2JsrlMnRdhyRJTFCpVEAfSafTTUlQoFs1luxBAkoolUqQZbmtJTYTT/AoHInOfpcwtVtkwcSBgrkDGYph+60oisIq4Xm+VfB0+U/P0Lvj3NwPGfHPTcHMvoyFXwpe7UmQtAqTUCU0D1VVbwTPVk5jY19Fe3ZfQny7CE51WJDXqpjeEUHr45ki9rIqa4dmQiJfMLItGEs/FcQ2ucbRmdnSYy5vYWyLx/w3EaMfLmBaDpMQvuDJ65PY8Dpnz3wpYmLtApzcrIAqmfrEgdZH1grY/a36w6Xz0DKD8ES25/niYS6+wWE8mWfByY8cXmYEJFYLkHUHtVqNQcltAvoLD3v7o/FUHsNvzlnwxfsCEukC/ho3yUHaBN5Buo17Ojtyl+DqrnvQgUtfcC0ZcAdkUeA+ye7eMru9AUGIJPe4zh509UP/AAfNypi8oj/mAAAAAElFTkSuQmCC"
 
 /***/ }),
-/* 9 */
+/* 10 */
 /* no static exports found */
 /* all exports used */
 /*!***********************************!*\
@@ -18366,12 +18444,12 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /* no static exports found */
 /* all exports used */
-/*!***************************************************!*\
-  !*** ./nengo_gui/static/components/views/base.ts ***!
-  \***************************************************/
+/*!**************************************************!*\
+  !*** ./nengo_gui/static/components/component.ts ***!
+  \**************************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18387,15 +18465,299 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+var interact = __webpack_require__(/*! interact.js */ 10);
 var maquette_1 = __webpack_require__(/*! maquette */ 1);
-var views_1 = __webpack_require__(/*! ../../views/views */ 16);
-__webpack_require__(/*! ./base.css */ 94);
-var utils = __webpack_require__(/*! ../../utils */ 2);
+var menu_1 = __webpack_require__(/*! ../menu */ 8);
+var utils = __webpack_require__(/*! ../utils */ 2);
+var Component = /** @class */ (function () {
+    function Component(server, uid, left, top, dimensions) {
+        var _this = this;
+        this._view = null;
+        this.syncWithView = utils.throttle(function () {
+            var _a = _this.view.pos, left = _a[0], top = _a[1];
+            _this._left = left / _this.scaleToPixels;
+            _this._top = top / _this.scaleToPixels;
+        }, 20);
+        this.server = server;
+        this.uid = uid;
+        this._left = left;
+        this._top = top;
+        this.dimensions = dimensions;
+        this.menu = new menu_1.Menu();
+        this.addMenuItems();
+        // TODO: nesting
+        // if (parent !== null) {
+        //     this.view.parent.children.push(this);
+        // }
+        this.interactRoot = interact(this.view.overlay);
+        // TODO: Dicuss: previously, only plots had inertia. Should they all?
+        this.interactRoot.draggable({ inertia: true });
+        this.interactRoot.on("dragmove", function (event) {
+            var _a = _this.view.pos, vLeft = _a[0], vTop = _a[1];
+            _this.view.pos = [vLeft + event.dx, vTop + event.dy];
+            // TODO: redraw
+            // this.redraw();
+        });
+        this.interactRoot.on("dragstart", function () {
+            menu_1.Menu.hideShown();
+        });
+        this.interactRoot.on("dragend", function () {
+            _this.syncWithView();
+        });
+        // --- Menu
+        var toggleMenu = function (event) {
+            if (menu_1.Menu.shown !== null) {
+                menu_1.Menu.hideShown();
+            }
+            else {
+                _this.menu.show(event.clientX, event.clientY);
+            }
+            event.stopPropagation();
+        };
+        this.interactRoot.on("hold", function (event) {
+            if (event.button === 0) {
+                toggleMenu(event);
+            }
+        });
+        // this.interactRoot.on("tap doubletap", (event) => {
+        //     Menu.hideShown();
+        // });
+        this.interactRoot.on("contextmenu", function (event) {
+            event.preventDefault();
+            toggleMenu(event);
+        });
+    }
+    Object.defineProperty(Component.prototype, "labelVisible", {
+        get: function () {
+            return this.view.labelVisible;
+        },
+        set: function (val) {
+            this.view.labelVisible = val;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Component.prototype, "left", {
+        get: function () {
+            return this._left;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Component.prototype, "scaleToPixels", {
+        get: function () {
+            return this._scaleToPixels;
+        },
+        set: function (val) {
+            this._scaleToPixels = val;
+            this.view.pos = [this._left * val, this._top * val];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Component.prototype, "top", {
+        get: function () {
+            return this._top;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Component.prototype, "scales", {
+        // get screenLocation() {
+        //     const ngDims = this.ng.rect();
+        //     let parentShiftX = 0;
+        //     let parentShiftY = 0;
+        //     let parent = this.parent;
+        //     while (parent !== null) {
+        //         parentShiftX = ((parentShiftX * parent.view.width * 2)
+        //                             + (parent.view.x - parent.view.width));
+        //         parentShiftY = ((parentShiftY * parent.view.height * 2)
+        //                             + (parent.view.y - parent.view.height));
+        //         parent = parent.view.parent;
+        //     }
+        //     parentShiftX *= ngDims.w;
+        //     parentShiftY *= ngDims.h;
+        //     let wScale = ngDims.w;
+        //     let hScale = ngDims.h;
+        //     if (this.parent !== null) {
+        //         wScale *= this.parent.view.nestedWidth * 2;
+        //         hScale *= this.parent.view.nestedHeight * 2;
+        //     }
+        //     return [this.x * wScale + parentShiftX + ngDims.offsetX,
+        //             this.y * hScale + parentShiftY + ngDims.offsetY];
+        // }
+        get: function () {
+            // let hScale = this.ng.scaledWidth;
+            // let vScale = this.ng.scaledHeight;
+            // let parent = this.parent;
+            // while (parent !== null) {
+            //     hScale *= parent.view.width * 2;
+            //     vScale *= parent.view.height * 2;
+            //     parent = parent.view.parent;
+            // }
+            // console.assert(!isNaN(hScale));
+            // console.assert(!isNaN(vScale));
+            // return {hor: hScale, vert: vScale};
+            return "todo";
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Component.prototype.addMenuItems = function () { };
+    // TODO: constrainPosition
+    // constrainPosition() {
+    //     if (this.parent !== null) {
+    //         this.width = Math.min(0.5, this.width);
+    //         this.height = Math.min(0.5, this.height);
+    //         this.x = Math.min(this.x, 1.0 - this.width);
+    //         this.x = Math.max(this.x, this.width);
+    //         this.y = Math.min(this.y, 1.0 - this.height);
+    //         this.y = Math.max(this.y, this.height);
+    //     }
+    // }
+    Component.prototype.requestFeedforwardLayout = function () {
+        // this.ng.notify("feedforwardLayout", {uid: this.uid});
+    };
+    Component.prototype.remove = function () {
+        // Remove the item from the parent's children list
+        // if (this.view.parent !== null) {
+        //     const index = this.view.parent.children.indexOf(this);
+        //     this.view.parent.children.splice(index, 1);
+        // }
+        // super.remove();
+        // this.miniItem.remove();
+    };
+    // TODO: rename to createComponent?
+    Component.prototype.createGraph = function (graphType, args) {
+        if (args === void 0) { args = null; }
+        // tslint:disable-line
+        // TODO: get nested implemented this
+        // const w = this.nestedWidth;
+        // const h = this.nestedHeight;
+        // const pos = this.view.screenLocation;
+        var w = this.view.width;
+        var h = this.view.height;
+        // TODO: implement an interface for this and rename it
+        var info = {};
+        if (args !== null) {
+            info.args = args;
+        }
+        if (info.type === "Slider") {
+            info.width /= 2;
+        }
+        // TODO: change this to an actual function call
+        // this.ng.notify("createGraph", info);
+    };
+    Component.prototype.ondomadd = function () {
+        this.view.ondomadd();
+        this.scaleToPixels = 1; // TODO: get from somewhere
+    };
+    Component.prototype.onnetadd = function (network) {
+        this.interactRoot.draggable({
+            restrict: { restriction: network.view.root }
+        });
+    };
+    Component.prototype.onnetgraphadd = function (netgraph) { };
+    return Component;
+}());
+exports.Component = Component;
+var ResizableComponent = /** @class */ (function (_super) {
+    __extends(ResizableComponent, _super);
+    // TODO: Add all things to constructor
+    function ResizableComponent(server, uid, left, top, width, height, dimensions) {
+        var _this = _super.call(this, server, uid, left, top, dimensions) || this;
+        _this._height = height;
+        _this._width = width;
+        _this.interactRoot.resizable(_this.resizeOptions);
+        _this.interactRoot.on("resizestart", function (event) {
+            menu_1.Menu.hideShown();
+        });
+        _this.interactRoot.on("resizemove", function (event) {
+            var dRect = event.deltaRect;
+            var _a = _this.view.pos, vLeft = _a[0], vTop = _a[1];
+            var _b = _this.view.scale, vWidth = _b[0], vHeight = _b[1];
+            _this.view.pos = [vLeft + dRect.left, vTop + dRect.top];
+            _this.view.scale = [vWidth + dRect.width, vHeight + dRect.height];
+            // this.view.contSize(event);
+            // this.redraw();
+        });
+        _this.interactRoot.on("resizeend", function (event) {
+            var _a = _this.view.scale, vWidth = _a[0], vHeight = _a[1];
+            _this._width = vWidth / _this.scaleToPixels;
+            _this._height = vHeight / _this.scaleToPixels;
+            // this.view.constrainPosition();
+            // this.redraw();
+            // TODO: turn this into an actual function call
+            // this.ng.notify("posSize", {
+            //     height: this.view.height,
+            //     uid: this.uid,
+            //     width: this.view.width,
+            //     x: this.view.x,
+            //     y: this.view.y,
+            // });
+        });
+        return _this;
+    }
+    Object.defineProperty(ResizableComponent.prototype, "height", {
+        get: function () {
+            return this._height;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ResizableComponent.prototype, "resizeOptions", {
+        get: function () {
+            return ResizableComponent.resizeOptions;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ResizableComponent.prototype, "scaleToPixels", {
+        get: function () {
+            return this._scaleToPixels;
+        },
+        set: function (val) {
+            this._scaleToPixels = val;
+            this.view.pos = [this._left * val, this._top * val];
+            this.view.scale = [this._width * val, this._height * val];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ResizableComponent.prototype, "width", {
+        get: function () {
+            return this._width;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ResizableComponent.prototype.onnetadd = function (network) {
+        this.interactRoot.resizable({
+            restrict: { restriction: network.view.root }
+        });
+        _super.prototype.onnetadd.call(this, network);
+    };
+    ResizableComponent.resizeOptions = {
+        edges: { bottom: true, left: true, right: true, top: true },
+        invert: "none",
+        margin: 10
+        // restrict: {
+        //     restriction: {
+        //         bottom: 600,
+        //         left: 0,
+        //         right: 600,
+        //         top: 0,
+        //     }
+        // }
+    };
+    return ResizableComponent;
+}(Component));
+exports.ResizableComponent = ResizableComponent;
 var ComponentView = /** @class */ (function () {
     function ComponentView(label) {
         var node = maquette_1.h("g", { transform: "translate(0,0)" }, [
             maquette_1.h("text", { transform: "translate(0,0)" }, [label]),
-            maquette_1.h("rect.overlay"),
+            maquette_1.h("rect.overlay")
         ]);
         // Create the SVG group to hold this item's shape and it's label
         this.root = utils.domCreateSVG(node);
@@ -18453,24 +18815,24 @@ var ComponentView = /** @class */ (function () {
         get: function () {
             return [
                 Number(this.overlay.getAttribute("width")),
-                Number(this.overlay.getAttribute("height")),
+                Number(this.overlay.getAttribute("height"))
             ];
         },
         set: function (val) {
             var width = val[0], height = val[1];
             this.overlay.setAttribute("width", "" + width);
             this.overlay.setAttribute("height", "" + height);
-            views_1.setTranslate(this._label, width * 0.5, height + ComponentView.labelPad);
+            utils.setTranslate(this._label, width * 0.5, height + ComponentView.labelPad);
         },
         enumerable: true,
         configurable: true
     });
     Object.defineProperty(ComponentView.prototype, "pos", {
         get: function () {
-            return views_1.getTranslate(this.root);
+            return utils.getTranslate(this.root);
         },
         set: function (val) {
-            views_1.setTranslate(this.root, val[0], val[1]);
+            utils.setTranslate(this.root, val[0], val[1]);
         },
         enumerable: true,
         configurable: true
@@ -18525,829 +18887,10 @@ var ResizableComponentView = /** @class */ (function (_super) {
     return ResizableComponentView;
 }(ComponentView));
 exports.ResizableComponentView = ResizableComponentView;
-var Crosshair = /** @class */ (function () {
-    function Crosshair() {
-        var crosshair = function (xy) {
-            return maquette_1.h("g.crosshair.crosshair" + xy, { styles: { display: "none" } }, [
-                maquette_1.h("line", { x1: "0", x2: "0", y1: "0", y2: "0" }),
-                maquette_1.h("text", { x: "0", y: "0" }, ["0.000"]),
-            ]);
-        };
-        this.x = utils.domCreateSVG(crosshair("X"));
-        this.y = utils.domCreateSVG(crosshair("Y"));
-        this.xLine = this.x.querySelector("line");
-        this.xText = this.x.querySelector("text");
-        this.yLine = this.y.querySelector("line");
-        this.yText = this.y.querySelector("text");
-    }
-    Object.defineProperty(Crosshair.prototype, "offset", {
-        get: function () {
-            return [
-                Number(this.xLine.getAttribute("y1")),
-                Number(this.yLine.getAttribute("x1")),
-            ];
-        },
-        set: function (val) {
-            this.xLine.setAttribute("y1", String(val[0]));
-            this.yLine.setAttribute("x1", String(val[1]));
-            this.yText.setAttribute("x", String(val[1])); //
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Crosshair.prototype, "pos", {
-        get: function () {
-            return [
-                Number(this.xLine.getAttribute("x1")),
-                Number(this.yLine.getAttribute("y1")),
-            ];
-        },
-        set: function (val) {
-            this.xLine.setAttribute("x1", String(val[0]));
-            this.xLine.setAttribute("x2", String(val[0]));
-            this.yLine.setAttribute("y1", String(val[1]));
-            this.yLine.setAttribute("y2", String(val[1]));
-            this.xText.setAttribute("x", String(val[0]));
-            this.yText.setAttribute("y", String(val[1]));
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Crosshair.prototype, "scale", {
-        get: function () {
-            return [
-                Number(this.yLine.getAttribute("x2")),
-                Number(this.xLine.getAttribute("y2")),
-            ];
-        },
-        set: function (val) {
-            this.yLine.setAttribute("x2", String(val[0]));
-            this.xLine.setAttribute("y2", String(val[1]));
-            this.xText.setAttribute("y", String(val[1]));
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Crosshair.prototype, "value", {
-        get: function () {
-            return [
-                Number(this.xText.textContent),
-                Number(this.yText.textContent),
-            ];
-        },
-        set: function (val) {
-            this.xText.textContent = val[0].toFixed(3);
-            this.yText.textContent = val[1].toFixed(3);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Crosshair.prototype, "visible", {
-        get: function () {
-            return this.x.style.display !== "none";
-        },
-        set: function (val) {
-            if (val) {
-                this.x.style.display = "";
-                this.y.style.display = "";
-            }
-            else {
-                this.x.style.display = "none";
-                this.y.style.display = "none";
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return Crosshair;
-}());
-exports.Crosshair = Crosshair;
-var Axis = /** @class */ (function () {
-    function Axis(xy) {
-        var node = maquette_1.h("g.axis.axis" + xy + ".unselectable", {
-            transform: "translate(0,0)",
-        });
-        this.g = utils.domCreateSVG(node);
-        this.orientation = xy === "X" ? "horizontal" : "vertical";
-    }
-    Object.defineProperty(Axis.prototype, "pos", {
-        get: function () {
-            return views_1.getTranslate(this.g);
-        },
-        set: function (val) {
-            views_1.setTranslate(this.g, val[0], val[1]);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Axis.prototype, "scale", {
-        get: function () {
-            var bbox = this.g.getBBox();
-            return [bbox.width, bbox.height];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return Axis;
-}());
-exports.Axis = Axis;
-var AxesView = /** @class */ (function () {
-    function AxesView() {
-        var node = maquette_1.h("g.axes");
-        this.root = utils.domCreateSVG(node);
-        this.x = new Axis("X");
-        this.y = new Axis("Y");
-        this.root.appendChild(this.x.g);
-        this.root.appendChild(this.y.g);
-        this.crosshair = new Crosshair();
-        this.root.appendChild(this.crosshair.x);
-        this.root.appendChild(this.crosshair.y);
-    }
-    Object.defineProperty(AxesView.prototype, "fontSize", {
-        get: function () {
-            // TODO: Number doesn't work here so we use parseFloat, but feels bad
-            return parseFloat(window.getComputedStyle(this.root)["font-size"]);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(AxesView.prototype, "scale", {
-        get: function () {
-            var _a = this.x.scale, xWidth = _a[0], xHeight = _a[1];
-            var _b = this.y.scale, yWidth = _b[0], yHeight = _b[1];
-            return [xWidth + yWidth, xHeight + yHeight];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return AxesView;
-}());
-exports.AxesView = AxesView;
-var LegendView = /** @class */ (function () {
-    function LegendView(colors) {
-        this._labels = [];
-        this._legendItems = [];
-        this._values = [];
-        this.colors = colors;
-        var dimensions = this.colors.length;
-        var node = maquette_1.h("g.legend", { transform: "translate(0,0)" });
-        this.root = utils.domCreateSVG(node);
-        this.numLabels = this.colors.length;
-        this.labels = [];
-    }
-    Object.defineProperty(LegendView.prototype, "labels", {
-        get: function () {
-            return this._labels.map(function (label) { return label.textContent; });
-        },
-        set: function (val) {
-            this._labels.forEach(function (label, i) {
-                if (i >= val.length) {
-                    label.textContent = "Dimension " + (i + 1);
-                }
-                else {
-                    label.textContent = val[i];
-                }
-            });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LegendView.prototype, "numLabels", {
-        get: function () {
-            return this._legendItems.length;
-        },
-        set: function (val) {
-            while (this._legendItems.length - val < 0) {
-                this.addLabel();
-            }
-            while (this._legendItems.length - val > 0) {
-                this.removeLabel();
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LegendView.prototype, "pos", {
-        get: function () {
-            return views_1.getTranslate(this.root);
-        },
-        set: function (val) {
-            views_1.setTranslate(this.root, val[0], val[1]);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LegendView.prototype, "valuesVisible", {
-        get: function () {
-            return this._values[0].style.display !== "none";
-        },
-        set: function (val) {
-            this._values.forEach(function (value) {
-                value.style.display = val ? null : "none";
-            });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LegendView.prototype, "values", {
-        set: function (val) {
-            console.assert(val.length === this.numLabels);
-            this._values.forEach(function (value, i) {
-                value.textContent = val[i].toFixed(2);
-            });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    LegendView.prototype.addLabel = function () {
-        var i = this._legendItems.length;
-        var node = maquette_1.h("g.legend-item", [
-            maquette_1.h("rect", {
-                fill: this.colors[i % this.colors.length],
-                height: "10",
-                width: "10",
-                y: "" + i * 20,
-            }),
-            maquette_1.h("text.label", {
-                x: "15",
-                y: "" + (i * 20 + 9),
-            }),
-            maquette_1.h("text.value", {
-                styles: { display: "none" },
-                y: "" + (i * 20 + 9),
-            }),
-        ]);
-        var legendItem = utils.domCreateSVG(node);
-        this.root.appendChild(legendItem);
-        this._legendItems.push(legendItem);
-        this._labels.push(legendItem.querySelector("text.label"));
-        this._values.push(legendItem.querySelector("text.value"));
-    };
-    LegendView.prototype.removeLabel = function () {
-        var legendItem = this._legendItems.pop();
-        this._labels.pop();
-        this._values.pop();
-        if (legendItem != null) {
-            this.root.removeChild(legendItem);
-        }
-    };
-    return LegendView;
-}());
-exports.LegendView = LegendView;
-var PlotView = /** @class */ (function (_super) {
-    __extends(PlotView, _super);
-    function PlotView(label, dimensions) {
-        if (dimensions === void 0) { dimensions = 1; }
-        var _this = _super.call(this, label) || this;
-        _this.colors = utils.makeColors(dimensions);
-        _this.axes = new AxesView();
-        _this.legend = new LegendView(_this.colors);
-        var node = maquette_1.h("g.plot");
-        _this.body = utils.domCreateSVG(node);
-        _this.body.appendChild(_this.axes.root);
-        _this.body.appendChild(_this.legend.root);
-        _this.root.appendChild(_this.body);
-        return _this;
-    }
-    Object.defineProperty(PlotView.prototype, "legendLabels", {
-        get: function () {
-            return this.legend.labels;
-        },
-        set: function (val) {
-            this.legend.labels = val;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PlotView.prototype, "legendVisible", {
-        get: function () {
-            return this.body.contains(this.legend.root);
-        },
-        set: function (val) {
-            if (val) {
-                this.body.appendChild(this.legend.root);
-            }
-            else {
-                this.body.removeChild(this.legend.root);
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(PlotView.prototype, "scale", {
-        get: function () {
-            return this.overlayScale;
-        },
-        set: function (val) {
-            var width = Math.max(ResizableComponentView.minWidth, val[0]);
-            var height = Math.max(ResizableComponentView.minHeight, val[1]);
-            this.overlayScale = [width, height];
-            this.legend.pos = [width + 2, 0];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return PlotView;
-}(ResizableComponentView));
-exports.PlotView = PlotView;
 
-
-/***/ }),
-/* 11 */
-/* no static exports found */
-/* all exports used */
-/*!************************************!*\
-  !*** ./nengo_gui/static/config.ts ***!
-  \************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function($) {
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var config_1 = __webpack_require__(/*! ./views/config */ 33);
-/**
- * A class that takes the place of localStorage if it doesn't exist.
- *
- * Note that this does not aim to implements the whole localStorage spec;
- * it only implements what Config uses. The values set in this object will
- * only exist for the current session and will not persist across sessions.
- */
-var MockLocalStorage = /** @class */ (function () {
-    function MockLocalStorage() {
-        this.items = {};
-    }
-    Object.defineProperty(MockLocalStorage.prototype, "length", {
-        get: function () {
-            return Object.keys(this.items).length;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    MockLocalStorage.prototype.clear = function () {
-        this.items = {};
-    };
-    MockLocalStorage.prototype.getItem = function (name) {
-        return this.items[name];
-    };
-    MockLocalStorage.prototype.key = function (index) {
-        return Object.keys(this.items)[index];
-    };
-    MockLocalStorage.prototype.removeItem = function (name) {
-        delete this.items[name];
-    };
-    MockLocalStorage.prototype.setItem = function (name, val) {
-        this.items[name] = String(val);
-    };
-    return MockLocalStorage;
-}());
-var Config = /** @class */ (function () {
-    function Config() {
-        if (typeof localStorage === "undefined" || localStorage === null) {
-            this.storage = new MockLocalStorage();
-        }
-        else {
-            this.storage = localStorage;
-        }
-    }
-    Object.defineProperty(Config.prototype, "aspectResize", {
-        get: function () {
-            return this.getBool("aspectResize", false);
-        },
-        set: function (val) {
-            this.setAny("aspectResize", val);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Config.prototype, "autoUpdate", {
-        get: function () {
-            return this.getBool("autoUpdate", true);
-        },
-        set: function (val) {
-            this.setAny("autoUpdate", val);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Config.prototype, "backend", {
-        get: function () {
-            return this.getString("backend", "nengo");
-        },
-        set: function (val) {
-            this.setAny("backend", val);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Config.prototype, "consoleHeight", {
-        get: function () {
-            return this.getNumber("consoleHeight", 100);
-        },
-        set: function (val) {
-            this.setAny("consoleHeight", val);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Config.prototype, "editorFontSize", {
-        get: function () {
-            return this.getNumber("editorFontSize", 12);
-        },
-        set: function (val) {
-            this.setAny("editorFontSize", val);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Config.prototype, "editorWidth", {
-        get: function () {
-            return this.getNumber("editorWidth", 580);
-        },
-        set: function (val) {
-            this.setAny("editorWidth", val);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Config.prototype, "fontSize", {
-        get: function () {
-            return this.getNumber("fontSize", 100);
-        },
-        set: function (val) {
-            this.setAny("fontSize", val);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Config.prototype, "hideEditor", {
-        get: function () {
-            return this.getBool("hideEditor", false);
-        },
-        set: function (val) {
-            this.setAny("hideEditor", val);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Config.prototype, "scriptdir", {
-        get: function () {
-            return this.getString("scriptdir", ".");
-        },
-        set: function (val) {
-            this.setAny("scriptdir", val);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Config.prototype, "transparentNets", {
-        get: function () {
-            return this.getBool("transparentNets", false);
-        },
-        set: function (val) {
-            this.setAny("transparentNets", val);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Config.prototype, "zoomFonts", {
-        get: function () {
-            return this.getBool("zoomFonts", false);
-        },
-        set: function (val) {
-            this.setAny("zoomFonts", val);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Config.prototype.restoreDefaults = function () {
-        var _this = this;
-        Object.keys(this).forEach(function (option) {
-            _this.storage.removeItem("ng." + option);
-        });
-    };
-    Config.prototype.getBool = function (key, defaultVal) {
-        if (defaultVal === void 0) { defaultVal = null; }
-        var val = this.getString(key) || defaultVal;
-        return val === "true" || val === true;
-    };
-    Config.prototype.getNumber = function (key, defaultVal) {
-        if (defaultVal === void 0) { defaultVal = null; }
-        return Number(this.getString(key) || defaultVal);
-    };
-    Config.prototype.getString = function (key, defaultVal) {
-        if (defaultVal === void 0) { defaultVal = null; }
-        return this.storage.getItem("ng." + key) || defaultVal;
-    };
-    Config.prototype.setAny = function (key, val) {
-        if (this.getString(key) !== String(val)) {
-            this.storage.setItem("ng." + key, val);
-            document.dispatchEvent(new CustomEvent("nengoConfigChange", {
-                detail: key,
-            }));
-        }
-        else {
-            console.log("'" + key + "' already set to " + val);
-        }
-    };
-    return Config;
-}());
-exports.config = new Config();
-// The following classes deal with the rendering of config items in the UI
-var ConfigItem = /** @class */ (function () {
-    function ConfigItem(key, label, update, help) {
-        if (update === void 0) { update = null; }
-        if (help === void 0) { help = null; }
-        var _this = this;
-        this.help = help;
-        this.key = key;
-        this.label = label;
-        this.update = update;
-        if (this.update === null) {
-            this.update = function (event) { _this.defaultUpdate(event); };
-        }
-    }
-    ConfigItem.prototype.defaultUpdate = function (event) {
-        var el = event.target;
-        var eltype = el.getAttribute("type");
-        if (el instanceof HTMLInputElement && eltype === "checkbox") {
-            exports.config[this.key] = el.checked;
-        }
-        else if (el instanceof HTMLInputElement ||
-            el instanceof HTMLSelectElement) {
-            exports.config[this.key] = el.value;
-        }
-    };
-    ConfigItem.prototype.setView = function (element) {
-        element.value = exports.config[this.key];
-    };
-    return ConfigItem;
-}());
-exports.ConfigItem = ConfigItem;
-var CheckboxItem = /** @class */ (function (_super) {
-    __extends(CheckboxItem, _super);
-    function CheckboxItem() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    CheckboxItem.prototype.setView = function (element) {
-        if (element instanceof HTMLInputElement) {
-            element.checked = exports.config[this.key];
-        }
-    };
-    return CheckboxItem;
-}(ConfigItem));
-exports.CheckboxItem = CheckboxItem;
-var ComboboxItem = /** @class */ (function (_super) {
-    __extends(ComboboxItem, _super);
-    function ComboboxItem(key, label, options, update, help) {
-        if (update === void 0) { update = null; }
-        if (help === void 0) { help = null; }
-        var _this = _super.call(this, key, label, update, help) || this;
-        _this.options = options;
-        return _this;
-    }
-    return ComboboxItem;
-}(ConfigItem));
-exports.ComboboxItem = ComboboxItem;
-var TextItem = /** @class */ (function (_super) {
-    __extends(TextItem, _super);
-    function TextItem(key, label, update, help, attributes) {
-        if (update === void 0) { update = null; }
-        if (help === void 0) { help = null; }
-        if (attributes === void 0) { attributes = {}; }
-        var _this = _super.call(this, key, label, update, help) || this;
-        _this.attributes = attributes;
-        _this.attributes["type"] = "text";
-        return _this;
-    }
-    return TextItem;
-}(ConfigItem));
-exports.TextItem = TextItem;
-var NumberItem = /** @class */ (function (_super) {
-    __extends(NumberItem, _super);
-    function NumberItem(key, label, unit, update, help, attributes) {
-        if (unit === void 0) { unit = ""; }
-        if (update === void 0) { update = null; }
-        if (help === void 0) { help = null; }
-        if (attributes === void 0) { attributes = {}; }
-        var _this = _super.call(this, key, label, update, help, attributes) || this;
-        _this.unit = unit;
-        _this.attributes["type"] = "number";
-        return _this;
-    }
-    return NumberItem;
-}(TextItem));
-exports.NumberItem = NumberItem;
-exports.configItems = [
-    new NumberItem("fontSize", "Font size", "%", null, "As a percentage of base size", {
-        "data-error": "Must be within 20–999 percent base size",
-        "max": 999,
-        "maxlength": 3,
-        "min": 20,
-        "required": true,
-        "step": 1,
-    }),
-    new CheckboxItem("zoomFonts", "Scale text when zooming"),
-    new CheckboxItem("aspectResize", "Fix aspect ratio of elements on canvas resize"),
-    new CheckboxItem("autoUpdate", "Automatically synchronize model with editor", function (event) {
-        var el = event.target;
-        exports.config["autoUpdate"] = el.checked;
-        // Also modify editor.updateTrigger?
-    }),
-    new CheckboxItem("transparentNets", "Expanded networks are transparent"),
-    new TextItem("scriptdir", "Script directory", null, "Enter a full absolute path, or '.' to use the current directory.", {
-        placeholder: "Current directory"
-    }),
-    new ComboboxItem("backend", "Select backend", ["nengo"]),
-];
-var ConfigDialog = /** @class */ (function () {
-    function ConfigDialog() {
-        var _this = this;
-        this.saved = {};
-        this.view = new config_1.ConfigDialogView(exports.configItems);
-        this.view.ok.addEventListener("click", function () {
-            var validator = $(_this.view.form).data("bs.validator");
-            validator.validate();
-            if (validator.hasErrors() || validator.isIncomplete()) {
-                return;
-            }
-            // Set the data-dismiss attribute and let event propagate
-            $(_this.view).modal("hide");
-        });
-        this.view.cancel.addEventListener("click", function () {
-            // Roll back any changes
-            Object.keys(_this.saved).forEach(function (option) {
-                if (exports.config[option] !== _this.saved[option]) {
-                    exports.config[option] = _this.saved[option];
-                }
-            });
-        });
-        this.view.configItems.forEach(function (configItem, i) {
-            // Allow the enter key to submit on text/number inputs
-            var inputType = configItem.getAttribute("type");
-            if (inputType === "text" || inputType === "number") {
-                configItem.addEventListener("keydown", function (event) {
-                    if (event.which === 13) {
-                        event.preventDefault();
-                        _this.view.ok.click();
-                    }
-                });
-            }
-            // All inputs get updated live
-            configItem.addEventListener("change", function (event) {
-                var validator = $(_this.view.form).data("bs.validator");
-                validator.validate();
-                if (!validator.hasErrors()) {
-                    exports.configItems[i].update(event);
-                }
-            });
-        });
-        $(this.view.form).validator();
-    }
-    ConfigDialog.prototype.show = function () {
-        var _this = this;
-        // Save values from before showing the modal for restoring after cancel
-        for (var option in exports.config) {
-            var vType = typeof exports.config[option];
-            if (vType === "number" || vType === "boolean" || vType === "string") {
-                this.saved[option] = exports.config[option];
-            }
-        }
-        // Set values as of current config state
-        exports.configItems.forEach(function (configItem, i) {
-            configItem.setView(_this.view.configItems[i]);
-        });
-        var validator = $(this.view.form).data("bs.validator");
-        validator.validate();
-        this.view.show();
-    };
-    return ConfigDialog;
-}());
-exports.ConfigDialog = ConfigDialog;
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
 /* 12 */
-/* no static exports found */
-/* all exports used */
-/*!**********************************!*\
-  !*** ./nengo_gui/static/menu.ts ***!
-  \**********************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * Create a menu that will appear inside the given div
- *
- * Each element that has a menu makes a call to Menu constructor
- */
-var menu_1 = __webpack_require__(/*! ./views/menu */ 36);
-var utils = __webpack_require__(/*! ./utils */ 2);
-var MenuAction = /** @class */ (function () {
-    function MenuAction(element, active) {
-        if (active === void 0) { active = null; }
-        this.element = element;
-        this.active = active;
-    }
-    MenuAction.prototype.isActive = function () {
-        if (this.active === null) {
-            return true;
-        }
-        else {
-            return this.active();
-        }
-    };
-    return MenuAction;
-}());
-exports.MenuAction = MenuAction;
-var Menu = /** @class */ (function () {
-    function Menu() {
-        this.actions = [];
-        this.view = new menu_1.MenuView();
-    }
-    Menu.prototype.addAction = function (label, callback, active) {
-        if (active === void 0) { active = null; }
-        var element = this.view.addAction(label);
-        element.addEventListener("click", function (event) {
-            callback(event);
-            Menu.hideShown();
-        });
-        element.addEventListener("contextmenu", function (event) {
-            event.preventDefault();
-            callback(event);
-            Menu.hideShown();
-        });
-        this.actions.push(new MenuAction(element, active));
-    };
-    Menu.prototype.addHeader = function (label) {
-        this.view.addHeader(label);
-    };
-    Menu.prototype.addSeparator = function () {
-        this.view.addSeparator();
-    };
-    /**
-     * Show this menu at the given (x,y) location.
-     *
-     * Automatically hides any menu with the same parent.
-     *
-     * Called by a listener from netgraph.js
-     */
-    Menu.prototype.show = function (x, y) {
-        var _this = this;
-        // TODO: have to get toolbar height somehow...
-        // For now, we know it's always 35 px
-        var toolbarHeight = 35;
-        var correctedY = y - toolbarHeight;
-        var h = this.view.height;
-        var w = this.view.width;
-        // TODO: mainH and mainW: get from viewport...?
-        var mainH = 600;
-        var mainW = 600;
-        if (correctedY + h > mainH) {
-            y = mainH - h;
-        }
-        if (x + w > mainW) {
-            x = mainW - w;
-        }
-        Menu.hideShown();
-        this.actions.forEach(function (action, i) {
-            if (action.isActive()) {
-                _this.view.showAction(action.element);
-            }
-            else {
-                _this.view.hideAction(action.element);
-            }
-        });
-        this.view.show(x, y);
-        document.body.appendChild(this.view.root);
-        Menu.shown = this;
-    };
-    Menu.shown = null;
-    Menu.hideShown = utils.debounce(function () {
-        if (Menu.shown !== null) {
-            document.body.removeChild(Menu.shown.view.root);
-            Menu.shown = null;
-        }
-    }, 50, { immediate: true });
-    return Menu;
-}());
-exports.Menu = Menu;
-
-
-/***/ }),
-/* 13 */
 /* no static exports found */
 /* all exports used */
 /*!***********************************************!*\
@@ -19358,7 +18901,7 @@ exports.Menu = Menu;
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAIfSURBVDjLpZNPaBNBGMXfbrubzBqbg4kL0lJLgiVKE/AP6Kl6UUFQNAeDIAjVS08aELx59GQPAREV/4BeiqcqROpRD4pUNCJSS21OgloISWMEZ/aPb6ARdNeTCz92mO+9N9/w7RphGOJ/nsH+olqtvg+CYJR8q9VquThxuVz+oJTKeZ63Uq/XC38E0Jj3ff8+OVupVGLbolkzQw5HOqAxQU4wXWWnZrykmYD0QsgAOJe9hpEUcPr8i0GaJ8n2vs/sL2h8R66TpVfWTdETHWE6GRGKjGiiKNLii5BSLpN7pBHpgMYhMkm8tPUWz3sL2D1wFaY/jvnWcTTaE5DyjMfTT5J0XIAiTRYn3ASwZ1MKbTmN7z+KaHUOYqmb1fcPiNa4kQBuyvWAHYfcHGzDgYcx9NKrwJYHCAyF21JiPWBnXMAQOea6bmn+4ueYGZi8gtymNVobF7BG5prNpjd+eW6X4BSUD0gOdCpzA8MpA/v2v15kl4+pK0emwHSbjJGBlz+vYM1fQeDrYOBTdzOGvDf6EFNr+LYjHbBgsaCLxr+moNQjU2vYhRXpgIUOmSWWnsJRfjlOZhrexgtYDZ/gWbetNRbNs6QT10GJglNk64HMaGgbAkoMo5fiFNy7CKDQUGqE5r38YktxAfSqW7Zt33l66WtkAkACjuNsaLVaDxlw5HdJ/86aYrG4WCgUZD6fX+jv/U0ymfxoWVZomuZyf+8XqfGP49CCrBUAAAAASUVORK5CYII="
 
 /***/ }),
-/* 14 */
+/* 13 */
 /* no static exports found */
 /* all exports used */
 /*!**************************************************!*\
@@ -19369,7 +18912,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAHwSURBVDjLpZM9a1RBFIafM/fevfcmC7uQjWEjUZKAYBHEVEb/gIWFjVVSWEj6gI0/wt8gprPQykIsTP5BQLAIhBVBzRf52Gw22bk7c8YiZslugggZppuZ55z3nfdICIHrrBhg+ePaa1WZPyk0s+6KWwM1khiyhDcvns4uxQAaZOHJo4nRLMtEJPpnxY6Cd10+fNl4DpwBTqymaZrJ8uoBHfZoyTqTYzvkSRMXlP2jnG8bFYbCXWJGePlsEq8iPQmFA2MijEBhtpis7ZCWftC0LZx3xGnK1ESd741hqqUaqgMeAChgjGDDLqXkgMPTJtZ3KJzDhTZpmtK2OSO5IRB6xvQDRAhOsb5Lx1lOu5ZCHV4B6RLUExvh4s+ZntHhDJAxSqs9TCDBqsc6j0iJdqtMuTROFBkIcllCCGcSytFNfm1tU8k2GRo2pOI43h9ie6tOvTJFbORyDsJFQHKD8fw+P9dWqJZ/I96TdEa5Nb1AOavjVfti0dfB+t4iXhWvyh27y9zEbRRobG7z6fgVeqSoKvB5oIMQEODx7FLvIJo55KS9R7b5ldrDReajpC+Z5z7GAHJFXn1exedVbG36ijwOmJgl0kS7lXtjD0DkLyqc70uPnSuIIwk9QCmWd+9XGnOFDzP/M5xxBInhLYBcd5z/AAZv2pOvFcS/AAAAAElFTkSuQmCC"
 
 /***/ }),
-/* 15 */
+/* 14 */
 /* no static exports found */
 /* all exports used */
 /*!********************!*\
@@ -28937,181 +28480,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;!function() {
 }();
 
 /***/ }),
-/* 16 */
-/* no static exports found */
-/* all exports used */
-/*!*****************************************!*\
-  !*** ./nengo_gui/static/views/views.ts ***!
-  \*****************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function($) {
-/**
- * Utility functions for views.
- */
-Object.defineProperty(exports, "__esModule", { value: true });
-var maquette_1 = __webpack_require__(/*! maquette */ 1);
-function bsAlert(text, level) {
-    if (level === void 0) { level = "info"; }
-    return maquette_1.h("div.alert.alert-" + level, { role: "alert" }, [
-        maquette_1.h("p", [
-            maquette_1.h("span.glyphicon.glyphicon-exclamation-sign", {
-                "aria-hidden": true
-            }),
-            text,
-        ])
-    ]);
-}
-exports.bsAlert = bsAlert;
-function bsActivatePopovers(parent) {
-    $(parent).find("[data-toggle=popover]").popover({ trigger: "hover" });
-}
-exports.bsActivatePopovers = bsActivatePopovers;
-function bsActivateTooltips(parent) {
-    $(parent).find("[data-toggle=tooltip]").tooltip();
-}
-exports.bsActivateTooltips = bsActivateTooltips;
-function bsPopover(title, content, placement) {
-    if (placement === void 0) { placement = "bottom"; }
-    return maquette_1.h("a", {
-        "href": "#",
-        "data-content": content,
-        "data-placement": placement,
-        "data-toggle": "popover",
-        "title": title,
-    }, [
-        maquette_1.h("sup", ["?"]),
-    ]);
-}
-exports.bsPopover = bsPopover;
-function bsTooltip(content, placement) {
-    if (placement === void 0) { placement = "bottom"; }
-    return maquette_1.h("a", {
-        "href": "#",
-        "data-toggle": "tooltip",
-        "data-placement": placement,
-        "title": content
-    }, [
-        maquette_1.h("sup", ["?"]),
-    ]);
-}
-exports.bsTooltip = bsTooltip;
-/**
- * Safely sets the content of an element to the given text.
- *
- * This should be used instead of `element.innerHTML = text`.
- *
- * @param {HTMLElement} element - The element to set.
- * @param {string} text - The text to set on the element.
- */
-function safeSetText(element, text) {
-    // First remove all children
-    while (element.firstChild) {
-        element.removeChild(element.firstChild);
-    }
-    element.appendChild(document.createTextNode(text));
-}
-exports.safeSetText = safeSetText;
-function getTransformNums(element) {
-    var transform;
-    if (element instanceof SVGElement) {
-        transform = element.getAttribute("transform");
-    }
-    else if (element instanceof HTMLElement) {
-        transform = element.style.transform;
-    }
-    else {
-        console.error("'element' is not HTML or SVG");
-    }
-    return transform.replace(/[^0-9\.,]/g, "").split(",").map(function (s) { return Number(s); });
-}
-function getMatrix(element) {
-    var nums = getTransformNums(element);
-    console.assert(nums.length === 6);
-    return nums;
-}
-exports.getMatrix = getMatrix;
-function getScale(element) {
-    var nums = getTransformNums(element);
-    if (nums.length === 2) {
-        return [nums[0], nums[1]];
-    }
-    else if (nums.length === 6) {
-        return [nums[0], nums[3]];
-    }
-}
-exports.getScale = getScale;
-function getTranslate(element) {
-    var nums = getTransformNums(element);
-    if (nums.length === 2) {
-        return [nums[0], nums[1]];
-    }
-    else if (nums.length === 6) {
-        return [nums[4], nums[5]];
-    }
-}
-exports.getTranslate = getTranslate;
-/**
- * Set the transform of an element.
- *
- * @param {HTMLElement} element - The HTML element to set.
- * @param {number} x - Shift on the x-axis.
- * @param {number} y - Shift on the y-axis.
- * @param {number}
- */
-function setTransform(element, transform, nums) {
-    var unit = "";
-    if (element instanceof HTMLElement) {
-        unit = "px";
-    }
-    var sep = unit + ",";
-    var str = transform + "(" + nums.join(sep) + unit + ")";
-    // let transform;
-    // if (w === null && h === null) {
-    //     transform = `translate(${xy})`;
-    // } else {
-    //     console.assert(w !== null && h !== null);
-    //     transform = `matrix(${w}${unit},0,0,${h}${unit},${xy})`;
-    // }
-    if (element instanceof SVGElement) {
-        element.setAttribute("transform", str);
-    }
-    else if (element instanceof HTMLElement) {
-        element.style.webkitTransform = element.style.transform = str;
-    }
-    else {
-        console.error("'element' is not HTML or SVG in 'setTransform'");
-    }
-}
-function setMatrix(element, a, b, c, d, e, f) {
-    setTransform(element, "matrix", [a, b, c, d, e, f]);
-}
-exports.setMatrix = setMatrix;
-function setScale(element, x, y) {
-    setTransform(element, "scale", [x, y]);
-}
-exports.setScale = setScale;
-function setTranslate(element, x, y) {
-    setTransform(element, "translate", [x, y]);
-}
-exports.setTranslate = setTranslate;
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
-
-/***/ }),
-/* 17 */
-/* no static exports found */
-/* all exports used */
-/*!************************************************!*\
-  !*** ./~/jqueryfiletree/dist/images/music.png ***!
-  \************************************************/
-/***/ (function(module, exports) {
-
-module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAETSURBVBgZfcExS0JRGIDh996OFIQEgSRhTS1Bg0trw937B9UPCAT3hnJ1kYbGhrv0BxoaXSsMhBCsyUEcoiTKUM/3HU8Fce4Q+DyRZz5DcOkdiqIIiiAo7xiCMXs4HI4ZisPhOMcQOJQbOoxxKHm22UUxBBbHM1cRfw58GUtMIAieTIwgxAQWRclMEZSYwCIIGYsixASCYsl4pgiGwDFF+HWUaDopbfCGHRp+nCWSTktFXvFDOKyuNNYp4LhFriPPaXW5UWAV5Y6HNH+/dbHJIjN6NHlJzMnxWqNIDqFHh8/U7hiEJbp0+ar0m2a4MGFEjie6jCrtJs1y57FuI21R6w8g8uwnH/VJJK1ZrT3gn8gz3zcVUYEwGmDcvQAAAABJRU5ErkJggg=="
-
-/***/ }),
-/* 18 */
+/* 15 */
 /* no static exports found */
 /* all exports used */
 /*!************************************************!*\
@@ -29132,16 +28501,18 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var base_1 = __webpack_require__(/*! ./base */ 6);
-var config_1 = __webpack_require__(/*! ../config */ 11);
-var menu_1 = __webpack_require__(/*! ../menu */ 12);
-var registry_1 = __webpack_require__(/*! ./registry */ 7);
-var network_1 = __webpack_require__(/*! ./views/network */ 29);
+var maquette_1 = __webpack_require__(/*! maquette */ 1);
+__webpack_require__(/*! ./network.css */ 87);
+var component_1 = __webpack_require__(/*! ./component */ 11);
+var config_1 = __webpack_require__(/*! ../config */ 7);
+var menu_1 = __webpack_require__(/*! ../menu */ 8);
+var utils = __webpack_require__(/*! ../utils */ 2);
+var registry_1 = __webpack_require__(/*! ./registry */ 6);
 var Network = /** @class */ (function (_super) {
     __extends(Network, _super);
     function Network(_a) {
-        var uid = _a.uid, pos = _a.pos, dimensions = _a.dimensions, _b = _a.expanded, expanded = _b === void 0 ? false : _b, _c = _a.depth, depth = _c === void 0 ? 0 : _c, _d = _a.defaultOutput, defaultOutput = _d === void 0 ? null : _d;
-        var _this = _super.call(this, uid, pos.left, pos.top, pos.width, pos.height, dimensions) || this;
+        var server = _a.server, uid = _a.uid, pos = _a.pos, dimensions = _a.dimensions, _b = _a.expanded, expanded = _b === void 0 ? false : _b, _c = _a.depth, depth = _c === void 0 ? 0 : _c, _d = _a.defaultOutput, defaultOutput = _d === void 0 ? null : _d;
+        var _this = _super.call(this, server, uid, pos.left, pos.top, pos.width, pos.height, dimensions) || this;
         _this.expanded = expanded;
         _this.depth = depth;
         // this.defaultOutput = defaultOutput;
@@ -29183,7 +28554,7 @@ var Network = /** @class */ (function (_super) {
     Object.defineProperty(Network.prototype, "view", {
         get: function () {
             if (this._view === null) {
-                this._view = new network_1.NetworkView("?");
+                this._view = new NetworkView("?");
             }
             return this._view;
         },
@@ -29191,7 +28562,6 @@ var Network = /** @class */ (function (_super) {
         configurable: true
     });
     Network.prototype.addMenuItems = function () {
-        var _this = this;
         // this.menu.addAction("Output Value", () => {
         //     this.createGraph("Value");
         // }, () => this.defaultOutput && this.spTargets.length === 0);
@@ -29202,7 +28572,8 @@ var Network = /** @class */ (function (_super) {
         //     this.createGraph("SpaSimilarity", this.spTargets[0]);
         // }, () => this.spTargets.length > 0);
         this.menu.addAction("Details ...", function () {
-            _this.createModal();
+            // TODO
+            // this.createModal();
         });
     };
     /**
@@ -29219,7 +28590,8 @@ var Network = /** @class */ (function (_super) {
             netgraph.collapse(_this);
         }, function () { return _this.expanded; });
         this.menu.addAction("Auto-layout", function () {
-            _this.requestFeedforwardLayout();
+            // TODO: server?
+            _this.server.send("netgraph.autolayout");
         }, function () { return _this.expanded; });
         this.menu.addAction("Expand network", function () {
             netgraph.expand(_this);
@@ -29243,24 +28615,835 @@ var Network = /** @class */ (function (_super) {
         _super.prototype.onnetgraphadd.call(this, netgraph);
     };
     return Network;
-}(base_1.ResizableComponent));
+}(component_1.ResizableComponent));
 exports.Network = Network;
+var NetworkView = /** @class */ (function (_super) {
+    __extends(NetworkView, _super);
+    function NetworkView(label) {
+        var _this = _super.call(this, label) || this;
+        var node = maquette_1.h("g.network", [
+            maquette_1.h("rect", {
+                height: "50",
+                styles: {
+                    "fill": "rgb(0,0,0)",
+                    "fill-opacity": "1.0",
+                    "stroke": "rgb(0,0,0)",
+                },
+                width: "50",
+                x: "0",
+                y: "0",
+            })
+        ]);
+        _this.body = utils.domCreateSVG(node);
+        _this.root.appendChild(_this.body);
+        _this.rect = _this.body.firstChild;
+        return _this;
+    }
+    Object.defineProperty(NetworkView.prototype, "fill", {
+        get: function () {
+            return this.rect.style.fill;
+        },
+        set: function (val) {
+            this.rect.style.fill = val;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NetworkView.prototype, "scale", {
+        get: function () {
+            return [
+                Number(this.rect.getAttribute("width")),
+                Number(this.rect.getAttribute("height")),
+            ];
+        },
+        set: function (val) {
+            var width = Math.max(component_1.ResizableComponentView.minWidth, val[0]);
+            var height = Math.max(component_1.ResizableComponentView.minHeight, val[1]);
+            this.rect.setAttribute("width", "" + width);
+            this.rect.setAttribute("height", "" + height);
+            this.overlayScale = [width, height];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NetworkView.prototype, "stroke", {
+        get: function () {
+            return this.rect.style.stroke;
+        },
+        set: function (val) {
+            this.rect.style.stroke = val;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NetworkView.prototype, "transparent", {
+        get: function () {
+            return this.rect.style.fillOpacity === "0";
+        },
+        set: function (val) {
+            if (val) {
+                this.rect.style.fillOpacity = "0";
+            }
+            else {
+                this.rect.style.fillOpacity = "1";
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return NetworkView;
+}(component_1.ResizableComponentView));
+exports.NetworkView = NetworkView;
 registry_1.registerComponent("network", Network);
 
 
 /***/ }),
-/* 19 */
+/* 16 */
 /* no static exports found */
 /* all exports used */
-/*!******************************************************!*\
-  !*** ./~/jqueryfiletree/dist/images/application.png ***!
-  \******************************************************/
-/***/ (function(module, exports) {
+/*!*********************************************!*\
+  !*** ./nengo_gui/static/components/plot.ts ***!
+  \*********************************************/
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAFiSURBVBgZpcEhbpRRGIXh99x7IU0asGBJWEIdCLaAqcFiCArFCkjA0KRJF0EF26kkFbVVdEj6/985zJ0wBjfp8ygJD6G3n358fP3m5NvtJscJYBObchEHx6QKJ6SKsnn6eLm7urr5/PP76cU4eXVy/ujouD074hDHd5s6By7GZknb3P7mUH+WNLZGKnx595JDvf96zTQSM92vRYA4lMEEO5RNraHWUDH3FV48f0K5mAYJk5pQQpqIgixaE1JDKtRDd2OsYfJaTKNcTA2IBIIesMAOPdDUGYJSqGYml5lGHHYkSGhAJBBIkAoWREAT3Z3JLqZhF3uS2EloQCQ8xLBxoAEWO7aZxros7EgISIIkwlZCY6s1OlAJTWFal5VppMzUgbAlQcIkiT0DXSI2U2ymYZs9AWJL4n+df3pncsI0bn5dX344W05dhctUFbapZcE2ToiLVHBMbGymS7aUhIdoPNBf7Jjw/gQ77u4AAAAASUVORK5CYII="
+"use strict";
+/* WEBPACK VAR INJECTION */(function($) {
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var d3 = __webpack_require__(/*! d3 */ 14);
+var maquette_1 = __webpack_require__(/*! maquette */ 1);
+__webpack_require__(/*! ./plot.css */ 89);
+var component_1 = __webpack_require__(/*! ./component */ 11);
+var modal_1 = __webpack_require__(/*! ../modal */ 5);
+var utils = __webpack_require__(/*! ../utils */ 2);
+var widget_1 = __webpack_require__(/*! ./widget */ 17);
+var Axis = /** @class */ (function () {
+    function Axis(xy, g, lim) {
+        this.scale = d3.scale.linear();
+        this.axis = d3.svg.axis();
+        this.axis.orient(xy === "X" ? "bottom" : "left");
+        this.axis.scale(this.scale);
+        this.g = d3.select(g);
+        this.lim = lim;
+    }
+    Object.defineProperty(Axis.prototype, "lim", {
+        get: function () {
+            var lim = this.scale.domain();
+            console.assert(lim.length === 2);
+            return lim;
+        },
+        set: function (val) {
+            this.scale.domain(val);
+            this.axis.tickValues(val);
+            this.axis(this.g);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Axis.prototype, "pixelLim", {
+        get: function () {
+            var scale = this.scale.range();
+            console.assert(scale.length === 2);
+            return scale;
+        },
+        set: function (val) {
+            this.scale.range(val);
+            this.axis(this.g);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Axis.prototype, "tickSize", {
+        get: function () {
+            return this.axis.outerTickSize();
+        },
+        set: function (val) {
+            // .tickPadding(val * 0.5)
+            this.axis.outerTickSize(val);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Axis.prototype.pixelAt = function (value) {
+        return this.scale(value);
+    };
+    Axis.prototype.valueAt = function (pixel) {
+        return this.scale.invert(pixel);
+    };
+    return Axis;
+}());
+exports.Axis = Axis;
+var Axes = /** @class */ (function () {
+    // TODO: have left xtick disappear if too close to right xtick?
+    // TODO: probably don't have width, height passed in? get from view?
+    function Axes(valueView, width, height, xlim, ylim) {
+        if (xlim === void 0) { xlim = [-0.5, 0.0]; }
+        if (ylim === void 0) { ylim = [-1, 1]; }
+        var _this = this;
+        this.view = valueView.axes;
+        this._width = width;
+        this._height = height;
+        // TODO: better initial values for x?
+        this.x = new Axis("X", this.view.x.g, xlim);
+        this.y = new Axis("Y", this.view.y.g, ylim);
+        // Set up mouse handlers for crosshairs
+        valueView.overlay.addEventListener("mouseover", function () {
+            _this.view.crosshair.visible = true;
+        });
+        valueView.overlay.addEventListener("mouseout", function () {
+            _this.view.crosshair.visible = false;
+        });
+        valueView.overlay.addEventListener("mousemove", function (event) {
+            var _a = valueView.pos, offsetX = _a[0], offsetY = _a[1];
+            var _b = [event.x - offsetX, event.y - offsetY], x = _b[0], y = _b[1];
+            _this.view.crosshair.pos = [x, y];
+            _this.view.crosshair.value = [_this.x.valueAt(x), _this.y.valueAt(y)];
+        });
+        // TODO: previosly, we hid on mouse wheel... should we?
+        // this.view.root.addEventListener("mousewheel", () => {
+        //     this.view.crosshairPos = ;
+        // });
+    }
+    Object.defineProperty(Axes.prototype, "height", {
+        get: function () {
+            return this._height;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Axes.prototype, "padding", {
+        get: function () {
+            return [5, 5];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Axes.prototype, "scale", {
+        set: function (val) {
+            this._width = Math.max(Axes.minWidth, val[0]);
+            this._height = Math.max(Axes.minHeight, val[1]);
+            var _a = this.view.x.scale, xWidth = _a[0], xHeight = _a[1];
+            var _b = this.view.y.scale, yWidth = _b[0], yHeight = _b[1];
+            // TOOD: why 0 and not yWidth?
+            this.view.x.pos = [0, this._height - xHeight];
+            this.x.pixelLim = [yWidth, this._width];
+            this.view.y.pos = [yWidth, 0];
+            this.y.pixelLim = [this._height - xHeight, 0];
+            this.view.crosshair.scale = [this._width, this._height - xHeight];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Axes.prototype, "width", {
+        get: function () {
+            return this._width;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Axes.prototype.ondomadd = function () {
+        this.scale = [this._width, this._height];
+        var yWidth = this.view.y.scale[0];
+        this.view.crosshair.offset = [0, yWidth];
+        this.x.tickSize = 0.4 * yWidth;
+        this.y.tickSize = 0.4 * yWidth;
+    };
+    // TODO: what should these actually be?
+    Axes.minHeight = 20;
+    Axes.minWidth = 20;
+    return Axes;
+}());
+exports.Axes = Axes;
+var Plot = /** @class */ (function (_super) {
+    __extends(Plot, _super);
+    function Plot(server, uid, left, top, width, height, dimensions, synapse, xlim, ylim) {
+        if (xlim === void 0) { xlim = [-0.5, 0]; }
+        if (ylim === void 0) { ylim = [-1, 1]; }
+        var _this = _super.call(this, server, uid, left, top, width, height, dimensions, synapse) || this;
+        _this.synapse = synapse;
+        _this.addAxes(width, height, xlim, ylim);
+        _this.interactRoot.on("resizemove", function (event) {
+            // Resizing the view happens in the superclass; we update axes here
+            var _a = _this.view.scale, vWidth = _a[0], wHeight = _a[1];
+            _this.axes.scale = [
+                vWidth * _this.scaleToPixels,
+                wHeight * _this.scaleToPixels
+            ];
+            _this.syncWithDataStore();
+        });
+        window.addEventListener("TimeSlider.moveShown", utils.throttle(function (e) {
+            _this.xlim = e.detail.shownTime;
+        }, 50) // Update once every 50 ms
+        );
+        window.addEventListener("SimControl.reset", function (e) {
+            _this.reset();
+        });
+        return _this;
+    }
+    Object.defineProperty(Plot.prototype, "legendLabels", {
+        get: function () {
+            return this.view.legendLabels;
+        },
+        set: function (val) {
+            this.view.legendLabels = val;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Plot.prototype, "legendVisible", {
+        get: function () {
+            return this.view.legendVisible;
+        },
+        set: function (val) {
+            this.view.legendVisible = val;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Plot.prototype, "xlim", {
+        get: function () {
+            return this.axes.x.lim;
+        },
+        set: function (val) {
+            this.axes.x.lim = val;
+            this.syncWithDataStore();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Plot.prototype, "ylim", {
+        get: function () {
+            return this.axes.y.lim;
+        },
+        set: function (val) {
+            this.axes.y.lim = val;
+            this.syncWithDataStore();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Plot.prototype.addAxes = function (width, height, xlim, ylim) {
+        this.axes = new Axes(this.view, width, height, xlim, ylim);
+    };
+    Plot.prototype.addMenuItems = function () {
+        var _this = this;
+        this.menu.addAction("Hide legend", function () {
+            _this.legendVisible = false;
+        }, function () { return _this.legendVisible; });
+        this.menu.addAction("Show legend", function () {
+            _this.legendVisible = true;
+        }, function () { return !_this.legendVisible; });
+        // TODO: give the legend its own context menu
+        this.menu.addAction("Set legend labels", function () {
+            _this.askLegend();
+        }, function () { return _this.legendVisible; });
+        this.menu.addSeparator();
+        _super.prototype.addMenuItems.call(this);
+    };
+    Plot.prototype.askLegend = function () {
+        var _this = this;
+        var modal = new modal_1.InputDialogView("Legend labels", "New value");
+        modal.title = "Enter comma separated legend labels";
+        modal.ok.addEventListener("click", function () {
+            var labelCSV = modal.input.value;
+            // No validation to do.
+            // Empty entries assumed to be indication to skip modification.
+            // Long strings okay.
+            // Excissive entries get ignored.
+            // TODO: Allow escaping of commas
+            if (labelCSV !== null && labelCSV !== "") {
+                _this.legendLabels = labelCSV.split(",").map(function (s) { return s.trim(); });
+            }
+            $(modal).modal("hide");
+        });
+        utils.handleTabs(modal);
+        $(modal.root).on("hidden.bs.modal", function () {
+            document.body.removeChild(modal.root);
+        });
+        document.body.appendChild(modal.root);
+        modal.show();
+    };
+    Plot.prototype.ondomadd = function () {
+        _super.prototype.ondomadd.call(this);
+        this.axes.ondomadd();
+    };
+    return Plot;
+}(widget_1.Widget));
+exports.Plot = Plot;
+var CrosshairView = /** @class */ (function () {
+    function CrosshairView() {
+        var crosshair = function (xy) {
+            return maquette_1.h("g.crosshair.crosshair" + xy, { styles: { display: "none" } }, [
+                maquette_1.h("line", { x1: "0", x2: "0", y1: "0", y2: "0" }),
+                maquette_1.h("text", { x: "0", y: "0" }, ["0.000"]),
+            ]);
+        };
+        this.x = utils.domCreateSVG(crosshair("X"));
+        this.y = utils.domCreateSVG(crosshair("Y"));
+        this.xLine = this.x.querySelector("line");
+        this.xText = this.x.querySelector("text");
+        this.yLine = this.y.querySelector("line");
+        this.yText = this.y.querySelector("text");
+    }
+    Object.defineProperty(CrosshairView.prototype, "offset", {
+        get: function () {
+            return [
+                Number(this.xLine.getAttribute("y1")),
+                Number(this.yLine.getAttribute("x1")),
+            ];
+        },
+        set: function (val) {
+            this.xLine.setAttribute("y1", String(val[0]));
+            this.yLine.setAttribute("x1", String(val[1]));
+            this.yText.setAttribute("x", String(val[1])); //
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(CrosshairView.prototype, "pos", {
+        get: function () {
+            return [
+                Number(this.xLine.getAttribute("x1")),
+                Number(this.yLine.getAttribute("y1")),
+            ];
+        },
+        set: function (val) {
+            this.xLine.setAttribute("x1", String(val[0]));
+            this.xLine.setAttribute("x2", String(val[0]));
+            this.yLine.setAttribute("y1", String(val[1]));
+            this.yLine.setAttribute("y2", String(val[1]));
+            this.xText.setAttribute("x", String(val[0]));
+            this.yText.setAttribute("y", String(val[1]));
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(CrosshairView.prototype, "scale", {
+        get: function () {
+            return [
+                Number(this.yLine.getAttribute("x2")),
+                Number(this.xLine.getAttribute("y2")),
+            ];
+        },
+        set: function (val) {
+            this.yLine.setAttribute("x2", String(val[0]));
+            this.xLine.setAttribute("y2", String(val[1]));
+            this.xText.setAttribute("y", String(val[1]));
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(CrosshairView.prototype, "value", {
+        get: function () {
+            return [
+                Number(this.xText.textContent),
+                Number(this.yText.textContent),
+            ];
+        },
+        set: function (val) {
+            this.xText.textContent = val[0].toFixed(3);
+            this.yText.textContent = val[1].toFixed(3);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(CrosshairView.prototype, "visible", {
+        get: function () {
+            return this.x.style.display !== "none";
+        },
+        set: function (val) {
+            if (val) {
+                this.x.style.display = "";
+                this.y.style.display = "";
+            }
+            else {
+                this.x.style.display = "none";
+                this.y.style.display = "none";
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return CrosshairView;
+}());
+exports.CrosshairView = CrosshairView;
+var AxisView = /** @class */ (function () {
+    function AxisView(xy) {
+        var node = maquette_1.h("g.axis.axis" + xy + ".unselectable", {
+            transform: "translate(0,0)",
+        });
+        this.g = utils.domCreateSVG(node);
+        this.orientation = xy === "X" ? "horizontal" : "vertical";
+    }
+    Object.defineProperty(AxisView.prototype, "pos", {
+        get: function () {
+            return utils.getTranslate(this.g);
+        },
+        set: function (val) {
+            utils.setTranslate(this.g, val[0], val[1]);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AxisView.prototype, "scale", {
+        get: function () {
+            var bbox = this.g.getBBox();
+            return [bbox.width, bbox.height];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return AxisView;
+}());
+exports.AxisView = AxisView;
+var AxesView = /** @class */ (function () {
+    function AxesView() {
+        var node = maquette_1.h("g.axes");
+        this.root = utils.domCreateSVG(node);
+        this.x = new AxisView("X");
+        this.y = new AxisView("Y");
+        this.root.appendChild(this.x.g);
+        this.root.appendChild(this.y.g);
+        this.crosshair = new CrosshairView();
+        this.root.appendChild(this.crosshair.x);
+        this.root.appendChild(this.crosshair.y);
+    }
+    Object.defineProperty(AxesView.prototype, "fontSize", {
+        get: function () {
+            // TODO: Number doesn't work here so we use parseFloat, but feels bad
+            return parseFloat(window.getComputedStyle(this.root)["font-size"]);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AxesView.prototype, "scale", {
+        get: function () {
+            var _a = this.x.scale, xWidth = _a[0], xHeight = _a[1];
+            var _b = this.y.scale, yWidth = _b[0], yHeight = _b[1];
+            return [xWidth + yWidth, xHeight + yHeight];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return AxesView;
+}());
+exports.AxesView = AxesView;
+var LegendView = /** @class */ (function () {
+    function LegendView(colors) {
+        this._labels = [];
+        this._legendItems = [];
+        this._values = [];
+        this.colors = colors;
+        var dimensions = this.colors.length;
+        var node = maquette_1.h("g.legend", { transform: "translate(0,0)" });
+        this.root = utils.domCreateSVG(node);
+        this.numLabels = this.colors.length;
+        this.labels = [];
+    }
+    Object.defineProperty(LegendView.prototype, "labels", {
+        get: function () {
+            return this._labels.map(function (label) { return label.textContent; });
+        },
+        set: function (val) {
+            this._labels.forEach(function (label, i) {
+                if (i >= val.length) {
+                    label.textContent = "Dimension " + (i + 1);
+                }
+                else {
+                    label.textContent = val[i];
+                }
+            });
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(LegendView.prototype, "numLabels", {
+        get: function () {
+            return this._legendItems.length;
+        },
+        set: function (val) {
+            while (this._legendItems.length - val < 0) {
+                this.addLabel();
+            }
+            while (this._legendItems.length - val > 0) {
+                this.removeLabel();
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(LegendView.prototype, "pos", {
+        get: function () {
+            return utils.getTranslate(this.root);
+        },
+        set: function (val) {
+            utils.setTranslate(this.root, val[0], val[1]);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(LegendView.prototype, "valuesVisible", {
+        get: function () {
+            return this._values[0].style.display !== "none";
+        },
+        set: function (val) {
+            this._values.forEach(function (value) {
+                value.style.display = val ? null : "none";
+            });
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(LegendView.prototype, "values", {
+        set: function (val) {
+            console.assert(val.length === this.numLabels);
+            this._values.forEach(function (value, i) {
+                value.textContent = val[i].toFixed(2);
+            });
+        },
+        enumerable: true,
+        configurable: true
+    });
+    LegendView.prototype.addLabel = function () {
+        var i = this._legendItems.length;
+        var node = maquette_1.h("g.legend-item", [
+            maquette_1.h("rect", {
+                fill: this.colors[i % this.colors.length],
+                height: "10",
+                width: "10",
+                y: "" + i * 20,
+            }),
+            maquette_1.h("text.label", {
+                x: "15",
+                y: "" + (i * 20 + 9),
+            }),
+            maquette_1.h("text.value", {
+                styles: { display: "none" },
+                y: "" + (i * 20 + 9),
+            }),
+        ]);
+        var legendItem = utils.domCreateSVG(node);
+        this.root.appendChild(legendItem);
+        this._legendItems.push(legendItem);
+        this._labels.push(legendItem.querySelector("text.label"));
+        this._values.push(legendItem.querySelector("text.value"));
+    };
+    LegendView.prototype.removeLabel = function () {
+        var legendItem = this._legendItems.pop();
+        this._labels.pop();
+        this._values.pop();
+        if (legendItem != null) {
+            this.root.removeChild(legendItem);
+        }
+    };
+    return LegendView;
+}());
+exports.LegendView = LegendView;
+var PlotView = /** @class */ (function (_super) {
+    __extends(PlotView, _super);
+    function PlotView(label, dimensions) {
+        if (dimensions === void 0) { dimensions = 1; }
+        var _this = _super.call(this, label) || this;
+        _this.colors = utils.makeColors(dimensions);
+        _this.axes = new AxesView();
+        _this.legend = new LegendView(_this.colors);
+        var node = maquette_1.h("g.plot");
+        _this.body = utils.domCreateSVG(node);
+        _this.body.appendChild(_this.axes.root);
+        _this.body.appendChild(_this.legend.root);
+        _this.root.appendChild(_this.body);
+        return _this;
+    }
+    Object.defineProperty(PlotView.prototype, "legendLabels", {
+        get: function () {
+            return this.legend.labels;
+        },
+        set: function (val) {
+            this.legend.labels = val;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PlotView.prototype, "legendVisible", {
+        get: function () {
+            return this.body.contains(this.legend.root);
+        },
+        set: function (val) {
+            if (val) {
+                this.body.appendChild(this.legend.root);
+            }
+            else {
+                this.body.removeChild(this.legend.root);
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PlotView.prototype, "scale", {
+        get: function () {
+            return this.overlayScale;
+        },
+        set: function (val) {
+            var width = Math.max(component_1.ResizableComponentView.minWidth, val[0]);
+            var height = Math.max(component_1.ResizableComponentView.minHeight, val[1]);
+            this.overlayScale = [width, height];
+            this.legend.pos = [width + 2, 0];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return PlotView;
+}(component_1.ResizableComponentView));
+exports.PlotView = PlotView;
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 20 */
+/* 17 */
+/* no static exports found */
+/* all exports used */
+/*!***********************************************!*\
+  !*** ./nengo_gui/static/components/widget.ts ***!
+  \***********************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function($) {
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var component_1 = __webpack_require__(/*! ./component */ 11);
+var datastore_1 = __webpack_require__(/*! ../datastore */ 31);
+var modal_1 = __webpack_require__(/*! ../modal */ 5);
+var utils = __webpack_require__(/*! ../utils */ 2);
+var Widget = /** @class */ (function (_super) {
+    __extends(Widget, _super);
+    function Widget(server, uid, left, top, width, height, dimensions, synapse) {
+        var _this = _super.call(this, server, uid, left, top, width, height, dimensions) || this;
+        _this.currentTime = 0.0;
+        _this.synapse = synapse;
+        _this.datastore = new datastore_1.DataStore(_this.dimensions, 0.0);
+        window.addEventListener("TimeSlider.moveShown", utils.throttle(function (e) {
+            _this.currentTime = e.detail.shownTime[1];
+        }, 50) // Update once every 50 ms
+        );
+        return _this;
+    }
+    /**
+     * Receive new line data from the server.
+     */
+    Widget.prototype.add = function (data) {
+        // TODO: handle this in the websocket code
+        // const size = this.dimensions + 1;
+        // // Since multiple data packets can be sent with a single event,
+        // // make sure to process all the packets.
+        // while (data.length >= size) {
+        //     this.datastore.push(data.slice(0, size));
+        //     data = data.slice(size);
+        // }
+        // if (data.length > 0) {
+        //     console.warn("extra data: " + data.length);
+        // }
+        if (data.length !== this.dimensions + 1) {
+            console.error("Got data with " + (data.length - 1) + " dimensions; " +
+                ("should be " + this.dimensions + " dimensions."));
+        }
+        else {
+            this.datastore.add(data);
+            this.syncWithDataStore();
+        }
+    };
+    Widget.prototype.addMenuItems = function () {
+        var _this = this;
+        this.menu.addAction("Set synapse...", function () {
+            _this.askSynapse();
+        });
+        this.menu.addAction("Hide label", function () {
+            _this.labelVisible = false;
+            // see component.interactRoot.on("dragend resizeend")
+            // this.saveLayout();
+        }, function () { return _this.labelVisible; });
+        this.menu.addAction("Show label", function () {
+            _this.labelVisible = true;
+            // see component.interactRoot.on("dragend resizeend")
+            // this.saveLayout();
+        }, function () { return !_this.labelVisible; });
+        // TODO: attachNetGraph
+        // this.menu.addAction("Remove", () => { this.remove(); });
+        _super.prototype.addMenuItems.call(this);
+    };
+    Widget.prototype.askSynapse = function () {
+        var _this = this;
+        var modal = new modal_1.InputDialogView(String(this.synapse), "Synaptic filter time constant (in seconds)", "Input should be a non-negative number");
+        modal.title = "Set synaptic filter...";
+        modal.ok.addEventListener("click", function () {
+            var validator = $(modal).data("bs.validator");
+            validator.validate();
+            if (validator.hasErrors() || validator.isIncomplete()) {
+                return;
+            }
+            if (modal.input.value !== null) {
+                var newSynapse = parseFloat(modal.input.value);
+                if (newSynapse !== _this.synapse) {
+                    _this.synapse = newSynapse;
+                    // this.ws.send("synapse:" + this.synapse);
+                }
+            }
+            $(modal).modal("hide");
+        });
+        utils.handleTabs(modal);
+        $(modal).validator({
+            custom: {
+                ngvalidator: function (item) {
+                    return utils.isNum(item.value) && Number(item.value) >= 0;
+                }
+            }
+        });
+        $(modal.root).on("hidden.bs.modal", function () {
+            document.body.removeChild(modal.root);
+        });
+        document.body.appendChild(modal.root);
+        modal.show();
+    };
+    Widget.prototype.reset = function () {
+        this.datastore.reset();
+    };
+    return Widget;
+}(component_1.ResizableComponent));
+exports.Widget = Widget;
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
+
+/***/ }),
+/* 18 */
+/* no static exports found */
+/* all exports used */
+/*!************************************************!*\
+  !*** ./~/jqueryfiletree/dist/images/music.png ***!
+  \************************************************/
+/***/ (function(module, exports) {
+
+module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAETSURBVBgZfcExS0JRGIDh996OFIQEgSRhTS1Bg0trw937B9UPCAT3hnJ1kYbGhrv0BxoaXSsMhBCsyUEcoiTKUM/3HU8Fce4Q+DyRZz5DcOkdiqIIiiAo7xiCMXs4HI4ZisPhOMcQOJQbOoxxKHm22UUxBBbHM1cRfw58GUtMIAieTIwgxAQWRclMEZSYwCIIGYsixASCYsl4pgiGwDFF+HWUaDopbfCGHRp+nCWSTktFXvFDOKyuNNYp4LhFriPPaXW5UWAV5Y6HNH+/dbHJIjN6NHlJzMnxWqNIDqFHh8/U7hiEJbp0+ar0m2a4MGFEjie6jCrtJs1y57FuI21R6w8g8uwnH/VJJK1ZrT3gn8gz3zcVUYEwGmDcvQAAAABJRU5ErkJggg=="
+
+/***/ }),
+/* 19 */
 /* no static exports found */
 /* all exports used */
 /*!************************************!*\
@@ -29281,12 +29464,13 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
  * @param {dict} args - A set of constructor arguments (see Component)
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-var ace = __webpack_require__(/*! brace */ 69);
-__webpack_require__(/*! brace/mode/python */ 70);
-var interact = __webpack_require__(/*! interact.js */ 9);
-var config_1 = __webpack_require__(/*! ./config */ 11);
+var ace = __webpack_require__(/*! brace */ 61);
+__webpack_require__(/*! brace/mode/python */ 62);
+var interact = __webpack_require__(/*! interact.js */ 10);
+var maquette_1 = __webpack_require__(/*! maquette */ 1);
+__webpack_require__(/*! ./editor.css */ 91);
+var config_1 = __webpack_require__(/*! ./config */ 7);
 var utils = __webpack_require__(/*! ./utils */ 2);
-var editor_1 = __webpack_require__(/*! ./views/editor */ 34);
 var Range = ace.acequire("ace/range").Range;
 var Editor = /** @class */ (function () {
     function Editor(server) {
@@ -29294,7 +29478,7 @@ var Editor = /** @class */ (function () {
         this.marker = null;
         this.saveDisabled = true;
         this.syncIntervalID = null;
-        this.view = new editor_1.EditorView();
+        this.view = new EditorView();
         this.onresize = utils.throttle(function () {
             [_this.interactConsole, _this.interactEditor].forEach(function (i) {
                 i.resizable({
@@ -29303,7 +29487,7 @@ var Editor = /** @class */ (function () {
                             bottom: _this.view.bottom - 20,
                             left: 250,
                             right: window.innerWidth - 100,
-                            top: _this.view.top + 40,
+                            top: _this.view.top + 40
                         }
                     }
                 });
@@ -29341,7 +29525,7 @@ var Editor = /** @class */ (function () {
         });
         this.interactEditor = interact(this.view.editor);
         this.interactEditor.resizable({
-            edges: { bottom: false, left: true, right: false, top: false },
+            edges: { bottom: false, left: true, right: false, top: false }
         });
         this.interactEditor.on("resizestart", function (event) {
             _this.view.root.style.transition = "none";
@@ -29356,7 +29540,7 @@ var Editor = /** @class */ (function () {
         });
         this.interactConsole = interact(this.view.console);
         this.interactConsole.resizable({
-            edges: { bottom: false, left: true, right: false, top: true },
+            edges: { bottom: false, left: true, right: false, top: true }
         });
         this.interactConsole.on("resizestart", function (event) {
             _this.view.root.style.transition = "none";
@@ -29569,10 +29753,111 @@ var Editor = /** @class */ (function () {
     return Editor;
 }());
 exports.Editor = Editor;
+var EditorView = /** @class */ (function () {
+    function EditorView() {
+        var node = maquette_1.h("div.editor-container", [
+            maquette_1.h("div.editor"),
+            maquette_1.h("div.console", [maquette_1.h("pre.stdout"), maquette_1.h("pre.stderr")])
+        ]);
+        this.root = maquette_1.dom.create(node).domNode;
+        this.editor = this.root.querySelector(".editor");
+        this.console = this.root.querySelector(".console");
+        this._stderr = this.console.querySelector(".stderr");
+        this._stdout = this.console.querySelector(".stdout");
+    }
+    Object.defineProperty(EditorView.prototype, "consoleHeight", {
+        get: function () {
+            return this.console.offsetHeight;
+        },
+        set: function (val) {
+            // TODO: probably these heights are not the same
+            this.console.style.height = val + "px";
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(EditorView.prototype, "bottom", {
+        get: function () {
+            return this.root.getBoundingClientRect().bottom;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(EditorView.prototype, "height", {
+        get: function () {
+            return this.root.offsetHeight;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(EditorView.prototype, "hidden", {
+        get: function () {
+            return this.root.classList.contains("hidden");
+        },
+        set: function (val) {
+            if (val) {
+                this.root.classList.add("hidden");
+            }
+            else {
+                this.root.classList.remove("hidden");
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(EditorView.prototype, "maxWidth", {
+        get: function () {
+            var parent = this.root.parentNode;
+            // 250 gives room for sidebar, but still somewhat arbitrary
+            return Math.max(580, parent.clientWidth - 250);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(EditorView.prototype, "stderr", {
+        get: function () {
+            return this._stderr.textContent;
+        },
+        set: function (val) {
+            this._stderr.textContent = val;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(EditorView.prototype, "stdout", {
+        get: function () {
+            return this._stdout.textContent;
+        },
+        set: function (val) {
+            this._stdout.textContent = val;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(EditorView.prototype, "top", {
+        get: function () {
+            return this.root.getBoundingClientRect().top;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(EditorView.prototype, "width", {
+        get: function () {
+            return this.root.clientWidth;
+        },
+        set: function (val) {
+            this.root.style.width = val + "px";
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return EditorView;
+}());
+exports.EditorView = EditorView;
 
 
 /***/ }),
-/* 21 */
+/* 20 */
 /* no static exports found */
 /* all exports used */
 /*!*************************************!*\
@@ -29587,8 +29872,19 @@ exports.Editor = Editor;
  *
  * @constructor
  */
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
-var hotkeys_1 = __webpack_require__(/*! ./views/hotkeys */ 35);
+var maquette_1 = __webpack_require__(/*! maquette */ 1);
+var modal_1 = __webpack_require__(/*! ./modal */ 5);
 var Hotkey = /** @class */ (function () {
     function Hotkey(name, key, modifiers, callback) {
         this.modifiers = { ctrl: false, shift: false };
@@ -29646,7 +29942,9 @@ var HotkeyManager = /** @class */ (function () {
         });
         // Prevent going back in history.
         this.add(null, "backspace", function () { });
-        server.bind("hotkeys.show", function () { _this.show(); });
+        server.bind("hotkeys.show", function () {
+            _this.show();
+        });
         this.server = server;
     }
     HotkeyManager.prototype.add = function (name, key) {
@@ -29709,7 +30007,7 @@ var HotkeyManager = /** @class */ (function () {
         });
     };
     HotkeyManager.prototype.show = function () {
-        var modal = new hotkeys_1.HotkeysDialogView(this.hotkeys);
+        var modal = new HotkeysDialogView(this.hotkeys);
         $(modal.root).on("hidden.bs.modal", function () {
             document.body.removeChild(modal.root);
         });
@@ -29719,174 +30017,39 @@ var HotkeyManager = /** @class */ (function () {
     return HotkeyManager;
 }());
 exports.HotkeyManager = HotkeyManager;
+var HotkeysDialogView = /** @class */ (function (_super) {
+    __extends(HotkeysDialogView, _super);
+    function HotkeysDialogView(hotkeys) {
+        var _this = _super.call(this) || this;
+        _this.title = "Hotkeys list";
+        _this.dialog.classList.add("modal-sm");
+        var row = function (action, shortcut) {
+            return maquette_1.h("tr", [
+                maquette_1.h("td", [action]),
+                maquette_1.h("td", { align: "right" }, [shortcut])
+            ]);
+        };
+        var node = maquette_1.h("table.table-striped", { width: "100%" }, [
+            maquette_1.h("tbody", [
+                hotkeys.map(function (hk) {
+                    if (hk.name !== null) {
+                        return row(hk.name, hk.shortcut);
+                    }
+                })
+            ])
+        ]);
+        _this.body.appendChild(maquette_1.dom.create(node).domNode);
+        _this.addCloseButton();
+        return _this;
+    }
+    return HotkeysDialogView;
+}(modal_1.ModalView));
+exports.HotkeysDialogView = HotkeysDialogView;
 
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 22 */
-/* no static exports found */
-/* all exports used */
-/*!************************************!*\
-  !*** ./nengo_gui/static/server.ts ***!
-  \************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-function getURL(uid) {
-    if (uid === void 0) { uid = null; }
-    var hostname = window.location.hostname;
-    var port = window.location.port;
-    var wsProto;
-    if (window.location.protocol === "https:") {
-        wsProto = "wss:";
-    }
-    else {
-        wsProto = "ws:";
-    }
-    var url = wsProto + "//" + hostname;
-    if (port != "") {
-        url += ":" + port;
-    }
-    if (uid != null) {
-        // If requesting UID, only send along UID
-        url += "/?uid=" + uid;
-    }
-    else {
-        // If not requesting UID, send along query params
-        var href = window.location.href.split("?");
-        if (href.length > 1) {
-            url += "/?" + href[1];
-        }
-    }
-    return url;
-}
-/**
- * Create a WebSocket connection to the server.
- *
- * This extends the normal WebSocket class with convenience methods
- * for binding and dispatching events to and from other clients
- * connected to the same websocket.
- *
- * @param {string} uid - The uid for the WebSocket.
- * @returns {WebSocket} The created WebSocket.
- */
-var ServerConnection = /** @class */ (function () {
-    function ServerConnection() {
-        var _this = this;
-        this.callbacks = {};
-        this.ws = new WebSocket(getURL());
-        this.ws.onmessage = function (event) {
-            var json = JSON.parse(event.data);
-            _this.dispatch(json[0], json[1]);
-        };
-        this.ws.onclose = function () {
-            _this.dispatch("close");
-        };
-        this.ws.onopen = function () {
-            _this.dispatch("open");
-        };
-    }
-    ServerConnection.prototype.bind = function (name, callback) {
-        if (!(name in this.callbacks)) {
-            this.callbacks[name] = [];
-        }
-        this.callbacks[name].push(callback);
-        return this;
-    };
-    ServerConnection.prototype.close = function () {
-        this.ws.close();
-    };
-    ServerConnection.prototype.isBound = function (name) {
-        return name in this.callbacks;
-    };
-    ServerConnection.prototype.isReady = function () {
-        return this.ws.readyState === WebSocket.OPEN;
-    };
-    ServerConnection.prototype.dispatch = function (name, kwargs) {
-        if (kwargs === void 0) { kwargs = {}; }
-        if (name in this.callbacks) {
-            this.callbacks[name].forEach(function (callback) {
-                callback(kwargs);
-            });
-        }
-        else {
-            console.warn("Nothing bound for '" + name + "'");
-        }
-        return this;
-    };
-    ServerConnection.prototype.send = function (name, kwargs) {
-        if (kwargs === void 0) { kwargs = {}; }
-        var payload = JSON.stringify([name, kwargs]);
-        this.ws.send(payload);
-        return this;
-    };
-    return ServerConnection;
-}());
-exports.ServerConnection = ServerConnection;
-var MockConnection = /** @class */ (function () {
-    function MockConnection() {
-        this.bound = [];
-    }
-    MockConnection.prototype.bind = function (name, callback) {
-        if (MockConnection.verbose) {
-            console.log("binding " + name);
-        }
-        this.bound.push(name);
-        return this;
-    };
-    MockConnection.prototype.isBound = function (name) {
-        return this.bound.indexOf(name) !== -1;
-    };
-    MockConnection.prototype.dispatch = function (name, kwargs) {
-        if (kwargs === void 0) { kwargs = {}; }
-        if (MockConnection.verbose) {
-            console.log("dispatch " + name + "(" + Object.keys(kwargs) + ")");
-        }
-        return this;
-    };
-    MockConnection.prototype.send = function (name, kwargs) {
-        if (kwargs === void 0) { kwargs = {}; }
-        if (MockConnection.verbose) {
-            console.log("send " + name + "(" + Object.keys(kwargs) + ")");
-        }
-        this.lastSentName = name;
-        this.lastSent = kwargs;
-        return this;
-    };
-    MockConnection.verbose = true;
-    return MockConnection;
-}());
-exports.MockConnection = MockConnection;
-/**
- * Create a WebSocket connection to the given uid.
- *
- * This constrains the normal WebSocket class to only accept binary data,
- * which is shuttled to one callback function.
- *
- * @param {string} uid - The uid for the WebSocket.
- * @returns {WebSocket} The created WebSocket.
- */
-var FastServerConnection = /** @class */ (function () {
-    function FastServerConnection(uid, destructure, step) {
-        this.uid = uid;
-        this.ws = new WebSocket(getURL(this.uid));
-        this.ws.binaryType = "arraybuffer";
-        this.ws.onmessage = function (event) {
-            console.assert(event.data instanceof ArrayBuffer);
-            var structure = destructure(event.data);
-            step.apply(void 0, structure);
-        };
-    }
-    FastServerConnection.typename = "fast";
-    return FastServerConnection;
-}());
-exports.FastServerConnection = FastServerConnection;
-
-
-/***/ }),
-/* 23 */
+/* 21 */
 /* no static exports found */
 /* all exports used */
 /*!*************************************!*\
@@ -29903,14 +30066,16 @@ exports.FastServerConnection = FastServerConnection;
  * upon page load.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-var config_1 = __webpack_require__(/*! ./config */ 11);
-var modal_1 = __webpack_require__(/*! ./views/modal */ 5);
-var sidebar_1 = __webpack_require__(/*! ./views/sidebar */ 37);
+var maquette_1 = __webpack_require__(/*! maquette */ 1);
+__webpack_require__(/*! ./sidebar.css */ 95);
+var config_1 = __webpack_require__(/*! ./config */ 7);
+var modal_1 = __webpack_require__(/*! ./modal */ 5);
+var utils = __webpack_require__(/*! ./utils */ 2);
 var Sidebar = /** @class */ (function () {
     function Sidebar(server) {
         var _this = this;
         this.configDialog = new config_1.ConfigDialog();
-        this.view = new sidebar_1.SidebarView();
+        this.view = new SidebarView();
         this.view.actions["config"].addEventListener("click", function () {
             _this.askConfig();
         });
@@ -30094,11 +30259,112 @@ var Sidebar = /** @class */ (function () {
     return Sidebar;
 }());
 exports.Sidebar = Sidebar;
+var SidebarView = /** @class */ (function () {
+    function SidebarView() {
+        this.groups = [];
+        var node = maquette_1.h("div.sidebar", [
+            maquette_1.h("div.filebrowser.active"),
+            maquette_1.h("div.accordion-container")
+        ]);
+        this.root = maquette_1.dom.create(node).domNode;
+        this.filebrowser = this.root.querySelector(".filebrowser");
+        this.utilities = this.root.querySelector(".accordion-container");
+        this.actions = {
+            config: this.addAction("Configure settings", "cog"),
+            minimap: this.addAction("Toggle minimap", "credit-card")
+        };
+        _a = this.addActionGroup("Download...", [
+            { label: "Simulation data as CSV", icon: "signal" },
+            { label: "Network layout as SVG", icon: "picture" }
+        ]), this.actions["data"] = _a[0], this.actions["svg"] = _a[1];
+        var _a;
+    }
+    Object.defineProperty(SidebarView.prototype, "active", {
+        get: function () {
+            if (this.filebrowser.classList.contains("active")) {
+                return "filebrowser";
+            }
+            else if (this.utilities.classList.contains("active")) {
+                return "utilities";
+            }
+            else {
+                console.error("No sidebar tab is active");
+            }
+        },
+        set: function (val) {
+            if (val === "filebrowser") {
+                this.filebrowser.classList.add("active");
+                this.utilities.classList.remove("active");
+            }
+            else if (val === "utilities") {
+                this.utilities.classList.add("active");
+                this.filebrowser.classList.remove("active");
+            }
+            else {
+                console.error(val + " not a valid sidebar tab");
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SidebarView.prototype, "hidden", {
+        get: function () {
+            return this.root.classList.contains("hidden");
+        },
+        set: function (val) {
+            if (val) {
+                this.root.classList.add("hidden");
+            }
+            else {
+                this.root.classList.remove("hidden");
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SidebarView.prototype, "width", {
+        get: function () {
+            return this.root.offsetWidth;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    SidebarView.prototype.action = function (label, icon, indent) {
+        if (indent === void 0) { indent = false; }
+        return maquette_1.h("div.sidebar-item" + (indent ? ".indent" : ""), [
+            maquette_1.h("span.title", [label]),
+            maquette_1.h("span.glyphicon.glyphicon-" + icon)
+        ]);
+    };
+    SidebarView.prototype.addAction = function (label, icon) {
+        var div = maquette_1.dom.create(this.action(label, icon))
+            .domNode;
+        this.utilities.appendChild(div);
+        return div;
+    };
+    SidebarView.prototype.addActionGroup = function (heading, items) {
+        var _this = this;
+        var headingNode = maquette_1.h("div.accordion-toggle.sidebar-item", [
+            maquette_1.h("span.title", [heading]),
+            maquette_1.h("span.glyphicon.glyphicon-chevron-down")
+        ]);
+        var headingDiv = maquette_1.dom.create(headingNode).domNode;
+        this.utilities.appendChild(headingDiv);
+        var contentNode = maquette_1.h("div.accordion-content", items.map(function (item) { return _this.action(item.label, item.icon, true); }));
+        var contentDiv = maquette_1.dom.create(contentNode).domNode;
+        this.utilities.appendChild(contentDiv);
+        this.groups.push({ content: contentDiv, heading: headingDiv });
+        // Convert HTMLCollection to array
+        return utils.toArray(contentDiv.getElementsByClassName("sidebar-item"));
+    };
+    return SidebarView;
+}());
+exports.SidebarView = SidebarView;
 
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 24 */
+/* 22 */
 /* no static exports found */
 /* all exports used */
 /*!*****************************************!*\
@@ -30109,11 +30375,12 @@ exports.Sidebar = Sidebar;
 "use strict";
 /* WEBPACK VAR INJECTION */(function($) {
 Object.defineProperty(exports, "__esModule", { value: true });
-var d3 = __webpack_require__(/*! d3 */ 15);
-var interact = __webpack_require__(/*! interact.js */ 9);
+var d3 = __webpack_require__(/*! d3 */ 14);
+var interact = __webpack_require__(/*! interact.js */ 10);
+var maquette_1 = __webpack_require__(/*! maquette */ 1);
+__webpack_require__(/*! ./sim-control.css */ 96);
+var modal_1 = __webpack_require__(/*! ./modal */ 5);
 var utils = __webpack_require__(/*! ./utils */ 2);
-var modal_1 = __webpack_require__(/*! ./views/modal */ 5);
-var sim_control_1 = __webpack_require__(/*! ./views/sim-control */ 38);
 /**
  * Control panel for a simulation.
  */
@@ -30134,7 +30401,7 @@ var SimControl = /** @class */ (function () {
         var _this = this;
         this.simulatorOptions = "";
         this._status = "paused";
-        this.view = new sim_control_1.SimControlView("sim-control");
+        this.view = new SimControlView("sim-control");
         this.timeSlider = new TimeSlider(keptTime, shownTime, this.view.timeSlider);
         this.speedThrottle = new SpeedThrottle(this.view.speedThrottle);
         this.view.pause.onclick = function (event) {
@@ -30491,1421 +30758,6 @@ var TimeSlider = /** @class */ (function () {
     return TimeSlider;
 }());
 exports.TimeSlider = TimeSlider;
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
-
-/***/ }),
-/* 25 */
-/* no static exports found */
-/* all exports used */
-/*!*************************************!*\
-  !*** ./nengo_gui/static/toolbar.ts ***!
-  \*************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function($) {
-/**
- * Toolbar for the top of the GUI.
- *
- * Toolbar constructor is written into HTML file by python and called
- * upon page load.
- *
- * @constructor
- * @param {string} filename - The name of the file opened
- */
-Object.defineProperty(exports, "__esModule", { value: true });
-var interact = __webpack_require__(/*! interact.js */ 9);
-var config_1 = __webpack_require__(/*! ./config */ 11);
-var menu_1 = __webpack_require__(/*! ./menu */ 12);
-var modal_1 = __webpack_require__(/*! ./views/modal */ 5);
-var toolbar_1 = __webpack_require__(/*! ./views/toolbar */ 39);
-var Toolbar = /** @class */ (function () {
-    function Toolbar(server) {
-        var _this = this;
-        this.view = new toolbar_1.ToolbarView();
-        this.server = server;
-        this.server.bind("toolbar.filename", function (_a) {
-            var filename = _a.filename;
-            _this.filename = filename;
-        });
-        this.view.buttons["open"].addEventListener("click", function () {
-            if (_this.view.is_active("open")) {
-                _this.view.deactivate("open");
-                _this.server.dispatch("sidebar.hide");
-            }
-            else {
-                _this.server.dispatch("sidebar.filebrowser");
-                _this.view.deactivate("utils");
-                _this.view.activate("open");
-            }
-        });
-        this.view.buttons["utils"].addEventListener("click", function () {
-            if (_this.view.is_active("utils")) {
-                _this.view.deactivate("utils");
-                _this.server.dispatch("sidebar.hide");
-            }
-            else {
-                _this.server.dispatch("sidebar.utilities");
-                _this.view.deactivate("open");
-                _this.view.activate("utils");
-            }
-        });
-        this.view.buttons["reset"].addEventListener("click", function () {
-            _this.askResetLayout();
-        });
-        this.view.buttons["undo"].addEventListener("click", function () {
-            _this.server.dispatch("netgraph.undo");
-            // this.netgraph.notify({undo: "1"});
-        });
-        this.view.buttons["redo"].addEventListener("click", function () {
-            _this.server.dispatch("netgraph.redo");
-            // this.netgraph.notify({undo: "0"});
-        });
-        this.view.buttons["filename"].addEventListener("click", function () {
-            _this.askSaveAs();
-        });
-        this.view.buttons["sync"].addEventListener("click", function () {
-            _this.server.dispatch("editor.syncWithServer");
-        });
-        this.view.buttons["save"].addEventListener("click", function () {
-            _this.server.dispatch("editor.save");
-        });
-        this.view.buttons["fontDown"].addEventListener("click", function () {
-            _this.server.dispatch("editor.fontDown");
-        });
-        this.view.buttons["fontUp"].addEventListener("click", function () {
-            _this.server.dispatch("editor.fontUp");
-        });
-        this.view.buttons["editor"].addEventListener("click", function () {
-            _this.server.dispatch("editor.toggle");
-        });
-        this.view.buttons["hotkeys"].addEventListener("click", function () {
-            // TODO: hotkeys menu func
-            _this.server.dispatch("hotkeys.show");
-        });
-        interact(this.view.root).on("tap", function () {
-            menu_1.Menu.hideShown();
-        });
-        // document.addEventListener("nengo.editor", (event: CustomEvent) => {
-        //     const hidden = event.detail;
-        // });
-        document.addEventListener("nengo.editor.dirty", function () {
-            _this.view.enable("sync");
-            _this.view.enable("save");
-        });
-        document.addEventListener("nengo.editor.saved", function () {
-            _this.view.disable("sync");
-            _this.view.disable("save");
-        });
-        document.addEventListener("nengoConfigChange", function (event) {
-            var key = event.detail;
-            if (key === "editorFontSize") {
-                if (config_1.config.editorFontSize <= 6) {
-                    _this.view.disable("fontDown");
-                }
-                else {
-                    _this.view.enable("fontDown");
-                }
-            }
-        });
-    }
-    Object.defineProperty(Toolbar.prototype, "filename", {
-        get: function () {
-            return this.view.filename;
-        },
-        set: function (val) {
-            var old_filename = this.view.filename;
-            if (val !== old_filename) {
-                this.view.filename = val;
-                // Update the URL so reload and bookmarks work as expected
-                history.pushState({}, val, "/?filename=" + val);
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Determines which tab should be in view when clicked.
-     *
-     * @param {HTMLElement|string} it - The element
-     * @param {number} posNum - Which tab it corresponds to
-     * @param {boolean} closeIfSelected - Whether to close the tab
-     * @returns {function} Function to call on tab click
-     */
-    // TODO: Move to toolbar
-    // menuTabClick(it, posNum, closeIfSelected) {
-    //     return () => {
-    //         if ($(it).hasClass("deactivated")) {
-    //             return;
-    //         }
-    //         if (closeIfSelected
-    //                 && this.menuOpen
-    //                 && $(it).hasClass("selected")) {
-    //             this.hideSideNav();
-    //             this.focusReset();
-    //         } else {
-    //             this.showSideNav();
-    //             const element = document.getElementById("MenuContent");
-    //             const transVal = String(-this.view.width * posNum);
-    //             element.style.transform = "translate(" + transVal + "px)";
-    //             this.focusReset();
-    //             $(it).addClass("selected");
-    //         }
-    //     };
-    // }
-    Toolbar.prototype.askResetLayout = function () {
-        var _this = this;
-        var modal = new modal_1.AlertDialogView("This operation cannot be undone!", "danger");
-        modal.title = "Are you sure you wish to reset this layout, " +
-            "removing all the graphs and resetting the position of all items?";
-        var resetButton = modal.addFooterButton("Reset");
-        modal.addCloseButton();
-        resetButton.addEventListener("click", function () {
-            _this.resetModelLayout();
-        });
-        $(modal.root).on("hidden.bs.modal", function () {
-            document.body.removeChild(modal.root);
-        });
-        document.body.appendChild(modal.root);
-        modal.show();
-    };
-    Toolbar.prototype.askSaveAs = function () {
-        var _this = this;
-        var modal = new modal_1.InputDialogView(null, null);
-        modal.title = "Save file as...";
-        modal.input.value = this.filename;
-        modal.ok.addEventListener("click", function () {
-            var newFilename = modal.input.value;
-            if (newFilename !== _this.filename) {
-                // TODO: connect to editor and do below
-                // const editorCode = this.editor.editor.getValue();
-                // TODO: make this an editor method
-                // this.editor.ws.send(JSON.stringify(
-                //     {code: editorCode, save: true, saveAs: newFilename}
-                // ));
-            }
-            $(modal).modal("hide");
-        });
-        modal.ok.addEventListener("keypress", function (event) {
-            if (event.which === 13) {
-                event.preventDefault();
-                modal.ok.click();
-            }
-        });
-        $(modal.root).on("hidden.bs.modal", function () {
-            document.body.removeChild(modal.root);
-        });
-        document.body.appendChild(modal.root);
-        modal.show();
-    };
-    // TODO: does this ever get used...?
-    // fileName() {
-    //     const openEl = <HTMLInputElement> document.getElementById("openFile");
-    //     console.assert(openEl.hasOwnProperty("value"));
-    //     let filename = openEl.value;
-    //     filename = filename.replace("C:\\fakepath\\", "");
-    //     this.sim.ws.send("open" + filename);
-    // }
-    /**
-     * Reset the model layout to the default.
-     *
-     * This is done by deleting the config file and reloading the script.
-     */
-    Toolbar.prototype.resetModelLayout = function () {
-        // TODO: is this the best way to refresh? Does reset=True do anything?
-        window.location.assign("/?reset=True&filename=" + this.filename);
-    };
-    return Toolbar;
-}());
-exports.Toolbar = Toolbar;
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
-
-/***/ }),
-/* 26 */
-/* no static exports found */
-/* all exports used */
-/*!*****************************************************************!*\
-  !*** ./~/bootstrap/dist/fonts/glyphicons-halflings-regular.eot ***!
-  \*****************************************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__.p + "./f4769f9bdb7466be65088239c12046d1.eot";
-
-/***/ }),
-/* 27 */
-/* no static exports found */
-/* all exports used */
-/*!*********************************************************!*\
-  !*** ./nengo_gui/static/components/views/connection.ts ***!
-  \*********************************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var maquette_1 = __webpack_require__(/*! maquette */ 1);
-var views_1 = __webpack_require__(/*! ../../views/views */ 16);
-var utils = __webpack_require__(/*! ../../utils */ 2);
-__webpack_require__(/*! ./connection.css */ 95);
-function arrowhead(rotate) {
-    if (rotate === void 0) { rotate = 0; }
-    return maquette_1.h("path.arrow", {
-        d: "M 10,0 L -5,-5 -5,5 z",
-        transform: "translate(0,0) rotate(" + rotate + ")",
-    });
-}
-var ConnectionView = /** @class */ (function () {
-    function ConnectionView() {
-        var node = maquette_1.h("g.connection", [
-            maquette_1.h("line", { x1: "0", x2: "10", y1: "0", y2: "10" }),
-            arrowhead(),
-        ]);
-        this.root = utils.domCreateSVG(node);
-        this.arrow = this.root.querySelector("path.arrow");
-        this.line = this.root.querySelector("line");
-    }
-    Object.defineProperty(ConnectionView.prototype, "endPos", {
-        get: function () {
-            return [
-                Number(this.line.getAttribute("x2")),
-                Number(this.line.getAttribute("y2")),
-            ];
-        },
-        set: function (val) {
-            this.line.setAttribute("x2", "" + val[0]);
-            this.line.setAttribute("y2", "" + val[1]);
-            this.syncArrowWithLine();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ConnectionView.prototype, "startPos", {
-        get: function () {
-            return [
-                Number(this.line.getAttribute("x1")),
-                Number(this.line.getAttribute("y1")),
-            ];
-        },
-        set: function (val) {
-            this.line.setAttribute("x1", "" + val[0]);
-            this.line.setAttribute("y1", "" + val[1]);
-            this.syncArrowWithLine();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ConnectionView.prototype, "visible", {
-        get: function () {
-            return this.root.style.display !== "none";
-        },
-        set: function (val) {
-            if (val) {
-                this.root.style.display = null;
-            }
-            else {
-                this.root.style.display = "none";
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ConnectionView.prototype.syncArrowWithLine = function () {
-        var start = this.startPos;
-        var end = this.endPos;
-        views_1.setTranslate(this.arrow, utils.lerp(start[0], end[0], ConnectionView.arrowLocation), utils.lerp(start[1], end[1], ConnectionView.arrowLocation));
-        // TODO: would be nice to do this in one step, but ok for now
-        var angle = utils.angle(start[0], end[0], start[1], end[1]);
-        var transform = this.arrow.getAttribute("transform");
-        this.arrow.setAttribute("transform", transform + " rotate(" + angle + ")");
-    };
-    ConnectionView.arrowLocation = 0.6;
-    return ConnectionView;
-}());
-exports.ConnectionView = ConnectionView;
-var RecurrentConnectionView = /** @class */ (function () {
-    function RecurrentConnectionView() {
-        this._width = 1.0;
-        var node = maquette_1.h("g.connection.recurrent", {
-            transform: "translate(0,0)",
-        }, [
-            maquette_1.h("path", { d: "" }),
-            arrowhead(RecurrentConnectionView.arrowRotation),
-        ]);
-        this.root = utils.domCreateSVG(node);
-        this.path = this.root.firstChild;
-        this.arrow = this.root.querySelector("path.arrow");
-    }
-    Object.defineProperty(RecurrentConnectionView.prototype, "pos", {
-        get: function () {
-            return views_1.getTranslate(this.root);
-        },
-        set: function (val) {
-            var _a = [this.width, this.height], w = _a[0], h = _a[1];
-            var r = RecurrentConnectionView.arrowRotation;
-            views_1.setTranslate(this.root, val[0] + w * 0.15, val[1] - h * 1.1);
-            this.arrow.setAttribute("transform", (_b = ["\n            translate(", ",", ")\n            rotate(", ")\n        "], _b.raw = ["\n            translate(", ",", ")\n            rotate(", ")\n        "], utils.singleline(_b, -w * 0.13, h * .1165, r - Math.max(30 - h, 0) * 0.8)));
-            var _b;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(RecurrentConnectionView.prototype, "height", {
-        get: function () {
-            // Note: aspect ratio is 1 : 0.675
-            return this._width * 0.675;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(RecurrentConnectionView.prototype, "width", {
-        get: function () {
-            return this._width;
-        },
-        set: function (val) {
-            var w = val;
-            // x goes into the negative because we set the position to be
-            // the center of the object
-            var d = (_a = ["\n            M", ",", "\n            C", ",", "\n            ", ",", "\n            ", ",", "\n            ", ",", "\n            ", ",", "\n            0,", "\n            S", ",", "\n            ", ",", "\n            C", ",", "\n            ", ",", "\n            ", ",", "\n        "], _a.raw = ["\n            M", ",", "\n            C", ",", "\n            ", ",", "\n            ", ",", "\n            ", ",", "\n            ", ",", "\n            0,", "\n            S", ",", "\n            ", ",", "\n            C", ",", "\n            ", ",", "\n            ", ",", "\n        "], utils.singleline(_a, w * -.3663, w * .59656, w * -.4493, w * .5397, w * -.5, w * .4645, w * -.5, w * .3819, w * -.5, w * .2083, w * -.27615, w * .0676, w * .0676, w * .5, w * .2083, w * .5, w * .3819, w * .5, w * .5156, w * 0.367, w * .63, w * 0.18, w * .675));
-            this.path.setAttribute("d", d);
-            this._width = val;
-            var _a;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(RecurrentConnectionView.prototype, "visible", {
-        get: function () {
-            return this.root.style.display !== "none";
-        },
-        set: function (val) {
-            if (val) {
-                this.root.style.display = null;
-            }
-            else {
-                this.root.style.display = "none";
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    RecurrentConnectionView.arrowRotation = 171; // In degrees
-    return RecurrentConnectionView;
-}());
-exports.RecurrentConnectionView = RecurrentConnectionView;
-
-
-/***/ }),
-/* 28 */
-/* no static exports found */
-/* all exports used */
-/*!*******************************************************!*\
-  !*** ./nengo_gui/static/components/views/ensemble.ts ***!
-  \*******************************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var maquette_1 = __webpack_require__(/*! maquette */ 1);
-var views_1 = __webpack_require__(/*! ../../views/views */ 16);
-var base_1 = __webpack_require__(/*! ./base */ 10);
-__webpack_require__(/*! ./ensemble.css */ 96);
-var utils = __webpack_require__(/*! ../../utils */ 2);
-var EnsembleView = /** @class */ (function (_super) {
-    __extends(EnsembleView, _super);
-    function EnsembleView(label) {
-        var _this = _super.call(this, label) || this;
-        _this.aspect = 1.;
-        var r = "4.843";
-        var node = maquette_1.h("g.ensemble", { transform: "scale(1,1)" }, [
-            maquette_1.h("circle", { cx: r, cy: "10.52", r: r, "stroke-width": "1" }),
-            maquette_1.h("circle", { cx: "16.186", cy: "17.874", r: r, "stroke-width": "1" }),
-            maquette_1.h("circle", { cx: "21.012", cy: "30.561", r: r, "stroke-width": "1" }),
-            maquette_1.h("circle", { cx: "29.704", cy: "17.23", r: r, "stroke-width": "1" }),
-            maquette_1.h("circle", { cx: "5.647", cy: "26.414", r: r, "stroke-width": "1" }),
-            maquette_1.h("circle", { cx: "19.894", cy: r, r: r, "stroke-width": "1" }),
-        ]);
-        _this.body = utils.domCreateSVG(node);
-        _this.root.appendChild(_this.body);
-        // Convert NodeList to array
-        _this.circles = utils.toArray(_this.body.childNodes);
-        return _this;
-    }
-    Object.defineProperty(EnsembleView.prototype, "scale", {
-        get: function () {
-            var _a = views_1.getScale(this.body), width = _a[0], height = _a[1];
-            return [width * this.baseWidth, height * this.baseHeight];
-        },
-        set: function (val) {
-            var width = Math.max(base_1.ResizableComponentView.minWidth, val[0]);
-            var height = Math.max(base_1.ResizableComponentView.minHeight, val[1]);
-            // Should be 1 at basewidth; scale accordingly
-            var strokeWidth = "" + this.baseWidth / width;
-            views_1.setScale(this.body, width / this.baseWidth, height / this.baseHeight);
-            this.circles.forEach(function (circle) {
-                circle.setAttribute("stroke-width", strokeWidth);
-            });
-            this.overlayScale = [width, height];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return EnsembleView;
-}(base_1.ResizableComponentView));
-exports.EnsembleView = EnsembleView;
-
-
-/***/ }),
-/* 29 */
-/* no static exports found */
-/* all exports used */
-/*!******************************************************!*\
-  !*** ./nengo_gui/static/components/views/network.ts ***!
-  \******************************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var maquette_1 = __webpack_require__(/*! maquette */ 1);
-var base_1 = __webpack_require__(/*! ./base */ 10);
-var utils = __webpack_require__(/*! ../../utils */ 2);
-__webpack_require__(/*! ./network.css */ 97);
-var NetworkView = /** @class */ (function (_super) {
-    __extends(NetworkView, _super);
-    function NetworkView(label) {
-        var _this = _super.call(this, label) || this;
-        var node = maquette_1.h("g.network", [
-            maquette_1.h("rect", {
-                height: "50",
-                styles: {
-                    "fill": "rgb(0,0,0)",
-                    "fill-opacity": "1.0",
-                    "stroke": "rgb(0,0,0)",
-                },
-                width: "50",
-                x: "0",
-                y: "0",
-            })
-        ]);
-        _this.body = utils.domCreateSVG(node);
-        _this.root.appendChild(_this.body);
-        _this.rect = _this.body.firstChild;
-        return _this;
-    }
-    Object.defineProperty(NetworkView.prototype, "fill", {
-        get: function () {
-            return this.rect.style.fill;
-        },
-        set: function (val) {
-            this.rect.style.fill = val;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(NetworkView.prototype, "scale", {
-        get: function () {
-            return [
-                Number(this.rect.getAttribute("width")),
-                Number(this.rect.getAttribute("height")),
-            ];
-        },
-        set: function (val) {
-            var width = Math.max(base_1.ResizableComponentView.minWidth, val[0]);
-            var height = Math.max(base_1.ResizableComponentView.minHeight, val[1]);
-            this.rect.setAttribute("width", "" + width);
-            this.rect.setAttribute("height", "" + height);
-            this.overlayScale = [width, height];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(NetworkView.prototype, "stroke", {
-        get: function () {
-            return this.rect.style.stroke;
-        },
-        set: function (val) {
-            this.rect.style.stroke = val;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(NetworkView.prototype, "transparent", {
-        get: function () {
-            return this.rect.style.fillOpacity === "0";
-        },
-        set: function (val) {
-            if (val) {
-                this.rect.style.fillOpacity = "0";
-            }
-            else {
-                this.rect.style.fillOpacity = "1";
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return NetworkView;
-}(base_1.ResizableComponentView));
-exports.NetworkView = NetworkView;
-
-
-/***/ }),
-/* 30 */
-/* no static exports found */
-/* all exports used */
-/*!***************************************************!*\
-  !*** ./nengo_gui/static/components/views/node.ts ***!
-  \***************************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var maquette_1 = __webpack_require__(/*! maquette */ 1);
-var base_1 = __webpack_require__(/*! ./base */ 10);
-var utils = __webpack_require__(/*! ../../utils */ 2);
-__webpack_require__(/*! ./node.css */ 98);
-var PassthroughNodeView = /** @class */ (function (_super) {
-    __extends(PassthroughNodeView, _super);
-    function PassthroughNodeView(label) {
-        var _this = _super.call(this, label) || this;
-        var node = maquette_1.h("g.passthrough", [
-            maquette_1.h("circle", { cx: "4", cy: "4", r: "4" }),
-        ]);
-        _this.body = utils.domCreateSVG(node);
-        _this.root.appendChild(_this.body);
-        return _this;
-    }
-    return PassthroughNodeView;
-}(base_1.ComponentView));
-exports.PassthroughNodeView = PassthroughNodeView;
-var NodeView = /** @class */ (function (_super) {
-    __extends(NodeView, _super);
-    function NodeView(label) {
-        var _this = _super.call(this, label) || this;
-        var node = maquette_1.h("g.node", [
-            maquette_1.h("rect", {
-                height: "50",
-                rx: "" + NodeView.radiusScale * 50,
-                ry: "" + NodeView.radiusScale * 50,
-                width: "50",
-                x: "0",
-                y: "0",
-            }),
-        ]);
-        _this.body = utils.domCreateSVG(node);
-        _this.root.appendChild(_this.body);
-        _this.rect = _this.body.firstChild;
-        return _this;
-    }
-    Object.defineProperty(NodeView.prototype, "scale", {
-        get: function () {
-            return [
-                Number(this.rect.getAttribute("width")),
-                Number(this.rect.getAttribute("height")),
-            ];
-        },
-        set: function (val) {
-            var width = Math.max(base_1.ResizableComponentView.minWidth, val[0]);
-            var height = Math.max(base_1.ResizableComponentView.minHeight, val[1]);
-            var smaller = Math.min(width, height);
-            this.rect.setAttribute("width", "" + width);
-            this.rect.setAttribute("height", "" + height);
-            this.rect.setAttribute("rx", "" + NodeView.radiusScale * smaller);
-            this.rect.setAttribute("ry", "" + NodeView.radiusScale * smaller);
-            this.overlayScale = [width, height];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    NodeView.radiusScale = 0.1;
-    return NodeView;
-}(base_1.ResizableComponentView));
-exports.NodeView = NodeView;
-
-
-/***/ }),
-/* 31 */
-/* no static exports found */
-/* all exports used */
-/*!****************************************************!*\
-  !*** ./nengo_gui/static/components/views/value.ts ***!
-  \****************************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var maquette_1 = __webpack_require__(/*! maquette */ 1);
-var base_1 = __webpack_require__(/*! ./base */ 10);
-var utils = __webpack_require__(/*! ../../utils */ 2);
-var ValueView = /** @class */ (function (_super) {
-    __extends(ValueView, _super);
-    function ValueView(label, dimensions) {
-        if (dimensions === void 0) { dimensions = 1; }
-        var _this = _super.call(this, label, dimensions) || this;
-        _this.paths = [];
-        _this.numLines = dimensions;
-        return _this;
-    }
-    Object.defineProperty(ValueView.prototype, "lines", {
-        set: function (val) {
-            this.paths.forEach(function (path, i) {
-                path.setAttribute("d", val[i]);
-            });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ValueView.prototype, "numLines", {
-        get: function () {
-            return this.paths.length;
-        },
-        set: function (val) {
-            while (this.paths.length - val < 0) {
-                this.addPath();
-            }
-            while (this.paths.length - val > 0) {
-                this.removePath();
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ValueView.prototype.addPath = function () {
-        var i = this.paths.length;
-        var node = maquette_1.h("path.line", { stroke: this.colors[i] });
-        var path = utils.domCreateSVG(node);
-        this.paths.push(path);
-        this.body.appendChild(path);
-    };
-    ValueView.prototype.removePath = function () {
-        var path = this.paths.pop();
-        if (path != null) {
-            this.body.removeChild(path);
-        }
-    };
-    return ValueView;
-}(base_1.PlotView));
-exports.ValueView = ValueView;
-
-
-/***/ }),
-/* 32 */
-/* no static exports found */
-/* all exports used */
-/*!***************************************!*\
-  !*** ./nengo_gui/static/datastore.ts ***!
-  \***************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var utils = __webpack_require__(/*! ./utils */ 2);
-/**
- * Storage of a set of data points and associated times with a fixed
- * number of dimensions.
- *
- * @constructor
- * @param {int} dims - number of data points per time
- * @param {SimControl} sim - the simulation controller
- * @param {float} synapse - the filter to apply to the data
- */
-var DataStore = /** @class */ (function () {
-    function DataStore(dims, synapse) {
-        var _this = this;
-        this.data = [];
-        this.times = [];
-        this._dims = dims;
-        this.synapse = synapse; // TODO: get from SimControl
-        // Listen for updates to the TimeSlider
-        window.addEventListener("TimeSlider.addTime", utils.throttle(function (event) {
-            // How much has the most recent time exceeded how much is kept?
-            var limit = event.detail.currentTime - event.detail.keptTime;
-            var extra = DataStore.nearestIndex(_this.times, limit);
-            // Remove the extra data
-            if (extra > 0) {
-                _this.remove(0, extra);
-            }
-        }, 100) // Only update once per 100 ms
-        );
-    }
-    Object.defineProperty(DataStore.prototype, "dims", {
-        get: function () {
-            return this._dims;
-        },
-        set: function (val) {
-            var newDims = val - this._dims;
-            if (newDims > 0) {
-                var nulls_1 = utils.emptyArray(newDims).map(function () { return null; });
-                this.data = this.data.map(function (row) { return row.concat(nulls_1); });
-            }
-            else if (newDims < 0) {
-                console.warn("Removed " + Math.abs(newDims) + " dimension(s).");
-                // + 2 because time is dim 0, and end is not included
-                this.data = this.data.map(function (row) { return row.slice(0, val + 2); });
-            }
-            this._dims = val;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DataStore.prototype, "length", {
-        get: function () {
-            return this.data.length;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Returns the index in `array` at `element`, or before it.
-     *
-     * This is helpful for determining where to insert an element,
-     * and for finding indices between two elements.
-     *
-     * This method uses binary search to be much faster than the naive
-     * approach of iterating through the array in order.
-     * Note that this assumes that the array is sorted, but that is also true
-     * if you were to search through it linearly.
-     *
-     * Returns 0 if element is less than all elements in array.
-     */
-    DataStore.nearestIndex = function (array, element) {
-        var _a = [0, array.length], low = _a[0], high = _a[1];
-        while (high > low) {
-            // Note: | 0 is a faster Math.floor
-            var ix = (high + low) / 2 | 0;
-            if (array[ix] <= element) {
-                if (array[ix + 1] > element || ix + 1 === array.length) {
-                    return ix;
-                }
-                else {
-                    low = ix + 1;
-                }
-            }
-            else {
-                high = ix;
-            }
-        }
-        console.assert(low === 0 && high === 0);
-        return 0;
-    };
-    /**
-     * Add a row of data.
-     *
-     * @param {array} row - dims+1 data points, with time as the first one
-     */
-    DataStore.prototype.add = function (row) {
-        console.assert(row.length - 1 === this.dims);
-        var time = row[0];
-        // If we get data out of order, wipe out the later data
-        if (time < this.times[this.times.length - 1]) {
-            this.remove(DataStore.nearestIndex(this.times, time));
-        }
-        // Compute lowpass filter (value = value*decay + newValue*(1-decay)
-        var decay = 0.0;
-        if ((this.times.length > 0) && (this.synapse > 0)) {
-            var dt = time - this.times[this.times.length - 1];
-            decay = Math.exp(-dt / this.synapse);
-        }
-        // Filter new data
-        var newdata = row.slice(1);
-        var lastdata = this.data[this.data.length - 1];
-        if (decay > 0.0) {
-            newdata = newdata.map(function (datum, dim) {
-                if (lastdata[dim] === null) {
-                    return datum;
-                }
-                else {
-                    var lastdatum = lastdata[dim];
-                    return datum * (1 - decay) + lastdatum * decay;
-                }
-            });
-        }
-        this.data.push([time].concat(newdata));
-        // Also keep a separate times list (for fast lookups)
-        this.times.push(time);
-    };
-    DataStore.prototype.at = function (time) {
-        return this.data[DataStore.nearestIndex(this.times, time)];
-    };
-    /**
-     * Reset the data storage.
-     *
-     * This will clear current data so there is
-     * nothing to display on a reset event.
-     */
-    DataStore.prototype.reset = function () {
-        this.remove(0);
-    };
-    DataStore.prototype.remove = function (start, deleteCount) {
-        // TODO: try to remove this weird if statement
-        if (deleteCount == null) {
-            this.data.splice(start);
-            this.times.splice(start);
-        }
-        else {
-            this.data.splice(start, deleteCount);
-            this.times.splice(start, deleteCount);
-        }
-    };
-    DataStore.prototype.slice = function (beginIndex, endIndex) {
-        if (endIndex == null) {
-            return this.data.slice(beginIndex);
-        }
-        else {
-            return this.data.slice(beginIndex, endIndex);
-        }
-    };
-    DataStore.prototype.timeSlice = function (beginTime, endTime) {
-        var beginIndex = DataStore.nearestIndex(this.times, beginTime);
-        var endIndex = endTime ?
-            DataStore.nearestIndex(this.times, endTime) + 1 : undefined;
-        return this.slice(beginIndex, endIndex);
-    };
-    return DataStore;
-}());
-exports.DataStore = DataStore;
-
-
-/***/ }),
-/* 33 */
-/* no static exports found */
-/* all exports used */
-/*!******************************************!*\
-  !*** ./nengo_gui/static/views/config.ts ***!
-  \******************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function($) {
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var maquette_1 = __webpack_require__(/*! maquette */ 1);
-var modal_1 = __webpack_require__(/*! ./modal */ 5);
-var config_1 = __webpack_require__(/*! ../config */ 11);
-var ConfigDialogView = /** @class */ (function (_super) {
-    __extends(ConfigDialogView, _super);
-    function ConfigDialogView(configItems) {
-        var _this = _super.call(this) || this;
-        var checkboxGroup = function (configItem) {
-            return maquette_1.h("div.form-group.checkbox", [
-                maquette_1.h("label.control-label", [
-                    maquette_1.h("input", {
-                        "type": "checkbox",
-                    }),
-                    configItem.label,
-                ]),
-                maquette_1.h("span.help-block.with-errors", [configItem.help]),
-            ]);
-        };
-        var comboboxGroup = function (configItem) {
-            return maquette_1.h("div.form-group", [
-                maquette_1.h("label.control-label", [
-                    configItem.label,
-                    maquette_1.h("select.form-control", configItem.options),
-                ]),
-                maquette_1.h("span.help-block.with-errors", [configItem.help]),
-            ]);
-        };
-        var numberGroup = function (configItem) {
-            return maquette_1.h("div.form-group", [
-                maquette_1.h("label.control-label", [
-                    configItem.label,
-                    maquette_1.h("div.input-group.col-xs-3", [
-                        maquette_1.h("input.form-control", configItem.attributes),
-                        maquette_1.h("span.input-group-addon", [configItem.unit]),
-                    ]),
-                ]),
-                maquette_1.h("span.help-block.with-errors", [configItem.help]),
-            ]);
-        };
-        var textGroup = function (configItem) {
-            return maquette_1.h("div.form-group", [
-                maquette_1.h("label.control-label", [
-                    configItem.label,
-                    maquette_1.h("input.form-control", configItem.attributes),
-                ]),
-                maquette_1.h("span.help-block.with-errors", [configItem.help]),
-            ]);
-        };
-        var node = maquette_1.h("form.form-horizontal", [
-            configItems.map(function (configItem) {
-                if (configItem instanceof config_1.CheckboxItem) {
-                    return checkboxGroup(configItem);
-                }
-                else if (configItem instanceof config_1.ComboboxItem) {
-                    return comboboxGroup(configItem);
-                }
-                else if (configItem instanceof config_1.NumberItem) {
-                    // Must check NumberItem first as it extends TextItem
-                    return numberGroup(configItem);
-                }
-                else if (configItem instanceof config_1.TextItem) {
-                    return textGroup(configItem);
-                }
-                else {
-                    throw new TypeError("ConfigItem not recognized.");
-                }
-            })
-        ]);
-        _this.form = maquette_1.dom.create(node).domNode;
-        _this.body.appendChild(_this.form);
-        _this.title = "Configure options";
-        _this.ok = _this.addFooterButton("OK");
-        _this.cancel = _this.addCloseButton("Cancel");
-        var groups = _this.body.getElementsByClassName("form-group");
-        _this.configItems = [];
-        for (var i = 0; i < groups.length; i++) {
-            _this.configItems[i] = groups[i].querySelector("input");
-            if (_this.configItems[i] === null) {
-                _this.configItems[i] = groups[i].querySelector("select");
-            }
-            console.assert(_this.configItems[i] !== null);
-        }
-        return _this;
-    }
-    ConfigDialogView.prototype.show = function () {
-        var _this = this;
-        $(this.root).modal("show");
-        $(this.root).on("shown.bs.modal", function () {
-            _this.configItems[0].focus();
-        });
-    };
-    return ConfigDialogView;
-}(modal_1.ModalView));
-exports.ConfigDialogView = ConfigDialogView;
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
-
-/***/ }),
-/* 34 */
-/* no static exports found */
-/* all exports used */
-/*!******************************************!*\
-  !*** ./nengo_gui/static/views/editor.ts ***!
-  \******************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var maquette_1 = __webpack_require__(/*! maquette */ 1);
-__webpack_require__(/*! ./editor.css */ 99);
-var EditorView = /** @class */ (function () {
-    function EditorView() {
-        var node = maquette_1.h("div.editor-container", [
-            maquette_1.h("div.editor"),
-            maquette_1.h("div.console", [
-                maquette_1.h("pre.stdout"),
-                maquette_1.h("pre.stderr"),
-            ]),
-        ]);
-        this.root = maquette_1.dom.create(node).domNode;
-        this.editor = this.root.querySelector(".editor");
-        this.console = this.root.querySelector(".console");
-        this._stderr = this.console.querySelector(".stderr");
-        this._stdout = this.console.querySelector(".stdout");
-    }
-    Object.defineProperty(EditorView.prototype, "consoleHeight", {
-        get: function () {
-            return this.console.offsetHeight;
-        },
-        set: function (val) {
-            // TODO: probably these heights are not the same
-            this.console.style.height = val + "px";
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(EditorView.prototype, "bottom", {
-        get: function () {
-            return this.root.getBoundingClientRect().bottom;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(EditorView.prototype, "height", {
-        get: function () {
-            return this.root.offsetHeight;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(EditorView.prototype, "hidden", {
-        get: function () {
-            return this.root.classList.contains("hidden");
-        },
-        set: function (val) {
-            if (val) {
-                this.root.classList.add("hidden");
-            }
-            else {
-                this.root.classList.remove("hidden");
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(EditorView.prototype, "maxWidth", {
-        get: function () {
-            var parent = this.root.parentNode;
-            // 250 gives room for sidebar, but still somewhat arbitrary
-            return Math.max(580, parent.clientWidth - 250);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(EditorView.prototype, "stderr", {
-        get: function () {
-            return this._stderr.textContent;
-        },
-        set: function (val) {
-            this._stderr.textContent = val;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(EditorView.prototype, "stdout", {
-        get: function () {
-            return this._stdout.textContent;
-        },
-        set: function (val) {
-            this._stdout.textContent = val;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(EditorView.prototype, "top", {
-        get: function () {
-            return this.root.getBoundingClientRect().top;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(EditorView.prototype, "width", {
-        get: function () {
-            return this.root.clientWidth;
-        },
-        set: function (val) {
-            this.root.style.width = val + "px";
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return EditorView;
-}());
-exports.EditorView = EditorView;
-
-
-/***/ }),
-/* 35 */
-/* no static exports found */
-/* all exports used */
-/*!*******************************************!*\
-  !*** ./nengo_gui/static/views/hotkeys.ts ***!
-  \*******************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var maquette_1 = __webpack_require__(/*! maquette */ 1);
-var modal_1 = __webpack_require__(/*! ./modal */ 5);
-var HotkeysDialogView = /** @class */ (function (_super) {
-    __extends(HotkeysDialogView, _super);
-    function HotkeysDialogView(hotkeys) {
-        var _this = _super.call(this) || this;
-        _this.title = "Hotkeys list";
-        _this.dialog.classList.add("modal-sm");
-        var row = function (action, shortcut) {
-            return maquette_1.h("tr", [
-                maquette_1.h("td", [action]),
-                maquette_1.h("td", { align: "right" }, [shortcut])
-            ]);
-        };
-        var node = maquette_1.h("table.table-striped", { width: "100%" }, [
-            maquette_1.h("tbody", [
-                hotkeys.map(function (hk) {
-                    if (hk.name !== null) {
-                        return row(hk.name, hk.shortcut);
-                    }
-                })
-            ])
-        ]);
-        _this.body.appendChild(maquette_1.dom.create(node).domNode);
-        _this.addCloseButton();
-        return _this;
-    }
-    return HotkeysDialogView;
-}(modal_1.ModalView));
-exports.HotkeysDialogView = HotkeysDialogView;
-
-
-/***/ }),
-/* 36 */
-/* no static exports found */
-/* all exports used */
-/*!****************************************!*\
-  !*** ./nengo_gui/static/views/menu.ts ***!
-  \****************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var maquette_1 = __webpack_require__(/*! maquette */ 1);
-__webpack_require__(/*! ./menu.css */ 101);
-var utils = __webpack_require__(/*! ../utils */ 2);
-var MenuView = /** @class */ (function () {
-    function MenuView() {
-        var node = maquette_1.h("div.menu", [
-            maquette_1.h("ul.dropdown-menu", { role: "menu" }),
-        ]);
-        this.root = maquette_1.dom.create(node).domNode;
-        this.menu = this.root.firstChild;
-    }
-    Object.defineProperty(MenuView.prototype, "height", {
-        get: function () {
-            return this.root.offsetHeight;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(MenuView.prototype, "width", {
-        get: function () {
-            return this.root.offsetWidth;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    MenuView.prototype.addAction = function (label) {
-        var node = maquette_1.h("li", [maquette_1.h("a.menu-item", { href: "#" }, [label])]);
-        var li = maquette_1.dom.create(node).domNode;
-        this.menu.appendChild(li);
-        return li;
-    };
-    MenuView.prototype.addHeader = function (label) {
-        var node = maquette_1.h("li.dropdown-header", [label]);
-        this.menu.appendChild(maquette_1.dom.create(node).domNode);
-    };
-    MenuView.prototype.addSeparator = function () {
-        var node = maquette_1.h("li.divider", { role: "separator" });
-        this.menu.appendChild(maquette_1.dom.create(node).domNode);
-    };
-    MenuView.prototype.hideAction = function (element) {
-        element.style.display = "none";
-    };
-    MenuView.prototype.showAction = function (element) {
-        element.style.display = null;
-    };
-    MenuView.prototype.show = function (x, y) {
-        this.root.style.left = x + "px";
-        this.root.style.top = y + "px";
-        this.root.style.zIndex = String(utils.nextZindex());
-    };
-    return MenuView;
-}());
-exports.MenuView = MenuView;
-
-
-/***/ }),
-/* 37 */
-/* no static exports found */
-/* all exports used */
-/*!*******************************************!*\
-  !*** ./nengo_gui/static/views/sidebar.ts ***!
-  \*******************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var maquette_1 = __webpack_require__(/*! maquette */ 1);
-__webpack_require__(/*! ./sidebar.css */ 104);
-var utils = __webpack_require__(/*! ../utils */ 2);
-var SidebarView = /** @class */ (function () {
-    function SidebarView() {
-        this.groups = [];
-        var node = maquette_1.h("div.sidebar", [
-            maquette_1.h("div.filebrowser.active"),
-            maquette_1.h("div.accordion-container"),
-        ]);
-        this.root = maquette_1.dom.create(node).domNode;
-        this.filebrowser =
-            this.root.querySelector(".filebrowser");
-        this.utilities =
-            this.root.querySelector(".accordion-container");
-        this.actions = {
-            "config": this.addAction("Configure settings", "cog"),
-            "minimap": this.addAction("Toggle minimap", "credit-card"),
-        };
-        _a = this.addActionGroup("Download...", [
-            { label: "Simulation data as CSV", icon: "signal" },
-            { label: "Network layout as SVG", icon: "picture" },
-        ]), this.actions["data"] = _a[0], this.actions["svg"] = _a[1];
-        var _a;
-    }
-    Object.defineProperty(SidebarView.prototype, "active", {
-        get: function () {
-            if (this.filebrowser.classList.contains("active")) {
-                return "filebrowser";
-            }
-            else if (this.utilities.classList.contains("active")) {
-                return "utilities";
-            }
-            else {
-                console.error("No sidebar tab is active");
-            }
-        },
-        set: function (val) {
-            if (val === "filebrowser") {
-                this.filebrowser.classList.add("active");
-                this.utilities.classList.remove("active");
-            }
-            else if (val === "utilities") {
-                this.utilities.classList.add("active");
-                this.filebrowser.classList.remove("active");
-            }
-            else {
-                console.error(val + " not a valid sidebar tab");
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(SidebarView.prototype, "hidden", {
-        get: function () {
-            return this.root.classList.contains("hidden");
-        },
-        set: function (val) {
-            if (val) {
-                this.root.classList.add("hidden");
-            }
-            else {
-                this.root.classList.remove("hidden");
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(SidebarView.prototype, "width", {
-        get: function () {
-            return this.root.offsetWidth;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    SidebarView.prototype.action = function (label, icon, indent) {
-        if (indent === void 0) { indent = false; }
-        return maquette_1.h("div.sidebar-item" + (indent ? ".indent" : ""), [
-            maquette_1.h("span.title", [label]),
-            maquette_1.h("span.glyphicon.glyphicon-" + icon),
-        ]);
-    };
-    SidebarView.prototype.addAction = function (label, icon) {
-        var div = maquette_1.dom.create(this.action(label, icon)).domNode;
-        this.utilities.appendChild(div);
-        return div;
-    };
-    SidebarView.prototype.addActionGroup = function (heading, items) {
-        var _this = this;
-        var headingNode = maquette_1.h("div.accordion-toggle.sidebar-item", [
-            maquette_1.h("span.title", [heading]),
-            maquette_1.h("span.glyphicon.glyphicon-chevron-down"),
-        ]);
-        var headingDiv = maquette_1.dom.create(headingNode).domNode;
-        this.utilities.appendChild(headingDiv);
-        var contentNode = maquette_1.h("div.accordion-content", items.map(function (item) { return _this.action(item.label, item.icon, true); }));
-        var contentDiv = maquette_1.dom.create(contentNode).domNode;
-        this.utilities.appendChild(contentDiv);
-        this.groups.push({ content: contentDiv, heading: headingDiv });
-        // Convert HTMLCollection to array
-        return utils.toArray(contentDiv.getElementsByClassName("sidebar-item"));
-    };
-    return SidebarView;
-}());
-exports.SidebarView = SidebarView;
-
-
-/***/ }),
-/* 38 */
-/* no static exports found */
-/* all exports used */
-/*!***********************************************!*\
-  !*** ./nengo_gui/static/views/sim-control.ts ***!
-  \***********************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var maquette_1 = __webpack_require__(/*! maquette */ 1);
-__webpack_require__(/*! ./sim-control.css */ 105);
-var views_1 = __webpack_require__(/*! ./views */ 16);
 function button(id, icon) {
     return maquette_1.h("button.btn.btn-default." + id + "-button", [
         maquette_1.h("span.glyphicon.glyphicon-" + icon),
@@ -32116,12 +30968,12 @@ var TimeSliderView = /** @class */ (function () {
          * Offset of the shownTime rect in pixels.
          */
         get: function () {
-            var _a = views_1.getTranslate(this.shownTime), x = _a[0], y = _a[1];
+            var _a = utils.getTranslate(this.shownTime), x = _a[0], y = _a[1];
             console.assert(y === 0);
             return x;
         },
         set: function (val) {
-            views_1.setTranslate(this.shownTime, val, 0);
+            utils.setTranslate(this.shownTime, val, 0);
         },
         enumerable: true,
         configurable: true
@@ -32166,21 +31018,235 @@ var TimeSliderView = /** @class */ (function () {
 }());
 exports.TimeSliderView = TimeSliderView;
 
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 39 */
+/* 23 */
 /* no static exports found */
 /* all exports used */
-/*!*******************************************!*\
-  !*** ./nengo_gui/static/views/toolbar.ts ***!
-  \*******************************************/
+/*!*************************************!*\
+  !*** ./nengo_gui/static/toolbar.ts ***!
+  \*************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-
+/* WEBPACK VAR INJECTION */(function($) {
+/**
+ * Toolbar for the top of the GUI.
+ *
+ * Toolbar constructor is written into HTML file by python and called
+ * upon page load.
+ *
+ * @constructor
+ * @param {string} filename - The name of the file opened
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
+var interact = __webpack_require__(/*! interact.js */ 10);
 var maquette_1 = __webpack_require__(/*! maquette */ 1);
-__webpack_require__(/*! ./toolbar.css */ 106);
+__webpack_require__(/*! ./toolbar.css */ 97);
+var config_1 = __webpack_require__(/*! ./config */ 7);
+var menu_1 = __webpack_require__(/*! ./menu */ 8);
+var modal_1 = __webpack_require__(/*! ./modal */ 5);
+var Toolbar = /** @class */ (function () {
+    function Toolbar(server) {
+        var _this = this;
+        this.view = new ToolbarView();
+        this.server = server;
+        this.server.bind("toolbar.filename", function (_a) {
+            var filename = _a.filename;
+            _this.filename = filename;
+        });
+        this.view.buttons["open"].addEventListener("click", function () {
+            if (_this.view.is_active("open")) {
+                _this.view.deactivate("open");
+                _this.server.dispatch("sidebar.hide");
+            }
+            else {
+                _this.server.dispatch("sidebar.filebrowser");
+                _this.view.deactivate("utils");
+                _this.view.activate("open");
+            }
+        });
+        this.view.buttons["utils"].addEventListener("click", function () {
+            if (_this.view.is_active("utils")) {
+                _this.view.deactivate("utils");
+                _this.server.dispatch("sidebar.hide");
+            }
+            else {
+                _this.server.dispatch("sidebar.utilities");
+                _this.view.deactivate("open");
+                _this.view.activate("utils");
+            }
+        });
+        this.view.buttons["reset"].addEventListener("click", function () {
+            _this.askResetLayout();
+        });
+        this.view.buttons["undo"].addEventListener("click", function () {
+            _this.server.dispatch("netgraph.undo");
+            // this.netgraph.notify({undo: "1"});
+        });
+        this.view.buttons["redo"].addEventListener("click", function () {
+            _this.server.dispatch("netgraph.redo");
+            // this.netgraph.notify({undo: "0"});
+        });
+        this.view.buttons["filename"].addEventListener("click", function () {
+            _this.askSaveAs();
+        });
+        this.view.buttons["sync"].addEventListener("click", function () {
+            _this.server.dispatch("editor.syncWithServer");
+        });
+        this.view.buttons["save"].addEventListener("click", function () {
+            _this.server.dispatch("editor.save");
+        });
+        this.view.buttons["fontDown"].addEventListener("click", function () {
+            _this.server.dispatch("editor.fontDown");
+        });
+        this.view.buttons["fontUp"].addEventListener("click", function () {
+            _this.server.dispatch("editor.fontUp");
+        });
+        this.view.buttons["editor"].addEventListener("click", function () {
+            _this.server.dispatch("editor.toggle");
+        });
+        this.view.buttons["hotkeys"].addEventListener("click", function () {
+            // TODO: hotkeys menu func
+            _this.server.dispatch("hotkeys.show");
+        });
+        interact(this.view.root).on("tap", function () {
+            menu_1.Menu.hideShown();
+        });
+        // document.addEventListener("nengo.editor", (event: CustomEvent) => {
+        //     const hidden = event.detail;
+        // });
+        document.addEventListener("nengo.editor.dirty", function () {
+            _this.view.enable("sync");
+            _this.view.enable("save");
+        });
+        document.addEventListener("nengo.editor.saved", function () {
+            _this.view.disable("sync");
+            _this.view.disable("save");
+        });
+        document.addEventListener("nengoConfigChange", function (event) {
+            var key = event.detail;
+            if (key === "editorFontSize") {
+                if (config_1.config.editorFontSize <= 6) {
+                    _this.view.disable("fontDown");
+                }
+                else {
+                    _this.view.enable("fontDown");
+                }
+            }
+        });
+    }
+    Object.defineProperty(Toolbar.prototype, "filename", {
+        get: function () {
+            return this.view.filename;
+        },
+        set: function (val) {
+            var old_filename = this.view.filename;
+            if (val !== old_filename) {
+                this.view.filename = val;
+                // Update the URL so reload and bookmarks work as expected
+                history.pushState({}, val, "/?filename=" + val);
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Determines which tab should be in view when clicked.
+     *
+     * @param {HTMLElement|string} it - The element
+     * @param {number} posNum - Which tab it corresponds to
+     * @param {boolean} closeIfSelected - Whether to close the tab
+     * @returns {function} Function to call on tab click
+     */
+    // TODO: Move to toolbar
+    // menuTabClick(it, posNum, closeIfSelected) {
+    //     return () => {
+    //         if ($(it).hasClass("deactivated")) {
+    //             return;
+    //         }
+    //         if (closeIfSelected
+    //                 && this.menuOpen
+    //                 && $(it).hasClass("selected")) {
+    //             this.hideSideNav();
+    //             this.focusReset();
+    //         } else {
+    //             this.showSideNav();
+    //             const element = document.getElementById("MenuContent");
+    //             const transVal = String(-this.view.width * posNum);
+    //             element.style.transform = "translate(" + transVal + "px)";
+    //             this.focusReset();
+    //             $(it).addClass("selected");
+    //         }
+    //     };
+    // }
+    Toolbar.prototype.askResetLayout = function () {
+        var _this = this;
+        var modal = new modal_1.AlertDialogView("This operation cannot be undone!", "danger");
+        modal.title =
+            "Are you sure you wish to reset this layout, " +
+                "removing all the graphs and resetting the position of all items?";
+        var resetButton = modal.addFooterButton("Reset");
+        modal.addCloseButton();
+        resetButton.addEventListener("click", function () {
+            _this.resetModelLayout();
+        });
+        $(modal.root).on("hidden.bs.modal", function () {
+            document.body.removeChild(modal.root);
+        });
+        document.body.appendChild(modal.root);
+        modal.show();
+    };
+    Toolbar.prototype.askSaveAs = function () {
+        var _this = this;
+        var modal = new modal_1.InputDialogView(null, null);
+        modal.title = "Save file as...";
+        modal.input.value = this.filename;
+        modal.ok.addEventListener("click", function () {
+            var newFilename = modal.input.value;
+            if (newFilename !== _this.filename) {
+                // TODO: connect to editor and do below
+                // const editorCode = this.editor.editor.getValue();
+                // TODO: make this an editor method
+                // this.editor.ws.send(JSON.stringify(
+                //     {code: editorCode, save: true, saveAs: newFilename}
+                // ));
+            }
+            $(modal).modal("hide");
+        });
+        modal.ok.addEventListener("keypress", function (event) {
+            if (event.which === 13) {
+                event.preventDefault();
+                modal.ok.click();
+            }
+        });
+        $(modal.root).on("hidden.bs.modal", function () {
+            document.body.removeChild(modal.root);
+        });
+        document.body.appendChild(modal.root);
+        modal.show();
+    };
+    // TODO: does this ever get used...?
+    // fileName() {
+    //     const openEl = <HTMLInputElement> document.getElementById("openFile");
+    //     console.assert(openEl.hasOwnProperty("value"));
+    //     let filename = openEl.value;
+    //     filename = filename.replace("C:\\fakepath\\", "");
+    //     this.sim.ws.send("open" + filename);
+    // }
+    /**
+     * Reset the model layout to the default.
+     *
+     * This is done by deleting the config file and reloading the script.
+     */
+    Toolbar.prototype.resetModelLayout = function () {
+        // TODO: is this the best way to refresh? Does reset=True do anything?
+        window.location.assign("/?reset=True&filename=" + this.filename);
+    };
+    return Toolbar;
+}());
+exports.Toolbar = Toolbar;
 var ToolbarView = /** @class */ (function () {
     function ToolbarView() {
         var node = maquette_1.h("div.toolbar", [maquette_1.h("ul.nav.nav-pills")]);
@@ -32200,7 +31266,7 @@ var ToolbarView = /** @class */ (function () {
             fontDown: this.addButton("Decrease font size", "zoom-out", "right"),
             fontUp: this.addButton("Increase font size", "zoom-in", "right"),
             editor: this.addButton("Open code editor", "list-alt", "right"),
-            hotkeys: this.addButton("Hotkey list", "question-sign", "right"),
+            hotkeys: this.addButton("Hotkey list", "question-sign", "right")
         };
     }
     Object.defineProperty(ToolbarView.prototype, "filename", {
@@ -32254,9 +31320,1084 @@ var ToolbarView = /** @class */ (function () {
 }());
 exports.ToolbarView = ToolbarView;
 
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 40 */
+/* 24 */
+/* no static exports found */
+/* all exports used */
+/*!******************************************************!*\
+  !*** ./~/jqueryfiletree/dist/images/application.png ***!
+  \******************************************************/
+/***/ (function(module, exports) {
+
+module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAFiSURBVBgZpcEhbpRRGIXh99x7IU0asGBJWEIdCLaAqcFiCArFCkjA0KRJF0EF26kkFbVVdEj6/985zJ0wBjfp8ygJD6G3n358fP3m5NvtJscJYBObchEHx6QKJ6SKsnn6eLm7urr5/PP76cU4eXVy/ujouD074hDHd5s6By7GZknb3P7mUH+WNLZGKnx595JDvf96zTQSM92vRYA4lMEEO5RNraHWUDH3FV48f0K5mAYJk5pQQpqIgixaE1JDKtRDd2OsYfJaTKNcTA2IBIIesMAOPdDUGYJSqGYml5lGHHYkSGhAJBBIkAoWREAT3Z3JLqZhF3uS2EloQCQ8xLBxoAEWO7aZxros7EgISIIkwlZCY6s1OlAJTWFal5VppMzUgbAlQcIkiT0DXSI2U2ymYZs9AWJL4n+df3pncsI0bn5dX344W05dhctUFbapZcE2ToiLVHBMbGymS7aUhIdoPNBf7Jjw/gQ77u4AAAAASUVORK5CYII="
+
+/***/ }),
+/* 25 */
+/* no static exports found */
+/* all exports used */
+/*!************************************!*\
+  !*** ./nengo_gui/static/server.ts ***!
+  \************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function getURL(uid) {
+    if (uid === void 0) { uid = null; }
+    var hostname = window.location.hostname;
+    var port = window.location.port;
+    var wsProto;
+    if (window.location.protocol === "https:") {
+        wsProto = "wss:";
+    }
+    else {
+        wsProto = "ws:";
+    }
+    var url = wsProto + "//" + hostname;
+    if (port != "") {
+        url += ":" + port;
+    }
+    if (uid != null) {
+        // If requesting UID, only send along UID
+        url += "/?uid=" + uid;
+    }
+    else {
+        // If not requesting UID, send along query params
+        var href = window.location.href.split("?");
+        if (href.length > 1) {
+            url += "/?" + href[1];
+        }
+    }
+    return url;
+}
+/**
+ * Create a WebSocket connection to the server.
+ *
+ * This extends the normal WebSocket class with convenience methods
+ * for binding and dispatching events to and from other clients
+ * connected to the same websocket.
+ *
+ * @param {string} uid - The uid for the WebSocket.
+ * @returns {WebSocket} The created WebSocket.
+ */
+var ServerConnection = /** @class */ (function () {
+    function ServerConnection() {
+        var _this = this;
+        this.callbacks = {};
+        this.ws = new WebSocket(getURL());
+        this.ws.onmessage = function (event) {
+            var json = JSON.parse(event.data);
+            _this.dispatch(json[0], json[1]);
+        };
+        this.ws.onclose = function () {
+            _this.dispatch("close");
+        };
+        this.ws.onopen = function () {
+            _this.dispatch("open");
+        };
+    }
+    ServerConnection.prototype.bind = function (name, callback) {
+        if (!(name in this.callbacks)) {
+            this.callbacks[name] = [];
+        }
+        this.callbacks[name].push(callback);
+        return this;
+    };
+    ServerConnection.prototype.close = function () {
+        this.ws.close();
+    };
+    ServerConnection.prototype.isBound = function (name) {
+        return name in this.callbacks;
+    };
+    ServerConnection.prototype.isReady = function () {
+        return this.ws.readyState === WebSocket.OPEN;
+    };
+    ServerConnection.prototype.dispatch = function (name, kwargs) {
+        if (kwargs === void 0) { kwargs = {}; }
+        if (name in this.callbacks) {
+            this.callbacks[name].forEach(function (callback) {
+                callback(kwargs);
+            });
+        }
+        else {
+            console.warn("Nothing bound for '" + name + "'");
+        }
+        return this;
+    };
+    ServerConnection.prototype.send = function (name, kwargs) {
+        if (kwargs === void 0) { kwargs = {}; }
+        var payload = JSON.stringify([name, kwargs]);
+        this.ws.send(payload);
+        return this;
+    };
+    return ServerConnection;
+}());
+exports.ServerConnection = ServerConnection;
+var MockConnection = /** @class */ (function () {
+    function MockConnection() {
+        this.bound = [];
+    }
+    MockConnection.prototype.bind = function (name, callback) {
+        if (MockConnection.verbose) {
+            console.log("binding " + name);
+        }
+        this.bound.push(name);
+        return this;
+    };
+    MockConnection.prototype.isBound = function (name) {
+        return this.bound.indexOf(name) !== -1;
+    };
+    MockConnection.prototype.dispatch = function (name, kwargs) {
+        if (kwargs === void 0) { kwargs = {}; }
+        if (MockConnection.verbose) {
+            console.log("dispatch " + name + "(" + Object.keys(kwargs) + ")");
+        }
+        return this;
+    };
+    MockConnection.prototype.send = function (name, kwargs) {
+        if (kwargs === void 0) { kwargs = {}; }
+        if (MockConnection.verbose) {
+            console.log("send " + name + "(" + Object.keys(kwargs) + ")");
+        }
+        this.lastSentName = name;
+        this.lastSent = kwargs;
+        return this;
+    };
+    MockConnection.verbose = true;
+    return MockConnection;
+}());
+exports.MockConnection = MockConnection;
+/**
+ * Create a WebSocket connection to the given uid.
+ *
+ * This constrains the normal WebSocket class to only accept binary data,
+ * which is shuttled to one callback function.
+ *
+ * @param {string} uid - The uid for the WebSocket.
+ * @returns {WebSocket} The created WebSocket.
+ */
+var FastServerConnection = /** @class */ (function () {
+    function FastServerConnection(uid, destructure, step) {
+        this.uid = uid;
+        this.ws = new WebSocket(getURL(this.uid));
+        this.ws.binaryType = "arraybuffer";
+        this.ws.onmessage = function (event) {
+            console.assert(event.data instanceof ArrayBuffer);
+            var structure = destructure(event.data);
+            step.apply(void 0, structure);
+        };
+    }
+    FastServerConnection.typename = "fast";
+    return FastServerConnection;
+}());
+exports.FastServerConnection = FastServerConnection;
+
+
+/***/ }),
+/* 26 */
+/* no static exports found */
+/* all exports used */
+/*!*****************************************************************!*\
+  !*** ./~/bootstrap/dist/fonts/glyphicons-halflings-regular.eot ***!
+  \*****************************************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__.p + "./f4769f9bdb7466be65088239c12046d1.eot";
+
+/***/ }),
+/* 27 */
+/* no static exports found */
+/* all exports used */
+/*!***************************************************!*\
+  !*** ./nengo_gui/static/components/connection.ts ***!
+  \***************************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var maquette_1 = __webpack_require__(/*! maquette */ 1);
+__webpack_require__(/*! ./connection.css */ 85);
+var utils = __webpack_require__(/*! ../utils */ 2);
+// Note: connections are not registered in the component registry because
+// they're handled differently by the netgraph; see ../netgraph.ts
+var ComponentConnection = /** @class */ (function () {
+    function ComponentConnection() {
+    }
+    Object.defineProperty(ComponentConnection.prototype, "visible", {
+        get: function () {
+            return this.view.visible;
+        },
+        set: function (val) {
+            this.view.visible = val;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return ComponentConnection;
+}());
+exports.ComponentConnection = ComponentConnection;
+var FeedforwardConnection = /** @class */ (function (_super) {
+    __extends(FeedforwardConnection, _super);
+    function FeedforwardConnection(pre, post) {
+        var _this = _super.call(this) || this;
+        console.assert(_this.pre !== _this.post);
+        _this.pre = pre;
+        _this.post = post;
+        _this.view = new ConnectionView();
+        _this.syncWithComponents();
+        _this.pre.interactRoot.on("dragmove resizemove", function () {
+            _this.view.startPos = _this.pre.view.centerPos;
+        });
+        _this.post.interactRoot.on("dragmove resizemove", function () {
+            _this.view.endPos = _this.post.view.centerPos;
+        });
+        return _this;
+    }
+    FeedforwardConnection.prototype.syncWithComponents = function () {
+        this.view.startPos = this.pre.view.centerPos;
+        this.view.endPos = this.post.view.centerPos;
+    };
+    return FeedforwardConnection;
+}(ComponentConnection));
+exports.FeedforwardConnection = FeedforwardConnection;
+var RecurrentConnection = /** @class */ (function (_super) {
+    __extends(RecurrentConnection, _super);
+    function RecurrentConnection(component) {
+        var _this = _super.call(this) || this;
+        _this.component = component;
+        _this.view = new RecurrentConnectionView();
+        _this.syncWithComponents();
+        _this.component.interactRoot.on("dragmove resizemove", function () {
+            return _this.syncWithComponents();
+        });
+        return _this;
+    }
+    RecurrentConnection.prototype.syncWithComponents = function () {
+        this.view.width = this.component.view.width * 1.4;
+        this.view.pos = this.component.view.centerPos;
+    };
+    return RecurrentConnection;
+}(ComponentConnection));
+exports.RecurrentConnection = RecurrentConnection;
+function arrowhead(rotate) {
+    if (rotate === void 0) { rotate = 0; }
+    return maquette_1.h("path.arrow", {
+        d: "M 10,0 L -5,-5 -5,5 z",
+        transform: "translate(0,0) rotate(" + rotate + ")"
+    });
+}
+var ConnectionView = /** @class */ (function () {
+    function ConnectionView() {
+        var node = maquette_1.h("g.connection", [
+            maquette_1.h("line", { x1: "0", x2: "10", y1: "0", y2: "10" }),
+            arrowhead()
+        ]);
+        this.root = utils.domCreateSVG(node);
+        this.arrow = this.root.querySelector("path.arrow");
+        this.line = this.root.querySelector("line");
+    }
+    Object.defineProperty(ConnectionView.prototype, "endPos", {
+        get: function () {
+            return [
+                Number(this.line.getAttribute("x2")),
+                Number(this.line.getAttribute("y2"))
+            ];
+        },
+        set: function (val) {
+            this.line.setAttribute("x2", "" + val[0]);
+            this.line.setAttribute("y2", "" + val[1]);
+            this.syncArrowWithLine();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ConnectionView.prototype, "startPos", {
+        get: function () {
+            return [
+                Number(this.line.getAttribute("x1")),
+                Number(this.line.getAttribute("y1"))
+            ];
+        },
+        set: function (val) {
+            this.line.setAttribute("x1", "" + val[0]);
+            this.line.setAttribute("y1", "" + val[1]);
+            this.syncArrowWithLine();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ConnectionView.prototype, "visible", {
+        get: function () {
+            return this.root.style.display !== "none";
+        },
+        set: function (val) {
+            if (val) {
+                this.root.style.display = null;
+            }
+            else {
+                this.root.style.display = "none";
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ConnectionView.prototype.syncArrowWithLine = function () {
+        var start = this.startPos;
+        var end = this.endPos;
+        utils.setTranslate(this.arrow, utils.lerp(start[0], end[0], ConnectionView.arrowLocation), utils.lerp(start[1], end[1], ConnectionView.arrowLocation));
+        // TODO: would be nice to do this in one step, but ok for now
+        var angle = utils.angle(start[0], end[0], start[1], end[1]);
+        var transform = this.arrow.getAttribute("transform");
+        this.arrow.setAttribute("transform", transform + " rotate(" + angle + ")");
+    };
+    ConnectionView.arrowLocation = 0.6;
+    return ConnectionView;
+}());
+exports.ConnectionView = ConnectionView;
+var RecurrentConnectionView = /** @class */ (function () {
+    function RecurrentConnectionView() {
+        this._width = 1.0;
+        var node = maquette_1.h("g.connection.recurrent", {
+            transform: "translate(0,0)"
+        }, [
+            maquette_1.h("path", { d: "" }),
+            arrowhead(RecurrentConnectionView.arrowRotation)
+        ]);
+        this.root = utils.domCreateSVG(node);
+        this.path = this.root.firstChild;
+        this.arrow = this.root.querySelector("path.arrow");
+    }
+    Object.defineProperty(RecurrentConnectionView.prototype, "pos", {
+        get: function () {
+            return utils.getTranslate(this.root);
+        },
+        set: function (val) {
+            var _a = [this.width, this.height], w = _a[0], h = _a[1];
+            var r = RecurrentConnectionView.arrowRotation;
+            utils.setTranslate(this.root, val[0] + w * 0.15, val[1] - h * 1.1);
+            this.arrow.setAttribute("transform", (_b = ["\n            translate(", ",", ")\n            rotate(", ")\n        "], _b.raw = ["\n            translate(", ",", ")\n            rotate(", ")\n        "], utils.singleline(_b, -w * 0.13, h * 0.1165, r - Math.max(30 - h, 0) * 0.8)));
+            var _b;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(RecurrentConnectionView.prototype, "height", {
+        get: function () {
+            // Note: aspect ratio is 1 : 0.675
+            return this._width * 0.675;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(RecurrentConnectionView.prototype, "width", {
+        get: function () {
+            return this._width;
+        },
+        set: function (val) {
+            var w = val;
+            // x goes into the negative because we set the position to be
+            // the center of the object
+            var d = (_a = ["\n            M", ",", "\n            C", ",", "\n            ", ",", "\n            ", ",", "\n            ", ",", "\n            ", ",", "\n            0,", "\n            S", ",", "\n            ", ",", "\n            C", ",", "\n            ", ",", "\n            ", ",", "\n        "], _a.raw = ["\n            M", ",", "\n            C", ",", "\n            ", ",", "\n            ", ",", "\n            ", ",", "\n            ", ",", "\n            0,", "\n            S", ",", "\n            ", ",", "\n            C", ",", "\n            ", ",", "\n            ", ",", "\n        "], utils.singleline(_a, w * -0.3663, w * 0.59656, w * -0.4493, w * 0.5397, w * -0.5, w * 0.4645, w * -0.5, w * 0.3819, w * -0.5, w * 0.2083, w * -0.27615, w * 0.0676, w * 0.0676, w * 0.5, w * 0.2083, w * 0.5, w * 0.3819, w * 0.5, w * 0.5156, w * 0.367, w * 0.63, w * 0.18, w * 0.675));
+            this.path.setAttribute("d", d);
+            this._width = val;
+            var _a;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(RecurrentConnectionView.prototype, "visible", {
+        get: function () {
+            return this.root.style.display !== "none";
+        },
+        set: function (val) {
+            if (val) {
+                this.root.style.display = null;
+            }
+            else {
+                this.root.style.display = "none";
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    RecurrentConnectionView.arrowRotation = 171; // In degrees
+    return RecurrentConnectionView;
+}());
+exports.RecurrentConnectionView = RecurrentConnectionView;
+
+
+/***/ }),
+/* 28 */
+/* no static exports found */
+/* all exports used */
+/*!*************************************************!*\
+  !*** ./nengo_gui/static/components/ensemble.ts ***!
+  \*************************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var maquette_1 = __webpack_require__(/*! maquette */ 1);
+__webpack_require__(/*! ./ensemble.css */ 86);
+var component_1 = __webpack_require__(/*! ./component */ 11);
+var registry_1 = __webpack_require__(/*! ./registry */ 6);
+var utils = __webpack_require__(/*! ../utils */ 2);
+var Ensemble = /** @class */ (function (_super) {
+    __extends(Ensemble, _super);
+    function Ensemble(_a) {
+        var server = _a.server, uid = _a.uid, pos = _a.pos, dimensions = _a.dimensions;
+        return _super.call(this, server, uid, pos.left, pos.top, pos.width, pos.height, dimensions) || this;
+    }
+    Object.defineProperty(Ensemble.prototype, "resizeOptions", {
+        get: function () {
+            var options = {};
+            for (var option in component_1.ResizableComponent.resizeOptions) {
+                options[option] = component_1.ResizableComponent.resizeOptions[option];
+            }
+            options.invert = "reposition";
+            options.square = true;
+            return options;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Ensemble.prototype, "view", {
+        get: function () {
+            if (this._view === null) {
+                this._view = new EnsembleView("?");
+            }
+            return this._view;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Ensemble.prototype.addMenuItems = function () {
+        var _this = this;
+        this.menu.addAction("Value", function () {
+            _this.createGraph("Value");
+        });
+        this.menu.addAction("XY-value", function () {
+            _this.createGraph("XYValue");
+        }, function () { return _this.dimensions > 1; });
+        this.menu.addAction("Spikes", function () {
+            _this.createGraph("Raster");
+        });
+        this.menu.addAction("Voltages", function () {
+            _this.createGraph("Voltage");
+        });
+        this.menu.addAction("Firing pattern", function () {
+            _this.createGraph("SpikeGrid");
+        });
+        this.menu.addAction("Details ...", function () {
+            // TODO
+            // this.createModal();
+        });
+    };
+    return Ensemble;
+}(component_1.ResizableComponent));
+exports.Ensemble = Ensemble;
+var EnsembleView = /** @class */ (function (_super) {
+    __extends(EnsembleView, _super);
+    function EnsembleView(label) {
+        var _this = _super.call(this, label) || this;
+        _this.aspect = 1;
+        var r = "4.843";
+        var node = maquette_1.h("g.ensemble", { transform: "scale(1,1)" }, [
+            maquette_1.h("circle", { cx: r, cy: "10.52", r: r, "stroke-width": "1" }),
+            maquette_1.h("circle", {
+                cx: "16.186",
+                cy: "17.874",
+                r: r,
+                "stroke-width": "1"
+            }),
+            maquette_1.h("circle", {
+                cx: "21.012",
+                cy: "30.561",
+                r: r,
+                "stroke-width": "1"
+            }),
+            maquette_1.h("circle", {
+                cx: "29.704",
+                cy: "17.23",
+                r: r,
+                "stroke-width": "1"
+            }),
+            maquette_1.h("circle", {
+                cx: "5.647",
+                cy: "26.414",
+                r: r,
+                "stroke-width": "1"
+            }),
+            maquette_1.h("circle", { cx: "19.894", cy: r, r: r, "stroke-width": "1" })
+        ]);
+        _this.body = utils.domCreateSVG(node);
+        _this.root.appendChild(_this.body);
+        // Convert NodeList to array
+        _this.circles = utils.toArray(_this.body.childNodes);
+        return _this;
+    }
+    Object.defineProperty(EnsembleView.prototype, "scale", {
+        get: function () {
+            var _a = utils.getScale(this.body), width = _a[0], height = _a[1];
+            return [width * this.baseWidth, height * this.baseHeight];
+        },
+        set: function (val) {
+            var width = Math.max(component_1.ResizableComponentView.minWidth, val[0]);
+            var height = Math.max(component_1.ResizableComponentView.minHeight, val[1]);
+            // Should be 1 at basewidth; scale accordingly
+            var strokeWidth = "" + this.baseWidth / width;
+            utils.setScale(this.body, width / this.baseWidth, height / this.baseHeight);
+            this.circles.forEach(function (circle) {
+                circle.setAttribute("stroke-width", strokeWidth);
+            });
+            this.overlayScale = [width, height];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return EnsembleView;
+}(component_1.ResizableComponentView));
+exports.EnsembleView = EnsembleView;
+registry_1.registerComponent("ensemble", Ensemble);
+
+
+/***/ }),
+/* 29 */
+/* no static exports found */
+/* all exports used */
+/*!*********************************************!*\
+  !*** ./nengo_gui/static/components/node.ts ***!
+  \*********************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var maquette_1 = __webpack_require__(/*! maquette */ 1);
+__webpack_require__(/*! ./node.css */ 88);
+var component_1 = __webpack_require__(/*! ./component */ 11);
+var registry_1 = __webpack_require__(/*! ./registry */ 6);
+var utils = __webpack_require__(/*! ../utils */ 2);
+var PassthroughNode = /** @class */ (function (_super) {
+    __extends(PassthroughNode, _super);
+    function PassthroughNode(_a) {
+        var server = _a.server, uid = _a.uid, pos = _a.pos, dimensions = _a.dimensions;
+        return _super.call(this, server, uid, pos.left, pos.top, dimensions) || this;
+    }
+    Object.defineProperty(PassthroughNode.prototype, "view", {
+        get: function () {
+            if (this._view === null) {
+                this._view = new PassthroughNodeView("?");
+            }
+            return this._view;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return PassthroughNode;
+}(component_1.Component));
+exports.PassthroughNode = PassthroughNode;
+var Node = /** @class */ (function (_super) {
+    __extends(Node, _super);
+    function Node(_a) {
+        var server = _a.server, uid = _a.uid, pos = _a.pos, dimensions = _a.dimensions;
+        return _super.call(this, server, uid, pos.left, pos.top, pos.width, pos.height, dimensions) || this;
+    }
+    Object.defineProperty(Node.prototype, "view", {
+        get: function () {
+            if (this._view === null) {
+                this._view = new NodeView("?");
+            }
+            return this._view;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Node.prototype.addMenuItems = function () {
+        var _this = this;
+        this.menu.addAction("Slider", function () {
+            _this.createGraph("Slider");
+        });
+        this.menu.addAction("Value", function () {
+            _this.createGraph("Value");
+        }, function () { return _this.dimensions > 0; });
+        this.menu.addAction("XY-value", function () {
+            _this.createGraph("XYValue");
+        }, function () { return _this.dimensions > 1; });
+        this.menu.addAction("HTML", function () {
+            _this.createGraph("HTMLView");
+        }, function () { return _this.htmlNode; });
+        this.menu.addAction("Details ...", function () {
+            // TODO
+            // this.createModal();
+        });
+    };
+    return Node;
+}(component_1.ResizableComponent));
+exports.Node = Node;
+var PassthroughNodeView = /** @class */ (function (_super) {
+    __extends(PassthroughNodeView, _super);
+    function PassthroughNodeView(label) {
+        var _this = _super.call(this, label) || this;
+        var node = maquette_1.h("g.passthrough", [
+            maquette_1.h("circle", { cx: "4", cy: "4", r: "4" })
+        ]);
+        _this.body = utils.domCreateSVG(node);
+        _this.root.appendChild(_this.body);
+        return _this;
+    }
+    return PassthroughNodeView;
+}(component_1.ComponentView));
+exports.PassthroughNodeView = PassthroughNodeView;
+var NodeView = /** @class */ (function (_super) {
+    __extends(NodeView, _super);
+    function NodeView(label) {
+        var _this = _super.call(this, label) || this;
+        var node = maquette_1.h("g.node", [
+            maquette_1.h("rect", {
+                height: "50",
+                rx: "" + NodeView.radiusScale * 50,
+                ry: "" + NodeView.radiusScale * 50,
+                width: "50",
+                x: "0",
+                y: "0"
+            })
+        ]);
+        _this.body = utils.domCreateSVG(node);
+        _this.root.appendChild(_this.body);
+        _this.rect = _this.body.firstChild;
+        return _this;
+    }
+    Object.defineProperty(NodeView.prototype, "scale", {
+        get: function () {
+            return [
+                Number(this.rect.getAttribute("width")),
+                Number(this.rect.getAttribute("height"))
+            ];
+        },
+        set: function (val) {
+            var width = Math.max(component_1.ResizableComponentView.minWidth, val[0]);
+            var height = Math.max(component_1.ResizableComponentView.minHeight, val[1]);
+            var smaller = Math.min(width, height);
+            this.rect.setAttribute("width", "" + width);
+            this.rect.setAttribute("height", "" + height);
+            this.rect.setAttribute("rx", "" + NodeView.radiusScale * smaller);
+            this.rect.setAttribute("ry", "" + NodeView.radiusScale * smaller);
+            this.overlayScale = [width, height];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    NodeView.radiusScale = 0.1;
+    return NodeView;
+}(component_1.ResizableComponentView));
+exports.NodeView = NodeView;
+registry_1.registerComponent("node", Node);
+
+
+/***/ }),
+/* 30 */
+/* no static exports found */
+/* all exports used */
+/*!**********************************************!*\
+  !*** ./nengo_gui/static/components/value.ts ***!
+  \**********************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/**
+ * Line graph showing decoded values over time
+ *
+ * Value constructor is called by python server when a user requests a plot
+ * or when the config file is making graphs. Server request is handled in
+ * netgraph.js {.on_message} function.
+ *
+ * @constructor
+ * @param {DOMElement} parent - the element to add this component to
+ * @param {SimControl} sim - the simulation controller
+ * @param {dict} args - A set of constructor arguments (see Component)
+ * @param {int} args.n_lines - number of decoded values
+ * @param {float} args.min_value - minimum value on y-axis
+ * @param {float} args.max_value - maximum value on y-axis
+ */
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var d3 = __webpack_require__(/*! d3 */ 14);
+var $ = __webpack_require__(/*! jquery */ 0);
+var maquette_1 = __webpack_require__(/*! maquette */ 1);
+var plot_1 = __webpack_require__(/*! ./plot */ 16);
+var modal_1 = __webpack_require__(/*! ../modal */ 5);
+var plot_2 = __webpack_require__(/*! ./plot */ 16);
+var registry_1 = __webpack_require__(/*! ./registry */ 6);
+var utils = __webpack_require__(/*! ../utils */ 2);
+var Value = /** @class */ (function (_super) {
+    __extends(Value, _super);
+    function Value(_a) {
+        var server = _a.server, uid = _a.uid, pos = _a.pos, dimensions = _a.dimensions, synapse = _a.synapse, _b = _a.xlim, xlim = _b === void 0 ? [-0.5, 0] : _b, _c = _a.ylim, ylim = _c === void 0 ? [-1, 1] : _c;
+        var _this = _super.call(this, server, uid, pos.left, pos.top, pos.width, pos.height, dimensions, synapse, xlim, ylim) || this;
+        _this.syncWithDataStore = utils.throttle(function () {
+            // Update the lines
+            var _a = _this.xlim, tStart = _a[0], tEnd = _a[1];
+            // TODO: it should be possible to only modify the start and
+            //       end of the line instead of remaking it every time...
+            var shownData = _this.datastore.timeSlice(tStart, tEnd);
+            if (shownData[0] != null) {
+                _this.view.lines = _this.lines.map(function (line) { return line(shownData); });
+                if (_this.legendVisible && _this.view.legend.valuesVisible) {
+                    var last = shownData[shownData.length - 1];
+                    _this.view.legend.values = last.slice(1);
+                }
+            }
+        }, 20);
+        // Create the lines on the plots
+        _this.lines = utils.emptyArray(_this.dimensions).map(function (_, i) {
+            return d3.svg
+                .line()
+                .x(function (d) { return _this.axes.x.pixelAt(d[0]); })
+                .y(function (d) { return _this.axes.y.pixelAt(d[i + 1]); })
+                .defined(function (d) { return d[i + 1] != null; });
+        });
+        return _this;
+    }
+    Object.defineProperty(Value.prototype, "view", {
+        get: function () {
+            if (this._view === null) {
+                this._view = new ValueView("?", this.dimensions);
+            }
+            return this._view;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Value.prototype.addMenuItems = function () {
+        var _this = this;
+        this.menu.addAction("Set y-limits...", function () {
+            _this.askYlim();
+        });
+        _super.prototype.addMenuItems.call(this);
+    };
+    Value.prototype.askYlim = function () {
+        var _this = this;
+        var modal = new modal_1.InputDialogView(String(this.ylim), "New y-limits", "Input should be in the form '<min>,<max>'.");
+        modal.title = "Set y-limits...";
+        modal.ok.addEventListener("click", function () {
+            var validator = $(modal).data("bs.validator");
+            validator.validate();
+            if (validator.hasErrors() || validator.isIncomplete()) {
+                return;
+            }
+            if (modal.input.value !== null) {
+                var newRange = modal.input.value.split(",");
+                var min = parseFloat(newRange[0]);
+                var max = parseFloat(newRange[1]);
+                _this.ylim = [min, max];
+            }
+            $(modal).modal("hide");
+        });
+        utils.handleTabs(modal);
+        $(modal).validator({
+            custom: {
+                ngvalidator: function (item) {
+                    var nums = item.value.split(",");
+                    var valid = false;
+                    if (utils.isNum(nums[0]) && utils.isNum(nums[1])) {
+                        // Two numbers, 1st less than 2nd
+                        if (Number(nums[0]) < Number(nums[1])) {
+                            valid = true;
+                        }
+                    }
+                    return nums.length === 2 && valid;
+                }
+            }
+        });
+        $(modal.root).on("hidden.bs.modal", function () {
+            document.body.removeChild(modal.root);
+        });
+        document.body.appendChild(modal.root);
+        modal.show();
+    };
+    return Value;
+}(plot_1.Plot));
+exports.Value = Value;
+var ValueView = /** @class */ (function (_super) {
+    __extends(ValueView, _super);
+    function ValueView(label, dimensions) {
+        if (dimensions === void 0) { dimensions = 1; }
+        var _this = _super.call(this, label, dimensions) || this;
+        _this.paths = [];
+        _this.numLines = dimensions;
+        return _this;
+    }
+    Object.defineProperty(ValueView.prototype, "lines", {
+        set: function (val) {
+            this.paths.forEach(function (path, i) {
+                path.setAttribute("d", val[i]);
+            });
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ValueView.prototype, "numLines", {
+        get: function () {
+            return this.paths.length;
+        },
+        set: function (val) {
+            while (this.paths.length - val < 0) {
+                this.addPath();
+            }
+            while (this.paths.length - val > 0) {
+                this.removePath();
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ValueView.prototype.addPath = function () {
+        var i = this.paths.length;
+        var node = maquette_1.h("path.line", { stroke: this.colors[i] });
+        var path = utils.domCreateSVG(node);
+        this.paths.push(path);
+        this.body.appendChild(path);
+    };
+    ValueView.prototype.removePath = function () {
+        var path = this.paths.pop();
+        if (path != null) {
+            this.body.removeChild(path);
+        }
+    };
+    return ValueView;
+}(plot_2.PlotView));
+exports.ValueView = ValueView;
+registry_1.registerComponent("value", Value);
+
+
+/***/ }),
+/* 31 */
+/* no static exports found */
+/* all exports used */
+/*!***************************************!*\
+  !*** ./nengo_gui/static/datastore.ts ***!
+  \***************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var utils = __webpack_require__(/*! ./utils */ 2);
+/**
+ * Storage of a set of data points and associated times with a fixed
+ * number of dimensions.
+ *
+ * @constructor
+ * @param {int} dims - number of data points per time
+ * @param {SimControl} sim - the simulation controller
+ * @param {float} synapse - the filter to apply to the data
+ */
+var DataStore = /** @class */ (function () {
+    function DataStore(dims, synapse) {
+        var _this = this;
+        this.data = [];
+        this.times = [];
+        this._dims = dims;
+        this.synapse = synapse; // TODO: get from SimControl
+        // Listen for updates to the TimeSlider
+        window.addEventListener("TimeSlider.addTime", utils.throttle(function (event) {
+            // How much has the most recent time exceeded how much is kept?
+            var limit = event.detail.currentTime - event.detail.keptTime;
+            var extra = DataStore.nearestIndex(_this.times, limit);
+            // Remove the extra data
+            if (extra > 0) {
+                _this.remove(0, extra);
+            }
+        }, 100) // Only update once per 100 ms
+        );
+    }
+    Object.defineProperty(DataStore.prototype, "dims", {
+        get: function () {
+            return this._dims;
+        },
+        set: function (val) {
+            var newDims = val - this._dims;
+            if (newDims > 0) {
+                var nulls_1 = utils.emptyArray(newDims).map(function () { return null; });
+                this.data = this.data.map(function (row) { return row.concat(nulls_1); });
+            }
+            else if (newDims < 0) {
+                console.warn("Removed " + Math.abs(newDims) + " dimension(s).");
+                // + 2 because time is dim 0, and end is not included
+                this.data = this.data.map(function (row) { return row.slice(0, val + 2); });
+            }
+            this._dims = val;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DataStore.prototype, "length", {
+        get: function () {
+            return this.data.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Returns the index in `array` at `element`, or before it.
+     *
+     * This is helpful for determining where to insert an element,
+     * and for finding indices between two elements.
+     *
+     * This method uses binary search to be much faster than the naive
+     * approach of iterating through the array in order.
+     * Note that this assumes that the array is sorted, but that is also true
+     * if you were to search through it linearly.
+     *
+     * Returns 0 if element is less than all elements in array.
+     */
+    DataStore.nearestIndex = function (array, element) {
+        var _a = [0, array.length], low = _a[0], high = _a[1];
+        while (high > low) {
+            // Note: | 0 is a faster Math.floor
+            var ix = ((high + low) / 2) | 0;
+            if (array[ix] <= element) {
+                if (array[ix + 1] > element || ix + 1 === array.length) {
+                    return ix;
+                }
+                else {
+                    low = ix + 1;
+                }
+            }
+            else {
+                high = ix;
+            }
+        }
+        console.assert(low === 0 && high === 0);
+        return 0;
+    };
+    /**
+     * Add a row of data.
+     *
+     * @param {array} row - dims+1 data points, with time as the first one
+     */
+    DataStore.prototype.add = function (row) {
+        console.assert(row.length - 1 === this.dims);
+        var time = row[0];
+        // If we get data out of order, wipe out the later data
+        if (time < this.times[this.times.length - 1]) {
+            this.remove(DataStore.nearestIndex(this.times, time));
+        }
+        // Compute lowpass filter (value = value*decay + newValue*(1-decay)
+        var decay = 0.0;
+        if (this.times.length > 0 && this.synapse > 0) {
+            var dt = time - this.times[this.times.length - 1];
+            decay = Math.exp(-dt / this.synapse);
+        }
+        // Filter new data
+        var newdata = row.slice(1);
+        var lastdata = this.data[this.data.length - 1];
+        if (decay > 0.0) {
+            newdata = newdata.map(function (datum, dim) {
+                if (lastdata[dim] === null) {
+                    return datum;
+                }
+                else {
+                    var lastdatum = lastdata[dim];
+                    return datum * (1 - decay) + lastdatum * decay;
+                }
+            });
+        }
+        this.data.push([time].concat(newdata));
+        // Also keep a separate times list (for fast lookups)
+        this.times.push(time);
+    };
+    DataStore.prototype.at = function (time) {
+        return this.data[DataStore.nearestIndex(this.times, time)];
+    };
+    /**
+     * Reset the data storage.
+     *
+     * This will clear current data so there is
+     * nothing to display on a reset event.
+     */
+    DataStore.prototype.reset = function () {
+        this.remove(0);
+    };
+    DataStore.prototype.remove = function (start, deleteCount) {
+        // TODO: try to remove this weird if statement
+        if (deleteCount == null) {
+            this.data.splice(start);
+            this.times.splice(start);
+        }
+        else {
+            this.data.splice(start, deleteCount);
+            this.times.splice(start, deleteCount);
+        }
+    };
+    DataStore.prototype.slice = function (beginIndex, endIndex) {
+        if (endIndex == null) {
+            return this.data.slice(beginIndex);
+        }
+        else {
+            return this.data.slice(beginIndex, endIndex);
+        }
+    };
+    DataStore.prototype.timeSlice = function (beginTime, endTime) {
+        var beginIndex = DataStore.nearestIndex(this.times, beginTime);
+        var endIndex = endTime
+            ? DataStore.nearestIndex(this.times, endTime) + 1
+            : undefined;
+        return this.slice(beginIndex, endIndex);
+    };
+    return DataStore;
+}());
+exports.DataStore = DataStore;
+
+
+/***/ }),
+/* 32 */
 /* no static exports found */
 /* all exports used */
 /*!************************************************!*\
@@ -32267,7 +32408,7 @@ exports.ToolbarView = ToolbarView;
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAHYSURBVDjLjZPLSxtRFMa1f0UXCl0VN66igg80kQZtsLiUWhe14MKFIFHbIEF8BNFFKYVkkT9GKFJooXTToq2gLkQT82oyjzuvO8nXe65mmIkRHfg2c+/3O+d8l9MBoIMkvi6hkNDAA3om9MTz+QAhy7JqnPO667poJ3GOdDr92Q/xAwbIrOs6GGOeFEVBtVpFoVCQkHw+j0wm40Ga5k4C0AXTNGHbNsxv32Hu7YNtp1Cr1VAsFiXAMAxQkWw2ewNpBZDZPjiA+XYebioJ9nIKqqqiVCrdGUlm0gpwzs5hzrwGX1uGMTMLtvrBG6VcLstOcrncPQDOYW3tgCffw0isg4uqnP6J8AhCnVAelUqlPYD/PYE59wZ67BXsL4fg/6ryYhNC82uaJkFtAdbHT+CJFbgbCagjYbDNlDev4zgyH4KQ7gA2n/fMUWWeiAtzBMrgWABAXciAhaibAKAYnXyaGx3/5cSXoIajsH/8hHP8B87llTSSqAMSmQMAfSL2VYtET5WRCLcW3oHt7Aaq+s1+eQAt/EJXh8MNe2kRSmwa/LoQeOsmpFUeQB0ag9I/jIve0G/n6Lhx3x60Ud3L4DbIPhEQo4PHmMVdTW6vD9BNkEesc1O0+t3/AXamvvzW7S+UAAAAAElFTkSuQmCC"
 
 /***/ }),
-/* 41 */
+/* 33 */
 /* no static exports found */
 /* all exports used */
 /*!***********************************************!*\
@@ -32278,7 +32419,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAIESURBVDjLjZNPTxNBGIexid9CEr8DBr8CHEiMVoomJiQkxBIM3dgIiaIESJTGGpVtyXIzHhoM4SIe9KAnEi4clQtJEczWFrbdP93d7s7u/JwZ7XYJBdnkyRxmfs/MvO9OD4AeDvuuMPoY/f/hKiMR5WKCvlarpRNCwiAI0A02D1mW38QlcUE/DzebTdi2HWEYBhqNBqrVqpBUKhUUCoVI0g5f4gK+wHVdeJ4nRo5lWdB1HbVaTQgcxwHfRFGUvxIuCKYfzmqZyZ2wKIO8fQ3/1Uv4Sy/QWliAO/sU9qMZmFMS3HfvT1xJ1ITOZJ9RpQi6+RH0y2fQb19BP23CVhRo+TysXA71+XkcMIk6fAfHK6tQVfWEoESXngNra0C5DHZJYGMDZiaD35IEi41qOo3vc3MoJ1Ooj92HpmkdQZiVEsHUAzl88hjY3gYIAdbXYQ0MoDo4CH1kBHssvH8jCf3eGKzDXzBNsyNoF/HH7WSJZLPA7i6wtQVnaAhmKoXjxUX8vDkMY3Qcnm6IInJOCS4nEte9QhF+RhInIRMTcFhYvZWCcXcUPmsl7w6H/w+nBFEb5SLc8TTo8jLq7M4m25mHfd8X8PC5AtHrXB5NdmwRrnfCcc4VCEnpA8jREasp6cpZAnrWO+hCGAn+Sa6xAtl84iJhttYSrzcm6OWSCzznNvzp9/4BgwKvG3Zq1eoAAAAASUVORK5CYII="
 
 /***/ }),
-/* 42 */
+/* 34 */
 /* no static exports found */
 /* all exports used */
 /*!*************************************************!*\
@@ -32289,7 +32430,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALtSURBVBgZTcFLaFxVAIDh/5577jwzj0wSUmqMtKIiBltbbJ1FUCxVoQu3FrHGVRU3BVcKrkTcKOhCUOtOAyJ23WIQtFawpoooZWKJpnbsNJN5PzP3PO5xArPo93nOOfasXCgfAz48mE8UhzpiqCN0FLFrog7QA+qABVpAA/gC+FYyERlz/NC+qeIbT85xt4GKckMV5Voju6A09ELLzXqfi38PTgLnJBORMfPZmMeectsSeB7SA19CPBAsxgW+EAQ+PLaQZH8uXTj/S+UDwYTVOitxmAh6yqOjoR1CZwSdETR2Yadv2fPm6i2KB9IszQZzkgkVmvnLZcuP21VeO1rgs+tdAu1YOZxlKiHw8fA9iADPdvn5nxa/3epUBGOH39sqjETu2UJG4oUwDB2RcmRSHuevdtjpWgZhxEBH4KDaDflobbNrlVoRh97demHpgfTth+5J5ZpNw5kjWQxw6mCa7aYlk4bPr7X54XqfkfGIHNjAYpQ6cOH1x9fEw/cnP13M+Ik7bc3ZYxniMR9PQCElObmYptox7E97XK0MscbhHJgwxKrQMiZ+v9Y9u3knHBUCn08ut6m2DQJHe6C5WOqQl4KbVcXR2QSxwENbS38wNEapLmNi4/0Hv/r3zxvHN0p1YnGP1e/r4ODr9TbZlKBTU7xSnKG4lCUZQKMfYkJVvfT2c44xyVjKr6lpEUI3g3UOPIE1lu6O5aUTcyRjPjhISUGttYtVYYUJuXxudRZ4p/jIvZx+eoHvSopmz/Ly8jyJwBFIkD7EfMimYLM8xChVZUJapU4Ap34tbdHalfRDh7aOUHsoE2FsROQchVyOV5/Zx3ZjiFWqxoS0Wh95/qlHk2+9+AR3sw60dSgDOPj4UoVUAL3+EKt1gwlptd7arnf4cq1EfipJPpsgn46TS8fJpGLEY4K4FJxenicuodbsYbX+jwkZGfPNlfWNhSvrG/cBM8AMMA1MA7lELAgSiYBsOkk+m+KPv8o3gJ+Y+B9yFXCQeyJWrQAAAABJRU5ErkJggg=="
 
 /***/ }),
-/* 43 */
+/* 35 */
 /* no static exports found */
 /* all exports used */
 /*!**********************************************!*\
@@ -32300,7 +32441,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAADoSURBVBgZBcExblNBGAbA2ceegTRBuIKOgiihSZNTcC5LUHAihNJR0kGKCDcYJY6D3/77MdOinTvzAgCw8ysThIvn/VojIyMjIyPP+bS1sUQIV2s95pBDDvmbP/mdkft83tpYguZq5Jh/OeaYh+yzy8hTHvNlaxNNczm+la9OTlar1UdA/+C2A4trRCnD3jS8BB1obq2Gk6GU6QbQAS4BUaYSQAf4bhhKKTFdAzrAOwAxEUAH+KEM01SY3gM6wBsEAQB0gJ+maZoC3gI6iPYaAIBJsiRmHU0AALOeFC3aK2cWAACUXe7+AwO0lc9eTHYTAAAAAElFTkSuQmCC"
 
 /***/ }),
-/* 44 */
+/* 36 */
 /* no static exports found */
 /* all exports used */
 /*!***************************************!*\
@@ -32314,7 +32455,7 @@ module.exports = function() {
 
 
 /***/ }),
-/* 45 */
+/* 37 */
 /* no static exports found */
 /* all exports used */
 /*!***********************************!*\
@@ -32346,7 +32487,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 46 */
+/* 38 */
 /* no static exports found */
 /* all exports used */
 /*!**************************************!*\
@@ -32357,7 +32498,7 @@ module.exports = g;
 module.exports = __webpack_require__.p + "favicon.ico";
 
 /***/ }),
-/* 47 */
+/* 39 */
 /* no static exports found */
 /* all exports used */
 /*!*****************************************************************************************!*\
@@ -32787,7 +32928,7 @@ var jQuery = __webpack_require__(/*! jquery */ 0);
 
 
 /***/ }),
-/* 48 */
+/* 40 */
 /* no static exports found */
 /* all exports used */
 /*!******************************************************************************!*\
@@ -32800,22 +32941,22 @@ var $ = __webpack_require__(/*! jquery */ 0);
 var jQuery = __webpack_require__(/*! jquery */ 0);
 
 // This file is autogenerated via the `commonjs` Grunt task. You can require() this file in a CommonJS environment.
-__webpack_require__(/*! ../../js/transition.js */ 68)
-__webpack_require__(/*! ../../js/alert.js */ 58)
-__webpack_require__(/*! ../../js/button.js */ 59)
-__webpack_require__(/*! ../../js/carousel.js */ 60)
-__webpack_require__(/*! ../../js/collapse.js */ 61)
-__webpack_require__(/*! ../../js/dropdown.js */ 62)
-__webpack_require__(/*! ../../js/modal.js */ 63)
-__webpack_require__(/*! ../../js/tooltip.js */ 67)
-__webpack_require__(/*! ../../js/popover.js */ 64)
-__webpack_require__(/*! ../../js/scrollspy.js */ 65)
-__webpack_require__(/*! ../../js/tab.js */ 66)
-__webpack_require__(/*! ../../js/affix.js */ 57)
+__webpack_require__(/*! ../../js/transition.js */ 60)
+__webpack_require__(/*! ../../js/alert.js */ 50)
+__webpack_require__(/*! ../../js/button.js */ 51)
+__webpack_require__(/*! ../../js/carousel.js */ 52)
+__webpack_require__(/*! ../../js/collapse.js */ 53)
+__webpack_require__(/*! ../../js/dropdown.js */ 54)
+__webpack_require__(/*! ../../js/modal.js */ 55)
+__webpack_require__(/*! ../../js/tooltip.js */ 59)
+__webpack_require__(/*! ../../js/popover.js */ 56)
+__webpack_require__(/*! ../../js/scrollspy.js */ 57)
+__webpack_require__(/*! ../../js/tab.js */ 58)
+__webpack_require__(/*! ../../js/affix.js */ 49)
 
 
 /***/ }),
-/* 49 */
+/* 41 */
 /* no static exports found */
 /* all exports used */
 /*!****************************************************************************!*\
@@ -32846,7 +32987,7 @@ var jQuery = __webpack_require__(/*! jquery */ 0);
 	if ( true ) {
 
 		// AMD. Register as an anonymous module.
-		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [ __webpack_require__(/*! jquery */ 0), __webpack_require__(/*! ./version */ 92) ], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [ __webpack_require__(/*! jquery */ 0), __webpack_require__(/*! ./version */ 84) ], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -33567,7 +33708,7 @@ return $.widget;
 
 
 /***/ }),
-/* 50 */
+/* 42 */
 /* no static exports found */
 /* all exports used */
 /*!******************************************************************************************!*\
@@ -33795,7 +33936,38 @@ var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); 
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 51 */
+/* 43 */
+/* no static exports found */
+/* all exports used */
+/*!***********************************!*\
+  !*** ./nengo_gui/static/main.css ***!
+  \***********************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(/*! !../../~/css-loader!../../~/postcss-loader??ref--0-2!./main.css */ 72);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(/*! ../../~/style-loader/addStyles.js */ 4)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/index.js??ref--0-2!./main.css", function() {
+			var newContent = require("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/index.js??ref--0-2!./main.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 44 */
 /* no static exports found */
 /* all exports used */
 /*!************************************************!*\
@@ -33806,7 +33978,7 @@ var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(/*! !../../../css-loader!../../../postcss-loader??ref--0-2!./bootstrap.min.css */ 87);
+var content = __webpack_require__(/*! !../../../css-loader!../../../postcss-loader??ref--0-2!./bootstrap.min.css */ 79);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
 var update = __webpack_require__(/*! ../../../style-loader/addStyles.js */ 4)(content, {});
@@ -33826,7 +33998,7 @@ if(false) {
 }
 
 /***/ }),
-/* 52 */
+/* 45 */
 /* no static exports found */
 /* all exports used */
 /*!******************************************************!*\
@@ -33837,7 +34009,7 @@ if(false) {
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(/*! !../../css-loader!../../postcss-loader??ref--0-2!./jQueryFileTree.min.css */ 88);
+var content = __webpack_require__(/*! !../../css-loader!../../postcss-loader??ref--0-2!./jQueryFileTree.min.css */ 80);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
 var update = __webpack_require__(/*! ../../style-loader/addStyles.js */ 4)(content, {});
@@ -33857,7 +34029,7 @@ if(false) {
 }
 
 /***/ }),
-/* 53 */
+/* 46 */
 /* no static exports found */
 /* all exports used */
 /*!*****************************************!*\
@@ -33869,38 +34041,38 @@ if(false) {
 
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var server_1 = __webpack_require__(/*! ../server */ 22);
+var server_1 = __webpack_require__(/*! ../server */ 25);
 // main
-var config_1 = __webpack_require__(/*! ../config */ 11);
-var editor_1 = __webpack_require__(/*! ../editor */ 20);
-var hotkeys_1 = __webpack_require__(/*! ../hotkeys */ 21);
-var menu_1 = __webpack_require__(/*! ../menu */ 12);
-var sidebar_1 = __webpack_require__(/*! ../sidebar */ 23);
-var sim_control_1 = __webpack_require__(/*! ../sim-control */ 24);
-var toolbar_1 = __webpack_require__(/*! ../toolbar */ 25);
+var config_1 = __webpack_require__(/*! ../config */ 7);
+var editor_1 = __webpack_require__(/*! ../editor */ 19);
+var hotkeys_1 = __webpack_require__(/*! ../hotkeys */ 20);
+var menu_1 = __webpack_require__(/*! ../menu */ 8);
+var sidebar_1 = __webpack_require__(/*! ../sidebar */ 21);
+var sim_control_1 = __webpack_require__(/*! ../sim-control */ 22);
+var toolbar_1 = __webpack_require__(/*! ../toolbar */ 23);
 // views
-var config_2 = __webpack_require__(/*! ../views/config */ 33);
-var editor_2 = __webpack_require__(/*! ../views/editor */ 34);
-var hotkeys_2 = __webpack_require__(/*! ../views/hotkeys */ 35);
-var menu_2 = __webpack_require__(/*! ../views/menu */ 36);
-var modal_1 = __webpack_require__(/*! ../views/modal */ 5);
-var sidebar_2 = __webpack_require__(/*! ../views/sidebar */ 37);
-var sim_control_2 = __webpack_require__(/*! ../views/sim-control */ 38);
-var toolbar_2 = __webpack_require__(/*! ../views/toolbar */ 39);
+var config_2 = __webpack_require__(/*! ../config */ 7);
+var editor_2 = __webpack_require__(/*! ../editor */ 19);
+var hotkeys_2 = __webpack_require__(/*! ../hotkeys */ 20);
+var menu_2 = __webpack_require__(/*! ../menu */ 8);
+var modal_1 = __webpack_require__(/*! ../modal */ 5);
+var sidebar_2 = __webpack_require__(/*! ../sidebar */ 21);
+var sim_control_2 = __webpack_require__(/*! ../sim-control */ 22);
+var toolbar_2 = __webpack_require__(/*! ../toolbar */ 23);
 // components
-var base_1 = __webpack_require__(/*! ../components/base */ 6);
-var ensemble_1 = __webpack_require__(/*! ../components/ensemble */ 108);
-var network_1 = __webpack_require__(/*! ../components/network */ 18);
-var node_1 = __webpack_require__(/*! ../components/node */ 109);
-var raster_1 = __webpack_require__(/*! ../components/raster */ 110);
-var slider_1 = __webpack_require__(/*! ../components/slider */ 111);
-var value_1 = __webpack_require__(/*! ../components/value */ 112);
-var xyvalue_1 = __webpack_require__(/*! ../components/xyvalue */ 115);
+var ensemble_1 = __webpack_require__(/*! ../components/ensemble */ 28);
+var network_1 = __webpack_require__(/*! ../components/network */ 15);
+var node_1 = __webpack_require__(/*! ../components/node */ 29);
+var position_1 = __webpack_require__(/*! ../components/position */ 98);
+var raster_1 = __webpack_require__(/*! ../components/raster */ 99);
+var slider_1 = __webpack_require__(/*! ../components/slider */ 100);
+var value_1 = __webpack_require__(/*! ../components/value */ 30);
+var xyvalue_1 = __webpack_require__(/*! ../components/xyvalue */ 101);
 // component views
-var connection_1 = __webpack_require__(/*! ../components/views/connection */ 27);
-var ensemble_2 = __webpack_require__(/*! ../components/views/ensemble */ 28);
-var network_2 = __webpack_require__(/*! ../components/views/network */ 29);
-var node_2 = __webpack_require__(/*! ../components/views/node */ 30);
+var connection_1 = __webpack_require__(/*! ../components/connection */ 27);
+var ensemble_2 = __webpack_require__(/*! ../components/ensemble */ 28);
+var network_2 = __webpack_require__(/*! ../components/network */ 15);
+var node_2 = __webpack_require__(/*! ../components/node */ 29);
 exports.listeners = {
     ConfigDialog: null
 };
@@ -33987,60 +34159,68 @@ exports.view = {
 exports.component = {
     Ensemble: function () {
         return new ensemble_1.Ensemble({
+            server: new server_1.MockConnection(),
             uid: "Ensemble",
-            pos: new base_1.Position(20, 20, 50, 50),
+            pos: new position_1.Position(20, 20, 50, 50),
             dimensions: 1
         });
     },
     Network: function () {
         return new network_1.Network({
+            server: new server_1.MockConnection(),
             uid: "Network",
-            pos: new base_1.Position(20, 20, 50, 50),
+            pos: new position_1.Position(20, 20, 50, 50),
             dimensions: 1
         });
     },
     Node: function () {
         return new node_1.Node({
+            server: new server_1.MockConnection(),
             uid: "Node",
-            pos: new base_1.Position(20, 20, 50, 50),
+            pos: new position_1.Position(20, 20, 50, 50),
             dimensions: 1
         });
     },
     PassthroughNode: function () {
         return new node_1.PassthroughNode({
+            server: new server_1.MockConnection(),
             uid: "Passthrough",
-            pos: new base_1.Position(20, 20),
+            pos: new position_1.Position(20, 20),
             dimensions: 1
         });
     },
     Raster: function () {
         return new raster_1.Raster({
+            server: new server_1.MockConnection(),
             uid: "Raster",
-            pos: new base_1.Position(20, 20, 100, 100),
+            pos: new position_1.Position(20, 20, 100, 100),
             nNeurons: 2,
             synapse: 0.005
         });
     },
     Slider: function () {
         return new slider_1.Slider({
+            server: new server_1.MockConnection(),
             uid: "Slider",
-            pos: new base_1.Position(20, 20, 100, 100),
+            pos: new position_1.Position(20, 20, 100, 100),
             dimensions: 2,
             synapse: 0.005
         });
     },
     Value: function () {
         return new value_1.Value({
+            server: new server_1.MockConnection(),
             uid: "Value",
-            pos: new base_1.Position(20, 20, 100, 100),
+            pos: new position_1.Position(20, 20, 100, 100),
             dimensions: 2,
             synapse: 0.005
         });
     },
     XYValue: function () {
         return new xyvalue_1.XYValue({
+            server: new server_1.MockConnection(),
             uid: "XY Value",
-            pos: new base_1.Position(20, 20, 100, 100),
+            pos: new position_1.Position(20, 20, 100, 100),
             dimensions: 2,
             synapse: 0.005
         });
@@ -34057,43 +34237,632 @@ exports.componentview = {
 
 
 /***/ }),
-/* 54 */
+/* 47 */
 /* no static exports found */
 /* all exports used */
-/*!**************************************!*\
-  !*** ./nengo_gui/static/netgraph.ts ***!
-  \**************************************/
-/***/ (function(module, exports) {
-
-"use strict";
-throw new Error("Module build failed: Error: ENOENT: no such file or directory, open '/home/tbekolay/Code/nengo_gui/nengo_gui/static/netgraph.ts'\n    at Error (native)");
-
-/***/ }),
-/* 55 */
-/* no static exports found */
-/* all exports used */
-/*!****************************************!*\
-  !*** ./nengo_gui/static/views/main.ts ***!
-  \****************************************/
+/*!*******************************************!*\
+  !*** ./nengo_gui/static/netgraph/main.ts ***!
+  \*******************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+/**
+ * Network diagram.
+ *
+ * @constructor
+ * @param {DOMElement} parent - the element to add this component to
+ * @param {dict} args - A set of constructor arguments, including:
+ * @param {int} args.id - the id of the server-side NetGraph to connect to
+ *
+ * NetGraph constructor is written into HTML file from the python
+ * server and is run on page load.
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
-var maquette_1 = __webpack_require__(/*! maquette */ 1);
-__webpack_require__(/*! ./main.css */ 100);
-var MainView = /** @class */ (function () {
-    function MainView() {
-        var node = maquette_1.h("div.main");
-        this.root = maquette_1.dom.create(node).domNode;
+var interact = __webpack_require__(/*! interact.js */ 10);
+var actions_1 = __webpack_require__(/*! ./actions */ 103);
+var components_1 = __webpack_require__(/*! ./components */ 104);
+var connections_1 = __webpack_require__(/*! ./connections */ 105);
+var network_1 = __webpack_require__(/*! ../components/network */ 15);
+var widget_1 = __webpack_require__(/*! ../components/widget */ 17);
+var config_1 = __webpack_require__(/*! ../config */ 7);
+var menu_1 = __webpack_require__(/*! ../menu */ 8);
+var utils = __webpack_require__(/*! ../utils */ 2);
+var registry_1 = __webpack_require__(/*! ../components/registry */ 6);
+var view_1 = __webpack_require__(/*! ./view */ 106);
+var NetGraph = /** @class */ (function () {
+    function NetGraph(server) {
+        var _this = this;
+        this.actions = new actions_1.ActionStack();
+        this.components = new components_1.ComponentManager();
+        this.connections = new connections_1.ConnectionManager();
+        this._offset = [0, 0];
+        // notify(eventName, eventArg) {
+        //     this.attached.forEach((conn) => {
+        //         conn.send("netgraph." + eventName,
+        //             {x: this.offsetX, y: this.offsetY});
+        //     });
+        // }
+        /**
+         * Handler for resizing the full SVG.
+         */
+        this.onresize = utils.throttle(function (event) {
+            // const width = this.view.width;
+            // const height = this.view.height;
+            // console.assert(width !== 0);
+            // console.assert(height !== 0);
+            // if (this.aspectResize) {
+            //     Object.keys(this.svgObjects).forEach(objType => {
+            //         Object.keys(this.svgObjects[objType]).forEach(key => {
+            //             const item = this.svgObjects[objType][key];
+            //             // TODO: this is the only thing ViewPort is being used for,
+            //             // so it can probably be removed
+            //             if (item.depth === 1) {
+            //                 // const newWidth =
+            //                 //     this.viewPort.scaleWidth(item.width) / this.scale;
+            //                 // const newHeight =
+            //                 //     this.viewPort.scaleHeight(item.height) / this.scale;
+            //                 // item.width = newWidth / (2 * width);
+            //                 // item.height = newHeight / (2 * height);
+            //             }
+            //         });
+            //     });
+            // }
+            // this.redraw();
+            _this.components.onresize(event);
+        }, 66);
+        this.view = new view_1.NetGraphView();
+        this.view.fontSize = this.fontSize;
+        this.view.scale = this.scale;
+        this.view.zoomFonts = this.zoomFonts;
+        this.interactRoot = interact(this.view.root);
+        this.interactRoot.styleCursor(false);
+        this.interactRoot.draggable(true);
+        this.interactRoot.on("dragstart", function () {
+            menu_1.Menu.hideShown();
+            // TODO: Is this really what we want?? Doesn't interact do this already?
+            document.documentElement.style.cursor = "move";
+        });
+        this.interactRoot.on("dragmove", function (event) {
+            _this.view.pan(event.dx, event.dy);
+        });
+        this.interactRoot.on("dragend", function (event) {
+            document.documentElement.style.cursor = "default";
+            _this.components.syncWithView();
+        });
+        this.interactRoot.on("wheel", function (event) {
+            event.preventDefault();
+            menu_1.Menu.hideShown();
+            var DeltaMode;
+            (function (DeltaMode) {
+                DeltaMode[DeltaMode["DOM_DELTA_PIXEL"] = 0] = "DOM_DELTA_PIXEL";
+                DeltaMode[DeltaMode["DOM_DELTA_LINE"] = 1] = "DOM_DELTA_LINE";
+                DeltaMode[DeltaMode["DOM_DELTA_PAGE"] = 2] = "DOM_DELTA_PAGE";
+            })(DeltaMode || (DeltaMode = {}));
+            // How much we scrolled, according to the browser
+            var delta;
+            if (event.deltaMode === DeltaMode.DOM_DELTA_LINE) {
+                if (event.deltaY !== 0) {
+                    delta = Math.log(1 + Math.abs(event.deltaY)) * 60;
+                    if (event.deltaY < 0) {
+                        delta *= -1;
+                    }
+                }
+                else {
+                    delta = 0;
+                }
+            }
+            else if (event.deltaMode === DeltaMode.DOM_DELTA_PIXEL) {
+                delta = event.deltaY;
+            }
+            else {
+                // DOM_DELTA_PAGE unhandled
+                delta = 0;
+            }
+            // The zoom constant controls how quickly the mouse wheel zooms
+            var zoomConstant = 1 / 600;
+            var zScale = 1 + Math.abs(delta) * zoomConstant;
+            if (delta > 0) {
+                // Doing it this way ensures zooming in then out returns
+                // to the original zoom level
+                zScale = 1 / zScale;
+            }
+            _this.scale = zScale * _this.scale;
+            // We want to scale centered on the mouse cursor, which is at
+            // event.offsetX, event.offsetY relative to the netgraph.
+            // The scaling above will scale each pixel by zScale, so we want
+            // to move the offset to compensate such that the pixel at
+            // event.offsetX, event.offsetY remains at that spot.
+            var o = _this.offset;
+            var x = event.offsetX + o[0];
+            var y = event.offsetY + o[1];
+            _this.offset = [o[0] + x * zScale - x, o[1] + y * zScale - y];
+            // this.components.saveLayouts();
+            // this.scaleMiniMapViewBox();
+            // this.redraw();
+            // Let the server know what happened
+            // this.server.send("netgraph.zoom", {
+            //     scale: this.scale,
+            //     x: this.offset[0],
+            //     y: this.offset[1]
+            // });
+        });
+        //this.interactRoot.on("click", (event) => {
+        //     document.querySelector(".aceText-input")
+        //         .dispatchEvent(new Event("blur"));
+        // })
+        // Scrollwheel on background zooms the full area by changing scale.
+        // Note that offsetX,Y are also changed to zoom into a particular
+        // point in the space
+        // Determine when to pull up the menu
+        this.interactRoot.on("hold", function (event) {
+            // Change to "tap" for right click
+            if (event.button === 0) {
+                if (menu_1.Menu.shown !== null) {
+                    menu_1.Menu.hideShown();
+                }
+                else {
+                    _this.menu.show(event.clientX, event.clientY);
+                }
+                event.stopPropagation();
+            }
+        });
+        this.interactRoot.on("tap", function (event) {
+            // Get rid of menus when clicking off
+            if (event.button === 0) {
+                menu_1.Menu.hideShown();
+            }
+        });
+        this.view.root.addEventListener("contextmenu", function (event) {
+            event.preventDefault();
+            if (menu_1.Menu.shown !== null) {
+                menu_1.Menu.hideShown();
+            }
+            else {
+                _this.menu.show(event.clientX, event.clientY);
+            }
+        });
+        server.bind("netgraph.pan", function (_a) {
+            var x = _a.x, y = _a.y;
+            _this.offset = [x, y];
+        });
+        server.bind("netgraph.zoom", function (_a) {
+            var zoom = _a.zoom;
+            _this.scale = zoom;
+        });
+        // TODO: How much error checking are we supposed to do?
+        // Should I check that the uid gives a network or do I just
+        // let it throw an error?
+        // Or should I make a seperate list of interactables
+        // server.bind("netgraph.expand", ({ uid }: { uid: string }) => {
+        //     const item = this.svgObjects.net[uid];
+        //     item.expand(true, true);
+        // });
+        // server.bind("netgraph.collapse", ({ uid }: { uid: string }) => {
+        //     const item = this.svgObjects.net[uid];
+        //     item.expand(true, true);
+        // });
+        // Should probably make a shape param too
+        // server.bind(
+        //     "netgraph.posSize",
+        //     () => {}
+        // {uid, x, y, width, height}: {uid: string} & utils.Shape) => {
+        //     const item = this.svgObjects[uid];
+        //     item.x = x;
+        //     item.y = y;
+        //     item.width = width;
+        //     item.height = height;
+        //     item.redraw();
+        //     // this.scaleMiniMap();
+        // }
+        // );
+        server.bind("netgraph.config", function (_a) {
+            var uid = _a.uid, config = _a.config;
+            // Anything about the config of a component has changed
+            var component = _this.components[uid];
+            component.updateLayout(config);
+        });
+        // server.bind("netgraph.remove", ({ uid }) => {
+        //     // TODO: this feels hacky
+        //     // (which is why TypeScript is complaining)
+        //     let item = this.svgObjects[uid];
+        //     if (item === undefined) {
+        //         item = this.svgConns[uid];
+        //     }
+        //     item.remove();
+        // });
+        // server.bind(
+        //     "netgraph.reconnect",
+        //     ({ uid, pres, posts }: { uid: string } & any & any) => {
+        //         const netConn = this.svgConns[uid];
+        //         netConn.setPres(pres);
+        //         netConn.setPosts(posts);
+        //         netConn.setRecurrent(pres[0] === posts[0]);
+        //         netConn.redraw();
+        //     }
+        // );
+        server.bind("netgraph.reconnect", function (_a) {
+            var uid = _a.uid, notifyServer = _a.notifyServer;
+            var component = _this.components[uid];
+            // component.remove(true, notifyServer);
+        });
+        var _loop_1 = function (compName) {
+            server.bind("netgraph.create_" + compName, function (argobj) {
+                argobj.server = _this.server;
+                _this.add(registry_1.createComponent(compName, argobj));
+            });
+        };
+        for (var compName in registry_1.ComponentRegistry) {
+            _loop_1(compName);
+        }
+        // Attach to connection
+        server.bind("netgraph.create_connection", function (_a) {
+            var pre = _a.pre, post = _a.post;
+            _this.connect(pre, post);
+        });
+        this.server = server;
+        // Respond to resize events
+        window.addEventListener("resize", function (event) { return _this.onresize(event); });
+        // this.createMinimap();
+        this.menu = new menu_1.Menu();
+        this.addMenuItems();
     }
-    return MainView;
+    Object.defineProperty(NetGraph.prototype, "aspectResize", {
+        get: function () {
+            return config_1.config.aspectResize;
+        },
+        set: function (val) {
+            config_1.config.aspectResize = val;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NetGraph.prototype, "fontSize", {
+        get: function () {
+            return config_1.config.fontSize;
+        },
+        set: function (val) {
+            if (val === this.fontSize) {
+                return;
+            }
+            config_1.config.fontSize = val;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NetGraph.prototype, "height", {
+        get: function () {
+            return this.view.height;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NetGraph.prototype, "offset", {
+        get: function () {
+            return this.view.offset;
+        },
+        set: function (val) {
+            this.view.offset = val;
+            // TODO: more, update things that need updating
+            // this.redraw(); // ???
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NetGraph.prototype, "scale", {
+        get: function () {
+            return this.components.scale;
+        },
+        set: function (val) {
+            this.components.scale = val;
+            this.view.scale = val;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NetGraph.prototype, "scaledHeight", {
+        /**
+         * Return the pixel height of the SVG times the current scale factor.
+         */
+        get: function () {
+            console.assert(this.view.height !== 0);
+            console.assert(this.scale !== 0);
+            return this.view.height * this.scale;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NetGraph.prototype, "scaledOffset", {
+        get: function () {
+            var _this = this;
+            return this.view.offset.map(function (v) { return v * _this.scale; });
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NetGraph.prototype, "scaledWidth", {
+        /**
+         * Return the pixel width of the SVG times the current scale factor.
+         */
+        get: function () {
+            console.assert(this.view.width !== 0);
+            console.assert(this.scale !== 0);
+            return this.view.width * this.scale;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NetGraph.prototype, "width", {
+        get: function () {
+            return this.view.width;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NetGraph.prototype, "zoomFonts", {
+        get: function () {
+            return config_1.config.zoomFonts;
+        },
+        set: function (val) {
+            config_1.config.zoomFonts = val;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    NetGraph.prototype.viewGroup = function (component) {
+        if (component instanceof widget_1.Widget) {
+            return this.view.widgets;
+        }
+        else if (component instanceof network_1.Network) {
+            return this.view.networks;
+        }
+        else {
+            return this.view.items;
+        }
+    };
+    NetGraph.prototype.add = function (component, network) {
+        if (network === void 0) { network = null; }
+        var group = this.viewGroup(component);
+        this.components.add(component, network);
+        if (network != null) {
+            component.onnetadd(network);
+        }
+        group.appendChild(component.view.root);
+        component.ondomadd();
+        // -- Move element to top when clicked on
+        var raiseToTop = function () {
+            // In SVG, z-order is based on element location, so to raise
+            // to the top we re-add the element.
+            // The DOM automatically removes element that get added twice.
+            group.appendChild(component.view.root);
+        };
+        component.view.root.addEventListener("mousedown", raiseToTop);
+        component.view.root.addEventListener("touchstart", raiseToTop);
+        // -- Record moves and resizes
+        this.interactRoot.on("dragend resizeend", function (event) {
+            // const info = {
+            //     height: this.h,
+            //     labelVisible: this.labelVisible,
+            //     width: this.w,
+            //     x: this.x,
+            //     y: this.y,
+            // };
+            // this.ws.send("config:" + JSON.stringify(info));
+        });
+    };
+    NetGraph.prototype.addMenuItems = function () {
+        var _this = this;
+        this.menu.addAction("Auto-layout", function () {
+            _this.server.send("netgraph.feedforwardLayout");
+        });
+    };
+    NetGraph.prototype.collapse = function (network, reportToServer, auto) {
+        if (reportToServer === void 0) { reportToServer = false; }
+        if (auto === void 0) { auto = false; }
+        // this.gClass.pop();
+        // Remove child NetGraphItems and NetGraphConnections
+        // while (this.childConnections.length > 0) {
+        //     this.childConnections[0].remove();
+        // }
+        // while (this.children.length > 0) {
+        //     this.children[0].remove();
+        // }
+        // if (this.expanded) {
+        //     this.expanded = false;
+        // if (this.ng.transparentNets) {
+        //     this.view.transparentShape(false);
+        // }
+        // this.gNetworks.removeChild(this.view.g);
+        // this.ng.view.gItems.appendChild(this.view.g);
+        // if (!this.minimap) {
+        //     this.miniItem.collapse(reportToServer, auto);
+        // }
+        // } else {
+        //     console.warn(
+        //         "collapsed a network that was already collapsed: " + this);
+        // }
+        // if (reportToServer) {
+        // if (auto) {
+        //     // Update the server, but do not place on the undo stack
+        //     this.ng.notify("autoCollapse", {uid: this.uid});
+        // } else {
+        //     this.ng.notify("collapse", {uid: this.uid});
+        // }
+        // }
+    };
+    NetGraph.prototype.connect = function (pre, post) {
+        // const connection = this.components.connect(pre, post);
+        // this.view.conns.appendChild(connection.view.root);
+        // TODO: update positions without having to move
+    };
+    // this will need to be refactored later
+    NetGraph.prototype.createNode = function (ngiArg, interArg, dimensions, html) {
+        // TODO: fill in the rest of the args
+        // const item = new NodeItem(ngiArg, interArg, dimensions, html);
+        // this.svgObjects.node[ngiArg.uid] = item;
+        // this.detectCollapsedConns(item.uid);
+    };
+    /**
+     * Create a new NetGraphConnection.
+     */
+    NetGraph.prototype.createConnection = function (info) {
+        // const connMini = new NetGraphConnection(this, info, true, null);
+        // this.svgConns[info.uid] = new NetGraphConnection(
+        //     this, info, false, connMini);
+    };
+    /**
+     * Manage collapsedConns dictionary.
+     *
+     * If a NetGraphConnection is looking for an item with a particular uid,
+     * but that item does not exist yet (due to it being inside a collapsed
+     * network), then it is added to the collapsedConns dictionary. When
+     * an item is created, this function is used to see if any
+     * NetGraphConnections are waiting for it, and notifies them.
+     */
+    // detectCollapsedConns(uid) {
+    //     const conns = this.collapsedConns[uid];
+    //     if (conns !== undefined) {
+    //         delete this.collapsedConns[uid];
+    //         for (let i = 0; i < conns.length; i++) {
+    //             const conn = conns[i];
+    //             // Make sure the NetGraphConnection hasn't been removed since
+    //             // it started listening.
+    //             if (!conn.removed) {
+    //                 conn.setPre(conn.findPre());
+    //                 conn.setPost(conn.findPost());
+    //                 conn.redraw();
+    //             }
+    //         }
+    //     }
+    // }
+    NetGraph.prototype.expand = function (network, returnToServer, auto) {
+        if (returnToServer === void 0) { returnToServer = true; }
+        if (auto === void 0) { auto = false; }
+        // Default to true if no parameter is specified
+        if (typeof returnToServer !== "undefined") {
+            returnToServer = true;
+        }
+        auto = typeof auto !== "undefined" ? auto : false;
+        // this.gClass.push("expanded");
+        // if (!this.expanded) {
+        //     this.expanded = true;
+        //     // if (this.ng.transparentNets) {
+        //     //     this.view.transparentShape(false);
+        //     // }
+        //     // this.ng.view.gItems.removeChild(this.view.g);
+        //     // this.gNetworks.appendChild(this.view.g);
+        //     if (!this.minimap) {
+        //         this.miniItem.expand(returnToServer, auto);
+        //     }
+        // } else {
+        //     console.warn(
+        //         "expanded a network that was already expanded: " + this);
+        // }
+        // if (returnToServer) {
+        //     // if (auto) {
+        //     //     // Update the server, but do not place on the undo stack
+        //     //     this.ng.notify("autoExpand", {uid: this.uid});
+        //     // } else {
+        //     //     this.ng.notify("expand", {uid: this.uid});
+        //     // }
+        // }
+    };
+    NetGraph.prototype.hotkeys = function (manager) {
+        manager.add("Undo", "z", { ctrl: true }, function () {
+            // this.notify("undo", "1");
+        });
+        manager.add("Redo", "z", { ctrl: true, shift: true }, function () {
+            // this.notify("undo", "0");
+        });
+        manager.add("Redo", "y", { ctrl: true }, function () {
+            // this.notify("undo", "0");
+        });
+        manager.add("Toggle minimap", "m", { ctrl: true }, function () {
+            // this.minimap.toggle();
+        });
+    };
+    /**
+     * Redraw all elements
+     */
+    // redraw() {
+    //     Object.keys(this.svgObjects).forEach(objType => {
+    //         Object.keys(this.svgObjects[objType]).forEach(key => {
+    //             this.svgObjects[objType][key].redraw();
+    //         });
+    //     });
+    //     Object.keys(this.svgConns).forEach(key => {
+    //         this.svgConns[key].redraw();
+    //     });
+    // }
+    /**
+     * Register a NetGraphConnection with a target item that it is looking for.
+     *
+     * This is a NetGraphItem that does not exist yet, because it is inside a
+     * collapsed network. When it does appear, NetGraph.detectCollapsed will
+     * handle notifying the NetGraphConnection.
+     */
+    // registerConn(conn, target) {
+    //     if (this.collapsedConns[target] === undefined) {
+    //         this.collapsedConns[target] = [conn];
+    //     } else {
+    //         const index = this.collapsedConns[target].indexOf(conn);
+    //         if (index === -1) {
+    //             this.collapsedConns[target].push(conn);
+    //         }
+    //     }
+    // }
+    NetGraph.prototype.remove = function (component, undoFlag, notifyServer) {
+        if (undoFlag === void 0) { undoFlag = false; }
+        if (notifyServer === void 0) { notifyServer = true; }
+        // TODO: unduplicate from add
+        var group = this.view.root;
+        if (component instanceof widget_1.Widget) {
+            group = this.view.widgets;
+        }
+        else {
+            group = this.view.items;
+            this.components.remove(component);
+        }
+        group.removeChild(component.view.root);
+        // Call collapse on networks...?
+        // --- from NetGraphItemView
+        // this.gItems.removeChild(this.g);
+        // --- from Component
+        // if (notifyServer) {
+        //     if (undoFlag) {
+        //         // this.ws.send("removeUndo");
+        //     } else {
+        //         // this.ws.send("remove");
+        //     }
+        // }
+        // this.parent.removeChild(this.view.root);
+        // allComponents.remove(this);
+        // --- from NetGraphItem
+        // delete this.ng.svgObjects[this.uid];
+        // Update any connections into or out of this item
+        // const connIn = this.connIn.slice();
+        // for (const conn of connIn) {
+        //     conn.setPost(conn.findPost());
+        //     conn.redraw();
+        // }
+        // const connOut = this.connOut.slice();
+        // for (const conn of connOut) {
+        //     conn.setPre(conn.findPre());
+        //     conn.redraw();
+        // }
+        // Remove from the SVG
+        // this.view.remove();
+        // if (this.view.depth === 1) {
+        //     this.ng.scaleMiniMap();
+        // }
+    };
+    return NetGraph;
 }());
-exports.MainView = MainView;
+exports.NetGraph = NetGraph;
 
 
 /***/ }),
-/* 56 */
+/* 48 */
 /* no static exports found */
 /* all exports used */
 /*!******************************!*\
@@ -34219,7 +34988,7 @@ function fromByteArray (uint8) {
 
 
 /***/ }),
-/* 57 */
+/* 49 */
 /* no static exports found */
 /* all exports used */
 /*!*********************************!*\
@@ -34393,7 +35162,7 @@ function fromByteArray (uint8) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 58 */
+/* 50 */
 /* no static exports found */
 /* all exports used */
 /*!*********************************!*\
@@ -34499,7 +35268,7 @@ function fromByteArray (uint8) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 59 */
+/* 51 */
 /* no static exports found */
 /* all exports used */
 /*!**********************************!*\
@@ -34636,7 +35405,7 @@ function fromByteArray (uint8) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 60 */
+/* 52 */
 /* no static exports found */
 /* all exports used */
 /*!************************************!*\
@@ -34885,7 +35654,7 @@ function fromByteArray (uint8) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 61 */
+/* 53 */
 /* no static exports found */
 /* all exports used */
 /*!************************************!*\
@@ -35109,7 +35878,7 @@ function fromByteArray (uint8) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 62 */
+/* 54 */
 /* no static exports found */
 /* all exports used */
 /*!************************************!*\
@@ -35286,7 +36055,7 @@ function fromByteArray (uint8) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 63 */
+/* 55 */
 /* no static exports found */
 /* all exports used */
 /*!*********************************!*\
@@ -35637,7 +36406,7 @@ function fromByteArray (uint8) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 64 */
+/* 56 */
 /* no static exports found */
 /* all exports used */
 /*!***********************************!*\
@@ -35757,7 +36526,7 @@ function fromByteArray (uint8) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 65 */
+/* 57 */
 /* no static exports found */
 /* all exports used */
 /*!*************************************!*\
@@ -35941,7 +36710,7 @@ function fromByteArray (uint8) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 66 */
+/* 58 */
 /* no static exports found */
 /* all exports used */
 /*!*******************************!*\
@@ -36108,7 +36877,7 @@ function fromByteArray (uint8) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 67 */
+/* 59 */
 /* no static exports found */
 /* all exports used */
 /*!***********************************!*\
@@ -36640,7 +37409,7 @@ function fromByteArray (uint8) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 68 */
+/* 60 */
 /* no static exports found */
 /* all exports used */
 /*!**************************************!*\
@@ -36711,7 +37480,7 @@ function fromByteArray (uint8) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! jquery */ 0)))
 
 /***/ }),
-/* 69 */
+/* 61 */
 /* no static exports found */
 /* all exports used */
 /*!**************************!*\
@@ -40432,7 +41201,7 @@ init(true);function init(packaged) {
     if (!global || !global.document)
         return;
     
-    options.packaged = packaged || acequire.packaged || module.packaged || (global.define && __webpack_require__(/*! !webpack amd define */ 44).packaged);
+    options.packaged = packaged || acequire.packaged || module.packaged || (global.define && __webpack_require__(/*! !webpack amd define */ 36).packaged);
 
     var scriptOptions = {};
     var scriptUrl = "";
@@ -53516,7 +54285,7 @@ var WorkerClient = function(topLevelNamespaces, mod, classname, workerUrl) {
 
     try {
             var workerSrc = mod.src;
-    var Blob = __webpack_require__(/*! w3c-blob */ 138);
+    var Blob = __webpack_require__(/*! w3c-blob */ 127);
     var blob = new Blob([ workerSrc ], { type: 'application/javascript' });
     var blobUrl = (window.URL || window.webkitURL).createObjectURL(blob);
 
@@ -55730,7 +56499,7 @@ exports.config = acequire("./config");
 exports.acequire = acequire;
 
 if (true)
-    exports.define = __webpack_require__(/*! !webpack amd define */ 44);
+    exports.define = __webpack_require__(/*! !webpack amd define */ 36);
 exports.edit = function(el) {
     if (typeof el == "string") {
         var _id = el;
@@ -55797,7 +56566,7 @@ exports.version = "1.2.6";
 module.exports = window.ace.acequire("ace/ace");
 
 /***/ }),
-/* 70 */
+/* 62 */
 /* no static exports found */
 /* all exports used */
 /*!********************************!*\
@@ -56073,7 +56842,7 @@ exports.Mode = Mode;
 
 
 /***/ }),
-/* 71 */
+/* 63 */
 /* no static exports found */
 /* all exports used */
 /*!***************************!*\
@@ -56092,9 +56861,9 @@ exports.Mode = Mode;
 
 
 
-var base64 = __webpack_require__(/*! base64-js */ 56)
-var ieee754 = __webpack_require__(/*! ieee754 */ 91)
-var isArray = __webpack_require__(/*! isarray */ 72)
+var base64 = __webpack_require__(/*! base64-js */ 48)
+var ieee754 = __webpack_require__(/*! ieee754 */ 83)
+var isArray = __webpack_require__(/*! isarray */ 64)
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -57872,10 +58641,10 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./../webpack/buildin/global.js */ 45)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./../webpack/buildin/global.js */ 37)))
 
 /***/ }),
-/* 72 */
+/* 64 */
 /* no static exports found */
 /* all exports used */
 /*!*************************************!*\
@@ -57891,7 +58660,102 @@ module.exports = Array.isArray || function (arr) {
 
 
 /***/ }),
-/* 73 */
+/* 65 */
+/* no static exports found */
+/* all exports used */
+/*!*****************************************************************************************!*\
+  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/components/connection.css ***!
+  \*****************************************************************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../~/css-loader/lib/css-base.js */ 3)(undefined);
+// imports
+
+
+// module
+exports.push([module.i, "svg.netgraph g.connection line, svg.netgraph g.connection path {\n    fill: none;\n    stroke:  black;\n    stroke-width: 2\n}\nsvg.netgraph g.connection path.arrow {\n    fill: black;\n    stroke: none;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 66 */
+/* no static exports found */
+/* all exports used */
+/*!***************************************************************************************!*\
+  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/components/ensemble.css ***!
+  \***************************************************************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../~/css-loader/lib/css-base.js */ 3)(undefined);
+// imports
+
+
+// module
+exports.push([module.i, "svg.netgraph g.ensemble {\n    fill: rgb(204, 204, 204);\n    stroke: rgb(127, 127, 127);\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 67 */
+/* no static exports found */
+/* all exports used */
+/*!**************************************************************************************!*\
+  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/components/network.css ***!
+  \**************************************************************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../~/css-loader/lib/css-base.js */ 3)(undefined);
+// imports
+
+
+// module
+exports.push([module.i, "svg g.network rect {\n    fill: rgb(204, 204, 204);\n    stroke:  rgb(127, 127, 127);\n    stroke-width: 1\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 68 */
+/* no static exports found */
+/* all exports used */
+/*!***********************************************************************************!*\
+  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/components/node.css ***!
+  \***********************************************************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../~/css-loader/lib/css-base.js */ 3)(undefined);
+// imports
+
+
+// module
+exports.push([module.i, "svg.netgraph g.node rect {\n    fill: rgb(204, 204, 204);\n    stroke:  rgb(127, 127, 127);\n    stroke-width: 1\n}\nsvg.netgraph g.passthrough circle {\n    fill: black;\n    stroke: none;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 69 */
+/* no static exports found */
+/* all exports used */
+/*!***********************************************************************************!*\
+  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/components/plot.css ***!
+  \***********************************************************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../~/css-loader/lib/css-base.js */ 3)(undefined);
+// imports
+
+
+// module
+exports.push([module.i, "/* } */\n\nsvg.netgraph .axes:hover {\n    border: 1px solid #888888;\n}\n\nsvg.netgraph .axes text {\n    cursor: default;\n    font-size: 0.8em;\n}\n\nsvg.netgraph .axes text:active {\n    cursor: move;\n}\n\nsvg.netgraph .axes .axis path {\n    stroke:  black;\n    stroke-width: 1;\n    fill: none;\n}\n\nsvg.netgraph .axes .crosshairX text {\n    dominant-baseline: text-before-edge;\n}\n\nsvg.netgraph .axes .crosshairY text {\n    dominant-baseline: middle;\n    text-anchor: end;\n}/*     text-align: center; */\n\nsvg.netgraph circle.last-point {\n    fill-opacity: 0.5;\n}/*     padding: 0; */\n\nsvg.netgraph .crosshair line {\n    stroke:  black;\n    stroke-width: 0.5\n}\n\nsvg.netgraph .crosshair text {\n    font-size: 80%;\n    pointer-events: none;\n}/*     margin: 0; */\n\nsvg.netgraph .crosshairX text {\n    text-anchor: middle;\n}/*     display: block; */\n\nsvg.netgraph .crosshairY text {\n    text-anchor: end;\n}/* .pointer span { */\n\nsvg.netgraph .legend-item text {\n    font-size: 80%;\n}/* TODO: global for text? */\n\nsvg.netgraph .legend-item text.label {\n    text-anchor: start;\n}\n\nsvg.netgraph .legend-item text.value {\n    text-anchor: end;\n}\n\nsvg.netgraph .line {\n    fill: none;\n    stroke-width: 1.5;\n}\n\nsvg.netgraph .widgets rect.overlay {\n    stroke:  rgb(102, 102, 102);\n    stroke-width: 1\n}\n\nsvg.netgraph rect.overlay {\n    fill: transparent;\n}\n\n.warning-text {\n    background-color: white;\n    box-align: center;\n    box-pack: center;\n    border: 1px dashed #a94442;\n    color: #a94442;\n    display: flex;\n    margin-left: 20%;\n    margin-right: auto;\n    position: absolute;\n    text-align: center;\n    top: 37%;\n    width: 60%;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 70 */
 /* no static exports found */
 /* all exports used */
 /*!*************************************************************************************!*\
@@ -57910,110 +58774,15 @@ exports.push([module.i, ".guideline {\n    background-color: #ddd;\n    border: 
 
 
 /***/ }),
-/* 74 */
+/* 71 */
 /* no static exports found */
 /* all exports used */
-/*!*****************************************************************************************!*\
-  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/components/views/base.css ***!
-  \*****************************************************************************************/
+/*!**************************************************************************!*\
+  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/editor.css ***!
+  \**************************************************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(/*! ../../../../~/css-loader/lib/css-base.js */ 3)(undefined);
-// imports
-
-
-// module
-exports.push([module.i, "/* } */\n\nsvg.netgraph .axes:hover {\n    border: 1px solid #888888;\n}\n\nsvg.netgraph .axes text {\n    cursor: default;\n    font-size: 0.8em;\n}\n\nsvg.netgraph .axes text:active {\n    cursor: move;\n}\n\nsvg.netgraph .axes .axis path {\n    stroke:  black;\n    stroke-width: 1;\n    fill: none;\n}\n\nsvg.netgraph .axes .crosshairX text {\n    dominant-baseline: text-before-edge;\n}\n\nsvg.netgraph .axes .crosshairY text {\n    dominant-baseline: middle;\n    text-anchor: end;\n}/*     text-align: center; */\n\nsvg.netgraph circle.last-point {\n    fill-opacity: 0.5;\n}/*     padding: 0; */\n\nsvg.netgraph .crosshair line {\n    stroke:  black;\n    stroke-width: 0.5\n}\n\nsvg.netgraph .crosshair text {\n    font-size: 80%;\n    pointer-events: none;\n}/*     margin: 0; */\n\nsvg.netgraph .crosshairX text {\n    text-anchor: middle;\n}/*     display: block; */\n\nsvg.netgraph .crosshairY text {\n    text-anchor: end;\n}/* .pointer span { */\n\nsvg.netgraph .legend-item text {\n    font-size: 80%;\n}/* TODO: global for text? */\n\nsvg.netgraph .legend-item text.label {\n    text-anchor: start;\n}\n\nsvg.netgraph .legend-item text.value {\n    text-anchor: end;\n}\n\nsvg.netgraph .line {\n    fill: none;\n    stroke-width: 1.5;\n}\n\nsvg.netgraph .widgets rect.overlay {\n    stroke:  rgb(102, 102, 102);\n    stroke-width: 1\n}\n\nsvg.netgraph rect.overlay {\n    fill: transparent;\n}\n\n.warning-text {\n    background-color: white;\n    box-align: center;\n    box-pack: center;\n    border: 1px dashed #a94442;\n    color: #a94442;\n    display: flex;\n    margin-left: 20%;\n    margin-right: auto;\n    position: absolute;\n    text-align: center;\n    top: 37%;\n    width: 60%;\n}\n", ""]);
-
-// exports
-
-
-/***/ }),
-/* 75 */
-/* no static exports found */
-/* all exports used */
-/*!***********************************************************************************************!*\
-  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/components/views/connection.css ***!
-  \***********************************************************************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(/*! ../../../../~/css-loader/lib/css-base.js */ 3)(undefined);
-// imports
-
-
-// module
-exports.push([module.i, "svg.netgraph g.connection line, svg.netgraph g.connection path {\n    fill: none;\n    stroke:  black;\n    stroke-width: 2\n}\nsvg.netgraph g.connection path.arrow {\n    fill: black;\n    stroke: none;\n}\n", ""]);
-
-// exports
-
-
-/***/ }),
-/* 76 */
-/* no static exports found */
-/* all exports used */
-/*!*********************************************************************************************!*\
-  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/components/views/ensemble.css ***!
-  \*********************************************************************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(/*! ../../../../~/css-loader/lib/css-base.js */ 3)(undefined);
-// imports
-
-
-// module
-exports.push([module.i, "svg.netgraph g.ensemble {\n    fill: rgb(204, 204, 204);\n    stroke: rgb(127, 127, 127);\n}\n", ""]);
-
-// exports
-
-
-/***/ }),
-/* 77 */
-/* no static exports found */
-/* all exports used */
-/*!********************************************************************************************!*\
-  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/components/views/network.css ***!
-  \********************************************************************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(/*! ../../../../~/css-loader/lib/css-base.js */ 3)(undefined);
-// imports
-
-
-// module
-exports.push([module.i, "svg g.network rect {\n    fill: rgb(204, 204, 204);\n    stroke:  rgb(127, 127, 127);\n    stroke-width: 1\n}\n", ""]);
-
-// exports
-
-
-/***/ }),
-/* 78 */
-/* no static exports found */
-/* all exports used */
-/*!*****************************************************************************************!*\
-  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/components/views/node.css ***!
-  \*****************************************************************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(/*! ../../../../~/css-loader/lib/css-base.js */ 3)(undefined);
-// imports
-
-
-// module
-exports.push([module.i, "svg.netgraph g.node rect {\n    fill: rgb(204, 204, 204);\n    stroke:  rgb(127, 127, 127);\n    stroke-width: 1\n}\nsvg.netgraph g.passthrough circle {\n    fill: black;\n    stroke: none;\n}\n", ""]);
-
-// exports
-
-
-/***/ }),
-/* 79 */
-/* no static exports found */
-/* all exports used */
-/*!********************************************************************************!*\
-  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/views/editor.css ***!
-  \********************************************************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(/*! ../../../~/css-loader/lib/css-base.js */ 3)(undefined);
+exports = module.exports = __webpack_require__(/*! ../../~/css-loader/lib/css-base.js */ 3)(undefined);
 // imports
 
 
@@ -58024,15 +58793,15 @@ exports.push([module.i, "div.editor-container {\n    display: flex;\n    flex:  
 
 
 /***/ }),
-/* 80 */
+/* 72 */
 /* no static exports found */
 /* all exports used */
-/*!******************************************************************************!*\
-  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/views/main.css ***!
-  \******************************************************************************/
+/*!************************************************************************!*\
+  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/main.css ***!
+  \************************************************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(/*! ../../../~/css-loader/lib/css-base.js */ 3)(undefined);
+exports = module.exports = __webpack_require__(/*! ../../~/css-loader/lib/css-base.js */ 3)(undefined);
 // imports
 
 
@@ -58043,15 +58812,15 @@ exports.push([module.i, "html {\n    height: 100%;\n    overflow-x: hidden;\n}\n
 
 
 /***/ }),
-/* 81 */
+/* 73 */
 /* no static exports found */
 /* all exports used */
-/*!******************************************************************************!*\
-  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/views/menu.css ***!
-  \******************************************************************************/
+/*!************************************************************************!*\
+  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/menu.css ***!
+  \************************************************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(/*! ../../../~/css-loader/lib/css-base.js */ 3)(undefined);
+exports = module.exports = __webpack_require__(/*! ../../~/css-loader/lib/css-base.js */ 3)(undefined);
 // imports
 
 
@@ -58062,15 +58831,15 @@ exports.push([module.i, "div.menu {\n    position: fixed;\n}\ndiv.menu .dropdown
 
 
 /***/ }),
-/* 82 */
+/* 74 */
 /* no static exports found */
 /* all exports used */
-/*!*******************************************************************************!*\
-  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/views/modal.css ***!
-  \*******************************************************************************/
+/*!*************************************************************************!*\
+  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/modal.css ***!
+  \*************************************************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(/*! ../../../~/css-loader/lib/css-base.js */ 3)(undefined);
+exports = module.exports = __webpack_require__(/*! ../../~/css-loader/lib/css-base.js */ 3)(undefined);
 // imports
 
 
@@ -58081,16 +58850,34 @@ exports.push([module.i, "div.modal {\n    cursor: default;\n    z-index: 1000000
 
 
 /***/ }),
-/* 83 */,
-/* 84 */
+/* 75 */
 /* no static exports found */
 /* all exports used */
 /*!*********************************************************************************!*\
-  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/views/sidebar.css ***!
+  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/netgraph/view.css ***!
   \*********************************************************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(/*! ../../../~/css-loader/lib/css-base.js */ 3)(undefined);
+// imports
+
+
+// module
+exports.push([module.i, "svg.netgraph {\n    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;\n    flex: 1 1 auto;\n    order: 2;\n}\n\nsvg.netgraph text {\n    cursor: default;\n    text-anchor: middle;\n}\n\nsvg.netgraph text:active {\n    cursor: move;\n}\n\nsvg.netgraph rect.view {\n    fill: #d9edf7;\n    stroke: #ccc;\n}\n\n.minimap {\n    border-radius: 10px/60px;\n    height: 100%;\n    opacity: 0.85;\n    position: 'relative';\n    width: 100%;\n}\n\n.minimap line {\n    stroke:  black;\n    stroke-width: 1px\n}\n\n.recur {\n    fill: none;\n    stroke:  black;\n    stroke-width: 2px\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 76 */
+/* no static exports found */
+/* all exports used */
+/*!***************************************************************************!*\
+  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/sidebar.css ***!
+  \***************************************************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../~/css-loader/lib/css-base.js */ 3)(undefined);
 // imports
 
 
@@ -58101,15 +58888,15 @@ exports.push([module.i, "div.sidebar {\n    background-color: rgb(240, 240, 240)
 
 
 /***/ }),
-/* 85 */
+/* 77 */
 /* no static exports found */
 /* all exports used */
-/*!*************************************************************************************!*\
-  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/views/sim-control.css ***!
-  \*************************************************************************************/
+/*!*******************************************************************************!*\
+  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/sim-control.css ***!
+  \*******************************************************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(/*! ../../../~/css-loader/lib/css-base.js */ 3)(undefined);
+exports = module.exports = __webpack_require__(/*! ../../~/css-loader/lib/css-base.js */ 3)(undefined);
 // imports
 
 
@@ -58120,15 +58907,15 @@ exports.push([module.i, ".guideline {\n    background-color: #ddd;\n    border: 
 
 
 /***/ }),
-/* 86 */
+/* 78 */
 /* no static exports found */
 /* all exports used */
-/*!*********************************************************************************!*\
-  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/views/toolbar.css ***!
-  \*********************************************************************************/
+/*!***************************************************************************!*\
+  !*** ./~/css-loader!./~/postcss-loader?{}!./nengo_gui/static/toolbar.css ***!
+  \***************************************************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(/*! ../../../~/css-loader/lib/css-base.js */ 3)(undefined);
+exports = module.exports = __webpack_require__(/*! ../../~/css-loader/lib/css-base.js */ 3)(undefined);
 // imports
 
 
@@ -58139,7 +58926,7 @@ exports.push([module.i, "div.toolbar {\n    border-bottom: 1px solid rgb(102, 10
 
 
 /***/ }),
-/* 87 */
+/* 79 */
 /* no static exports found */
 /* all exports used */
 /*!*************************************************************************************!*\
@@ -58152,13 +58939,13 @@ exports = module.exports = __webpack_require__(/*! ../../../css-loader/lib/css-b
 
 
 // module
-exports.push([module.i, "/*!\n * Bootstrap v3.3.7 (http://getbootstrap.com)\n * Copyright 2011-2016 Twitter, Inc.\n * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)\n *//*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */html{font-family:sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}body{margin:0}article,aside,details,figcaption,figure,footer,header,hgroup,main,menu,nav,section,summary{display:block}audio,canvas,progress,video{display:inline-block;vertical-align:baseline}audio:not([controls]){display:none;height:0}[hidden],template{display:none}a{background-color:transparent}a:active,a:hover{outline:0}abbr[title]{border-bottom:1px dotted}b,strong{font-weight:700}dfn{font-style:italic}h1{margin:.67em 0;font-size:2em}mark{color:#000;background:#ff0}small{font-size:80%}sub,sup{position:relative;font-size:75%;line-height:0;vertical-align:baseline}sup{top:-.5em}sub{bottom:-.25em}img{border:0}svg:not(:root){overflow:hidden}figure{margin:1em 40px}hr{height:0;box-sizing:content-box}pre{overflow:auto}code,kbd,pre,samp{font-family:monospace,monospace;font-size:1em}button,input,optgroup,select,textarea{margin:0;font:inherit;color:inherit}button{overflow:visible}button,select{text-transform:none}button,html input[type=button],input[type=reset],input[type=submit]{-webkit-appearance:button;cursor:pointer}button[disabled],html input[disabled]{cursor:default}button::-moz-focus-inner,input::-moz-focus-inner{padding:0;border:0}input{line-height:normal}input[type=checkbox],input[type=radio]{box-sizing:border-box;padding:0}input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{height:auto}input[type=search]{box-sizing:content-box;-webkit-appearance:textfield}input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-search-decoration{-webkit-appearance:none}fieldset{padding:.35em .625em .75em;margin:0 2px;border:1px solid silver}legend{padding:0;border:0}textarea{overflow:auto}optgroup{font-weight:700}table{border-spacing:0;border-collapse:collapse}td,th{padding:0}/*! Source: https://github.com/h5bp/html5-boilerplate/blob/master/src/css/main.css */@media print{*,:after,:before{color:#000!important;text-shadow:none!important;background:0 0!important;box-shadow:none!important}a,a:visited{text-decoration:underline}a[href]:after{content:\" (\" attr(href) \")\"}abbr[title]:after{content:\" (\" attr(title) \")\"}a[href^=\"javascript:\"]:after,a[href^=\"#\"]:after{content:\"\"}blockquote,pre{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}img,tr{page-break-inside:avoid}img{max-width:100%!important}h2,h3,p{orphans:3;widows:3}h2,h3{page-break-after:avoid}.navbar{display:none}.btn>.caret,.dropup>.btn>.caret{border-top-color:#000!important}.label{border:1px solid #000}.table{border-collapse:collapse!important}.table td,.table th{background-color:#fff!important}.table-bordered td,.table-bordered th{border:1px solid #ddd!important}}@font-face{font-family:'Glyphicons Halflings';src:url(" + __webpack_require__(/*! ../fonts/glyphicons-halflings-regular.eot */ 26) + ");src:url(" + __webpack_require__(/*! ../fonts/glyphicons-halflings-regular.eot */ 26) + "?#iefix) format('embedded-opentype'),url(" + __webpack_require__(/*! ../fonts/glyphicons-halflings-regular.woff2 */ 137) + ") format('woff2'),url(" + __webpack_require__(/*! ../fonts/glyphicons-halflings-regular.woff */ 136) + ") format('woff'),url(" + __webpack_require__(/*! ../fonts/glyphicons-halflings-regular.ttf */ 90) + ") format('truetype'),url(" + __webpack_require__(/*! ../fonts/glyphicons-halflings-regular.svg */ 89) + "#glyphicons_halflingsregular) format('svg')}.glyphicon{position:relative;top:1px;display:inline-block;font-family:'Glyphicons Halflings';font-style:normal;font-weight:400;line-height:1;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.glyphicon-asterisk:before{content:\"*\"}.glyphicon-plus:before{content:\"+\"}.glyphicon-eur:before,.glyphicon-euro:before{content:\"\\20AC\"}.glyphicon-minus:before{content:\"\\2212\"}.glyphicon-cloud:before{content:\"\\2601\"}.glyphicon-envelope:before{content:\"\\2709\"}.glyphicon-pencil:before{content:\"\\270F\"}.glyphicon-glass:before{content:\"\\E001\"}.glyphicon-music:before{content:\"\\E002\"}.glyphicon-search:before{content:\"\\E003\"}.glyphicon-heart:before{content:\"\\E005\"}.glyphicon-star:before{content:\"\\E006\"}.glyphicon-star-empty:before{content:\"\\E007\"}.glyphicon-user:before{content:\"\\E008\"}.glyphicon-film:before{content:\"\\E009\"}.glyphicon-th-large:before{content:\"\\E010\"}.glyphicon-th:before{content:\"\\E011\"}.glyphicon-th-list:before{content:\"\\E012\"}.glyphicon-ok:before{content:\"\\E013\"}.glyphicon-remove:before{content:\"\\E014\"}.glyphicon-zoom-in:before{content:\"\\E015\"}.glyphicon-zoom-out:before{content:\"\\E016\"}.glyphicon-off:before{content:\"\\E017\"}.glyphicon-signal:before{content:\"\\E018\"}.glyphicon-cog:before{content:\"\\E019\"}.glyphicon-trash:before{content:\"\\E020\"}.glyphicon-home:before{content:\"\\E021\"}.glyphicon-file:before{content:\"\\E022\"}.glyphicon-time:before{content:\"\\E023\"}.glyphicon-road:before{content:\"\\E024\"}.glyphicon-download-alt:before{content:\"\\E025\"}.glyphicon-download:before{content:\"\\E026\"}.glyphicon-upload:before{content:\"\\E027\"}.glyphicon-inbox:before{content:\"\\E028\"}.glyphicon-play-circle:before{content:\"\\E029\"}.glyphicon-repeat:before{content:\"\\E030\"}.glyphicon-refresh:before{content:\"\\E031\"}.glyphicon-list-alt:before{content:\"\\E032\"}.glyphicon-lock:before{content:\"\\E033\"}.glyphicon-flag:before{content:\"\\E034\"}.glyphicon-headphones:before{content:\"\\E035\"}.glyphicon-volume-off:before{content:\"\\E036\"}.glyphicon-volume-down:before{content:\"\\E037\"}.glyphicon-volume-up:before{content:\"\\E038\"}.glyphicon-qrcode:before{content:\"\\E039\"}.glyphicon-barcode:before{content:\"\\E040\"}.glyphicon-tag:before{content:\"\\E041\"}.glyphicon-tags:before{content:\"\\E042\"}.glyphicon-book:before{content:\"\\E043\"}.glyphicon-bookmark:before{content:\"\\E044\"}.glyphicon-print:before{content:\"\\E045\"}.glyphicon-camera:before{content:\"\\E046\"}.glyphicon-font:before{content:\"\\E047\"}.glyphicon-bold:before{content:\"\\E048\"}.glyphicon-italic:before{content:\"\\E049\"}.glyphicon-text-height:before{content:\"\\E050\"}.glyphicon-text-width:before{content:\"\\E051\"}.glyphicon-align-left:before{content:\"\\E052\"}.glyphicon-align-center:before{content:\"\\E053\"}.glyphicon-align-right:before{content:\"\\E054\"}.glyphicon-align-justify:before{content:\"\\E055\"}.glyphicon-list:before{content:\"\\E056\"}.glyphicon-indent-left:before{content:\"\\E057\"}.glyphicon-indent-right:before{content:\"\\E058\"}.glyphicon-facetime-video:before{content:\"\\E059\"}.glyphicon-picture:before{content:\"\\E060\"}.glyphicon-map-marker:before{content:\"\\E062\"}.glyphicon-adjust:before{content:\"\\E063\"}.glyphicon-tint:before{content:\"\\E064\"}.glyphicon-edit:before{content:\"\\E065\"}.glyphicon-share:before{content:\"\\E066\"}.glyphicon-check:before{content:\"\\E067\"}.glyphicon-move:before{content:\"\\E068\"}.glyphicon-step-backward:before{content:\"\\E069\"}.glyphicon-fast-backward:before{content:\"\\E070\"}.glyphicon-backward:before{content:\"\\E071\"}.glyphicon-play:before{content:\"\\E072\"}.glyphicon-pause:before{content:\"\\E073\"}.glyphicon-stop:before{content:\"\\E074\"}.glyphicon-forward:before{content:\"\\E075\"}.glyphicon-fast-forward:before{content:\"\\E076\"}.glyphicon-step-forward:before{content:\"\\E077\"}.glyphicon-eject:before{content:\"\\E078\"}.glyphicon-chevron-left:before{content:\"\\E079\"}.glyphicon-chevron-right:before{content:\"\\E080\"}.glyphicon-plus-sign:before{content:\"\\E081\"}.glyphicon-minus-sign:before{content:\"\\E082\"}.glyphicon-remove-sign:before{content:\"\\E083\"}.glyphicon-ok-sign:before{content:\"\\E084\"}.glyphicon-question-sign:before{content:\"\\E085\"}.glyphicon-info-sign:before{content:\"\\E086\"}.glyphicon-screenshot:before{content:\"\\E087\"}.glyphicon-remove-circle:before{content:\"\\E088\"}.glyphicon-ok-circle:before{content:\"\\E089\"}.glyphicon-ban-circle:before{content:\"\\E090\"}.glyphicon-arrow-left:before{content:\"\\E091\"}.glyphicon-arrow-right:before{content:\"\\E092\"}.glyphicon-arrow-up:before{content:\"\\E093\"}.glyphicon-arrow-down:before{content:\"\\E094\"}.glyphicon-share-alt:before{content:\"\\E095\"}.glyphicon-resize-full:before{content:\"\\E096\"}.glyphicon-resize-small:before{content:\"\\E097\"}.glyphicon-exclamation-sign:before{content:\"\\E101\"}.glyphicon-gift:before{content:\"\\E102\"}.glyphicon-leaf:before{content:\"\\E103\"}.glyphicon-fire:before{content:\"\\E104\"}.glyphicon-eye-open:before{content:\"\\E105\"}.glyphicon-eye-close:before{content:\"\\E106\"}.glyphicon-warning-sign:before{content:\"\\E107\"}.glyphicon-plane:before{content:\"\\E108\"}.glyphicon-calendar:before{content:\"\\E109\"}.glyphicon-random:before{content:\"\\E110\"}.glyphicon-comment:before{content:\"\\E111\"}.glyphicon-magnet:before{content:\"\\E112\"}.glyphicon-chevron-up:before{content:\"\\E113\"}.glyphicon-chevron-down:before{content:\"\\E114\"}.glyphicon-retweet:before{content:\"\\E115\"}.glyphicon-shopping-cart:before{content:\"\\E116\"}.glyphicon-folder-close:before{content:\"\\E117\"}.glyphicon-folder-open:before{content:\"\\E118\"}.glyphicon-resize-vertical:before{content:\"\\E119\"}.glyphicon-resize-horizontal:before{content:\"\\E120\"}.glyphicon-hdd:before{content:\"\\E121\"}.glyphicon-bullhorn:before{content:\"\\E122\"}.glyphicon-bell:before{content:\"\\E123\"}.glyphicon-certificate:before{content:\"\\E124\"}.glyphicon-thumbs-up:before{content:\"\\E125\"}.glyphicon-thumbs-down:before{content:\"\\E126\"}.glyphicon-hand-right:before{content:\"\\E127\"}.glyphicon-hand-left:before{content:\"\\E128\"}.glyphicon-hand-up:before{content:\"\\E129\"}.glyphicon-hand-down:before{content:\"\\E130\"}.glyphicon-circle-arrow-right:before{content:\"\\E131\"}.glyphicon-circle-arrow-left:before{content:\"\\E132\"}.glyphicon-circle-arrow-up:before{content:\"\\E133\"}.glyphicon-circle-arrow-down:before{content:\"\\E134\"}.glyphicon-globe:before{content:\"\\E135\"}.glyphicon-wrench:before{content:\"\\E136\"}.glyphicon-tasks:before{content:\"\\E137\"}.glyphicon-filter:before{content:\"\\E138\"}.glyphicon-briefcase:before{content:\"\\E139\"}.glyphicon-fullscreen:before{content:\"\\E140\"}.glyphicon-dashboard:before{content:\"\\E141\"}.glyphicon-paperclip:before{content:\"\\E142\"}.glyphicon-heart-empty:before{content:\"\\E143\"}.glyphicon-link:before{content:\"\\E144\"}.glyphicon-phone:before{content:\"\\E145\"}.glyphicon-pushpin:before{content:\"\\E146\"}.glyphicon-usd:before{content:\"\\E148\"}.glyphicon-gbp:before{content:\"\\E149\"}.glyphicon-sort:before{content:\"\\E150\"}.glyphicon-sort-by-alphabet:before{content:\"\\E151\"}.glyphicon-sort-by-alphabet-alt:before{content:\"\\E152\"}.glyphicon-sort-by-order:before{content:\"\\E153\"}.glyphicon-sort-by-order-alt:before{content:\"\\E154\"}.glyphicon-sort-by-attributes:before{content:\"\\E155\"}.glyphicon-sort-by-attributes-alt:before{content:\"\\E156\"}.glyphicon-unchecked:before{content:\"\\E157\"}.glyphicon-expand:before{content:\"\\E158\"}.glyphicon-collapse-down:before{content:\"\\E159\"}.glyphicon-collapse-up:before{content:\"\\E160\"}.glyphicon-log-in:before{content:\"\\E161\"}.glyphicon-flash:before{content:\"\\E162\"}.glyphicon-log-out:before{content:\"\\E163\"}.glyphicon-new-window:before{content:\"\\E164\"}.glyphicon-record:before{content:\"\\E165\"}.glyphicon-save:before{content:\"\\E166\"}.glyphicon-open:before{content:\"\\E167\"}.glyphicon-saved:before{content:\"\\E168\"}.glyphicon-import:before{content:\"\\E169\"}.glyphicon-export:before{content:\"\\E170\"}.glyphicon-send:before{content:\"\\E171\"}.glyphicon-floppy-disk:before{content:\"\\E172\"}.glyphicon-floppy-saved:before{content:\"\\E173\"}.glyphicon-floppy-remove:before{content:\"\\E174\"}.glyphicon-floppy-save:before{content:\"\\E175\"}.glyphicon-floppy-open:before{content:\"\\E176\"}.glyphicon-credit-card:before{content:\"\\E177\"}.glyphicon-transfer:before{content:\"\\E178\"}.glyphicon-cutlery:before{content:\"\\E179\"}.glyphicon-header:before{content:\"\\E180\"}.glyphicon-compressed:before{content:\"\\E181\"}.glyphicon-earphone:before{content:\"\\E182\"}.glyphicon-phone-alt:before{content:\"\\E183\"}.glyphicon-tower:before{content:\"\\E184\"}.glyphicon-stats:before{content:\"\\E185\"}.glyphicon-sd-video:before{content:\"\\E186\"}.glyphicon-hd-video:before{content:\"\\E187\"}.glyphicon-subtitles:before{content:\"\\E188\"}.glyphicon-sound-stereo:before{content:\"\\E189\"}.glyphicon-sound-dolby:before{content:\"\\E190\"}.glyphicon-sound-5-1:before{content:\"\\E191\"}.glyphicon-sound-6-1:before{content:\"\\E192\"}.glyphicon-sound-7-1:before{content:\"\\E193\"}.glyphicon-copyright-mark:before{content:\"\\E194\"}.glyphicon-registration-mark:before{content:\"\\E195\"}.glyphicon-cloud-download:before{content:\"\\E197\"}.glyphicon-cloud-upload:before{content:\"\\E198\"}.glyphicon-tree-conifer:before{content:\"\\E199\"}.glyphicon-tree-deciduous:before{content:\"\\E200\"}.glyphicon-cd:before{content:\"\\E201\"}.glyphicon-save-file:before{content:\"\\E202\"}.glyphicon-open-file:before{content:\"\\E203\"}.glyphicon-level-up:before{content:\"\\E204\"}.glyphicon-copy:before{content:\"\\E205\"}.glyphicon-paste:before{content:\"\\E206\"}.glyphicon-alert:before{content:\"\\E209\"}.glyphicon-equalizer:before{content:\"\\E210\"}.glyphicon-king:before{content:\"\\E211\"}.glyphicon-queen:before{content:\"\\E212\"}.glyphicon-pawn:before{content:\"\\E213\"}.glyphicon-bishop:before{content:\"\\E214\"}.glyphicon-knight:before{content:\"\\E215\"}.glyphicon-baby-formula:before{content:\"\\E216\"}.glyphicon-tent:before{content:\"\\26FA\"}.glyphicon-blackboard:before{content:\"\\E218\"}.glyphicon-bed:before{content:\"\\E219\"}.glyphicon-apple:before{content:\"\\F8FF\"}.glyphicon-erase:before{content:\"\\E221\"}.glyphicon-hourglass:before{content:\"\\231B\"}.glyphicon-lamp:before{content:\"\\E223\"}.glyphicon-duplicate:before{content:\"\\E224\"}.glyphicon-piggy-bank:before{content:\"\\E225\"}.glyphicon-scissors:before{content:\"\\E226\"}.glyphicon-bitcoin:before{content:\"\\E227\"}.glyphicon-btc:before{content:\"\\E227\"}.glyphicon-xbt:before{content:\"\\E227\"}.glyphicon-yen:before{content:\"\\A5\"}.glyphicon-jpy:before{content:\"\\A5\"}.glyphicon-ruble:before{content:\"\\20BD\"}.glyphicon-rub:before{content:\"\\20BD\"}.glyphicon-scale:before{content:\"\\E230\"}.glyphicon-ice-lolly:before{content:\"\\E231\"}.glyphicon-ice-lolly-tasted:before{content:\"\\E232\"}.glyphicon-education:before{content:\"\\E233\"}.glyphicon-option-horizontal:before{content:\"\\E234\"}.glyphicon-option-vertical:before{content:\"\\E235\"}.glyphicon-menu-hamburger:before{content:\"\\E236\"}.glyphicon-modal-window:before{content:\"\\E237\"}.glyphicon-oil:before{content:\"\\E238\"}.glyphicon-grain:before{content:\"\\E239\"}.glyphicon-sunglasses:before{content:\"\\E240\"}.glyphicon-text-size:before{content:\"\\E241\"}.glyphicon-text-color:before{content:\"\\E242\"}.glyphicon-text-background:before{content:\"\\E243\"}.glyphicon-object-align-top:before{content:\"\\E244\"}.glyphicon-object-align-bottom:before{content:\"\\E245\"}.glyphicon-object-align-horizontal:before{content:\"\\E246\"}.glyphicon-object-align-left:before{content:\"\\E247\"}.glyphicon-object-align-vertical:before{content:\"\\E248\"}.glyphicon-object-align-right:before{content:\"\\E249\"}.glyphicon-triangle-right:before{content:\"\\E250\"}.glyphicon-triangle-left:before{content:\"\\E251\"}.glyphicon-triangle-bottom:before{content:\"\\E252\"}.glyphicon-triangle-top:before{content:\"\\E253\"}.glyphicon-console:before{content:\"\\E254\"}.glyphicon-superscript:before{content:\"\\E255\"}.glyphicon-subscript:before{content:\"\\E256\"}.glyphicon-menu-left:before{content:\"\\E257\"}.glyphicon-menu-right:before{content:\"\\E258\"}.glyphicon-menu-down:before{content:\"\\E259\"}.glyphicon-menu-up:before{content:\"\\E260\"}*{box-sizing:border-box}:after,:before{box-sizing:border-box}html{font-size:10px;-webkit-tap-highlight-color:rgba(0,0,0,0)}body{font-family:\"Helvetica Neue\",Helvetica,Arial,sans-serif;font-size:14px;line-height:1.42857143;color:#333;background-color:#fff}button,input,select,textarea{font-family:inherit;font-size:inherit;line-height:inherit}a{color:#337ab7;text-decoration:none}a:focus,a:hover{color:#23527c;text-decoration:underline}a:focus{outline:5px auto -webkit-focus-ring-color;outline-offset:-2px}figure{margin:0}img{vertical-align:middle}.carousel-inner>.item>a>img,.carousel-inner>.item>img,.img-responsive,.thumbnail a>img,.thumbnail>img{display:block;max-width:100%;height:auto}.img-rounded{border-radius:6px}.img-thumbnail{display:inline-block;max-width:100%;height:auto;padding:4px;line-height:1.42857143;background-color:#fff;border:1px solid #ddd;border-radius:4px;transition:all .2s ease-in-out}.img-circle{border-radius:50%}hr{margin-top:20px;margin-bottom:20px;border:0;border-top:1px solid #eee}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}.sr-only-focusable:active,.sr-only-focusable:focus{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}[role=button]{cursor:pointer}.h1,.h2,.h3,.h4,.h5,.h6,h1,h2,h3,h4,h5,h6{font-family:inherit;font-weight:500;line-height:1.1;color:inherit}.h1 .small,.h1 small,.h2 .small,.h2 small,.h3 .small,.h3 small,.h4 .small,.h4 small,.h5 .small,.h5 small,.h6 .small,.h6 small,h1 .small,h1 small,h2 .small,h2 small,h3 .small,h3 small,h4 .small,h4 small,h5 .small,h5 small,h6 .small,h6 small{font-weight:400;line-height:1;color:#777}.h1,.h2,.h3,h1,h2,h3{margin-top:20px;margin-bottom:10px}.h1 .small,.h1 small,.h2 .small,.h2 small,.h3 .small,.h3 small,h1 .small,h1 small,h2 .small,h2 small,h3 .small,h3 small{font-size:65%}.h4,.h5,.h6,h4,h5,h6{margin-top:10px;margin-bottom:10px}.h4 .small,.h4 small,.h5 .small,.h5 small,.h6 .small,.h6 small,h4 .small,h4 small,h5 .small,h5 small,h6 .small,h6 small{font-size:75%}.h1,h1{font-size:36px}.h2,h2{font-size:30px}.h3,h3{font-size:24px}.h4,h4{font-size:18px}.h5,h5{font-size:14px}.h6,h6{font-size:12px}p{margin:0 0 10px}.lead{margin-bottom:20px;font-size:16px;font-weight:300;line-height:1.4}@media (min-width:768px){.lead{font-size:21px}}.small,small{font-size:85%}.mark,mark{padding:.2em;background-color:#fcf8e3}.text-left{text-align:left}.text-right{text-align:right}.text-center{text-align:center}.text-justify{text-align:justify}.text-nowrap{white-space:nowrap}.text-lowercase{text-transform:lowercase}.text-uppercase{text-transform:uppercase}.text-capitalize{text-transform:capitalize}.text-muted{color:#777}.text-primary{color:#337ab7}a.text-primary:focus,a.text-primary:hover{color:#286090}.text-success{color:#3c763d}a.text-success:focus,a.text-success:hover{color:#2b542c}.text-info{color:#31708f}a.text-info:focus,a.text-info:hover{color:#245269}.text-warning{color:#8a6d3b}a.text-warning:focus,a.text-warning:hover{color:#66512c}.text-danger{color:#a94442}a.text-danger:focus,a.text-danger:hover{color:#843534}.bg-primary{color:#fff;background-color:#337ab7}a.bg-primary:focus,a.bg-primary:hover{background-color:#286090}.bg-success{background-color:#dff0d8}a.bg-success:focus,a.bg-success:hover{background-color:#c1e2b3}.bg-info{background-color:#d9edf7}a.bg-info:focus,a.bg-info:hover{background-color:#afd9ee}.bg-warning{background-color:#fcf8e3}a.bg-warning:focus,a.bg-warning:hover{background-color:#f7ecb5}.bg-danger{background-color:#f2dede}a.bg-danger:focus,a.bg-danger:hover{background-color:#e4b9b9}.page-header{padding-bottom:9px;margin:40px 0 20px;border-bottom:1px solid #eee}ol,ul{margin-top:0;margin-bottom:10px}ol ol,ol ul,ul ol,ul ul{margin-bottom:0}.list-unstyled{padding-left:0;list-style:none}.list-inline{padding-left:0;margin-left:-5px;list-style:none}.list-inline>li{display:inline-block;padding-right:5px;padding-left:5px}dl{margin-top:0;margin-bottom:20px}dd,dt{line-height:1.42857143}dt{font-weight:700}dd{margin-left:0}@media (min-width:768px){.dl-horizontal dt{float:left;width:160px;overflow:hidden;clear:left;text-align:right;text-overflow:ellipsis;white-space:nowrap}.dl-horizontal dd{margin-left:180px}}abbr[data-original-title],abbr[title]{cursor:help;border-bottom:1px dotted #777}.initialism{font-size:90%;text-transform:uppercase}blockquote{padding:10px 20px;margin:0 0 20px;font-size:17.5px;border-left:5px solid #eee}blockquote ol:last-child,blockquote p:last-child,blockquote ul:last-child{margin-bottom:0}blockquote .small,blockquote footer,blockquote small{display:block;font-size:80%;line-height:1.42857143;color:#777}blockquote .small:before,blockquote footer:before,blockquote small:before{content:'\\2014   \\A0'}.blockquote-reverse,blockquote.pull-right{padding-right:15px;padding-left:0;text-align:right;border-right:5px solid #eee;border-left:0}.blockquote-reverse .small:before,.blockquote-reverse footer:before,.blockquote-reverse small:before,blockquote.pull-right .small:before,blockquote.pull-right footer:before,blockquote.pull-right small:before{content:''}.blockquote-reverse .small:after,.blockquote-reverse footer:after,.blockquote-reverse small:after,blockquote.pull-right .small:after,blockquote.pull-right footer:after,blockquote.pull-right small:after{content:'\\A0   \\2014'}address{margin-bottom:20px;font-style:normal;line-height:1.42857143}code,kbd,pre,samp{font-family:Menlo,Monaco,Consolas,\"Courier New\",monospace}code{padding:2px 4px;font-size:90%;color:#c7254e;background-color:#f9f2f4;border-radius:4px}kbd{padding:2px 4px;font-size:90%;color:#fff;background-color:#333;border-radius:3px;box-shadow:inset 0 -1px 0 rgba(0,0,0,.25)}kbd kbd{padding:0;font-size:100%;font-weight:700;box-shadow:none}pre{display:block;padding:9.5px;margin:0 0 10px;font-size:13px;line-height:1.42857143;color:#333;word-break:break-all;word-wrap:break-word;background-color:#f5f5f5;border:1px solid #ccc;border-radius:4px}pre code{padding:0;font-size:inherit;color:inherit;white-space:pre-wrap;background-color:transparent;border-radius:0}.pre-scrollable{max-height:340px;overflow-y:scroll}.container{padding-right:15px;padding-left:15px;margin-right:auto;margin-left:auto}@media (min-width:768px){.container{width:750px}}@media (min-width:992px){.container{width:970px}}@media (min-width:1200px){.container{width:1170px}}.container-fluid{padding-right:15px;padding-left:15px;margin-right:auto;margin-left:auto}.row{margin-right:-15px;margin-left:-15px}.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9{position:relative;min-height:1px;padding-right:15px;padding-left:15px}.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9{float:left}.col-xs-12{width:100%}.col-xs-11{width:91.66666667%}.col-xs-10{width:83.33333333%}.col-xs-9{width:75%}.col-xs-8{width:66.66666667%}.col-xs-7{width:58.33333333%}.col-xs-6{width:50%}.col-xs-5{width:41.66666667%}.col-xs-4{width:33.33333333%}.col-xs-3{width:25%}.col-xs-2{width:16.66666667%}.col-xs-1{width:8.33333333%}.col-xs-pull-12{right:100%}.col-xs-pull-11{right:91.66666667%}.col-xs-pull-10{right:83.33333333%}.col-xs-pull-9{right:75%}.col-xs-pull-8{right:66.66666667%}.col-xs-pull-7{right:58.33333333%}.col-xs-pull-6{right:50%}.col-xs-pull-5{right:41.66666667%}.col-xs-pull-4{right:33.33333333%}.col-xs-pull-3{right:25%}.col-xs-pull-2{right:16.66666667%}.col-xs-pull-1{right:8.33333333%}.col-xs-pull-0{right:auto}.col-xs-push-12{left:100%}.col-xs-push-11{left:91.66666667%}.col-xs-push-10{left:83.33333333%}.col-xs-push-9{left:75%}.col-xs-push-8{left:66.66666667%}.col-xs-push-7{left:58.33333333%}.col-xs-push-6{left:50%}.col-xs-push-5{left:41.66666667%}.col-xs-push-4{left:33.33333333%}.col-xs-push-3{left:25%}.col-xs-push-2{left:16.66666667%}.col-xs-push-1{left:8.33333333%}.col-xs-push-0{left:auto}.col-xs-offset-12{margin-left:100%}.col-xs-offset-11{margin-left:91.66666667%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-0{margin-left:0}@media (min-width:768px){.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9{float:left}.col-sm-12{width:100%}.col-sm-11{width:91.66666667%}.col-sm-10{width:83.33333333%}.col-sm-9{width:75%}.col-sm-8{width:66.66666667%}.col-sm-7{width:58.33333333%}.col-sm-6{width:50%}.col-sm-5{width:41.66666667%}.col-sm-4{width:33.33333333%}.col-sm-3{width:25%}.col-sm-2{width:16.66666667%}.col-sm-1{width:8.33333333%}.col-sm-pull-12{right:100%}.col-sm-pull-11{right:91.66666667%}.col-sm-pull-10{right:83.33333333%}.col-sm-pull-9{right:75%}.col-sm-pull-8{right:66.66666667%}.col-sm-pull-7{right:58.33333333%}.col-sm-pull-6{right:50%}.col-sm-pull-5{right:41.66666667%}.col-sm-pull-4{right:33.33333333%}.col-sm-pull-3{right:25%}.col-sm-pull-2{right:16.66666667%}.col-sm-pull-1{right:8.33333333%}.col-sm-pull-0{right:auto}.col-sm-push-12{left:100%}.col-sm-push-11{left:91.66666667%}.col-sm-push-10{left:83.33333333%}.col-sm-push-9{left:75%}.col-sm-push-8{left:66.66666667%}.col-sm-push-7{left:58.33333333%}.col-sm-push-6{left:50%}.col-sm-push-5{left:41.66666667%}.col-sm-push-4{left:33.33333333%}.col-sm-push-3{left:25%}.col-sm-push-2{left:16.66666667%}.col-sm-push-1{left:8.33333333%}.col-sm-push-0{left:auto}.col-sm-offset-12{margin-left:100%}.col-sm-offset-11{margin-left:91.66666667%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-0{margin-left:0}}@media (min-width:992px){.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9{float:left}.col-md-12{width:100%}.col-md-11{width:91.66666667%}.col-md-10{width:83.33333333%}.col-md-9{width:75%}.col-md-8{width:66.66666667%}.col-md-7{width:58.33333333%}.col-md-6{width:50%}.col-md-5{width:41.66666667%}.col-md-4{width:33.33333333%}.col-md-3{width:25%}.col-md-2{width:16.66666667%}.col-md-1{width:8.33333333%}.col-md-pull-12{right:100%}.col-md-pull-11{right:91.66666667%}.col-md-pull-10{right:83.33333333%}.col-md-pull-9{right:75%}.col-md-pull-8{right:66.66666667%}.col-md-pull-7{right:58.33333333%}.col-md-pull-6{right:50%}.col-md-pull-5{right:41.66666667%}.col-md-pull-4{right:33.33333333%}.col-md-pull-3{right:25%}.col-md-pull-2{right:16.66666667%}.col-md-pull-1{right:8.33333333%}.col-md-pull-0{right:auto}.col-md-push-12{left:100%}.col-md-push-11{left:91.66666667%}.col-md-push-10{left:83.33333333%}.col-md-push-9{left:75%}.col-md-push-8{left:66.66666667%}.col-md-push-7{left:58.33333333%}.col-md-push-6{left:50%}.col-md-push-5{left:41.66666667%}.col-md-push-4{left:33.33333333%}.col-md-push-3{left:25%}.col-md-push-2{left:16.66666667%}.col-md-push-1{left:8.33333333%}.col-md-push-0{left:auto}.col-md-offset-12{margin-left:100%}.col-md-offset-11{margin-left:91.66666667%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-9{margin-left:75%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-6{margin-left:50%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-3{margin-left:25%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-0{margin-left:0}}@media (min-width:1200px){.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9{float:left}.col-lg-12{width:100%}.col-lg-11{width:91.66666667%}.col-lg-10{width:83.33333333%}.col-lg-9{width:75%}.col-lg-8{width:66.66666667%}.col-lg-7{width:58.33333333%}.col-lg-6{width:50%}.col-lg-5{width:41.66666667%}.col-lg-4{width:33.33333333%}.col-lg-3{width:25%}.col-lg-2{width:16.66666667%}.col-lg-1{width:8.33333333%}.col-lg-pull-12{right:100%}.col-lg-pull-11{right:91.66666667%}.col-lg-pull-10{right:83.33333333%}.col-lg-pull-9{right:75%}.col-lg-pull-8{right:66.66666667%}.col-lg-pull-7{right:58.33333333%}.col-lg-pull-6{right:50%}.col-lg-pull-5{right:41.66666667%}.col-lg-pull-4{right:33.33333333%}.col-lg-pull-3{right:25%}.col-lg-pull-2{right:16.66666667%}.col-lg-pull-1{right:8.33333333%}.col-lg-pull-0{right:auto}.col-lg-push-12{left:100%}.col-lg-push-11{left:91.66666667%}.col-lg-push-10{left:83.33333333%}.col-lg-push-9{left:75%}.col-lg-push-8{left:66.66666667%}.col-lg-push-7{left:58.33333333%}.col-lg-push-6{left:50%}.col-lg-push-5{left:41.66666667%}.col-lg-push-4{left:33.33333333%}.col-lg-push-3{left:25%}.col-lg-push-2{left:16.66666667%}.col-lg-push-1{left:8.33333333%}.col-lg-push-0{left:auto}.col-lg-offset-12{margin-left:100%}.col-lg-offset-11{margin-left:91.66666667%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-0{margin-left:0}}table{background-color:transparent}caption{padding-top:8px;padding-bottom:8px;color:#777;text-align:left}th{text-align:left}.table{width:100%;max-width:100%;margin-bottom:20px}.table>tbody>tr>td,.table>tbody>tr>th,.table>tfoot>tr>td,.table>tfoot>tr>th,.table>thead>tr>td,.table>thead>tr>th{padding:8px;line-height:1.42857143;vertical-align:top;border-top:1px solid #ddd}.table>thead>tr>th{vertical-align:bottom;border-bottom:2px solid #ddd}.table>caption+thead>tr:first-child>td,.table>caption+thead>tr:first-child>th,.table>colgroup+thead>tr:first-child>td,.table>colgroup+thead>tr:first-child>th,.table>thead:first-child>tr:first-child>td,.table>thead:first-child>tr:first-child>th{border-top:0}.table>tbody+tbody{border-top:2px solid #ddd}.table .table{background-color:#fff}.table-condensed>tbody>tr>td,.table-condensed>tbody>tr>th,.table-condensed>tfoot>tr>td,.table-condensed>tfoot>tr>th,.table-condensed>thead>tr>td,.table-condensed>thead>tr>th{padding:5px}.table-bordered{border:1px solid #ddd}.table-bordered>tbody>tr>td,.table-bordered>tbody>tr>th,.table-bordered>tfoot>tr>td,.table-bordered>tfoot>tr>th,.table-bordered>thead>tr>td,.table-bordered>thead>tr>th{border:1px solid #ddd}.table-bordered>thead>tr>td,.table-bordered>thead>tr>th{border-bottom-width:2px}.table-striped>tbody>tr:nth-of-type(odd){background-color:#f9f9f9}.table-hover>tbody>tr:hover{background-color:#f5f5f5}table col[class*=col-]{position:static;display:table-column;float:none}table td[class*=col-],table th[class*=col-]{position:static;display:table-cell;float:none}.table>tbody>tr.active>td,.table>tbody>tr.active>th,.table>tbody>tr>td.active,.table>tbody>tr>th.active,.table>tfoot>tr.active>td,.table>tfoot>tr.active>th,.table>tfoot>tr>td.active,.table>tfoot>tr>th.active,.table>thead>tr.active>td,.table>thead>tr.active>th,.table>thead>tr>td.active,.table>thead>tr>th.active{background-color:#f5f5f5}.table-hover>tbody>tr.active:hover>td,.table-hover>tbody>tr.active:hover>th,.table-hover>tbody>tr:hover>.active,.table-hover>tbody>tr>td.active:hover,.table-hover>tbody>tr>th.active:hover{background-color:#e8e8e8}.table>tbody>tr.success>td,.table>tbody>tr.success>th,.table>tbody>tr>td.success,.table>tbody>tr>th.success,.table>tfoot>tr.success>td,.table>tfoot>tr.success>th,.table>tfoot>tr>td.success,.table>tfoot>tr>th.success,.table>thead>tr.success>td,.table>thead>tr.success>th,.table>thead>tr>td.success,.table>thead>tr>th.success{background-color:#dff0d8}.table-hover>tbody>tr.success:hover>td,.table-hover>tbody>tr.success:hover>th,.table-hover>tbody>tr:hover>.success,.table-hover>tbody>tr>td.success:hover,.table-hover>tbody>tr>th.success:hover{background-color:#d0e9c6}.table>tbody>tr.info>td,.table>tbody>tr.info>th,.table>tbody>tr>td.info,.table>tbody>tr>th.info,.table>tfoot>tr.info>td,.table>tfoot>tr.info>th,.table>tfoot>tr>td.info,.table>tfoot>tr>th.info,.table>thead>tr.info>td,.table>thead>tr.info>th,.table>thead>tr>td.info,.table>thead>tr>th.info{background-color:#d9edf7}.table-hover>tbody>tr.info:hover>td,.table-hover>tbody>tr.info:hover>th,.table-hover>tbody>tr:hover>.info,.table-hover>tbody>tr>td.info:hover,.table-hover>tbody>tr>th.info:hover{background-color:#c4e3f3}.table>tbody>tr.warning>td,.table>tbody>tr.warning>th,.table>tbody>tr>td.warning,.table>tbody>tr>th.warning,.table>tfoot>tr.warning>td,.table>tfoot>tr.warning>th,.table>tfoot>tr>td.warning,.table>tfoot>tr>th.warning,.table>thead>tr.warning>td,.table>thead>tr.warning>th,.table>thead>tr>td.warning,.table>thead>tr>th.warning{background-color:#fcf8e3}.table-hover>tbody>tr.warning:hover>td,.table-hover>tbody>tr.warning:hover>th,.table-hover>tbody>tr:hover>.warning,.table-hover>tbody>tr>td.warning:hover,.table-hover>tbody>tr>th.warning:hover{background-color:#faf2cc}.table>tbody>tr.danger>td,.table>tbody>tr.danger>th,.table>tbody>tr>td.danger,.table>tbody>tr>th.danger,.table>tfoot>tr.danger>td,.table>tfoot>tr.danger>th,.table>tfoot>tr>td.danger,.table>tfoot>tr>th.danger,.table>thead>tr.danger>td,.table>thead>tr.danger>th,.table>thead>tr>td.danger,.table>thead>tr>th.danger{background-color:#f2dede}.table-hover>tbody>tr.danger:hover>td,.table-hover>tbody>tr.danger:hover>th,.table-hover>tbody>tr:hover>.danger,.table-hover>tbody>tr>td.danger:hover,.table-hover>tbody>tr>th.danger:hover{background-color:#ebcccc}.table-responsive{min-height:.01%;overflow-x:auto}@media screen and (max-width:767px){.table-responsive{width:100%;margin-bottom:15px;overflow-y:hidden;-ms-overflow-style:-ms-autohiding-scrollbar;border:1px solid #ddd}.table-responsive>.table{margin-bottom:0}.table-responsive>.table>tbody>tr>td,.table-responsive>.table>tbody>tr>th,.table-responsive>.table>tfoot>tr>td,.table-responsive>.table>tfoot>tr>th,.table-responsive>.table>thead>tr>td,.table-responsive>.table>thead>tr>th{white-space:nowrap}.table-responsive>.table-bordered{border:0}.table-responsive>.table-bordered>tbody>tr>td:first-child,.table-responsive>.table-bordered>tbody>tr>th:first-child,.table-responsive>.table-bordered>tfoot>tr>td:first-child,.table-responsive>.table-bordered>tfoot>tr>th:first-child,.table-responsive>.table-bordered>thead>tr>td:first-child,.table-responsive>.table-bordered>thead>tr>th:first-child{border-left:0}.table-responsive>.table-bordered>tbody>tr>td:last-child,.table-responsive>.table-bordered>tbody>tr>th:last-child,.table-responsive>.table-bordered>tfoot>tr>td:last-child,.table-responsive>.table-bordered>tfoot>tr>th:last-child,.table-responsive>.table-bordered>thead>tr>td:last-child,.table-responsive>.table-bordered>thead>tr>th:last-child{border-right:0}.table-responsive>.table-bordered>tbody>tr:last-child>td,.table-responsive>.table-bordered>tbody>tr:last-child>th,.table-responsive>.table-bordered>tfoot>tr:last-child>td,.table-responsive>.table-bordered>tfoot>tr:last-child>th{border-bottom:0}}fieldset{min-width:0;padding:0;margin:0;border:0}legend{display:block;width:100%;padding:0;margin-bottom:20px;font-size:21px;line-height:inherit;color:#333;border:0;border-bottom:1px solid #e5e5e5}label{display:inline-block;max-width:100%;margin-bottom:5px;font-weight:700}input[type=search]{box-sizing:border-box}input[type=checkbox],input[type=radio]{margin:4px 0 0;margin-top:1px\\9;line-height:normal}input[type=file]{display:block}input[type=range]{display:block;width:100%}select[multiple],select[size]{height:auto}input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus{outline:5px auto -webkit-focus-ring-color;outline-offset:-2px}output{display:block;padding-top:7px;font-size:14px;line-height:1.42857143;color:#555}.form-control{display:block;width:100%;height:34px;padding:6px 12px;font-size:14px;line-height:1.42857143;color:#555;background-color:#fff;background-image:none;border:1px solid #ccc;border-radius:4px;box-shadow:inset 0 1px 1px rgba(0,0,0,.075);transition:border-color ease-in-out .15s,box-shadow ease-in-out .15s}.form-control:focus{border-color:#66afe9;outline:0;box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)}.form-control::-moz-placeholder{color:#999;opacity:1}.form-control:-ms-input-placeholder{color:#999}.form-control::-webkit-input-placeholder{color:#999}.form-control::-ms-expand{background-color:transparent;border:0}.form-control[disabled],.form-control[readonly],fieldset[disabled] .form-control{background-color:#eee;opacity:1}.form-control[disabled],fieldset[disabled] .form-control{cursor:not-allowed}textarea.form-control{height:auto}input[type=search]{-webkit-appearance:none}@media screen and (-webkit-min-device-pixel-ratio:0){input[type=date].form-control,input[type=time].form-control,input[type=datetime-local].form-control,input[type=month].form-control{line-height:34px}.input-group-sm input[type=date],.input-group-sm input[type=time],.input-group-sm input[type=datetime-local],.input-group-sm input[type=month],input[type=date].input-sm,input[type=time].input-sm,input[type=datetime-local].input-sm,input[type=month].input-sm{line-height:30px}.input-group-lg input[type=date],.input-group-lg input[type=time],.input-group-lg input[type=datetime-local],.input-group-lg input[type=month],input[type=date].input-lg,input[type=time].input-lg,input[type=datetime-local].input-lg,input[type=month].input-lg{line-height:46px}}.form-group{margin-bottom:15px}.checkbox,.radio{position:relative;display:block;margin-top:10px;margin-bottom:10px}.checkbox label,.radio label{min-height:20px;padding-left:20px;margin-bottom:0;font-weight:400;cursor:pointer}.checkbox input[type=checkbox],.checkbox-inline input[type=checkbox],.radio input[type=radio],.radio-inline input[type=radio]{position:absolute;margin-top:4px\\9;margin-left:-20px}.checkbox+.checkbox,.radio+.radio{margin-top:-5px}.checkbox-inline,.radio-inline{position:relative;display:inline-block;padding-left:20px;margin-bottom:0;font-weight:400;vertical-align:middle;cursor:pointer}.checkbox-inline+.checkbox-inline,.radio-inline+.radio-inline{margin-top:0;margin-left:10px}fieldset[disabled] input[type=checkbox],fieldset[disabled] input[type=radio],input[type=checkbox].disabled,input[type=checkbox][disabled],input[type=radio].disabled,input[type=radio][disabled]{cursor:not-allowed}.checkbox-inline.disabled,.radio-inline.disabled,fieldset[disabled] .checkbox-inline,fieldset[disabled] .radio-inline{cursor:not-allowed}.checkbox.disabled label,.radio.disabled label,fieldset[disabled] .checkbox label,fieldset[disabled] .radio label{cursor:not-allowed}.form-control-static{min-height:34px;padding-top:7px;padding-bottom:7px;margin-bottom:0}.form-control-static.input-lg,.form-control-static.input-sm{padding-right:0;padding-left:0}.input-sm{height:30px;padding:5px 10px;font-size:12px;line-height:1.5;border-radius:3px}select.input-sm{height:30px;line-height:30px}select[multiple].input-sm,textarea.input-sm{height:auto}.form-group-sm .form-control{height:30px;padding:5px 10px;font-size:12px;line-height:1.5;border-radius:3px}.form-group-sm select.form-control{height:30px;line-height:30px}.form-group-sm select[multiple].form-control,.form-group-sm textarea.form-control{height:auto}.form-group-sm .form-control-static{height:30px;min-height:32px;padding:6px 10px;font-size:12px;line-height:1.5}.input-lg{height:46px;padding:10px 16px;font-size:18px;line-height:1.3333333;border-radius:6px}select.input-lg{height:46px;line-height:46px}select[multiple].input-lg,textarea.input-lg{height:auto}.form-group-lg .form-control{height:46px;padding:10px 16px;font-size:18px;line-height:1.3333333;border-radius:6px}.form-group-lg select.form-control{height:46px;line-height:46px}.form-group-lg select[multiple].form-control,.form-group-lg textarea.form-control{height:auto}.form-group-lg .form-control-static{height:46px;min-height:38px;padding:11px 16px;font-size:18px;line-height:1.3333333}.has-feedback{position:relative}.has-feedback .form-control{padding-right:42.5px}.form-control-feedback{position:absolute;top:0;right:0;z-index:2;display:block;width:34px;height:34px;line-height:34px;text-align:center;pointer-events:none}.form-group-lg .form-control+.form-control-feedback,.input-group-lg+.form-control-feedback,.input-lg+.form-control-feedback{width:46px;height:46px;line-height:46px}.form-group-sm .form-control+.form-control-feedback,.input-group-sm+.form-control-feedback,.input-sm+.form-control-feedback{width:30px;height:30px;line-height:30px}.has-success .checkbox,.has-success .checkbox-inline,.has-success .control-label,.has-success .help-block,.has-success .radio,.has-success .radio-inline,.has-success.checkbox label,.has-success.checkbox-inline label,.has-success.radio label,.has-success.radio-inline label{color:#3c763d}.has-success .form-control{border-color:#3c763d;box-shadow:inset 0 1px 1px rgba(0,0,0,.075)}.has-success .form-control:focus{border-color:#2b542c;box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #67b168}.has-success .input-group-addon{color:#3c763d;background-color:#dff0d8;border-color:#3c763d}.has-success .form-control-feedback{color:#3c763d}.has-warning .checkbox,.has-warning .checkbox-inline,.has-warning .control-label,.has-warning .help-block,.has-warning .radio,.has-warning .radio-inline,.has-warning.checkbox label,.has-warning.checkbox-inline label,.has-warning.radio label,.has-warning.radio-inline label{color:#8a6d3b}.has-warning .form-control{border-color:#8a6d3b;box-shadow:inset 0 1px 1px rgba(0,0,0,.075)}.has-warning .form-control:focus{border-color:#66512c;box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #c0a16b}.has-warning .input-group-addon{color:#8a6d3b;background-color:#fcf8e3;border-color:#8a6d3b}.has-warning .form-control-feedback{color:#8a6d3b}.has-error .checkbox,.has-error .checkbox-inline,.has-error .control-label,.has-error .help-block,.has-error .radio,.has-error .radio-inline,.has-error.checkbox label,.has-error.checkbox-inline label,.has-error.radio label,.has-error.radio-inline label{color:#a94442}.has-error .form-control{border-color:#a94442;box-shadow:inset 0 1px 1px rgba(0,0,0,.075)}.has-error .form-control:focus{border-color:#843534;box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #ce8483}.has-error .input-group-addon{color:#a94442;background-color:#f2dede;border-color:#a94442}.has-error .form-control-feedback{color:#a94442}.has-feedback label~.form-control-feedback{top:25px}.has-feedback label.sr-only~.form-control-feedback{top:0}.help-block{display:block;margin-top:5px;margin-bottom:10px;color:#737373}@media (min-width:768px){.form-inline .form-group{display:inline-block;margin-bottom:0;vertical-align:middle}.form-inline .form-control{display:inline-block;width:auto;vertical-align:middle}.form-inline .form-control-static{display:inline-block}.form-inline .input-group{display:inline-table;vertical-align:middle}.form-inline .input-group .form-control,.form-inline .input-group .input-group-addon,.form-inline .input-group .input-group-btn{width:auto}.form-inline .input-group>.form-control{width:100%}.form-inline .control-label{margin-bottom:0;vertical-align:middle}.form-inline .checkbox,.form-inline .radio{display:inline-block;margin-top:0;margin-bottom:0;vertical-align:middle}.form-inline .checkbox label,.form-inline .radio label{padding-left:0}.form-inline .checkbox input[type=checkbox],.form-inline .radio input[type=radio]{position:relative;margin-left:0}.form-inline .has-feedback .form-control-feedback{top:0}}.form-horizontal .checkbox,.form-horizontal .checkbox-inline,.form-horizontal .radio,.form-horizontal .radio-inline{padding-top:7px;margin-top:0;margin-bottom:0}.form-horizontal .checkbox,.form-horizontal .radio{min-height:27px}.form-horizontal .form-group{margin-right:-15px;margin-left:-15px}@media (min-width:768px){.form-horizontal .control-label{padding-top:7px;margin-bottom:0;text-align:right}}.form-horizontal .has-feedback .form-control-feedback{right:15px}@media (min-width:768px){.form-horizontal .form-group-lg .control-label{padding-top:11px;font-size:18px}}@media (min-width:768px){.form-horizontal .form-group-sm .control-label{padding-top:6px;font-size:12px}}.btn{display:inline-block;padding:6px 12px;margin-bottom:0;font-size:14px;font-weight:400;line-height:1.42857143;text-align:center;white-space:nowrap;vertical-align:middle;touch-action:manipulation;cursor:pointer;-webkit-user-select:none;-moz-user-select:none;user-select:none;background-image:none;border:1px solid transparent;border-radius:4px}.btn.active.focus,.btn.active:focus,.btn.focus,.btn:active.focus,.btn:active:focus,.btn:focus{outline:5px auto -webkit-focus-ring-color;outline-offset:-2px}.btn.focus,.btn:focus,.btn:hover{color:#333;text-decoration:none}.btn.active,.btn:active{background-image:none;outline:0;box-shadow:inset 0 3px 5px rgba(0,0,0,.125)}.btn.disabled,.btn[disabled],fieldset[disabled] .btn{cursor:not-allowed;filter:alpha(opacity=65);box-shadow:none;opacity:.65}a.btn.disabled,fieldset[disabled] a.btn{pointer-events:none}.btn-default{color:#333;background-color:#fff;border-color:#ccc}.btn-default.focus,.btn-default:focus{color:#333;background-color:#e6e6e6;border-color:#8c8c8c}.btn-default:hover{color:#333;background-color:#e6e6e6;border-color:#adadad}.btn-default.active,.btn-default:active,.open>.dropdown-toggle.btn-default{color:#333;background-color:#e6e6e6;border-color:#adadad}.btn-default.active.focus,.btn-default.active:focus,.btn-default.active:hover,.btn-default:active.focus,.btn-default:active:focus,.btn-default:active:hover,.open>.dropdown-toggle.btn-default.focus,.open>.dropdown-toggle.btn-default:focus,.open>.dropdown-toggle.btn-default:hover{color:#333;background-color:#d4d4d4;border-color:#8c8c8c}.btn-default.active,.btn-default:active,.open>.dropdown-toggle.btn-default{background-image:none}.btn-default.disabled.focus,.btn-default.disabled:focus,.btn-default.disabled:hover,.btn-default[disabled].focus,.btn-default[disabled]:focus,.btn-default[disabled]:hover,fieldset[disabled] .btn-default.focus,fieldset[disabled] .btn-default:focus,fieldset[disabled] .btn-default:hover{background-color:#fff;border-color:#ccc}.btn-default .badge{color:#fff;background-color:#333}.btn-primary{color:#fff;background-color:#337ab7;border-color:#2e6da4}.btn-primary.focus,.btn-primary:focus{color:#fff;background-color:#286090;border-color:#122b40}.btn-primary:hover{color:#fff;background-color:#286090;border-color:#204d74}.btn-primary.active,.btn-primary:active,.open>.dropdown-toggle.btn-primary{color:#fff;background-color:#286090;border-color:#204d74}.btn-primary.active.focus,.btn-primary.active:focus,.btn-primary.active:hover,.btn-primary:active.focus,.btn-primary:active:focus,.btn-primary:active:hover,.open>.dropdown-toggle.btn-primary.focus,.open>.dropdown-toggle.btn-primary:focus,.open>.dropdown-toggle.btn-primary:hover{color:#fff;background-color:#204d74;border-color:#122b40}.btn-primary.active,.btn-primary:active,.open>.dropdown-toggle.btn-primary{background-image:none}.btn-primary.disabled.focus,.btn-primary.disabled:focus,.btn-primary.disabled:hover,.btn-primary[disabled].focus,.btn-primary[disabled]:focus,.btn-primary[disabled]:hover,fieldset[disabled] .btn-primary.focus,fieldset[disabled] .btn-primary:focus,fieldset[disabled] .btn-primary:hover{background-color:#337ab7;border-color:#2e6da4}.btn-primary .badge{color:#337ab7;background-color:#fff}.btn-success{color:#fff;background-color:#5cb85c;border-color:#4cae4c}.btn-success.focus,.btn-success:focus{color:#fff;background-color:#449d44;border-color:#255625}.btn-success:hover{color:#fff;background-color:#449d44;border-color:#398439}.btn-success.active,.btn-success:active,.open>.dropdown-toggle.btn-success{color:#fff;background-color:#449d44;border-color:#398439}.btn-success.active.focus,.btn-success.active:focus,.btn-success.active:hover,.btn-success:active.focus,.btn-success:active:focus,.btn-success:active:hover,.open>.dropdown-toggle.btn-success.focus,.open>.dropdown-toggle.btn-success:focus,.open>.dropdown-toggle.btn-success:hover{color:#fff;background-color:#398439;border-color:#255625}.btn-success.active,.btn-success:active,.open>.dropdown-toggle.btn-success{background-image:none}.btn-success.disabled.focus,.btn-success.disabled:focus,.btn-success.disabled:hover,.btn-success[disabled].focus,.btn-success[disabled]:focus,.btn-success[disabled]:hover,fieldset[disabled] .btn-success.focus,fieldset[disabled] .btn-success:focus,fieldset[disabled] .btn-success:hover{background-color:#5cb85c;border-color:#4cae4c}.btn-success .badge{color:#5cb85c;background-color:#fff}.btn-info{color:#fff;background-color:#5bc0de;border-color:#46b8da}.btn-info.focus,.btn-info:focus{color:#fff;background-color:#31b0d5;border-color:#1b6d85}.btn-info:hover{color:#fff;background-color:#31b0d5;border-color:#269abc}.btn-info.active,.btn-info:active,.open>.dropdown-toggle.btn-info{color:#fff;background-color:#31b0d5;border-color:#269abc}.btn-info.active.focus,.btn-info.active:focus,.btn-info.active:hover,.btn-info:active.focus,.btn-info:active:focus,.btn-info:active:hover,.open>.dropdown-toggle.btn-info.focus,.open>.dropdown-toggle.btn-info:focus,.open>.dropdown-toggle.btn-info:hover{color:#fff;background-color:#269abc;border-color:#1b6d85}.btn-info.active,.btn-info:active,.open>.dropdown-toggle.btn-info{background-image:none}.btn-info.disabled.focus,.btn-info.disabled:focus,.btn-info.disabled:hover,.btn-info[disabled].focus,.btn-info[disabled]:focus,.btn-info[disabled]:hover,fieldset[disabled] .btn-info.focus,fieldset[disabled] .btn-info:focus,fieldset[disabled] .btn-info:hover{background-color:#5bc0de;border-color:#46b8da}.btn-info .badge{color:#5bc0de;background-color:#fff}.btn-warning{color:#fff;background-color:#f0ad4e;border-color:#eea236}.btn-warning.focus,.btn-warning:focus{color:#fff;background-color:#ec971f;border-color:#985f0d}.btn-warning:hover{color:#fff;background-color:#ec971f;border-color:#d58512}.btn-warning.active,.btn-warning:active,.open>.dropdown-toggle.btn-warning{color:#fff;background-color:#ec971f;border-color:#d58512}.btn-warning.active.focus,.btn-warning.active:focus,.btn-warning.active:hover,.btn-warning:active.focus,.btn-warning:active:focus,.btn-warning:active:hover,.open>.dropdown-toggle.btn-warning.focus,.open>.dropdown-toggle.btn-warning:focus,.open>.dropdown-toggle.btn-warning:hover{color:#fff;background-color:#d58512;border-color:#985f0d}.btn-warning.active,.btn-warning:active,.open>.dropdown-toggle.btn-warning{background-image:none}.btn-warning.disabled.focus,.btn-warning.disabled:focus,.btn-warning.disabled:hover,.btn-warning[disabled].focus,.btn-warning[disabled]:focus,.btn-warning[disabled]:hover,fieldset[disabled] .btn-warning.focus,fieldset[disabled] .btn-warning:focus,fieldset[disabled] .btn-warning:hover{background-color:#f0ad4e;border-color:#eea236}.btn-warning .badge{color:#f0ad4e;background-color:#fff}.btn-danger{color:#fff;background-color:#d9534f;border-color:#d43f3a}.btn-danger.focus,.btn-danger:focus{color:#fff;background-color:#c9302c;border-color:#761c19}.btn-danger:hover{color:#fff;background-color:#c9302c;border-color:#ac2925}.btn-danger.active,.btn-danger:active,.open>.dropdown-toggle.btn-danger{color:#fff;background-color:#c9302c;border-color:#ac2925}.btn-danger.active.focus,.btn-danger.active:focus,.btn-danger.active:hover,.btn-danger:active.focus,.btn-danger:active:focus,.btn-danger:active:hover,.open>.dropdown-toggle.btn-danger.focus,.open>.dropdown-toggle.btn-danger:focus,.open>.dropdown-toggle.btn-danger:hover{color:#fff;background-color:#ac2925;border-color:#761c19}.btn-danger.active,.btn-danger:active,.open>.dropdown-toggle.btn-danger{background-image:none}.btn-danger.disabled.focus,.btn-danger.disabled:focus,.btn-danger.disabled:hover,.btn-danger[disabled].focus,.btn-danger[disabled]:focus,.btn-danger[disabled]:hover,fieldset[disabled] .btn-danger.focus,fieldset[disabled] .btn-danger:focus,fieldset[disabled] .btn-danger:hover{background-color:#d9534f;border-color:#d43f3a}.btn-danger .badge{color:#d9534f;background-color:#fff}.btn-link{font-weight:400;color:#337ab7;border-radius:0}.btn-link,.btn-link.active,.btn-link:active,.btn-link[disabled],fieldset[disabled] .btn-link{background-color:transparent;box-shadow:none}.btn-link,.btn-link:active,.btn-link:focus,.btn-link:hover{border-color:transparent}.btn-link:focus,.btn-link:hover{color:#23527c;text-decoration:underline;background-color:transparent}.btn-link[disabled]:focus,.btn-link[disabled]:hover,fieldset[disabled] .btn-link:focus,fieldset[disabled] .btn-link:hover{color:#777;text-decoration:none}.btn-group-lg>.btn,.btn-lg{padding:10px 16px;font-size:18px;line-height:1.3333333;border-radius:6px}.btn-group-sm>.btn,.btn-sm{padding:5px 10px;font-size:12px;line-height:1.5;border-radius:3px}.btn-group-xs>.btn,.btn-xs{padding:1px 5px;font-size:12px;line-height:1.5;border-radius:3px}.btn-block{display:block;width:100%}.btn-block+.btn-block{margin-top:5px}input[type=button].btn-block,input[type=reset].btn-block,input[type=submit].btn-block{width:100%}.fade{opacity:0;transition:opacity .15s linear}.fade.in{opacity:1}.collapse{display:none}.collapse.in{display:block}tr.collapse.in{display:table-row}tbody.collapse.in{display:table-row-group}.collapsing{position:relative;height:0;overflow:hidden;transition-timing-function:ease;transition-duration:.35s;transition-property:height,visibility}.caret{display:inline-block;width:0;height:0;margin-left:2px;vertical-align:middle;border-top:4px dashed;border-top:4px solid\\9;border-right:4px solid transparent;border-left:4px solid transparent}.dropdown,.dropup{position:relative}.dropdown-toggle:focus{outline:0}.dropdown-menu{position:absolute;top:100%;left:0;z-index:1000;display:none;float:left;min-width:160px;padding:5px 0;margin:2px 0 0;font-size:14px;text-align:left;list-style:none;background-color:#fff;background-clip:padding-box;border:1px solid #ccc;border:1px solid rgba(0,0,0,.15);border-radius:4px;box-shadow:0 6px 12px rgba(0,0,0,.175)}.dropdown-menu.pull-right{right:0;left:auto}.dropdown-menu .divider{height:1px;margin:9px 0;overflow:hidden;background-color:#e5e5e5}.dropdown-menu>li>a{display:block;padding:3px 20px;clear:both;font-weight:400;line-height:1.42857143;color:#333;white-space:nowrap}.dropdown-menu>li>a:focus,.dropdown-menu>li>a:hover{color:#262626;text-decoration:none;background-color:#f5f5f5}.dropdown-menu>.active>a,.dropdown-menu>.active>a:focus,.dropdown-menu>.active>a:hover{color:#fff;text-decoration:none;background-color:#337ab7;outline:0}.dropdown-menu>.disabled>a,.dropdown-menu>.disabled>a:focus,.dropdown-menu>.disabled>a:hover{color:#777}.dropdown-menu>.disabled>a:focus,.dropdown-menu>.disabled>a:hover{text-decoration:none;cursor:not-allowed;background-color:transparent;background-image:none;filter:progid:DXImageTransform.Microsoft.gradient(enabled=false)}.open>.dropdown-menu{display:block}.open>a{outline:0}.dropdown-menu-right{right:0;left:auto}.dropdown-menu-left{right:auto;left:0}.dropdown-header{display:block;padding:3px 20px;font-size:12px;line-height:1.42857143;color:#777;white-space:nowrap}.dropdown-backdrop{position:fixed;top:0;right:0;bottom:0;left:0;z-index:990}.pull-right>.dropdown-menu{right:0;left:auto}.dropup .caret,.navbar-fixed-bottom .dropdown .caret{content:\"\";border-top:0;border-bottom:4px dashed;border-bottom:4px solid\\9}.dropup .dropdown-menu,.navbar-fixed-bottom .dropdown .dropdown-menu{top:auto;bottom:100%;margin-bottom:2px}@media (min-width:768px){.navbar-right .dropdown-menu{right:0;left:auto}.navbar-right .dropdown-menu-left{right:auto;left:0}}.btn-group,.btn-group-vertical{position:relative;display:inline-block;vertical-align:middle}.btn-group-vertical>.btn,.btn-group>.btn{position:relative;float:left}.btn-group-vertical>.btn.active,.btn-group-vertical>.btn:active,.btn-group-vertical>.btn:focus,.btn-group-vertical>.btn:hover,.btn-group>.btn.active,.btn-group>.btn:active,.btn-group>.btn:focus,.btn-group>.btn:hover{z-index:2}.btn-group .btn+.btn,.btn-group .btn+.btn-group,.btn-group .btn-group+.btn,.btn-group .btn-group+.btn-group{margin-left:-1px}.btn-toolbar{margin-left:-5px}.btn-toolbar .btn,.btn-toolbar .btn-group,.btn-toolbar .input-group{float:left}.btn-toolbar>.btn,.btn-toolbar>.btn-group,.btn-toolbar>.input-group{margin-left:5px}.btn-group>.btn:not(:first-child):not(:last-child):not(.dropdown-toggle){border-radius:0}.btn-group>.btn:first-child{margin-left:0}.btn-group>.btn:first-child:not(:last-child):not(.dropdown-toggle){border-top-right-radius:0;border-bottom-right-radius:0}.btn-group>.btn:last-child:not(:first-child),.btn-group>.dropdown-toggle:not(:first-child){border-top-left-radius:0;border-bottom-left-radius:0}.btn-group>.btn-group{float:left}.btn-group>.btn-group:not(:first-child):not(:last-child)>.btn{border-radius:0}.btn-group>.btn-group:first-child:not(:last-child)>.btn:last-child,.btn-group>.btn-group:first-child:not(:last-child)>.dropdown-toggle{border-top-right-radius:0;border-bottom-right-radius:0}.btn-group>.btn-group:last-child:not(:first-child)>.btn:first-child{border-top-left-radius:0;border-bottom-left-radius:0}.btn-group .dropdown-toggle:active,.btn-group.open .dropdown-toggle{outline:0}.btn-group>.btn+.dropdown-toggle{padding-right:8px;padding-left:8px}.btn-group>.btn-lg+.dropdown-toggle{padding-right:12px;padding-left:12px}.btn-group.open .dropdown-toggle{box-shadow:inset 0 3px 5px rgba(0,0,0,.125)}.btn-group.open .dropdown-toggle.btn-link{box-shadow:none}.btn .caret{margin-left:0}.btn-lg .caret{border-width:5px 5px 0;border-bottom-width:0}.dropup .btn-lg .caret{border-width:0 5px 5px}.btn-group-vertical>.btn,.btn-group-vertical>.btn-group,.btn-group-vertical>.btn-group>.btn{display:block;float:none;width:100%;max-width:100%}.btn-group-vertical>.btn-group>.btn{float:none}.btn-group-vertical>.btn+.btn,.btn-group-vertical>.btn+.btn-group,.btn-group-vertical>.btn-group+.btn,.btn-group-vertical>.btn-group+.btn-group{margin-top:-1px;margin-left:0}.btn-group-vertical>.btn:not(:first-child):not(:last-child){border-radius:0}.btn-group-vertical>.btn:first-child:not(:last-child){border-top-left-radius:4px;border-top-right-radius:4px;border-bottom-right-radius:0;border-bottom-left-radius:0}.btn-group-vertical>.btn:last-child:not(:first-child){border-top-left-radius:0;border-top-right-radius:0;border-bottom-right-radius:4px;border-bottom-left-radius:4px}.btn-group-vertical>.btn-group:not(:first-child):not(:last-child)>.btn{border-radius:0}.btn-group-vertical>.btn-group:first-child:not(:last-child)>.btn:last-child,.btn-group-vertical>.btn-group:first-child:not(:last-child)>.dropdown-toggle{border-bottom-right-radius:0;border-bottom-left-radius:0}.btn-group-vertical>.btn-group:last-child:not(:first-child)>.btn:first-child{border-top-left-radius:0;border-top-right-radius:0}.btn-group-justified{display:table;width:100%;table-layout:fixed;border-collapse:separate}.btn-group-justified>.btn,.btn-group-justified>.btn-group{display:table-cell;float:none;width:1%}.btn-group-justified>.btn-group .btn{width:100%}.btn-group-justified>.btn-group .dropdown-menu{left:auto}[data-toggle=buttons]>.btn input[type=checkbox],[data-toggle=buttons]>.btn input[type=radio],[data-toggle=buttons]>.btn-group>.btn input[type=checkbox],[data-toggle=buttons]>.btn-group>.btn input[type=radio]{position:absolute;clip:rect(0,0,0,0);pointer-events:none}.input-group{position:relative;display:table;border-collapse:separate}.input-group[class*=col-]{float:none;padding-right:0;padding-left:0}.input-group .form-control{position:relative;z-index:2;float:left;width:100%;margin-bottom:0}.input-group .form-control:focus{z-index:3}.input-group-lg>.form-control,.input-group-lg>.input-group-addon,.input-group-lg>.input-group-btn>.btn{height:46px;padding:10px 16px;font-size:18px;line-height:1.3333333;border-radius:6px}select.input-group-lg>.form-control,select.input-group-lg>.input-group-addon,select.input-group-lg>.input-group-btn>.btn{height:46px;line-height:46px}select[multiple].input-group-lg>.form-control,select[multiple].input-group-lg>.input-group-addon,select[multiple].input-group-lg>.input-group-btn>.btn,textarea.input-group-lg>.form-control,textarea.input-group-lg>.input-group-addon,textarea.input-group-lg>.input-group-btn>.btn{height:auto}.input-group-sm>.form-control,.input-group-sm>.input-group-addon,.input-group-sm>.input-group-btn>.btn{height:30px;padding:5px 10px;font-size:12px;line-height:1.5;border-radius:3px}select.input-group-sm>.form-control,select.input-group-sm>.input-group-addon,select.input-group-sm>.input-group-btn>.btn{height:30px;line-height:30px}select[multiple].input-group-sm>.form-control,select[multiple].input-group-sm>.input-group-addon,select[multiple].input-group-sm>.input-group-btn>.btn,textarea.input-group-sm>.form-control,textarea.input-group-sm>.input-group-addon,textarea.input-group-sm>.input-group-btn>.btn{height:auto}.input-group .form-control,.input-group-addon,.input-group-btn{display:table-cell}.input-group .form-control:not(:first-child):not(:last-child),.input-group-addon:not(:first-child):not(:last-child),.input-group-btn:not(:first-child):not(:last-child){border-radius:0}.input-group-addon,.input-group-btn{width:1%;white-space:nowrap;vertical-align:middle}.input-group-addon{padding:6px 12px;font-size:14px;font-weight:400;line-height:1;color:#555;text-align:center;background-color:#eee;border:1px solid #ccc;border-radius:4px}.input-group-addon.input-sm{padding:5px 10px;font-size:12px;border-radius:3px}.input-group-addon.input-lg{padding:10px 16px;font-size:18px;border-radius:6px}.input-group-addon input[type=checkbox],.input-group-addon input[type=radio]{margin-top:0}.input-group .form-control:first-child,.input-group-addon:first-child,.input-group-btn:first-child>.btn,.input-group-btn:first-child>.btn-group>.btn,.input-group-btn:first-child>.dropdown-toggle,.input-group-btn:last-child>.btn-group:not(:last-child)>.btn,.input-group-btn:last-child>.btn:not(:last-child):not(.dropdown-toggle){border-top-right-radius:0;border-bottom-right-radius:0}.input-group-addon:first-child{border-right:0}.input-group .form-control:last-child,.input-group-addon:last-child,.input-group-btn:first-child>.btn-group:not(:first-child)>.btn,.input-group-btn:first-child>.btn:not(:first-child),.input-group-btn:last-child>.btn,.input-group-btn:last-child>.btn-group>.btn,.input-group-btn:last-child>.dropdown-toggle{border-top-left-radius:0;border-bottom-left-radius:0}.input-group-addon:last-child{border-left:0}.input-group-btn{position:relative;font-size:0;white-space:nowrap}.input-group-btn>.btn{position:relative}.input-group-btn>.btn+.btn{margin-left:-1px}.input-group-btn>.btn:active,.input-group-btn>.btn:focus,.input-group-btn>.btn:hover{z-index:2}.input-group-btn:first-child>.btn,.input-group-btn:first-child>.btn-group{margin-right:-1px}.input-group-btn:last-child>.btn,.input-group-btn:last-child>.btn-group{z-index:2;margin-left:-1px}.nav{padding-left:0;margin-bottom:0;list-style:none}.nav>li{position:relative;display:block}.nav>li>a{position:relative;display:block;padding:10px 15px}.nav>li>a:focus,.nav>li>a:hover{text-decoration:none;background-color:#eee}.nav>li.disabled>a{color:#777}.nav>li.disabled>a:focus,.nav>li.disabled>a:hover{color:#777;text-decoration:none;cursor:not-allowed;background-color:transparent}.nav .open>a,.nav .open>a:focus,.nav .open>a:hover{background-color:#eee;border-color:#337ab7}.nav .nav-divider{height:1px;margin:9px 0;overflow:hidden;background-color:#e5e5e5}.nav>li>a>img{max-width:none}.nav-tabs{border-bottom:1px solid #ddd}.nav-tabs>li{float:left;margin-bottom:-1px}.nav-tabs>li>a{margin-right:2px;line-height:1.42857143;border:1px solid transparent;border-radius:4px 4px 0 0}.nav-tabs>li>a:hover{border-color:#eee #eee #ddd}.nav-tabs>li.active>a,.nav-tabs>li.active>a:focus,.nav-tabs>li.active>a:hover{color:#555;cursor:default;background-color:#fff;border:1px solid #ddd;border-bottom-color:transparent}.nav-tabs.nav-justified{width:100%;border-bottom:0}.nav-tabs.nav-justified>li{float:none}.nav-tabs.nav-justified>li>a{margin-bottom:5px;text-align:center}.nav-tabs.nav-justified>.dropdown .dropdown-menu{top:auto;left:auto}@media (min-width:768px){.nav-tabs.nav-justified>li{display:table-cell;width:1%}.nav-tabs.nav-justified>li>a{margin-bottom:0}}.nav-tabs.nav-justified>li>a{margin-right:0;border-radius:4px}.nav-tabs.nav-justified>.active>a,.nav-tabs.nav-justified>.active>a:focus,.nav-tabs.nav-justified>.active>a:hover{border:1px solid #ddd}@media (min-width:768px){.nav-tabs.nav-justified>li>a{border-bottom:1px solid #ddd;border-radius:4px 4px 0 0}.nav-tabs.nav-justified>.active>a,.nav-tabs.nav-justified>.active>a:focus,.nav-tabs.nav-justified>.active>a:hover{border-bottom-color:#fff}}.nav-pills>li{float:left}.nav-pills>li>a{border-radius:4px}.nav-pills>li+li{margin-left:2px}.nav-pills>li.active>a,.nav-pills>li.active>a:focus,.nav-pills>li.active>a:hover{color:#fff;background-color:#337ab7}.nav-stacked>li{float:none}.nav-stacked>li+li{margin-top:2px;margin-left:0}.nav-justified{width:100%}.nav-justified>li{float:none}.nav-justified>li>a{margin-bottom:5px;text-align:center}.nav-justified>.dropdown .dropdown-menu{top:auto;left:auto}@media (min-width:768px){.nav-justified>li{display:table-cell;width:1%}.nav-justified>li>a{margin-bottom:0}}.nav-tabs-justified{border-bottom:0}.nav-tabs-justified>li>a{margin-right:0;border-radius:4px}.nav-tabs-justified>.active>a,.nav-tabs-justified>.active>a:focus,.nav-tabs-justified>.active>a:hover{border:1px solid #ddd}@media (min-width:768px){.nav-tabs-justified>li>a{border-bottom:1px solid #ddd;border-radius:4px 4px 0 0}.nav-tabs-justified>.active>a,.nav-tabs-justified>.active>a:focus,.nav-tabs-justified>.active>a:hover{border-bottom-color:#fff}}.tab-content>.tab-pane{display:none}.tab-content>.active{display:block}.nav-tabs .dropdown-menu{margin-top:-1px;border-top-left-radius:0;border-top-right-radius:0}.navbar{position:relative;min-height:50px;margin-bottom:20px;border:1px solid transparent}@media (min-width:768px){.navbar{border-radius:4px}}@media (min-width:768px){.navbar-header{float:left}}.navbar-collapse{padding-right:15px;padding-left:15px;overflow-x:visible;-webkit-overflow-scrolling:touch;border-top:1px solid transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}.navbar-collapse.in{overflow-y:auto}@media (min-width:768px){.navbar-collapse{width:auto;border-top:0;box-shadow:none}.navbar-collapse.collapse{display:block!important;height:auto!important;padding-bottom:0;overflow:visible!important}.navbar-collapse.in{overflow-y:visible}.navbar-fixed-bottom .navbar-collapse,.navbar-fixed-top .navbar-collapse,.navbar-static-top .navbar-collapse{padding-right:0;padding-left:0}}.navbar-fixed-bottom .navbar-collapse,.navbar-fixed-top .navbar-collapse{max-height:340px}@media (max-device-width:480px) and (orientation:landscape){.navbar-fixed-bottom .navbar-collapse,.navbar-fixed-top .navbar-collapse{max-height:200px}}.container-fluid>.navbar-collapse,.container-fluid>.navbar-header,.container>.navbar-collapse,.container>.navbar-header{margin-right:-15px;margin-left:-15px}@media (min-width:768px){.container-fluid>.navbar-collapse,.container-fluid>.navbar-header,.container>.navbar-collapse,.container>.navbar-header{margin-right:0;margin-left:0}}.navbar-static-top{z-index:1000;border-width:0 0 1px}@media (min-width:768px){.navbar-static-top{border-radius:0}}.navbar-fixed-bottom,.navbar-fixed-top{position:fixed;right:0;left:0;z-index:1030}@media (min-width:768px){.navbar-fixed-bottom,.navbar-fixed-top{border-radius:0}}.navbar-fixed-top{top:0;border-width:0 0 1px}.navbar-fixed-bottom{bottom:0;margin-bottom:0;border-width:1px 0 0}.navbar-brand{float:left;height:50px;padding:15px 15px;font-size:18px;line-height:20px}.navbar-brand:focus,.navbar-brand:hover{text-decoration:none}.navbar-brand>img{display:block}@media (min-width:768px){.navbar>.container .navbar-brand,.navbar>.container-fluid .navbar-brand{margin-left:-15px}}.navbar-toggle{position:relative;float:right;padding:9px 10px;margin-top:8px;margin-right:15px;margin-bottom:8px;background-color:transparent;background-image:none;border:1px solid transparent;border-radius:4px}.navbar-toggle:focus{outline:0}.navbar-toggle .icon-bar{display:block;width:22px;height:2px;border-radius:1px}.navbar-toggle .icon-bar+.icon-bar{margin-top:4px}@media (min-width:768px){.navbar-toggle{display:none}}.navbar-nav{margin:7.5px -15px}.navbar-nav>li>a{padding-top:10px;padding-bottom:10px;line-height:20px}@media (max-width:767px){.navbar-nav .open .dropdown-menu{position:static;float:none;width:auto;margin-top:0;background-color:transparent;border:0;box-shadow:none}.navbar-nav .open .dropdown-menu .dropdown-header,.navbar-nav .open .dropdown-menu>li>a{padding:5px 15px 5px 25px}.navbar-nav .open .dropdown-menu>li>a{line-height:20px}.navbar-nav .open .dropdown-menu>li>a:focus,.navbar-nav .open .dropdown-menu>li>a:hover{background-image:none}}@media (min-width:768px){.navbar-nav{float:left;margin:0}.navbar-nav>li{float:left}.navbar-nav>li>a{padding-top:15px;padding-bottom:15px}}.navbar-form{padding:10px 15px;margin-top:8px;margin-right:-15px;margin-bottom:8px;margin-left:-15px;border-top:1px solid transparent;border-bottom:1px solid transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 1px 0 rgba(255,255,255,.1)}@media (min-width:768px){.navbar-form .form-group{display:inline-block;margin-bottom:0;vertical-align:middle}.navbar-form .form-control{display:inline-block;width:auto;vertical-align:middle}.navbar-form .form-control-static{display:inline-block}.navbar-form .input-group{display:inline-table;vertical-align:middle}.navbar-form .input-group .form-control,.navbar-form .input-group .input-group-addon,.navbar-form .input-group .input-group-btn{width:auto}.navbar-form .input-group>.form-control{width:100%}.navbar-form .control-label{margin-bottom:0;vertical-align:middle}.navbar-form .checkbox,.navbar-form .radio{display:inline-block;margin-top:0;margin-bottom:0;vertical-align:middle}.navbar-form .checkbox label,.navbar-form .radio label{padding-left:0}.navbar-form .checkbox input[type=checkbox],.navbar-form .radio input[type=radio]{position:relative;margin-left:0}.navbar-form .has-feedback .form-control-feedback{top:0}}@media (max-width:767px){.navbar-form .form-group{margin-bottom:5px}.navbar-form .form-group:last-child{margin-bottom:0}}@media (min-width:768px){.navbar-form{width:auto;padding-top:0;padding-bottom:0;margin-right:0;margin-left:0;border:0;box-shadow:none}}.navbar-nav>li>.dropdown-menu{margin-top:0;border-top-left-radius:0;border-top-right-radius:0}.navbar-fixed-bottom .navbar-nav>li>.dropdown-menu{margin-bottom:0;border-top-left-radius:4px;border-top-right-radius:4px;border-bottom-right-radius:0;border-bottom-left-radius:0}.navbar-btn{margin-top:8px;margin-bottom:8px}.navbar-btn.btn-sm{margin-top:10px;margin-bottom:10px}.navbar-btn.btn-xs{margin-top:14px;margin-bottom:14px}.navbar-text{margin-top:15px;margin-bottom:15px}@media (min-width:768px){.navbar-text{float:left;margin-right:15px;margin-left:15px}}@media (min-width:768px){.navbar-left{float:left!important}.navbar-right{float:right!important;margin-right:-15px}.navbar-right~.navbar-right{margin-right:0}}.navbar-default{background-color:#f8f8f8;border-color:#e7e7e7}.navbar-default .navbar-brand{color:#777}.navbar-default .navbar-brand:focus,.navbar-default .navbar-brand:hover{color:#5e5e5e;background-color:transparent}.navbar-default .navbar-text{color:#777}.navbar-default .navbar-nav>li>a{color:#777}.navbar-default .navbar-nav>li>a:focus,.navbar-default .navbar-nav>li>a:hover{color:#333;background-color:transparent}.navbar-default .navbar-nav>.active>a,.navbar-default .navbar-nav>.active>a:focus,.navbar-default .navbar-nav>.active>a:hover{color:#555;background-color:#e7e7e7}.navbar-default .navbar-nav>.disabled>a,.navbar-default .navbar-nav>.disabled>a:focus,.navbar-default .navbar-nav>.disabled>a:hover{color:#ccc;background-color:transparent}.navbar-default .navbar-toggle{border-color:#ddd}.navbar-default .navbar-toggle:focus,.navbar-default .navbar-toggle:hover{background-color:#ddd}.navbar-default .navbar-toggle .icon-bar{background-color:#888}.navbar-default .navbar-collapse,.navbar-default .navbar-form{border-color:#e7e7e7}.navbar-default .navbar-nav>.open>a,.navbar-default .navbar-nav>.open>a:focus,.navbar-default .navbar-nav>.open>a:hover{color:#555;background-color:#e7e7e7}@media (max-width:767px){.navbar-default .navbar-nav .open .dropdown-menu>li>a{color:#777}.navbar-default .navbar-nav .open .dropdown-menu>li>a:focus,.navbar-default .navbar-nav .open .dropdown-menu>li>a:hover{color:#333;background-color:transparent}.navbar-default .navbar-nav .open .dropdown-menu>.active>a,.navbar-default .navbar-nav .open .dropdown-menu>.active>a:focus,.navbar-default .navbar-nav .open .dropdown-menu>.active>a:hover{color:#555;background-color:#e7e7e7}.navbar-default .navbar-nav .open .dropdown-menu>.disabled>a,.navbar-default .navbar-nav .open .dropdown-menu>.disabled>a:focus,.navbar-default .navbar-nav .open .dropdown-menu>.disabled>a:hover{color:#ccc;background-color:transparent}}.navbar-default .navbar-link{color:#777}.navbar-default .navbar-link:hover{color:#333}.navbar-default .btn-link{color:#777}.navbar-default .btn-link:focus,.navbar-default .btn-link:hover{color:#333}.navbar-default .btn-link[disabled]:focus,.navbar-default .btn-link[disabled]:hover,fieldset[disabled] .navbar-default .btn-link:focus,fieldset[disabled] .navbar-default .btn-link:hover{color:#ccc}.navbar-inverse{background-color:#222;border-color:#080808}.navbar-inverse .navbar-brand{color:#9d9d9d}.navbar-inverse .navbar-brand:focus,.navbar-inverse .navbar-brand:hover{color:#fff;background-color:transparent}.navbar-inverse .navbar-text{color:#9d9d9d}.navbar-inverse .navbar-nav>li>a{color:#9d9d9d}.navbar-inverse .navbar-nav>li>a:focus,.navbar-inverse .navbar-nav>li>a:hover{color:#fff;background-color:transparent}.navbar-inverse .navbar-nav>.active>a,.navbar-inverse .navbar-nav>.active>a:focus,.navbar-inverse .navbar-nav>.active>a:hover{color:#fff;background-color:#080808}.navbar-inverse .navbar-nav>.disabled>a,.navbar-inverse .navbar-nav>.disabled>a:focus,.navbar-inverse .navbar-nav>.disabled>a:hover{color:#444;background-color:transparent}.navbar-inverse .navbar-toggle{border-color:#333}.navbar-inverse .navbar-toggle:focus,.navbar-inverse .navbar-toggle:hover{background-color:#333}.navbar-inverse .navbar-toggle .icon-bar{background-color:#fff}.navbar-inverse .navbar-collapse,.navbar-inverse .navbar-form{border-color:#101010}.navbar-inverse .navbar-nav>.open>a,.navbar-inverse .navbar-nav>.open>a:focus,.navbar-inverse .navbar-nav>.open>a:hover{color:#fff;background-color:#080808}@media (max-width:767px){.navbar-inverse .navbar-nav .open .dropdown-menu>.dropdown-header{border-color:#080808}.navbar-inverse .navbar-nav .open .dropdown-menu .divider{background-color:#080808}.navbar-inverse .navbar-nav .open .dropdown-menu>li>a{color:#9d9d9d}.navbar-inverse .navbar-nav .open .dropdown-menu>li>a:focus,.navbar-inverse .navbar-nav .open .dropdown-menu>li>a:hover{color:#fff;background-color:transparent}.navbar-inverse .navbar-nav .open .dropdown-menu>.active>a,.navbar-inverse .navbar-nav .open .dropdown-menu>.active>a:focus,.navbar-inverse .navbar-nav .open .dropdown-menu>.active>a:hover{color:#fff;background-color:#080808}.navbar-inverse .navbar-nav .open .dropdown-menu>.disabled>a,.navbar-inverse .navbar-nav .open .dropdown-menu>.disabled>a:focus,.navbar-inverse .navbar-nav .open .dropdown-menu>.disabled>a:hover{color:#444;background-color:transparent}}.navbar-inverse .navbar-link{color:#9d9d9d}.navbar-inverse .navbar-link:hover{color:#fff}.navbar-inverse .btn-link{color:#9d9d9d}.navbar-inverse .btn-link:focus,.navbar-inverse .btn-link:hover{color:#fff}.navbar-inverse .btn-link[disabled]:focus,.navbar-inverse .btn-link[disabled]:hover,fieldset[disabled] .navbar-inverse .btn-link:focus,fieldset[disabled] .navbar-inverse .btn-link:hover{color:#444}.breadcrumb{padding:8px 15px;margin-bottom:20px;list-style:none;background-color:#f5f5f5;border-radius:4px}.breadcrumb>li{display:inline-block}.breadcrumb>li+li:before{padding:0 5px;color:#ccc;content:\"/\\A0\"}.breadcrumb>.active{color:#777}.pagination{display:inline-block;padding-left:0;margin:20px 0;border-radius:4px}.pagination>li{display:inline}.pagination>li>a,.pagination>li>span{position:relative;float:left;padding:6px 12px;margin-left:-1px;line-height:1.42857143;color:#337ab7;text-decoration:none;background-color:#fff;border:1px solid #ddd}.pagination>li:first-child>a,.pagination>li:first-child>span{margin-left:0;border-top-left-radius:4px;border-bottom-left-radius:4px}.pagination>li:last-child>a,.pagination>li:last-child>span{border-top-right-radius:4px;border-bottom-right-radius:4px}.pagination>li>a:focus,.pagination>li>a:hover,.pagination>li>span:focus,.pagination>li>span:hover{z-index:2;color:#23527c;background-color:#eee;border-color:#ddd}.pagination>.active>a,.pagination>.active>a:focus,.pagination>.active>a:hover,.pagination>.active>span,.pagination>.active>span:focus,.pagination>.active>span:hover{z-index:3;color:#fff;cursor:default;background-color:#337ab7;border-color:#337ab7}.pagination>.disabled>a,.pagination>.disabled>a:focus,.pagination>.disabled>a:hover,.pagination>.disabled>span,.pagination>.disabled>span:focus,.pagination>.disabled>span:hover{color:#777;cursor:not-allowed;background-color:#fff;border-color:#ddd}.pagination-lg>li>a,.pagination-lg>li>span{padding:10px 16px;font-size:18px;line-height:1.3333333}.pagination-lg>li:first-child>a,.pagination-lg>li:first-child>span{border-top-left-radius:6px;border-bottom-left-radius:6px}.pagination-lg>li:last-child>a,.pagination-lg>li:last-child>span{border-top-right-radius:6px;border-bottom-right-radius:6px}.pagination-sm>li>a,.pagination-sm>li>span{padding:5px 10px;font-size:12px;line-height:1.5}.pagination-sm>li:first-child>a,.pagination-sm>li:first-child>span{border-top-left-radius:3px;border-bottom-left-radius:3px}.pagination-sm>li:last-child>a,.pagination-sm>li:last-child>span{border-top-right-radius:3px;border-bottom-right-radius:3px}.pager{padding-left:0;margin:20px 0;text-align:center;list-style:none}.pager li{display:inline}.pager li>a,.pager li>span{display:inline-block;padding:5px 14px;background-color:#fff;border:1px solid #ddd;border-radius:15px}.pager li>a:focus,.pager li>a:hover{text-decoration:none;background-color:#eee}.pager .next>a,.pager .next>span{float:right}.pager .previous>a,.pager .previous>span{float:left}.pager .disabled>a,.pager .disabled>a:focus,.pager .disabled>a:hover,.pager .disabled>span{color:#777;cursor:not-allowed;background-color:#fff}.label{display:inline;padding:.2em .6em .3em;font-size:75%;font-weight:700;line-height:1;color:#fff;text-align:center;white-space:nowrap;vertical-align:baseline;border-radius:.25em}a.label:focus,a.label:hover{color:#fff;text-decoration:none;cursor:pointer}.label:empty{display:none}.btn .label{position:relative;top:-1px}.label-default{background-color:#777}.label-default[href]:focus,.label-default[href]:hover{background-color:#5e5e5e}.label-primary{background-color:#337ab7}.label-primary[href]:focus,.label-primary[href]:hover{background-color:#286090}.label-success{background-color:#5cb85c}.label-success[href]:focus,.label-success[href]:hover{background-color:#449d44}.label-info{background-color:#5bc0de}.label-info[href]:focus,.label-info[href]:hover{background-color:#31b0d5}.label-warning{background-color:#f0ad4e}.label-warning[href]:focus,.label-warning[href]:hover{background-color:#ec971f}.label-danger{background-color:#d9534f}.label-danger[href]:focus,.label-danger[href]:hover{background-color:#c9302c}.badge{display:inline-block;min-width:10px;padding:3px 7px;font-size:12px;font-weight:700;line-height:1;color:#fff;text-align:center;white-space:nowrap;vertical-align:middle;background-color:#777;border-radius:10px}.badge:empty{display:none}.btn .badge{position:relative;top:-1px}.btn-group-xs>.btn .badge,.btn-xs .badge{top:0;padding:1px 5px}a.badge:focus,a.badge:hover{color:#fff;text-decoration:none;cursor:pointer}.list-group-item.active>.badge,.nav-pills>.active>a>.badge{color:#337ab7;background-color:#fff}.list-group-item>.badge{float:right}.list-group-item>.badge+.badge{margin-right:5px}.nav-pills>li>a>.badge{margin-left:3px}.jumbotron{padding-top:30px;padding-bottom:30px;margin-bottom:30px;color:inherit;background-color:#eee}.jumbotron .h1,.jumbotron h1{color:inherit}.jumbotron p{margin-bottom:15px;font-size:21px;font-weight:200}.jumbotron>hr{border-top-color:#d5d5d5}.container .jumbotron,.container-fluid .jumbotron{padding-right:15px;padding-left:15px;border-radius:6px}.jumbotron .container{max-width:100%}@media screen and (min-width:768px){.jumbotron{padding-top:48px;padding-bottom:48px}.container .jumbotron,.container-fluid .jumbotron{padding-right:60px;padding-left:60px}.jumbotron .h1,.jumbotron h1{font-size:63px}}.thumbnail{display:block;padding:4px;margin-bottom:20px;line-height:1.42857143;background-color:#fff;border:1px solid #ddd;border-radius:4px;transition:border .2s ease-in-out}.thumbnail a>img,.thumbnail>img{margin-right:auto;margin-left:auto}a.thumbnail.active,a.thumbnail:focus,a.thumbnail:hover{border-color:#337ab7}.thumbnail .caption{padding:9px;color:#333}.alert{padding:15px;margin-bottom:20px;border:1px solid transparent;border-radius:4px}.alert h4{margin-top:0;color:inherit}.alert .alert-link{font-weight:700}.alert>p,.alert>ul{margin-bottom:0}.alert>p+p{margin-top:5px}.alert-dismissable,.alert-dismissible{padding-right:35px}.alert-dismissable .close,.alert-dismissible .close{position:relative;top:-2px;right:-21px;color:inherit}.alert-success{color:#3c763d;background-color:#dff0d8;border-color:#d6e9c6}.alert-success hr{border-top-color:#c9e2b3}.alert-success .alert-link{color:#2b542c}.alert-info{color:#31708f;background-color:#d9edf7;border-color:#bce8f1}.alert-info hr{border-top-color:#a6e1ec}.alert-info .alert-link{color:#245269}.alert-warning{color:#8a6d3b;background-color:#fcf8e3;border-color:#faebcc}.alert-warning hr{border-top-color:#f7e1b5}.alert-warning .alert-link{color:#66512c}.alert-danger{color:#a94442;background-color:#f2dede;border-color:#ebccd1}.alert-danger hr{border-top-color:#e4b9c0}.alert-danger .alert-link{color:#843534}@keyframes progress-bar-stripes{from{background-position:40px 0}to{background-position:0 0}}.progress{height:20px;margin-bottom:20px;overflow:hidden;background-color:#f5f5f5;border-radius:4px;box-shadow:inset 0 1px 2px rgba(0,0,0,.1)}.progress-bar{float:left;width:0;height:100%;font-size:12px;line-height:20px;color:#fff;text-align:center;background-color:#337ab7;box-shadow:inset 0 -1px 0 rgba(0,0,0,.15);transition:width .6s ease}.progress-bar-striped,.progress-striped .progress-bar{background-image:linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);background-size:40px 40px}.progress-bar.active,.progress.active .progress-bar{animation:progress-bar-stripes 2s linear infinite}.progress-bar-success{background-color:#5cb85c}.progress-striped .progress-bar-success{background-image:linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)}.progress-bar-info{background-color:#5bc0de}.progress-striped .progress-bar-info{background-image:linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)}.progress-bar-warning{background-color:#f0ad4e}.progress-striped .progress-bar-warning{background-image:linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)}.progress-bar-danger{background-color:#d9534f}.progress-striped .progress-bar-danger{background-image:linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)}.media{margin-top:15px}.media:first-child{margin-top:0}.media,.media-body{overflow:hidden;zoom:1}.media-body{width:10000px}.media-object{display:block}.media-object.img-thumbnail{max-width:none}.media-right,.media>.pull-right{padding-left:10px}.media-left,.media>.pull-left{padding-right:10px}.media-body,.media-left,.media-right{display:table-cell;vertical-align:top}.media-middle{vertical-align:middle}.media-bottom{vertical-align:bottom}.media-heading{margin-top:0;margin-bottom:5px}.media-list{padding-left:0;list-style:none}.list-group{padding-left:0;margin-bottom:20px}.list-group-item{position:relative;display:block;padding:10px 15px;margin-bottom:-1px;background-color:#fff;border:1px solid #ddd}.list-group-item:first-child{border-top-left-radius:4px;border-top-right-radius:4px}.list-group-item:last-child{margin-bottom:0;border-bottom-right-radius:4px;border-bottom-left-radius:4px}a.list-group-item,button.list-group-item{color:#555}a.list-group-item .list-group-item-heading,button.list-group-item .list-group-item-heading{color:#333}a.list-group-item:focus,a.list-group-item:hover,button.list-group-item:focus,button.list-group-item:hover{color:#555;text-decoration:none;background-color:#f5f5f5}button.list-group-item{width:100%;text-align:left}.list-group-item.disabled,.list-group-item.disabled:focus,.list-group-item.disabled:hover{color:#777;cursor:not-allowed;background-color:#eee}.list-group-item.disabled .list-group-item-heading,.list-group-item.disabled:focus .list-group-item-heading,.list-group-item.disabled:hover .list-group-item-heading{color:inherit}.list-group-item.disabled .list-group-item-text,.list-group-item.disabled:focus .list-group-item-text,.list-group-item.disabled:hover .list-group-item-text{color:#777}.list-group-item.active,.list-group-item.active:focus,.list-group-item.active:hover{z-index:2;color:#fff;background-color:#337ab7;border-color:#337ab7}.list-group-item.active .list-group-item-heading,.list-group-item.active .list-group-item-heading>.small,.list-group-item.active .list-group-item-heading>small,.list-group-item.active:focus .list-group-item-heading,.list-group-item.active:focus .list-group-item-heading>.small,.list-group-item.active:focus .list-group-item-heading>small,.list-group-item.active:hover .list-group-item-heading,.list-group-item.active:hover .list-group-item-heading>.small,.list-group-item.active:hover .list-group-item-heading>small{color:inherit}.list-group-item.active .list-group-item-text,.list-group-item.active:focus .list-group-item-text,.list-group-item.active:hover .list-group-item-text{color:#c7ddef}.list-group-item-success{color:#3c763d;background-color:#dff0d8}a.list-group-item-success,button.list-group-item-success{color:#3c763d}a.list-group-item-success .list-group-item-heading,button.list-group-item-success .list-group-item-heading{color:inherit}a.list-group-item-success:focus,a.list-group-item-success:hover,button.list-group-item-success:focus,button.list-group-item-success:hover{color:#3c763d;background-color:#d0e9c6}a.list-group-item-success.active,a.list-group-item-success.active:focus,a.list-group-item-success.active:hover,button.list-group-item-success.active,button.list-group-item-success.active:focus,button.list-group-item-success.active:hover{color:#fff;background-color:#3c763d;border-color:#3c763d}.list-group-item-info{color:#31708f;background-color:#d9edf7}a.list-group-item-info,button.list-group-item-info{color:#31708f}a.list-group-item-info .list-group-item-heading,button.list-group-item-info .list-group-item-heading{color:inherit}a.list-group-item-info:focus,a.list-group-item-info:hover,button.list-group-item-info:focus,button.list-group-item-info:hover{color:#31708f;background-color:#c4e3f3}a.list-group-item-info.active,a.list-group-item-info.active:focus,a.list-group-item-info.active:hover,button.list-group-item-info.active,button.list-group-item-info.active:focus,button.list-group-item-info.active:hover{color:#fff;background-color:#31708f;border-color:#31708f}.list-group-item-warning{color:#8a6d3b;background-color:#fcf8e3}a.list-group-item-warning,button.list-group-item-warning{color:#8a6d3b}a.list-group-item-warning .list-group-item-heading,button.list-group-item-warning .list-group-item-heading{color:inherit}a.list-group-item-warning:focus,a.list-group-item-warning:hover,button.list-group-item-warning:focus,button.list-group-item-warning:hover{color:#8a6d3b;background-color:#faf2cc}a.list-group-item-warning.active,a.list-group-item-warning.active:focus,a.list-group-item-warning.active:hover,button.list-group-item-warning.active,button.list-group-item-warning.active:focus,button.list-group-item-warning.active:hover{color:#fff;background-color:#8a6d3b;border-color:#8a6d3b}.list-group-item-danger{color:#a94442;background-color:#f2dede}a.list-group-item-danger,button.list-group-item-danger{color:#a94442}a.list-group-item-danger .list-group-item-heading,button.list-group-item-danger .list-group-item-heading{color:inherit}a.list-group-item-danger:focus,a.list-group-item-danger:hover,button.list-group-item-danger:focus,button.list-group-item-danger:hover{color:#a94442;background-color:#ebcccc}a.list-group-item-danger.active,a.list-group-item-danger.active:focus,a.list-group-item-danger.active:hover,button.list-group-item-danger.active,button.list-group-item-danger.active:focus,button.list-group-item-danger.active:hover{color:#fff;background-color:#a94442;border-color:#a94442}.list-group-item-heading{margin-top:0;margin-bottom:5px}.list-group-item-text{margin-bottom:0;line-height:1.3}.panel{margin-bottom:20px;background-color:#fff;border:1px solid transparent;border-radius:4px;box-shadow:0 1px 1px rgba(0,0,0,.05)}.panel-body{padding:15px}.panel-heading{padding:10px 15px;border-bottom:1px solid transparent;border-top-left-radius:3px;border-top-right-radius:3px}.panel-heading>.dropdown .dropdown-toggle{color:inherit}.panel-title{margin-top:0;margin-bottom:0;font-size:16px;color:inherit}.panel-title>.small,.panel-title>.small>a,.panel-title>a,.panel-title>small,.panel-title>small>a{color:inherit}.panel-footer{padding:10px 15px;background-color:#f5f5f5;border-top:1px solid #ddd;border-bottom-right-radius:3px;border-bottom-left-radius:3px}.panel>.list-group,.panel>.panel-collapse>.list-group{margin-bottom:0}.panel>.list-group .list-group-item,.panel>.panel-collapse>.list-group .list-group-item{border-width:1px 0;border-radius:0}.panel>.list-group:first-child .list-group-item:first-child,.panel>.panel-collapse>.list-group:first-child .list-group-item:first-child{border-top:0;border-top-left-radius:3px;border-top-right-radius:3px}.panel>.list-group:last-child .list-group-item:last-child,.panel>.panel-collapse>.list-group:last-child .list-group-item:last-child{border-bottom:0;border-bottom-right-radius:3px;border-bottom-left-radius:3px}.panel>.panel-heading+.panel-collapse>.list-group .list-group-item:first-child{border-top-left-radius:0;border-top-right-radius:0}.panel-heading+.list-group .list-group-item:first-child{border-top-width:0}.list-group+.panel-footer{border-top-width:0}.panel>.panel-collapse>.table,.panel>.table,.panel>.table-responsive>.table{margin-bottom:0}.panel>.panel-collapse>.table caption,.panel>.table caption,.panel>.table-responsive>.table caption{padding-right:15px;padding-left:15px}.panel>.table-responsive:first-child>.table:first-child,.panel>.table:first-child{border-top-left-radius:3px;border-top-right-radius:3px}.panel>.table-responsive:first-child>.table:first-child>tbody:first-child>tr:first-child,.panel>.table-responsive:first-child>.table:first-child>thead:first-child>tr:first-child,.panel>.table:first-child>tbody:first-child>tr:first-child,.panel>.table:first-child>thead:first-child>tr:first-child{border-top-left-radius:3px;border-top-right-radius:3px}.panel>.table-responsive:first-child>.table:first-child>tbody:first-child>tr:first-child td:first-child,.panel>.table-responsive:first-child>.table:first-child>tbody:first-child>tr:first-child th:first-child,.panel>.table-responsive:first-child>.table:first-child>thead:first-child>tr:first-child td:first-child,.panel>.table-responsive:first-child>.table:first-child>thead:first-child>tr:first-child th:first-child,.panel>.table:first-child>tbody:first-child>tr:first-child td:first-child,.panel>.table:first-child>tbody:first-child>tr:first-child th:first-child,.panel>.table:first-child>thead:first-child>tr:first-child td:first-child,.panel>.table:first-child>thead:first-child>tr:first-child th:first-child{border-top-left-radius:3px}.panel>.table-responsive:first-child>.table:first-child>tbody:first-child>tr:first-child td:last-child,.panel>.table-responsive:first-child>.table:first-child>tbody:first-child>tr:first-child th:last-child,.panel>.table-responsive:first-child>.table:first-child>thead:first-child>tr:first-child td:last-child,.panel>.table-responsive:first-child>.table:first-child>thead:first-child>tr:first-child th:last-child,.panel>.table:first-child>tbody:first-child>tr:first-child td:last-child,.panel>.table:first-child>tbody:first-child>tr:first-child th:last-child,.panel>.table:first-child>thead:first-child>tr:first-child td:last-child,.panel>.table:first-child>thead:first-child>tr:first-child th:last-child{border-top-right-radius:3px}.panel>.table-responsive:last-child>.table:last-child,.panel>.table:last-child{border-bottom-right-radius:3px;border-bottom-left-radius:3px}.panel>.table-responsive:last-child>.table:last-child>tbody:last-child>tr:last-child,.panel>.table-responsive:last-child>.table:last-child>tfoot:last-child>tr:last-child,.panel>.table:last-child>tbody:last-child>tr:last-child,.panel>.table:last-child>tfoot:last-child>tr:last-child{border-bottom-right-radius:3px;border-bottom-left-radius:3px}.panel>.table-responsive:last-child>.table:last-child>tbody:last-child>tr:last-child td:first-child,.panel>.table-responsive:last-child>.table:last-child>tbody:last-child>tr:last-child th:first-child,.panel>.table-responsive:last-child>.table:last-child>tfoot:last-child>tr:last-child td:first-child,.panel>.table-responsive:last-child>.table:last-child>tfoot:last-child>tr:last-child th:first-child,.panel>.table:last-child>tbody:last-child>tr:last-child td:first-child,.panel>.table:last-child>tbody:last-child>tr:last-child th:first-child,.panel>.table:last-child>tfoot:last-child>tr:last-child td:first-child,.panel>.table:last-child>tfoot:last-child>tr:last-child th:first-child{border-bottom-left-radius:3px}.panel>.table-responsive:last-child>.table:last-child>tbody:last-child>tr:last-child td:last-child,.panel>.table-responsive:last-child>.table:last-child>tbody:last-child>tr:last-child th:last-child,.panel>.table-responsive:last-child>.table:last-child>tfoot:last-child>tr:last-child td:last-child,.panel>.table-responsive:last-child>.table:last-child>tfoot:last-child>tr:last-child th:last-child,.panel>.table:last-child>tbody:last-child>tr:last-child td:last-child,.panel>.table:last-child>tbody:last-child>tr:last-child th:last-child,.panel>.table:last-child>tfoot:last-child>tr:last-child td:last-child,.panel>.table:last-child>tfoot:last-child>tr:last-child th:last-child{border-bottom-right-radius:3px}.panel>.panel-body+.table,.panel>.panel-body+.table-responsive,.panel>.table+.panel-body,.panel>.table-responsive+.panel-body{border-top:1px solid #ddd}.panel>.table>tbody:first-child>tr:first-child td,.panel>.table>tbody:first-child>tr:first-child th{border-top:0}.panel>.table-bordered,.panel>.table-responsive>.table-bordered{border:0}.panel>.table-bordered>tbody>tr>td:first-child,.panel>.table-bordered>tbody>tr>th:first-child,.panel>.table-bordered>tfoot>tr>td:first-child,.panel>.table-bordered>tfoot>tr>th:first-child,.panel>.table-bordered>thead>tr>td:first-child,.panel>.table-bordered>thead>tr>th:first-child,.panel>.table-responsive>.table-bordered>tbody>tr>td:first-child,.panel>.table-responsive>.table-bordered>tbody>tr>th:first-child,.panel>.table-responsive>.table-bordered>tfoot>tr>td:first-child,.panel>.table-responsive>.table-bordered>tfoot>tr>th:first-child,.panel>.table-responsive>.table-bordered>thead>tr>td:first-child,.panel>.table-responsive>.table-bordered>thead>tr>th:first-child{border-left:0}.panel>.table-bordered>tbody>tr>td:last-child,.panel>.table-bordered>tbody>tr>th:last-child,.panel>.table-bordered>tfoot>tr>td:last-child,.panel>.table-bordered>tfoot>tr>th:last-child,.panel>.table-bordered>thead>tr>td:last-child,.panel>.table-bordered>thead>tr>th:last-child,.panel>.table-responsive>.table-bordered>tbody>tr>td:last-child,.panel>.table-responsive>.table-bordered>tbody>tr>th:last-child,.panel>.table-responsive>.table-bordered>tfoot>tr>td:last-child,.panel>.table-responsive>.table-bordered>tfoot>tr>th:last-child,.panel>.table-responsive>.table-bordered>thead>tr>td:last-child,.panel>.table-responsive>.table-bordered>thead>tr>th:last-child{border-right:0}.panel>.table-bordered>tbody>tr:first-child>td,.panel>.table-bordered>tbody>tr:first-child>th,.panel>.table-bordered>thead>tr:first-child>td,.panel>.table-bordered>thead>tr:first-child>th,.panel>.table-responsive>.table-bordered>tbody>tr:first-child>td,.panel>.table-responsive>.table-bordered>tbody>tr:first-child>th,.panel>.table-responsive>.table-bordered>thead>tr:first-child>td,.panel>.table-responsive>.table-bordered>thead>tr:first-child>th{border-bottom:0}.panel>.table-bordered>tbody>tr:last-child>td,.panel>.table-bordered>tbody>tr:last-child>th,.panel>.table-bordered>tfoot>tr:last-child>td,.panel>.table-bordered>tfoot>tr:last-child>th,.panel>.table-responsive>.table-bordered>tbody>tr:last-child>td,.panel>.table-responsive>.table-bordered>tbody>tr:last-child>th,.panel>.table-responsive>.table-bordered>tfoot>tr:last-child>td,.panel>.table-responsive>.table-bordered>tfoot>tr:last-child>th{border-bottom:0}.panel>.table-responsive{margin-bottom:0;border:0}.panel-group{margin-bottom:20px}.panel-group .panel{margin-bottom:0;border-radius:4px}.panel-group .panel+.panel{margin-top:5px}.panel-group .panel-heading{border-bottom:0}.panel-group .panel-heading+.panel-collapse>.list-group,.panel-group .panel-heading+.panel-collapse>.panel-body{border-top:1px solid #ddd}.panel-group .panel-footer{border-top:0}.panel-group .panel-footer+.panel-collapse .panel-body{border-bottom:1px solid #ddd}.panel-default{border-color:#ddd}.panel-default>.panel-heading{color:#333;background-color:#f5f5f5;border-color:#ddd}.panel-default>.panel-heading+.panel-collapse>.panel-body{border-top-color:#ddd}.panel-default>.panel-heading .badge{color:#f5f5f5;background-color:#333}.panel-default>.panel-footer+.panel-collapse>.panel-body{border-bottom-color:#ddd}.panel-primary{border-color:#337ab7}.panel-primary>.panel-heading{color:#fff;background-color:#337ab7;border-color:#337ab7}.panel-primary>.panel-heading+.panel-collapse>.panel-body{border-top-color:#337ab7}.panel-primary>.panel-heading .badge{color:#337ab7;background-color:#fff}.panel-primary>.panel-footer+.panel-collapse>.panel-body{border-bottom-color:#337ab7}.panel-success{border-color:#d6e9c6}.panel-success>.panel-heading{color:#3c763d;background-color:#dff0d8;border-color:#d6e9c6}.panel-success>.panel-heading+.panel-collapse>.panel-body{border-top-color:#d6e9c6}.panel-success>.panel-heading .badge{color:#dff0d8;background-color:#3c763d}.panel-success>.panel-footer+.panel-collapse>.panel-body{border-bottom-color:#d6e9c6}.panel-info{border-color:#bce8f1}.panel-info>.panel-heading{color:#31708f;background-color:#d9edf7;border-color:#bce8f1}.panel-info>.panel-heading+.panel-collapse>.panel-body{border-top-color:#bce8f1}.panel-info>.panel-heading .badge{color:#d9edf7;background-color:#31708f}.panel-info>.panel-footer+.panel-collapse>.panel-body{border-bottom-color:#bce8f1}.panel-warning{border-color:#faebcc}.panel-warning>.panel-heading{color:#8a6d3b;background-color:#fcf8e3;border-color:#faebcc}.panel-warning>.panel-heading+.panel-collapse>.panel-body{border-top-color:#faebcc}.panel-warning>.panel-heading .badge{color:#fcf8e3;background-color:#8a6d3b}.panel-warning>.panel-footer+.panel-collapse>.panel-body{border-bottom-color:#faebcc}.panel-danger{border-color:#ebccd1}.panel-danger>.panel-heading{color:#a94442;background-color:#f2dede;border-color:#ebccd1}.panel-danger>.panel-heading+.panel-collapse>.panel-body{border-top-color:#ebccd1}.panel-danger>.panel-heading .badge{color:#f2dede;background-color:#a94442}.panel-danger>.panel-footer+.panel-collapse>.panel-body{border-bottom-color:#ebccd1}.embed-responsive{position:relative;display:block;height:0;padding:0;overflow:hidden}.embed-responsive .embed-responsive-item,.embed-responsive embed,.embed-responsive iframe,.embed-responsive object,.embed-responsive video{position:absolute;top:0;bottom:0;left:0;width:100%;height:100%;border:0}.embed-responsive-16by9{padding-bottom:56.25%}.embed-responsive-4by3{padding-bottom:75%}.well{min-height:20px;padding:19px;margin-bottom:20px;background-color:#f5f5f5;border:1px solid #e3e3e3;border-radius:4px;box-shadow:inset 0 1px 1px rgba(0,0,0,.05)}.well blockquote{border-color:#ddd;border-color:rgba(0,0,0,.15)}.well-lg{padding:24px;border-radius:6px}.well-sm{padding:9px;border-radius:3px}.close{float:right;font-size:21px;font-weight:700;line-height:1;color:#000;text-shadow:0 1px 0 #fff;filter:alpha(opacity=20);opacity:.2}.close:focus,.close:hover{color:#000;text-decoration:none;cursor:pointer;filter:alpha(opacity=50);opacity:.5}button.close{-webkit-appearance:none;padding:0;cursor:pointer;background:0 0;border:0}.modal-open{overflow:hidden}.modal{position:fixed;top:0;right:0;bottom:0;left:0;z-index:1050;display:none;overflow:hidden;-webkit-overflow-scrolling:touch;outline:0}.modal.fade .modal-dialog{transition:transform .3s ease-out;transform:translate(0,-25%)}.modal.in .modal-dialog{transform:translate(0,0)}.modal-open .modal{overflow-x:hidden;overflow-y:auto}.modal-dialog{position:relative;width:auto;margin:10px}.modal-content{position:relative;background-color:#fff;background-clip:padding-box;border:1px solid #999;border:1px solid rgba(0,0,0,.2);border-radius:6px;outline:0;box-shadow:0 3px 9px rgba(0,0,0,.5)}.modal-backdrop{position:fixed;top:0;right:0;bottom:0;left:0;z-index:1040;background-color:#000}.modal-backdrop.fade{filter:alpha(opacity=0);opacity:0}.modal-backdrop.in{filter:alpha(opacity=50);opacity:.5}.modal-header{padding:15px;border-bottom:1px solid #e5e5e5}.modal-header .close{margin-top:-2px}.modal-title{margin:0;line-height:1.42857143}.modal-body{position:relative;padding:15px}.modal-footer{padding:15px;text-align:right;border-top:1px solid #e5e5e5}.modal-footer .btn+.btn{margin-bottom:0;margin-left:5px}.modal-footer .btn-group .btn+.btn{margin-left:-1px}.modal-footer .btn-block+.btn-block{margin-left:0}.modal-scrollbar-measure{position:absolute;top:-9999px;width:50px;height:50px;overflow:scroll}@media (min-width:768px){.modal-dialog{width:600px;margin:30px auto}.modal-content{box-shadow:0 5px 15px rgba(0,0,0,.5)}.modal-sm{width:300px}}@media (min-width:992px){.modal-lg{width:900px}}.tooltip{position:absolute;z-index:1070;display:block;font-family:\"Helvetica Neue\",Helvetica,Arial,sans-serif;font-size:12px;font-style:normal;font-weight:400;line-height:1.42857143;text-align:left;text-align:start;text-decoration:none;text-shadow:none;text-transform:none;letter-spacing:normal;word-break:normal;word-spacing:normal;word-wrap:normal;white-space:normal;filter:alpha(opacity=0);opacity:0;line-break:auto}.tooltip.in{filter:alpha(opacity=90);opacity:.9}.tooltip.top{padding:5px 0;margin-top:-3px}.tooltip.right{padding:0 5px;margin-left:3px}.tooltip.bottom{padding:5px 0;margin-top:3px}.tooltip.left{padding:0 5px;margin-left:-3px}.tooltip-inner{max-width:200px;padding:3px 8px;color:#fff;text-align:center;background-color:#000;border-radius:4px}.tooltip-arrow{position:absolute;width:0;height:0;border-color:transparent;border-style:solid}.tooltip.top .tooltip-arrow{bottom:0;left:50%;margin-left:-5px;border-width:5px 5px 0;border-top-color:#000}.tooltip.top-left .tooltip-arrow{right:5px;bottom:0;margin-bottom:-5px;border-width:5px 5px 0;border-top-color:#000}.tooltip.top-right .tooltip-arrow{bottom:0;left:5px;margin-bottom:-5px;border-width:5px 5px 0;border-top-color:#000}.tooltip.right .tooltip-arrow{top:50%;left:0;margin-top:-5px;border-width:5px 5px 5px 0;border-right-color:#000}.tooltip.left .tooltip-arrow{top:50%;right:0;margin-top:-5px;border-width:5px 0 5px 5px;border-left-color:#000}.tooltip.bottom .tooltip-arrow{top:0;left:50%;margin-left:-5px;border-width:0 5px 5px;border-bottom-color:#000}.tooltip.bottom-left .tooltip-arrow{top:0;right:5px;margin-top:-5px;border-width:0 5px 5px;border-bottom-color:#000}.tooltip.bottom-right .tooltip-arrow{top:0;left:5px;margin-top:-5px;border-width:0 5px 5px;border-bottom-color:#000}.popover{position:absolute;top:0;left:0;z-index:1060;display:none;max-width:276px;padding:1px;font-family:\"Helvetica Neue\",Helvetica,Arial,sans-serif;font-size:14px;font-style:normal;font-weight:400;line-height:1.42857143;text-align:left;text-align:start;text-decoration:none;text-shadow:none;text-transform:none;letter-spacing:normal;word-break:normal;word-spacing:normal;word-wrap:normal;white-space:normal;background-color:#fff;background-clip:padding-box;border:1px solid #ccc;border:1px solid rgba(0,0,0,.2);border-radius:6px;box-shadow:0 5px 10px rgba(0,0,0,.2);line-break:auto}.popover.top{margin-top:-10px}.popover.right{margin-left:10px}.popover.bottom{margin-top:10px}.popover.left{margin-left:-10px}.popover-title{padding:8px 14px;margin:0;font-size:14px;background-color:#f7f7f7;border-bottom:1px solid #ebebeb;border-radius:5px 5px 0 0}.popover-content{padding:9px 14px}.popover>.arrow,.popover>.arrow:after{position:absolute;display:block;width:0;height:0;border-color:transparent;border-style:solid}.popover>.arrow{border-width:11px}.popover>.arrow:after{content:\"\";border-width:10px}.popover.top>.arrow{bottom:-11px;left:50%;margin-left:-11px;border-top-color:#999;border-top-color:rgba(0,0,0,.25);border-bottom-width:0}.popover.top>.arrow:after{bottom:1px;margin-left:-10px;content:\" \";border-top-color:#fff;border-bottom-width:0}.popover.right>.arrow{top:50%;left:-11px;margin-top:-11px;border-right-color:#999;border-right-color:rgba(0,0,0,.25);border-left-width:0}.popover.right>.arrow:after{bottom:-10px;left:1px;content:\" \";border-right-color:#fff;border-left-width:0}.popover.bottom>.arrow{top:-11px;left:50%;margin-left:-11px;border-top-width:0;border-bottom-color:#999;border-bottom-color:rgba(0,0,0,.25)}.popover.bottom>.arrow:after{top:1px;margin-left:-10px;content:\" \";border-top-width:0;border-bottom-color:#fff}.popover.left>.arrow{top:50%;right:-11px;margin-top:-11px;border-right-width:0;border-left-color:#999;border-left-color:rgba(0,0,0,.25)}.popover.left>.arrow:after{right:1px;bottom:-10px;content:\" \";border-right-width:0;border-left-color:#fff}.carousel{position:relative}.carousel-inner{position:relative;width:100%;overflow:hidden}.carousel-inner>.item{position:relative;display:none;transition:.6s ease-in-out left}.carousel-inner>.item>a>img,.carousel-inner>.item>img{line-height:1}@media all and (transform-3d), (-webkit-transform-3d){.carousel-inner>.item{transition:transform .6s ease-in-out;-webkit-backface-visibility:hidden;backface-visibility:hidden;perspective:1000px}.carousel-inner>.item.active.right,.carousel-inner>.item.next{left:0;transform:translate3d(100%,0,0)}.carousel-inner>.item.active.left,.carousel-inner>.item.prev{left:0;transform:translate3d(-100%,0,0)}.carousel-inner>.item.active,.carousel-inner>.item.next.left,.carousel-inner>.item.prev.right{left:0;transform:translate3d(0,0,0)}}.carousel-inner>.active,.carousel-inner>.next,.carousel-inner>.prev{display:block}.carousel-inner>.active{left:0}.carousel-inner>.next,.carousel-inner>.prev{position:absolute;top:0;width:100%}.carousel-inner>.next{left:100%}.carousel-inner>.prev{left:-100%}.carousel-inner>.next.left,.carousel-inner>.prev.right{left:0}.carousel-inner>.active.left{left:-100%}.carousel-inner>.active.right{left:100%}.carousel-control{position:absolute;top:0;bottom:0;left:0;width:15%;font-size:20px;color:#fff;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,.6);background-color:rgba(0,0,0,0);filter:alpha(opacity=50);opacity:.5}.carousel-control.left{background-image:linear-gradient(to right,rgba(0,0,0,.5) 0,rgba(0,0,0,.0001) 100%);filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#80000000', endColorstr='#00000000', GradientType=1);background-repeat:repeat-x}.carousel-control.right{right:0;left:auto;background-image:linear-gradient(to right,rgba(0,0,0,.0001) 0,rgba(0,0,0,.5) 100%);filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#80000000', GradientType=1);background-repeat:repeat-x}.carousel-control:focus,.carousel-control:hover{color:#fff;text-decoration:none;filter:alpha(opacity=90);outline:0;opacity:.9}.carousel-control .glyphicon-chevron-left,.carousel-control .glyphicon-chevron-right,.carousel-control .icon-next,.carousel-control .icon-prev{position:absolute;top:50%;z-index:5;display:inline-block;margin-top:-10px}.carousel-control .glyphicon-chevron-left,.carousel-control .icon-prev{left:50%;margin-left:-10px}.carousel-control .glyphicon-chevron-right,.carousel-control .icon-next{right:50%;margin-right:-10px}.carousel-control .icon-next,.carousel-control .icon-prev{width:20px;height:20px;font-family:serif;line-height:1}.carousel-control .icon-prev:before{content:'\\2039'}.carousel-control .icon-next:before{content:'\\203A'}.carousel-indicators{position:absolute;bottom:10px;left:50%;z-index:15;width:60%;padding-left:0;margin-left:-30%;text-align:center;list-style:none}.carousel-indicators li{display:inline-block;width:10px;height:10px;margin:1px;text-indent:-999px;cursor:pointer;background-color:#000\\9;background-color:rgba(0,0,0,0);border:1px solid #fff;border-radius:10px}.carousel-indicators .active{width:12px;height:12px;margin:0;background-color:#fff}.carousel-caption{position:absolute;right:15%;bottom:20px;left:15%;z-index:10;padding-top:20px;padding-bottom:20px;color:#fff;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,.6)}.carousel-caption .btn{text-shadow:none}@media screen and (min-width:768px){.carousel-control .glyphicon-chevron-left,.carousel-control .glyphicon-chevron-right,.carousel-control .icon-next,.carousel-control .icon-prev{width:30px;height:30px;margin-top:-10px;font-size:30px}.carousel-control .glyphicon-chevron-left,.carousel-control .icon-prev{margin-left:-10px}.carousel-control .glyphicon-chevron-right,.carousel-control .icon-next{margin-right:-10px}.carousel-caption{right:20%;left:20%;padding-bottom:30px}.carousel-indicators{bottom:20px}}.btn-group-vertical>.btn-group:after,.btn-group-vertical>.btn-group:before,.btn-toolbar:after,.btn-toolbar:before,.clearfix:after,.clearfix:before,.container-fluid:after,.container-fluid:before,.container:after,.container:before,.dl-horizontal dd:after,.dl-horizontal dd:before,.form-horizontal .form-group:after,.form-horizontal .form-group:before,.modal-footer:after,.modal-footer:before,.modal-header:after,.modal-header:before,.nav:after,.nav:before,.navbar-collapse:after,.navbar-collapse:before,.navbar-header:after,.navbar-header:before,.navbar:after,.navbar:before,.pager:after,.pager:before,.panel-body:after,.panel-body:before,.row:after,.row:before{display:table;content:\" \"}.btn-group-vertical>.btn-group:after,.btn-toolbar:after,.clearfix:after,.container-fluid:after,.container:after,.dl-horizontal dd:after,.form-horizontal .form-group:after,.modal-footer:after,.modal-header:after,.nav:after,.navbar-collapse:after,.navbar-header:after,.navbar:after,.pager:after,.panel-body:after,.row:after{clear:both}.center-block{display:block;margin-right:auto;margin-left:auto}.pull-right{float:right!important}.pull-left{float:left!important}.hide{display:none!important}.show{display:block!important}.invisible{visibility:hidden}.text-hide{font:0/0 a;color:transparent;text-shadow:none;background-color:transparent;border:0}.hidden{display:none!important}.affix{position:fixed}.visible-lg,.visible-md,.visible-sm,.visible-xs{display:none!important}.visible-lg-block,.visible-lg-inline,.visible-lg-inline-block,.visible-md-block,.visible-md-inline,.visible-md-inline-block,.visible-sm-block,.visible-sm-inline,.visible-sm-inline-block,.visible-xs-block,.visible-xs-inline,.visible-xs-inline-block{display:none!important}@media (max-width:767px){.visible-xs{display:block!important}table.visible-xs{display:table!important}tr.visible-xs{display:table-row!important}td.visible-xs,th.visible-xs{display:table-cell!important}}@media (max-width:767px){.visible-xs-block{display:block!important}}@media (max-width:767px){.visible-xs-inline{display:inline!important}}@media (max-width:767px){.visible-xs-inline-block{display:inline-block!important}}@media (min-width:768px) and (max-width:991px){.visible-sm{display:block!important}table.visible-sm{display:table!important}tr.visible-sm{display:table-row!important}td.visible-sm,th.visible-sm{display:table-cell!important}}@media (min-width:768px) and (max-width:991px){.visible-sm-block{display:block!important}}@media (min-width:768px) and (max-width:991px){.visible-sm-inline{display:inline!important}}@media (min-width:768px) and (max-width:991px){.visible-sm-inline-block{display:inline-block!important}}@media (min-width:992px) and (max-width:1199px){.visible-md{display:block!important}table.visible-md{display:table!important}tr.visible-md{display:table-row!important}td.visible-md,th.visible-md{display:table-cell!important}}@media (min-width:992px) and (max-width:1199px){.visible-md-block{display:block!important}}@media (min-width:992px) and (max-width:1199px){.visible-md-inline{display:inline!important}}@media (min-width:992px) and (max-width:1199px){.visible-md-inline-block{display:inline-block!important}}@media (min-width:1200px){.visible-lg{display:block!important}table.visible-lg{display:table!important}tr.visible-lg{display:table-row!important}td.visible-lg,th.visible-lg{display:table-cell!important}}@media (min-width:1200px){.visible-lg-block{display:block!important}}@media (min-width:1200px){.visible-lg-inline{display:inline!important}}@media (min-width:1200px){.visible-lg-inline-block{display:inline-block!important}}@media (max-width:767px){.hidden-xs{display:none!important}}@media (min-width:768px) and (max-width:991px){.hidden-sm{display:none!important}}@media (min-width:992px) and (max-width:1199px){.hidden-md{display:none!important}}@media (min-width:1200px){.hidden-lg{display:none!important}}.visible-print{display:none!important}@media print{.visible-print{display:block!important}table.visible-print{display:table!important}tr.visible-print{display:table-row!important}td.visible-print,th.visible-print{display:table-cell!important}}.visible-print-block{display:none!important}@media print{.visible-print-block{display:block!important}}.visible-print-inline{display:none!important}@media print{.visible-print-inline{display:inline!important}}.visible-print-inline-block{display:none!important}@media print{.visible-print-inline-block{display:inline-block!important}}@media print{.hidden-print{display:none!important}}/*# sourceMappingURL=bootstrap.min.css.map */", ""]);
+exports.push([module.i, "/*!\n * Bootstrap v3.3.7 (http://getbootstrap.com)\n * Copyright 2011-2016 Twitter, Inc.\n * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)\n *//*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */html{font-family:sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}body{margin:0}article,aside,details,figcaption,figure,footer,header,hgroup,main,menu,nav,section,summary{display:block}audio,canvas,progress,video{display:inline-block;vertical-align:baseline}audio:not([controls]){display:none;height:0}[hidden],template{display:none}a{background-color:transparent}a:active,a:hover{outline:0}abbr[title]{border-bottom:1px dotted}b,strong{font-weight:700}dfn{font-style:italic}h1{margin:.67em 0;font-size:2em}mark{color:#000;background:#ff0}small{font-size:80%}sub,sup{position:relative;font-size:75%;line-height:0;vertical-align:baseline}sup{top:-.5em}sub{bottom:-.25em}img{border:0}svg:not(:root){overflow:hidden}figure{margin:1em 40px}hr{height:0;box-sizing:content-box}pre{overflow:auto}code,kbd,pre,samp{font-family:monospace,monospace;font-size:1em}button,input,optgroup,select,textarea{margin:0;font:inherit;color:inherit}button{overflow:visible}button,select{text-transform:none}button,html input[type=button],input[type=reset],input[type=submit]{-webkit-appearance:button;cursor:pointer}button[disabled],html input[disabled]{cursor:default}button::-moz-focus-inner,input::-moz-focus-inner{padding:0;border:0}input{line-height:normal}input[type=checkbox],input[type=radio]{box-sizing:border-box;padding:0}input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{height:auto}input[type=search]{box-sizing:content-box;-webkit-appearance:textfield}input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-search-decoration{-webkit-appearance:none}fieldset{padding:.35em .625em .75em;margin:0 2px;border:1px solid silver}legend{padding:0;border:0}textarea{overflow:auto}optgroup{font-weight:700}table{border-spacing:0;border-collapse:collapse}td,th{padding:0}/*! Source: https://github.com/h5bp/html5-boilerplate/blob/master/src/css/main.css */@media print{*,:after,:before{color:#000!important;text-shadow:none!important;background:0 0!important;box-shadow:none!important}a,a:visited{text-decoration:underline}a[href]:after{content:\" (\" attr(href) \")\"}abbr[title]:after{content:\" (\" attr(title) \")\"}a[href^=\"javascript:\"]:after,a[href^=\"#\"]:after{content:\"\"}blockquote,pre{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}img,tr{page-break-inside:avoid}img{max-width:100%!important}h2,h3,p{orphans:3;widows:3}h2,h3{page-break-after:avoid}.navbar{display:none}.btn>.caret,.dropup>.btn>.caret{border-top-color:#000!important}.label{border:1px solid #000}.table{border-collapse:collapse!important}.table td,.table th{background-color:#fff!important}.table-bordered td,.table-bordered th{border:1px solid #ddd!important}}@font-face{font-family:'Glyphicons Halflings';src:url(" + __webpack_require__(/*! ../fonts/glyphicons-halflings-regular.eot */ 26) + ");src:url(" + __webpack_require__(/*! ../fonts/glyphicons-halflings-regular.eot */ 26) + "?#iefix) format('embedded-opentype'),url(" + __webpack_require__(/*! ../fonts/glyphicons-halflings-regular.woff2 */ 126) + ") format('woff2'),url(" + __webpack_require__(/*! ../fonts/glyphicons-halflings-regular.woff */ 125) + ") format('woff'),url(" + __webpack_require__(/*! ../fonts/glyphicons-halflings-regular.ttf */ 82) + ") format('truetype'),url(" + __webpack_require__(/*! ../fonts/glyphicons-halflings-regular.svg */ 81) + "#glyphicons_halflingsregular) format('svg')}.glyphicon{position:relative;top:1px;display:inline-block;font-family:'Glyphicons Halflings';font-style:normal;font-weight:400;line-height:1;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.glyphicon-asterisk:before{content:\"*\"}.glyphicon-plus:before{content:\"+\"}.glyphicon-eur:before,.glyphicon-euro:before{content:\"\\20AC\"}.glyphicon-minus:before{content:\"\\2212\"}.glyphicon-cloud:before{content:\"\\2601\"}.glyphicon-envelope:before{content:\"\\2709\"}.glyphicon-pencil:before{content:\"\\270F\"}.glyphicon-glass:before{content:\"\\E001\"}.glyphicon-music:before{content:\"\\E002\"}.glyphicon-search:before{content:\"\\E003\"}.glyphicon-heart:before{content:\"\\E005\"}.glyphicon-star:before{content:\"\\E006\"}.glyphicon-star-empty:before{content:\"\\E007\"}.glyphicon-user:before{content:\"\\E008\"}.glyphicon-film:before{content:\"\\E009\"}.glyphicon-th-large:before{content:\"\\E010\"}.glyphicon-th:before{content:\"\\E011\"}.glyphicon-th-list:before{content:\"\\E012\"}.glyphicon-ok:before{content:\"\\E013\"}.glyphicon-remove:before{content:\"\\E014\"}.glyphicon-zoom-in:before{content:\"\\E015\"}.glyphicon-zoom-out:before{content:\"\\E016\"}.glyphicon-off:before{content:\"\\E017\"}.glyphicon-signal:before{content:\"\\E018\"}.glyphicon-cog:before{content:\"\\E019\"}.glyphicon-trash:before{content:\"\\E020\"}.glyphicon-home:before{content:\"\\E021\"}.glyphicon-file:before{content:\"\\E022\"}.glyphicon-time:before{content:\"\\E023\"}.glyphicon-road:before{content:\"\\E024\"}.glyphicon-download-alt:before{content:\"\\E025\"}.glyphicon-download:before{content:\"\\E026\"}.glyphicon-upload:before{content:\"\\E027\"}.glyphicon-inbox:before{content:\"\\E028\"}.glyphicon-play-circle:before{content:\"\\E029\"}.glyphicon-repeat:before{content:\"\\E030\"}.glyphicon-refresh:before{content:\"\\E031\"}.glyphicon-list-alt:before{content:\"\\E032\"}.glyphicon-lock:before{content:\"\\E033\"}.glyphicon-flag:before{content:\"\\E034\"}.glyphicon-headphones:before{content:\"\\E035\"}.glyphicon-volume-off:before{content:\"\\E036\"}.glyphicon-volume-down:before{content:\"\\E037\"}.glyphicon-volume-up:before{content:\"\\E038\"}.glyphicon-qrcode:before{content:\"\\E039\"}.glyphicon-barcode:before{content:\"\\E040\"}.glyphicon-tag:before{content:\"\\E041\"}.glyphicon-tags:before{content:\"\\E042\"}.glyphicon-book:before{content:\"\\E043\"}.glyphicon-bookmark:before{content:\"\\E044\"}.glyphicon-print:before{content:\"\\E045\"}.glyphicon-camera:before{content:\"\\E046\"}.glyphicon-font:before{content:\"\\E047\"}.glyphicon-bold:before{content:\"\\E048\"}.glyphicon-italic:before{content:\"\\E049\"}.glyphicon-text-height:before{content:\"\\E050\"}.glyphicon-text-width:before{content:\"\\E051\"}.glyphicon-align-left:before{content:\"\\E052\"}.glyphicon-align-center:before{content:\"\\E053\"}.glyphicon-align-right:before{content:\"\\E054\"}.glyphicon-align-justify:before{content:\"\\E055\"}.glyphicon-list:before{content:\"\\E056\"}.glyphicon-indent-left:before{content:\"\\E057\"}.glyphicon-indent-right:before{content:\"\\E058\"}.glyphicon-facetime-video:before{content:\"\\E059\"}.glyphicon-picture:before{content:\"\\E060\"}.glyphicon-map-marker:before{content:\"\\E062\"}.glyphicon-adjust:before{content:\"\\E063\"}.glyphicon-tint:before{content:\"\\E064\"}.glyphicon-edit:before{content:\"\\E065\"}.glyphicon-share:before{content:\"\\E066\"}.glyphicon-check:before{content:\"\\E067\"}.glyphicon-move:before{content:\"\\E068\"}.glyphicon-step-backward:before{content:\"\\E069\"}.glyphicon-fast-backward:before{content:\"\\E070\"}.glyphicon-backward:before{content:\"\\E071\"}.glyphicon-play:before{content:\"\\E072\"}.glyphicon-pause:before{content:\"\\E073\"}.glyphicon-stop:before{content:\"\\E074\"}.glyphicon-forward:before{content:\"\\E075\"}.glyphicon-fast-forward:before{content:\"\\E076\"}.glyphicon-step-forward:before{content:\"\\E077\"}.glyphicon-eject:before{content:\"\\E078\"}.glyphicon-chevron-left:before{content:\"\\E079\"}.glyphicon-chevron-right:before{content:\"\\E080\"}.glyphicon-plus-sign:before{content:\"\\E081\"}.glyphicon-minus-sign:before{content:\"\\E082\"}.glyphicon-remove-sign:before{content:\"\\E083\"}.glyphicon-ok-sign:before{content:\"\\E084\"}.glyphicon-question-sign:before{content:\"\\E085\"}.glyphicon-info-sign:before{content:\"\\E086\"}.glyphicon-screenshot:before{content:\"\\E087\"}.glyphicon-remove-circle:before{content:\"\\E088\"}.glyphicon-ok-circle:before{content:\"\\E089\"}.glyphicon-ban-circle:before{content:\"\\E090\"}.glyphicon-arrow-left:before{content:\"\\E091\"}.glyphicon-arrow-right:before{content:\"\\E092\"}.glyphicon-arrow-up:before{content:\"\\E093\"}.glyphicon-arrow-down:before{content:\"\\E094\"}.glyphicon-share-alt:before{content:\"\\E095\"}.glyphicon-resize-full:before{content:\"\\E096\"}.glyphicon-resize-small:before{content:\"\\E097\"}.glyphicon-exclamation-sign:before{content:\"\\E101\"}.glyphicon-gift:before{content:\"\\E102\"}.glyphicon-leaf:before{content:\"\\E103\"}.glyphicon-fire:before{content:\"\\E104\"}.glyphicon-eye-open:before{content:\"\\E105\"}.glyphicon-eye-close:before{content:\"\\E106\"}.glyphicon-warning-sign:before{content:\"\\E107\"}.glyphicon-plane:before{content:\"\\E108\"}.glyphicon-calendar:before{content:\"\\E109\"}.glyphicon-random:before{content:\"\\E110\"}.glyphicon-comment:before{content:\"\\E111\"}.glyphicon-magnet:before{content:\"\\E112\"}.glyphicon-chevron-up:before{content:\"\\E113\"}.glyphicon-chevron-down:before{content:\"\\E114\"}.glyphicon-retweet:before{content:\"\\E115\"}.glyphicon-shopping-cart:before{content:\"\\E116\"}.glyphicon-folder-close:before{content:\"\\E117\"}.glyphicon-folder-open:before{content:\"\\E118\"}.glyphicon-resize-vertical:before{content:\"\\E119\"}.glyphicon-resize-horizontal:before{content:\"\\E120\"}.glyphicon-hdd:before{content:\"\\E121\"}.glyphicon-bullhorn:before{content:\"\\E122\"}.glyphicon-bell:before{content:\"\\E123\"}.glyphicon-certificate:before{content:\"\\E124\"}.glyphicon-thumbs-up:before{content:\"\\E125\"}.glyphicon-thumbs-down:before{content:\"\\E126\"}.glyphicon-hand-right:before{content:\"\\E127\"}.glyphicon-hand-left:before{content:\"\\E128\"}.glyphicon-hand-up:before{content:\"\\E129\"}.glyphicon-hand-down:before{content:\"\\E130\"}.glyphicon-circle-arrow-right:before{content:\"\\E131\"}.glyphicon-circle-arrow-left:before{content:\"\\E132\"}.glyphicon-circle-arrow-up:before{content:\"\\E133\"}.glyphicon-circle-arrow-down:before{content:\"\\E134\"}.glyphicon-globe:before{content:\"\\E135\"}.glyphicon-wrench:before{content:\"\\E136\"}.glyphicon-tasks:before{content:\"\\E137\"}.glyphicon-filter:before{content:\"\\E138\"}.glyphicon-briefcase:before{content:\"\\E139\"}.glyphicon-fullscreen:before{content:\"\\E140\"}.glyphicon-dashboard:before{content:\"\\E141\"}.glyphicon-paperclip:before{content:\"\\E142\"}.glyphicon-heart-empty:before{content:\"\\E143\"}.glyphicon-link:before{content:\"\\E144\"}.glyphicon-phone:before{content:\"\\E145\"}.glyphicon-pushpin:before{content:\"\\E146\"}.glyphicon-usd:before{content:\"\\E148\"}.glyphicon-gbp:before{content:\"\\E149\"}.glyphicon-sort:before{content:\"\\E150\"}.glyphicon-sort-by-alphabet:before{content:\"\\E151\"}.glyphicon-sort-by-alphabet-alt:before{content:\"\\E152\"}.glyphicon-sort-by-order:before{content:\"\\E153\"}.glyphicon-sort-by-order-alt:before{content:\"\\E154\"}.glyphicon-sort-by-attributes:before{content:\"\\E155\"}.glyphicon-sort-by-attributes-alt:before{content:\"\\E156\"}.glyphicon-unchecked:before{content:\"\\E157\"}.glyphicon-expand:before{content:\"\\E158\"}.glyphicon-collapse-down:before{content:\"\\E159\"}.glyphicon-collapse-up:before{content:\"\\E160\"}.glyphicon-log-in:before{content:\"\\E161\"}.glyphicon-flash:before{content:\"\\E162\"}.glyphicon-log-out:before{content:\"\\E163\"}.glyphicon-new-window:before{content:\"\\E164\"}.glyphicon-record:before{content:\"\\E165\"}.glyphicon-save:before{content:\"\\E166\"}.glyphicon-open:before{content:\"\\E167\"}.glyphicon-saved:before{content:\"\\E168\"}.glyphicon-import:before{content:\"\\E169\"}.glyphicon-export:before{content:\"\\E170\"}.glyphicon-send:before{content:\"\\E171\"}.glyphicon-floppy-disk:before{content:\"\\E172\"}.glyphicon-floppy-saved:before{content:\"\\E173\"}.glyphicon-floppy-remove:before{content:\"\\E174\"}.glyphicon-floppy-save:before{content:\"\\E175\"}.glyphicon-floppy-open:before{content:\"\\E176\"}.glyphicon-credit-card:before{content:\"\\E177\"}.glyphicon-transfer:before{content:\"\\E178\"}.glyphicon-cutlery:before{content:\"\\E179\"}.glyphicon-header:before{content:\"\\E180\"}.glyphicon-compressed:before{content:\"\\E181\"}.glyphicon-earphone:before{content:\"\\E182\"}.glyphicon-phone-alt:before{content:\"\\E183\"}.glyphicon-tower:before{content:\"\\E184\"}.glyphicon-stats:before{content:\"\\E185\"}.glyphicon-sd-video:before{content:\"\\E186\"}.glyphicon-hd-video:before{content:\"\\E187\"}.glyphicon-subtitles:before{content:\"\\E188\"}.glyphicon-sound-stereo:before{content:\"\\E189\"}.glyphicon-sound-dolby:before{content:\"\\E190\"}.glyphicon-sound-5-1:before{content:\"\\E191\"}.glyphicon-sound-6-1:before{content:\"\\E192\"}.glyphicon-sound-7-1:before{content:\"\\E193\"}.glyphicon-copyright-mark:before{content:\"\\E194\"}.glyphicon-registration-mark:before{content:\"\\E195\"}.glyphicon-cloud-download:before{content:\"\\E197\"}.glyphicon-cloud-upload:before{content:\"\\E198\"}.glyphicon-tree-conifer:before{content:\"\\E199\"}.glyphicon-tree-deciduous:before{content:\"\\E200\"}.glyphicon-cd:before{content:\"\\E201\"}.glyphicon-save-file:before{content:\"\\E202\"}.glyphicon-open-file:before{content:\"\\E203\"}.glyphicon-level-up:before{content:\"\\E204\"}.glyphicon-copy:before{content:\"\\E205\"}.glyphicon-paste:before{content:\"\\E206\"}.glyphicon-alert:before{content:\"\\E209\"}.glyphicon-equalizer:before{content:\"\\E210\"}.glyphicon-king:before{content:\"\\E211\"}.glyphicon-queen:before{content:\"\\E212\"}.glyphicon-pawn:before{content:\"\\E213\"}.glyphicon-bishop:before{content:\"\\E214\"}.glyphicon-knight:before{content:\"\\E215\"}.glyphicon-baby-formula:before{content:\"\\E216\"}.glyphicon-tent:before{content:\"\\26FA\"}.glyphicon-blackboard:before{content:\"\\E218\"}.glyphicon-bed:before{content:\"\\E219\"}.glyphicon-apple:before{content:\"\\F8FF\"}.glyphicon-erase:before{content:\"\\E221\"}.glyphicon-hourglass:before{content:\"\\231B\"}.glyphicon-lamp:before{content:\"\\E223\"}.glyphicon-duplicate:before{content:\"\\E224\"}.glyphicon-piggy-bank:before{content:\"\\E225\"}.glyphicon-scissors:before{content:\"\\E226\"}.glyphicon-bitcoin:before{content:\"\\E227\"}.glyphicon-btc:before{content:\"\\E227\"}.glyphicon-xbt:before{content:\"\\E227\"}.glyphicon-yen:before{content:\"\\A5\"}.glyphicon-jpy:before{content:\"\\A5\"}.glyphicon-ruble:before{content:\"\\20BD\"}.glyphicon-rub:before{content:\"\\20BD\"}.glyphicon-scale:before{content:\"\\E230\"}.glyphicon-ice-lolly:before{content:\"\\E231\"}.glyphicon-ice-lolly-tasted:before{content:\"\\E232\"}.glyphicon-education:before{content:\"\\E233\"}.glyphicon-option-horizontal:before{content:\"\\E234\"}.glyphicon-option-vertical:before{content:\"\\E235\"}.glyphicon-menu-hamburger:before{content:\"\\E236\"}.glyphicon-modal-window:before{content:\"\\E237\"}.glyphicon-oil:before{content:\"\\E238\"}.glyphicon-grain:before{content:\"\\E239\"}.glyphicon-sunglasses:before{content:\"\\E240\"}.glyphicon-text-size:before{content:\"\\E241\"}.glyphicon-text-color:before{content:\"\\E242\"}.glyphicon-text-background:before{content:\"\\E243\"}.glyphicon-object-align-top:before{content:\"\\E244\"}.glyphicon-object-align-bottom:before{content:\"\\E245\"}.glyphicon-object-align-horizontal:before{content:\"\\E246\"}.glyphicon-object-align-left:before{content:\"\\E247\"}.glyphicon-object-align-vertical:before{content:\"\\E248\"}.glyphicon-object-align-right:before{content:\"\\E249\"}.glyphicon-triangle-right:before{content:\"\\E250\"}.glyphicon-triangle-left:before{content:\"\\E251\"}.glyphicon-triangle-bottom:before{content:\"\\E252\"}.glyphicon-triangle-top:before{content:\"\\E253\"}.glyphicon-console:before{content:\"\\E254\"}.glyphicon-superscript:before{content:\"\\E255\"}.glyphicon-subscript:before{content:\"\\E256\"}.glyphicon-menu-left:before{content:\"\\E257\"}.glyphicon-menu-right:before{content:\"\\E258\"}.glyphicon-menu-down:before{content:\"\\E259\"}.glyphicon-menu-up:before{content:\"\\E260\"}*{box-sizing:border-box}:after,:before{box-sizing:border-box}html{font-size:10px;-webkit-tap-highlight-color:rgba(0,0,0,0)}body{font-family:\"Helvetica Neue\",Helvetica,Arial,sans-serif;font-size:14px;line-height:1.42857143;color:#333;background-color:#fff}button,input,select,textarea{font-family:inherit;font-size:inherit;line-height:inherit}a{color:#337ab7;text-decoration:none}a:focus,a:hover{color:#23527c;text-decoration:underline}a:focus{outline:5px auto -webkit-focus-ring-color;outline-offset:-2px}figure{margin:0}img{vertical-align:middle}.carousel-inner>.item>a>img,.carousel-inner>.item>img,.img-responsive,.thumbnail a>img,.thumbnail>img{display:block;max-width:100%;height:auto}.img-rounded{border-radius:6px}.img-thumbnail{display:inline-block;max-width:100%;height:auto;padding:4px;line-height:1.42857143;background-color:#fff;border:1px solid #ddd;border-radius:4px;transition:all .2s ease-in-out}.img-circle{border-radius:50%}hr{margin-top:20px;margin-bottom:20px;border:0;border-top:1px solid #eee}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}.sr-only-focusable:active,.sr-only-focusable:focus{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}[role=button]{cursor:pointer}.h1,.h2,.h3,.h4,.h5,.h6,h1,h2,h3,h4,h5,h6{font-family:inherit;font-weight:500;line-height:1.1;color:inherit}.h1 .small,.h1 small,.h2 .small,.h2 small,.h3 .small,.h3 small,.h4 .small,.h4 small,.h5 .small,.h5 small,.h6 .small,.h6 small,h1 .small,h1 small,h2 .small,h2 small,h3 .small,h3 small,h4 .small,h4 small,h5 .small,h5 small,h6 .small,h6 small{font-weight:400;line-height:1;color:#777}.h1,.h2,.h3,h1,h2,h3{margin-top:20px;margin-bottom:10px}.h1 .small,.h1 small,.h2 .small,.h2 small,.h3 .small,.h3 small,h1 .small,h1 small,h2 .small,h2 small,h3 .small,h3 small{font-size:65%}.h4,.h5,.h6,h4,h5,h6{margin-top:10px;margin-bottom:10px}.h4 .small,.h4 small,.h5 .small,.h5 small,.h6 .small,.h6 small,h4 .small,h4 small,h5 .small,h5 small,h6 .small,h6 small{font-size:75%}.h1,h1{font-size:36px}.h2,h2{font-size:30px}.h3,h3{font-size:24px}.h4,h4{font-size:18px}.h5,h5{font-size:14px}.h6,h6{font-size:12px}p{margin:0 0 10px}.lead{margin-bottom:20px;font-size:16px;font-weight:300;line-height:1.4}@media (min-width:768px){.lead{font-size:21px}}.small,small{font-size:85%}.mark,mark{padding:.2em;background-color:#fcf8e3}.text-left{text-align:left}.text-right{text-align:right}.text-center{text-align:center}.text-justify{text-align:justify}.text-nowrap{white-space:nowrap}.text-lowercase{text-transform:lowercase}.text-uppercase{text-transform:uppercase}.text-capitalize{text-transform:capitalize}.text-muted{color:#777}.text-primary{color:#337ab7}a.text-primary:focus,a.text-primary:hover{color:#286090}.text-success{color:#3c763d}a.text-success:focus,a.text-success:hover{color:#2b542c}.text-info{color:#31708f}a.text-info:focus,a.text-info:hover{color:#245269}.text-warning{color:#8a6d3b}a.text-warning:focus,a.text-warning:hover{color:#66512c}.text-danger{color:#a94442}a.text-danger:focus,a.text-danger:hover{color:#843534}.bg-primary{color:#fff;background-color:#337ab7}a.bg-primary:focus,a.bg-primary:hover{background-color:#286090}.bg-success{background-color:#dff0d8}a.bg-success:focus,a.bg-success:hover{background-color:#c1e2b3}.bg-info{background-color:#d9edf7}a.bg-info:focus,a.bg-info:hover{background-color:#afd9ee}.bg-warning{background-color:#fcf8e3}a.bg-warning:focus,a.bg-warning:hover{background-color:#f7ecb5}.bg-danger{background-color:#f2dede}a.bg-danger:focus,a.bg-danger:hover{background-color:#e4b9b9}.page-header{padding-bottom:9px;margin:40px 0 20px;border-bottom:1px solid #eee}ol,ul{margin-top:0;margin-bottom:10px}ol ol,ol ul,ul ol,ul ul{margin-bottom:0}.list-unstyled{padding-left:0;list-style:none}.list-inline{padding-left:0;margin-left:-5px;list-style:none}.list-inline>li{display:inline-block;padding-right:5px;padding-left:5px}dl{margin-top:0;margin-bottom:20px}dd,dt{line-height:1.42857143}dt{font-weight:700}dd{margin-left:0}@media (min-width:768px){.dl-horizontal dt{float:left;width:160px;overflow:hidden;clear:left;text-align:right;text-overflow:ellipsis;white-space:nowrap}.dl-horizontal dd{margin-left:180px}}abbr[data-original-title],abbr[title]{cursor:help;border-bottom:1px dotted #777}.initialism{font-size:90%;text-transform:uppercase}blockquote{padding:10px 20px;margin:0 0 20px;font-size:17.5px;border-left:5px solid #eee}blockquote ol:last-child,blockquote p:last-child,blockquote ul:last-child{margin-bottom:0}blockquote .small,blockquote footer,blockquote small{display:block;font-size:80%;line-height:1.42857143;color:#777}blockquote .small:before,blockquote footer:before,blockquote small:before{content:'\\2014   \\A0'}.blockquote-reverse,blockquote.pull-right{padding-right:15px;padding-left:0;text-align:right;border-right:5px solid #eee;border-left:0}.blockquote-reverse .small:before,.blockquote-reverse footer:before,.blockquote-reverse small:before,blockquote.pull-right .small:before,blockquote.pull-right footer:before,blockquote.pull-right small:before{content:''}.blockquote-reverse .small:after,.blockquote-reverse footer:after,.blockquote-reverse small:after,blockquote.pull-right .small:after,blockquote.pull-right footer:after,blockquote.pull-right small:after{content:'\\A0   \\2014'}address{margin-bottom:20px;font-style:normal;line-height:1.42857143}code,kbd,pre,samp{font-family:Menlo,Monaco,Consolas,\"Courier New\",monospace}code{padding:2px 4px;font-size:90%;color:#c7254e;background-color:#f9f2f4;border-radius:4px}kbd{padding:2px 4px;font-size:90%;color:#fff;background-color:#333;border-radius:3px;box-shadow:inset 0 -1px 0 rgba(0,0,0,.25)}kbd kbd{padding:0;font-size:100%;font-weight:700;box-shadow:none}pre{display:block;padding:9.5px;margin:0 0 10px;font-size:13px;line-height:1.42857143;color:#333;word-break:break-all;word-wrap:break-word;background-color:#f5f5f5;border:1px solid #ccc;border-radius:4px}pre code{padding:0;font-size:inherit;color:inherit;white-space:pre-wrap;background-color:transparent;border-radius:0}.pre-scrollable{max-height:340px;overflow-y:scroll}.container{padding-right:15px;padding-left:15px;margin-right:auto;margin-left:auto}@media (min-width:768px){.container{width:750px}}@media (min-width:992px){.container{width:970px}}@media (min-width:1200px){.container{width:1170px}}.container-fluid{padding-right:15px;padding-left:15px;margin-right:auto;margin-left:auto}.row{margin-right:-15px;margin-left:-15px}.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9{position:relative;min-height:1px;padding-right:15px;padding-left:15px}.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9{float:left}.col-xs-12{width:100%}.col-xs-11{width:91.66666667%}.col-xs-10{width:83.33333333%}.col-xs-9{width:75%}.col-xs-8{width:66.66666667%}.col-xs-7{width:58.33333333%}.col-xs-6{width:50%}.col-xs-5{width:41.66666667%}.col-xs-4{width:33.33333333%}.col-xs-3{width:25%}.col-xs-2{width:16.66666667%}.col-xs-1{width:8.33333333%}.col-xs-pull-12{right:100%}.col-xs-pull-11{right:91.66666667%}.col-xs-pull-10{right:83.33333333%}.col-xs-pull-9{right:75%}.col-xs-pull-8{right:66.66666667%}.col-xs-pull-7{right:58.33333333%}.col-xs-pull-6{right:50%}.col-xs-pull-5{right:41.66666667%}.col-xs-pull-4{right:33.33333333%}.col-xs-pull-3{right:25%}.col-xs-pull-2{right:16.66666667%}.col-xs-pull-1{right:8.33333333%}.col-xs-pull-0{right:auto}.col-xs-push-12{left:100%}.col-xs-push-11{left:91.66666667%}.col-xs-push-10{left:83.33333333%}.col-xs-push-9{left:75%}.col-xs-push-8{left:66.66666667%}.col-xs-push-7{left:58.33333333%}.col-xs-push-6{left:50%}.col-xs-push-5{left:41.66666667%}.col-xs-push-4{left:33.33333333%}.col-xs-push-3{left:25%}.col-xs-push-2{left:16.66666667%}.col-xs-push-1{left:8.33333333%}.col-xs-push-0{left:auto}.col-xs-offset-12{margin-left:100%}.col-xs-offset-11{margin-left:91.66666667%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-0{margin-left:0}@media (min-width:768px){.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9{float:left}.col-sm-12{width:100%}.col-sm-11{width:91.66666667%}.col-sm-10{width:83.33333333%}.col-sm-9{width:75%}.col-sm-8{width:66.66666667%}.col-sm-7{width:58.33333333%}.col-sm-6{width:50%}.col-sm-5{width:41.66666667%}.col-sm-4{width:33.33333333%}.col-sm-3{width:25%}.col-sm-2{width:16.66666667%}.col-sm-1{width:8.33333333%}.col-sm-pull-12{right:100%}.col-sm-pull-11{right:91.66666667%}.col-sm-pull-10{right:83.33333333%}.col-sm-pull-9{right:75%}.col-sm-pull-8{right:66.66666667%}.col-sm-pull-7{right:58.33333333%}.col-sm-pull-6{right:50%}.col-sm-pull-5{right:41.66666667%}.col-sm-pull-4{right:33.33333333%}.col-sm-pull-3{right:25%}.col-sm-pull-2{right:16.66666667%}.col-sm-pull-1{right:8.33333333%}.col-sm-pull-0{right:auto}.col-sm-push-12{left:100%}.col-sm-push-11{left:91.66666667%}.col-sm-push-10{left:83.33333333%}.col-sm-push-9{left:75%}.col-sm-push-8{left:66.66666667%}.col-sm-push-7{left:58.33333333%}.col-sm-push-6{left:50%}.col-sm-push-5{left:41.66666667%}.col-sm-push-4{left:33.33333333%}.col-sm-push-3{left:25%}.col-sm-push-2{left:16.66666667%}.col-sm-push-1{left:8.33333333%}.col-sm-push-0{left:auto}.col-sm-offset-12{margin-left:100%}.col-sm-offset-11{margin-left:91.66666667%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-0{margin-left:0}}@media (min-width:992px){.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9{float:left}.col-md-12{width:100%}.col-md-11{width:91.66666667%}.col-md-10{width:83.33333333%}.col-md-9{width:75%}.col-md-8{width:66.66666667%}.col-md-7{width:58.33333333%}.col-md-6{width:50%}.col-md-5{width:41.66666667%}.col-md-4{width:33.33333333%}.col-md-3{width:25%}.col-md-2{width:16.66666667%}.col-md-1{width:8.33333333%}.col-md-pull-12{right:100%}.col-md-pull-11{right:91.66666667%}.col-md-pull-10{right:83.33333333%}.col-md-pull-9{right:75%}.col-md-pull-8{right:66.66666667%}.col-md-pull-7{right:58.33333333%}.col-md-pull-6{right:50%}.col-md-pull-5{right:41.66666667%}.col-md-pull-4{right:33.33333333%}.col-md-pull-3{right:25%}.col-md-pull-2{right:16.66666667%}.col-md-pull-1{right:8.33333333%}.col-md-pull-0{right:auto}.col-md-push-12{left:100%}.col-md-push-11{left:91.66666667%}.col-md-push-10{left:83.33333333%}.col-md-push-9{left:75%}.col-md-push-8{left:66.66666667%}.col-md-push-7{left:58.33333333%}.col-md-push-6{left:50%}.col-md-push-5{left:41.66666667%}.col-md-push-4{left:33.33333333%}.col-md-push-3{left:25%}.col-md-push-2{left:16.66666667%}.col-md-push-1{left:8.33333333%}.col-md-push-0{left:auto}.col-md-offset-12{margin-left:100%}.col-md-offset-11{margin-left:91.66666667%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-9{margin-left:75%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-6{margin-left:50%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-3{margin-left:25%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-0{margin-left:0}}@media (min-width:1200px){.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9{float:left}.col-lg-12{width:100%}.col-lg-11{width:91.66666667%}.col-lg-10{width:83.33333333%}.col-lg-9{width:75%}.col-lg-8{width:66.66666667%}.col-lg-7{width:58.33333333%}.col-lg-6{width:50%}.col-lg-5{width:41.66666667%}.col-lg-4{width:33.33333333%}.col-lg-3{width:25%}.col-lg-2{width:16.66666667%}.col-lg-1{width:8.33333333%}.col-lg-pull-12{right:100%}.col-lg-pull-11{right:91.66666667%}.col-lg-pull-10{right:83.33333333%}.col-lg-pull-9{right:75%}.col-lg-pull-8{right:66.66666667%}.col-lg-pull-7{right:58.33333333%}.col-lg-pull-6{right:50%}.col-lg-pull-5{right:41.66666667%}.col-lg-pull-4{right:33.33333333%}.col-lg-pull-3{right:25%}.col-lg-pull-2{right:16.66666667%}.col-lg-pull-1{right:8.33333333%}.col-lg-pull-0{right:auto}.col-lg-push-12{left:100%}.col-lg-push-11{left:91.66666667%}.col-lg-push-10{left:83.33333333%}.col-lg-push-9{left:75%}.col-lg-push-8{left:66.66666667%}.col-lg-push-7{left:58.33333333%}.col-lg-push-6{left:50%}.col-lg-push-5{left:41.66666667%}.col-lg-push-4{left:33.33333333%}.col-lg-push-3{left:25%}.col-lg-push-2{left:16.66666667%}.col-lg-push-1{left:8.33333333%}.col-lg-push-0{left:auto}.col-lg-offset-12{margin-left:100%}.col-lg-offset-11{margin-left:91.66666667%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-0{margin-left:0}}table{background-color:transparent}caption{padding-top:8px;padding-bottom:8px;color:#777;text-align:left}th{text-align:left}.table{width:100%;max-width:100%;margin-bottom:20px}.table>tbody>tr>td,.table>tbody>tr>th,.table>tfoot>tr>td,.table>tfoot>tr>th,.table>thead>tr>td,.table>thead>tr>th{padding:8px;line-height:1.42857143;vertical-align:top;border-top:1px solid #ddd}.table>thead>tr>th{vertical-align:bottom;border-bottom:2px solid #ddd}.table>caption+thead>tr:first-child>td,.table>caption+thead>tr:first-child>th,.table>colgroup+thead>tr:first-child>td,.table>colgroup+thead>tr:first-child>th,.table>thead:first-child>tr:first-child>td,.table>thead:first-child>tr:first-child>th{border-top:0}.table>tbody+tbody{border-top:2px solid #ddd}.table .table{background-color:#fff}.table-condensed>tbody>tr>td,.table-condensed>tbody>tr>th,.table-condensed>tfoot>tr>td,.table-condensed>tfoot>tr>th,.table-condensed>thead>tr>td,.table-condensed>thead>tr>th{padding:5px}.table-bordered{border:1px solid #ddd}.table-bordered>tbody>tr>td,.table-bordered>tbody>tr>th,.table-bordered>tfoot>tr>td,.table-bordered>tfoot>tr>th,.table-bordered>thead>tr>td,.table-bordered>thead>tr>th{border:1px solid #ddd}.table-bordered>thead>tr>td,.table-bordered>thead>tr>th{border-bottom-width:2px}.table-striped>tbody>tr:nth-of-type(odd){background-color:#f9f9f9}.table-hover>tbody>tr:hover{background-color:#f5f5f5}table col[class*=col-]{position:static;display:table-column;float:none}table td[class*=col-],table th[class*=col-]{position:static;display:table-cell;float:none}.table>tbody>tr.active>td,.table>tbody>tr.active>th,.table>tbody>tr>td.active,.table>tbody>tr>th.active,.table>tfoot>tr.active>td,.table>tfoot>tr.active>th,.table>tfoot>tr>td.active,.table>tfoot>tr>th.active,.table>thead>tr.active>td,.table>thead>tr.active>th,.table>thead>tr>td.active,.table>thead>tr>th.active{background-color:#f5f5f5}.table-hover>tbody>tr.active:hover>td,.table-hover>tbody>tr.active:hover>th,.table-hover>tbody>tr:hover>.active,.table-hover>tbody>tr>td.active:hover,.table-hover>tbody>tr>th.active:hover{background-color:#e8e8e8}.table>tbody>tr.success>td,.table>tbody>tr.success>th,.table>tbody>tr>td.success,.table>tbody>tr>th.success,.table>tfoot>tr.success>td,.table>tfoot>tr.success>th,.table>tfoot>tr>td.success,.table>tfoot>tr>th.success,.table>thead>tr.success>td,.table>thead>tr.success>th,.table>thead>tr>td.success,.table>thead>tr>th.success{background-color:#dff0d8}.table-hover>tbody>tr.success:hover>td,.table-hover>tbody>tr.success:hover>th,.table-hover>tbody>tr:hover>.success,.table-hover>tbody>tr>td.success:hover,.table-hover>tbody>tr>th.success:hover{background-color:#d0e9c6}.table>tbody>tr.info>td,.table>tbody>tr.info>th,.table>tbody>tr>td.info,.table>tbody>tr>th.info,.table>tfoot>tr.info>td,.table>tfoot>tr.info>th,.table>tfoot>tr>td.info,.table>tfoot>tr>th.info,.table>thead>tr.info>td,.table>thead>tr.info>th,.table>thead>tr>td.info,.table>thead>tr>th.info{background-color:#d9edf7}.table-hover>tbody>tr.info:hover>td,.table-hover>tbody>tr.info:hover>th,.table-hover>tbody>tr:hover>.info,.table-hover>tbody>tr>td.info:hover,.table-hover>tbody>tr>th.info:hover{background-color:#c4e3f3}.table>tbody>tr.warning>td,.table>tbody>tr.warning>th,.table>tbody>tr>td.warning,.table>tbody>tr>th.warning,.table>tfoot>tr.warning>td,.table>tfoot>tr.warning>th,.table>tfoot>tr>td.warning,.table>tfoot>tr>th.warning,.table>thead>tr.warning>td,.table>thead>tr.warning>th,.table>thead>tr>td.warning,.table>thead>tr>th.warning{background-color:#fcf8e3}.table-hover>tbody>tr.warning:hover>td,.table-hover>tbody>tr.warning:hover>th,.table-hover>tbody>tr:hover>.warning,.table-hover>tbody>tr>td.warning:hover,.table-hover>tbody>tr>th.warning:hover{background-color:#faf2cc}.table>tbody>tr.danger>td,.table>tbody>tr.danger>th,.table>tbody>tr>td.danger,.table>tbody>tr>th.danger,.table>tfoot>tr.danger>td,.table>tfoot>tr.danger>th,.table>tfoot>tr>td.danger,.table>tfoot>tr>th.danger,.table>thead>tr.danger>td,.table>thead>tr.danger>th,.table>thead>tr>td.danger,.table>thead>tr>th.danger{background-color:#f2dede}.table-hover>tbody>tr.danger:hover>td,.table-hover>tbody>tr.danger:hover>th,.table-hover>tbody>tr:hover>.danger,.table-hover>tbody>tr>td.danger:hover,.table-hover>tbody>tr>th.danger:hover{background-color:#ebcccc}.table-responsive{min-height:.01%;overflow-x:auto}@media screen and (max-width:767px){.table-responsive{width:100%;margin-bottom:15px;overflow-y:hidden;-ms-overflow-style:-ms-autohiding-scrollbar;border:1px solid #ddd}.table-responsive>.table{margin-bottom:0}.table-responsive>.table>tbody>tr>td,.table-responsive>.table>tbody>tr>th,.table-responsive>.table>tfoot>tr>td,.table-responsive>.table>tfoot>tr>th,.table-responsive>.table>thead>tr>td,.table-responsive>.table>thead>tr>th{white-space:nowrap}.table-responsive>.table-bordered{border:0}.table-responsive>.table-bordered>tbody>tr>td:first-child,.table-responsive>.table-bordered>tbody>tr>th:first-child,.table-responsive>.table-bordered>tfoot>tr>td:first-child,.table-responsive>.table-bordered>tfoot>tr>th:first-child,.table-responsive>.table-bordered>thead>tr>td:first-child,.table-responsive>.table-bordered>thead>tr>th:first-child{border-left:0}.table-responsive>.table-bordered>tbody>tr>td:last-child,.table-responsive>.table-bordered>tbody>tr>th:last-child,.table-responsive>.table-bordered>tfoot>tr>td:last-child,.table-responsive>.table-bordered>tfoot>tr>th:last-child,.table-responsive>.table-bordered>thead>tr>td:last-child,.table-responsive>.table-bordered>thead>tr>th:last-child{border-right:0}.table-responsive>.table-bordered>tbody>tr:last-child>td,.table-responsive>.table-bordered>tbody>tr:last-child>th,.table-responsive>.table-bordered>tfoot>tr:last-child>td,.table-responsive>.table-bordered>tfoot>tr:last-child>th{border-bottom:0}}fieldset{min-width:0;padding:0;margin:0;border:0}legend{display:block;width:100%;padding:0;margin-bottom:20px;font-size:21px;line-height:inherit;color:#333;border:0;border-bottom:1px solid #e5e5e5}label{display:inline-block;max-width:100%;margin-bottom:5px;font-weight:700}input[type=search]{box-sizing:border-box}input[type=checkbox],input[type=radio]{margin:4px 0 0;margin-top:1px\\9;line-height:normal}input[type=file]{display:block}input[type=range]{display:block;width:100%}select[multiple],select[size]{height:auto}input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus{outline:5px auto -webkit-focus-ring-color;outline-offset:-2px}output{display:block;padding-top:7px;font-size:14px;line-height:1.42857143;color:#555}.form-control{display:block;width:100%;height:34px;padding:6px 12px;font-size:14px;line-height:1.42857143;color:#555;background-color:#fff;background-image:none;border:1px solid #ccc;border-radius:4px;box-shadow:inset 0 1px 1px rgba(0,0,0,.075);transition:border-color ease-in-out .15s,box-shadow ease-in-out .15s}.form-control:focus{border-color:#66afe9;outline:0;box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)}.form-control::-moz-placeholder{color:#999;opacity:1}.form-control:-ms-input-placeholder{color:#999}.form-control::-webkit-input-placeholder{color:#999}.form-control::-ms-expand{background-color:transparent;border:0}.form-control[disabled],.form-control[readonly],fieldset[disabled] .form-control{background-color:#eee;opacity:1}.form-control[disabled],fieldset[disabled] .form-control{cursor:not-allowed}textarea.form-control{height:auto}input[type=search]{-webkit-appearance:none}@media screen and (-webkit-min-device-pixel-ratio:0){input[type=date].form-control,input[type=time].form-control,input[type=datetime-local].form-control,input[type=month].form-control{line-height:34px}.input-group-sm input[type=date],.input-group-sm input[type=time],.input-group-sm input[type=datetime-local],.input-group-sm input[type=month],input[type=date].input-sm,input[type=time].input-sm,input[type=datetime-local].input-sm,input[type=month].input-sm{line-height:30px}.input-group-lg input[type=date],.input-group-lg input[type=time],.input-group-lg input[type=datetime-local],.input-group-lg input[type=month],input[type=date].input-lg,input[type=time].input-lg,input[type=datetime-local].input-lg,input[type=month].input-lg{line-height:46px}}.form-group{margin-bottom:15px}.checkbox,.radio{position:relative;display:block;margin-top:10px;margin-bottom:10px}.checkbox label,.radio label{min-height:20px;padding-left:20px;margin-bottom:0;font-weight:400;cursor:pointer}.checkbox input[type=checkbox],.checkbox-inline input[type=checkbox],.radio input[type=radio],.radio-inline input[type=radio]{position:absolute;margin-top:4px\\9;margin-left:-20px}.checkbox+.checkbox,.radio+.radio{margin-top:-5px}.checkbox-inline,.radio-inline{position:relative;display:inline-block;padding-left:20px;margin-bottom:0;font-weight:400;vertical-align:middle;cursor:pointer}.checkbox-inline+.checkbox-inline,.radio-inline+.radio-inline{margin-top:0;margin-left:10px}fieldset[disabled] input[type=checkbox],fieldset[disabled] input[type=radio],input[type=checkbox].disabled,input[type=checkbox][disabled],input[type=radio].disabled,input[type=radio][disabled]{cursor:not-allowed}.checkbox-inline.disabled,.radio-inline.disabled,fieldset[disabled] .checkbox-inline,fieldset[disabled] .radio-inline{cursor:not-allowed}.checkbox.disabled label,.radio.disabled label,fieldset[disabled] .checkbox label,fieldset[disabled] .radio label{cursor:not-allowed}.form-control-static{min-height:34px;padding-top:7px;padding-bottom:7px;margin-bottom:0}.form-control-static.input-lg,.form-control-static.input-sm{padding-right:0;padding-left:0}.input-sm{height:30px;padding:5px 10px;font-size:12px;line-height:1.5;border-radius:3px}select.input-sm{height:30px;line-height:30px}select[multiple].input-sm,textarea.input-sm{height:auto}.form-group-sm .form-control{height:30px;padding:5px 10px;font-size:12px;line-height:1.5;border-radius:3px}.form-group-sm select.form-control{height:30px;line-height:30px}.form-group-sm select[multiple].form-control,.form-group-sm textarea.form-control{height:auto}.form-group-sm .form-control-static{height:30px;min-height:32px;padding:6px 10px;font-size:12px;line-height:1.5}.input-lg{height:46px;padding:10px 16px;font-size:18px;line-height:1.3333333;border-radius:6px}select.input-lg{height:46px;line-height:46px}select[multiple].input-lg,textarea.input-lg{height:auto}.form-group-lg .form-control{height:46px;padding:10px 16px;font-size:18px;line-height:1.3333333;border-radius:6px}.form-group-lg select.form-control{height:46px;line-height:46px}.form-group-lg select[multiple].form-control,.form-group-lg textarea.form-control{height:auto}.form-group-lg .form-control-static{height:46px;min-height:38px;padding:11px 16px;font-size:18px;line-height:1.3333333}.has-feedback{position:relative}.has-feedback .form-control{padding-right:42.5px}.form-control-feedback{position:absolute;top:0;right:0;z-index:2;display:block;width:34px;height:34px;line-height:34px;text-align:center;pointer-events:none}.form-group-lg .form-control+.form-control-feedback,.input-group-lg+.form-control-feedback,.input-lg+.form-control-feedback{width:46px;height:46px;line-height:46px}.form-group-sm .form-control+.form-control-feedback,.input-group-sm+.form-control-feedback,.input-sm+.form-control-feedback{width:30px;height:30px;line-height:30px}.has-success .checkbox,.has-success .checkbox-inline,.has-success .control-label,.has-success .help-block,.has-success .radio,.has-success .radio-inline,.has-success.checkbox label,.has-success.checkbox-inline label,.has-success.radio label,.has-success.radio-inline label{color:#3c763d}.has-success .form-control{border-color:#3c763d;box-shadow:inset 0 1px 1px rgba(0,0,0,.075)}.has-success .form-control:focus{border-color:#2b542c;box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #67b168}.has-success .input-group-addon{color:#3c763d;background-color:#dff0d8;border-color:#3c763d}.has-success .form-control-feedback{color:#3c763d}.has-warning .checkbox,.has-warning .checkbox-inline,.has-warning .control-label,.has-warning .help-block,.has-warning .radio,.has-warning .radio-inline,.has-warning.checkbox label,.has-warning.checkbox-inline label,.has-warning.radio label,.has-warning.radio-inline label{color:#8a6d3b}.has-warning .form-control{border-color:#8a6d3b;box-shadow:inset 0 1px 1px rgba(0,0,0,.075)}.has-warning .form-control:focus{border-color:#66512c;box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #c0a16b}.has-warning .input-group-addon{color:#8a6d3b;background-color:#fcf8e3;border-color:#8a6d3b}.has-warning .form-control-feedback{color:#8a6d3b}.has-error .checkbox,.has-error .checkbox-inline,.has-error .control-label,.has-error .help-block,.has-error .radio,.has-error .radio-inline,.has-error.checkbox label,.has-error.checkbox-inline label,.has-error.radio label,.has-error.radio-inline label{color:#a94442}.has-error .form-control{border-color:#a94442;box-shadow:inset 0 1px 1px rgba(0,0,0,.075)}.has-error .form-control:focus{border-color:#843534;box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #ce8483}.has-error .input-group-addon{color:#a94442;background-color:#f2dede;border-color:#a94442}.has-error .form-control-feedback{color:#a94442}.has-feedback label~.form-control-feedback{top:25px}.has-feedback label.sr-only~.form-control-feedback{top:0}.help-block{display:block;margin-top:5px;margin-bottom:10px;color:#737373}@media (min-width:768px){.form-inline .form-group{display:inline-block;margin-bottom:0;vertical-align:middle}.form-inline .form-control{display:inline-block;width:auto;vertical-align:middle}.form-inline .form-control-static{display:inline-block}.form-inline .input-group{display:inline-table;vertical-align:middle}.form-inline .input-group .form-control,.form-inline .input-group .input-group-addon,.form-inline .input-group .input-group-btn{width:auto}.form-inline .input-group>.form-control{width:100%}.form-inline .control-label{margin-bottom:0;vertical-align:middle}.form-inline .checkbox,.form-inline .radio{display:inline-block;margin-top:0;margin-bottom:0;vertical-align:middle}.form-inline .checkbox label,.form-inline .radio label{padding-left:0}.form-inline .checkbox input[type=checkbox],.form-inline .radio input[type=radio]{position:relative;margin-left:0}.form-inline .has-feedback .form-control-feedback{top:0}}.form-horizontal .checkbox,.form-horizontal .checkbox-inline,.form-horizontal .radio,.form-horizontal .radio-inline{padding-top:7px;margin-top:0;margin-bottom:0}.form-horizontal .checkbox,.form-horizontal .radio{min-height:27px}.form-horizontal .form-group{margin-right:-15px;margin-left:-15px}@media (min-width:768px){.form-horizontal .control-label{padding-top:7px;margin-bottom:0;text-align:right}}.form-horizontal .has-feedback .form-control-feedback{right:15px}@media (min-width:768px){.form-horizontal .form-group-lg .control-label{padding-top:11px;font-size:18px}}@media (min-width:768px){.form-horizontal .form-group-sm .control-label{padding-top:6px;font-size:12px}}.btn{display:inline-block;padding:6px 12px;margin-bottom:0;font-size:14px;font-weight:400;line-height:1.42857143;text-align:center;white-space:nowrap;vertical-align:middle;touch-action:manipulation;cursor:pointer;-webkit-user-select:none;-moz-user-select:none;user-select:none;background-image:none;border:1px solid transparent;border-radius:4px}.btn.active.focus,.btn.active:focus,.btn.focus,.btn:active.focus,.btn:active:focus,.btn:focus{outline:5px auto -webkit-focus-ring-color;outline-offset:-2px}.btn.focus,.btn:focus,.btn:hover{color:#333;text-decoration:none}.btn.active,.btn:active{background-image:none;outline:0;box-shadow:inset 0 3px 5px rgba(0,0,0,.125)}.btn.disabled,.btn[disabled],fieldset[disabled] .btn{cursor:not-allowed;filter:alpha(opacity=65);box-shadow:none;opacity:.65}a.btn.disabled,fieldset[disabled] a.btn{pointer-events:none}.btn-default{color:#333;background-color:#fff;border-color:#ccc}.btn-default.focus,.btn-default:focus{color:#333;background-color:#e6e6e6;border-color:#8c8c8c}.btn-default:hover{color:#333;background-color:#e6e6e6;border-color:#adadad}.btn-default.active,.btn-default:active,.open>.dropdown-toggle.btn-default{color:#333;background-color:#e6e6e6;border-color:#adadad}.btn-default.active.focus,.btn-default.active:focus,.btn-default.active:hover,.btn-default:active.focus,.btn-default:active:focus,.btn-default:active:hover,.open>.dropdown-toggle.btn-default.focus,.open>.dropdown-toggle.btn-default:focus,.open>.dropdown-toggle.btn-default:hover{color:#333;background-color:#d4d4d4;border-color:#8c8c8c}.btn-default.active,.btn-default:active,.open>.dropdown-toggle.btn-default{background-image:none}.btn-default.disabled.focus,.btn-default.disabled:focus,.btn-default.disabled:hover,.btn-default[disabled].focus,.btn-default[disabled]:focus,.btn-default[disabled]:hover,fieldset[disabled] .btn-default.focus,fieldset[disabled] .btn-default:focus,fieldset[disabled] .btn-default:hover{background-color:#fff;border-color:#ccc}.btn-default .badge{color:#fff;background-color:#333}.btn-primary{color:#fff;background-color:#337ab7;border-color:#2e6da4}.btn-primary.focus,.btn-primary:focus{color:#fff;background-color:#286090;border-color:#122b40}.btn-primary:hover{color:#fff;background-color:#286090;border-color:#204d74}.btn-primary.active,.btn-primary:active,.open>.dropdown-toggle.btn-primary{color:#fff;background-color:#286090;border-color:#204d74}.btn-primary.active.focus,.btn-primary.active:focus,.btn-primary.active:hover,.btn-primary:active.focus,.btn-primary:active:focus,.btn-primary:active:hover,.open>.dropdown-toggle.btn-primary.focus,.open>.dropdown-toggle.btn-primary:focus,.open>.dropdown-toggle.btn-primary:hover{color:#fff;background-color:#204d74;border-color:#122b40}.btn-primary.active,.btn-primary:active,.open>.dropdown-toggle.btn-primary{background-image:none}.btn-primary.disabled.focus,.btn-primary.disabled:focus,.btn-primary.disabled:hover,.btn-primary[disabled].focus,.btn-primary[disabled]:focus,.btn-primary[disabled]:hover,fieldset[disabled] .btn-primary.focus,fieldset[disabled] .btn-primary:focus,fieldset[disabled] .btn-primary:hover{background-color:#337ab7;border-color:#2e6da4}.btn-primary .badge{color:#337ab7;background-color:#fff}.btn-success{color:#fff;background-color:#5cb85c;border-color:#4cae4c}.btn-success.focus,.btn-success:focus{color:#fff;background-color:#449d44;border-color:#255625}.btn-success:hover{color:#fff;background-color:#449d44;border-color:#398439}.btn-success.active,.btn-success:active,.open>.dropdown-toggle.btn-success{color:#fff;background-color:#449d44;border-color:#398439}.btn-success.active.focus,.btn-success.active:focus,.btn-success.active:hover,.btn-success:active.focus,.btn-success:active:focus,.btn-success:active:hover,.open>.dropdown-toggle.btn-success.focus,.open>.dropdown-toggle.btn-success:focus,.open>.dropdown-toggle.btn-success:hover{color:#fff;background-color:#398439;border-color:#255625}.btn-success.active,.btn-success:active,.open>.dropdown-toggle.btn-success{background-image:none}.btn-success.disabled.focus,.btn-success.disabled:focus,.btn-success.disabled:hover,.btn-success[disabled].focus,.btn-success[disabled]:focus,.btn-success[disabled]:hover,fieldset[disabled] .btn-success.focus,fieldset[disabled] .btn-success:focus,fieldset[disabled] .btn-success:hover{background-color:#5cb85c;border-color:#4cae4c}.btn-success .badge{color:#5cb85c;background-color:#fff}.btn-info{color:#fff;background-color:#5bc0de;border-color:#46b8da}.btn-info.focus,.btn-info:focus{color:#fff;background-color:#31b0d5;border-color:#1b6d85}.btn-info:hover{color:#fff;background-color:#31b0d5;border-color:#269abc}.btn-info.active,.btn-info:active,.open>.dropdown-toggle.btn-info{color:#fff;background-color:#31b0d5;border-color:#269abc}.btn-info.active.focus,.btn-info.active:focus,.btn-info.active:hover,.btn-info:active.focus,.btn-info:active:focus,.btn-info:active:hover,.open>.dropdown-toggle.btn-info.focus,.open>.dropdown-toggle.btn-info:focus,.open>.dropdown-toggle.btn-info:hover{color:#fff;background-color:#269abc;border-color:#1b6d85}.btn-info.active,.btn-info:active,.open>.dropdown-toggle.btn-info{background-image:none}.btn-info.disabled.focus,.btn-info.disabled:focus,.btn-info.disabled:hover,.btn-info[disabled].focus,.btn-info[disabled]:focus,.btn-info[disabled]:hover,fieldset[disabled] .btn-info.focus,fieldset[disabled] .btn-info:focus,fieldset[disabled] .btn-info:hover{background-color:#5bc0de;border-color:#46b8da}.btn-info .badge{color:#5bc0de;background-color:#fff}.btn-warning{color:#fff;background-color:#f0ad4e;border-color:#eea236}.btn-warning.focus,.btn-warning:focus{color:#fff;background-color:#ec971f;border-color:#985f0d}.btn-warning:hover{color:#fff;background-color:#ec971f;border-color:#d58512}.btn-warning.active,.btn-warning:active,.open>.dropdown-toggle.btn-warning{color:#fff;background-color:#ec971f;border-color:#d58512}.btn-warning.active.focus,.btn-warning.active:focus,.btn-warning.active:hover,.btn-warning:active.focus,.btn-warning:active:focus,.btn-warning:active:hover,.open>.dropdown-toggle.btn-warning.focus,.open>.dropdown-toggle.btn-warning:focus,.open>.dropdown-toggle.btn-warning:hover{color:#fff;background-color:#d58512;border-color:#985f0d}.btn-warning.active,.btn-warning:active,.open>.dropdown-toggle.btn-warning{background-image:none}.btn-warning.disabled.focus,.btn-warning.disabled:focus,.btn-warning.disabled:hover,.btn-warning[disabled].focus,.btn-warning[disabled]:focus,.btn-warning[disabled]:hover,fieldset[disabled] .btn-warning.focus,fieldset[disabled] .btn-warning:focus,fieldset[disabled] .btn-warning:hover{background-color:#f0ad4e;border-color:#eea236}.btn-warning .badge{color:#f0ad4e;background-color:#fff}.btn-danger{color:#fff;background-color:#d9534f;border-color:#d43f3a}.btn-danger.focus,.btn-danger:focus{color:#fff;background-color:#c9302c;border-color:#761c19}.btn-danger:hover{color:#fff;background-color:#c9302c;border-color:#ac2925}.btn-danger.active,.btn-danger:active,.open>.dropdown-toggle.btn-danger{color:#fff;background-color:#c9302c;border-color:#ac2925}.btn-danger.active.focus,.btn-danger.active:focus,.btn-danger.active:hover,.btn-danger:active.focus,.btn-danger:active:focus,.btn-danger:active:hover,.open>.dropdown-toggle.btn-danger.focus,.open>.dropdown-toggle.btn-danger:focus,.open>.dropdown-toggle.btn-danger:hover{color:#fff;background-color:#ac2925;border-color:#761c19}.btn-danger.active,.btn-danger:active,.open>.dropdown-toggle.btn-danger{background-image:none}.btn-danger.disabled.focus,.btn-danger.disabled:focus,.btn-danger.disabled:hover,.btn-danger[disabled].focus,.btn-danger[disabled]:focus,.btn-danger[disabled]:hover,fieldset[disabled] .btn-danger.focus,fieldset[disabled] .btn-danger:focus,fieldset[disabled] .btn-danger:hover{background-color:#d9534f;border-color:#d43f3a}.btn-danger .badge{color:#d9534f;background-color:#fff}.btn-link{font-weight:400;color:#337ab7;border-radius:0}.btn-link,.btn-link.active,.btn-link:active,.btn-link[disabled],fieldset[disabled] .btn-link{background-color:transparent;box-shadow:none}.btn-link,.btn-link:active,.btn-link:focus,.btn-link:hover{border-color:transparent}.btn-link:focus,.btn-link:hover{color:#23527c;text-decoration:underline;background-color:transparent}.btn-link[disabled]:focus,.btn-link[disabled]:hover,fieldset[disabled] .btn-link:focus,fieldset[disabled] .btn-link:hover{color:#777;text-decoration:none}.btn-group-lg>.btn,.btn-lg{padding:10px 16px;font-size:18px;line-height:1.3333333;border-radius:6px}.btn-group-sm>.btn,.btn-sm{padding:5px 10px;font-size:12px;line-height:1.5;border-radius:3px}.btn-group-xs>.btn,.btn-xs{padding:1px 5px;font-size:12px;line-height:1.5;border-radius:3px}.btn-block{display:block;width:100%}.btn-block+.btn-block{margin-top:5px}input[type=button].btn-block,input[type=reset].btn-block,input[type=submit].btn-block{width:100%}.fade{opacity:0;transition:opacity .15s linear}.fade.in{opacity:1}.collapse{display:none}.collapse.in{display:block}tr.collapse.in{display:table-row}tbody.collapse.in{display:table-row-group}.collapsing{position:relative;height:0;overflow:hidden;transition-timing-function:ease;transition-duration:.35s;transition-property:height,visibility}.caret{display:inline-block;width:0;height:0;margin-left:2px;vertical-align:middle;border-top:4px dashed;border-top:4px solid\\9;border-right:4px solid transparent;border-left:4px solid transparent}.dropdown,.dropup{position:relative}.dropdown-toggle:focus{outline:0}.dropdown-menu{position:absolute;top:100%;left:0;z-index:1000;display:none;float:left;min-width:160px;padding:5px 0;margin:2px 0 0;font-size:14px;text-align:left;list-style:none;background-color:#fff;background-clip:padding-box;border:1px solid #ccc;border:1px solid rgba(0,0,0,.15);border-radius:4px;box-shadow:0 6px 12px rgba(0,0,0,.175)}.dropdown-menu.pull-right{right:0;left:auto}.dropdown-menu .divider{height:1px;margin:9px 0;overflow:hidden;background-color:#e5e5e5}.dropdown-menu>li>a{display:block;padding:3px 20px;clear:both;font-weight:400;line-height:1.42857143;color:#333;white-space:nowrap}.dropdown-menu>li>a:focus,.dropdown-menu>li>a:hover{color:#262626;text-decoration:none;background-color:#f5f5f5}.dropdown-menu>.active>a,.dropdown-menu>.active>a:focus,.dropdown-menu>.active>a:hover{color:#fff;text-decoration:none;background-color:#337ab7;outline:0}.dropdown-menu>.disabled>a,.dropdown-menu>.disabled>a:focus,.dropdown-menu>.disabled>a:hover{color:#777}.dropdown-menu>.disabled>a:focus,.dropdown-menu>.disabled>a:hover{text-decoration:none;cursor:not-allowed;background-color:transparent;background-image:none;filter:progid:DXImageTransform.Microsoft.gradient(enabled=false)}.open>.dropdown-menu{display:block}.open>a{outline:0}.dropdown-menu-right{right:0;left:auto}.dropdown-menu-left{right:auto;left:0}.dropdown-header{display:block;padding:3px 20px;font-size:12px;line-height:1.42857143;color:#777;white-space:nowrap}.dropdown-backdrop{position:fixed;top:0;right:0;bottom:0;left:0;z-index:990}.pull-right>.dropdown-menu{right:0;left:auto}.dropup .caret,.navbar-fixed-bottom .dropdown .caret{content:\"\";border-top:0;border-bottom:4px dashed;border-bottom:4px solid\\9}.dropup .dropdown-menu,.navbar-fixed-bottom .dropdown .dropdown-menu{top:auto;bottom:100%;margin-bottom:2px}@media (min-width:768px){.navbar-right .dropdown-menu{right:0;left:auto}.navbar-right .dropdown-menu-left{right:auto;left:0}}.btn-group,.btn-group-vertical{position:relative;display:inline-block;vertical-align:middle}.btn-group-vertical>.btn,.btn-group>.btn{position:relative;float:left}.btn-group-vertical>.btn.active,.btn-group-vertical>.btn:active,.btn-group-vertical>.btn:focus,.btn-group-vertical>.btn:hover,.btn-group>.btn.active,.btn-group>.btn:active,.btn-group>.btn:focus,.btn-group>.btn:hover{z-index:2}.btn-group .btn+.btn,.btn-group .btn+.btn-group,.btn-group .btn-group+.btn,.btn-group .btn-group+.btn-group{margin-left:-1px}.btn-toolbar{margin-left:-5px}.btn-toolbar .btn,.btn-toolbar .btn-group,.btn-toolbar .input-group{float:left}.btn-toolbar>.btn,.btn-toolbar>.btn-group,.btn-toolbar>.input-group{margin-left:5px}.btn-group>.btn:not(:first-child):not(:last-child):not(.dropdown-toggle){border-radius:0}.btn-group>.btn:first-child{margin-left:0}.btn-group>.btn:first-child:not(:last-child):not(.dropdown-toggle){border-top-right-radius:0;border-bottom-right-radius:0}.btn-group>.btn:last-child:not(:first-child),.btn-group>.dropdown-toggle:not(:first-child){border-top-left-radius:0;border-bottom-left-radius:0}.btn-group>.btn-group{float:left}.btn-group>.btn-group:not(:first-child):not(:last-child)>.btn{border-radius:0}.btn-group>.btn-group:first-child:not(:last-child)>.btn:last-child,.btn-group>.btn-group:first-child:not(:last-child)>.dropdown-toggle{border-top-right-radius:0;border-bottom-right-radius:0}.btn-group>.btn-group:last-child:not(:first-child)>.btn:first-child{border-top-left-radius:0;border-bottom-left-radius:0}.btn-group .dropdown-toggle:active,.btn-group.open .dropdown-toggle{outline:0}.btn-group>.btn+.dropdown-toggle{padding-right:8px;padding-left:8px}.btn-group>.btn-lg+.dropdown-toggle{padding-right:12px;padding-left:12px}.btn-group.open .dropdown-toggle{box-shadow:inset 0 3px 5px rgba(0,0,0,.125)}.btn-group.open .dropdown-toggle.btn-link{box-shadow:none}.btn .caret{margin-left:0}.btn-lg .caret{border-width:5px 5px 0;border-bottom-width:0}.dropup .btn-lg .caret{border-width:0 5px 5px}.btn-group-vertical>.btn,.btn-group-vertical>.btn-group,.btn-group-vertical>.btn-group>.btn{display:block;float:none;width:100%;max-width:100%}.btn-group-vertical>.btn-group>.btn{float:none}.btn-group-vertical>.btn+.btn,.btn-group-vertical>.btn+.btn-group,.btn-group-vertical>.btn-group+.btn,.btn-group-vertical>.btn-group+.btn-group{margin-top:-1px;margin-left:0}.btn-group-vertical>.btn:not(:first-child):not(:last-child){border-radius:0}.btn-group-vertical>.btn:first-child:not(:last-child){border-top-left-radius:4px;border-top-right-radius:4px;border-bottom-right-radius:0;border-bottom-left-radius:0}.btn-group-vertical>.btn:last-child:not(:first-child){border-top-left-radius:0;border-top-right-radius:0;border-bottom-right-radius:4px;border-bottom-left-radius:4px}.btn-group-vertical>.btn-group:not(:first-child):not(:last-child)>.btn{border-radius:0}.btn-group-vertical>.btn-group:first-child:not(:last-child)>.btn:last-child,.btn-group-vertical>.btn-group:first-child:not(:last-child)>.dropdown-toggle{border-bottom-right-radius:0;border-bottom-left-radius:0}.btn-group-vertical>.btn-group:last-child:not(:first-child)>.btn:first-child{border-top-left-radius:0;border-top-right-radius:0}.btn-group-justified{display:table;width:100%;table-layout:fixed;border-collapse:separate}.btn-group-justified>.btn,.btn-group-justified>.btn-group{display:table-cell;float:none;width:1%}.btn-group-justified>.btn-group .btn{width:100%}.btn-group-justified>.btn-group .dropdown-menu{left:auto}[data-toggle=buttons]>.btn input[type=checkbox],[data-toggle=buttons]>.btn input[type=radio],[data-toggle=buttons]>.btn-group>.btn input[type=checkbox],[data-toggle=buttons]>.btn-group>.btn input[type=radio]{position:absolute;clip:rect(0,0,0,0);pointer-events:none}.input-group{position:relative;display:table;border-collapse:separate}.input-group[class*=col-]{float:none;padding-right:0;padding-left:0}.input-group .form-control{position:relative;z-index:2;float:left;width:100%;margin-bottom:0}.input-group .form-control:focus{z-index:3}.input-group-lg>.form-control,.input-group-lg>.input-group-addon,.input-group-lg>.input-group-btn>.btn{height:46px;padding:10px 16px;font-size:18px;line-height:1.3333333;border-radius:6px}select.input-group-lg>.form-control,select.input-group-lg>.input-group-addon,select.input-group-lg>.input-group-btn>.btn{height:46px;line-height:46px}select[multiple].input-group-lg>.form-control,select[multiple].input-group-lg>.input-group-addon,select[multiple].input-group-lg>.input-group-btn>.btn,textarea.input-group-lg>.form-control,textarea.input-group-lg>.input-group-addon,textarea.input-group-lg>.input-group-btn>.btn{height:auto}.input-group-sm>.form-control,.input-group-sm>.input-group-addon,.input-group-sm>.input-group-btn>.btn{height:30px;padding:5px 10px;font-size:12px;line-height:1.5;border-radius:3px}select.input-group-sm>.form-control,select.input-group-sm>.input-group-addon,select.input-group-sm>.input-group-btn>.btn{height:30px;line-height:30px}select[multiple].input-group-sm>.form-control,select[multiple].input-group-sm>.input-group-addon,select[multiple].input-group-sm>.input-group-btn>.btn,textarea.input-group-sm>.form-control,textarea.input-group-sm>.input-group-addon,textarea.input-group-sm>.input-group-btn>.btn{height:auto}.input-group .form-control,.input-group-addon,.input-group-btn{display:table-cell}.input-group .form-control:not(:first-child):not(:last-child),.input-group-addon:not(:first-child):not(:last-child),.input-group-btn:not(:first-child):not(:last-child){border-radius:0}.input-group-addon,.input-group-btn{width:1%;white-space:nowrap;vertical-align:middle}.input-group-addon{padding:6px 12px;font-size:14px;font-weight:400;line-height:1;color:#555;text-align:center;background-color:#eee;border:1px solid #ccc;border-radius:4px}.input-group-addon.input-sm{padding:5px 10px;font-size:12px;border-radius:3px}.input-group-addon.input-lg{padding:10px 16px;font-size:18px;border-radius:6px}.input-group-addon input[type=checkbox],.input-group-addon input[type=radio]{margin-top:0}.input-group .form-control:first-child,.input-group-addon:first-child,.input-group-btn:first-child>.btn,.input-group-btn:first-child>.btn-group>.btn,.input-group-btn:first-child>.dropdown-toggle,.input-group-btn:last-child>.btn-group:not(:last-child)>.btn,.input-group-btn:last-child>.btn:not(:last-child):not(.dropdown-toggle){border-top-right-radius:0;border-bottom-right-radius:0}.input-group-addon:first-child{border-right:0}.input-group .form-control:last-child,.input-group-addon:last-child,.input-group-btn:first-child>.btn-group:not(:first-child)>.btn,.input-group-btn:first-child>.btn:not(:first-child),.input-group-btn:last-child>.btn,.input-group-btn:last-child>.btn-group>.btn,.input-group-btn:last-child>.dropdown-toggle{border-top-left-radius:0;border-bottom-left-radius:0}.input-group-addon:last-child{border-left:0}.input-group-btn{position:relative;font-size:0;white-space:nowrap}.input-group-btn>.btn{position:relative}.input-group-btn>.btn+.btn{margin-left:-1px}.input-group-btn>.btn:active,.input-group-btn>.btn:focus,.input-group-btn>.btn:hover{z-index:2}.input-group-btn:first-child>.btn,.input-group-btn:first-child>.btn-group{margin-right:-1px}.input-group-btn:last-child>.btn,.input-group-btn:last-child>.btn-group{z-index:2;margin-left:-1px}.nav{padding-left:0;margin-bottom:0;list-style:none}.nav>li{position:relative;display:block}.nav>li>a{position:relative;display:block;padding:10px 15px}.nav>li>a:focus,.nav>li>a:hover{text-decoration:none;background-color:#eee}.nav>li.disabled>a{color:#777}.nav>li.disabled>a:focus,.nav>li.disabled>a:hover{color:#777;text-decoration:none;cursor:not-allowed;background-color:transparent}.nav .open>a,.nav .open>a:focus,.nav .open>a:hover{background-color:#eee;border-color:#337ab7}.nav .nav-divider{height:1px;margin:9px 0;overflow:hidden;background-color:#e5e5e5}.nav>li>a>img{max-width:none}.nav-tabs{border-bottom:1px solid #ddd}.nav-tabs>li{float:left;margin-bottom:-1px}.nav-tabs>li>a{margin-right:2px;line-height:1.42857143;border:1px solid transparent;border-radius:4px 4px 0 0}.nav-tabs>li>a:hover{border-color:#eee #eee #ddd}.nav-tabs>li.active>a,.nav-tabs>li.active>a:focus,.nav-tabs>li.active>a:hover{color:#555;cursor:default;background-color:#fff;border:1px solid #ddd;border-bottom-color:transparent}.nav-tabs.nav-justified{width:100%;border-bottom:0}.nav-tabs.nav-justified>li{float:none}.nav-tabs.nav-justified>li>a{margin-bottom:5px;text-align:center}.nav-tabs.nav-justified>.dropdown .dropdown-menu{top:auto;left:auto}@media (min-width:768px){.nav-tabs.nav-justified>li{display:table-cell;width:1%}.nav-tabs.nav-justified>li>a{margin-bottom:0}}.nav-tabs.nav-justified>li>a{margin-right:0;border-radius:4px}.nav-tabs.nav-justified>.active>a,.nav-tabs.nav-justified>.active>a:focus,.nav-tabs.nav-justified>.active>a:hover{border:1px solid #ddd}@media (min-width:768px){.nav-tabs.nav-justified>li>a{border-bottom:1px solid #ddd;border-radius:4px 4px 0 0}.nav-tabs.nav-justified>.active>a,.nav-tabs.nav-justified>.active>a:focus,.nav-tabs.nav-justified>.active>a:hover{border-bottom-color:#fff}}.nav-pills>li{float:left}.nav-pills>li>a{border-radius:4px}.nav-pills>li+li{margin-left:2px}.nav-pills>li.active>a,.nav-pills>li.active>a:focus,.nav-pills>li.active>a:hover{color:#fff;background-color:#337ab7}.nav-stacked>li{float:none}.nav-stacked>li+li{margin-top:2px;margin-left:0}.nav-justified{width:100%}.nav-justified>li{float:none}.nav-justified>li>a{margin-bottom:5px;text-align:center}.nav-justified>.dropdown .dropdown-menu{top:auto;left:auto}@media (min-width:768px){.nav-justified>li{display:table-cell;width:1%}.nav-justified>li>a{margin-bottom:0}}.nav-tabs-justified{border-bottom:0}.nav-tabs-justified>li>a{margin-right:0;border-radius:4px}.nav-tabs-justified>.active>a,.nav-tabs-justified>.active>a:focus,.nav-tabs-justified>.active>a:hover{border:1px solid #ddd}@media (min-width:768px){.nav-tabs-justified>li>a{border-bottom:1px solid #ddd;border-radius:4px 4px 0 0}.nav-tabs-justified>.active>a,.nav-tabs-justified>.active>a:focus,.nav-tabs-justified>.active>a:hover{border-bottom-color:#fff}}.tab-content>.tab-pane{display:none}.tab-content>.active{display:block}.nav-tabs .dropdown-menu{margin-top:-1px;border-top-left-radius:0;border-top-right-radius:0}.navbar{position:relative;min-height:50px;margin-bottom:20px;border:1px solid transparent}@media (min-width:768px){.navbar{border-radius:4px}}@media (min-width:768px){.navbar-header{float:left}}.navbar-collapse{padding-right:15px;padding-left:15px;overflow-x:visible;-webkit-overflow-scrolling:touch;border-top:1px solid transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}.navbar-collapse.in{overflow-y:auto}@media (min-width:768px){.navbar-collapse{width:auto;border-top:0;box-shadow:none}.navbar-collapse.collapse{display:block!important;height:auto!important;padding-bottom:0;overflow:visible!important}.navbar-collapse.in{overflow-y:visible}.navbar-fixed-bottom .navbar-collapse,.navbar-fixed-top .navbar-collapse,.navbar-static-top .navbar-collapse{padding-right:0;padding-left:0}}.navbar-fixed-bottom .navbar-collapse,.navbar-fixed-top .navbar-collapse{max-height:340px}@media (max-device-width:480px) and (orientation:landscape){.navbar-fixed-bottom .navbar-collapse,.navbar-fixed-top .navbar-collapse{max-height:200px}}.container-fluid>.navbar-collapse,.container-fluid>.navbar-header,.container>.navbar-collapse,.container>.navbar-header{margin-right:-15px;margin-left:-15px}@media (min-width:768px){.container-fluid>.navbar-collapse,.container-fluid>.navbar-header,.container>.navbar-collapse,.container>.navbar-header{margin-right:0;margin-left:0}}.navbar-static-top{z-index:1000;border-width:0 0 1px}@media (min-width:768px){.navbar-static-top{border-radius:0}}.navbar-fixed-bottom,.navbar-fixed-top{position:fixed;right:0;left:0;z-index:1030}@media (min-width:768px){.navbar-fixed-bottom,.navbar-fixed-top{border-radius:0}}.navbar-fixed-top{top:0;border-width:0 0 1px}.navbar-fixed-bottom{bottom:0;margin-bottom:0;border-width:1px 0 0}.navbar-brand{float:left;height:50px;padding:15px 15px;font-size:18px;line-height:20px}.navbar-brand:focus,.navbar-brand:hover{text-decoration:none}.navbar-brand>img{display:block}@media (min-width:768px){.navbar>.container .navbar-brand,.navbar>.container-fluid .navbar-brand{margin-left:-15px}}.navbar-toggle{position:relative;float:right;padding:9px 10px;margin-top:8px;margin-right:15px;margin-bottom:8px;background-color:transparent;background-image:none;border:1px solid transparent;border-radius:4px}.navbar-toggle:focus{outline:0}.navbar-toggle .icon-bar{display:block;width:22px;height:2px;border-radius:1px}.navbar-toggle .icon-bar+.icon-bar{margin-top:4px}@media (min-width:768px){.navbar-toggle{display:none}}.navbar-nav{margin:7.5px -15px}.navbar-nav>li>a{padding-top:10px;padding-bottom:10px;line-height:20px}@media (max-width:767px){.navbar-nav .open .dropdown-menu{position:static;float:none;width:auto;margin-top:0;background-color:transparent;border:0;box-shadow:none}.navbar-nav .open .dropdown-menu .dropdown-header,.navbar-nav .open .dropdown-menu>li>a{padding:5px 15px 5px 25px}.navbar-nav .open .dropdown-menu>li>a{line-height:20px}.navbar-nav .open .dropdown-menu>li>a:focus,.navbar-nav .open .dropdown-menu>li>a:hover{background-image:none}}@media (min-width:768px){.navbar-nav{float:left;margin:0}.navbar-nav>li{float:left}.navbar-nav>li>a{padding-top:15px;padding-bottom:15px}}.navbar-form{padding:10px 15px;margin-top:8px;margin-right:-15px;margin-bottom:8px;margin-left:-15px;border-top:1px solid transparent;border-bottom:1px solid transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 1px 0 rgba(255,255,255,.1)}@media (min-width:768px){.navbar-form .form-group{display:inline-block;margin-bottom:0;vertical-align:middle}.navbar-form .form-control{display:inline-block;width:auto;vertical-align:middle}.navbar-form .form-control-static{display:inline-block}.navbar-form .input-group{display:inline-table;vertical-align:middle}.navbar-form .input-group .form-control,.navbar-form .input-group .input-group-addon,.navbar-form .input-group .input-group-btn{width:auto}.navbar-form .input-group>.form-control{width:100%}.navbar-form .control-label{margin-bottom:0;vertical-align:middle}.navbar-form .checkbox,.navbar-form .radio{display:inline-block;margin-top:0;margin-bottom:0;vertical-align:middle}.navbar-form .checkbox label,.navbar-form .radio label{padding-left:0}.navbar-form .checkbox input[type=checkbox],.navbar-form .radio input[type=radio]{position:relative;margin-left:0}.navbar-form .has-feedback .form-control-feedback{top:0}}@media (max-width:767px){.navbar-form .form-group{margin-bottom:5px}.navbar-form .form-group:last-child{margin-bottom:0}}@media (min-width:768px){.navbar-form{width:auto;padding-top:0;padding-bottom:0;margin-right:0;margin-left:0;border:0;box-shadow:none}}.navbar-nav>li>.dropdown-menu{margin-top:0;border-top-left-radius:0;border-top-right-radius:0}.navbar-fixed-bottom .navbar-nav>li>.dropdown-menu{margin-bottom:0;border-top-left-radius:4px;border-top-right-radius:4px;border-bottom-right-radius:0;border-bottom-left-radius:0}.navbar-btn{margin-top:8px;margin-bottom:8px}.navbar-btn.btn-sm{margin-top:10px;margin-bottom:10px}.navbar-btn.btn-xs{margin-top:14px;margin-bottom:14px}.navbar-text{margin-top:15px;margin-bottom:15px}@media (min-width:768px){.navbar-text{float:left;margin-right:15px;margin-left:15px}}@media (min-width:768px){.navbar-left{float:left!important}.navbar-right{float:right!important;margin-right:-15px}.navbar-right~.navbar-right{margin-right:0}}.navbar-default{background-color:#f8f8f8;border-color:#e7e7e7}.navbar-default .navbar-brand{color:#777}.navbar-default .navbar-brand:focus,.navbar-default .navbar-brand:hover{color:#5e5e5e;background-color:transparent}.navbar-default .navbar-text{color:#777}.navbar-default .navbar-nav>li>a{color:#777}.navbar-default .navbar-nav>li>a:focus,.navbar-default .navbar-nav>li>a:hover{color:#333;background-color:transparent}.navbar-default .navbar-nav>.active>a,.navbar-default .navbar-nav>.active>a:focus,.navbar-default .navbar-nav>.active>a:hover{color:#555;background-color:#e7e7e7}.navbar-default .navbar-nav>.disabled>a,.navbar-default .navbar-nav>.disabled>a:focus,.navbar-default .navbar-nav>.disabled>a:hover{color:#ccc;background-color:transparent}.navbar-default .navbar-toggle{border-color:#ddd}.navbar-default .navbar-toggle:focus,.navbar-default .navbar-toggle:hover{background-color:#ddd}.navbar-default .navbar-toggle .icon-bar{background-color:#888}.navbar-default .navbar-collapse,.navbar-default .navbar-form{border-color:#e7e7e7}.navbar-default .navbar-nav>.open>a,.navbar-default .navbar-nav>.open>a:focus,.navbar-default .navbar-nav>.open>a:hover{color:#555;background-color:#e7e7e7}@media (max-width:767px){.navbar-default .navbar-nav .open .dropdown-menu>li>a{color:#777}.navbar-default .navbar-nav .open .dropdown-menu>li>a:focus,.navbar-default .navbar-nav .open .dropdown-menu>li>a:hover{color:#333;background-color:transparent}.navbar-default .navbar-nav .open .dropdown-menu>.active>a,.navbar-default .navbar-nav .open .dropdown-menu>.active>a:focus,.navbar-default .navbar-nav .open .dropdown-menu>.active>a:hover{color:#555;background-color:#e7e7e7}.navbar-default .navbar-nav .open .dropdown-menu>.disabled>a,.navbar-default .navbar-nav .open .dropdown-menu>.disabled>a:focus,.navbar-default .navbar-nav .open .dropdown-menu>.disabled>a:hover{color:#ccc;background-color:transparent}}.navbar-default .navbar-link{color:#777}.navbar-default .navbar-link:hover{color:#333}.navbar-default .btn-link{color:#777}.navbar-default .btn-link:focus,.navbar-default .btn-link:hover{color:#333}.navbar-default .btn-link[disabled]:focus,.navbar-default .btn-link[disabled]:hover,fieldset[disabled] .navbar-default .btn-link:focus,fieldset[disabled] .navbar-default .btn-link:hover{color:#ccc}.navbar-inverse{background-color:#222;border-color:#080808}.navbar-inverse .navbar-brand{color:#9d9d9d}.navbar-inverse .navbar-brand:focus,.navbar-inverse .navbar-brand:hover{color:#fff;background-color:transparent}.navbar-inverse .navbar-text{color:#9d9d9d}.navbar-inverse .navbar-nav>li>a{color:#9d9d9d}.navbar-inverse .navbar-nav>li>a:focus,.navbar-inverse .navbar-nav>li>a:hover{color:#fff;background-color:transparent}.navbar-inverse .navbar-nav>.active>a,.navbar-inverse .navbar-nav>.active>a:focus,.navbar-inverse .navbar-nav>.active>a:hover{color:#fff;background-color:#080808}.navbar-inverse .navbar-nav>.disabled>a,.navbar-inverse .navbar-nav>.disabled>a:focus,.navbar-inverse .navbar-nav>.disabled>a:hover{color:#444;background-color:transparent}.navbar-inverse .navbar-toggle{border-color:#333}.navbar-inverse .navbar-toggle:focus,.navbar-inverse .navbar-toggle:hover{background-color:#333}.navbar-inverse .navbar-toggle .icon-bar{background-color:#fff}.navbar-inverse .navbar-collapse,.navbar-inverse .navbar-form{border-color:#101010}.navbar-inverse .navbar-nav>.open>a,.navbar-inverse .navbar-nav>.open>a:focus,.navbar-inverse .navbar-nav>.open>a:hover{color:#fff;background-color:#080808}@media (max-width:767px){.navbar-inverse .navbar-nav .open .dropdown-menu>.dropdown-header{border-color:#080808}.navbar-inverse .navbar-nav .open .dropdown-menu .divider{background-color:#080808}.navbar-inverse .navbar-nav .open .dropdown-menu>li>a{color:#9d9d9d}.navbar-inverse .navbar-nav .open .dropdown-menu>li>a:focus,.navbar-inverse .navbar-nav .open .dropdown-menu>li>a:hover{color:#fff;background-color:transparent}.navbar-inverse .navbar-nav .open .dropdown-menu>.active>a,.navbar-inverse .navbar-nav .open .dropdown-menu>.active>a:focus,.navbar-inverse .navbar-nav .open .dropdown-menu>.active>a:hover{color:#fff;background-color:#080808}.navbar-inverse .navbar-nav .open .dropdown-menu>.disabled>a,.navbar-inverse .navbar-nav .open .dropdown-menu>.disabled>a:focus,.navbar-inverse .navbar-nav .open .dropdown-menu>.disabled>a:hover{color:#444;background-color:transparent}}.navbar-inverse .navbar-link{color:#9d9d9d}.navbar-inverse .navbar-link:hover{color:#fff}.navbar-inverse .btn-link{color:#9d9d9d}.navbar-inverse .btn-link:focus,.navbar-inverse .btn-link:hover{color:#fff}.navbar-inverse .btn-link[disabled]:focus,.navbar-inverse .btn-link[disabled]:hover,fieldset[disabled] .navbar-inverse .btn-link:focus,fieldset[disabled] .navbar-inverse .btn-link:hover{color:#444}.breadcrumb{padding:8px 15px;margin-bottom:20px;list-style:none;background-color:#f5f5f5;border-radius:4px}.breadcrumb>li{display:inline-block}.breadcrumb>li+li:before{padding:0 5px;color:#ccc;content:\"/\\A0\"}.breadcrumb>.active{color:#777}.pagination{display:inline-block;padding-left:0;margin:20px 0;border-radius:4px}.pagination>li{display:inline}.pagination>li>a,.pagination>li>span{position:relative;float:left;padding:6px 12px;margin-left:-1px;line-height:1.42857143;color:#337ab7;text-decoration:none;background-color:#fff;border:1px solid #ddd}.pagination>li:first-child>a,.pagination>li:first-child>span{margin-left:0;border-top-left-radius:4px;border-bottom-left-radius:4px}.pagination>li:last-child>a,.pagination>li:last-child>span{border-top-right-radius:4px;border-bottom-right-radius:4px}.pagination>li>a:focus,.pagination>li>a:hover,.pagination>li>span:focus,.pagination>li>span:hover{z-index:2;color:#23527c;background-color:#eee;border-color:#ddd}.pagination>.active>a,.pagination>.active>a:focus,.pagination>.active>a:hover,.pagination>.active>span,.pagination>.active>span:focus,.pagination>.active>span:hover{z-index:3;color:#fff;cursor:default;background-color:#337ab7;border-color:#337ab7}.pagination>.disabled>a,.pagination>.disabled>a:focus,.pagination>.disabled>a:hover,.pagination>.disabled>span,.pagination>.disabled>span:focus,.pagination>.disabled>span:hover{color:#777;cursor:not-allowed;background-color:#fff;border-color:#ddd}.pagination-lg>li>a,.pagination-lg>li>span{padding:10px 16px;font-size:18px;line-height:1.3333333}.pagination-lg>li:first-child>a,.pagination-lg>li:first-child>span{border-top-left-radius:6px;border-bottom-left-radius:6px}.pagination-lg>li:last-child>a,.pagination-lg>li:last-child>span{border-top-right-radius:6px;border-bottom-right-radius:6px}.pagination-sm>li>a,.pagination-sm>li>span{padding:5px 10px;font-size:12px;line-height:1.5}.pagination-sm>li:first-child>a,.pagination-sm>li:first-child>span{border-top-left-radius:3px;border-bottom-left-radius:3px}.pagination-sm>li:last-child>a,.pagination-sm>li:last-child>span{border-top-right-radius:3px;border-bottom-right-radius:3px}.pager{padding-left:0;margin:20px 0;text-align:center;list-style:none}.pager li{display:inline}.pager li>a,.pager li>span{display:inline-block;padding:5px 14px;background-color:#fff;border:1px solid #ddd;border-radius:15px}.pager li>a:focus,.pager li>a:hover{text-decoration:none;background-color:#eee}.pager .next>a,.pager .next>span{float:right}.pager .previous>a,.pager .previous>span{float:left}.pager .disabled>a,.pager .disabled>a:focus,.pager .disabled>a:hover,.pager .disabled>span{color:#777;cursor:not-allowed;background-color:#fff}.label{display:inline;padding:.2em .6em .3em;font-size:75%;font-weight:700;line-height:1;color:#fff;text-align:center;white-space:nowrap;vertical-align:baseline;border-radius:.25em}a.label:focus,a.label:hover{color:#fff;text-decoration:none;cursor:pointer}.label:empty{display:none}.btn .label{position:relative;top:-1px}.label-default{background-color:#777}.label-default[href]:focus,.label-default[href]:hover{background-color:#5e5e5e}.label-primary{background-color:#337ab7}.label-primary[href]:focus,.label-primary[href]:hover{background-color:#286090}.label-success{background-color:#5cb85c}.label-success[href]:focus,.label-success[href]:hover{background-color:#449d44}.label-info{background-color:#5bc0de}.label-info[href]:focus,.label-info[href]:hover{background-color:#31b0d5}.label-warning{background-color:#f0ad4e}.label-warning[href]:focus,.label-warning[href]:hover{background-color:#ec971f}.label-danger{background-color:#d9534f}.label-danger[href]:focus,.label-danger[href]:hover{background-color:#c9302c}.badge{display:inline-block;min-width:10px;padding:3px 7px;font-size:12px;font-weight:700;line-height:1;color:#fff;text-align:center;white-space:nowrap;vertical-align:middle;background-color:#777;border-radius:10px}.badge:empty{display:none}.btn .badge{position:relative;top:-1px}.btn-group-xs>.btn .badge,.btn-xs .badge{top:0;padding:1px 5px}a.badge:focus,a.badge:hover{color:#fff;text-decoration:none;cursor:pointer}.list-group-item.active>.badge,.nav-pills>.active>a>.badge{color:#337ab7;background-color:#fff}.list-group-item>.badge{float:right}.list-group-item>.badge+.badge{margin-right:5px}.nav-pills>li>a>.badge{margin-left:3px}.jumbotron{padding-top:30px;padding-bottom:30px;margin-bottom:30px;color:inherit;background-color:#eee}.jumbotron .h1,.jumbotron h1{color:inherit}.jumbotron p{margin-bottom:15px;font-size:21px;font-weight:200}.jumbotron>hr{border-top-color:#d5d5d5}.container .jumbotron,.container-fluid .jumbotron{padding-right:15px;padding-left:15px;border-radius:6px}.jumbotron .container{max-width:100%}@media screen and (min-width:768px){.jumbotron{padding-top:48px;padding-bottom:48px}.container .jumbotron,.container-fluid .jumbotron{padding-right:60px;padding-left:60px}.jumbotron .h1,.jumbotron h1{font-size:63px}}.thumbnail{display:block;padding:4px;margin-bottom:20px;line-height:1.42857143;background-color:#fff;border:1px solid #ddd;border-radius:4px;transition:border .2s ease-in-out}.thumbnail a>img,.thumbnail>img{margin-right:auto;margin-left:auto}a.thumbnail.active,a.thumbnail:focus,a.thumbnail:hover{border-color:#337ab7}.thumbnail .caption{padding:9px;color:#333}.alert{padding:15px;margin-bottom:20px;border:1px solid transparent;border-radius:4px}.alert h4{margin-top:0;color:inherit}.alert .alert-link{font-weight:700}.alert>p,.alert>ul{margin-bottom:0}.alert>p+p{margin-top:5px}.alert-dismissable,.alert-dismissible{padding-right:35px}.alert-dismissable .close,.alert-dismissible .close{position:relative;top:-2px;right:-21px;color:inherit}.alert-success{color:#3c763d;background-color:#dff0d8;border-color:#d6e9c6}.alert-success hr{border-top-color:#c9e2b3}.alert-success .alert-link{color:#2b542c}.alert-info{color:#31708f;background-color:#d9edf7;border-color:#bce8f1}.alert-info hr{border-top-color:#a6e1ec}.alert-info .alert-link{color:#245269}.alert-warning{color:#8a6d3b;background-color:#fcf8e3;border-color:#faebcc}.alert-warning hr{border-top-color:#f7e1b5}.alert-warning .alert-link{color:#66512c}.alert-danger{color:#a94442;background-color:#f2dede;border-color:#ebccd1}.alert-danger hr{border-top-color:#e4b9c0}.alert-danger .alert-link{color:#843534}@keyframes progress-bar-stripes{from{background-position:40px 0}to{background-position:0 0}}.progress{height:20px;margin-bottom:20px;overflow:hidden;background-color:#f5f5f5;border-radius:4px;box-shadow:inset 0 1px 2px rgba(0,0,0,.1)}.progress-bar{float:left;width:0;height:100%;font-size:12px;line-height:20px;color:#fff;text-align:center;background-color:#337ab7;box-shadow:inset 0 -1px 0 rgba(0,0,0,.15);transition:width .6s ease}.progress-bar-striped,.progress-striped .progress-bar{background-image:linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);background-size:40px 40px}.progress-bar.active,.progress.active .progress-bar{animation:progress-bar-stripes 2s linear infinite}.progress-bar-success{background-color:#5cb85c}.progress-striped .progress-bar-success{background-image:linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)}.progress-bar-info{background-color:#5bc0de}.progress-striped .progress-bar-info{background-image:linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)}.progress-bar-warning{background-color:#f0ad4e}.progress-striped .progress-bar-warning{background-image:linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)}.progress-bar-danger{background-color:#d9534f}.progress-striped .progress-bar-danger{background-image:linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)}.media{margin-top:15px}.media:first-child{margin-top:0}.media,.media-body{overflow:hidden;zoom:1}.media-body{width:10000px}.media-object{display:block}.media-object.img-thumbnail{max-width:none}.media-right,.media>.pull-right{padding-left:10px}.media-left,.media>.pull-left{padding-right:10px}.media-body,.media-left,.media-right{display:table-cell;vertical-align:top}.media-middle{vertical-align:middle}.media-bottom{vertical-align:bottom}.media-heading{margin-top:0;margin-bottom:5px}.media-list{padding-left:0;list-style:none}.list-group{padding-left:0;margin-bottom:20px}.list-group-item{position:relative;display:block;padding:10px 15px;margin-bottom:-1px;background-color:#fff;border:1px solid #ddd}.list-group-item:first-child{border-top-left-radius:4px;border-top-right-radius:4px}.list-group-item:last-child{margin-bottom:0;border-bottom-right-radius:4px;border-bottom-left-radius:4px}a.list-group-item,button.list-group-item{color:#555}a.list-group-item .list-group-item-heading,button.list-group-item .list-group-item-heading{color:#333}a.list-group-item:focus,a.list-group-item:hover,button.list-group-item:focus,button.list-group-item:hover{color:#555;text-decoration:none;background-color:#f5f5f5}button.list-group-item{width:100%;text-align:left}.list-group-item.disabled,.list-group-item.disabled:focus,.list-group-item.disabled:hover{color:#777;cursor:not-allowed;background-color:#eee}.list-group-item.disabled .list-group-item-heading,.list-group-item.disabled:focus .list-group-item-heading,.list-group-item.disabled:hover .list-group-item-heading{color:inherit}.list-group-item.disabled .list-group-item-text,.list-group-item.disabled:focus .list-group-item-text,.list-group-item.disabled:hover .list-group-item-text{color:#777}.list-group-item.active,.list-group-item.active:focus,.list-group-item.active:hover{z-index:2;color:#fff;background-color:#337ab7;border-color:#337ab7}.list-group-item.active .list-group-item-heading,.list-group-item.active .list-group-item-heading>.small,.list-group-item.active .list-group-item-heading>small,.list-group-item.active:focus .list-group-item-heading,.list-group-item.active:focus .list-group-item-heading>.small,.list-group-item.active:focus .list-group-item-heading>small,.list-group-item.active:hover .list-group-item-heading,.list-group-item.active:hover .list-group-item-heading>.small,.list-group-item.active:hover .list-group-item-heading>small{color:inherit}.list-group-item.active .list-group-item-text,.list-group-item.active:focus .list-group-item-text,.list-group-item.active:hover .list-group-item-text{color:#c7ddef}.list-group-item-success{color:#3c763d;background-color:#dff0d8}a.list-group-item-success,button.list-group-item-success{color:#3c763d}a.list-group-item-success .list-group-item-heading,button.list-group-item-success .list-group-item-heading{color:inherit}a.list-group-item-success:focus,a.list-group-item-success:hover,button.list-group-item-success:focus,button.list-group-item-success:hover{color:#3c763d;background-color:#d0e9c6}a.list-group-item-success.active,a.list-group-item-success.active:focus,a.list-group-item-success.active:hover,button.list-group-item-success.active,button.list-group-item-success.active:focus,button.list-group-item-success.active:hover{color:#fff;background-color:#3c763d;border-color:#3c763d}.list-group-item-info{color:#31708f;background-color:#d9edf7}a.list-group-item-info,button.list-group-item-info{color:#31708f}a.list-group-item-info .list-group-item-heading,button.list-group-item-info .list-group-item-heading{color:inherit}a.list-group-item-info:focus,a.list-group-item-info:hover,button.list-group-item-info:focus,button.list-group-item-info:hover{color:#31708f;background-color:#c4e3f3}a.list-group-item-info.active,a.list-group-item-info.active:focus,a.list-group-item-info.active:hover,button.list-group-item-info.active,button.list-group-item-info.active:focus,button.list-group-item-info.active:hover{color:#fff;background-color:#31708f;border-color:#31708f}.list-group-item-warning{color:#8a6d3b;background-color:#fcf8e3}a.list-group-item-warning,button.list-group-item-warning{color:#8a6d3b}a.list-group-item-warning .list-group-item-heading,button.list-group-item-warning .list-group-item-heading{color:inherit}a.list-group-item-warning:focus,a.list-group-item-warning:hover,button.list-group-item-warning:focus,button.list-group-item-warning:hover{color:#8a6d3b;background-color:#faf2cc}a.list-group-item-warning.active,a.list-group-item-warning.active:focus,a.list-group-item-warning.active:hover,button.list-group-item-warning.active,button.list-group-item-warning.active:focus,button.list-group-item-warning.active:hover{color:#fff;background-color:#8a6d3b;border-color:#8a6d3b}.list-group-item-danger{color:#a94442;background-color:#f2dede}a.list-group-item-danger,button.list-group-item-danger{color:#a94442}a.list-group-item-danger .list-group-item-heading,button.list-group-item-danger .list-group-item-heading{color:inherit}a.list-group-item-danger:focus,a.list-group-item-danger:hover,button.list-group-item-danger:focus,button.list-group-item-danger:hover{color:#a94442;background-color:#ebcccc}a.list-group-item-danger.active,a.list-group-item-danger.active:focus,a.list-group-item-danger.active:hover,button.list-group-item-danger.active,button.list-group-item-danger.active:focus,button.list-group-item-danger.active:hover{color:#fff;background-color:#a94442;border-color:#a94442}.list-group-item-heading{margin-top:0;margin-bottom:5px}.list-group-item-text{margin-bottom:0;line-height:1.3}.panel{margin-bottom:20px;background-color:#fff;border:1px solid transparent;border-radius:4px;box-shadow:0 1px 1px rgba(0,0,0,.05)}.panel-body{padding:15px}.panel-heading{padding:10px 15px;border-bottom:1px solid transparent;border-top-left-radius:3px;border-top-right-radius:3px}.panel-heading>.dropdown .dropdown-toggle{color:inherit}.panel-title{margin-top:0;margin-bottom:0;font-size:16px;color:inherit}.panel-title>.small,.panel-title>.small>a,.panel-title>a,.panel-title>small,.panel-title>small>a{color:inherit}.panel-footer{padding:10px 15px;background-color:#f5f5f5;border-top:1px solid #ddd;border-bottom-right-radius:3px;border-bottom-left-radius:3px}.panel>.list-group,.panel>.panel-collapse>.list-group{margin-bottom:0}.panel>.list-group .list-group-item,.panel>.panel-collapse>.list-group .list-group-item{border-width:1px 0;border-radius:0}.panel>.list-group:first-child .list-group-item:first-child,.panel>.panel-collapse>.list-group:first-child .list-group-item:first-child{border-top:0;border-top-left-radius:3px;border-top-right-radius:3px}.panel>.list-group:last-child .list-group-item:last-child,.panel>.panel-collapse>.list-group:last-child .list-group-item:last-child{border-bottom:0;border-bottom-right-radius:3px;border-bottom-left-radius:3px}.panel>.panel-heading+.panel-collapse>.list-group .list-group-item:first-child{border-top-left-radius:0;border-top-right-radius:0}.panel-heading+.list-group .list-group-item:first-child{border-top-width:0}.list-group+.panel-footer{border-top-width:0}.panel>.panel-collapse>.table,.panel>.table,.panel>.table-responsive>.table{margin-bottom:0}.panel>.panel-collapse>.table caption,.panel>.table caption,.panel>.table-responsive>.table caption{padding-right:15px;padding-left:15px}.panel>.table-responsive:first-child>.table:first-child,.panel>.table:first-child{border-top-left-radius:3px;border-top-right-radius:3px}.panel>.table-responsive:first-child>.table:first-child>tbody:first-child>tr:first-child,.panel>.table-responsive:first-child>.table:first-child>thead:first-child>tr:first-child,.panel>.table:first-child>tbody:first-child>tr:first-child,.panel>.table:first-child>thead:first-child>tr:first-child{border-top-left-radius:3px;border-top-right-radius:3px}.panel>.table-responsive:first-child>.table:first-child>tbody:first-child>tr:first-child td:first-child,.panel>.table-responsive:first-child>.table:first-child>tbody:first-child>tr:first-child th:first-child,.panel>.table-responsive:first-child>.table:first-child>thead:first-child>tr:first-child td:first-child,.panel>.table-responsive:first-child>.table:first-child>thead:first-child>tr:first-child th:first-child,.panel>.table:first-child>tbody:first-child>tr:first-child td:first-child,.panel>.table:first-child>tbody:first-child>tr:first-child th:first-child,.panel>.table:first-child>thead:first-child>tr:first-child td:first-child,.panel>.table:first-child>thead:first-child>tr:first-child th:first-child{border-top-left-radius:3px}.panel>.table-responsive:first-child>.table:first-child>tbody:first-child>tr:first-child td:last-child,.panel>.table-responsive:first-child>.table:first-child>tbody:first-child>tr:first-child th:last-child,.panel>.table-responsive:first-child>.table:first-child>thead:first-child>tr:first-child td:last-child,.panel>.table-responsive:first-child>.table:first-child>thead:first-child>tr:first-child th:last-child,.panel>.table:first-child>tbody:first-child>tr:first-child td:last-child,.panel>.table:first-child>tbody:first-child>tr:first-child th:last-child,.panel>.table:first-child>thead:first-child>tr:first-child td:last-child,.panel>.table:first-child>thead:first-child>tr:first-child th:last-child{border-top-right-radius:3px}.panel>.table-responsive:last-child>.table:last-child,.panel>.table:last-child{border-bottom-right-radius:3px;border-bottom-left-radius:3px}.panel>.table-responsive:last-child>.table:last-child>tbody:last-child>tr:last-child,.panel>.table-responsive:last-child>.table:last-child>tfoot:last-child>tr:last-child,.panel>.table:last-child>tbody:last-child>tr:last-child,.panel>.table:last-child>tfoot:last-child>tr:last-child{border-bottom-right-radius:3px;border-bottom-left-radius:3px}.panel>.table-responsive:last-child>.table:last-child>tbody:last-child>tr:last-child td:first-child,.panel>.table-responsive:last-child>.table:last-child>tbody:last-child>tr:last-child th:first-child,.panel>.table-responsive:last-child>.table:last-child>tfoot:last-child>tr:last-child td:first-child,.panel>.table-responsive:last-child>.table:last-child>tfoot:last-child>tr:last-child th:first-child,.panel>.table:last-child>tbody:last-child>tr:last-child td:first-child,.panel>.table:last-child>tbody:last-child>tr:last-child th:first-child,.panel>.table:last-child>tfoot:last-child>tr:last-child td:first-child,.panel>.table:last-child>tfoot:last-child>tr:last-child th:first-child{border-bottom-left-radius:3px}.panel>.table-responsive:last-child>.table:last-child>tbody:last-child>tr:last-child td:last-child,.panel>.table-responsive:last-child>.table:last-child>tbody:last-child>tr:last-child th:last-child,.panel>.table-responsive:last-child>.table:last-child>tfoot:last-child>tr:last-child td:last-child,.panel>.table-responsive:last-child>.table:last-child>tfoot:last-child>tr:last-child th:last-child,.panel>.table:last-child>tbody:last-child>tr:last-child td:last-child,.panel>.table:last-child>tbody:last-child>tr:last-child th:last-child,.panel>.table:last-child>tfoot:last-child>tr:last-child td:last-child,.panel>.table:last-child>tfoot:last-child>tr:last-child th:last-child{border-bottom-right-radius:3px}.panel>.panel-body+.table,.panel>.panel-body+.table-responsive,.panel>.table+.panel-body,.panel>.table-responsive+.panel-body{border-top:1px solid #ddd}.panel>.table>tbody:first-child>tr:first-child td,.panel>.table>tbody:first-child>tr:first-child th{border-top:0}.panel>.table-bordered,.panel>.table-responsive>.table-bordered{border:0}.panel>.table-bordered>tbody>tr>td:first-child,.panel>.table-bordered>tbody>tr>th:first-child,.panel>.table-bordered>tfoot>tr>td:first-child,.panel>.table-bordered>tfoot>tr>th:first-child,.panel>.table-bordered>thead>tr>td:first-child,.panel>.table-bordered>thead>tr>th:first-child,.panel>.table-responsive>.table-bordered>tbody>tr>td:first-child,.panel>.table-responsive>.table-bordered>tbody>tr>th:first-child,.panel>.table-responsive>.table-bordered>tfoot>tr>td:first-child,.panel>.table-responsive>.table-bordered>tfoot>tr>th:first-child,.panel>.table-responsive>.table-bordered>thead>tr>td:first-child,.panel>.table-responsive>.table-bordered>thead>tr>th:first-child{border-left:0}.panel>.table-bordered>tbody>tr>td:last-child,.panel>.table-bordered>tbody>tr>th:last-child,.panel>.table-bordered>tfoot>tr>td:last-child,.panel>.table-bordered>tfoot>tr>th:last-child,.panel>.table-bordered>thead>tr>td:last-child,.panel>.table-bordered>thead>tr>th:last-child,.panel>.table-responsive>.table-bordered>tbody>tr>td:last-child,.panel>.table-responsive>.table-bordered>tbody>tr>th:last-child,.panel>.table-responsive>.table-bordered>tfoot>tr>td:last-child,.panel>.table-responsive>.table-bordered>tfoot>tr>th:last-child,.panel>.table-responsive>.table-bordered>thead>tr>td:last-child,.panel>.table-responsive>.table-bordered>thead>tr>th:last-child{border-right:0}.panel>.table-bordered>tbody>tr:first-child>td,.panel>.table-bordered>tbody>tr:first-child>th,.panel>.table-bordered>thead>tr:first-child>td,.panel>.table-bordered>thead>tr:first-child>th,.panel>.table-responsive>.table-bordered>tbody>tr:first-child>td,.panel>.table-responsive>.table-bordered>tbody>tr:first-child>th,.panel>.table-responsive>.table-bordered>thead>tr:first-child>td,.panel>.table-responsive>.table-bordered>thead>tr:first-child>th{border-bottom:0}.panel>.table-bordered>tbody>tr:last-child>td,.panel>.table-bordered>tbody>tr:last-child>th,.panel>.table-bordered>tfoot>tr:last-child>td,.panel>.table-bordered>tfoot>tr:last-child>th,.panel>.table-responsive>.table-bordered>tbody>tr:last-child>td,.panel>.table-responsive>.table-bordered>tbody>tr:last-child>th,.panel>.table-responsive>.table-bordered>tfoot>tr:last-child>td,.panel>.table-responsive>.table-bordered>tfoot>tr:last-child>th{border-bottom:0}.panel>.table-responsive{margin-bottom:0;border:0}.panel-group{margin-bottom:20px}.panel-group .panel{margin-bottom:0;border-radius:4px}.panel-group .panel+.panel{margin-top:5px}.panel-group .panel-heading{border-bottom:0}.panel-group .panel-heading+.panel-collapse>.list-group,.panel-group .panel-heading+.panel-collapse>.panel-body{border-top:1px solid #ddd}.panel-group .panel-footer{border-top:0}.panel-group .panel-footer+.panel-collapse .panel-body{border-bottom:1px solid #ddd}.panel-default{border-color:#ddd}.panel-default>.panel-heading{color:#333;background-color:#f5f5f5;border-color:#ddd}.panel-default>.panel-heading+.panel-collapse>.panel-body{border-top-color:#ddd}.panel-default>.panel-heading .badge{color:#f5f5f5;background-color:#333}.panel-default>.panel-footer+.panel-collapse>.panel-body{border-bottom-color:#ddd}.panel-primary{border-color:#337ab7}.panel-primary>.panel-heading{color:#fff;background-color:#337ab7;border-color:#337ab7}.panel-primary>.panel-heading+.panel-collapse>.panel-body{border-top-color:#337ab7}.panel-primary>.panel-heading .badge{color:#337ab7;background-color:#fff}.panel-primary>.panel-footer+.panel-collapse>.panel-body{border-bottom-color:#337ab7}.panel-success{border-color:#d6e9c6}.panel-success>.panel-heading{color:#3c763d;background-color:#dff0d8;border-color:#d6e9c6}.panel-success>.panel-heading+.panel-collapse>.panel-body{border-top-color:#d6e9c6}.panel-success>.panel-heading .badge{color:#dff0d8;background-color:#3c763d}.panel-success>.panel-footer+.panel-collapse>.panel-body{border-bottom-color:#d6e9c6}.panel-info{border-color:#bce8f1}.panel-info>.panel-heading{color:#31708f;background-color:#d9edf7;border-color:#bce8f1}.panel-info>.panel-heading+.panel-collapse>.panel-body{border-top-color:#bce8f1}.panel-info>.panel-heading .badge{color:#d9edf7;background-color:#31708f}.panel-info>.panel-footer+.panel-collapse>.panel-body{border-bottom-color:#bce8f1}.panel-warning{border-color:#faebcc}.panel-warning>.panel-heading{color:#8a6d3b;background-color:#fcf8e3;border-color:#faebcc}.panel-warning>.panel-heading+.panel-collapse>.panel-body{border-top-color:#faebcc}.panel-warning>.panel-heading .badge{color:#fcf8e3;background-color:#8a6d3b}.panel-warning>.panel-footer+.panel-collapse>.panel-body{border-bottom-color:#faebcc}.panel-danger{border-color:#ebccd1}.panel-danger>.panel-heading{color:#a94442;background-color:#f2dede;border-color:#ebccd1}.panel-danger>.panel-heading+.panel-collapse>.panel-body{border-top-color:#ebccd1}.panel-danger>.panel-heading .badge{color:#f2dede;background-color:#a94442}.panel-danger>.panel-footer+.panel-collapse>.panel-body{border-bottom-color:#ebccd1}.embed-responsive{position:relative;display:block;height:0;padding:0;overflow:hidden}.embed-responsive .embed-responsive-item,.embed-responsive embed,.embed-responsive iframe,.embed-responsive object,.embed-responsive video{position:absolute;top:0;bottom:0;left:0;width:100%;height:100%;border:0}.embed-responsive-16by9{padding-bottom:56.25%}.embed-responsive-4by3{padding-bottom:75%}.well{min-height:20px;padding:19px;margin-bottom:20px;background-color:#f5f5f5;border:1px solid #e3e3e3;border-radius:4px;box-shadow:inset 0 1px 1px rgba(0,0,0,.05)}.well blockquote{border-color:#ddd;border-color:rgba(0,0,0,.15)}.well-lg{padding:24px;border-radius:6px}.well-sm{padding:9px;border-radius:3px}.close{float:right;font-size:21px;font-weight:700;line-height:1;color:#000;text-shadow:0 1px 0 #fff;filter:alpha(opacity=20);opacity:.2}.close:focus,.close:hover{color:#000;text-decoration:none;cursor:pointer;filter:alpha(opacity=50);opacity:.5}button.close{-webkit-appearance:none;padding:0;cursor:pointer;background:0 0;border:0}.modal-open{overflow:hidden}.modal{position:fixed;top:0;right:0;bottom:0;left:0;z-index:1050;display:none;overflow:hidden;-webkit-overflow-scrolling:touch;outline:0}.modal.fade .modal-dialog{transition:transform .3s ease-out;transform:translate(0,-25%)}.modal.in .modal-dialog{transform:translate(0,0)}.modal-open .modal{overflow-x:hidden;overflow-y:auto}.modal-dialog{position:relative;width:auto;margin:10px}.modal-content{position:relative;background-color:#fff;background-clip:padding-box;border:1px solid #999;border:1px solid rgba(0,0,0,.2);border-radius:6px;outline:0;box-shadow:0 3px 9px rgba(0,0,0,.5)}.modal-backdrop{position:fixed;top:0;right:0;bottom:0;left:0;z-index:1040;background-color:#000}.modal-backdrop.fade{filter:alpha(opacity=0);opacity:0}.modal-backdrop.in{filter:alpha(opacity=50);opacity:.5}.modal-header{padding:15px;border-bottom:1px solid #e5e5e5}.modal-header .close{margin-top:-2px}.modal-title{margin:0;line-height:1.42857143}.modal-body{position:relative;padding:15px}.modal-footer{padding:15px;text-align:right;border-top:1px solid #e5e5e5}.modal-footer .btn+.btn{margin-bottom:0;margin-left:5px}.modal-footer .btn-group .btn+.btn{margin-left:-1px}.modal-footer .btn-block+.btn-block{margin-left:0}.modal-scrollbar-measure{position:absolute;top:-9999px;width:50px;height:50px;overflow:scroll}@media (min-width:768px){.modal-dialog{width:600px;margin:30px auto}.modal-content{box-shadow:0 5px 15px rgba(0,0,0,.5)}.modal-sm{width:300px}}@media (min-width:992px){.modal-lg{width:900px}}.tooltip{position:absolute;z-index:1070;display:block;font-family:\"Helvetica Neue\",Helvetica,Arial,sans-serif;font-size:12px;font-style:normal;font-weight:400;line-height:1.42857143;text-align:left;text-align:start;text-decoration:none;text-shadow:none;text-transform:none;letter-spacing:normal;word-break:normal;word-spacing:normal;word-wrap:normal;white-space:normal;filter:alpha(opacity=0);opacity:0;line-break:auto}.tooltip.in{filter:alpha(opacity=90);opacity:.9}.tooltip.top{padding:5px 0;margin-top:-3px}.tooltip.right{padding:0 5px;margin-left:3px}.tooltip.bottom{padding:5px 0;margin-top:3px}.tooltip.left{padding:0 5px;margin-left:-3px}.tooltip-inner{max-width:200px;padding:3px 8px;color:#fff;text-align:center;background-color:#000;border-radius:4px}.tooltip-arrow{position:absolute;width:0;height:0;border-color:transparent;border-style:solid}.tooltip.top .tooltip-arrow{bottom:0;left:50%;margin-left:-5px;border-width:5px 5px 0;border-top-color:#000}.tooltip.top-left .tooltip-arrow{right:5px;bottom:0;margin-bottom:-5px;border-width:5px 5px 0;border-top-color:#000}.tooltip.top-right .tooltip-arrow{bottom:0;left:5px;margin-bottom:-5px;border-width:5px 5px 0;border-top-color:#000}.tooltip.right .tooltip-arrow{top:50%;left:0;margin-top:-5px;border-width:5px 5px 5px 0;border-right-color:#000}.tooltip.left .tooltip-arrow{top:50%;right:0;margin-top:-5px;border-width:5px 0 5px 5px;border-left-color:#000}.tooltip.bottom .tooltip-arrow{top:0;left:50%;margin-left:-5px;border-width:0 5px 5px;border-bottom-color:#000}.tooltip.bottom-left .tooltip-arrow{top:0;right:5px;margin-top:-5px;border-width:0 5px 5px;border-bottom-color:#000}.tooltip.bottom-right .tooltip-arrow{top:0;left:5px;margin-top:-5px;border-width:0 5px 5px;border-bottom-color:#000}.popover{position:absolute;top:0;left:0;z-index:1060;display:none;max-width:276px;padding:1px;font-family:\"Helvetica Neue\",Helvetica,Arial,sans-serif;font-size:14px;font-style:normal;font-weight:400;line-height:1.42857143;text-align:left;text-align:start;text-decoration:none;text-shadow:none;text-transform:none;letter-spacing:normal;word-break:normal;word-spacing:normal;word-wrap:normal;white-space:normal;background-color:#fff;background-clip:padding-box;border:1px solid #ccc;border:1px solid rgba(0,0,0,.2);border-radius:6px;box-shadow:0 5px 10px rgba(0,0,0,.2);line-break:auto}.popover.top{margin-top:-10px}.popover.right{margin-left:10px}.popover.bottom{margin-top:10px}.popover.left{margin-left:-10px}.popover-title{padding:8px 14px;margin:0;font-size:14px;background-color:#f7f7f7;border-bottom:1px solid #ebebeb;border-radius:5px 5px 0 0}.popover-content{padding:9px 14px}.popover>.arrow,.popover>.arrow:after{position:absolute;display:block;width:0;height:0;border-color:transparent;border-style:solid}.popover>.arrow{border-width:11px}.popover>.arrow:after{content:\"\";border-width:10px}.popover.top>.arrow{bottom:-11px;left:50%;margin-left:-11px;border-top-color:#999;border-top-color:rgba(0,0,0,.25);border-bottom-width:0}.popover.top>.arrow:after{bottom:1px;margin-left:-10px;content:\" \";border-top-color:#fff;border-bottom-width:0}.popover.right>.arrow{top:50%;left:-11px;margin-top:-11px;border-right-color:#999;border-right-color:rgba(0,0,0,.25);border-left-width:0}.popover.right>.arrow:after{bottom:-10px;left:1px;content:\" \";border-right-color:#fff;border-left-width:0}.popover.bottom>.arrow{top:-11px;left:50%;margin-left:-11px;border-top-width:0;border-bottom-color:#999;border-bottom-color:rgba(0,0,0,.25)}.popover.bottom>.arrow:after{top:1px;margin-left:-10px;content:\" \";border-top-width:0;border-bottom-color:#fff}.popover.left>.arrow{top:50%;right:-11px;margin-top:-11px;border-right-width:0;border-left-color:#999;border-left-color:rgba(0,0,0,.25)}.popover.left>.arrow:after{right:1px;bottom:-10px;content:\" \";border-right-width:0;border-left-color:#fff}.carousel{position:relative}.carousel-inner{position:relative;width:100%;overflow:hidden}.carousel-inner>.item{position:relative;display:none;transition:.6s ease-in-out left}.carousel-inner>.item>a>img,.carousel-inner>.item>img{line-height:1}@media all and (transform-3d), (-webkit-transform-3d){.carousel-inner>.item{transition:transform .6s ease-in-out;-webkit-backface-visibility:hidden;backface-visibility:hidden;perspective:1000px}.carousel-inner>.item.active.right,.carousel-inner>.item.next{left:0;transform:translate3d(100%,0,0)}.carousel-inner>.item.active.left,.carousel-inner>.item.prev{left:0;transform:translate3d(-100%,0,0)}.carousel-inner>.item.active,.carousel-inner>.item.next.left,.carousel-inner>.item.prev.right{left:0;transform:translate3d(0,0,0)}}.carousel-inner>.active,.carousel-inner>.next,.carousel-inner>.prev{display:block}.carousel-inner>.active{left:0}.carousel-inner>.next,.carousel-inner>.prev{position:absolute;top:0;width:100%}.carousel-inner>.next{left:100%}.carousel-inner>.prev{left:-100%}.carousel-inner>.next.left,.carousel-inner>.prev.right{left:0}.carousel-inner>.active.left{left:-100%}.carousel-inner>.active.right{left:100%}.carousel-control{position:absolute;top:0;bottom:0;left:0;width:15%;font-size:20px;color:#fff;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,.6);background-color:rgba(0,0,0,0);filter:alpha(opacity=50);opacity:.5}.carousel-control.left{background-image:linear-gradient(to right,rgba(0,0,0,.5) 0,rgba(0,0,0,.0001) 100%);filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#80000000', endColorstr='#00000000', GradientType=1);background-repeat:repeat-x}.carousel-control.right{right:0;left:auto;background-image:linear-gradient(to right,rgba(0,0,0,.0001) 0,rgba(0,0,0,.5) 100%);filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#80000000', GradientType=1);background-repeat:repeat-x}.carousel-control:focus,.carousel-control:hover{color:#fff;text-decoration:none;filter:alpha(opacity=90);outline:0;opacity:.9}.carousel-control .glyphicon-chevron-left,.carousel-control .glyphicon-chevron-right,.carousel-control .icon-next,.carousel-control .icon-prev{position:absolute;top:50%;z-index:5;display:inline-block;margin-top:-10px}.carousel-control .glyphicon-chevron-left,.carousel-control .icon-prev{left:50%;margin-left:-10px}.carousel-control .glyphicon-chevron-right,.carousel-control .icon-next{right:50%;margin-right:-10px}.carousel-control .icon-next,.carousel-control .icon-prev{width:20px;height:20px;font-family:serif;line-height:1}.carousel-control .icon-prev:before{content:'\\2039'}.carousel-control .icon-next:before{content:'\\203A'}.carousel-indicators{position:absolute;bottom:10px;left:50%;z-index:15;width:60%;padding-left:0;margin-left:-30%;text-align:center;list-style:none}.carousel-indicators li{display:inline-block;width:10px;height:10px;margin:1px;text-indent:-999px;cursor:pointer;background-color:#000\\9;background-color:rgba(0,0,0,0);border:1px solid #fff;border-radius:10px}.carousel-indicators .active{width:12px;height:12px;margin:0;background-color:#fff}.carousel-caption{position:absolute;right:15%;bottom:20px;left:15%;z-index:10;padding-top:20px;padding-bottom:20px;color:#fff;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,.6)}.carousel-caption .btn{text-shadow:none}@media screen and (min-width:768px){.carousel-control .glyphicon-chevron-left,.carousel-control .glyphicon-chevron-right,.carousel-control .icon-next,.carousel-control .icon-prev{width:30px;height:30px;margin-top:-10px;font-size:30px}.carousel-control .glyphicon-chevron-left,.carousel-control .icon-prev{margin-left:-10px}.carousel-control .glyphicon-chevron-right,.carousel-control .icon-next{margin-right:-10px}.carousel-caption{right:20%;left:20%;padding-bottom:30px}.carousel-indicators{bottom:20px}}.btn-group-vertical>.btn-group:after,.btn-group-vertical>.btn-group:before,.btn-toolbar:after,.btn-toolbar:before,.clearfix:after,.clearfix:before,.container-fluid:after,.container-fluid:before,.container:after,.container:before,.dl-horizontal dd:after,.dl-horizontal dd:before,.form-horizontal .form-group:after,.form-horizontal .form-group:before,.modal-footer:after,.modal-footer:before,.modal-header:after,.modal-header:before,.nav:after,.nav:before,.navbar-collapse:after,.navbar-collapse:before,.navbar-header:after,.navbar-header:before,.navbar:after,.navbar:before,.pager:after,.pager:before,.panel-body:after,.panel-body:before,.row:after,.row:before{display:table;content:\" \"}.btn-group-vertical>.btn-group:after,.btn-toolbar:after,.clearfix:after,.container-fluid:after,.container:after,.dl-horizontal dd:after,.form-horizontal .form-group:after,.modal-footer:after,.modal-header:after,.nav:after,.navbar-collapse:after,.navbar-header:after,.navbar:after,.pager:after,.panel-body:after,.row:after{clear:both}.center-block{display:block;margin-right:auto;margin-left:auto}.pull-right{float:right!important}.pull-left{float:left!important}.hide{display:none!important}.show{display:block!important}.invisible{visibility:hidden}.text-hide{font:0/0 a;color:transparent;text-shadow:none;background-color:transparent;border:0}.hidden{display:none!important}.affix{position:fixed}.visible-lg,.visible-md,.visible-sm,.visible-xs{display:none!important}.visible-lg-block,.visible-lg-inline,.visible-lg-inline-block,.visible-md-block,.visible-md-inline,.visible-md-inline-block,.visible-sm-block,.visible-sm-inline,.visible-sm-inline-block,.visible-xs-block,.visible-xs-inline,.visible-xs-inline-block{display:none!important}@media (max-width:767px){.visible-xs{display:block!important}table.visible-xs{display:table!important}tr.visible-xs{display:table-row!important}td.visible-xs,th.visible-xs{display:table-cell!important}}@media (max-width:767px){.visible-xs-block{display:block!important}}@media (max-width:767px){.visible-xs-inline{display:inline!important}}@media (max-width:767px){.visible-xs-inline-block{display:inline-block!important}}@media (min-width:768px) and (max-width:991px){.visible-sm{display:block!important}table.visible-sm{display:table!important}tr.visible-sm{display:table-row!important}td.visible-sm,th.visible-sm{display:table-cell!important}}@media (min-width:768px) and (max-width:991px){.visible-sm-block{display:block!important}}@media (min-width:768px) and (max-width:991px){.visible-sm-inline{display:inline!important}}@media (min-width:768px) and (max-width:991px){.visible-sm-inline-block{display:inline-block!important}}@media (min-width:992px) and (max-width:1199px){.visible-md{display:block!important}table.visible-md{display:table!important}tr.visible-md{display:table-row!important}td.visible-md,th.visible-md{display:table-cell!important}}@media (min-width:992px) and (max-width:1199px){.visible-md-block{display:block!important}}@media (min-width:992px) and (max-width:1199px){.visible-md-inline{display:inline!important}}@media (min-width:992px) and (max-width:1199px){.visible-md-inline-block{display:inline-block!important}}@media (min-width:1200px){.visible-lg{display:block!important}table.visible-lg{display:table!important}tr.visible-lg{display:table-row!important}td.visible-lg,th.visible-lg{display:table-cell!important}}@media (min-width:1200px){.visible-lg-block{display:block!important}}@media (min-width:1200px){.visible-lg-inline{display:inline!important}}@media (min-width:1200px){.visible-lg-inline-block{display:inline-block!important}}@media (max-width:767px){.hidden-xs{display:none!important}}@media (min-width:768px) and (max-width:991px){.hidden-sm{display:none!important}}@media (min-width:992px) and (max-width:1199px){.hidden-md{display:none!important}}@media (min-width:1200px){.hidden-lg{display:none!important}}.visible-print{display:none!important}@media print{.visible-print{display:block!important}table.visible-print{display:table!important}tr.visible-print{display:table-row!important}td.visible-print,th.visible-print{display:table-cell!important}}.visible-print-block{display:none!important}@media print{.visible-print-block{display:block!important}}.visible-print-inline{display:none!important}@media print{.visible-print-inline{display:inline!important}}.visible-print-inline-block{display:none!important}@media print{.visible-print-inline-block{display:inline-block!important}}@media print{.hidden-print{display:none!important}}/*# sourceMappingURL=bootstrap.min.css.map */", ""]);
 
 // exports
 
 
 /***/ }),
-/* 88 */
+/* 80 */
 /* no static exports found */
 /* all exports used */
 /*!*******************************************************************************************!*\
@@ -58171,13 +58958,13 @@ exports = module.exports = __webpack_require__(/*! ../../css-loader/lib/css-base
 
 
 // module
-exports.push([module.i, "UL.jqueryFileTree{font-family:Verdana,sans-serif;font-size:11px;line-height:18px;padding:0;margin:0;display:none}UL.jqueryFileTree LI{list-style:none;padding:0 0 0 20px;margin:0;white-space:nowrap}UL.jqueryFileTree LI.directory{background:url(" + __webpack_require__(/*! ./images/directory.png */ 121) + ") left top no-repeat}UL.jqueryFileTree LI.directory-locked{background:url(" + __webpack_require__(/*! ./images/directory-lock.png */ 120) + ") left top no-repeat}UL.jqueryFileTree LI.expanded{background:url(" + __webpack_require__(/*! ./images/folder_open.png */ 125) + ") left top no-repeat}UL.jqueryFileTree LI.file{background:url(" + __webpack_require__(/*! ./images/file.png */ 124) + ") left top no-repeat}UL.jqueryFileTree LI.file-locked{background:url(" + __webpack_require__(/*! ./images/file-lock.png */ 123) + ") left top no-repeat!important}UL.jqueryFileTree LI.wait{background:url(" + __webpack_require__(/*! ./images/spinner.gif */ 133) + ") left top no-repeat}UL.jqueryFileTree LI.selected>a{font-weight:700}UL.jqueryFileTree LI.ext_3gp{background:url(" + __webpack_require__(/*! ./images/film.png */ 13) + ") left top no-repeat}UL.jqueryFileTree LI.ext_afp,UL.jqueryFileTree LI.ext_afpa,UL.jqueryFileTree LI.ext_asp,UL.jqueryFileTree LI.ext_aspx{background:url(" + __webpack_require__(/*! ./images/code.png */ 8) + ") left top no-repeat}UL.jqueryFileTree LI.ext_avi{background:url(" + __webpack_require__(/*! ./images/film.png */ 13) + ") left top no-repeat}UL.jqueryFileTree LI.ext_bat{background:url(" + __webpack_require__(/*! ./images/application.png */ 19) + ") left top no-repeat}UL.jqueryFileTree LI.ext_bmp{background:url(" + __webpack_require__(/*! ./images/picture.png */ 14) + ") left top no-repeat}UL.jqueryFileTree LI.ext_c,UL.jqueryFileTree LI.ext_cfm,UL.jqueryFileTree LI.ext_cgi{background:url(" + __webpack_require__(/*! ./images/code.png */ 8) + ") left top no-repeat}UL.jqueryFileTree LI.ext_com{background:url(" + __webpack_require__(/*! ./images/application.png */ 19) + ") left top no-repeat}UL.jqueryFileTree LI.ext_cpp{background:url(" + __webpack_require__(/*! ./images/code.png */ 8) + ") left top no-repeat}UL.jqueryFileTree LI.ext_css{background:url(" + __webpack_require__(/*! ./images/css.png */ 118) + ") left top no-repeat}UL.jqueryFileTree LI.ext_doc{background:url(" + __webpack_require__(/*! ./images/doc.png */ 122) + ") left top no-repeat}UL.jqueryFileTree LI.ext_exe{background:url(" + __webpack_require__(/*! ./images/application.png */ 19) + ") left top no-repeat}UL.jqueryFileTree LI.ext_gif{background:url(" + __webpack_require__(/*! ./images/picture.png */ 14) + ") left top no-repeat}UL.jqueryFileTree LI.ext_fla{background:url(" + __webpack_require__(/*! ./images/flash.png */ 40) + ") left top no-repeat}UL.jqueryFileTree LI.ext_h{background:url(" + __webpack_require__(/*! ./images/code.png */ 8) + ") left top no-repeat}UL.jqueryFileTree LI.ext_htm,UL.jqueryFileTree LI.ext_html{background:url(" + __webpack_require__(/*! ./images/html.png */ 126) + ") left top no-repeat}UL.jqueryFileTree LI.ext_jar{background:url(" + __webpack_require__(/*! ./images/java.png */ 127) + ") left top no-repeat}UL.jqueryFileTree LI.ext_jpeg,UL.jqueryFileTree LI.ext_jpg{background:url(" + __webpack_require__(/*! ./images/picture.png */ 14) + ") left top no-repeat}UL.jqueryFileTree LI.ext_js{background:url(" + __webpack_require__(/*! ./images/script.png */ 42) + ") left top no-repeat}UL.jqueryFileTree LI.ext_lasso{background:url(" + __webpack_require__(/*! ./images/code.png */ 8) + ") left top no-repeat}UL.jqueryFileTree LI.ext_log{background:url(" + __webpack_require__(/*! ./images/txt.png */ 43) + ") left top no-repeat}UL.jqueryFileTree LI.ext_m4p{background:url(" + __webpack_require__(/*! ./images/music.png */ 17) + ") left top no-repeat}UL.jqueryFileTree LI.ext_mov{background:url(" + __webpack_require__(/*! ./images/film.png */ 13) + ") left top no-repeat}UL.jqueryFileTree LI.ext_mp3{background:url(" + __webpack_require__(/*! ./images/music.png */ 17) + ") left top no-repeat}UL.jqueryFileTree LI.ext_mp4,UL.jqueryFileTree LI.ext_mpeg,UL.jqueryFileTree LI.ext_mpg{background:url(" + __webpack_require__(/*! ./images/film.png */ 13) + ") left top no-repeat}UL.jqueryFileTree LI.ext_ogg{background:url(" + __webpack_require__(/*! ./images/music.png */ 17) + ") left top no-repeat}UL.jqueryFileTree LI.ext_ogv{background:url(" + __webpack_require__(/*! ./images/film.png */ 13) + ") left top no-repeat}UL.jqueryFileTree LI.ext_pcx{background:url(" + __webpack_require__(/*! ./images/picture.png */ 14) + ") left top no-repeat}UL.jqueryFileTree LI.ext_pdf{background:url(" + __webpack_require__(/*! ./images/pdf.png */ 129) + ") left top no-repeat}UL.jqueryFileTree LI.ext_php{background:url(" + __webpack_require__(/*! ./images/php.png */ 130) + ") left top no-repeat}UL.jqueryFileTree LI.ext_png{background:url(" + __webpack_require__(/*! ./images/picture.png */ 14) + ") left top no-repeat}UL.jqueryFileTree LI.ext_ppt{background:url(" + __webpack_require__(/*! ./images/ppt.png */ 131) + ") left top no-repeat}UL.jqueryFileTree LI.ext_psd{background:url(" + __webpack_require__(/*! ./images/psd.png */ 132) + ") left top no-repeat}UL.jqueryFileTree LI.ext_pl,UL.jqueryFileTree LI.ext_py{background:url(" + __webpack_require__(/*! ./images/script.png */ 42) + ") left top no-repeat}UL.jqueryFileTree LI.ext_rb,UL.jqueryFileTree LI.ext_rbx,UL.jqueryFileTree LI.ext_rhtml{background:url(" + __webpack_require__(/*! ./images/ruby.png */ 41) + ") left top no-repeat}UL.jqueryFileTree LI.ext_rpm{background:url(" + __webpack_require__(/*! ./images/linux.png */ 128) + ") left top no-repeat}UL.jqueryFileTree LI.ext_ruby{background:url(" + __webpack_require__(/*! ./images/ruby.png */ 41) + ") left top no-repeat}UL.jqueryFileTree LI.ext_sql{background:url(" + __webpack_require__(/*! ./images/db.png */ 119) + ") left top no-repeat}UL.jqueryFileTree LI.ext_swf{background:url(" + __webpack_require__(/*! ./images/flash.png */ 40) + ") left top no-repeat}UL.jqueryFileTree LI.ext_tif,UL.jqueryFileTree LI.ext_tiff{background:url(" + __webpack_require__(/*! ./images/picture.png */ 14) + ") left top no-repeat}UL.jqueryFileTree LI.ext_txt{background:url(" + __webpack_require__(/*! ./images/txt.png */ 43) + ") left top no-repeat}UL.jqueryFileTree LI.ext_vb{background:url(" + __webpack_require__(/*! ./images/code.png */ 8) + ") left top no-repeat}UL.jqueryFileTree LI.ext_wav{background:url(" + __webpack_require__(/*! ./images/music.png */ 17) + ") left top no-repeat}UL.jqueryFileTree LI.ext_webm,UL.jqueryFileTree LI.ext_wmv{background:url(" + __webpack_require__(/*! ./images/film.png */ 13) + ") left top no-repeat}UL.jqueryFileTree LI.ext_xls{background:url(" + __webpack_require__(/*! ./images/xls.png */ 134) + ") left top no-repeat}UL.jqueryFileTree LI.ext_xml{background:url(" + __webpack_require__(/*! ./images/code.png */ 8) + ") left top no-repeat}UL.jqueryFileTree LI.ext_zip{background:url(" + __webpack_require__(/*! ./images/zip.png */ 135) + ") left top no-repeat}UL.jqueryFileTree A{color:#333;text-decoration:none;display:inline-block;padding:0 2px;cursor:pointer}UL.jqueryFileTree A:hover{background:#BDF}", ""]);
+exports.push([module.i, "UL.jqueryFileTree{font-family:Verdana,sans-serif;font-size:11px;line-height:18px;padding:0;margin:0;display:none}UL.jqueryFileTree LI{list-style:none;padding:0 0 0 20px;margin:0;white-space:nowrap}UL.jqueryFileTree LI.directory{background:url(" + __webpack_require__(/*! ./images/directory.png */ 110) + ") left top no-repeat}UL.jqueryFileTree LI.directory-locked{background:url(" + __webpack_require__(/*! ./images/directory-lock.png */ 109) + ") left top no-repeat}UL.jqueryFileTree LI.expanded{background:url(" + __webpack_require__(/*! ./images/folder_open.png */ 114) + ") left top no-repeat}UL.jqueryFileTree LI.file{background:url(" + __webpack_require__(/*! ./images/file.png */ 113) + ") left top no-repeat}UL.jqueryFileTree LI.file-locked{background:url(" + __webpack_require__(/*! ./images/file-lock.png */ 112) + ") left top no-repeat!important}UL.jqueryFileTree LI.wait{background:url(" + __webpack_require__(/*! ./images/spinner.gif */ 122) + ") left top no-repeat}UL.jqueryFileTree LI.selected>a{font-weight:700}UL.jqueryFileTree LI.ext_3gp{background:url(" + __webpack_require__(/*! ./images/film.png */ 12) + ") left top no-repeat}UL.jqueryFileTree LI.ext_afp,UL.jqueryFileTree LI.ext_afpa,UL.jqueryFileTree LI.ext_asp,UL.jqueryFileTree LI.ext_aspx{background:url(" + __webpack_require__(/*! ./images/code.png */ 9) + ") left top no-repeat}UL.jqueryFileTree LI.ext_avi{background:url(" + __webpack_require__(/*! ./images/film.png */ 12) + ") left top no-repeat}UL.jqueryFileTree LI.ext_bat{background:url(" + __webpack_require__(/*! ./images/application.png */ 24) + ") left top no-repeat}UL.jqueryFileTree LI.ext_bmp{background:url(" + __webpack_require__(/*! ./images/picture.png */ 13) + ") left top no-repeat}UL.jqueryFileTree LI.ext_c,UL.jqueryFileTree LI.ext_cfm,UL.jqueryFileTree LI.ext_cgi{background:url(" + __webpack_require__(/*! ./images/code.png */ 9) + ") left top no-repeat}UL.jqueryFileTree LI.ext_com{background:url(" + __webpack_require__(/*! ./images/application.png */ 24) + ") left top no-repeat}UL.jqueryFileTree LI.ext_cpp{background:url(" + __webpack_require__(/*! ./images/code.png */ 9) + ") left top no-repeat}UL.jqueryFileTree LI.ext_css{background:url(" + __webpack_require__(/*! ./images/css.png */ 107) + ") left top no-repeat}UL.jqueryFileTree LI.ext_doc{background:url(" + __webpack_require__(/*! ./images/doc.png */ 111) + ") left top no-repeat}UL.jqueryFileTree LI.ext_exe{background:url(" + __webpack_require__(/*! ./images/application.png */ 24) + ") left top no-repeat}UL.jqueryFileTree LI.ext_gif{background:url(" + __webpack_require__(/*! ./images/picture.png */ 13) + ") left top no-repeat}UL.jqueryFileTree LI.ext_fla{background:url(" + __webpack_require__(/*! ./images/flash.png */ 32) + ") left top no-repeat}UL.jqueryFileTree LI.ext_h{background:url(" + __webpack_require__(/*! ./images/code.png */ 9) + ") left top no-repeat}UL.jqueryFileTree LI.ext_htm,UL.jqueryFileTree LI.ext_html{background:url(" + __webpack_require__(/*! ./images/html.png */ 115) + ") left top no-repeat}UL.jqueryFileTree LI.ext_jar{background:url(" + __webpack_require__(/*! ./images/java.png */ 116) + ") left top no-repeat}UL.jqueryFileTree LI.ext_jpeg,UL.jqueryFileTree LI.ext_jpg{background:url(" + __webpack_require__(/*! ./images/picture.png */ 13) + ") left top no-repeat}UL.jqueryFileTree LI.ext_js{background:url(" + __webpack_require__(/*! ./images/script.png */ 34) + ") left top no-repeat}UL.jqueryFileTree LI.ext_lasso{background:url(" + __webpack_require__(/*! ./images/code.png */ 9) + ") left top no-repeat}UL.jqueryFileTree LI.ext_log{background:url(" + __webpack_require__(/*! ./images/txt.png */ 35) + ") left top no-repeat}UL.jqueryFileTree LI.ext_m4p{background:url(" + __webpack_require__(/*! ./images/music.png */ 18) + ") left top no-repeat}UL.jqueryFileTree LI.ext_mov{background:url(" + __webpack_require__(/*! ./images/film.png */ 12) + ") left top no-repeat}UL.jqueryFileTree LI.ext_mp3{background:url(" + __webpack_require__(/*! ./images/music.png */ 18) + ") left top no-repeat}UL.jqueryFileTree LI.ext_mp4,UL.jqueryFileTree LI.ext_mpeg,UL.jqueryFileTree LI.ext_mpg{background:url(" + __webpack_require__(/*! ./images/film.png */ 12) + ") left top no-repeat}UL.jqueryFileTree LI.ext_ogg{background:url(" + __webpack_require__(/*! ./images/music.png */ 18) + ") left top no-repeat}UL.jqueryFileTree LI.ext_ogv{background:url(" + __webpack_require__(/*! ./images/film.png */ 12) + ") left top no-repeat}UL.jqueryFileTree LI.ext_pcx{background:url(" + __webpack_require__(/*! ./images/picture.png */ 13) + ") left top no-repeat}UL.jqueryFileTree LI.ext_pdf{background:url(" + __webpack_require__(/*! ./images/pdf.png */ 118) + ") left top no-repeat}UL.jqueryFileTree LI.ext_php{background:url(" + __webpack_require__(/*! ./images/php.png */ 119) + ") left top no-repeat}UL.jqueryFileTree LI.ext_png{background:url(" + __webpack_require__(/*! ./images/picture.png */ 13) + ") left top no-repeat}UL.jqueryFileTree LI.ext_ppt{background:url(" + __webpack_require__(/*! ./images/ppt.png */ 120) + ") left top no-repeat}UL.jqueryFileTree LI.ext_psd{background:url(" + __webpack_require__(/*! ./images/psd.png */ 121) + ") left top no-repeat}UL.jqueryFileTree LI.ext_pl,UL.jqueryFileTree LI.ext_py{background:url(" + __webpack_require__(/*! ./images/script.png */ 34) + ") left top no-repeat}UL.jqueryFileTree LI.ext_rb,UL.jqueryFileTree LI.ext_rbx,UL.jqueryFileTree LI.ext_rhtml{background:url(" + __webpack_require__(/*! ./images/ruby.png */ 33) + ") left top no-repeat}UL.jqueryFileTree LI.ext_rpm{background:url(" + __webpack_require__(/*! ./images/linux.png */ 117) + ") left top no-repeat}UL.jqueryFileTree LI.ext_ruby{background:url(" + __webpack_require__(/*! ./images/ruby.png */ 33) + ") left top no-repeat}UL.jqueryFileTree LI.ext_sql{background:url(" + __webpack_require__(/*! ./images/db.png */ 108) + ") left top no-repeat}UL.jqueryFileTree LI.ext_swf{background:url(" + __webpack_require__(/*! ./images/flash.png */ 32) + ") left top no-repeat}UL.jqueryFileTree LI.ext_tif,UL.jqueryFileTree LI.ext_tiff{background:url(" + __webpack_require__(/*! ./images/picture.png */ 13) + ") left top no-repeat}UL.jqueryFileTree LI.ext_txt{background:url(" + __webpack_require__(/*! ./images/txt.png */ 35) + ") left top no-repeat}UL.jqueryFileTree LI.ext_vb{background:url(" + __webpack_require__(/*! ./images/code.png */ 9) + ") left top no-repeat}UL.jqueryFileTree LI.ext_wav{background:url(" + __webpack_require__(/*! ./images/music.png */ 18) + ") left top no-repeat}UL.jqueryFileTree LI.ext_webm,UL.jqueryFileTree LI.ext_wmv{background:url(" + __webpack_require__(/*! ./images/film.png */ 12) + ") left top no-repeat}UL.jqueryFileTree LI.ext_xls{background:url(" + __webpack_require__(/*! ./images/xls.png */ 123) + ") left top no-repeat}UL.jqueryFileTree LI.ext_xml{background:url(" + __webpack_require__(/*! ./images/code.png */ 9) + ") left top no-repeat}UL.jqueryFileTree LI.ext_zip{background:url(" + __webpack_require__(/*! ./images/zip.png */ 124) + ") left top no-repeat}UL.jqueryFileTree A{color:#333;text-decoration:none;display:inline-block;padding:0 2px;cursor:pointer}UL.jqueryFileTree A:hover{background:#BDF}", ""]);
 
 // exports
 
 
 /***/ }),
-/* 89 */
+/* 81 */
 /* no static exports found */
 /* all exports used */
 /*!*****************************************************************!*\
@@ -58188,7 +58975,7 @@ exports.push([module.i, "UL.jqueryFileTree{font-family:Verdana,sans-serif;font-s
 module.exports = __webpack_require__.p + "./89889688147bd7575d6327160d64e760.svg";
 
 /***/ }),
-/* 90 */
+/* 82 */
 /* no static exports found */
 /* all exports used */
 /*!*****************************************************************!*\
@@ -58199,7 +58986,7 @@ module.exports = __webpack_require__.p + "./89889688147bd7575d6327160d64e760.svg
 module.exports = __webpack_require__.p + "./e18bbf611f2a2e43afc071aa2f4e1512.ttf";
 
 /***/ }),
-/* 91 */
+/* 83 */
 /* no static exports found */
 /* all exports used */
 /*!****************************!*\
@@ -58294,7 +59081,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 
 /***/ }),
-/* 92 */
+/* 84 */
 /* no static exports found */
 /* all exports used */
 /*!***********************************!*\
@@ -58325,7 +59112,162 @@ return $.ui.version = "1.12.1";
 
 
 /***/ }),
-/* 93 */
+/* 85 */
+/* no static exports found */
+/* all exports used */
+/*!****************************************************!*\
+  !*** ./nengo_gui/static/components/connection.css ***!
+  \****************************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(/*! !../../../~/css-loader!../../../~/postcss-loader??ref--0-2!./connection.css */ 65);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(/*! ../../../~/style-loader/addStyles.js */ 4)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./connection.css", function() {
+			var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./connection.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 86 */
+/* no static exports found */
+/* all exports used */
+/*!**************************************************!*\
+  !*** ./nengo_gui/static/components/ensemble.css ***!
+  \**************************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(/*! !../../../~/css-loader!../../../~/postcss-loader??ref--0-2!./ensemble.css */ 66);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(/*! ../../../~/style-loader/addStyles.js */ 4)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./ensemble.css", function() {
+			var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./ensemble.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 87 */
+/* no static exports found */
+/* all exports used */
+/*!*************************************************!*\
+  !*** ./nengo_gui/static/components/network.css ***!
+  \*************************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(/*! !../../../~/css-loader!../../../~/postcss-loader??ref--0-2!./network.css */ 67);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(/*! ../../../~/style-loader/addStyles.js */ 4)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./network.css", function() {
+			var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./network.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 88 */
+/* no static exports found */
+/* all exports used */
+/*!**********************************************!*\
+  !*** ./nengo_gui/static/components/node.css ***!
+  \**********************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(/*! !../../../~/css-loader!../../../~/postcss-loader??ref--0-2!./node.css */ 68);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(/*! ../../../~/style-loader/addStyles.js */ 4)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./node.css", function() {
+			var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./node.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 89 */
+/* no static exports found */
+/* all exports used */
+/*!**********************************************!*\
+  !*** ./nengo_gui/static/components/plot.css ***!
+  \**********************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(/*! !../../../~/css-loader!../../../~/postcss-loader??ref--0-2!./plot.css */ 69);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(/*! ../../../~/style-loader/addStyles.js */ 4)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./plot.css", function() {
+			var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./plot.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 90 */
 /* no static exports found */
 /* all exports used */
 /*!************************************************!*\
@@ -58336,7 +59278,7 @@ return $.ui.version = "1.12.1";
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(/*! !../../../~/css-loader!../../../~/postcss-loader??ref--0-2!./slider.css */ 73);
+var content = __webpack_require__(/*! !../../../~/css-loader!../../../~/postcss-loader??ref--0-2!./slider.css */ 70);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
 var update = __webpack_require__(/*! ../../../~/style-loader/addStyles.js */ 4)(content, {});
@@ -58356,28 +59298,121 @@ if(false) {
 }
 
 /***/ }),
-/* 94 */
+/* 91 */
 /* no static exports found */
 /* all exports used */
-/*!****************************************************!*\
-  !*** ./nengo_gui/static/components/views/base.css ***!
-  \****************************************************/
+/*!*************************************!*\
+  !*** ./nengo_gui/static/editor.css ***!
+  \*************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(/*! !../../../../~/css-loader!../../../../~/postcss-loader??ref--0-2!./base.css */ 74);
+var content = __webpack_require__(/*! !../../~/css-loader!../../~/postcss-loader??ref--0-2!./editor.css */ 71);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
-var update = __webpack_require__(/*! ../../../../~/style-loader/addStyles.js */ 4)(content, {});
+var update = __webpack_require__(/*! ../../~/style-loader/addStyles.js */ 4)(content, {});
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
 	// When the styles change, update the <style> tags
 	if(!content.locals) {
-		module.hot.accept("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/postcss-loader/index.js??ref--0-2!./base.css", function() {
-			var newContent = require("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/postcss-loader/index.js??ref--0-2!./base.css");
+		module.hot.accept("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/index.js??ref--0-2!./editor.css", function() {
+			var newContent = require("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/index.js??ref--0-2!./editor.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 92 */
+/* no static exports found */
+/* all exports used */
+/*!***********************************!*\
+  !*** ./nengo_gui/static/menu.css ***!
+  \***********************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(/*! !../../~/css-loader!../../~/postcss-loader??ref--0-2!./menu.css */ 73);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(/*! ../../~/style-loader/addStyles.js */ 4)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/index.js??ref--0-2!./menu.css", function() {
+			var newContent = require("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/index.js??ref--0-2!./menu.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 93 */
+/* no static exports found */
+/* all exports used */
+/*!************************************!*\
+  !*** ./nengo_gui/static/modal.css ***!
+  \************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(/*! !../../~/css-loader!../../~/postcss-loader??ref--0-2!./modal.css */ 74);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(/*! ../../~/style-loader/addStyles.js */ 4)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/index.js??ref--0-2!./modal.css", function() {
+			var newContent = require("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/index.js??ref--0-2!./modal.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 94 */
+/* no static exports found */
+/* all exports used */
+/*!********************************************!*\
+  !*** ./nengo_gui/static/netgraph/view.css ***!
+  \********************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(/*! !../../../~/css-loader!../../../~/postcss-loader??ref--0-2!./view.css */ 75);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(/*! ../../../~/style-loader/addStyles.js */ 4)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./view.css", function() {
+			var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./view.css");
 			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 			update(newContent);
 		});
@@ -58390,25 +59425,25 @@ if(false) {
 /* 95 */
 /* no static exports found */
 /* all exports used */
-/*!**********************************************************!*\
-  !*** ./nengo_gui/static/components/views/connection.css ***!
-  \**********************************************************/
+/*!**************************************!*\
+  !*** ./nengo_gui/static/sidebar.css ***!
+  \**************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(/*! !../../../../~/css-loader!../../../../~/postcss-loader??ref--0-2!./connection.css */ 75);
+var content = __webpack_require__(/*! !../../~/css-loader!../../~/postcss-loader??ref--0-2!./sidebar.css */ 76);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
-var update = __webpack_require__(/*! ../../../../~/style-loader/addStyles.js */ 4)(content, {});
+var update = __webpack_require__(/*! ../../~/style-loader/addStyles.js */ 4)(content, {});
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
 	// When the styles change, update the <style> tags
 	if(!content.locals) {
-		module.hot.accept("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/postcss-loader/index.js??ref--0-2!./connection.css", function() {
-			var newContent = require("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/postcss-loader/index.js??ref--0-2!./connection.css");
+		module.hot.accept("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/index.js??ref--0-2!./sidebar.css", function() {
+			var newContent = require("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/index.js??ref--0-2!./sidebar.css");
 			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 			update(newContent);
 		});
@@ -58421,25 +59456,25 @@ if(false) {
 /* 96 */
 /* no static exports found */
 /* all exports used */
-/*!********************************************************!*\
-  !*** ./nengo_gui/static/components/views/ensemble.css ***!
-  \********************************************************/
+/*!******************************************!*\
+  !*** ./nengo_gui/static/sim-control.css ***!
+  \******************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(/*! !../../../../~/css-loader!../../../../~/postcss-loader??ref--0-2!./ensemble.css */ 76);
+var content = __webpack_require__(/*! !../../~/css-loader!../../~/postcss-loader??ref--0-2!./sim-control.css */ 77);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
-var update = __webpack_require__(/*! ../../../../~/style-loader/addStyles.js */ 4)(content, {});
+var update = __webpack_require__(/*! ../../~/style-loader/addStyles.js */ 4)(content, {});
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
 	// When the styles change, update the <style> tags
 	if(!content.locals) {
-		module.hot.accept("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/postcss-loader/index.js??ref--0-2!./ensemble.css", function() {
-			var newContent = require("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/postcss-loader/index.js??ref--0-2!./ensemble.css");
+		module.hot.accept("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/index.js??ref--0-2!./sim-control.css", function() {
+			var newContent = require("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/index.js??ref--0-2!./sim-control.css");
 			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 			update(newContent);
 		});
@@ -58452,25 +59487,25 @@ if(false) {
 /* 97 */
 /* no static exports found */
 /* all exports used */
-/*!*******************************************************!*\
-  !*** ./nengo_gui/static/components/views/network.css ***!
-  \*******************************************************/
+/*!**************************************!*\
+  !*** ./nengo_gui/static/toolbar.css ***!
+  \**************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(/*! !../../../../~/css-loader!../../../../~/postcss-loader??ref--0-2!./network.css */ 77);
+var content = __webpack_require__(/*! !../../~/css-loader!../../~/postcss-loader??ref--0-2!./toolbar.css */ 78);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
-var update = __webpack_require__(/*! ../../../../~/style-loader/addStyles.js */ 4)(content, {});
+var update = __webpack_require__(/*! ../../~/style-loader/addStyles.js */ 4)(content, {});
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
 	// When the styles change, update the <style> tags
 	if(!content.locals) {
-		module.hot.accept("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/postcss-loader/index.js??ref--0-2!./network.css", function() {
-			var newContent = require("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/postcss-loader/index.js??ref--0-2!./network.css");
+		module.hot.accept("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/index.js??ref--0-2!./toolbar.css", function() {
+			var newContent = require("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/index.js??ref--0-2!./toolbar.css");
 			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 			update(newContent);
 		});
@@ -58483,419 +59518,32 @@ if(false) {
 /* 98 */
 /* no static exports found */
 /* all exports used */
-/*!****************************************************!*\
-  !*** ./nengo_gui/static/components/views/node.css ***!
-  \****************************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(/*! !../../../../~/css-loader!../../../../~/postcss-loader??ref--0-2!./node.css */ 78);
-if(typeof content === 'string') content = [[module.i, content, '']];
-// add the styles to the DOM
-var update = __webpack_require__(/*! ../../../../~/style-loader/addStyles.js */ 4)(content, {});
-if(content.locals) module.exports = content.locals;
-// Hot Module Replacement
-if(false) {
-	// When the styles change, update the <style> tags
-	if(!content.locals) {
-		module.hot.accept("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/postcss-loader/index.js??ref--0-2!./node.css", function() {
-			var newContent = require("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/postcss-loader/index.js??ref--0-2!./node.css");
-			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-			update(newContent);
-		});
-	}
-	// When the module is disposed, remove the <style> tags
-	module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 99 */
-/* no static exports found */
-/* all exports used */
-/*!*******************************************!*\
-  !*** ./nengo_gui/static/views/editor.css ***!
-  \*******************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(/*! !../../../~/css-loader!../../../~/postcss-loader??ref--0-2!./editor.css */ 79);
-if(typeof content === 'string') content = [[module.i, content, '']];
-// add the styles to the DOM
-var update = __webpack_require__(/*! ../../../~/style-loader/addStyles.js */ 4)(content, {});
-if(content.locals) module.exports = content.locals;
-// Hot Module Replacement
-if(false) {
-	// When the styles change, update the <style> tags
-	if(!content.locals) {
-		module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./editor.css", function() {
-			var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./editor.css");
-			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-			update(newContent);
-		});
-	}
-	// When the module is disposed, remove the <style> tags
-	module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 100 */
-/* no static exports found */
-/* all exports used */
-/*!*****************************************!*\
-  !*** ./nengo_gui/static/views/main.css ***!
-  \*****************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(/*! !../../../~/css-loader!../../../~/postcss-loader??ref--0-2!./main.css */ 80);
-if(typeof content === 'string') content = [[module.i, content, '']];
-// add the styles to the DOM
-var update = __webpack_require__(/*! ../../../~/style-loader/addStyles.js */ 4)(content, {});
-if(content.locals) module.exports = content.locals;
-// Hot Module Replacement
-if(false) {
-	// When the styles change, update the <style> tags
-	if(!content.locals) {
-		module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./main.css", function() {
-			var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./main.css");
-			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-			update(newContent);
-		});
-	}
-	// When the module is disposed, remove the <style> tags
-	module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 101 */
-/* no static exports found */
-/* all exports used */
-/*!*****************************************!*\
-  !*** ./nengo_gui/static/views/menu.css ***!
-  \*****************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(/*! !../../../~/css-loader!../../../~/postcss-loader??ref--0-2!./menu.css */ 81);
-if(typeof content === 'string') content = [[module.i, content, '']];
-// add the styles to the DOM
-var update = __webpack_require__(/*! ../../../~/style-loader/addStyles.js */ 4)(content, {});
-if(content.locals) module.exports = content.locals;
-// Hot Module Replacement
-if(false) {
-	// When the styles change, update the <style> tags
-	if(!content.locals) {
-		module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./menu.css", function() {
-			var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./menu.css");
-			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-			update(newContent);
-		});
-	}
-	// When the module is disposed, remove the <style> tags
-	module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 102 */
-/* no static exports found */
-/* all exports used */
-/*!******************************************!*\
-  !*** ./nengo_gui/static/views/modal.css ***!
-  \******************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(/*! !../../../~/css-loader!../../../~/postcss-loader??ref--0-2!./modal.css */ 82);
-if(typeof content === 'string') content = [[module.i, content, '']];
-// add the styles to the DOM
-var update = __webpack_require__(/*! ../../../~/style-loader/addStyles.js */ 4)(content, {});
-if(content.locals) module.exports = content.locals;
-// Hot Module Replacement
-if(false) {
-	// When the styles change, update the <style> tags
-	if(!content.locals) {
-		module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./modal.css", function() {
-			var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./modal.css");
-			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-			update(newContent);
-		});
-	}
-	// When the module is disposed, remove the <style> tags
-	module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 103 */,
-/* 104 */
-/* no static exports found */
-/* all exports used */
-/*!********************************************!*\
-  !*** ./nengo_gui/static/views/sidebar.css ***!
-  \********************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(/*! !../../../~/css-loader!../../../~/postcss-loader??ref--0-2!./sidebar.css */ 84);
-if(typeof content === 'string') content = [[module.i, content, '']];
-// add the styles to the DOM
-var update = __webpack_require__(/*! ../../../~/style-loader/addStyles.js */ 4)(content, {});
-if(content.locals) module.exports = content.locals;
-// Hot Module Replacement
-if(false) {
-	// When the styles change, update the <style> tags
-	if(!content.locals) {
-		module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./sidebar.css", function() {
-			var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./sidebar.css");
-			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-			update(newContent);
-		});
-	}
-	// When the module is disposed, remove the <style> tags
-	module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 105 */
-/* no static exports found */
-/* all exports used */
-/*!************************************************!*\
-  !*** ./nengo_gui/static/views/sim-control.css ***!
-  \************************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(/*! !../../../~/css-loader!../../../~/postcss-loader??ref--0-2!./sim-control.css */ 85);
-if(typeof content === 'string') content = [[module.i, content, '']];
-// add the styles to the DOM
-var update = __webpack_require__(/*! ../../../~/style-loader/addStyles.js */ 4)(content, {});
-if(content.locals) module.exports = content.locals;
-// Hot Module Replacement
-if(false) {
-	// When the styles change, update the <style> tags
-	if(!content.locals) {
-		module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./sim-control.css", function() {
-			var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./sim-control.css");
-			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-			update(newContent);
-		});
-	}
-	// When the module is disposed, remove the <style> tags
-	module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 106 */
-/* no static exports found */
-/* all exports used */
-/*!********************************************!*\
-  !*** ./nengo_gui/static/views/toolbar.css ***!
-  \********************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(/*! !../../../~/css-loader!../../../~/postcss-loader??ref--0-2!./toolbar.css */ 86);
-if(typeof content === 'string') content = [[module.i, content, '']];
-// add the styles to the DOM
-var update = __webpack_require__(/*! ../../../~/style-loader/addStyles.js */ 4)(content, {});
-if(content.locals) module.exports = content.locals;
-// Hot Module Replacement
-if(false) {
-	// When the styles change, update the <style> tags
-	if(!content.locals) {
-		module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./toolbar.css", function() {
-			var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js??ref--0-2!./toolbar.css");
-			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-			update(newContent);
-		});
-	}
-	// When the module is disposed, remove the <style> tags
-	module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 107 */,
-/* 108 */
-/* no static exports found */
-/* all exports used */
 /*!*************************************************!*\
-  !*** ./nengo_gui/static/components/ensemble.ts ***!
+  !*** ./nengo_gui/static/components/position.ts ***!
   \*************************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
-var base_1 = __webpack_require__(/*! ./base */ 6);
-var registry_1 = __webpack_require__(/*! ./registry */ 7);
-var ensemble_1 = __webpack_require__(/*! ./views/ensemble */ 28);
-var Ensemble = /** @class */ (function (_super) {
-    __extends(Ensemble, _super);
-    function Ensemble(_a) {
-        var uid = _a.uid, pos = _a.pos, dimensions = _a.dimensions;
-        return _super.call(this, uid, pos.left, pos.top, pos.width, pos.height, dimensions) || this;
+var Position = /** @class */ (function () {
+    function Position(left, top, width, height) {
+        if (left === void 0) { left = 0; }
+        if (top === void 0) { top = 0; }
+        if (width === void 0) { width = null; }
+        if (height === void 0) { height = null; }
+        this.left = left;
+        this.top = top;
+        this.width = width;
+        this.height = height;
     }
-    Object.defineProperty(Ensemble.prototype, "resizeOptions", {
-        get: function () {
-            var options = {};
-            for (var option in base_1.ResizableComponent.resizeOptions) {
-                options[option] = base_1.ResizableComponent.resizeOptions[option];
-            }
-            options.invert = "reposition";
-            options.square = true;
-            return options;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Ensemble.prototype, "view", {
-        get: function () {
-            if (this._view === null) {
-                this._view = new ensemble_1.EnsembleView("?");
-            }
-            return this._view;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Ensemble.prototype.addMenuItems = function () {
-        var _this = this;
-        this.menu.addAction("Value", function () {
-            _this.createGraph("Value");
-        });
-        this.menu.addAction("XY-value", function () {
-            _this.createGraph("XYValue");
-        }, function () { return _this.dimensions > 1; });
-        this.menu.addAction("Spikes", function () {
-            _this.createGraph("Raster");
-        });
-        this.menu.addAction("Voltages", function () {
-            _this.createGraph("Voltage");
-        });
-        this.menu.addAction("Firing pattern", function () {
-            _this.createGraph("SpikeGrid");
-        });
-        this.menu.addAction("Details ...", function () {
-            _this.createModal();
-        });
-    };
-    return Ensemble;
-}(base_1.ResizableComponent));
-exports.Ensemble = Ensemble;
-registry_1.registerComponent("ensemble", Ensemble);
+    return Position;
+}());
+exports.Position = Position;
 
 
 /***/ }),
-/* 109 */
-/* no static exports found */
-/* all exports used */
-/*!*********************************************!*\
-  !*** ./nengo_gui/static/components/node.ts ***!
-  \*********************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var base_1 = __webpack_require__(/*! ./base */ 6);
-var registry_1 = __webpack_require__(/*! ./registry */ 7);
-var node_1 = __webpack_require__(/*! ./views/node */ 30);
-var PassthroughNode = /** @class */ (function (_super) {
-    __extends(PassthroughNode, _super);
-    function PassthroughNode(_a) {
-        var uid = _a.uid, pos = _a.pos, dimensions = _a.dimensions;
-        return _super.call(this, uid, pos.left, pos.top, dimensions) || this;
-    }
-    Object.defineProperty(PassthroughNode.prototype, "view", {
-        get: function () {
-            if (this._view === null) {
-                this._view = new node_1.PassthroughNodeView("?");
-            }
-            return this._view;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return PassthroughNode;
-}(base_1.Component));
-exports.PassthroughNode = PassthroughNode;
-var Node = /** @class */ (function (_super) {
-    __extends(Node, _super);
-    function Node(_a) {
-        var uid = _a.uid, pos = _a.pos, dimensions = _a.dimensions;
-        return _super.call(this, uid, pos.left, pos.top, pos.width, pos.height, dimensions) || this;
-    }
-    Object.defineProperty(Node.prototype, "view", {
-        get: function () {
-            if (this._view === null) {
-                this._view = new node_1.NodeView("?");
-            }
-            return this._view;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Node.prototype.addMenuItems = function () {
-        var _this = this;
-        this.menu.addAction("Slider", function () {
-            _this.createGraph("Slider");
-        });
-        this.menu.addAction("Value", function () {
-            _this.createGraph("Value");
-        }, function () { return _this.dimensions > 0; });
-        this.menu.addAction("XY-value", function () {
-            _this.createGraph("XYValue");
-        }, function () { return _this.dimensions > 1; });
-        this.menu.addAction("HTML", function () {
-            _this.createGraph("HTMLView");
-        }, function () { return _this.htmlNode; });
-        this.menu.addAction("Details ...", function () {
-            _this.createModal();
-        });
-    };
-    return Node;
-}(base_1.ResizableComponent));
-exports.Node = Node;
-registry_1.registerComponent("node", Node);
-
-
-/***/ }),
-/* 110 */
+/* 99 */
 /* no static exports found */
 /* all exports used */
 /*!***********************************************!*\
@@ -58930,16 +59578,16 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var $ = __webpack_require__(/*! jquery */ 0);
+var maquette_1 = __webpack_require__(/*! maquette */ 1);
+var modal_1 = __webpack_require__(/*! ../modal */ 5);
+var plot_1 = __webpack_require__(/*! ./plot */ 16);
+var registry_1 = __webpack_require__(/*! ./registry */ 6);
 var utils = __webpack_require__(/*! ../utils */ 2);
-var modal_1 = __webpack_require__(/*! ../views/modal */ 5);
-var raster_1 = __webpack_require__(/*! ./views/raster */ 113);
-var base_1 = __webpack_require__(/*! ./base */ 6);
-var registry_1 = __webpack_require__(/*! ./registry */ 7);
 var Raster = /** @class */ (function (_super) {
     __extends(Raster, _super);
     function Raster(_a) {
-        var uid = _a.uid, pos = _a.pos, synapse = _a.synapse, nNeurons = _a.nNeurons, _b = _a.xlim, xlim = _b === void 0 ? [-0.5, 0] : _b;
-        var _this = _super.call(this, uid, pos.left, pos.top, pos.width, pos.height, nNeurons, synapse, xlim, [0, nNeurons]) || this;
+        var server = _a.server, uid = _a.uid, pos = _a.pos, synapse = _a.synapse, nNeurons = _a.nNeurons, _b = _a.xlim, xlim = _b === void 0 ? [-0.5, 0] : _b;
+        var _this = _super.call(this, server, uid, pos.left, pos.top, pos.width, pos.height, nNeurons, synapse, xlim, [0, nNeurons]) || this;
         /**
          * Redraw the lines and axis due to changed data.
          */
@@ -58977,7 +59625,7 @@ var Raster = /** @class */ (function (_super) {
     Object.defineProperty(Raster.prototype, "view", {
         get: function () {
             if (this._view === null) {
-                this._view = new raster_1.RasterView("?");
+                this._view = new RasterView("?");
             }
             return this._view;
         },
@@ -59023,13 +59671,32 @@ var Raster = /** @class */ (function (_super) {
         modal.show();
     };
     return Raster;
-}(base_1.Plot));
+}(plot_1.Plot));
 exports.Raster = Raster;
+var RasterView = /** @class */ (function (_super) {
+    __extends(RasterView, _super);
+    function RasterView(label) {
+        var _this = _super.call(this, label, 1) || this;
+        var node = maquette_1.h("path.line", { stroke: _this.colors[0] });
+        _this.path = utils.domCreateSVG(node);
+        _this.body.appendChild(_this.path);
+        return _this;
+    }
+    Object.defineProperty(RasterView.prototype, "line", {
+        set: function (val) {
+            this.path.setAttribute("d", val);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return RasterView;
+}(plot_1.PlotView));
+exports.RasterView = RasterView;
 registry_1.registerComponent("raster", Raster);
 
 
 /***/ }),
-/* 111 */
+/* 100 */
 /* no static exports found */
 /* all exports used */
 /*!***********************************************!*\
@@ -59063,23 +59730,23 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var d3 = __webpack_require__(/*! d3 */ 15);
+var d3 = __webpack_require__(/*! d3 */ 14);
 var $ = __webpack_require__(/*! jquery */ 0);
-var interact = __webpack_require__(/*! interact.js */ 9);
+var interact = __webpack_require__(/*! interact.js */ 10);
 var maquette_1 = __webpack_require__(/*! maquette */ 1);
-var datastore_1 = __webpack_require__(/*! ../datastore */ 32);
-var menu_1 = __webpack_require__(/*! ../menu */ 12);
+__webpack_require__(/*! ./slider.css */ 90);
+var datastore_1 = __webpack_require__(/*! ../datastore */ 31);
+var menu_1 = __webpack_require__(/*! ../menu */ 8);
 var utils = __webpack_require__(/*! ../utils */ 2);
-var modal_1 = __webpack_require__(/*! ../views/modal */ 5);
-var value_1 = __webpack_require__(/*! ./views/value */ 31);
-var base_1 = __webpack_require__(/*! ./base */ 6);
-var registry_1 = __webpack_require__(/*! ./registry */ 7);
-__webpack_require__(/*! ./slider.css */ 93);
+var modal_1 = __webpack_require__(/*! ../modal */ 5);
+var value_1 = __webpack_require__(/*! ./value */ 30);
+var registry_1 = __webpack_require__(/*! ./registry */ 6);
+var widget_1 = __webpack_require__(/*! ./widget */ 17);
 var Slider = /** @class */ (function (_super) {
     __extends(Slider, _super);
     function Slider(_a) {
-        var uid = _a.uid, pos = _a.pos, dimensions = _a.dimensions, synapse = _a.synapse, _b = _a.startValue, startValue = _b === void 0 ? [0] : _b, _c = _a.lim, lim = _c === void 0 ? [-1, 1] : _c;
-        var _this = _super.call(this, uid, pos.left, pos.top, pos.width, pos.height, dimensions, synapse) || this;
+        var server = _a.server, uid = _a.uid, pos = _a.pos, dimensions = _a.dimensions, synapse = _a.synapse, _b = _a.startValue, startValue = _b === void 0 ? [0] : _b, _c = _a.lim, lim = _c === void 0 ? [-1, 1] : _c;
+        var _this = _super.call(this, server, uid, pos.left, pos.top, pos.width, pos.height, dimensions, synapse) || this;
         // Check if user is filling in a number into a slider
         _this.fillingSliderValue = false;
         _this.nSliders = dimensions;
@@ -59384,7 +60051,7 @@ var Slider = /** @class */ (function (_super) {
         // Component.prototype.updateLayout.call(this, config);
     };
     return Slider;
-}(base_1.Widget));
+}(widget_1.Widget));
 exports.Slider = Slider;
 registry_1.registerComponent("slider", Slider);
 /**
@@ -59576,262 +60243,7 @@ exports.SliderControl = SliderControl;
 
 
 /***/ }),
-/* 112 */
-/* no static exports found */
-/* all exports used */
-/*!**********************************************!*\
-  !*** ./nengo_gui/static/components/value.ts ***!
-  \**********************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-/**
- * Line graph showing decoded values over time
- *
- * Value constructor is called by python server when a user requests a plot
- * or when the config file is making graphs. Server request is handled in
- * netgraph.js {.on_message} function.
- *
- * @constructor
- * @param {DOMElement} parent - the element to add this component to
- * @param {SimControl} sim - the simulation controller
- * @param {dict} args - A set of constructor arguments (see Component)
- * @param {int} args.n_lines - number of decoded values
- * @param {float} args.min_value - minimum value on y-axis
- * @param {float} args.max_value - maximum value on y-axis
- */
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var d3 = __webpack_require__(/*! d3 */ 15);
-var $ = __webpack_require__(/*! jquery */ 0);
-var utils = __webpack_require__(/*! ../utils */ 2);
-var modal_1 = __webpack_require__(/*! ../views/modal */ 5);
-var value_1 = __webpack_require__(/*! ./views/value */ 31);
-var base_1 = __webpack_require__(/*! ./base */ 6);
-var registry_1 = __webpack_require__(/*! ./registry */ 7);
-var Value = /** @class */ (function (_super) {
-    __extends(Value, _super);
-    function Value(_a) {
-        var uid = _a.uid, pos = _a.pos, dimensions = _a.dimensions, synapse = _a.synapse, _b = _a.xlim, xlim = _b === void 0 ? [-0.5, 0] : _b, _c = _a.ylim, ylim = _c === void 0 ? [-1, 1] : _c;
-        var _this = _super.call(this, uid, pos.left, pos.top, pos.width, pos.height, dimensions, synapse, xlim, ylim) || this;
-        _this.syncWithDataStore = utils.throttle(function () {
-            // Update the lines
-            var _a = _this.xlim, tStart = _a[0], tEnd = _a[1];
-            // TODO: it should be possible to only modify the start and
-            //       end of the line instead of remaking it every time...
-            var shownData = _this.datastore.timeSlice(tStart, tEnd);
-            if (shownData[0] != null) {
-                _this.view.lines = _this.lines.map(function (line) { return line(shownData); });
-                if (_this.legendVisible && _this.view.legend.valuesVisible) {
-                    var last = shownData[shownData.length - 1];
-                    _this.view.legend.values = last.slice(1);
-                }
-            }
-        }, 20);
-        // Create the lines on the plots
-        _this.lines = utils.emptyArray(_this.dimensions).map(function (_, i) {
-            return d3.svg
-                .line()
-                .x(function (d) { return _this.axes.x.pixelAt(d[0]); })
-                .y(function (d) { return _this.axes.y.pixelAt(d[i + 1]); })
-                .defined(function (d) { return d[i + 1] != null; });
-        });
-        return _this;
-    }
-    Object.defineProperty(Value.prototype, "view", {
-        get: function () {
-            if (this._view === null) {
-                this._view = new value_1.ValueView("?", this.dimensions);
-            }
-            return this._view;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Value.prototype.addMenuItems = function () {
-        var _this = this;
-        this.menu.addAction("Set y-limits...", function () {
-            _this.askYlim();
-        });
-        _super.prototype.addMenuItems.call(this);
-    };
-    Value.prototype.askYlim = function () {
-        var _this = this;
-        var modal = new modal_1.InputDialogView(String(this.ylim), "New y-limits", "Input should be in the form '<min>,<max>'.");
-        modal.title = "Set y-limits...";
-        modal.ok.addEventListener("click", function () {
-            var validator = $(modal).data("bs.validator");
-            validator.validate();
-            if (validator.hasErrors() || validator.isIncomplete()) {
-                return;
-            }
-            if (modal.input.value !== null) {
-                var newRange = modal.input.value.split(",");
-                var min = parseFloat(newRange[0]);
-                var max = parseFloat(newRange[1]);
-                _this.ylim = [min, max];
-            }
-            $(modal).modal("hide");
-        });
-        utils.handleTabs(modal);
-        $(modal).validator({
-            custom: {
-                ngvalidator: function (item) {
-                    var nums = item.value.split(",");
-                    var valid = false;
-                    if (utils.isNum(nums[0]) && utils.isNum(nums[1])) {
-                        // Two numbers, 1st less than 2nd
-                        if (Number(nums[0]) < Number(nums[1])) {
-                            valid = true;
-                        }
-                    }
-                    return nums.length === 2 && valid;
-                }
-            }
-        });
-        $(modal.root).on("hidden.bs.modal", function () {
-            document.body.removeChild(modal.root);
-        });
-        document.body.appendChild(modal.root);
-        modal.show();
-    };
-    return Value;
-}(base_1.Plot));
-exports.Value = Value;
-registry_1.registerComponent("value", Value);
-
-
-/***/ }),
-/* 113 */
-/* no static exports found */
-/* all exports used */
-/*!*****************************************************!*\
-  !*** ./nengo_gui/static/components/views/raster.ts ***!
-  \*****************************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var maquette_1 = __webpack_require__(/*! maquette */ 1);
-var base_1 = __webpack_require__(/*! ./base */ 10);
-var utils = __webpack_require__(/*! ../../utils */ 2);
-var RasterView = /** @class */ (function (_super) {
-    __extends(RasterView, _super);
-    function RasterView(label) {
-        var _this = _super.call(this, label, 1) || this;
-        var node = maquette_1.h("path.line", { stroke: _this.colors[0] });
-        _this.path = utils.domCreateSVG(node);
-        _this.body.appendChild(_this.path);
-        return _this;
-    }
-    Object.defineProperty(RasterView.prototype, "line", {
-        set: function (val) {
-            this.path.setAttribute("d", val);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return RasterView;
-}(base_1.PlotView));
-exports.RasterView = RasterView;
-
-
-/***/ }),
-/* 114 */
-/* no static exports found */
-/* all exports used */
-/*!******************************************************!*\
-  !*** ./nengo_gui/static/components/views/xyvalue.ts ***!
-  \******************************************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var maquette_1 = __webpack_require__(/*! maquette */ 1);
-var base_1 = __webpack_require__(/*! ./base */ 10);
-var utils = __webpack_require__(/*! ../../utils */ 2);
-var XYValueView = /** @class */ (function (_super) {
-    __extends(XYValueView, _super);
-    function XYValueView(label) {
-        var _this = _super.call(this, label, 1) || this;
-        var pathNode = maquette_1.h("path.line", { stroke: _this.colors[0] });
-        var circleNode = maquette_1.h("circle.last-point", {
-            cx: "0", cy: "0", fill: _this.colors[0], r: "0",
-        });
-        _this.path = utils.domCreateSVG(pathNode);
-        _this.body.appendChild(_this.path);
-        _this.circle = utils.domCreateSVG(circleNode);
-        return _this;
-    }
-    Object.defineProperty(XYValueView.prototype, "line", {
-        set: function (val) {
-            this.path.setAttribute("d", val);
-            if (!this.body.contains(this.circle)) {
-                this.body.appendChild(this.circle);
-            }
-            // Parse the "d" attribute to get the last x, y coordinate
-            var commands = val.split(/(?=[LMC])/);
-            var last = commands[commands.length - 1];
-            var lastNums = last.replace(/[lmcz]/ig, "").split(",").map(Number);
-            this.circle.setAttribute("cx", "" + lastNums[0]);
-            this.circle.setAttribute("cy", "" + lastNums[1]);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(XYValueView.prototype, "scale", {
-        get: function () {
-            return this.overlayScale;
-        },
-        set: function (val) {
-            var width = Math.max(base_1.ResizableComponentView.minWidth, val[0]);
-            var height = Math.max(base_1.ResizableComponentView.minHeight, val[1]);
-            this.overlayScale = [width, height];
-            this.legend.pos = [width + 2, 0];
-            this.circle.setAttribute("r", "" + Math.min(width, height) / 30);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return XYValueView;
-}(base_1.PlotView));
-exports.XYValueView = XYValueView;
-
-
-/***/ }),
-/* 115 */
+/* 101 */
 /* no static exports found */
 /* all exports used */
 /*!************************************************!*\
@@ -59852,13 +60264,14 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var d3 = __webpack_require__(/*! d3 */ 15);
+var d3 = __webpack_require__(/*! d3 */ 14);
 var $ = __webpack_require__(/*! jquery */ 0);
+var maquette_1 = __webpack_require__(/*! maquette */ 1);
+var component_1 = __webpack_require__(/*! ./component */ 11);
+var modal_1 = __webpack_require__(/*! ../modal */ 5);
+var plot_1 = __webpack_require__(/*! ./plot */ 16);
+var registry_1 = __webpack_require__(/*! ./registry */ 6);
 var utils = __webpack_require__(/*! ../utils */ 2);
-var modal_1 = __webpack_require__(/*! ../views/modal */ 5);
-var xyvalue_1 = __webpack_require__(/*! ./views/xyvalue */ 114);
-var base_1 = __webpack_require__(/*! ./base */ 6);
-var registry_1 = __webpack_require__(/*! ./registry */ 7);
 var XYAxes = /** @class */ (function (_super) {
     __extends(XYAxes, _super);
     function XYAxes() {
@@ -59873,8 +60286,8 @@ var XYAxes = /** @class */ (function (_super) {
     });
     Object.defineProperty(XYAxes.prototype, "scale", {
         set: function (val) {
-            this._width = Math.max(base_1.Axes.minWidth, val[0]);
-            this._height = Math.max(base_1.Axes.minHeight, val[1]);
+            this._width = Math.max(plot_1.Axes.minWidth, val[0]);
+            this._height = Math.max(plot_1.Axes.minHeight, val[1]);
             var _a = this.view.x.scale, xWidth = _a[0], xHeight = _a[1];
             var _b = this.view.y.scale, yWidth = _b[0], yHeight = _b[1];
             this.x.pixelLim = [0, this._width];
@@ -59890,13 +60303,13 @@ var XYAxes = /** @class */ (function (_super) {
         configurable: true
     });
     return XYAxes;
-}(base_1.Axes));
+}(plot_1.Axes));
 exports.XYAxes = XYAxes;
 var XYValue = /** @class */ (function (_super) {
     __extends(XYValue, _super);
     function XYValue(_a) {
-        var uid = _a.uid, pos = _a.pos, dimensions = _a.dimensions, synapse = _a.synapse, _b = _a.index, index = _b === void 0 ? [0, 1] : _b, _c = _a.xlim, xlim = _c === void 0 ? [-1, 1] : _c, _d = _a.ylim, ylim = _d === void 0 ? [-1, 1] : _d;
-        var _this = _super.call(this, uid, pos.left, pos.top, pos.width, pos.height, dimensions, synapse, xlim, ylim) || this;
+        var server = _a.server, uid = _a.uid, pos = _a.pos, dimensions = _a.dimensions, synapse = _a.synapse, _b = _a.index, index = _b === void 0 ? [0, 1] : _b, _c = _a.xlim, xlim = _c === void 0 ? [-1, 1] : _c, _d = _a.ylim, ylim = _d === void 0 ? [-1, 1] : _d;
+        var _this = _super.call(this, server, uid, pos.left, pos.top, pos.width, pos.height, dimensions, synapse, xlim, ylim) || this;
         _this._index = [0, 1];
         /**
          * Redraw the lines and axis due to changed data.
@@ -59934,7 +60347,7 @@ var XYValue = /** @class */ (function (_super) {
     Object.defineProperty(XYValue.prototype, "view", {
         get: function () {
             if (this._view === null) {
-                this._view = new xyvalue_1.XYValueView("?");
+                this._view = new XYValueView("?");
             }
             return this._view;
         },
@@ -60043,13 +60456,59 @@ var XYValue = /** @class */ (function (_super) {
         modal.show();
     };
     return XYValue;
-}(base_1.Plot));
+}(plot_1.Plot));
 exports.XYValue = XYValue;
+var XYValueView = /** @class */ (function (_super) {
+    __extends(XYValueView, _super);
+    function XYValueView(label) {
+        var _this = _super.call(this, label, 1) || this;
+        var pathNode = maquette_1.h("path.line", { stroke: _this.colors[0] });
+        var circleNode = maquette_1.h("circle.last-point", {
+            cx: "0", cy: "0", fill: _this.colors[0], r: "0",
+        });
+        _this.path = utils.domCreateSVG(pathNode);
+        _this.body.appendChild(_this.path);
+        _this.circle = utils.domCreateSVG(circleNode);
+        return _this;
+    }
+    Object.defineProperty(XYValueView.prototype, "line", {
+        set: function (val) {
+            this.path.setAttribute("d", val);
+            if (!this.body.contains(this.circle)) {
+                this.body.appendChild(this.circle);
+            }
+            // Parse the "d" attribute to get the last x, y coordinate
+            var commands = val.split(/(?=[LMC])/);
+            var last = commands[commands.length - 1];
+            var lastNums = last.replace(/[lmcz]/ig, "").split(",").map(Number);
+            this.circle.setAttribute("cx", "" + lastNums[0]);
+            this.circle.setAttribute("cy", "" + lastNums[1]);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(XYValueView.prototype, "scale", {
+        get: function () {
+            return this.overlayScale;
+        },
+        set: function (val) {
+            var width = Math.max(component_1.ResizableComponentView.minWidth, val[0]);
+            var height = Math.max(component_1.ResizableComponentView.minHeight, val[1]);
+            this.overlayScale = [width, height];
+            this.legend.pos = [width + 2, 0];
+            this.circle.setAttribute("r", "" + Math.min(width, height) / 30);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return XYValueView;
+}(plot_1.PlotView));
+exports.XYValueView = XYValueView;
 registry_1.registerComponent("xy_value", XYValue);
 
 
 /***/ }),
-/* 116 */
+/* 102 */
 /* no static exports found */
 /* all exports used */
 /*!**********************************!*\
@@ -60063,22 +60522,24 @@ registry_1.registerComponent("xy_value", XYValue);
  * Entry point into the Nengo application.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(/*! bootstrap/dist/css/bootstrap.min.css */ 51);
-__webpack_require__(/*! imports-loader?$=jquery,jQuery=jquery!bootstrap */ 48);
-__webpack_require__(/*! imports-loader?$=jquery,jQuery=jquery!bootstrap-validator */ 47);
-__webpack_require__(/*! imports-loader?$=jquery,jQuery=jquery!jquery-ui */ 49);
-__webpack_require__(/*! imports-loader?$=jquery,jQuery=jquery!jqueryfiletree/src/jQueryFileTree */ 50);
-__webpack_require__(/*! jqueryfiletree/dist/jQueryFileTree.min.css */ 52);
-__webpack_require__(/*! ./favicon.ico */ 46);
-var items = __webpack_require__(/*! ./debug/items */ 53);
-var editor_1 = __webpack_require__(/*! ./editor */ 20);
-var hotkeys_1 = __webpack_require__(/*! ./hotkeys */ 21);
-var netgraph_1 = __webpack_require__(/*! ./netgraph */ 54);
-var server_1 = __webpack_require__(/*! ./server */ 22);
-var sidebar_1 = __webpack_require__(/*! ./sidebar */ 23);
-var sim_control_1 = __webpack_require__(/*! ./sim-control */ 24);
-var toolbar_1 = __webpack_require__(/*! ./toolbar */ 25);
-var main_1 = __webpack_require__(/*! ./views/main */ 55);
+__webpack_require__(/*! bootstrap/dist/css/bootstrap.min.css */ 44);
+__webpack_require__(/*! imports-loader?$=jquery,jQuery=jquery!bootstrap */ 40);
+__webpack_require__(/*! imports-loader?$=jquery,jQuery=jquery!bootstrap-validator */ 39);
+__webpack_require__(/*! imports-loader?$=jquery,jQuery=jquery!jquery-ui */ 41);
+__webpack_require__(/*! imports-loader?$=jquery,jQuery=jquery!jqueryfiletree/src/jQueryFileTree */ 42);
+__webpack_require__(/*! jqueryfiletree/dist/jQueryFileTree.min.css */ 45);
+__webpack_require__(/*! ./favicon.ico */ 38);
+var maquette_1 = __webpack_require__(/*! maquette */ 1);
+__webpack_require__(/*! ./main.css */ 43);
+var items = __webpack_require__(/*! ./debug/items */ 46);
+var editor_1 = __webpack_require__(/*! ./editor */ 19);
+var hotkeys_1 = __webpack_require__(/*! ./hotkeys */ 20);
+var main_1 = __webpack_require__(/*! ./netgraph/main */ 47);
+var server_1 = __webpack_require__(/*! ./server */ 25);
+var sidebar_1 = __webpack_require__(/*! ./sidebar */ 21);
+var sim_control_1 = __webpack_require__(/*! ./sim-control */ 22);
+var toolbar_1 = __webpack_require__(/*! ./toolbar */ 23);
+var network_1 = __webpack_require__(/*! ./components/network */ 15);
 var DebugItem = /** @class */ (function () {
     function DebugItem(category, name) {
         this.category = category;
@@ -60108,7 +60569,7 @@ exports.DebugItem = DebugItem;
 var NengoDebug = /** @class */ (function () {
     function NengoDebug() {
         this.items = [];
-        this.netgraph = new netgraph_1.NetGraph(new server_1.MockConnection());
+        this.netgraph = new main_1.NetGraph(new server_1.MockConnection());
         this.netgraph.view.root.style.width = "600px";
         this.netgraph.view.root.style.height = "600px";
         this.netgraph.view.root.style.outline = "red solid 1px";
@@ -60124,13 +60585,13 @@ var NengoDebug = /** @class */ (function () {
         }
         else if (item.category === "component") {
             // Add the item to the last added network.
-            var network_1 = null;
+            var network_2 = null;
             this.netgraph.components.components.forEach(function (component) {
-                if (component instanceof Network) {
-                    network_1 = component;
+                if (component instanceof network_1.Network) {
+                    network_2 = component;
                 }
             });
-            this.netgraph.add(item.obj, network_1);
+            this.netgraph.add(item.obj, network_2);
         }
         else {
             document.body.appendChild(item.root);
@@ -60176,12 +60637,12 @@ var NengoDebug = /** @class */ (function () {
 exports.NengoDebug = NengoDebug;
 var Nengo = /** @class */ (function () {
     function Nengo(server) {
-        this.view = new main_1.MainView();
+        this.view = new MainView();
         this.editor = new editor_1.Editor(server);
         this.sim = new sim_control_1.SimControl(server);
         this.toolbar = new toolbar_1.Toolbar(server);
         this.sidebar = new sidebar_1.Sidebar(server);
-        this.netgraph = new netgraph_1.NetGraph(server);
+        this.netgraph = new main_1.NetGraph(server);
         // Add hotkeys
         this.hotkeys = new hotkeys_1.HotkeyManager(server);
         this.sim.hotkeys(this.hotkeys);
@@ -60210,6 +60671,32 @@ var Nengo = /** @class */ (function () {
     return Nengo;
 }());
 exports.Nengo = Nengo;
+var MainView = /** @class */ (function () {
+    function MainView() {
+        var node = maquette_1.h("div.main");
+        this.root = maquette_1.dom.create(node).domNode;
+    }
+    return MainView;
+}());
+exports.MainView = MainView;
+// TODO: splash screen, if we want it
+// class VMiddle {
+//     node: VNode;
+//     root: HTMLElement;
+//     constructor() {
+//         this.node =
+//             h("div#loading", {styles: {
+//                 "z-index": "100000002",
+//                 "position": "absolute",
+//                 "top": "0",
+//                 "right": "0",
+//                 "bottom": "0",
+//                 "left": "0",
+//                 "background": "#ffffff",
+//             }});
+//         this.root = dom.create(this.node).domNode as HTMLElement;
+//     }
+// }
 if (typeof localStorage === "undefined" || localStorage === null) {
     console.error("localStorage not available. Please update your browser!");
 }
@@ -60231,21 +60718,420 @@ if (typeof document !== "undefined") {
         }, 1000); // Time out after 1 second
     });
 }
-// Exposing components for server
-// import "expose-loader?HTMLView!./components/htmlview";
-// import "expose-loader?Image!./components/image";
-// import "expose-loader?Pointer!./components/pointer";
-// import "expose-loader?Raster!./components/raster";
-// import "expose-loader?Slider!./components/slider";
-// import "expose-loader?SpaSimilarity!./components/spa-similarity";
-// import "expose-loader?Value!./components/value";
-// import "expose-loader?XYValue!./components/xyvalue";
-// import "expose-loader?utils!./utils";
 
 
 /***/ }),
-/* 117 */,
-/* 118 */
+/* 103 */
+/* no static exports found */
+/* all exports used */
+/*!**********************************************!*\
+  !*** ./nengo_gui/static/netgraph/actions.ts ***!
+  \**********************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Action = /** @class */ (function () {
+    function Action(apply, undo) {
+        this.apply = apply;
+        this.undo = undo;
+    }
+    return Action;
+}());
+exports.Action = Action;
+var ActionStack = /** @class */ (function () {
+    function ActionStack() {
+        this.actions = [];
+        this.index = -1;
+    }
+    Object.defineProperty(ActionStack.prototype, "canUndo", {
+        get: function () {
+            return this.index >= 0;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ActionStack.prototype, "canRedo", {
+        get: function () {
+            return this.index + 1 < this.actions.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ActionStack.prototype, "lastAction", {
+        get: function () {
+            return this.actions[this.index];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ActionStack.prototype.apply = function (func, undo) {
+        func();
+        this.actions.push(new Action(func, undo));
+        this.index += 1;
+    };
+    ActionStack.prototype.redo = function () {
+        console.assert(this.canRedo);
+        this.index += 1;
+        this.actions[this.index].apply();
+    };
+    ActionStack.prototype.undo = function () {
+        console.assert(this.canUndo);
+        this.actions[this.index].undo();
+        this.index -= 1;
+    };
+    return ActionStack;
+}());
+exports.ActionStack = ActionStack;
+
+
+/***/ }),
+/* 104 */
+/* no static exports found */
+/* all exports used */
+/*!*************************************************!*\
+  !*** ./nengo_gui/static/netgraph/components.ts ***!
+  \*************************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var widget_1 = __webpack_require__(/*! ../components/widget */ 17);
+var utils = __webpack_require__(/*! ../utils */ 2);
+var ComponentManager = /** @class */ (function () {
+    function ComponentManager() {
+        this.components = [];
+        // TODO: Make top-level netgraph network a network
+        this.networks = {};
+        this.widgets = [];
+        this._scale = 1;
+        // get nestedHeight() {
+        //     let h = this.height;
+        //     let parent = this.parent;
+        //     while (parent !== null) {
+        //         h *= parent.view.height * 2;
+        //         parent = parent.view.parent;
+        //     }
+        //     return h;
+        // }
+        // get nestedWidth() {
+        //     let w = this.width;
+        //     let parent = this.parent;
+        //     while (parent !== null) {
+        //         w *= parent.view.width * 2;
+        //         parent = parent.view.parent;
+        //     }
+        //     return w;
+        // }
+        this.onresize = utils.throttle(function (widthScale, heightScale) {
+            // for (const uid in this.components) {
+            //     const component = this.components[uid];
+            //     // TODO: Set component scaleToPixels
+            //     // component.onresize(
+            //     //     component.width * widthScale, component.height * heightScale,
+            //     // );
+            // }
+        }, 66);
+    }
+    Object.defineProperty(ComponentManager.prototype, "length", {
+        get: function () {
+            return this.components.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ComponentManager.prototype, "scale", {
+        get: function () {
+            return this._scale;
+        },
+        set: function (val) {
+            if (val !== this._scale) {
+                var scaleScale_1 = val / this._scale;
+                this.components.forEach(function (component) {
+                    component.scaleToPixels *= scaleScale_1;
+                });
+                this._scale = val;
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ComponentManager.prototype.add = function (component, network) {
+        if (network === void 0) { network = null; }
+        this.components.push(component);
+        this.networks[component.uid] = network;
+        if (component instanceof widget_1.Widget) {
+            this.widgets.push(component);
+        }
+    };
+    ComponentManager.prototype.remove = function (component) {
+        // First, remove all children ???
+        var index = this.components.indexOf(component);
+        this.components.splice(index, 1);
+    };
+    ComponentManager.prototype.saveLayouts = function () {
+        this.components.forEach(function (component) {
+            // TODO: layout?
+            // component.saveLayout();
+        });
+    };
+    // TODO: do we need this?
+    ComponentManager.prototype.shift = function (dleft, dtop) {
+        this.components.forEach(function (component) {
+            var _a = component.view.pos, left = _a[0], top = _a[1];
+            component.view.pos = [left + dleft, top + dtop];
+        });
+    };
+    ComponentManager.prototype.syncWithView = function () {
+        this.components.forEach(function (component) {
+            component.syncWithView();
+        });
+    };
+    ComponentManager.prototype.toCSV = function () {
+        var data = [];
+        var csv = [];
+        // Extract all the data from the value components
+        this.widgets.forEach(function (widget) {
+            data.push(widget.datastore.data);
+        });
+        // Grabs all the time steps
+        var times = this.widgets[0].datastore.times;
+        // Headers for the csv file
+        csv.push(["Graph Name"]);
+        csv.push(["Times"]);
+        // Adds ensemble name and appropriate number of spaces to the header
+        this.widgets.forEach(function (value, i) {
+            csv[0].push(value.uid);
+            data[i].forEach(function () {
+                csv[0].push([]);
+            });
+        });
+        data.forEach(function (dims) {
+            dims.forEach(function (dim, i) {
+                csv[1].push("Dimension " + (i + 1));
+            });
+        });
+        // Puts the data at each time step into a row in the csv
+        times.forEach(function (time, timeIx) {
+            var row = [time];
+            data.forEach(function (dims, dimsIx) {
+                dims.forEach(function (dim, dimIx) {
+                    row.push(data[dimsIx][dimIx][timeIx]);
+                });
+            });
+            csv.push(row);
+        });
+        // Turns the array into a CSV string
+        csv.forEach(function (elem, i) {
+            csv[i] = elem.join(",");
+        });
+        return csv.join("\n");
+    };
+    return ComponentManager;
+}());
+exports.ComponentManager = ComponentManager;
+
+
+/***/ }),
+/* 105 */
+/* no static exports found */
+/* all exports used */
+/*!**************************************************!*\
+  !*** ./nengo_gui/static/netgraph/connections.ts ***!
+  \**************************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var connection_1 = __webpack_require__(/*! ../components/connection */ 27);
+var ConnectionManager = /** @class */ (function () {
+    function ConnectionManager() {
+        this.byComponent = {};
+        this.connections = {};
+    }
+    ConnectionManager.removeFromArray = function (array, connection) {
+        var ix = array.indexOf(connection);
+        if (ix > -1) {
+            array.splice(ix, 1);
+        }
+    };
+    ConnectionManager.prototype.connect = function (pre, post) {
+        var uids = pre.uid + "->" + post.uid;
+        if (!(uids in this.connections)) {
+            if (!(pre.uid in this.byComponent)) {
+                this.byComponent[pre.uid] = [];
+            }
+            if (!(post.uid in this.byComponent)) {
+                this.byComponent[post.uid] = [];
+            }
+            var connection = void 0;
+            if (pre === post) {
+                connection = new connection_1.RecurrentConnection(pre);
+            }
+            else {
+                connection = new connection_1.FeedforwardConnection(pre, post);
+            }
+            this.connections[uids] = connection;
+            this.byComponent[pre.uid].push(connection);
+            this.byComponent[post.uid].push(connection);
+        }
+        return this.connections[uids];
+    };
+    ConnectionManager.prototype.disconnect = function (pre, post) {
+        var uids = pre.uid + "->" + post.uid;
+        if (uids in this.connections) {
+            var conn = this.connections[uids];
+            delete this.connections[uids];
+            ConnectionManager.removeFromArray(this.byComponent[pre.uid], conn);
+            ConnectionManager.removeFromArray(this.byComponent[post.uid], conn);
+        }
+    };
+    ConnectionManager.prototype.removeAll = function (component) {
+        var _this = this;
+        this.byComponent[component.uid].forEach(function (conn) {
+            if (conn instanceof connection_1.FeedforwardConnection) {
+                _this.disconnect(conn.pre, conn.post);
+            }
+            else if (conn instanceof connection_1.RecurrentConnection) {
+                _this.disconnect(conn.component, conn.component);
+            }
+        });
+        console.assert(this.byComponent[component.uid].length === 0);
+    };
+    ConnectionManager.prototype.syncWithComponents = function () {
+        for (var uid in this.connections) {
+            this.connections[uid].syncWithComponents();
+        }
+    };
+    return ConnectionManager;
+}());
+exports.ConnectionManager = ConnectionManager;
+
+
+/***/ }),
+/* 106 */
+/* no static exports found */
+/* all exports used */
+/*!*******************************************!*\
+  !*** ./nengo_gui/static/netgraph/view.ts ***!
+  \*******************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var maquette_1 = __webpack_require__(/*! maquette */ 1);
+__webpack_require__(/*! ./view.css */ 94);
+var NetGraphView = /** @class */ (function () {
+    function NetGraphView() {
+        // TODO:
+        // Reading netgraph.css file as text and embedding it within def tags;
+        // this is needed for saving the SVG plot to disk.
+        // const css = require("!!css-loader!./netgraph.css").toString();
+        this._fontSize = 16;
+        this._offset = [0, 0];
+        this._scale = 1;
+        this._zoomFonts = false;
+        // const defs = h("defs", [h(
+        //     "style", {type: "text/css"}, [`<![CDATA[\n${css}\n]]>`],
+        // )]);
+        // Create the master SVG element
+        var svg = maquette_1.h("svg.netgraph", [
+            maquette_1.h("g.widgets"),
+            maquette_1.h("g.nets"),
+            maquette_1.h("g.conns"),
+            maquette_1.h("g.items")
+        ]); // defs,
+        this.root = maquette_1.dom.create(svg).domNode;
+        // Three separate layers, so that expanded networks are at the back,
+        // then connection lines, and then other items (nodes, ensembles, and
+        // collapsed networks) are drawn on top.
+        this.networks = this.root.querySelector(".nets");
+        this.conns = this.root.querySelector(".conns");
+        this.items = this.root.querySelector(".items");
+        this.widgets = this.root.querySelector(".widgets");
+    }
+    Object.defineProperty(NetGraphView.prototype, "fontSize", {
+        get: function () {
+            return this._fontSize;
+        },
+        set: function (val) {
+            this._fontSize = val;
+            this.updateFontsize();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NetGraphView.prototype, "height", {
+        get: function () {
+            return this.root.getBoundingClientRect().height;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NetGraphView.prototype, "offset", {
+        get: function () {
+            return this._offset;
+        },
+        set: function (val) {
+            this._offset = val;
+            this.updateOffset();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NetGraphView.prototype, "scale", {
+        get: function () {
+            return this._scale;
+        },
+        set: function (val) {
+            this._scale = val;
+            this.updateFontsize();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NetGraphView.prototype, "width", {
+        get: function () {
+            return this.root.getBoundingClientRect().width;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NetGraphView.prototype, "zoomFonts", {
+        get: function () {
+            return this._zoomFonts;
+        },
+        set: function (val) {
+            this._zoomFonts = val;
+            this.updateFontsize();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    NetGraphView.prototype.pan = function (dleft, dtop) {
+        this._offset[0] -= dleft;
+        this._offset[1] -= dtop;
+        this.updateOffset();
+    };
+    NetGraphView.prototype.updateFontsize = function () {
+        this.root.style.fontSize = this.zoomFonts
+            ? 3 * this.scale * this.fontSize / 100 + "em"
+            : this.fontSize / 100 + "em";
+    };
+    NetGraphView.prototype.updateOffset = function () {
+        this.root.setAttribute("viewBox", this._offset.join(" ") + " " + this.width + " " + this.height);
+    };
+    return NetGraphView;
+}());
+exports.NetGraphView = NetGraphView;
+
+
+/***/ }),
+/* 107 */
 /* no static exports found */
 /* all exports used */
 /*!**********************************************!*\
@@ -60256,7 +61142,7 @@ if (typeof document !== "undefined") {
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAH8SURBVDjLjZPLaxNRFIfHLrpx10WbghXxH7DQx6p14cadiCs31Y2LLizYhdBFWyhYaFUaUxLUQFCxL61E+0gofWGLRUqGqoWp2JpGG8g4ybTJJJm86897Ls4QJIm98DED9/6+mXNmjiAIwhlGE6P1P5xjVAEQiqHVlMlkYvl8/rhQKKAUbB92u91WSkKrlcLJZBK6rptomoZoNApFUbhElmU4HA4u8YzU1PsmWryroxYrF9CBdDqNbDbLr0QikUAsFkM4HOaCVCoFesjzpwMuaeXuthYcw4rtvG4KKGxAAgrE43FEIhGzlJQWxE/RirQ6i8/T7XjXV2szBawM8yDdU91GKaqqInQgwf9xCNmoB7LYgZn+Oud0T121KfiXYokqf8X+5jAyR3NQvtzEq96z4os7lhqzieW6TxJN3UVg8yEPqzu38P7xRVy+cPoay52qKDhUf0HaWsC3xRvstd3Qvt9mTWtEOPAJf/+L8oKAfwfLnil43z7Bkusqdr2X4Btvg1+c5fsVBZJ/H9aXbix/2EAouAVx4zVmHl2BtOrkPako2DsIwulexKhnG/cmfbg+uIbukXkooR/I5XKcioLu+8/QNTyGzqE36OidQNeDJayLe7yZBuUEv8t9iRIcU6Z4FprZ36fTxknC7GyCBrBY0ECSE4yzAY1+gyH4Ay9cw2Ifwv9mAAAAAElFTkSuQmCC"
 
 /***/ }),
-/* 119 */
+/* 108 */
 /* no static exports found */
 /* all exports used */
 /*!*********************************************!*\
@@ -60267,7 +61153,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAHVSURBVDjLjZPLaiJBFIZNHmJWCeQdMuT1Mi/gYlARBRUkao+abHUhmhgU0QHtARVxJ0bxhvfGa07Of5Iu21yYFPyLrqrz1f+f6rIRkQ3icca6ZF39RxesU1VnAVyuVqvJdrvd73Y7+ky8Tk6n87cVYgVcoXixWNByuVSaTqc0Ho+p1+sJpNvtksvlUhCb3W7/cf/w+BSLxfapVIqSySRlMhnSdZ2GwyHN53OaTCbU7/cFYBgG4RCPx/MKub27+1ur1Xqj0YjW6zWxCyloNBqUSCSkYDab0WAw+BBJeqLFtQpvGoFqAlAEaZomuc0ocAQnnU7nALiJ3uh8whgnttttarVaVCgUpCAUCgnQhMAJ+gG3CsDZa7xh1mw2ZbFSqYgwgsGgbDQhcIWeAHSIoP1pcGeNarUqgFKpJMLw+/0q72azkYhmPAWIRmM6AGbXc7kc5fN5AXi9XgWACwAguLEAojrfsVGv1yV/sVikcrksAIfDIYUQHEAoPgLwT3GdzWYNdBfXh3xwApDP5zsqtkoBwuHwaSAQ+OV2u//F43GKRCLEc5ROpwVoOngvBXj7jU/wwZPPX72DT7RXgDfIT27QEgvfKea9c3m9FsA5IN94zqbw9M9fAEuW+zzj8uLvAAAAAElFTkSuQmCC"
 
 /***/ }),
-/* 120 */
+/* 109 */
 /* no static exports found */
 /* all exports used */
 /*!*********************************************************!*\
@@ -60278,7 +61164,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wEHBzgbF752wQAAAitJREFUOMvVkjtoFFEUhr97d3d285g8Nk+jgqbKRkEQCQgiiDYWFlaWWqSyTyvYqY2ldnYWNjaWIhZCGiPBiK+QKIkhyW6yj8zO7uzMvfdY7IiKaO+pzoPv4xQ//PelAD49O7NcGJidVUr/chI6wdqmNfWzQOdPinDmyjuTBVCiZ46ee5RTSoF0YZTCRHvTu8u3NyXdAmS8ARGblJvbLxaAJ1kAjES4ON/ZeYCNM6AHUMqnMHWRqbm7HiKAo9NKcFbI9/mT4db5Wz8FidLiYmzsIU5w7Q2ScJdm+SW5wiHEJqyvjLHxeZwkznD4VMnzrX8MoCtQUnCmTdwCiUOS4AB/5jqFkRKgWH9zwOqHMtOn++kZzLD2OmIvvJB/OH8nl36gyfaMM1SaBxyIIDhcvEVSfc7m0gjFUcfsyVcoAvL5BRYfH9fVrfZEKhARG+FabxHbQGyAmDouqWHjBu1gkJ7eOi7eRWxIr2+wJkd/0St0BR1EnMElFcQ0uhJTR0yD1aVhtr+MghSpfOtDxKLzCc1wUlvj5ruCWERhEVNNwTpiG5go4Ov7ExxUB9FaE9SHyGRjnAXwUFpuZAEkdjXT2u9Nmp6P87VIDpyPsx2SaAituwGbOFJmeKzG6koJZxVAtiuIOvfWH16dQ7iEwv8RGuuyRJWbHkxogGbFiQoC56zK/B7Kv9T9a4t54KnW6jKAcxIBVa3VVDrv638JajstAT46J2EKAxTTvg2sfQcOKDLrpHX7EAAAAABJRU5ErkJggg=="
 
 /***/ }),
-/* 121 */
+/* 110 */
 /* no static exports found */
 /* all exports used */
 /*!****************************************************!*\
@@ -60289,7 +61175,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAGrSURBVDjLxZO7ihRBFIa/6u0ZW7GHBUV0UQQTZzd3QdhMQxOfwMRXEANBMNQX0MzAzFAwEzHwARbNFDdwEd31Mj3X7a6uOr9BtzNjYjKBJ6nicP7v3KqcJFaxhBVtZUAK8OHlld2st7Xl3DJPVONP+zEUV4HqL5UDYHr5xvuQAjgl/Qs7TzvOOVAjxjlC+ePSwe6DfbVegLVuT4r14eTr6zvA8xSAoBLzx6pvj4l+DZIezuVkG9fY2H7YRQIMZIBwycmzH1/s3F8AapfIPNF3kQk7+kw9PWBy+IZOdg5Ug3mkAATy/t0usovzGeCUWTjCz0B+Sj0ekfdvkZ3abBv+U4GaCtJ1iEm6ANQJ6fEzrG/engcKw/wXQvEKxSEKQxRGKE7Izt+DSiwBJMUSm71rguMYhQKrBygOIRStf4TiFFRBvbRGKiQLWP29yRSHKBTtfdBmHs0BUpgvtgF4yRFR+NUKi0XZcYjCeCG2smkzLAHkbRBmP0/Uk26O5YnUActBp1GsAI+S5nRJJJal5K1aAMrq0d6Tm9uI6zjyf75dAe6tx/SsWeD//o2/Ab6IH3/h25pOAAAAAElFTkSuQmCC"
 
 /***/ }),
-/* 122 */
+/* 111 */
 /* no static exports found */
 /* all exports used */
 /*!**********************************************!*\
@@ -60300,7 +61186,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAIdSURBVDjLjZO7a5RREMV/9/F9yaLBzQY3CC7EpBGxU2O0EBG0sxHBUitTWYitYCsiiJL0NvlfgoWSRpGA4IMsm43ZXchmv8e9MxZZN1GD5MCBW8yce4aZY1QVAGPMaWAacPwfm8A3VRUAVJWhyIUsy7plWcYQgh7GLMt0aWnpNTADWFX9Q2C+LMu4s7Oj/X5/xF6vp51OR1utloYQtNls6vLy8kjE3Huz9qPIQjcUg/GZenVOokIEiSBBCKUSQ+TFwwa1Wo2iKBARVlZW3iwuLr7izssPnwZ50DLIoWz9zPT+s/fabrf/GQmY97GIIXGWp28/08si5+oV1jcGTCSO6nHH2pddYqmkaUq320VECCFQr9cBsBIVBbJcSdXQmK7Q6Qsnq54sj2gBplS896RpSpIkjI2NjVZitdh7jAOSK6trXcpC2GjlfP1esHD+GDYozjm893jvSZJkXyAWe+ssc6W5G9naLqkaw/pGxBrl1tVpJCrWWpxzI6GRgOQKCv2BYHPl5uUatROeSsVy7eIkU9UUiYoxBgDnHNbagw4U6yAWwpmphNvXT6HAhAZuLNRx1iDDWzHG/L6ZEbyJVLa2c54/PgsKgyzw5MHcqKC9nROK/aaDvwN4KYS7j959DHk2PtuYnBUBFUEVVBQRgzX7I/wNM7RmgEshhFXAcDSI9/6KHQZKAYkxDgA5SnOMcReI5kCcG8M42yM6iMDmL261eaOOnqrOAAAAAElFTkSuQmCC"
 
 /***/ }),
-/* 123 */
+/* 112 */
 /* no static exports found */
 /* all exports used */
 /*!****************************************************!*\
@@ -60311,7 +61197,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wEHBzgd/t3T9AAAAfNJREFUOMuFk0trU0EUx38zc/PwUUt8VSRiW0QUFxW0FV2JS1cuFF2KLv0SfgWhXfRruBRXFl8oiq/SjbWobWik5ra5yeR2Zu5x0SRtoqZ/OMyZGc5vzpyZo9hSGRgBDINVBb4DWf/GhVarFTvngvde/mWtVkump6cfAaOA7gdMOedCkiTSaDS6tr6+LrVaTVZXV8V7L5VKRWZmZv6CKGDKey/WWknTVKy1Yq2Ver0ucRxLtVoV7700m01JkkRmZ2c7EFTbJr33r0MI3ZSyLENE8N6TpimlUqkn5SiKLgFvop2LWmuUUl0/hIAxhnw+TxzH2CRlM3WUR49vg3YCOsEd3xjTzkaYf/aTL89XSJueU+drjJcuHl6sve0F9KsDmX+xwqvH3zh75Rj7hgssvFzlcvnm7Wtj955Gu7w7IrD0aY3y6UNcvXMGE2lKR4b4MLc4YV19RO8OEJobjr0HIrTSZF7YXyqilC4MF0eK0aBAgHdPlvj6/hcAPxZqWzVxipwujAvZ/YFX8JuBz3MrrC0nKBS/Kw1yBYOzAa1MXpC7elABAVLrUGz5YxMHmbx+EpPrhkU7AfI/SEeN2GE3HMFlPf9AgCyEYI0xxf5G0Xp7uracYOubvYe0xxPtdu4J3hMN5W6de/hguHD0Rn+rK3SG4uMfhiULfvdiYVMAAAAASUVORK5CYII="
 
 /***/ }),
-/* 124 */
+/* 113 */
 /* no static exports found */
 /* all exports used */
 /*!***********************************************!*\
@@ -60322,7 +61208,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAC4SURBVCjPdZFbDsIgEEWnrsMm7oGGfZrohxvU+Iq1TyjU60Bf1pac4Yc5YS4ZAtGWBMk/drQBOVwJlZrWYkLhsB8UV9K0BUrPGy9cWbng2CtEEUmLGppPjRwpbixUKHBiZRS0p+ZGhvs4irNEvWD8heHpbsyDXznPhYFOyTjJc13olIqzZCHBouE0FRMUjA+s1gTjaRgVFpqRwC8mfoXPPEVPS7LbRaJL2y7bOifRCTEli3U7BMWgLzKlW/CuebZPAAAAAElFTkSuQmCC"
 
 /***/ }),
-/* 125 */
+/* 114 */
 /* no static exports found */
 /* all exports used */
 /*!******************************************************!*\
@@ -60333,7 +61219,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAHZSURBVHjaxFO/axRBFP5m726zId5hfiAxGlERTAIpExI4K4NVQBBTWsb8BVZCwEbQykYs05qUF0JSBLEVLAJJFQ0nufjrvOM25s7czuzO883s6rmg1RUOvJ03u+993/vevBVEhG6Wgy5X1wBZ89jfmNrxChMTQvyJRwhODipR6M/yIUhlCftsXZ/fDS2AIGdstLiSE0KYPJsM9sN27erXnUcVSt6alXELRJGqNj+/esDHNQuAkNrQsif48gKRzLCwAufn4Y3cxMj0Exe20ZphtAUXzpnhd6XicgdACYe05GSO1QR9eohq+TWw+/xf0l0n1zfwuweswdPhKeQPxpct1MtbuFB8Bm9wPBH8qwKKK8iexfvVG50mQjnI9p6zbn1/HdfubnOYZlUfEfrsR8eg0Nh39pvwLj5M3wIUj1PURu3NS1y+swzlb3KwD60aNplRYpDIALRQXl3E4OTSXgcg4OJ0aF0tvyWMfswaNRLm2KoV18b1T9271RkkSfRhZQGX5hc5uA5StXi31kjAjJ2ADiJmv19KSSCpG8jhvGq6LDzvEOW4lDx/GGJWM0MS5AQJ3VvDfjsN0A6eKvlp+mjt8Rw3Pf+3e8v09ntm77syU0oN5X//G38KMADaP/qtsmS7rgAAAABJRU5ErkJggg=="
 
 /***/ }),
-/* 126 */
+/* 115 */
 /* no static exports found */
 /* all exports used */
 /*!***********************************************!*\
@@ -60344,7 +61230,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAJwSURBVDjLjZPdT1JhHMetvyO3/gfLKy+68bLV2qIAq7UyG6IrdRPL5hs2U5FR0MJIAqZlh7BVViI1kkyyiPkCyUtztQYTYbwJE8W+Pc8pjofK1dk+OxfP+X3O83srAVBCIc8eQhmh/B/sJezm4niCsvX19cTm5uZWPp/H3yDnUKvVKr6ELyinwWtra8hkMhzJZBLxeBwrKyusJBwOQ6PRcJJC8K4DJ/dXM04DOswNqNOLybsRo9N6LCy7kUgkEIlEWEE2mwX9iVar/Smhglqd8IREKwya3qhg809gPLgI/XsrOp/IcXVMhqnFSayurv6RElsT6ZCoov5u1fzUVwvcKRdefVuEKRCA3OFHv2MOxtlBdFuaMf/ZhWg0yt4kFAoVCZS3Hd1gkpOwRt9h0LOES3YvamzPcdF7A6rlPrSbpbhP0kmlUmw9YrHYtoDku2T6pEZ/2ICXEQ8kTz+g2TkNceAKKv2nIHachn6qBx1MI5t/Op1mRXzBd31AiRafBp1vZyEcceGCzQ6p24yjEzocGT6LUacS0iExcrkcK6Fsp6AXLRnmFOjyPMIZixPHmAAOGxZQec2OQyo7zpm6cNN6GZ2kK1RAofPAr8GA4oUMrdNNkIw/wPFhDwSjX3Dwlg0CQy96HreiTlcFZsaAjY0NNvh3QUXtHeHcoKMNA7NjqLd8xHmzDzXDRvRO1KHtngTyhzL4SHeooAAnKMxBtUYQbGWa0Dc+AsWzSVy3qkjeItLCFsz4XoNMaRFFAm4SyTXbmQa2YHQSGacR/pAXO+zGFif4JdlHCpShBzstEz+YfJtmt5cnKKWS/1jnAnT1S38AGTynUFUTzJcAAAAASUVORK5CYII="
 
 /***/ }),
-/* 127 */
+/* 116 */
 /* no static exports found */
 /* all exports used */
 /*!***********************************************!*\
@@ -60355,7 +61241,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAILSURBVDjLrVM7ixNhFB2LFKJV+v0L24nabIogtmItin9ALBS3tXNt3CWgVlpMsAgrWRexkCSTd0KimYS8Q94vsnlrikAec7z34hSibON+cJjXPeee79xvFADK/0C5UIFyubxLUEulklooFNR8Pn+Sy+VOstmsmslk1HQ6raZSqd2/BCqVyh4RW/V6HePxGJPJRDCdTuU6Go0EZ2dnIFEkk8lWIpHYEwEi24lszGYzjHptfPvsgvbuEJ9ePMPH548Epwf70N4f4fuXY6rpYDgcIh6PG7FYzM62dSav12spfHXn2rk4fbmPxWIhIpFIRFfIzk+v1wvDMLAhka9vD+B88gCv79lxdPeG4M39W/jw9KF8q+oJzOdz2VIoFPqhOJ3O7mAwwHK5xGazketqtRKws3+Bto1arYZgMFhTHA6HC78XW6P0wYJmcAy2y+9arRYoPCHTpOD3+w8Vm8122xTgQhobqtUqms0mGo0GeDLckdOnESIcDqPdbnN3aJp2VbFarTfN7kxmUqfTkSLuyM8syB3pLMj7fr8Pn883kTFaLJbr1EHfbrdilwm9Xg/dblfABNMF3/NWisUiKPjHIkDrMou43e4CF+m6LkUMU4idcFc+WJwRkbU/TiKtS4QrgUDgmGZrcEcelXkKORsWJ9sGkV3n/kzRaHSHgtrQjEGCHJSAyBuPx7Nz4X/jL/ZqKRurPTy6AAAAAElFTkSuQmCC"
 
 /***/ }),
-/* 128 */
+/* 117 */
 /* no static exports found */
 /* all exports used */
 /*!************************************************!*\
@@ -60366,7 +61252,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAIuSURBVDjLjZNPiFJRFManVo24jYISClqli3KGp0VY7mSCBqKoIHIIahFtStwUCPVGIiloRJmkqQERiqBFIZGtcgrHrCGaFo+hCQlCU9/T558n/v+699Z7PBmjDnzcxbnnd8/53jtjAMaoSOwkmiDi/qFdRJu1Oh1gotVqyd1ut9/r9TBKJI9QKDSnh+gBXKfT6cfjcbhcLvj9flQqFVSrVXYWCgUGyefzCIfDGkQt3kQBklTGvv022A84yWlFJpNBvV6HLMsoFosM0Gw20Wg0EIlEfkP0AFEUEb53EYnnbpw5MYV0Os0KarUaSqXShpGYJ3pAWfyJ3IcjKH5y4NIpK5aX37O5FUVho9AHaCe5XG40IJlcwv1gAMLnFSw8fASfzwfiiwahnVA/JEnaCOA47mw0GkWvDxbZbBZmsxk8z2sQOg71hIKGAB6PZ9xms60KggA16AWv1wuDwcBgFNJutxmEaghwbPr4Ubd7hhUOBgMNkkgkYDQakUqlQP4PBqCi3QwBzp+bPulwHEaHXKIJNW4H7mDLuAHr699YB+ooQ4DCu8u7f7yaeum0b8ObpbRW/H31KSatFph2bCfGiRpAlQZYix16lnuyF8Gre/BgYRFKkzjekJGcd+L66a14ccuM8pebbAS9NMDHxzMX1hYt+ZV5S+3aFTcCd+cwO8sjduMg3gat+BqzQ3jNj9qNvubBn085SQxSaOJvy6QvJnfrbHt1ABOF/Mc6q6Krb/oFGtGkE2IcdecAAAAASUVORK5CYII="
 
 /***/ }),
-/* 129 */
+/* 118 */
 /* no static exports found */
 /* all exports used */
 /*!**********************************************!*\
@@ -60377,7 +61263,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAHhSURBVDjLjZPLSxtRFIfVZRdWi0oFBf+BrhRx5dKVYKG4tLhRqlgXPmIVJQiC60JCCZYqFHQh7rrQlUK7aVUUfCBRG5RkJpNkkswrM5NEf73n6gxpHujAB/fOvefjnHM5VQCqCPa1MNoZnU/Qxqhx4woE7ZZlpXO53F0+n0c52Dl8Pt/nQkmhoJOCdUWBsvQJ2u4ODMOAwvapVAqSJHGJKIrw+/2uxAmuJgFdMDUVincSxvEBTNOEpmlIp9OIxWJckMlkoOs6AoHAg6RYYNs2kp4RqOvfuIACVFVFPB4vKYn3pFjAykDSOwVta52vqW6nlEQiwTMRBKGygIh9GEDCMwZH6EgoE+qHLMuVBdbfKwjv3yE6Ogjz/PQ/CZVDPSFRRYE4/RHy1y8wry8RGWGSqyC/nM1meX9IQpQV2JKIUH8vrEgYmeAFwuPDCHa9QehtD26HBhCZnYC8ucGzKSsIL8wgsjiH1PYPxL+vQvm5B/3sBMLyIm7GhhCe90BaWykV/Gp+VR9oqPVe9vfBTsruM1HtBKVPmFIUNusBrV3B4ev6bsbyXlPdkbr/u+StHUkxruBPY+0KY8f38oWX/byvNAdluHNLeOxDB+uyQQfPCWZ3NT69BYJWkjxjnB1o9Fv/ASQ5s+ABz8i2AAAAAElFTkSuQmCC"
 
 /***/ }),
-/* 130 */
+/* 119 */
 /* no static exports found */
 /* all exports used */
 /*!**********************************************!*\
@@ -60388,7 +61274,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAGsSURBVDjLjZNLSwJRFICtFv2AgggS2vQLDFvVpn0Pi4iItm1KItvWJqW1pYsRemyyNILARbZpm0WtrJ0kbmbUlHmr4+t0z60Z7oSSAx935txzvrlPBwA4EPKMEVwE9z+ME/qtOkbgqtVqUqPRaDWbTegE6YdQKBRkJazAjcWapoGu6xayLIMoilAoFKhEEAQIh8OWxCzuQwEmVKtVMAyDtoiqqiBJEhSLRSqoVCqAP+E47keCAvfU5sDQ8MRs/OYNtr1x2PXdwuJShLLljcFlNAW5HA9khLYp0TUhSYMLHm7PLEDS7zyw3ybRqyfg+TyBtwl2sDP1nKWFiUSazFex3tk45sXjL1Aul20CGTs+syVY37igBbwg03eMsfH9gwSsrZ+Doig2QZsdNiZmMkVrKmwc18azHKELyQrOMEHTDJp8HXu1hostG8dY8PiRngdWMEq467ZwbDxwlIR8XrQLcBvn5k9Gpmd8fn/gHlZWT20C/D4k8eTDB3yVFKjX6xSbgD1If8G970Q3QbvbPehAyxL8SibJEdaxo5dikqvS28sInCjp4Tqb4NV3fgPirZ4pD4KS4wAAAABJRU5ErkJggg=="
 
 /***/ }),
-/* 131 */
+/* 120 */
 /* no static exports found */
 /* all exports used */
 /*!**********************************************!*\
@@ -60399,7 +61285,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAHeSURBVDjLjZO/i1NBEMc/u+/lBYxiLkgU7vRstLEUDyxtxV68ykIMWlocaGHrD1DxSAqxNf4t115jo6DYhCRCEsk733s7u2PxkuiRoBkYdmGZz3xndsaoKgDGmC3gLBDxbxsA31U1AKCqzCBXsywbO+e8iOgqz7JM2+32W+AiYFX1GGDHOeen06mmabrwyWSio9FI+/2+ioj2ej3tdDoLiJm+bimAhgBeUe9RmbkrT5wgT97RaDQoioIQAt1ud7/Var1h+uq+/s9+PLilw+FwqSRgJ1YpexHSKenHF4DFf/uC3b7CydsPsafraO5IkoTxeEwIARGh2WwCYNUJAOmHZ5y4eY/a7h4hPcIdHvDz/fMSnjviOCZJEiqVCtVqdfEl8RygHkz9DLZWQzOHisd9OizfckcURRhjMMbMm14CQlEC/NfPjPd2CSJQCEEEDWYBsNZijFkaCqu5Ky+blwl5geaOUDg0c8TnNssSClkER1GEtXYZcOruI6ILl1AJqATirW02Hr8sFThBVZfklyXMFdQbbDzdXzm78z4Bx7KXTcwdgzs3yizuzxAhHvVh4avqBzAzaQa4JiIHgGE9C3EcX7ezhVIgeO9/AWGdYO/9EeDNX+t8frbOdk0FHhj8BvUsfP0TH5dOAAAAAElFTkSuQmCC"
 
 /***/ }),
-/* 132 */
+/* 121 */
 /* no static exports found */
 /* all exports used */
 /*!**********************************************!*\
@@ -60410,7 +61296,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALqSURBVDjLjVPbS9NRHN9T/0BWFBQUVIQKXigCpVIyygcDJUrnZdNEc5hlmZc0TdSF0bxszs3LvM3pXE6Xa3NL0TJTl7pcTY1Ec5rX/WxqCrHhp7NBPaRGD5+Xw/lczud8vzQAtJ0wWhLp+4kbUThSFGrQFwTrB59dE+ryA/3+vreNOMaPOmLkMeUT4mTMaoph1klh7pPApOLAUH4LPTn+X7qzLwXsKDDGj0wy8hibM+oCrI9pYTWGA0ZnWEd8sWZQYvXDC5g0XAzyo6BJP5f/R2C89OYeErlquiUPP9vogNgF1iYfbH10B0zxRMQFC4oszMsz8F3XBOqdBKqUs7a2B6fdHAIkMnu6le1w3WrwBLrjHSKWrhhYh72w2kVHjTIIae3eKFJexkp/I0YlKWhJdKsgZIanoTjMtlHPxSY9BD/YgbA2eGPteRjmWzOJazrmZKl4rL4AQT8TD4nIfPMjzKgKIUtwNtJIyxXftISclICN3GxYfHyw3FEEy1ALLIPNsOhkWGzLw5umCHCUflBLr2O29i4WXgnQwDpB0YY5NyapASmoxlxQrGAsFrAIWQ6D6Da0GecxXBaLFfLmuHI+TgrkCBCIYKqIwVKHEHWxxzZp758GbTrc9AqYu4WYb8kkRcnsLcPejzL5DKi3dfAQSEFX9RKRZkzxQklKIaqjD4PW9+QqVy+IxmdpOkwvOaB6xVjpa8QQOSMtY4DHAPW6GuLSVFwprUJxSQYWlRyMS9JQGXlw3PELZDB8OzN9c0hkdXua1/pYfTKonloHkeoWYVachCkuHZNFwZhrTMeCmov2rIsoY+wL2TaJJLKr4r6HzUyIpso4R9yp4mB8LWFgScPHtJyNjhx/CCOcCnccZTua77jKRkiJy51lmKlJxJK2lJBLoOMxiet+myDcKWXXXbBDGn/KTcI6brO7TUgzMcBl4Pk9d3tkhSB8r+s/l+k36mKOJpKW10VRh/TlzAOFJLLnTvd2Ffhf/AKfTM1hskDhXAAAAABJRU5ErkJggg=="
 
 /***/ }),
-/* 133 */
+/* 122 */
 /* no static exports found */
 /* all exports used */
 /*!**************************************************!*\
@@ -60421,7 +61307,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/gif;base64,R0lGODlhEAAQAAAAACH/C05FVFNDQVBFMi4wAwH//wAh+QQLBgAPACwAAAAAEAAQAIMvLy92dnaUlJSlpaWtra21tbW9vb3GxsbOzs7W1tbe3t7n5+fv7+/39/f///////8EifDJ52QJdeq3QnoC4DSFsnFAAAIPMizaAheAEbrI0yyOEwSGRkCAKAwIO2PjoQikGktK4zAowCauzCTxkRgGYNNmajBQBWixhlEoEAyTBUIrUVwlUwFy8z0wKEYIUwkNDApBCUdLdhwDCUULjg8MCVokBQ4HBA9UfxsLBDCaIwRdGiMSCAYVDVoRACH5BAsGAA8ALAAAAAAQABAAgz09PXNzc4uLi6Wlpa2trbW1tb29vcbGxs7OztbW1t7e3ufn5+/v7/f39////////wSL8Mnn5Ah16reCegHgNICxPUwQgMAjAIe2MM8BhwmwNovjCAJEIzBAGAYAxqIwaHAugobz0WAwCwtNwpCZJBITYwF7ahwMhjOBQN5YCwSThKHoShTZSQMxIEwnRwc0DkxCBwlVCgYNCX1OeE8JCFgDYAwJXQ1jDgcENQM0GwsEWZ0jBGAbIxJGFQ1dEQAh+QQLBgAPACwAAAAAEAAQAIM5OTl/f3+UlJSlpaWtra21tbW9vb3GxsbOzs7W1tbe3t7n5+fv7+/39/f///////8Ei/DJ5yQRdeq3xHpB4DCBsT3k8AjBChzawjxIkLAJ0DaK4xSDRENgUCAIAEYuiTIMCo2GxNEIAACFDAehlQQEE4TBcJhtOuODgUAofDaMQoFgkjB6G8Vb0kAMCFIaTmUUQAgNB0J3Bg0Jf1J6HEEIbkEoCVoNcg4HBA8HA2YxBB+dVAQJJ1QSYhUNWhEAIfkECwYADwAsAAAAABAAEACDOjo6fX19mJiYpaWlra2ttbW1vb29xsbGzs7O1tbW3t7e5+fn7+/v9/f3////////BI3wyeekGXXqx8p6Q+A0AbI9DVGAAQiY08I8ypAQggIIqOI4hYGiYTgsEoYA4wAANDiXQiMzCjQNmccCkZUIBhOEoTjbLAICAcFAUH02uiZgwvBt1poGYkB4ai4HM0ADCA0HCQ11Bg0JfE8KHws2CB42HAlZDQUFDgcEDwcDZRoLBB+eIwQJJyMSYhVTExEAIfkECwYADwAsAAAAABAAEACDQUFBb29vi4uLpaWlra2ttbW1vb29xsbGzs7O1tbW3t7e5+fn7+/v9/f3////////BIvwyeckMnXqxwp7B+E0Q7I9DWGAw1MEirZ8yqAcwxIUqOI4BVvDgGAoEAIGIhBocAyDQiMzEgACiMxjkd0QeBaD4fDZLARMgYHwXZwUAcB1YtRKCgdNAzEgOCcOcgMfQAMIDQcJDQwJAWdyTgpuCyUIBZQrCQNaDQUFDiEsZTIEbiEjBCYbI2EVUxMRACH5BAsGAA8ALAAAAAAQABAAgzw8PH9/f5iYmKWlpa2trbW1tb29vcbGxs7OztbW1t7e3ufn5+/v7/f39////////wSM8MnnJDJ16scKewfhNIWyPQ1hgMSDDIu2fMqghMyAoIvjFLaGAcFYKAiMhCDQ4BgGhUZmRAgIEjJEZnI4TC6Gw2fDWFoNBEIhtlkE3oEJQ7GVFLyTxovQnDgCAAEmPzoNBwkNCwQACwMAAE0KMY0JCAIFAAUPCQVbJJ0hD49sMgQxIQ4LmScjFhgcWxEAIfkECwYADwAsAAAAABAAEACDQEBAa2tri4uLpaWlra2ttbW1vb29xsbGzs7O1tbW3t7e5+fn7+/v9/f3////////BIzwyeckMnXqxwp7B+E0hbI9DWGAxIMMi7Z8yqCEzICgi+MUtoYBwVgoCI0FsMExDAqNzOgwIJgmC0RmcthZDIbDZ8MgDJ4GAqEQIw8EgsGEodhKuprGC6lxCAACMT86DVQKCQUBSgEBTAoxC1WMBwByN1skBQ4BAA+cCScLBDEAAA4LACsbIxKMFVETEQAh+QQLBgAPACwAAAAAEAAQAIM1NTVnZ2eBgYGlpaWtra21tbW9vb3GxsbOzs7W1tbe3t7n5+fv7+/39/f///////8EjfDJ5yQyderHCnsH4TSFsj0NYYDEgwyLtnzKoITMgKCL4xS2hgHBWCgIjQWwwTEMCo3M6PCMTRaIzCSRmFwMh8+mcTCADQRCwaphpFUTRkJr6U4arwBz4hgIBh8/TwoBMDcCDAcCAkwKMQYABQIBCAEtWFoMAAIOAQAPkyYbBwAmng4MAQcnIxKTFVETEQAh+QQLBgAPACwAAAAAEAAQAIMlJSVkZGSQkJClpaWtra21tbW9vb3GxsbOzs7W1tbe3t7n5+fv7+/39/f///////8Ei/DJ5yQyderHCnsH4TSFsj0NYYDEgwyLtnzKoITMgKCL4xS2hgHBWCgIjQWwwTEMCo3M6PCMTRaIzCSRmFwMh8+mcTCADQTCoLvpFFTegVaisEoYAQCAqXGGKXoCCwGCCwkCDAkDSA8lIAAEAgEJAQccCVp4AQ6SD5F2WwArkg4MAjsbIxIDAhVRExEAIfkECwYADwAsAAAAABAAEACDPj4+b29vkJCQpaWlra2ttbW1vb29xsbGzs7O1tbW3t7e5+fn7+/v9/f3////////BIrwyeckMnXqxwp7B+E0hbI9DWGAxIMMi7Z8yqCEzICgi+MUtoYBwVgoCI0FsMExDAqNzOjwjE0OgswkkZgEAIDAbtM4GAzYgPpw6hRU24JWorBKGAIwU+M8fBxfAgsCBAwMCQYNCQNIIGwJAG8CNV2HWg1qDgMCD04fGwtiD5sODARdGyMSThVRExEAIfkECwYADwAsAAAAABAAEACDPz8/c3NzkJCQpaWlra2ttbW1vb29xsbGzs7O1tbW3t7e5+fn7+/v9/f3////////BIfwyeckMnXqxwp7B+E0hbI9DWGAxIMMi3aYrxIyA4IujhMAA0bgwFgoCI1FYdB4LAQAAKNJaRwGhdjkIMhMEomJIEAOb6wGw+EXPZw6BdVEgdkotJLGABCgTgwDRBQ/QSoMDHQNCQNILjoKQwZZA2EMCV4NAl0GLVcfG09hnCMEZhojFnUNXhEAIfkECwYADwAsAAAAABAAEACDLi4ub29vjY2NpaWlra2ttbW1vb29xsbGzs7O1tbW3t7e5+fn7+/v9/f3////////BI3wyeckMnXqpwB6B+E0hbI9DACAxIMMi5aYB0DczPA1i+MEtkYgkFgoCLzCoPFIAAMNJqVxGBRik4MgM0kkJgOB2LShGgzaIfHEKBQIhskCwZUosJKGQSydGAYHDBQDAQUMBwkNDAoGDQkDSC5fCwMJCFeVKAlcJAUOISADghsLBDEhIwRfGyMWGA8NXBEAOw=="
 
 /***/ }),
-/* 134 */
+/* 123 */
 /* no static exports found */
 /* all exports used */
 /*!**********************************************!*\
@@ -60432,7 +61318,7 @@ module.exports = "data:image/gif;base64,R0lGODlhEAAQAAAAACH/C05FVFNDQVBFMi4wAwH/
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAIpSURBVDjLjZNPSFRRFMZ/9707o0SOOshM0x/JFtUmisKBooVEEUThsgi3KS0CN0G2lagWEYkSUdsRWgSFG9sVFAW1EIwQqRZiiDOZY804b967954249hUpB98y/PjO5zzKREBQCm1E0gDPv9XHpgTEQeAiFCDHAmCoBhFkTXGyL8cBIGMjo7eA3YDnog0ALJRFNlSqSTlcrnulZUVWV5elsXFRTHGyMLCgoyNjdUhanCyV9ayOSeIdTgnOCtY43DWYY3j9ulxkskkYRjinCOXy40MDAzcZXCyVzZS38MeKRQKf60EZPXSXInL9y+wLZMkCMs0RR28mJ2grSWJEo+lH9/IpNPE43GKxSLOOYwxpFIpAPTWjiaOtZ+gLdFKlJlD8u00xWP8lO/M5+e5efEB18b70VqjlMJai++vH8qLqoa+nn4+fJmiNNPCvMzQnIjzZuo1V88Ns3/HAcKKwfd9tNZorYnFYuuAMLDMfJ3m+fQznr7L0Vk9zGpLmezB4zx++YggqhAFEZ7n4ft+HVQHVMoB5++cJNWaRrQwMjHM9qCLTFcnJJq59WSIMLAopQDwfR/P8+oAbaqWK2eGSGxpxVrDnvQ+3s++4tPnj4SewYscUdUgIiilcM41/uXZG9kNz9h9aa+EYdjg+hnDwHDq+iGsaXwcZ6XhsdZW+FOqFk0B3caYt4Bic3Ja66NerVACOGttBXCbGbbWrgJW/VbnXbU6e5tMYIH8L54Xq0cq018+AAAAAElFTkSuQmCC"
 
 /***/ }),
-/* 135 */
+/* 124 */
 /* no static exports found */
 /* all exports used */
 /*!**********************************************!*\
@@ -60443,7 +61329,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAEUSURBVCjPXdFNSsMAEIbh0Su4teAdIgEvJB5C14K4UexCEFQEKfivtKIIIlYQdKPiDUTRKtb0x6ZJ+volraEJ3+zmycwkMczGzTE3lwkbxeLE5XTqQfTIjhIm6bCy9E/icoOoyR4v7PLDN+8ibxQHxGzE3JBfHrgUalDnQ6BNk1WRFPjs66kDNTxqg0Uh5qYg4IkrjrS9pTWfmvKaBaGaNU4EY+Lpkq88eKZKmTAhbd3i5UFZg0+TzV1d1FZy4FCpJCAQ8DUnA86ZpciiXjbQhK7aObDOGnNsUkra/WRAiQXdvSwWpBkGvQpnbHHMRvqRlCgBqkm/dd2745YbtofafsOcPiiMTc1fzNzHma4O/XLHCtgfTLBbxm6KrMIAAAAASUVORK5CYII="
 
 /***/ }),
-/* 136 */
+/* 125 */
 /* no static exports found */
 /* all exports used */
 /*!******************************************************************!*\
@@ -60454,7 +61340,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1
 module.exports = __webpack_require__.p + "./fa2772327f55d8198301fdb8bcfc8158.woff";
 
 /***/ }),
-/* 137 */
+/* 126 */
 /* no static exports found */
 /* all exports used */
 /*!*******************************************************************!*\
@@ -60465,7 +61351,7 @@ module.exports = __webpack_require__.p + "./fa2772327f55d8198301fdb8bcfc8158.wof
 module.exports = __webpack_require__.p + "./448c34a56d699c29117adc64c43affeb.woff2";
 
 /***/ }),
-/* 138 */
+/* 127 */
 /* no static exports found */
 /* all exports used */
 /*!*******************************!*\
@@ -60502,7 +61388,7 @@ function get_blob() {
   }
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./../webpack/buildin/global.js */ 45)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./../webpack/buildin/global.js */ 37)))
 
 /***/ })
 /******/ ]);

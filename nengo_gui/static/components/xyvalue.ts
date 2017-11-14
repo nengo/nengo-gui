@@ -1,13 +1,15 @@
 import * as d3 from "d3";
 import * as $ from "jquery";
+import { VNode, dom, h } from "maquette";
 
+import { ResizableComponentView } from "./component";
 import { DataStore } from "../datastore";
-import * as utils from "../utils";
-import { InputDialogView } from "../views/modal";
-import { XYValueView } from "./views/xyvalue";
-import { Axes, Plot, Position } from "./base";
+import { InputDialogView } from "../modal";
+import { Axes, Plot, PlotView } from "./plot";
+import { Position } from "./position";
 import { registerComponent } from "./registry";
 import { Connection } from "../server";
+import * as utils from "../utils";
 
 export class XYAxes extends Axes {
     get padding(): [number, number] {
@@ -219,6 +221,47 @@ export class XYValue extends Plot {
             this.view.line = this.line(shownData);
         }
     }, 20);
+}
+
+export class XYValueView extends PlotView {
+    circle: SVGCircleElement;
+    path: SVGPathElement;
+
+    constructor(label: string) {
+        super(label, 1); // Dimensions always 1
+        const pathNode = h("path.line", {stroke: this.colors[0]});
+        const circleNode = h("circle.last-point", {
+            cx: "0", cy: "0", fill: this.colors[0], r: "0",
+        });
+        this.path = utils.domCreateSVG(pathNode) as SVGPathElement;
+        this.body.appendChild(this.path);
+        this.circle = utils.domCreateSVG(circleNode) as SVGCircleElement;
+    }
+
+    set line(val: string) {
+        this.path.setAttribute("d", val);
+        if (!this.body.contains(this.circle)) {
+            this.body.appendChild(this.circle);
+        }
+        // Parse the "d" attribute to get the last x, y coordinate
+        const commands = val.split(/(?=[LMC])/);
+        const last = commands[commands.length - 1];
+        const lastNums = last.replace(/[lmcz]/ig, "").split(",").map(Number);
+        this.circle.setAttribute("cx", `${lastNums[0]}`);
+        this.circle.setAttribute("cy", `${lastNums[1]}`);
+    }
+
+    get scale(): [number, number] {
+        return this.overlayScale;
+    }
+
+    set scale(val: [number, number]) {
+        const width = Math.max(ResizableComponentView.minWidth, val[0]);
+        const height = Math.max(ResizableComponentView.minHeight, val[1]);
+        this.overlayScale = [width, height];
+        this.legend.pos = [width + 2, 0];
+        this.circle.setAttribute("r", `${Math.min(width, height) / 30}`);
+    }
 }
 
 registerComponent("xy_value", XYValue);

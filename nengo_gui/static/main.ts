@@ -11,6 +11,10 @@ import "jqueryfiletree/dist/jQueryFileTree.min.css";
 
 import "./favicon.ico";
 
+import { VNode, dom, h } from "maquette";
+
+import "./main.css";
+
 import * as items from "./debug/items";
 import { Editor } from "./editor";
 import { HotkeyManager } from "./hotkeys";
@@ -20,7 +24,6 @@ import { Sidebar } from "./sidebar";
 import { SimControl } from "./sim-control";
 import { Toolbar } from "./toolbar";
 import { Network } from "./components/network";
-import { MainView } from "./views/main";
 
 export interface NengoWindow extends Window {
     nengo: Nengo;
@@ -162,7 +165,7 @@ export class Nengo {
         this.view.root.appendChild(this.sidebar.view.root);
         window.dispatchEvent(new Event("resize"));
 
-        server.bind("netgraph.update", (cfg) => {
+        server.bind("netgraph.update", cfg => {
             // TODO
             // this.filename = filename;
             // this.toolbar.filename = filename
@@ -171,13 +174,44 @@ export class Nengo {
 
             // In case anything needs to be adjusted
             window.dispatchEvent(new Event("resize"));
-        })
+        });
 
         // Request config and update accordingly
-        server.send("netgraph.request_update", { initialize: true })
+        server.send("netgraph.request_update", { initialize: true });
         this.server = server;
     }
 }
+
+export class MainView {
+    root: HTMLElement;
+
+    constructor() {
+        const node = h("div.main");
+
+        this.root = dom.create(node).domNode as HTMLElement;
+    }
+}
+
+// TODO: splash screen, if we want it
+// class VMiddle {
+//     node: VNode;
+//     root: HTMLElement;
+
+//     constructor() {
+//         this.node =
+//             h("div#loading", {styles: {
+//                 "z-index": "100000002",
+//                 "position": "absolute",
+//                 "top": "0",
+//                 "right": "0",
+//                 "bottom": "0",
+//                 "left": "0",
+//                 "background": "#ffffff",
+//             }});
+
+//         this.root = dom.create(this.node).domNode as HTMLElement;
+//     }
+// }
 
 if (typeof localStorage === "undefined" || localStorage === null) {
     console.error("localStorage not available. Please update your browser!");
@@ -201,14 +235,3 @@ if (typeof document !== "undefined") {
         }, 1000); // Time out after 1 second
     });
 }
-
-// Exposing components for server
-// import "expose-loader?HTMLView!./components/htmlview";
-// import "expose-loader?Image!./components/image";
-// import "expose-loader?Pointer!./components/pointer";
-// import "expose-loader?Raster!./components/raster";
-// import "expose-loader?Slider!./components/slider";
-// import "expose-loader?SpaSimilarity!./components/spa-similarity";
-// import "expose-loader?Value!./components/value";
-// import "expose-loader?XYValue!./components/xyvalue";
-// import "expose-loader?utils!./utils";

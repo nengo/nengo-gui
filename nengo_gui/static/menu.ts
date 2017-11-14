@@ -3,7 +3,10 @@
  *
  * Each element that has a menu makes a call to Menu constructor
  */
-import { MenuView } from "./views/menu";
+
+import { VNode, dom, h } from "maquette";
+
+import "./menu.css";
 
 import * as utils from "./utils";
 
@@ -26,15 +29,18 @@ export class MenuAction {
 }
 
 export class Menu {
-
     static shown: Menu = null;
 
-    static hideShown = utils.debounce(() => {
-        if (Menu.shown !== null) {
-            document.body.removeChild(Menu.shown.view.root);
-            Menu.shown = null;
-        }
-    }, 50, {immediate: true});
+    static hideShown = utils.debounce(
+        () => {
+            if (Menu.shown !== null) {
+                document.body.removeChild(Menu.shown.view.root);
+                Menu.shown = null;
+            }
+        },
+        50,
+        { immediate: true }
+    );
 
     actions: MenuAction[] = [];
     view: MenuView = new MenuView();
@@ -42,7 +48,7 @@ export class Menu {
     addAction(
         label: string,
         callback: (event: Event) => void,
-        active: () => boolean = null,
+        active: () => boolean = null
     ) {
         const element = this.view.addAction(label);
         element.addEventListener("click", (event: Event) => {
@@ -102,5 +108,55 @@ export class Menu {
         this.view.show(x, y);
         document.body.appendChild(this.view.root);
         Menu.shown = this;
+    }
+}
+
+export class MenuView {
+    menu: HTMLUListElement;
+    root: HTMLDivElement;
+
+    constructor() {
+        const node = h("div.menu", [h("ul.dropdown-menu", { role: "menu" })]);
+        this.root = dom.create(node).domNode as HTMLDivElement;
+        this.menu = this.root.firstChild as HTMLUListElement;
+    }
+
+    get height(): number {
+        return this.root.offsetHeight;
+    }
+
+    get width(): number {
+        return this.root.offsetWidth;
+    }
+
+    addAction(label: string): HTMLLIElement {
+        const node = h("li", [h("a.menu-item", { href: "#" }, [label])]);
+        const li = dom.create(node).domNode as HTMLLIElement;
+        this.menu.appendChild(li);
+        return li;
+    }
+
+    addHeader(label: string) {
+        const node = h("li.dropdown-header", [label]);
+        this.menu.appendChild(dom.create(node).domNode);
+    }
+
+    addSeparator() {
+        const node = h("li.divider", { role: "separator" });
+        this.menu.appendChild(dom.create(node).domNode);
+    }
+
+    hideAction(element: HTMLLIElement) {
+        element.style.display = "none";
+    }
+
+    showAction(element: HTMLLIElement) {
+        element.style.display = null;
+    }
+
+    show(x: number, y: number) {
+        this.root.style.left = x + "px";
+        this.root.style.top = y + "px";
+        this.root.style.zIndex = String(utils.nextZindex());
     }
 }
