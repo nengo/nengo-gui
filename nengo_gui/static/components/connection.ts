@@ -119,7 +119,7 @@ export class RecurrentConnection extends ComponentConnection {
     }
 
     syncWithComponents() {
-        this.view.width = this.component.view.width * 1.4;
+        this.view.width = this.component.view.scale[0] * 1.4;
         this.view.pos = this.component.view.centerPos;
     }
 }

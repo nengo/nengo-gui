@@ -3,8 +3,9 @@ import { VNode, dom, h } from "maquette";
 
 import "./plot.css";
 
-import { ResizableComponentView } from "./component";
+import { ComponentView } from "./component";
 import { InputDialogView } from "../modal";
+import { Position } from "./position";
 import { Connection } from "../server";
 import * as utils from "../utils";
 import { Widget } from "./widget";
@@ -55,6 +56,15 @@ export class Axis {
         this.axis.outerTickSize(val);
     }
 
+    isPixelValid(pixel: number) {
+        const lim = this.pixelLim;
+        if (lim[0] > lim[1]) {
+            return lim[1] <= pixel && pixel <= lim[0];
+        } else {
+            return lim[0] <= pixel && pixel <= lim[1];
+        }
+    }
+
     pixelAt(value: number) {
         return this.scale(value);
     }
@@ -80,13 +90,13 @@ export class Axes {
 
     // TODO: probably don't have width, height passed in? get from view?
     constructor(
-        valueView: PlotView,
+        plotView: PlotView,
         width,
         height,
         xlim: [number, number] = [-0.5, 0.0],
         ylim: [number, number] = [-1, 1]
     ) {
-        this.view = valueView.axes;
+        this.view = plotView.axes;
         this._width = width;
         this._height = height;
 
@@ -95,17 +105,21 @@ export class Axes {
         this.y = new Axis("Y", this.view.y.g, ylim);
 
         // Set up mouse handlers for crosshairs
-        valueView.overlay.addEventListener("mouseover", () => {
-            this.view.crosshair.visible = true;
-        });
-        valueView.overlay.addEventListener("mouseout", () => {
+        plotView.overlay.addEventListener("mouseout", () => {
             this.view.crosshair.visible = false;
         });
-        valueView.overlay.addEventListener("mousemove", (event: MouseEvent) => {
-            const [offsetX, offsetY] = valueView.pos;
-            const [x, y] = [event.x - offsetX, event.y - offsetY];
-            this.view.crosshair.pos = [x, y];
-            this.view.crosshair.value = [this.x.valueAt(x), this.y.valueAt(y)];
+        plotView.overlay.addEventListener("mousemove", (event: MouseEvent) => {
+            const pt = utils.dom2svg(plotView.root, event.x, event.y);
+            if (this.x.isPixelValid(pt.x) && this.y.isPixelValid(pt.y)) {
+                this.view.crosshair.pos = [pt.x, pt.y];
+                this.view.crosshair.value = [
+                    this.x.valueAt(pt.x),
+                    this.y.valueAt(pt.y)
+                ];
+                this.view.crosshair.visible = true;
+            } else {
+                this.view.crosshair.visible = false;
+            }
         });
 
         // TODO: previosly, we hid on mouse wheel... should we?
@@ -152,33 +166,29 @@ export class Axes {
 
 export abstract class Plot extends Widget {
     axes: Axes;
-
-    protected _view: PlotView;
+    view: PlotView;
 
     constructor(
         server: Connection,
         uid: string,
-        left: number,
-        top: number,
-        width: number,
-        height: number,
+        view: PlotView,
+        label: string,
+        pos: Position,
         dimensions: number,
         synapse: number,
+        labelVisible: boolean = true,
         xlim: [number, number] = [-0.5, 0],
         ylim: [number, number] = [-1, 1]
     ) {
-        super(server, uid, left, top, width, height, dimensions, synapse);
+        super(server, uid, view, label, pos, dimensions, synapse, labelVisible);
         this.synapse = synapse;
+        this.view.dimensions = dimensions;
 
-        this.addAxes(width, height, xlim, ylim);
+        this.addAxes(pos.width, pos.height, xlim, ylim);
 
         this.interactRoot.on("resizemove", event => {
             // Resizing the view happens in the superclass; we update axes here
-            const [vWidth, wHeight] = this.view.scale;
-            this.axes.scale = [
-                vWidth * this.scaleToPixels,
-                wHeight * this.scaleToPixels
-            ];
+            this.axes.scale = this.view.scale;
             this.syncWithDataStore();
         });
 
@@ -208,8 +218,6 @@ export abstract class Plot extends Widget {
     set legendVisible(val: boolean) {
         this.view.legendVisible = val;
     }
-
-    abstract get view(): PlotView;
 
     get xlim(): [number, number] {
         return this.axes.x.lim;
@@ -287,10 +295,15 @@ export abstract class Plot extends Widget {
         super.ondomadd();
         this.axes.ondomadd();
     }
+
+    scale(factor: number) {
+        super.scale(factor);
+        this.axes.scale = this.view.scale;
+        this.syncWithDataStore();
+    }
 }
 
 export class CrosshairView {
-
     x: SVGGElement;
     xLine: SVGLineElement;
     xText: SVGTextElement;
@@ -300,9 +313,9 @@ export class CrosshairView {
 
     constructor() {
         const crosshair = (xy: "X" | "Y") =>
-            h(`g.crosshair.crosshair${xy}`, {styles: {display: "none"}}, [
-                h("line", {x1: "0", x2: "0", y1: "0", y2: "0"}),
-                h("text", {x: "0", y: "0"}, ["0.000"]),
+            h(`g.crosshair.crosshair${xy}`, { styles: { display: "none" } }, [
+                h("line", { x1: "0", x2: "0", y1: "0", y2: "0" }),
+                h("text", { x: "0", y: "0" }, ["0.000"])
             ]);
         this.x = utils.domCreateSVG(crosshair("X")) as SVGGElement;
         this.y = utils.domCreateSVG(crosshair("Y")) as SVGGElement;
@@ -315,20 +328,20 @@ export class CrosshairView {
     get offset(): [number, number] {
         return [
             Number(this.xLine.getAttribute("y1")),
-            Number(this.yLine.getAttribute("x1")),
+            Number(this.yLine.getAttribute("x1"))
         ];
     }
 
     set offset(val: [number, number]) {
         this.xLine.setAttribute("y1", String(val[0]));
         this.yLine.setAttribute("x1", String(val[1]));
-        this.yText.setAttribute("x", String(val[1])); //
+        this.yText.setAttribute("x", String(val[1]));
     }
 
     get pos(): [number, number] {
         return [
             Number(this.xLine.getAttribute("x1")),
-            Number(this.yLine.getAttribute("y1")),
+            Number(this.yLine.getAttribute("y1"))
         ];
     }
 
@@ -344,7 +357,7 @@ export class CrosshairView {
     get scale(): [number, number] {
         return [
             Number(this.yLine.getAttribute("x2")),
-            Number(this.xLine.getAttribute("y2")),
+            Number(this.xLine.getAttribute("y2"))
         ];
     }
 
@@ -355,10 +368,7 @@ export class CrosshairView {
     }
 
     get value(): [number, number] {
-        return [
-            Number(this.xText.textContent),
-            Number(this.yText.textContent),
-        ];
+        return [Number(this.xText.textContent), Number(this.yText.textContent)];
     }
 
     set value(val: [number, number]) {
@@ -387,7 +397,7 @@ export class AxisView {
 
     constructor(xy: "X" | "Y") {
         const node = h(`g.axis.axis${xy}.unselectable`, {
-            transform: "translate(0,0)",
+            transform: "translate(0,0)"
         });
         this.g = utils.domCreateSVG(node) as SVGGElement;
         this.orientation = xy === "X" ? "horizontal" : "vertical";
@@ -448,14 +458,14 @@ export class LegendView {
     constructor(colors: string[]) {
         this.colors = colors;
         const dimensions = this.colors.length;
-        const node = h("g.legend", {transform: "translate(0,0)"});
+        const node = h("g.legend", { transform: "translate(0,0)" });
         this.root = utils.domCreateSVG(node) as SVGGElement;
         this.numLabels = this.colors.length;
         this.labels = [];
     }
 
     get labels(): string[] {
-        return this._labels.map((label) => label.textContent);
+        return this._labels.map(label => label.textContent);
     }
 
     set labels(val: string[]) {
@@ -490,11 +500,13 @@ export class LegendView {
     }
 
     get valuesVisible(): boolean {
-        return this._values[0].style.display !== "none";
+        return (
+            this._values.length > 0 && this._values[0].style.display !== "none"
+        );
     }
 
     set valuesVisible(val: boolean) {
-        this._values.forEach((value) => {
+        this._values.forEach(value => {
             value.style.display = val ? null : "none";
         });
     }
@@ -508,32 +520,31 @@ export class LegendView {
 
     private addLabel() {
         const i = this._legendItems.length;
-        const node =
-            h("g.legend-item", [
-                h("rect", {
-                    fill: this.colors[i % this.colors.length],
-                    height: "10",
-                    width: "10",
-                    y: `${i * 20}`,
-                }),
-                h("text.label", {
-                    x: "15",
-                    y: `${i * 20 + 9}`,
-                }),
-                h("text.value", {
-                    styles: {display: "none"}, // Hide by default
-                    y: `${i * 20 + 9}`,
-                }),
-            ]);
+        const node = h("g.legend-item", [
+            h("rect", {
+                fill: this.colors[i % this.colors.length],
+                height: "10",
+                width: "10",
+                y: `${i * 20}`
+            }),
+            h("text.legend-label", {
+                x: "15",
+                y: `${i * 20 + 9}`
+            }),
+            h("text.legend-value", {
+                styles: { display: "none" }, // Hide by default
+                y: `${i * 20 + 9}`
+            })
+        ]);
         const legendItem = utils.domCreateSVG(node) as SVGGElement;
         this.root.appendChild(legendItem);
         this._legendItems.push(legendItem);
-        this._labels.push(
-            legendItem.querySelector("text.label") as SVGTextElement,
-        );
-        this._values.push(
-            legendItem.querySelector("text.value") as SVGTextElement,
-        );
+        this._labels.push(legendItem.querySelector(
+            "text.legend-label"
+        ) as SVGTextElement);
+        this._values.push(legendItem.querySelector(
+            "text.legend-value"
+        ) as SVGTextElement);
     }
 
     private removeLabel() {
@@ -546,15 +557,14 @@ export class LegendView {
     }
 }
 
-export abstract class PlotView extends ResizableComponentView {
+export abstract class PlotView extends ComponentView {
     axes: AxesView;
-    colors: string[];
+    colors: string[] = [];
     legend: LegendView;
     plot: SVGGElement;
 
-    constructor(label: string, dimensions: number = 1) {
-        super(label);
-        this.colors = utils.makeColors(dimensions);
+    constructor() {
+        super();
         this.axes = new AxesView();
         this.legend = new LegendView(this.colors);
         const node = h("g.plot");
@@ -562,6 +572,14 @@ export abstract class PlotView extends ResizableComponentView {
         this.body.appendChild(this.axes.root);
         this.body.appendChild(this.legend.root);
         this.root.appendChild(this.body);
+    }
+
+    get dimensions(): number {
+        return this.colors.length;
+    }
+
+    set dimensions(val: number) {
+        this.colors = utils.makeColors(val);
     }
 
     get legendLabels(): string[] {
@@ -589,9 +607,12 @@ export abstract class PlotView extends ResizableComponentView {
     }
 
     set scale(val: [number, number]) {
-        const width = Math.max(ResizableComponentView.minWidth, val[0]);
-        const height = Math.max(ResizableComponentView.minHeight, val[1]);
+        const [width, height] = val;
         this.overlayScale = [width, height];
         this.legend.pos = [width + 2, 0];
+    }
+
+    protected updateLabel() {
+        utils.setTranslate(this._label, this.overlayScale[0] * 0.5, 0);
     }
 }

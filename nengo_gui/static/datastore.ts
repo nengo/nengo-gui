@@ -1,5 +1,17 @@
 import * as utils from "./utils";
 
+export type TypedArray =
+    | Uint8Array
+    | Int8Array
+    | Uint8Array
+    | Uint8ClampedArray
+    | Int16Array
+    | Uint16Array
+    | Int32Array
+    | Uint32Array
+    | Float32Array
+    | Float64Array;
+
 /**
  * Storage of a set of data points and associated times with a fixed
  * number of dimensions.
@@ -97,7 +109,7 @@ export class DataStore {
      *
      * @param {array} row - dims+1 data points, with time as the first one
      */
-    add(row: number[]) {
+    add(row: number[] | TypedArray) {
         console.assert(row.length - 1 === this.dims);
         const time = row[0];
         // If we get data out of order, wipe out the later data
@@ -113,19 +125,17 @@ export class DataStore {
         }
 
         // Filter new data
-        let newdata = row.slice(1);
+        const newdata = [time];
         const lastdata = this.data[this.data.length - 1];
-        if (decay > 0.0) {
-            newdata = newdata.map((datum, dim) => {
-                if (lastdata[dim] === null) {
-                    return datum;
-                } else {
-                    const lastdatum = lastdata[dim];
-                    return datum * (1 - decay) + lastdatum * decay;
-                }
-            });
+        for (let i = 1; i < row.length; i++) {
+            if (lastdata == null || lastdata[i] == null || decay <= 0.0) {
+                newdata.push(row[i]);
+            } else {
+                newdata.push(row[i] * (1 - decay) + lastdata[i] * decay);
+            }
         }
-        this.data.push([time].concat(newdata));
+
+        this.data.push(newdata);
         // Also keep a separate times list (for fast lookups)
         this.times.push(time);
     }

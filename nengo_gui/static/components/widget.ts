@@ -1,27 +1,31 @@
-import { ResizableComponent } from "./component";
-import { DataStore } from "../datastore";
+import { Component, ComponentView } from "./component";
+import { DataStore, TypedArray } from "../datastore";
 import { InputDialogView } from "../modal";
-import { Connection } from "../server";
+import { Position } from "./position";
+import { Connection, FastConnection, FastServerConnection } from "../server";
 import * as utils from "../utils";
 
-export abstract class Widget extends ResizableComponent {
+export abstract class Widget extends Component {
     currentTime: number = 0.0;
     datastore: DataStore;
     synapse: number;
 
+    protected fastServer: FastConnection;
+
     constructor(
         server: Connection,
         uid: string,
-        left: number,
-        top: number,
-        width: number,
-        height: number,
+        view: ComponentView,
+        label: string,
+        pos: Position,
         dimensions: number,
-        synapse: number
+        synapse: number,
+        labelVisible: boolean = true
     ) {
-        super(server, uid, left, top, width, height, dimensions);
+        super(server, uid, view, label, pos, labelVisible);
         this.synapse = synapse;
-        this.datastore = new DataStore(this.dimensions, 0.0);
+        this.datastore = new DataStore(dimensions, 0.0);
+        this.fastServer = new FastServerConnection(this.uid);
 
         window.addEventListener(
             "TimeSlider.moveShown",
@@ -31,21 +35,20 @@ export abstract class Widget extends ResizableComponent {
         );
     }
 
+    get dimensions(): number {
+        return this.datastore.dims;
+    }
+
+    set dimensions(val: number) {
+        console.warn(`Changing dimensionality of ${this.uid}`);
+        this.datastore.dims = val;
+    }
+
     /**
      * Receive new line data from the server.
      */
-    add(data: number[]) {
+    add(data: number[] | TypedArray) {
         // TODO: handle this in the websocket code
-        // const size = this.dimensions + 1;
-        // // Since multiple data packets can be sent with a single event,
-        // // make sure to process all the packets.
-        // while (data.length >= size) {
-        //     this.datastore.push(data.slice(0, size));
-        //     data = data.slice(size);
-        // }
-        // if (data.length > 0) {
-        //     console.warn("extra data: " + data.length);
-        // }
         if (data.length !== this.dimensions + 1) {
             console.error(
                 `Got data with ${data.length - 1} dimensions; ` +
@@ -127,5 +130,5 @@ export abstract class Widget extends ResizableComponent {
         this.datastore.reset();
     }
 
-    syncWithDataStore: () => void;
+    syncWithDataStore() {}
 }

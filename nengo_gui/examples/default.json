@@ -1,89 +1,69 @@
 {
   "_viz_0": {
-    "cls": "Slider",
-    "label": "_viz_0",
-    "obj": "stim",
-    "pos": {
-      "height": 0.15631105900742479,
-      "width": 0.056211354693648116,
-      "left": 0.013331633126704564,
-      "top": 0.9266777774469566
-    },
-    "ylim": [
-      -1,
-      1
-    ]
-  },
-  "_viz_1": {
-    "cls": "Value",
-    "label": "_viz_1",
-    "legend": false,
+    "cls": "Value", 
+    "label_visible": true, 
+    "legend": false, 
     "legend_labels": [
       "label_0"
-    ],
-    "obj": "a",
+    ], 
+    "obj": "a", 
     "pos": {
-      "height": 0.15631105900742479,
-      "width": 0.11242270938729623,
-      "left": 0.7566623456266636,
-      "top": 1.076554956024495
-    },
-    "synapse": 0.01,
+      "height": 70.33997655334115, 
+      "left": 462.75848551210237, 
+      "top": 537.2548882310801, 
+      "width": 50.16722408026756
+    }, 
+    "synapse": 0.01, 
     "ylim": [
-      -1,
+      -1, 
       1
     ]
-  },
-  "_viz_2": {
-    "cls": "Raster",
-    "label": "_viz_2",
-    "n_neurons": 10,
-    "obj": "a",
+  }, 
+  "_viz_1": {
+    "cls": "Slider", 
+    "label_visible": true, 
+    "obj": "stim", 
     "pos": {
-      "height": 0.15631105900742479,
-      "width": 0.11242270938729623,
-      "left": 0.761159254002155,
-      "top": 0.3215725410186248
-    }
-  },
-  "_viz_3": {
-    "cls": "SpikeGrid",
-    "label": "_viz_3",
-    "obj": "a",
-    "pos": {
-      "height": 0.15631105900742479,
-      "width": 0.11242270938729623,
-      "left": 0.7622834810960266,
-      "top": 0.6857773085059296
-    }
-  },
+      "height": 90.67509346098738, 
+      "left": 113.95125886942171, 
+      "top": 300.3088766314966, 
+      "width": 32.33522354607953
+    }, 
+    "ylim": [
+      -1, 
+      1
+    ]
+  }, 
   "a": {
-    "cls": "Ensemble",
+    "cls": "Ensemble", 
+    "label_visible": true, 
     "pos": {
-      "height": 0.1,
-      "width": 0.1,
-      "left": 0.4745375564192452,
-      "top": 0.459165350709913
+      "height": 150.0, 
+      "left": 464.9297725782068, 
+      "top": 297.2797471961704, 
+      "width": 90.9090909090909
     }
-  },
+  }, 
   "model": {
-    "cls": "Network",
-    "expanded": true,
-    "has_layout": true,
+    "cls": "Network", 
+    "expanded": true, 
+    "has_layout": true, 
+    "label_visible": true, 
     "pos": {
-      "height": 0.75,
-      "width": 0.75,
-      "left": 0.18240584598088863,
-      "top": -0.029973270808909668
+      "height": 427.66482044540237, 
+      "left": 231.03431258051188, 
+      "top": 100.53641766478532, 
+      "width": 427.66482044540237
     }
-  },
+  }, 
   "stim": {
-    "cls": "Node",
+    "cls": "Node", 
+    "label_visible": true, 
     "pos": {
-      "height": 0.1,
-      "width": 0.1,
-      "left": 0.01338784448139807,
-      "top": 0.6203471795571499
+      "height": 120.0, 
+      "left": 118.18181818181817, 
+      "top": 300.0, 
+      "width": 72.72727272727272
     }
   }
 }

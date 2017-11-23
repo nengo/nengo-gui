@@ -26,33 +26,38 @@ import { Connection } from "../server";
 import * as utils from "../utils";
 
 export class Raster extends Plot {
+    view: RasterView;
+
     protected _nNeurons: number;
-    protected _view: RasterView;
 
     constructor({
         server,
         uid,
+        label,
         pos,
         synapse,
         nNeurons,
+        labelVisible = true,
         xlim = [-0.5, 0],
     }: {
         server: Connection;
         uid: string;
+        label: string;
         pos: Position;
         synapse: number;
         nNeurons: number;
+        labelVisible?: boolean;
         xlim?: [number, number];
     }) {
         super(
             server,
             uid,
-            pos.left,
-            pos.top,
-            pos.width,
-            pos.height,
+            new RasterView,
+            label,
+            pos,
             nNeurons,
             synapse,
+            labelVisible,
             xlim,
             [0, nNeurons]
         );
@@ -66,13 +71,6 @@ export class Raster extends Plot {
     set nNeurons(val: number) {
         this._nNeurons = val;
         this.ylim = [0, this.nNeurons];
-    }
-
-    get view(): RasterView {
-        if (this._view === null) {
-            this._view = new RasterView("?");
-        }
-        return this._view;
     }
 
     addMenuItems() {
@@ -121,7 +119,7 @@ export class Raster extends Plot {
     /**
      * Redraw the lines and axis due to changed data.
      */
-    syncWithDataStore = utils.throttle(() => {
+    syncWithDataStore() {
         const [tStart, tEnd] = this.xlim;
         const shownData = this.datastore.timeSlice(tStart, tEnd);
 
@@ -138,15 +136,15 @@ export class Raster extends Plot {
             });
         }
         this.view.line = path.join("");
-    }, 20);
+    }
 }
 
 export class RasterView extends PlotView {
     // All the lines are implemented as a single path element
     path: SVGPathElement;
 
-    constructor(label: string) {
-        super(label, 1);
+    constructor() {
+        super();
         const node = h("path.line", {stroke: this.colors[0]});
         this.path = utils.domCreateSVG(node) as SVGPathElement;
         this.body.appendChild(this.path);

@@ -1,4 +1,4 @@
-function getURL(uid: string = null): string {
+function getURL(fast: boolean = false, uid: string = null): string {
     const hostname = window.location.hostname;
     const port = window.location.port;
     let wsProto;
@@ -7,21 +7,29 @@ function getURL(uid: string = null): string {
     } else {
         wsProto = "ws:";
     }
+
     let url = `${wsProto}//${hostname}`;
     if (port != "") {
         url += `:${port}`;
     }
+
+    if (fast) {
+        url += "/fast";
+    } else {
+        url += "/";
+    }
+
     if (uid != null) {
         // If requesting UID, only send along UID
-        url += `/?uid=${uid}`;
-    } else {
+        url += `?uid=${uid}`;
+    } else if (!fast) {
         // If not requesting UID, send along query params
         const href = window.location.href.split("?");
         if (href.length > 1) {
-            url += `/?${href[1]}`;
+            url += `?${href[1]}`;
         }
     }
-    return url
+    return url;
 }
 
 export interface Connection {
@@ -140,7 +148,8 @@ export class MockConnection implements Connection {
 }
 
 export interface FastConnection {
-    // Nothing yet...
+    uid: string;
+    bind(step: (data: ArrayBuffer) => void);
 }
 
 /**
@@ -153,23 +162,40 @@ export interface FastConnection {
  * @returns {WebSocket} The created WebSocket.
  */
 export class FastServerConnection implements FastConnection {
-    static typename: string = "fast";
     uid: string;
+
+    private destructure: (data: ArrayBuffer) => any[] = null;
+    private step: (...args: any[]) => void = null;
     private ws: WebSocket;
 
-    constructor(
-        uid: string,
-        destructure: (data: ArrayBuffer) => any[],
-        step: (...args: any[]) => void
-    ) {
+    constructor(uid: string = null) {
         this.uid = uid;
 
-        this.ws = new WebSocket(getURL(this.uid));
+        this.ws = new WebSocket(getURL(true, this.uid));
         this.ws.binaryType = "arraybuffer";
         this.ws.onmessage = (event: MessageEvent) => {
-            console.assert(event.data instanceof ArrayBuffer);
-            const structure = destructure(event.data);
-            step(...structure);
+            if (!(event.data instanceof ArrayBuffer)) {
+                console.warn(
+                    `Received non-binary data for '${this.uid}': ${event.data}`
+                );
+            } else if (this.step != null) {
+                this.step(event.data);
+            } else {
+                console.warn(`Nothing bound for '${this.uid}'`);
+            }
         };
+    }
+
+    bind(step: (data: ArrayBuffer) => void) {
+        this.step = step;
+    }
+}
+
+export class FastMockConnection implements FastConnection {
+    uid: string;
+
+    private step: (...args: any[]) => void = null;
+    bind(step: (data: ArrayBuffer) => void) {
+        this.step = step;
     }
 }

@@ -7,7 +7,7 @@ import "./sim-control.css";
 
 import { HotkeyManager } from "./hotkeys";
 import { AlertDialogView } from "./modal";
-import { Connection, FastServerConnection } from "./server";
+import { Connection, FastConnection, FastServerConnection } from "./server";
 import * as utils from "./utils";
 
 /**
@@ -24,6 +24,7 @@ export class SimControl {
     ws: FastServerConnection;
 
     private _status: string = "paused";
+    private fastServer: FastConnection;
     private server: Connection;
 
     /**
@@ -64,6 +65,13 @@ export class SimControl {
             this.timeSlider.reset();
         };
 
+        this.fastServer = new FastServerConnection();
+        this.fastServer.bind((data: ArrayBuffer) => {
+            const view = new Float64Array(data);
+            this.timeSlider.addTime(view[0]);
+            this.speedThrottle.time = view[0];
+        });
+
         // this.ws = new FastServerConnection(
         //     "simcontrol",
         //     (data: ArrayBuffer) => {
@@ -77,6 +85,11 @@ export class SimControl {
         //         this.speedThrottle.proportion = proportion;
         //     },
         // );
+
+        server.bind("simcontrol.rate", ({ rate, proportion }) => {
+            this.speedThrottle.speed = rate;
+            this.speedThrottle.proportion = proportion;
+        });
 
         server.bind("close", event => {
             this.disconnected();

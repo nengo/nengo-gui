@@ -264,13 +264,17 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
         # figure out what component is being connected to
 
         client = FastClientConnection(self.ws)
-        page = self.server.pages[int(self.query['page'][0])]
-        uid = self.query['uid']
-        print(uid)
-        component = page.components.by_uid[uid]
-        # TODO: isinstance better?
-        assert hasattr(component, "attach"), (
-            "Do not make a WS connection for a non-Widget component")
+        while len(self.server.pages) == 0:
+            time.sleep(0.01)
+        page = self.server.pages[0]
+        # TODO: handle multiple pages
+        # page = self.server.pages[int(self.query['page'][0])]
+        uid = self.query.get('uid', [None])[0]
+
+        if uid is None:
+            component = page.simcontrol
+        else:
+            component = page.netgraph.components.by_uid[uid]
         component.attach(client)
 
         # now = default_timer()

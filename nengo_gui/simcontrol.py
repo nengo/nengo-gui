@@ -20,10 +20,12 @@ class SimControl(ExposedToClient):
 
     RATE_TAU = 0.5
 
-    def __init__(self, client, shown_time=0.5, kept_time=4.0, backend="nengo"):
+    # TODO: shown_time=0.5, kept_time=4.0,
+    def __init__(self, client, dt=0.001, backend="nengo"):
         super(SimControl, self).__init__(client)
-        self.shown_time = shown_time
-        self.kept_time = kept_time
+        self._dt = dt
+        # self.shown_time = shown_time
+        # self.kept_time = kept_time
         self.backend = backend
 
         self.node = None
@@ -68,7 +70,7 @@ class SimControl(ExposedToClient):
     @property
     @bind("simcontrol.get_dt")
     def dt(self):
-        return self._sim.dt
+        return self._dt
 
     @property
     def sim(self):
@@ -80,9 +82,6 @@ class SimControl(ExposedToClient):
         if self._sim is not None and self._sim is not value:
             self._sim.close()
         self._sim = value
-        if self._sim is not None:
-            # TODO: play here, or elsewhere?
-            self.simthread.play()
 
     @property
     def status(self):
@@ -93,9 +92,12 @@ class SimControl(ExposedToClient):
         self._status = val
         self.send_status()
 
-    def add_nengo_objects(self, network, config):
+    def add_nengo_objects(self, network):
         with network:
             self.node = nengo.Node(self.control, size_out=0)
+
+    def attach(self, fast_client):
+        self.fast_client = fast_client
 
     def remove_nengo_objects(self, network):
         network.nodes.remove(self.node)
@@ -123,6 +125,7 @@ class SimControl(ExposedToClient):
 
         actual_dt = t - self.time
         self.time = t
+        self.fast_client.send(np.array(self.time, dtype=np.float64))
 
         now = timeit.default_timer()
         if self.last_time is not None:
@@ -185,7 +188,7 @@ class SimControl(ExposedToClient):
             self._set_stream("stderr", traceback.format_exc())
             self.sim = None
 
-    def build(self, network):
+    def build(self, network, filename):
         # Remove the current simulator
         self.sim = None
 
@@ -193,11 +196,11 @@ class SimControl(ExposedToClient):
         Simulator = importlib.import_module(self.backend).Simulator
 
         sim = None
-        env = exec_env.ExecutionEnvironment(self.filename, allow_sim=True)
+        env = exec_env.ExecutionEnvironment(filename, allow_sim=True)
         try:
             with env:
                 # TODO: make it possible to pass args to the simulator
-                sim = Simulator(network)
+                sim = Simulator(network, dt=self.dt)
         except Exception:
             self._set_stream("stderr", traceback.format_exc())
         self._set_stream("stdout", env.stdout.getvalue())
@@ -205,7 +208,6 @@ class SimControl(ExposedToClient):
 
     def send_rate(self):
         self.client.send("simcontrol.rate",
-                         time=self.time,
                          rate=self.rate,
                          proportion=self.rate_proportion)
 
@@ -216,6 +218,7 @@ class SimControl(ExposedToClient):
     def pause(self):
         self.paused = True
         self.status = "paused"
+        self.simthread.pause()
 
     @bind("simcontrol.config")
     def config(self):
@@ -239,9 +242,10 @@ class SimControl(ExposedToClient):
     def play(self):
         if self._sim is None:
             self.status = 'building'
-            self.client.dispatch("page.rebuild")  # ???
+            self.client.dispatch("page.build")
         self.paused = False
         self.status = "running"
+        self.simthread.play()
 
     @bind("simcontrol.reset")
     def reset(self):

@@ -573,10 +573,29 @@ export function setMatrix(
     setTransform(element, "matrix", [a, b, c, d, e, f]);
 }
 
-export function setScale(element: Element, x: number, y: number) {
-    setTransform(element, "scale", [x, y]);
+export function setScale(element: Element, x: number, y: number = null) {
+    if (y == null) {
+        setTransform(element, "scale", [x]);
+    } else {
+        setTransform(element, "scale", [x, y]);
+    }
 }
 
 export function setTranslate(element: Element, x: number, y: number) {
     setTransform(element, "translate", [x, y]);
+}
+
+export function dom2svg(element: SVGGElement, x: number, y: number) {
+    // https://www.sitepoint.com/how-to-translate-from-dom-to-svg-coordinates-and-back-again/
+
+    // TODO: do some profiling to see how slow this is compared to
+    // not creating a new point and finding the parent every time
+    let svg = element.parentNode as SVGElement;
+    while (svg.tagName !== "svg") {
+        svg = svg.parentNode as SVGGElement;
+    }
+    const pt = (<SVGSVGElement>svg).createSVGPoint();
+    pt.x = x;
+    pt.y = y;
+    return pt.matrixTransform(element.getScreenCTM().inverse());
 }

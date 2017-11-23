@@ -134,6 +134,7 @@ export const component = {
         new Ensemble({
             server: new MockConnection(),
             uid: "Ensemble",
+            label: "Ensemble",
             pos: new Position(20, 20, 50, 50),
             dimensions: 1
         }),
@@ -141,13 +142,14 @@ export const component = {
         new Network({
             server: new MockConnection(),
             uid: "Network",
-            pos: new Position(20, 20, 50, 50),
-            dimensions: 1
+            label: "Network",
+            pos: new Position(20, 20, 50, 50)
         }),
     Node: () =>
         new Node({
             server: new MockConnection(),
             uid: "Node",
+            label: "Node",
             pos: new Position(20, 20, 50, 50),
             dimensions: 1
         }),
@@ -155,13 +157,14 @@ export const component = {
         new PassthroughNode({
             server: new MockConnection(),
             uid: "Passthrough",
-            pos: new Position(20, 20),
-            dimensions: 1
+            label: "Passthrough",
+            pos: new Position(20, 20)
         }),
     Raster: () =>
         new Raster({
             server: new MockConnection(),
             uid: "Raster",
+            label: "Raster",
             pos: new Position(20, 20, 100, 100),
             nNeurons: 2,
             synapse: 0.005
@@ -170,6 +173,7 @@ export const component = {
         new Slider({
             server: new MockConnection(),
             uid: "Slider",
+            label: "Slider",
             pos: new Position(20, 20, 100, 100),
             dimensions: 2,
             synapse: 0.005
@@ -178,6 +182,7 @@ export const component = {
         new Value({
             server: new MockConnection(),
             uid: "Value",
+            label: "Value",
             pos: new Position(20, 20, 100, 100),
             dimensions: 2,
             synapse: 0.005
@@ -186,6 +191,7 @@ export const component = {
         new XYValue({
             server: new MockConnection(),
             uid: "XY Value",
+            label: "XY Value",
             pos: new Position(20, 20, 100, 100),
             dimensions: 2,
             synapse: 0.005
@@ -194,9 +200,9 @@ export const component = {
 
 export const componentview = {
     ConnectionView: () => new ConnectionView(),
-    EnsembleView: () => new EnsembleView("Ensemble"),
-    NetworkView: () => new NetworkView("Network"),
-    NodeView: () => new NodeView("Node"),
-    PassthroughNodeView: () => new PassthroughNodeView("PassthroughNode"),
+    EnsembleView: () => new EnsembleView(),
+    NetworkView: () => new NetworkView(),
+    NodeView: () => new NodeView(),
+    PassthroughNodeView: () => new PassthroughNodeView(),
     RecurrentConnectionView: () => new RecurrentConnectionView()
 };

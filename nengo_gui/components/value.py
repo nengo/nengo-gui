@@ -11,8 +11,9 @@ class Value(Widget):
 
     def __init__(self, client, obj, uid,
                  ylim=(-1, 1), legend_labels=None, synapse=0.01, legend=False,
-                 pos=None, label=None):
-        super(Value, self).__init__(client, obj, uid, pos=pos, label=label)
+                 pos=None, label_visible=True):
+        super(Value, self).__init__(
+            client, obj, uid, pos=pos, label_visible=label_visible)
 
         self.ylim = ylim
         self.legend_labels = [] if legend_labels is None else legend_labels
@@ -71,10 +72,12 @@ class Value(Widget):
         self.client.send("netgraph.create_value",
                          uid=self.uid,
                          pos=self.pos,
+                         label=self.label,
+                         labelVisible=self.label_visible,
                          dimensions=self.n_lines,
                          synapse=0.005,  # TODO
                          xlim=[-0.5, 0],  # TODO
-                         ylim=[-1, 1])  #TODO
+                         ylim=[-1, 1])  # TODO
 
     def dumps(self, names):
         """Important to do correctly, as it's used in the config file."""

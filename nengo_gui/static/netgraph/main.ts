@@ -49,9 +49,9 @@ export class NetGraph {
 
     constructor(server: Connection) {
         this.view = new NetGraphView();
-        this.view.fontSize = this.fontSize;
-        this.view.scale = this.scale;
-        this.view.zoomFonts = this.zoomFonts;
+        // TODO: currently one font size for all GUI...
+        //       should it be netgraph specific?
+        this.view.fontPercent = this.fontPercent;
 
         this.interactRoot = interact(this.view.root);
         this.interactRoot.styleCursor(false);
@@ -67,7 +67,7 @@ export class NetGraph {
         });
         this.interactRoot.on("dragend", event => {
             document.documentElement.style.cursor = "default";
-            this.components.syncWithView();
+            // TODO: figure out how config changes will be sent to server
         });
         this.interactRoot.on("wheel", event => {
             event.preventDefault();
@@ -99,44 +99,36 @@ export class NetGraph {
 
             // The zoom constant controls how quickly the mouse wheel zooms
             const zoomConstant = 1 / 600;
-            let zScale = 1 + Math.abs(delta) * zoomConstant;
+            let factor = 1 + Math.abs(delta) * zoomConstant;
             if (delta > 0) {
                 // Doing it this way ensures zooming in then out returns
                 // to the original zoom level
-                zScale = 1 / zScale;
+                factor = 1 / factor;
             }
-            this.scale = zScale * this.scale;
+            this.scale(factor);
 
             // We want to scale centered on the mouse cursor, which is at
-            // event.offsetX, event.offsetY relative to the netgraph.
-            // The scaling above will scale each pixel by zScale, so we want
+            // event.offsetX, event.offsetY relative to the netgraph offset.
+            // The scaling above will scale each pixel by factor, so we want
             // to move the offset to compensate such that the pixel at
-            // event.offsetX, event.offsetY remains at that spot.
+            // event.offsetX, event.offsetY remains at that spot on the screen.
             const o = this.offset;
             const x = event.offsetX + o[0];
             const y = event.offsetY + o[1];
-            this.offset = [o[0] + x * zScale - x, o[1] + y * zScale - y];
-
-            // this.components.saveLayouts();
-
-            // this.scaleMiniMapViewBox();
-            // this.redraw();
+            this.offset = [o[0] + x * factor - x, o[1] + y * factor - y];
 
             // Let the server know what happened
-
             // this.server.send("netgraph.zoom", {
             //     scale: this.scale,
             //     x: this.offset[0],
             //     y: this.offset[1]
             // });
         });
+
         //this.interactRoot.on("click", (event) => {
         //     document.querySelector(".aceText-input")
         //         .dispatchEvent(new Event("blur"));
         // })
-        // Scrollwheel on background zooms the full area by changing scale.
-        // Note that offsetX,Y are also changed to zoom into a particular
-        // point in the space
 
         // Determine when to pull up the menu
         this.interactRoot.on("hold", event => {
@@ -150,6 +142,7 @@ export class NetGraph {
                 event.stopPropagation();
             }
         });
+
         this.interactRoot.on("tap", event => {
             // Get rid of menus when clicking off
             if (event.button === 0) {
@@ -170,7 +163,7 @@ export class NetGraph {
             this.offset = [x, y];
         });
         server.bind("netgraph.zoom", ({ zoom }: { zoom: number }) => {
-            this.scale = zoom;
+            this.scale(zoom);
         });
 
         // TODO: How much error checking are we supposed to do?
@@ -196,9 +189,9 @@ export class NetGraph {
         //     item.y = y;
         //     item.width = width;
         //     item.height = height;
-
+        //
         //     item.redraw();
-
+        //
         //     // this.scaleMiniMap();
         // }
         // );
@@ -243,7 +236,9 @@ export class NetGraph {
 
         for (const compName in ComponentRegistry) {
             server.bind(`netgraph.create_${compName}`, argobj => {
-                argobj.server = this.server;
+                if (!("server" in argobj)) {
+                    argobj.server = this.server;
+                }
                 this.add(createComponent(compName, argobj));
             });
         }
@@ -258,6 +253,17 @@ export class NetGraph {
         // Respond to resize events
         window.addEventListener("resize", event => this.onresize(event));
 
+        document.addEventListener("nengoConfigChange", (event: CustomEvent) => {
+            const key = event.detail;
+            if (key === "zoomFonts" && !config.zoomFonts) {
+                this.view.fontPercent = config.fontPercent;
+                this.scale(1.0);
+            } else if (key === "fontPercent") {
+                this.view.fontPercent = config.fontPercent;
+                this.scale(1.0);
+            }
+        });
+
         // this.createMinimap();
         this.menu = new Menu();
         this.addMenuItems();
@@ -271,15 +277,12 @@ export class NetGraph {
         config.aspectResize = val;
     }
 
-    get fontSize(): number {
-        return config.fontSize;
+    get fontPercent(): number {
+        return config.fontPercent;
     }
 
-    set fontSize(val: number) {
-        if (val === this.fontSize) {
-            return;
-        }
-        config.fontSize = val;
+    set fontPercent(val: number) {
+        config.fontPercent = val;
     }
 
     get height(): number {
@@ -294,37 +297,6 @@ export class NetGraph {
         this.view.offset = val;
         // TODO: more, update things that need updating
         // this.redraw(); // ???
-    }
-
-    get scale(): number {
-        return this.components.scale;
-    }
-
-    set scale(val: number) {
-        this.components.scale = val;
-        this.view.scale = val;
-    }
-
-    /**
-     * Return the pixel height of the SVG times the current scale factor.
-     */
-    get scaledHeight() {
-        console.assert(this.view.height !== 0);
-        console.assert(this.scale !== 0);
-        return this.view.height * this.scale;
-    }
-
-    get scaledOffset() {
-        return this.view.offset.map(v => v * this.scale);
-    }
-
-    /**
-     * Return the pixel width of the SVG times the current scale factor.
-     */
-    get scaledWidth() {
-        console.assert(this.view.width !== 0);
-        console.assert(this.scale !== 0);
-        return this.view.width * this.scale;
     }
 
     get width(): number {
@@ -638,5 +610,13 @@ export class NetGraph {
         // if (this.view.depth === 1) {
         //     this.ng.scaleMiniMap();
         // }
+    }
+
+    scale(factor: number) {
+        // Scale the view first, as components may move depending on font size
+        if (this.zoomFonts) {
+            this.view.fontPercent *= factor;
+        }
+        this.components.scale(factor);
     }
 }

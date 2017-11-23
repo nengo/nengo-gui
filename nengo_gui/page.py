@@ -33,19 +33,22 @@ class Page(ExposedToClient):
 
         self.lock = threading.Lock()
 
+    @bind("page.build")
     def build(self):
         """Build the network."""
         # use the lock to make sure only one Simulator is building at a time
         # TODO: should there be a master lock in the GUI?
         with self.lock:
             self.netgraph.add_nengo_objects()
+            self.simcontrol.add_nengo_objects(self.netgraph.model)
             # TODO: Remove hack!
-            del self.simcontrol.voltage_probes[:]
+            del self.simcontrol.voltage_comps[:]
             for c in self.netgraph.components:
                 if isinstance(c, Voltage):
                     self.simcontrol.voltage_comps.append(c)
-            self.simcontrol.build(self.netgraph.net)
+            self.simcontrol.build(self.netgraph.model, self.netgraph.filename)
             self.netgraph.remove_nengo_objects()
+            self.simcontrol.remove_nengo_objects(self.netgraph.model)
 
     @bind("page.ready")
     def ready(self):

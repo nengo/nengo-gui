@@ -6,9 +6,10 @@ from .base import Component
 class Connection(Component):
 
     # TODO: would be nice to not have to get namefinder here
-    def __init__(self, client, obj, uid, namefinder, pos=None, label=None):
+    def __init__(self, client, obj, uid, namefinder,
+                 pos=None, label_visible=True):
         super(Connection, self).__init__(
-            client, obj, uid, pos=pos, label=label)
+            client, obj, uid, pos=pos, label_visible=label_visible)
         self.pre = self._get_pre(self.obj)
         self.post = self._get_post(self.obj)
         self.pre_uid = namefinder[self.pre]

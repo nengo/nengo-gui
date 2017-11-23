@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import * as $ from "jquery";
 import { VNode, dom, h } from "maquette";
 
-import { ResizableComponentView } from "./component";
+import { ComponentView } from "./component";
 import { DataStore } from "../datastore";
 import { InputDialogView } from "../modal";
 import { Axes, Plot, PlotView } from "./plot";
@@ -36,24 +36,29 @@ export class XYAxes extends Axes {
 
 export class XYValue extends Plot {
     line: d3.svg.Line<Array<number>>;
+    view: XYValueView;
+
     protected _index: [number, number] = [0, 1];
-    protected _view: XYValueView;
 
     constructor({
         server,
         uid,
+        label,
         pos,
         dimensions,
         synapse,
+        labelVisible = true,
         index = [0, 1],
         xlim = [-1, 1],
         ylim = [-1, 1]
     }: {
         server: Connection;
         uid: string;
+        label: string;
         pos: Position;
         dimensions: number;
         synapse: number;
+        labelVisible?: boolean;
         index?: [number, number];
         xlim?: [number, number];
         ylim?: [number, number];
@@ -61,12 +66,12 @@ export class XYValue extends Plot {
         super(
             server,
             uid,
-            pos.left,
-            pos.top,
-            pos.width,
-            pos.height,
+            new XYValueView(),
+            label,
+            pos,
             dimensions,
             synapse,
+            labelVisible,
             xlim,
             ylim
         );
@@ -87,13 +92,6 @@ export class XYValue extends Plot {
             this._index = val;
             this.syncWithDataStore();
         }
-    }
-
-    get view(): XYValueView {
-        if (this._view === null) {
-            this._view = new XYValueView("?");
-        }
-        return this._view;
     }
 
     addAxes(width, height, xlim, ylim) {
@@ -213,25 +211,28 @@ export class XYValue extends Plot {
     /**
      * Redraw the lines and axis due to changed data.
      */
-    syncWithDataStore = utils.throttle(() => {
+    syncWithDataStore() {
         // Update the lines
         const [tStart, tEnd] = this.xlim;
         const shownData = this.datastore.timeSlice(tStart, tEnd);
         if (shownData[0] != null) {
             this.view.line = this.line(shownData);
         }
-    }, 20);
+    }
 }
 
 export class XYValueView extends PlotView {
     circle: SVGCircleElement;
     path: SVGPathElement;
 
-    constructor(label: string) {
-        super(label, 1); // Dimensions always 1
-        const pathNode = h("path.line", {stroke: this.colors[0]});
+    constructor() {
+        super(); // Dimensions always 1
+        const pathNode = h("path.line", { stroke: this.colors[0] });
         const circleNode = h("circle.last-point", {
-            cx: "0", cy: "0", fill: this.colors[0], r: "0",
+            cx: "0",
+            cy: "0",
+            fill: this.colors[0],
+            r: "0"
         });
         this.path = utils.domCreateSVG(pathNode) as SVGPathElement;
         this.body.appendChild(this.path);
@@ -246,7 +247,10 @@ export class XYValueView extends PlotView {
         // Parse the "d" attribute to get the last x, y coordinate
         const commands = val.split(/(?=[LMC])/);
         const last = commands[commands.length - 1];
-        const lastNums = last.replace(/[lmcz]/ig, "").split(",").map(Number);
+        const lastNums = last
+            .replace(/[lmcz]/gi, "")
+            .split(",")
+            .map(Number);
         this.circle.setAttribute("cx", `${lastNums[0]}`);
         this.circle.setAttribute("cy", `${lastNums[1]}`);
     }
@@ -256,8 +260,7 @@ export class XYValueView extends PlotView {
     }
 
     set scale(val: [number, number]) {
-        const width = Math.max(ResizableComponentView.minWidth, val[0]);
-        const height = Math.max(ResizableComponentView.minHeight, val[1]);
+        const [width, height] = val;
         this.overlayScale = [width, height];
         this.legend.pos = [width + 2, 0];
         this.circle.setAttribute("r", `${Math.min(width, height) / 30}`);

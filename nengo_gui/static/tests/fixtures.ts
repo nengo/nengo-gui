@@ -23,7 +23,7 @@ export function teardown(assert: Test, ...fixtures: Fixture[]) {
 /* tslint:disable:no-string-literal */
 
 const page = fs.readFileSync(path.join(
-    __dirname, "..", "..", "templates", "page.html"
+    __dirname, "..", "dist", "index.html"
 ), "utf-8");
 
 function setDOMGlobals(document) {

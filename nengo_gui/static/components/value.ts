@@ -28,53 +28,62 @@ import * as utils from "../utils";
 
 export class Value extends Plot {
     lines: Array<d3.svg.Line<Array<number>>>;
-    protected _view: ValueView;
+    view: ValueView;
 
     constructor({
         server,
         uid,
+        label,
         pos,
         dimensions,
         synapse,
+        labelVisible = true,
         xlim = [-0.5, 0],
         ylim = [-1, 1]
     }: {
         server: Connection;
         uid: string;
+        label: string;
         pos: Position;
         dimensions: number;
         synapse: number;
+        labelVisible?: boolean;
         xlim?: [number, number];
         ylim?: [number, number];
     }) {
         super(
             server,
             uid,
-            pos.left,
-            pos.top,
-            pos.width,
-            pos.height,
+            new ValueView(),
+            label,
+            pos,
             dimensions,
             synapse,
+            labelVisible,
             xlim,
             ylim
         );
 
         // Create the lines on the plots
-        this.lines = utils.emptyArray(this.dimensions).map((_, i) =>
+        this.view.numLines = dimensions;
+        this.lines = utils.emptyArray(dimensions).map((_, i) =>
             d3.svg
                 .line()
                 .x(d => this.axes.x.pixelAt(d[0]))
                 .y(d => this.axes.y.pixelAt(d[i + 1]))
                 .defined(d => d[i + 1] != null)
         );
-    }
 
-    get view(): ValueView {
-        if (this._view === null) {
-            this._view = new ValueView("?", this.dimensions);
-        }
-        return this._view;
+        this.fastServer.bind((data: ArrayBuffer) => {
+            this.add(new Float64Array(data));
+        });
+
+        window.addEventListener(
+            "TimeSlider.shownTime",
+            (event: CustomEvent) => {
+                this.xlim = event.detail.shownTime;
+            }
+        );
     }
 
     addMenuItems() {
@@ -129,9 +138,11 @@ export class Value extends Plot {
         modal.show();
     }
 
-    syncWithDataStore = utils.throttle(() => {
+    syncWithDataStore() {
         // Update the lines
         const [tStart, tEnd] = this.xlim;
+
+        // NEXT: this is way too slow, do it with d3?
         // TODO: it should be possible to only modify the start and
         //       end of the line instead of remaking it every time...
         const shownData = this.datastore.timeSlice(tStart, tEnd);
@@ -142,17 +153,11 @@ export class Value extends Plot {
                 this.view.legend.values = last.slice(1);
             }
         }
-    }, 20);
+    }
 }
 
 export class ValueView extends PlotView {
-
     paths: Array<SVGPathElement> = [];
-
-    constructor(label: string, dimensions: number = 1) {
-        super(label, dimensions);
-        this.numLines = dimensions;
-    }
 
     set lines(val: Array<string>) {
         this.paths.forEach((path, i) => {
@@ -175,7 +180,7 @@ export class ValueView extends PlotView {
 
     private addPath() {
         const i = this.paths.length;
-        const node = h("path.line", {stroke: this.colors[i]});
+        const node = h("path.line", { stroke: this.colors[i] });
         const path = utils.domCreateSVG(node) as SVGPathElement;
         this.paths.push(path);
         this.body.appendChild(path);

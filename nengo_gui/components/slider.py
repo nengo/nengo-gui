@@ -70,8 +70,9 @@ class OverriddenOutput(Process):
 class Slider(Widget):
     """Input control component. Exclusively associated to Nodes"""
 
-    def __init__(self, client, obj, uid, ylim=(-1, 1), pos=None, label=None):
-        super(Slider, self).__init__(client, obj, uid, pos, label)
+    def __init__(self, client, obj, uid,
+                 ylim=(-1, 1), pos=None, label_visible=True):
+        super(Slider, self).__init__(client, obj, uid, pos, label_visible)
         self.base_output = self.obj.output
 
     def add_nengo_objects(self, model):
@@ -102,6 +103,8 @@ class Slider(Widget):
         self.client.send("netgraph.create_slider",
                          uid=self.uid,
                          pos=self.pos,
+                         label=self.label,
+                         labelVisible=self.label_visible,
                          dimensions=self.obj.size_out,
                          synapse=0.005,  # TODO
                          startValue=start_value)

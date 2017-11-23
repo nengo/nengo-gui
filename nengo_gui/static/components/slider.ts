@@ -39,39 +39,42 @@ export class Slider extends Widget {
     nSliders: number;
     notifyMsgs;
     resetValue: number[];
-    scale: [number, number];
+    // scale: [number, number];
     sliderHeight: number;
     sliders: SliderControl[];
     startValue: number[];
-
-    protected _view: ValueView;
+    view: ValueView;
 
     constructor({
         server,
         uid,
+        label,
         pos,
         dimensions,
         synapse,
+        labelVisible = true,
         startValue = [0],
         lim = [-1, 1]
     }: {
         server: Connection;
         uid: string;
+        label: string;
         pos: Position;
         dimensions: number;
         synapse: number;
+        labelVisible?: boolean;
         startValue?: number[];
         lim?: [number, number];
     }) {
         super(
             server,
             uid,
-            pos.left,
-            pos.top,
-            pos.width,
-            pos.height,
+            new ValueView(),
+            label,
+            pos,
             dimensions,
-            synapse
+            synapse,
+            labelVisible
         );
 
         // Check if user is filling in a number into a slider
@@ -85,7 +88,7 @@ export class Slider extends Widget {
         //       fix is merged in (#160)
         this.immediateNotify = true;
 
-        this.setAxesGeometry(this.width, this.height);
+        // this.setAxesGeometry(this.width, this.height);
 
         // this.minHeight = 40;
 
@@ -143,20 +146,13 @@ export class Slider extends Widget {
         });
     }
 
-    get view(): ValueView {
-        if (this._view === null) {
-            this._view = new ValueView("?");
-        }
-        return this._view;
-    }
-
-    setAxesGeometry(width, height) {
-        this.scale = [width, height];
-        const scale = parseFloat($("#main").css("font-size"));
-        this.borderSize = 1;
-        this.axTop = 1.75 * scale;
-        this.sliderHeight = this.height - this.axTop;
-    }
+    // setAxesGeometry(width, height) {
+    //     this.scale = [width, height];
+    //     const scale = parseFloat($("#main").css("font-size"));
+    //     this.borderSize = 1;
+    //     this.axTop = 1.75 * scale;
+    //     this.sliderHeight = this.height - this.axTop;
+    // }
 
     sendValue(sliderIndex, value) {
         console.assert(typeof sliderIndex === "number");
@@ -214,7 +210,7 @@ export class Slider extends Widget {
         //     height = this.minHeight;
         // }
 
-        this.setAxesGeometry(width, height);
+        // this.setAxesGeometry(width, height);
 
         this.group.style.height = String(
             height - this.axTop - 2 * this.borderSize

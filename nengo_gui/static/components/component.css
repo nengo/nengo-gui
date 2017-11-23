@@ -1,0 +1,19 @@
+svg.netgraph {
+    text {
+        cursor: default;
+
+        &.component-label {
+            dominant-baseline: text-after-edge;
+            text-anchor: middle;
+        }
+
+        &:active {
+            cursor: move;
+        }
+    }
+
+    rect.view {
+        fill: #d9edf7;
+        stroke: #ccc;
+    }
+}

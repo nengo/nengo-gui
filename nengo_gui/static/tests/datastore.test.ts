@@ -69,7 +69,7 @@ test("DataStore filters data", assert => {
 
     // NB: Math.ceil(null) gives 0, unfortunately
     assert.deepEqual(datastore.data, [
-        [0.1, 3, 3, 0], [0.2, 2, 3, 0], [0.3, 1, 2, 2]
+        [0.1, 3, 3, 0], [0.2, 3, 3, 0], [0.3, 2, 2, 2]
     ]);
     fixtures.teardown(assert);
 });

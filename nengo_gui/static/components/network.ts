@@ -2,7 +2,7 @@ import { VNode, dom, h } from "maquette";
 
 import "./network.css";
 
-import { Component, ResizableComponent, ResizableComponentView } from "./component";
+import { Component, ComponentView } from "./component";
 import { config } from "../config";
 import {
     ComponentConnection,
@@ -17,34 +17,36 @@ import { Connection } from "../server";
 import * as utils from "../utils";
 import { registerComponent } from "./registry";
 
-export class Network extends ResizableComponent {
+export class Network extends Component {
     expanded: boolean;
     // spTargets; // Vocab...? Subclass for SPA networks?
     // defaultOutput;
     gClass: string[];
     gNetworks: SVGElement;
+    view: NetworkView;
 
     protected _depth: number;
-    protected _view: NetworkView;
 
     constructor({
         server,
         uid,
+        label,
         pos,
-        dimensions,
+        labelVisible = true,
         expanded = false,
         depth = 0,
         defaultOutput = null
     }: {
         server: Connection;
+        label: string;
         uid: string;
         pos: Position;
-        dimensions: number;
+        labelVisible?: boolean;
         expanded?: boolean;
         depth?: number;
         defaultOutput?: string;
     }) {
-        super(server, uid, pos.left, pos.top, pos.width, pos.height, dimensions);
+        super(server, uid, new NetworkView(), label, pos, labelVisible);
 
         this.expanded = expanded;
         this.depth = depth;
@@ -80,13 +82,6 @@ export class Network extends ResizableComponent {
 
     set transparent(val: boolean) {
         this.view.transparent = val;
-    }
-
-    get view(): NetworkView {
-        if (this._view === null) {
-            this._view = new NetworkView("?");
-        }
-        return this._view;
     }
 
     addMenuItems() {
@@ -157,22 +152,22 @@ export class Network extends ResizableComponent {
     }
 }
 
-export class NetworkView extends ResizableComponentView {
+export class NetworkView extends ComponentView {
     rect: SVGRectElement;
 
-    constructor(label: string) {
-        super(label);
+    constructor() {
+        super();
         const node = h("g.network", [
             h("rect", {
                 height: "50",
                 styles: {
-                    "fill": "rgb(0,0,0)",
+                    fill: "rgb(0,0,0)",
                     "fill-opacity": "1.0",
-                    "stroke": "rgb(0,0,0)",
+                    stroke: "rgb(0,0,0)"
                 },
                 width: "50",
                 x: "0",
-                y: "0",
+                y: "0"
             })
         ]);
         this.body = utils.domCreateSVG(node) as SVGGElement;
@@ -191,13 +186,12 @@ export class NetworkView extends ResizableComponentView {
     get scale(): [number, number] {
         return [
             Number(this.rect.getAttribute("width")),
-            Number(this.rect.getAttribute("height")),
+            Number(this.rect.getAttribute("height"))
         ];
     }
 
     set scale(val: [number, number]) {
-        const width = Math.max(ResizableComponentView.minWidth, val[0]);
-        const height = Math.max(ResizableComponentView.minHeight, val[1]);
+        const [width, height] = val;
         this.rect.setAttribute("width", `${width}`);
         this.rect.setAttribute("height", `${height}`);
         this.overlayScale = [width, height];

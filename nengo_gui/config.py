@@ -90,11 +90,6 @@ def upgrade(old_text, locals):
                                      width=kwargs.pop("width"),
                                      height=kwargs.pop("height"))
 
-        # label_visible now label is not None
-        if "label_visible" in kwargs:
-            visible = kwargs.pop("label_visible")
-            kwargs["label"] = obj if visible else None
-
         # show_legend now legend
         if "show_legend" in kwargs:
             kwargs["legend"] = kwargs.pop("show_legend")
@@ -104,5 +99,15 @@ def upgrade(old_text, locals):
             maxval = kwargs.pop("max_value")
             minval = kwargs.pop("min_value")
             kwargs["ylim"] = (minval, maxval)
+
+        # Make sure label_visible is in there
+        kwargs.setdefault("label_visible", True)
+
+        # The scale of things is quite different now.
+        # Scale to a reasonable size.
+        kwargs["pos"].height *= 600
+        kwargs["pos"].width *= 600
+        kwargs["pos"].left *= 600
+        kwargs["pos"].top *= 600
 
     return json.dumps(new_config, cls=NengoGUIConfig, indent=2, sort_keys=True)

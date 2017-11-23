@@ -20,32 +20,37 @@ export class HTMLView extends Widget {
     dataStore;
     pdiv;
     sim;
-
-    protected _view: ValueView;
+    view: ValueView;
 
     constructor({
         server,
         uid,
+        label,
         pos,
         dimensions,
-        synapse
+        synapse,
+        labelVisible = true
     }: {
         server: Connection;
         uid: string;
+        label: string;
         pos: Position;
         dimensions: number;
         synapse: number;
+        labelVisible?: boolean;
     }) {
         super(
             server,
             uid,
-            pos.left,
-            pos.top,
-            pos.width,
-            pos.height,
+            new ValueView(),
+            label,
+            pos,
             dimensions,
-            synapse
+            synapse,
+            labelVisible
         );
+
+        // TODO: all of this really
 
         this.pdiv = document.createElement("div");
         this.pdiv.style.width = "100%";
@@ -67,13 +72,6 @@ export class HTMLView extends Widget {
         //     this.viewPort.scaleWidth(this.w),
         //     this.viewPort.scaleHeight(this.h)
         // );
-    }
-
-    get view(): ValueView {
-        if (this._view === null) {
-            this._view = new ValueView("?");
-        }
-        return this._view;
     }
 
     /**

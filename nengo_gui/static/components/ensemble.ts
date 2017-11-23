@@ -3,52 +3,43 @@ import { VNode, dom, h } from "maquette";
 
 import "./ensemble.css";
 
-import { ResizableComponent, ResizableComponentView } from "./component";
+import { Component, ComponentView } from "./component";
 import { Position } from "./position";
 import { registerComponent } from "./registry";
 import { Connection } from "../server";
 import * as utils from "../utils";
 
-export class Ensemble extends ResizableComponent {
-    protected _view: EnsembleView;
+export class Ensemble extends Component {
+    dimensions: number;
+    view: EnsembleView;
 
     constructor({
         server,
         uid,
+        label,
         pos,
-        dimensions
+        dimensions,
+        labelVisible = true
     }: {
         server: Connection;
         uid: string;
+        label: string;
         pos: Position;
         dimensions: number;
+        labelVisible?: boolean;
     }) {
-        super(
-            server,
-            uid,
-            pos.left,
-            pos.top,
-            pos.width,
-            pos.height,
-            dimensions
-        );
+        super(server, uid, new EnsembleView(), label, pos, labelVisible);
+        this.dimensions = dimensions;
     }
 
     get resizeOptions(): any {
         const options: any = {};
-        for (const option in ResizableComponent.resizeOptions) {
-            options[option] = ResizableComponent.resizeOptions[option];
+        for (const option in Component.resizeDefaults) {
+            options[option] = Component.resizeDefaults[option];
         }
         options.invert = "reposition";
         options.square = true;
         return options;
-    }
-
-    get view(): EnsembleView {
-        if (this._view === null) {
-            this._view = new EnsembleView("?");
-        }
-        return this._view;
     }
 
     addMenuItems() {
@@ -78,12 +69,16 @@ export class Ensemble extends ResizableComponent {
     }
 }
 
-export class EnsembleView extends ResizableComponentView {
-    aspect: number = 1;
+export class EnsembleView extends ComponentView {
     circles: Array<SVGCircleElement>;
 
-    constructor(label: string) {
-        super(label);
+    // Width and height when g.ensemble transform is scale(1,1)
+    static baseWidth = 34.55;
+    static baseHeight = 35.4;
+    static heightToWidth = EnsembleView.baseHeight / EnsembleView.baseWidth;
+
+    constructor() {
+        super();
         const r = "4.843";
         const node = h("g.ensemble", { transform: "scale(1,1)" }, [
             h("circle", { cx: r, cy: "10.52", r: r, "stroke-width": "1" }),
@@ -121,20 +116,17 @@ export class EnsembleView extends ResizableComponentView {
     }
 
     get scale(): [number, number] {
-        const [width, height] = utils.getScale(this.body);
-        return [width * this.baseWidth, height * this.baseHeight];
+        return this.overlayScale;
     }
 
     set scale(val: [number, number]) {
-        const width = Math.max(ResizableComponentView.minWidth, val[0]);
-        const height = Math.max(ResizableComponentView.minHeight, val[1]);
-        // Should be 1 at basewidth; scale accordingly
-        const strokeWidth = `${this.baseWidth / width}`;
-        utils.setScale(
-            this.body,
-            width / this.baseWidth,
-            height / this.baseHeight
-        );
+        // Ensembles should keep the same aspect ratio; if we get something else,
+        // we'll use the larger of the width and height as height, and scale
+        // the width appropriately.
+        const height = val[1];
+        const width = EnsembleView.heightToWidth * height;
+        const strokeWidth = `${EnsembleView.baseWidth / width}`;
+        utils.setScale(this.body, height / EnsembleView.baseHeight);
         this.circles.forEach(circle => {
             circle.setAttribute("stroke-width", strokeWidth);
         });

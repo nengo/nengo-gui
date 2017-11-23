@@ -15,7 +15,7 @@ import * as $ from "jquery";
 import * as d3 from "d3";
 import { VNode, dom, h } from "maquette";
 
-import { Component, ResizableComponentView } from "./component";
+import { Component, ComponentView } from "./component";
 import { DataStore } from "../datastore";
 import { Menu } from "../menu";
 import { InputDialogView } from "../modal";
@@ -27,35 +27,41 @@ import { Value } from "./value";
 import { Widget } from "./widget";
 
 export class SpaPointer extends Widget {
+    view: SpaPointerView;
+
     protected _fixedValue: string = null;
     protected _showPairs: boolean;
-    protected _view: SpaPointerView;
 
     constructor({
         server,
         uid,
+        label,
         pos,
         dimensions,
         synapse,
+        labelVisible = true,
         showPairs = false
     }: {
         server: Connection;
         uid: string;
+        label: string;
         pos: Position;
         dimensions: number;
         synapse: number;
+        labelVisible?: boolean;
         showPairs?: boolean;
     }) {
         super(
             server,
             uid,
-            pos.left,
-            pos.top,
-            pos.width,
-            pos.height,
+            new SpaPointerView(),
+            label,
+            pos,
             dimensions,
-            synapse
+            synapse,
+            labelVisible
         );
+        // TOOD: set this.numItems
         this.showPairs = showPairs;
     }
 
@@ -78,14 +84,6 @@ export class SpaPointer extends Widget {
             // Notify server?
             // this.saveLayout();
         }
-    }
-
-    get view(): SpaPointerView {
-        if (this._view === null) {
-            // TODO: how to get numItems?
-            this._view = new SpaPointerView("?", 1);
-        }
-        return this._view;
     }
 
     addMenuItems() {
@@ -162,26 +160,24 @@ export class SpaPointer extends Widget {
     /**
      * Redraw the lines and axis due to changed data.
      */
-    syncWithDataStore = utils.throttle(() => {
+    syncWithDataStore() {
         const data = this.datastore.at(this.currentTime);
         if (data != null) {
             this.view.values = data;
         }
-    }, 20);
+    }
 }
 
-export class SpaPointerView extends ResizableComponentView {
-
+export class SpaPointerView extends ComponentView {
     root: SVGGElement;
 
     private _items: Array<SVGGElement> = [];
     private _values: Array<number>;
 
-    constructor(label:string, numItems: number) {
-        super(label);
+    constructor() {
+        super();
         const node = h("g.widget");
         this.root = utils.domCreateSVG(node) as SVGGElement;
-        this.numItems = numItems;
     }
 
     get labels(): Array<string> {
@@ -213,8 +209,7 @@ export class SpaPointerView extends ResizableComponentView {
     }
 
     set scale(val: [number, number]) {
-        const width = Math.max(ResizableComponentView.minWidth, val[0]);
-        const height = Math.max(ResizableComponentView.minHeight, val[1]);
+        const [width, height] = val;
         this.overlayScale = [width, height];
     }
 
@@ -234,7 +229,7 @@ export class SpaPointerView extends ResizableComponentView {
             const hex = utils.clip(val[i] * 255, 0, 255);
             item.setAttribute("stroke", `rgb(${hex},${hex},${hex})`);
 
-            const itemHeight = (val[i] / total) * height;
+            const itemHeight = val[i] / total * height;
             item.setAttribute("font-size", `${itemHeight}`);
             y += itemHeight;
         });
@@ -248,9 +243,9 @@ export class SpaPointerView extends ResizableComponentView {
         const i = this._items.length;
         const node = h("text.pointer", {
             "font-size": "12",
-            "stroke": "rgb(255, 255, 255)",
-            "x": `${width * 0.5}`,
-            "y": `${i * 12}`,
+            stroke: "rgb(255, 255, 255)",
+            x: `${width * 0.5}`,
+            y: `${i * 12}`
         });
         const item = utils.domCreateSVG(node) as SVGGElement;
         this.root.appendChild(item);
@@ -267,7 +262,6 @@ export class SpaPointerView extends ResizableComponentView {
 
 registerComponent("spa_pointer", SpaPointer);
 
-
 /**
  * Line graph showing semantic pointer decoded values over time.
  *
@@ -282,21 +276,35 @@ export class SpaSimilarity extends Value {
     constructor({
         server,
         uid,
+        label,
         pos,
         dimensions,
         synapse,
+        labelVisible = true,
         xlim = [-0.5, 0],
         ylim = [-1, 1]
     }: {
         server: Connection;
         uid: string;
+        label: string;
         pos: Position;
         dimensions: number;
         synapse: number;
+        labelVisible?: boolean;
         xlim?: [number, number];
         ylim?: [number, number];
     }) {
-        super({server, uid, pos, dimensions, synapse, xlim, ylim});
+        super({
+            server,
+            uid,
+            label,
+            pos,
+            dimensions,
+            synapse,
+            labelVisible,
+            xlim,
+            ylim
+        });
         this.view.legend.valuesVisible = true;
     }
 

@@ -7,8 +7,9 @@ from .base import Component
 class Network(Component):
 
     def __init__(self, client, obj, uid,
-                 pos=None, label=None, expanded=False, has_layout=False):
-        super(Network, self).__init__(client, obj, uid, pos, label)
+                 pos=None, label_visible=True,
+                 expanded=False, has_layout=False):
+        super(Network, self).__init__(client, obj, uid, pos, label_visible)
         self.expanded = expanded
         self.has_layout = has_layout
 
@@ -26,6 +27,8 @@ class Network(Component):
         self.client.send("netgraph.create_network",
                          uid=self.uid,
                          pos=self.pos,
+                         label=self.label,
+                         labelVisible=self.label_visible,
                          dimensions=1,  # TODO
                          expanded=self.expanded)
 

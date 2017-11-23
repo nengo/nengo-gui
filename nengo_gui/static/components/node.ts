@@ -2,12 +2,7 @@ import { VNode, dom, h } from "maquette";
 
 import "./node.css";
 
-import {
-    Component,
-    ComponentView,
-    ResizableComponent,
-    ResizableComponentView
-} from "./component";
+import { Component, ComponentView } from "./component";
 import { Position } from "./position";
 import { registerComponent } from "./registry";
 import { Connection } from "../server";
@@ -16,55 +11,77 @@ import * as utils from "../utils";
 export class PassthroughNode extends Component {
     fixedHeight: number;
     fixedWidth: number;
-
-    protected _view: PassthroughNodeView;
+    view: PassthroughNodeView;
 
     constructor({
         server,
         uid,
+        label,
         pos,
-        dimensions
+        labelVisible = true
     }: {
         server: Connection;
         uid: string;
+        label: string;
         pos: Position;
-        dimensions: number;
+        labelVisible?: boolean;
     }) {
-        super(server, uid, pos.left, pos.top, dimensions);
+        super(server, uid, new PassthroughNodeView(), label, pos, labelVisible);
     }
 
-    get view(): PassthroughNodeView {
-        if (this._view === null) {
-            this._view = new PassthroughNodeView("?");
-        }
-        return this._view;
+    get resizeOptions(): any {
+        return null;
     }
 }
 
-export class Node extends ResizableComponent {
-    htmlNode;
+export class PassthroughNodeView extends ComponentView {
+    static width: number = 8;
+    static height: number = 8;
 
-    protected _view: NodeView;
+    constructor() {
+        super();
+        const node = h("g.passthrough", [
+            h("circle", { cx: "4", cy: "4", r: "4" })
+        ]);
+        this.body = utils.domCreateSVG(node) as SVGGElement;
+        this.root.appendChild(this.body);
+        this.overlayScale = [
+            PassthroughNodeView.width,
+            PassthroughNodeView.height
+        ];
+    }
+
+    get scale(): [number, number] {
+        return [PassthroughNodeView.width, PassthroughNodeView.height];
+    }
+
+    set scale(val: [number, number]) {
+        // Scale cannot be changed
+    }
+}
+
+export class Node extends Component {
+    htmlNode;
+    dimensions: number;
+    view: NodeView;
 
     constructor({
         server,
         uid,
+        label,
         pos,
-        dimensions
+        dimensions,
+        labelVisible = true
     }: {
         server: Connection;
         uid: string;
+        label: string;
         pos: Position;
         dimensions: number;
+        labelVisible?: boolean;
     }) {
-        super(server, uid, pos.left, pos.top, pos.width, pos.height, dimensions);
-    }
-
-    get view(): NodeView {
-        if (this._view === null) {
-            this._view = new NodeView("?");
-        }
-        return this._view;
+        super(server, uid, new NodeView(), label, pos, labelVisible);
+        this.dimensions = dimensions;
     }
 
     addMenuItems() {
@@ -99,57 +116,13 @@ export class Node extends ResizableComponent {
     }
 }
 
-export class PassthroughNodeView extends ComponentView {
-    constructor(label: string) {
-        super(label);
-        const node = h("g.passthrough", [
-            h("circle", { cx: "4", cy: "4", r: "4" })
-        ]);
-        this.body = utils.domCreateSVG(node) as SVGGElement;
-        this.root.appendChild(this.body);
-    }
-
-    // constructor(label: string) {
-    //     super(label);
-
-    // TODO: WTF can this be avoided?
-    // I have to make a sepcific minimap subclass for this...
-    // or something better?
-    // if (this.minimap === false) {
-    //     this.fixedWidth = 10;
-    //     this.fixedHeight = 10;
-    // } else {
-    //     this.fixedWidth = 3;
-    //     this.fixedHeight = 3;
-    // }
-
-    // }
-
-    // _getScreenWidth() {
-    //     return this.fixedWidth;
-    // }
-
-    // _getScreenHeight() {
-    //     return this.fixedHeight;
-    // }
-
-    // redrawSize() {
-    //     const screenD = super.redrawSize();
-
-    //     this.shape.setAttribute("rx", String(screenD.width / 2));
-    //     this.shape.setAttribute("ry", String(screenD.height / 2));
-
-    //     return screenD;
-    // }
-}
-
-export class NodeView extends ResizableComponentView {
+export class NodeView extends ComponentView {
     static radiusScale: number = 0.1;
 
     rect: SVGRectElement;
 
-    constructor(label: string) {
-        super(label);
+    constructor() {
+        super();
         const node = h("g.node", [
             h("rect", {
                 height: "50",
@@ -173,8 +146,7 @@ export class NodeView extends ResizableComponentView {
     }
 
     set scale(val: [number, number]) {
-        const width = Math.max(ResizableComponentView.minWidth, val[0]);
-        const height = Math.max(ResizableComponentView.minHeight, val[1]);
+        const [width, height] = val;
         const smaller = Math.min(width, height);
         this.rect.setAttribute("width", `${width}`);
         this.rect.setAttribute("height", `${height}`);

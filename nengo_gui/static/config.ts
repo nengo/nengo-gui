@@ -96,12 +96,12 @@ class Config {
         this.setAny("editorWidth", val);
     }
 
-    get fontSize(): number {
-        return this.getNumber("fontSize", 100);
+    get fontPercent(): number {
+        return this.getNumber("fontPercent", 100);
     }
 
-    set fontSize(val: number) {
-        this.setAny("fontSize", val);
+    set fontPercent(val: number) {
+        this.setAny("fontPercent", val);
     }
 
     get hideEditor(): boolean {
@@ -272,7 +272,7 @@ export class NumberItem extends TextItem {
 
 export const configItems = [
     new NumberItem(
-        "fontSize",
+        "fontPercent",
         "Font size",
         "%",
         null,
@@ -296,7 +296,7 @@ export const configItems = [
         "Automatically synchronize model with editor",
         event => {
             const el = event.target as HTMLInputElement;
-            config["autoUpdate"] = el.checked;
+            config.autoUpdate = el.checked;
             // Also modify editor.updateTrigger?
         }
     ),

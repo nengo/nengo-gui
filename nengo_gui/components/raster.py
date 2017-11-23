@@ -8,8 +8,10 @@ from .base import Widget
 class Raster(Widget):
     """Plot showing spike events over time."""
 
-    def __init__(self, client, obj, uid, n_neurons=10, pos=None, label=None):
-        super(Raster, self).__init__(client, obj, uid, pos, label)
+    def __init__(self, client, obj, uid,
+                 n_neurons=10, pos=None, label_visible=True):
+        super(Raster, self).__init__(
+            client, obj, uid, pos=pos, label_visible=label_visible)
 
         self.chosen = None  # Filled in when n_neurons set
 
@@ -59,6 +61,8 @@ class Raster(Widget):
         self.client.send("netgraph.create_raster",
                          uid=self.uid,
                          pos=self.pos,
+                         label=self.label,
+                         labelVisible=self.label_visible,
                          nNeurons=self.n_neurons)
 
     def remove_nengo_objects(self, model):

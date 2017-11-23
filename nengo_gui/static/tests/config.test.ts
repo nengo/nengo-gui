@@ -9,7 +9,7 @@ test("config defaults", assert => {
     assert.equal(config.transparentNets, false);
     assert.equal(config.aspectResize, false);
     assert.equal(config.zoomFonts, false);
-    assert.equal(config.fontSize, 100);
+    assert.equal(config.fontPercent, 100);
     assert.equal(config.scriptdir, ".");
     assert.equal(config.hideEditor, false);
     assert.equal(config.editorWidth, 580);

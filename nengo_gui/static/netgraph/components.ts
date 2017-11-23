@@ -1,4 +1,4 @@
-import { Component, ResizableComponent } from "../components/component";
+import { Component } from "../components/component";
 import { Network } from "../components/network";
 import { Widget } from "../components/widget";
 import * as utils from "../utils";
@@ -9,24 +9,8 @@ export class ComponentManager {
     networks: { [uid: string]: Network | null } = {};
     widgets: Array<Widget> = [];
 
-    private _scale: number = 1;
-
     get length(): number {
         return this.components.length;
-    }
-
-    get scale(): number {
-        return this._scale;
-    }
-
-    set scale(val: number) {
-        if (val !== this._scale) {
-            const scaleScale = val / this._scale;
-            this.components.forEach(component => {
-                component.scaleToPixels *= scaleScale;
-            });
-            this._scale = val;
-        }
     }
 
     add(component: Component, network: Network = null) {
@@ -83,17 +67,9 @@ export class ComponentManager {
         });
     }
 
-    // TODO: do we need this?
-    shift(dleft: number, dtop: number) {
+    scale(factor: number) {
         this.components.forEach(component => {
-            const [left, top] = component.view.pos;
-            component.view.pos = [left + dleft, top + dtop];
-        });
-    }
-
-    syncWithView() {
-        this.components.forEach(component => {
-            component.syncWithView();
+            component.scale(factor);
         });
     }
 

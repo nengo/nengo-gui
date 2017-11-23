@@ -11,10 +11,7 @@ export class NetGraphView {
     root: SVGSVGElement;
     widgets: SVGGElement;
 
-    private _fontSize: number = 16;
     private _offset: [number, number] = [0, 0];
-    private _scale: number = 1;
-    private _zoomFonts: boolean = false;
 
     constructor() {
         // TODO:
@@ -28,10 +25,10 @@ export class NetGraphView {
 
         // Create the master SVG element
         const svg = h("svg.netgraph", [
-            h("g.widgets"),
             h("g.nets"),
             h("g.conns"),
-            h("g.items")
+            h("g.items"),
+            h("g.widgets")
         ]); // defs,
 
         this.root = dom.create(svg).domNode as SVGSVGElement;
@@ -45,13 +42,12 @@ export class NetGraphView {
         this.widgets = this.root.querySelector(".widgets") as SVGGElement;
     }
 
-    get fontSize(): number {
-        return this._fontSize;
+    get fontPercent(): number {
+        return parseFloat(this.root.style.fontSize);
     }
 
-    set fontSize(val: number) {
-        this._fontSize = val;
-        this.updateFontsize();
+    set fontPercent(val: number) {
+        this.root.style.fontSize = `${val}%`;
     }
 
     get height(): number {
@@ -67,26 +63,8 @@ export class NetGraphView {
         this.updateOffset();
     }
 
-    get scale(): number {
-        return this._scale;
-    }
-
-    set scale(val: number) {
-        this._scale = val;
-        this.updateFontsize();
-    }
-
     get width(): number {
         return this.root.getBoundingClientRect().width;
-    }
-
-    get zoomFonts(): boolean {
-        return this._zoomFonts;
-    }
-
-    set zoomFonts(val: boolean) {
-        this._zoomFonts = val;
-        this.updateFontsize();
     }
 
     pan(dleft, dtop) {
@@ -95,11 +73,7 @@ export class NetGraphView {
         this.updateOffset();
     }
 
-    private updateFontsize() {
-        this.root.style.fontSize = this.zoomFonts
-            ? `${3 * this.scale * this.fontSize / 100}em`
-            : `${this.fontSize / 100}em`;
-    }
+    private updateFontsize() {}
 
     private updateOffset() {
         this.root.setAttribute(

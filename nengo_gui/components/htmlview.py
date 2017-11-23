@@ -11,8 +11,9 @@ class HTMLView(Component):
     websocket connection.
     """
 
-    def __init__(self, client, obj, uid, pos=None, label=None):
-        super(HTMLView, self).__init__(client, obj, uid, pos=pos, label=label)
+    def __init__(self, client, obj, uid, pos=None, label_visible=True):
+        super(HTMLView, self).__init__(
+            client, obj, uid, pos=pos, label_visible=label_visible)
         self._old_output = None
 
     def add_nengo_objects(self, model):
@@ -30,6 +31,8 @@ class HTMLView(Component):
         self.client.send("netgraph.create_htmlview",
                          uid=self.uid,
                          pos=self.pos,
+                         label=self.label,
+                         labelVisible=self.label_visible,
                          dimensions=1,  # TODO
                          syanpse=0.005)  # TODO
 

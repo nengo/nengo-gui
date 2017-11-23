@@ -76,7 +76,8 @@ class ComponentManager(object):
 
     def create(self):
         for comp in self._components:
-            comp.create()
+            if comp.uid != "model":
+                comp.create()
 
     def load(self, filename, model, locals):
         """Load from a JSON file"""
@@ -178,16 +179,18 @@ class ComponentManager(object):
                 # TODO: attach?
                 # obj.attach(page=self, config=self.config.cfg[name], uid=name)
 
-        # Make components for Nengo objects
-        for obj, name in iteritems(namefinder.names):
+        # Make components for Nengo objects not in locals
+        for obj, uid in iteritems(namefinder.names):
+            if uid in self.by_uid:
+                continue
+
             if isinstance(obj, nengo.Connection):
                 self.add(components.Connection(
-                    self.client, obj, namefinder[obj], namefinder))
+                    self.client, obj, uid, namefinder))
             elif isinstance(obj, tuple(self.NENGO_MAP)):
                 for nengocls, compcls in iteritems(self.NENGO_MAP):
                     if isinstance(obj, nengocls):
-                        comp = compcls(self.client, obj, namefinder[obj])
-                        self.add(comp)
+                        self.add(compcls(self.client, obj, name))
                         break
 
 
@@ -313,26 +316,6 @@ class NameFinder(object):
         self.names[obj] = name
         return name
 
-    def label(self, obj):
-        """Return a readable label for an object.
-
-        An important difference between a label and a name is that a label
-        does not have to be unique in a namespace.
-
-        If the object has a .label set, this will be used. Otherwise, it
-        uses names, which thanks to the NameFinder will be legal
-        Python code for referring to the object given the current locals()
-        dictionary ("model.ensembles[1]" or "ens" or "model.buffer.state").
-        If it has to use names, it will only use the last part of the
-        label (after the last "."). This avoids redundancy in nested displays.
-        """
-        label = obj.label
-        if label is None:
-            label = self.names[obj]
-            if '.' in label:
-                label = label.rsplit('.', 1)[1]
-        return label
-
     def update(self, names):
         nets = []
         for k, v in iteritems(names):
@@ -426,6 +409,10 @@ class NetGraph(ExposedToClient):
     @property
     def filename(self):
         return self.context.filename
+
+    @property
+    def model(self):
+        return self.context.model
 
     def set_editor_code(self, code):
         self.client.dispatch("editor.code", code=code)

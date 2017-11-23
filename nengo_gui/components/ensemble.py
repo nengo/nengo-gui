@@ -12,11 +12,12 @@ class Ensemble(Component):
         return self.obj.n_neurons
 
     def create(self):
-        # TODO: figure out args to pass to this
         self.client.send("netgraph.create_ensemble",
                          uid=self.uid,
+                         label=self.label,
                          pos=self.pos,
-                         dimensions=self.dimensions)
+                         dimensions=self.dimensions,
+                         labelVisible=self.label_visible)
 
     def similar(self, other):
         return (super(Ensemble, self).similar(other)

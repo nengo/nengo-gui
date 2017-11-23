@@ -10,8 +10,9 @@ class XYValue(Widget):
 
     def __init__(self, client, obj, uid,
                  xlim=(-1, 1), ylim=(-1, 1), index_x=0, index_y=1,
-                 pos=None, label=None):
-        super(XYValue, self).__init__(client, obj, uid, pos=pos, label=label)
+                 pos=None, label_visible=True):
+        super(XYValue, self).__init__(client, obj, uid,
+                                      pos=pos, label_visible=label_visible)
         self.node = None
         self.conn = None
 
@@ -37,7 +38,10 @@ class XYValue(Widget):
 
     def create(self):
         self.client.send("netgraph.create_xyvalue",
-                         uid=self.uid, n_lines=self.n_lines, label=self.label)
+                         uid=self.uid,
+                         n_lines=self.n_lines,
+                         label=self.label,
+                         labelVisible=self.label_visible)
 
     def remove_nengo_objects(self, model):
         model.connections.remove(self.conn)

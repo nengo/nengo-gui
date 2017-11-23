@@ -10,8 +10,9 @@ from .base import Widget
 
 class SpaWidget(Widget):
     def __init__(self, client, obj, uid,
-                 target="default", show_pairs=False, pos=None, label=None):
-        super(SpaWidget, self).__init__(client, obj, uid, pos, label)
+                 target="default", show_pairs=False,
+                 pos=None, label_visible=True):
+        super(SpaWidget, self).__init__(client, obj, uid, pos, label_visible)
         self.target = target
         self.show_pairs = show_pairs
 
@@ -137,6 +138,8 @@ class SpaPointer(SpaWidget):
         self.client.send("netgraph.create_spa_pointer",
                          uid=self.uid,
                          pos=self.pos,
+                         label=self.label,
+                         labelVisible=self.label_visible,
                          dimensions=1,  # TODO
                          synapse=0.005,  # TODO
                          showPairs=self.show_pairs)

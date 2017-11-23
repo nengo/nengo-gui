@@ -24,6 +24,8 @@ class Node(Component):
         self.client.send("netgraph.create_node",
                          uid=self.uid,
                          pos=self.pos,
+                         label=self.label,
+                         labelVisible=self.label_visible,
                          dimensions=self.dimensions)
 
     def similar(self, other):

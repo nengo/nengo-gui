@@ -28,34 +28,38 @@ export class Image extends Plot {
     pixelsX: number;
     pixelsY: number;
     svg;
-    _view: ValueView;
+    view: ValueView;
 
     constructor({
         server,
         uid,
+        label,
         pos,
         dimensions,
         synapse,
+        labelVisible = true,
         xlim = [-0.5, 0],
         ylim = [-1, 1]
     }: {
         server: Connection;
         uid: string;
+        label: string,
         pos: Position;
         dimensions: number;
         synapse: number;
+        labelVisible?: boolean;
         xlim?: [number, number];
         ylim?: [number, number];
     }) {
         super(
             server,
             uid,
-            pos.left,
-            pos.top,
-            pos.width,
-            pos.height,
+            new ValueView(),
+            label,
+            pos,
             dimensions,
             synapse,
+            labelVisible,
             xlim,
             ylim
         );
@@ -100,13 +104,6 @@ export class Image extends Plot {
         this.canvas = document.createElement("CANVAS");
         this.canvas.width = this.pixelsX;
         this.canvas.height = this.pixelsY;
-    }
-
-    get view(): ValueView {
-        if (this._view === null) {
-            this._view = new ValueView("?");
-        }
-        return this._view;
     }
 
     /**

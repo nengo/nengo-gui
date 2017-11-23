@@ -1,4 +1,4 @@
-from nengo_gui.client import ExposedToClient
+from nengo_gui.client import ExposedToClient, FastClientConnection
 from nengo_gui.exceptions import NotAttachedError
 
 
@@ -39,19 +39,40 @@ class Component(ExposedToClient):
     server is via ``Component.message()``.
     """
 
-    def __init__(self, client, obj, uid, pos=None, label=None):
+    def __init__(self, client, obj, uid, pos=None, label_visible=True):
         super(Component, self).__init__(client)
         self.obj = obj
         self._uid = uid
-        self.pos = Position() if pos is None else pos
-        self.label = label
+        self.pos = pos
+        self.label_visible = label_visible
+
+    @property
+    def label(self):
+        """Return a readable label for an object.
+
+        An important difference between a label and a name is that a label
+        does not have to be unique in a namespace.
+
+        If the object has a .label set, this will be used. Otherwise, it
+        uses names, which thanks to the NameFinder will be legal
+        Python code for referring to the object given the current locals()
+        dictionary ("model.ensembles[1]" or "ens" or "model.buffer.state").
+        If it has to use names, it will only use the last part of the
+        label (after the last "."). This avoids redundancy in nested displays.
+        """
+        label = self.obj.label
+        if label is None:
+            label = self.uid
+            if '.' in label:
+                label = label.rsplit('.', 1)[1]
+        return label
 
     @property
     def uid(self):
         return self._uid
 
     # TODO: rename
-    def add_nengo_objects(self, network, config):
+    def add_nengo_objects(self, network):
         """Add or modify the nengo model before build.
 
         Components may need to modify the underlying nengo.Network by adding

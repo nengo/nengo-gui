@@ -10,8 +10,10 @@ class SpikeGrid(Widget):
     The color of the squares corresponds to the neuron spiking.
     """
 
-    def __init__(self, client, obj, uid, n_neurons=None, pos=None, label=None):
-        super(SpikeGrid, self).__init__(client, obj, uid, pos=pos, label=label)
+    def __init__(self, client, obj, uid,
+                 n_neurons=None, pos=None, label_visible=True):
+        super(SpikeGrid, self).__init__(
+            client, obj, uid, pos=pos, label_visible=label_visible)
         self.n_neurons = self.max_neurons if n_neurons is None else n_neurons
 
         self.max_value = 1.0
@@ -70,6 +72,8 @@ class SpikeGrid(Widget):
         self.client.send("netgraph.create_spike_grid",
                          uid=self.uid,
                          pos=self.pos,
+                         label=self.label,
+                         labelVisible=self.label_visible,
                          dimensions=1,  # TODO
                          synapse=0.005,  # TODO
                          xlim=[-0.5, 0],  # TODO
