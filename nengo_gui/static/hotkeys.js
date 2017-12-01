@@ -15,24 +15,7 @@ Nengo.Hotkeys = function () {
             var is_editable = (ev.target.tagName === 'INPUT' ||
                 ev.target.tagName == 'TEXTAREA');
 
-            if (typeof ev.key != 'undefined') {
-                var key = ev.key;
-            } else {
-                switch (ev.keyCode) {
-                    case 191:
-                        var key = '?';
-                        break;
-                    case 8:
-                        var key = 'backspace';
-                        break;
-                    case 13:
-                        var key = 'enter';
-                        break;
-                    default:
-                        var key = String.fromCharCode(ev.keyCode)
-                }
-            }
-            var key = key.toLowerCase();
+            var key = self.determine_key(ev);
             var ctrl = ev.ctrlKey || ev.metaKey;
 
             // toggle editor with ctrl-e
@@ -93,8 +76,33 @@ Nengo.Hotkeys = function () {
                 Nengo.ace.update_trigger = true;
                 ev.preventDefault();
             }
+            
+	    if (!is_editable) {
+	        Nengo.netgraph.ws.send(JSON.stringify(
+		    {event:'keydown', 
+		     keyCode:ev.keyCode, 
+		     key:key
+		    }));
+            }
         }
     });
+    
+    document.addEventListener('keyup', function(ev) {
+        if (self.active) {
+            
+            var is_editable = (ev.target.tagName === 'INPUT' ||
+                ev.target.tagName == 'TEXTAREA');
+
+	    if (!is_editable) {
+                Nengo.netgraph.ws.send(JSON.stringify(
+                    {event:'keyup', 
+                     keyCode:ev.keyCode, 
+                     key:self.determine_key(ev)
+                    }));
+            }
+        }
+    });
+    
 }
 
 Nengo.Hotkeys.prototype.callMenu = function () {
@@ -109,6 +117,29 @@ Nengo.Hotkeys.prototype.callMenu = function () {
 Nengo.Hotkeys.prototype.set_active = function(bool) {
     console.assert(typeof(bool) == 'boolean')
     this.active = bool;
+}
+
+Nengo.Hotkeys.prototype.determine_key = function(ev) {
+    if (typeof ev.key != 'undefined') {
+        var key = ev.key;
+    } else {
+        switch (ev.keyCode) {
+            case 191:
+                var key = '?';
+                break;
+            case 8:
+                var key = 'backspace';
+                break;
+            case 13:
+                var key = 'enter';
+                break;
+            default:
+                var key = String.fromCharCode(ev.keyCode)
+        }
+    }
+    
+    var key = key.toLowerCase();
+    return key;
 }
 
 Nengo.hotkeys = new Nengo.Hotkeys();

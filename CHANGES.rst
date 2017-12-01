@@ -22,6 +22,7 @@ Release History
 0.4.4 (unreleased)
 ==================
 
+- Improvement (Experimental): Nodes have access to the GUI keyboard state
 - Improvement: support for nengo-bio Connections
 - Improvement: show multiple connections between objects
 - Bugfix: handle new Connection transform in Nengo 3.0.0
