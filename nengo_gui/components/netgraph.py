@@ -394,6 +394,7 @@ class NetGraph(Component):
             return
         action = info.get('act', None)
         undo = info.get('undo', None)
+        event = info.get('event', None)
         if action is not None:
             del info['act']
             if action in ('auto_expand', 'auto_collapse'):
@@ -415,6 +416,8 @@ class NetGraph(Component):
                 self.undo()
             else:
                 self.redo()
+        elif event is not None:
+            self.handle_event(event, info)
         else:
             print('received message', msg)
 
@@ -687,3 +690,13 @@ class NetGraph(Component):
         info = dict(uid=uid, pre=pres, post=posts, type='conn', parent=parent,
                     kind=NetGraph.connection_kind(conn))
         client.write_text(json.dumps(info))
+
+    def handle_event(self, event, info):
+        if event == 'keyup':
+            self.page.keys_pressed.discard(info['key'])
+            self.page.key_codes_pressed.discard(info['keyCode'])
+        elif event == 'keydown':
+            self.page.keys_pressed.add(info['key'])
+            self.page.key_codes_pressed.add(info['keyCode'])
+
+        print(self.page.keys_pressed)
