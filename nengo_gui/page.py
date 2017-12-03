@@ -211,6 +211,7 @@ class Page(object):
         code_locals = {}
         code_locals['nengo_gui'] = nengo_gui
         code_locals['__file__'] = self.filename
+        code_locals['__page__'] = self
 
         self.code = code
         self.error = None
