@@ -119,7 +119,6 @@ class Page(object):
         t = threading.Thread(target=self.runner)
         t.daemon = True
         t.start()
-        self.running_thread = t
 
     @property
     def sim(self):
