@@ -29,20 +29,20 @@ g.net rect{
     stroke-width: 2px;
 }
 
-.netgraph g.inhibitory > line {
+.netgraph g.inhibitory > .conn {
     stroke: #c00000;
 }
 
-.netgraph g.inhibitory > path {
+.netgraph g.inhibitory > .marker {
     fill: #c00000;
 }
 
-.netgraph g.modulatory > line {
+.netgraph g.modulatory > .conn {
     stroke: #8eb627;
     stroke-dasharray: 1em;
 }
 
-.netgraph g.modulatory > path {
+.netgraph g.modulatory > .marker {
     fill: #8eb627;
 }
 

@@ -85,16 +85,18 @@ Nengo.NetGraphConnection.prototype.create_line = function() {
                     "M6.451,28.748C2.448,26.041,0,22.413,0,18.425C0, \
                         10.051,10.801,3.262,24.125,3.262 \
                     S48.25,10.051,48.25,18.425c0,6.453-6.412,11.964-15.45,14.153");
-        this.recurrent_ellipse.setAttribute('class','recur');
+        this.recurrent_ellipse.classList.add('recur');
+        this.recurrent_ellipse.classList.add('conn');
         this.g.appendChild(this.recurrent_ellipse);
 
         this.marker = this.ng.createSVGElement('path');
+        this.marker.classList.add('marker');
         this.g.appendChild(this.marker);
 
         if (this.minimap == false) {
             switch (this.kind) {
                 case "inhibitory":
-                    this.marker.setAttribute('d', "M 7,7 C 10.5,3.5 7,0 7,0 L 0,7 c 0,0 3.5,3.5 7,0 z");
+                    this.marker.setAttribute('d', "M 5,5.5 c 0,-5 5,-5 5,-5 V 10 c 0,0 -5,0 -5,-5 z");
                     break;
                 case "modulatory":
                     this.marker.setAttribute('d', "M 7.5,0 0,-5 -7.5,0 0,5 z");
@@ -110,8 +112,10 @@ Nengo.NetGraphConnection.prototype.create_line = function() {
 
     } else {
         this.line = this.ng.createSVGElement('line');
+        this.line.classList.add('conn');
         this.g.appendChild(this.line);
         this.marker = this.ng.createSVGElement('path');
+        this.marker.classList.add('marker');
         if (this.minimap == false) {
             switch (this.kind) {
                 case "inhibitory":
