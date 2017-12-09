@@ -33,6 +33,8 @@ def main():
     parser.add_argument(
         '--key', nargs=1, default=[None], type=str, help="SSL key file")
     parser.add_argument(
+        '--unsecure', action='store_true', help='do not use SSL security')
+    parser.add_argument(
         '-P', '--port', dest='port', metavar='PORT',
         type=int, help='port to run server on')
     parser.add_argument(
@@ -75,7 +77,8 @@ def main():
     server_settings = GuiServerSettings(
         (host, port), args.auto_shutdown[0], password_hash=password_hash,
         ssl_cert=args.cert[0], ssl_key=args.key[0])
-    if host != 'localhost' and not server_settings.use_ssl:
+    if (host != 'localhost' and not server_settings.use_ssl and
+            not args.unsecure):
         raise ValueError(
             "Listening on external network interfaces only allowed with SSL.")
 

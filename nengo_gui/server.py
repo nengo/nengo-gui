@@ -8,7 +8,10 @@ import json
 import select
 import socket
 import struct
-import ssl
+try:
+    import ssl
+except ImportError:  # for Python without ssl support
+    from . import nossl as ssl
 import sys
 import threading
 import traceback

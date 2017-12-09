@@ -13,7 +13,10 @@ try:
     from urllib.parse import unquote
 except ImportError:  # Python 2.7
     from urllib import unquote
-import ssl
+try:
+    import ssl
+except ImportError:  # for Python without ssl support
+    from . import nossl as ssl
 import time
 
 import nengo_gui
