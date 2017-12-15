@@ -140,11 +140,8 @@ class GUI(InteractiveGUI):
             page_settings=ps)
 
     def start(self):
-        t = threading.Thread(
-            target=webbrowser.open,
-            args=('http://localhost:%d/?token=%s' % (
+        webbrowser.open('http://localhost:%d/?token=%s' % (
                 self.server.server_port,
-                self.server.settings.auth_token,)))
-        t.start()
+                self.server.auth_token,))
 
         super(GUI, self).start()
