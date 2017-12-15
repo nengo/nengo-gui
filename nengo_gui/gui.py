@@ -265,7 +265,7 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
 
         client = FastClientConnection(self.ws)
         while len(self.server.pages) == 0:
-            time.sleep(0.01)
+            time.sleep(0.1)
         page = self.server.pages[0]
         # TODO: handle multiple pages
         # page = self.server.pages[int(self.query['page'][0])]
@@ -277,23 +277,24 @@ class GuiRequestHandler(server.AuthenticatedHttpWsRequestHandler):
             component = page.netgraph.components.by_uid[uid]
         component.attach(client)
 
-        # now = default_timer()
-        # next_ping_time = now
+        now = default_timer()
+        next_ping_time = now
 
         while True:
             try:
                 msg = self.ws.read_frame()
                 while msg is not None:
                     client.receive(msg.data)
+                    msg = self.ws.read_frame()
 
                 # TODO: do we need to keep alive?
                 # Keep connection alive
-                # now = default_timer()
-                # if next_ping_time is None or now > next_ping_time:
-                #     self.ws.write_frame(WebSocketFrame(
-                #         1, 0, WebSocketFrame.OP_PING, 0, b''))
-                # next_ping_time = now + 5.0
-                # time.sleep(0.001)
+                now = default_timer()
+                if next_ping_time is None or now > next_ping_time:
+                    self.ws.write_frame(WebSocketFrame(
+                        1, 0, WebSocketFrame.OP_PING, 0, b''))
+                next_ping_time = now + 5.0
+                time.sleep(0.005)
             except server.SocketClosedError:
                 # This error means the server has shut down
                 logger.debug("Shutting down fast connection for %r", uid)

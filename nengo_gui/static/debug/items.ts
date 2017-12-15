@@ -31,15 +31,6 @@ import { Slider } from "../components/slider";
 import { Value } from "../components/value";
 import { XYValue } from "../components/xyvalue";
 
-// component views
-import {
-    ConnectionView,
-    RecurrentConnectionView
-} from "../components/connection";
-import { EnsembleView } from "../components/ensemble";
-import { NetworkView } from "../components/network";
-import { NodeView, PassthroughNodeView } from "../components/node";
-
 export const listeners = {
     ConfigDialog: null
 };
@@ -73,7 +64,7 @@ export const main = {
         return menu;
     },
     Sidebar: () => new Sidebar(new MockConnection()),
-    SimControl: () => new SimControl(new MockConnection(), 4.0, [-1.0, 0.0]),
+    SimControl: () => new SimControl(new MockConnection(), 4.0, 1.0),
     Toolbar: () => {
         const tb = new Toolbar(new MockConnection());
         tb.filename = "test.py";
@@ -196,13 +187,4 @@ export const component = {
             dimensions: 2,
             synapse: 0.005
         })
-};
-
-export const componentview = {
-    ConnectionView: () => new ConnectionView(),
-    EnsembleView: () => new EnsembleView(),
-    NetworkView: () => new NetworkView(),
-    NodeView: () => new NodeView(),
-    PassthroughNodeView: () => new PassthroughNodeView(),
-    RecurrentConnectionView: () => new RecurrentConnectionView()
 };

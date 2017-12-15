@@ -10,7 +10,7 @@
  * server and is run on page load.
  */
 
-import * as interact from "interact.js";
+import * as interact from "interactjs";
 
 import { ActionStack } from "./actions";
 import { ComponentManager } from "./components";

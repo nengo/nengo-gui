@@ -11,7 +11,7 @@
 
 import * as ace from "brace";
 import "brace/mode/python";
-import * as interact from "interact.js";
+import * as interact from "interactjs";
 import * as $ from "jquery";
 import { VNode, dom, h } from "maquette";
 

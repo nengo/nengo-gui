@@ -2,7 +2,13 @@ import { Component, ComponentView } from "./component";
 import { DataStore, TypedArray } from "../datastore";
 import { InputDialogView } from "../modal";
 import { Position } from "./position";
-import { Connection, FastConnection, FastServerConnection } from "../server";
+import {
+    Connection,
+    FastConnection,
+    FastServerConnection,
+    MockFastConnection,
+    MockConnection
+} from "../server";
 import * as utils from "../utils";
 
 export abstract class Widget extends Component {
@@ -25,7 +31,12 @@ export abstract class Widget extends Component {
         super(server, uid, view, label, pos, labelVisible);
         this.synapse = synapse;
         this.datastore = new DataStore(dimensions, 0.0);
-        this.fastServer = new FastServerConnection(this.uid);
+        if (server instanceof MockConnection) {
+            // If server is mocked, mock the fast connection too
+            this.fastServer = new MockFastConnection(this.uid);
+        } else {
+            this.fastServer = new FastServerConnection(this.uid);
+        }
 
         window.addEventListener(
             "TimeSlider.moveShown",
@@ -130,5 +141,5 @@ export abstract class Widget extends Component {
         this.datastore.reset();
     }
 
-    syncWithDataStore() {}
+    syncWithDataStore: () => void;
 }

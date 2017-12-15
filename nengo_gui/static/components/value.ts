@@ -77,13 +77,6 @@ export class Value extends Plot {
         this.fastServer.bind((data: ArrayBuffer) => {
             this.add(new Float64Array(data));
         });
-
-        window.addEventListener(
-            "TimeSlider.shownTime",
-            (event: CustomEvent) => {
-                this.xlim = event.detail.shownTime;
-            }
-        );
     }
 
     addMenuItems() {
@@ -138,13 +131,10 @@ export class Value extends Plot {
         modal.show();
     }
 
-    syncWithDataStore() {
+    syncWithDataStore = utils.throttle(() => {
         // Update the lines
         const [tStart, tEnd] = this.xlim;
 
-        // NEXT: this is way too slow, do it with d3?
-        // TODO: it should be possible to only modify the start and
-        //       end of the line instead of remaking it every time...
         const shownData = this.datastore.timeSlice(tStart, tEnd);
         if (shownData[0] != null) {
             this.view.lines = this.lines.map(line => line(shownData));
@@ -153,7 +143,7 @@ export class Value extends Plot {
                 this.view.legend.values = last.slice(1);
             }
         }
-    }
+    }, 10);
 }
 
 export class ValueView extends PlotView {

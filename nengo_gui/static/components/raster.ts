@@ -119,7 +119,7 @@ export class Raster extends Plot {
     /**
      * Redraw the lines and axis due to changed data.
      */
-    syncWithDataStore() {
+    syncWithDataStore = utils.throttle(() => {
         const [tStart, tEnd] = this.xlim;
         const shownData = this.datastore.timeSlice(tStart, tEnd);
 
@@ -136,7 +136,7 @@ export class Raster extends Plot {
             });
         }
         this.view.line = path.join("");
-    }
+    }, 20);
 }
 
 export class RasterView extends PlotView {

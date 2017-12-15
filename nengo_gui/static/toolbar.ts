@@ -8,7 +8,7 @@
  * @param {string} filename - The name of the file opened
  */
 
-import * as interact from "interact.js";
+import * as interact from "interactjs";
 import { dom, h, VNode } from "maquette";
 
 import "./toolbar.css";

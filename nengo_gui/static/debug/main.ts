@@ -88,7 +88,6 @@ export class Debug {
             attach("main");
             attach("view");
             attach("component");
-            attach("componentview");
         });
     }
 

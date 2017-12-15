@@ -56,8 +56,7 @@ class OverriddenOutput(Process):
 
             if callable(self.f):
                 self.value[...] = np.atleast_1d(self.f(t, *args))
-                # TODO: is this only needed when callable?
-                self.fast_client.send(self.value)
+                self.fast_client.send(np.hstack([self.t, self.value]))
             else:
                 self.value[...] = self.f
 
@@ -99,7 +98,6 @@ class Slider(Widget):
                 callable(self.base_output) or
                 isinstance(self.base_output, Process)):
             start_value[...] = self.base_output
-        start_value = [float(x) for x in start_value]
         self.client.send("netgraph.create_slider",
                          uid=self.uid,
                          pos=self.pos,
@@ -107,7 +105,7 @@ class Slider(Widget):
                          labelVisible=self.label_visible,
                          dimensions=self.obj.size_out,
                          synapse=0.005,  # TODO
-                         startValue=start_value)
+                         startValue=[float(x) for x in start_value])
 
     def remove_nengo_objects(self, model):
         # If we're setting the output back to None, clear size_out
@@ -116,12 +114,12 @@ class Slider(Widget):
             self.obj.size_out = None
         self.obj.output = self.base_output
 
-    @bind("{self.uid}.reset")
-    def reset(self):
+    @bind("{self.uid}.forget")
+    def forget(self):
         # Make sure we're currently running
         if self.obj.output is not self.base_output:
-            # A bit of a hack, but to reset we set all of the values to nan
-            # as nan values are not overridden.
+            # A bit of a hack, but to forget user-specified values we set all
+            # of the values to nan as nan values are not overridden.
             nans = np.zeros(self.obj.size_out) * np.nan
             # Send directly to the fast client
             self.fast_client.receive(nans.tobytes())

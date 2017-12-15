@@ -125,7 +125,6 @@ class SimControl(ExposedToClient):
 
         actual_dt = t - self.time
         self.time = t
-        self.fast_client.send(np.array(self.time, dtype=np.float64))
 
         now = timeit.default_timer()
         if self.last_time is not None:
@@ -143,6 +142,9 @@ class SimControl(ExposedToClient):
                     # compute current proportion of full speed
                     self.rate_proportion = 1.0 - (
                         (self.rate * self.delay_time) / actual_dt)
+
+        self.fast_client.send(np.array(
+            [self.time, self.rate, self.rate_proportion], dtype=np.float64))
 
         # if we have a desired proportion, use it to control delay_time
         #  Note that we need last_time to not be None so that we have a
@@ -165,7 +167,6 @@ class SimControl(ExposedToClient):
             self.sleep(self.delay_time)
 
         self.last_time = now
-        self.send_rate()
 
         # Sleeps to prevent the simulation from advancing
         # while the simulation is paused
@@ -205,11 +206,6 @@ class SimControl(ExposedToClient):
             self._set_stream("stderr", traceback.format_exc())
         self._set_stream("stdout", env.stdout.getvalue())
         self.sim = sim
-
-    def send_rate(self):
-        self.client.send("simcontrol.rate",
-                         rate=self.rate,
-                         proportion=self.rate_proportion)
 
     def send_status(self):
         self.client.send("simcontrol.status", status=self.status)
@@ -255,7 +251,8 @@ class SimControl(ExposedToClient):
         self.time = 0
         self.rate = 0
         self.rate_proportion = 1.0
-        self.send_rate()
+        self.fast_client.send(np.array(
+            [self.time, self.rate, self.rate_proportion], dtype=np.float64))
 
     @bind("simcontrol.target_scale")
     def target_scale(self, target):

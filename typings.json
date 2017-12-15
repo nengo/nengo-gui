@@ -5,7 +5,6 @@
   },
   "globalDependencies": {
     "bootstrap-validator": "github:tbekolay/types-bootstrap-validator/src/validator.d.ts#f55e8715fff96e6ae233fa3928abac267b728399",
-    "interact": "registry:dt/interact#1.0.25+20160613160313",
     "jqueryfiletree": "github:tbekolay/types-jqueryfiletree/src/filetree.d.ts#24c72ca29dd4f707732e804274e4e34f3b4bcb51",
     "jqueryui": "registry:dt/jqueryui#1.11.0+20160727153854",
     "socket.io": "registry:dt/socket.io#1.4.4+20160909205835",

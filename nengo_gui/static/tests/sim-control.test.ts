@@ -8,7 +8,7 @@ import { MockConnection } from "../server";
 
 test("SimControl.status", assert => {
     const dom = new fixtures.DOM(assert);
-    const sim = new SimControl(new MockConnection(), 4.0, [-0.5, 0.0]);
+    const sim = new SimControl(new MockConnection(), 4.0, 0.5);
 
     assert.equal(sim.status, "paused");
     assert.equal(sim.paused, true);
@@ -24,23 +24,10 @@ test("SimControl.status", assert => {
     fixtures.teardown(assert, dom);
 });
 
-test("SimControl.attach", assert => {
-    const dom = new fixtures.DOM(assert);
-    const server = new MockConnection();
-    const sim = new SimControl(new MockConnection(), 4.0, [-0.5, 0.0]);
-
-    assert.ok(server.isBound("close"));
-    assert.ok(server.isBound("simcontrol.status"));
-    assert.ok(server.isBound("simcontrol.simulator"));
-    assert.ok(server.isBound("simcontrol.config"));
-
-    fixtures.teardown(assert, dom);
-});
-
 test("SimControl sends", assert => {
     const dom = new fixtures.DOM(assert);
     const server = new MockConnection();
-    const sim = new SimControl(server, 4.0, [-0.5, 0.0]);
+    const sim = new SimControl(server, 4.0, 0.5);
 
     sim.setBackend("test");
     assert.equal(server.lastSentName, "simcontrol.set_backend");
@@ -66,38 +53,36 @@ test("SimControl sends", assert => {
 
 test("TimeSlider.addTime", assert => {
     const dom = new fixtures.DOM(assert);
-    const ts = new SimControl(new MockConnection(), 4.0, [-0.5, 0.0]).timeSlider;
+    const ts = new SimControl(new MockConnection(), 4.0, 0.5).timeSlider;
     const tolerance = 1e-5;
-
-    let firstShown = ts.shownTime[0];
 
     // Increasing times
     [0.001, 0.01, 0.1, 1.0].forEach(time => {
         ts.addTime(time);
-        assert.equal(ts.currentTime, time);
-        assert.ok(ts.shownTime[0] - (firstShown + time) <= tolerance);
+        assert.equal(ts.timeCurrent, time);
+        assert.ok((ts.timeShown - ts.shownWidth) - (ts.timeShown + time) <= tolerance);
     });
 
     // When time goes backward, we reset
     ts.addTime(0.5);
-    assert.equal(ts.currentTime, 0);
+    assert.equal(ts.timeCurrent, 0);
 
     fixtures.teardown(assert, dom);
 });
 
 test("TimeSlider.reset", assert => {
     const dom = new fixtures.DOM(assert);
-    const sim = new SimControl(new MockConnection(), 4.0, [-0.5, 0.0]);
+    const sim = new SimControl(new MockConnection(), 4.0, 0.5);
     const ts = sim.timeSlider;
 
     ts.addTime(0.1);
-    assert.equal(ts.currentTime, 0.1);
+    assert.equal(ts.timeCurrent, 0.1);
     ts.reset();
-    assert.equal(ts.currentTime, 0);
+    assert.equal(ts.timeCurrent, 0);
     ts.addTime(0.1);
-    assert.equal(ts.currentTime, 0.1);
+    assert.equal(ts.timeCurrent, 0.1);
     sim.view.reset.dispatchEvent(new Event("click"));
-    assert.equal(ts.currentTime, 0);
+    assert.equal(ts.timeCurrent, 0);
 
     fixtures.teardown(assert, dom);
 });

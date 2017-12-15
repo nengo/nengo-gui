@@ -26,7 +26,7 @@ function getURL(fast: boolean = false, uid: string = null): string {
         // If not requesting UID, send along query params
         const href = window.location.href.split("?");
         if (href.length > 1) {
-            url += `?${href[1]}`;
+            url += `?${href[1].replace("#", "")}`;
         }
     }
     return url;
@@ -150,6 +150,7 @@ export class MockConnection implements Connection {
 export interface FastConnection {
     uid: string;
     bind(step: (data: ArrayBuffer) => void);
+    send(data: ArrayBuffer);
 }
 
 /**
@@ -189,13 +190,25 @@ export class FastServerConnection implements FastConnection {
     bind(step: (data: ArrayBuffer) => void) {
         this.step = step;
     }
+
+    send(data: ArrayBuffer) {
+        this.ws.send(data);
+    }
 }
 
-export class FastMockConnection implements FastConnection {
+export class MockFastConnection implements FastConnection {
+    sentLast: ArrayBuffer;
+    sentHistory: ArrayBuffer[] = [];
     uid: string;
-
     private step: (...args: any[]) => void = null;
+    constructor(uid: string = null) {
+        this.uid = uid;
+    }
     bind(step: (data: ArrayBuffer) => void) {
         this.step = step;
+    }
+    send(data: ArrayBuffer) {
+        this.sentLast = data;
+        this.sentHistory.push(data);
     }
 }

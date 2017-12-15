@@ -37,14 +37,14 @@ export class DataStore {
             "TimeSlider.addTime",
             utils.throttle((event: CustomEvent) => {
                 // How much has the most recent time exceeded how much is kept?
-                const limit = event.detail.currentTime - event.detail.keptTime;
+                const limit = event.detail.timeCurrent - event.detail.keptTime;
                 const extra = DataStore.nearestIndex(this.times, limit);
 
                 // Remove the extra data
                 if (extra > 0) {
                     this.remove(0, extra);
                 }
-            }, 100) // Only update once per 100 ms
+            }, 200) // Only update once per 200 ms
         );
     }
 

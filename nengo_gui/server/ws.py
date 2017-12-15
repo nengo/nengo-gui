@@ -1,6 +1,7 @@
 import base64
 import errno
 import hashlib
+import select
 import socket
 import ssl
 import struct
@@ -18,6 +19,8 @@ WS_MAGIC = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
 def _sendall(socket, data):
     bytes_sent = 0
     while bytes_sent < len(data):
+        _, ready, _ = select.select([], [socket], [])
+        assert socket in ready, "Socket not ready"
         bytes_sent += socket.send(data[bytes_sent:])
 
 

@@ -144,8 +144,8 @@ export function isInt(value) {
  * @param {string} value - The string to check.
  * @returns {boolean} Whether the value is a number.
  */
-export function isNum(value) {
-    return !isNaN(value) && !(value.trim() === "");
+export function isNum(value: string) {
+    return !isNaN(Number(value)) && !(value.trim() === "");
 }
 
 export function now() {
@@ -219,7 +219,9 @@ export function throttle(
     wait: number,
     { leading: leading = true, trailing: trailing = true } = {}
 ) {
-    let timeout;
+    // TODO: optimize this function as it gets called a LOT
+    // E.g., do we ever not do leading and trailing = true?
+    let timeout = null;
     let context;
     let args;
     let result;
@@ -236,14 +238,14 @@ export function throttle(
 
     const throttled: any = function() {
         const current = now();
-        if (!previous && !leading) {
+        if (!leading) {
             previous = current;
         }
         const remaining = wait - (current - previous);
         context = this;
         args = arguments;
         if (remaining <= 0 || remaining > wait) {
-            if (timeout) {
+            if (timeout == null) {
                 clearTimeout(timeout);
                 timeout = null;
             }
@@ -266,6 +268,29 @@ export function throttle(
 
     return throttled;
 }
+
+// var throttle = function(func, limit) {
+//   var inThrottle,
+//     lastFunc,
+//     lastRan;
+//   return function() {
+//     var context = this,
+//       args = arguments;
+//     if (!inThrottle) {
+//       func.apply(context, args);
+//       lastRan = Date.now()
+//       inThrottle = true;
+//     } else {
+//       clearTimeout(lastFunc)
+//       lastFunc = setTimeout(function() {
+//         if ((Date.now() - lastRan) >= limit) {
+//           func.apply(context, args)
+//           lastRan = Date.now()
+//         }
+//       }, limit - (Date.now() - lastRan))
+//     }
+//   };
+// };
 
 export function delay(func: Function, wait: number, ...args) {
     return setTimeout(() => {
@@ -472,6 +497,18 @@ export function bsTooltip(
     );
 }
 
+export function toStringParts(num: number, trunc: number): [string, string] {
+    const parts = num.toString().split(".");
+    let decimal = parts.length === 2 ? parts[1] : "";
+    if (decimal.length > trunc) {
+        decimal = decimal.substr(0, trunc);
+    }
+    while (decimal.length < trunc) {
+        decimal += "0";
+    }
+    return [parts[0], decimal];
+}
+
 /**
  * Safely sets the content of an element to the given text.
  *
@@ -495,7 +532,7 @@ function getTransformNums(element: Element) {
     } else if (element instanceof HTMLElement) {
         transform = element.style.transform;
     } else {
-        console.error("'element' is not HTML or SVG");
+        console.error(`${element} is not HTML or SVG`);
     }
 
     return transform
@@ -557,7 +594,7 @@ function setTransform(element: Element, transform: string, nums: Number[]) {
     } else if (element instanceof HTMLElement) {
         element.style.webkitTransform = element.style.transform = str;
     } else {
-        console.error("'element' is not HTML or SVG in 'setTransform'");
+        console.error(`${element} is not HTML or SVG in 'setTransform'`);
     }
 }
 

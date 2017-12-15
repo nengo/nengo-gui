@@ -12,6 +12,18 @@ svg.netgraph {
         }
     }
 
+    rect.overlay {
+        fill: transparent;
+    }
+
+    g.widgets > g:hover {
+        rect.overlay {
+            stroke: gray(40%) {
+                width: 1;
+            };
+        }
+    }
+
     rect.view {
         fill: #d9edf7;
         stroke: #ccc;

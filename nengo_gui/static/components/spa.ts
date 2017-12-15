@@ -160,12 +160,12 @@ export class SpaPointer extends Widget {
     /**
      * Redraw the lines and axis due to changed data.
      */
-    syncWithDataStore() {
+    syncWithDataStore = utils.throttle(() => {
         const data = this.datastore.at(this.currentTime);
         if (data != null) {
             this.view.values = data;
         }
-    }
+    }, 20);
 }
 
 export class SpaPointerView extends ComponentView {

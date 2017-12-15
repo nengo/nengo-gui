@@ -11,9 +11,9 @@ import * as utils from "../utils";
 import { Widget } from "./widget";
 
 export class Axis {
-    private axis: d3.svg.Axis;
-    private g: d3.Selection<SVGGElement>;
-    private scale: d3.scale.Linear<number, number>;
+    axis: d3.svg.Axis;
+    g: d3.Selection<SVGGElement>;
+    scale: d3.scale.Linear<number, number>;
 
     constructor(xy: "X" | "Y", g: SVGGElement, lim: [number, number]) {
         this.scale = d3.scale.linear();
@@ -193,10 +193,13 @@ export abstract class Plot extends Widget {
         });
 
         window.addEventListener(
-            "TimeSlider.moveShown",
-            utils.throttle((e: CustomEvent) => {
-                this.xlim = e.detail.shownTime;
-            }, 50) // Update once every 50 ms
+            "TimeSlider.timeShown",
+            utils.throttle((event: CustomEvent) => {
+                this.xlim = [
+                    event.detail.timeShown - event.detail.shownWidth,
+                    event.detail.timeShown
+                ];
+            }, 20) // Update once every 20 ms
         );
         window.addEventListener("SimControl.reset", e => {
             this.reset();

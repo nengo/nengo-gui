@@ -89,17 +89,6 @@ svg.netgraph {
         stroke-width: 1.5;
     }
 
-    .widgets {
-        rect.overlay {
-            stroke: gray(40%) {
-                width: 1;
-            };
-        }
-    }
-
-    rect.overlay {
-        fill: transparent;
-    }
 }
 
 .warning-text {

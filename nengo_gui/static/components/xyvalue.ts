@@ -211,14 +211,14 @@ export class XYValue extends Plot {
     /**
      * Redraw the lines and axis due to changed data.
      */
-    syncWithDataStore() {
+    syncWithDataStore = utils.throttle(() => {
         // Update the lines
         const [tStart, tEnd] = this.xlim;
         const shownData = this.datastore.timeSlice(tStart, tEnd);
         if (shownData[0] != null) {
             this.view.line = this.line(shownData);
         }
-    }
+    }, 20);
 }
 
 export class XYValueView extends PlotView {

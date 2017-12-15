@@ -109,7 +109,6 @@ export class DebugView {
                     menu("main"),
                     menu("view", "View"),
                     menu("component", "Component"),
-                    menu("componentview", "Component View")
                 ])
             ]),
             h("iframe", { src: "nengo.html" })
@@ -126,9 +125,6 @@ export class DebugView {
         this.menus = {
             component: this.controls.querySelector(
                 "#component"
-            ) as HTMLDivElement,
-            componentview: this.controls.querySelector(
-                "#componentview"
             ) as HTMLDivElement,
             main: this.controls.querySelector("#main") as HTMLDivElement,
             view: this.controls.querySelector("#view") as HTMLDivElement

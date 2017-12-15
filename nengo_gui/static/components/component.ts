@@ -1,4 +1,4 @@
-import * as interact from "interact.js";
+import * as interact from "interactjs";
 import { h } from "maquette";
 
 import "./component.css";
@@ -23,7 +23,10 @@ export abstract class Component {
     protected static resizeDefaults = {
         edges: { bottom: true, left: true, right: true, top: true },
         invert: "none",
-        margin: 10
+        margin: 10,
+        restrictSize: {
+            min: { height: 25, width: 25 }
+        }
     };
 
     constructor(
@@ -100,12 +103,8 @@ export abstract class Component {
                 const [width, height] = this.view.scale;
                 this.view.pos = [left + dRect.left, top + dRect.top];
                 this.view.scale = [width + dRect.width, height + dRect.height];
-                // this.view.contSize(event);
-                // this.redraw();
             });
             this.interactRoot.on("resizeend", event => {
-                // this.view.constrainPosition();
-
                 // TODO: turn this into an actual function call
                 // this.ng.notify("posSize", {
                 //     height: this.view.height,
@@ -158,27 +157,23 @@ export abstract class Component {
         // const pos = this.view.screenLocation;
         // const w = this.view.width;
         // const h = this.view.height;
-
         // TODO: implement an interface for this and rename it
         // const info: any = {
-            // height: this.ng.viewPort.fromScreenY(100),
-            // type: graphType,
-            // uid: this.uid,
-            // width: this.ng.viewPort.fromScreenX(100),
-            // x: this.ng.viewPort.fromScreenX(pos[0])
-            //     - this.ng.viewPort.shiftX(w),
-            // y: this.ng.viewPort.fromScreenY(pos[1])
-            //     - this.ng.viewPort.shiftY(h),
+        // height: this.ng.viewPort.fromScreenY(100),
+        // type: graphType,
+        // uid: this.uid,
+        // width: this.ng.viewPort.fromScreenX(100),
+        // x: this.ng.viewPort.fromScreenX(pos[0])
+        //     - this.ng.viewPort.shiftX(w),
+        // y: this.ng.viewPort.fromScreenY(pos[1])
+        //     - this.ng.viewPort.shiftY(h),
         // };
-
         // if (args !== null) {
         //     info.args = args;
         // }
-
         // if (info.type === "Slider") {
         //     info.width /= 2;
         // }
-
         // TODO: change this to an actual function call
         // this.ng.notify("createGraph", info);
     }
@@ -261,9 +256,8 @@ export abstract class ComponentView {
     }
 
     set overlayScale(val: [number, number]) {
-        const [width, height] = val;
-        this.overlay.setAttribute("width", `${width}`);
-        this.overlay.setAttribute("height", `${height}`);
+        this.overlay.setAttribute("width", `${val[0]}`);
+        this.overlay.setAttribute("height", `${val[1]}`);
         this.updateLabel();
     }
 

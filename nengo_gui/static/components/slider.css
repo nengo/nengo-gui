@@ -1,11 +1,66 @@
+svg.netgraph {
+
+    g.control {
+
+        rect.guideline {
+            fill: #ddd;
+            pointer-events: none;
+            rx: 4;
+            rx: 4;
+            stroke: #888 {
+                width: 1;
+            }
+        }
+
+
+        g.handle {
+
+            rect {
+                fill: #fff;
+                stroke: #666 {
+                    width: 1;
+                };
+                rx: 4;
+                ry: 4;
+            }
+
+            &:hover {
+                cursor: pointer;
+
+                rect {
+                    fill: #e6e6e6;
+                }
+            }
+
+            &.invalid {
+                rect {
+                    fill: salmon;
+                }
+            }
+
+            input {
+                background-color: transparent;
+                border: none;
+                cursor: text;
+                line-height: normal;
+                outline: none;
+                text-align: center;
+            }
+
+            text {
+                alignment-baseline: central;
+                cursor: pointer;
+                text-anchor: middle;
+            }
+        }
+    }
+}
+
+
 .guideline {
     background-color: #ddd;
     border: 1px solid #888 {
         radius: 4px;
     }
     z-index: -1;
-}
-
-input#value_in_field {
-    cursor: text !important;
 }

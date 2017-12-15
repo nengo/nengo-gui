@@ -104,20 +104,36 @@
 
         }
 
-        td, th {
-            border: none;
-        }
+        table.table {
+            width: 130px;
 
-        th {
-            padding: 0.2em;
-        }
+            td, th {
+                border: none;
+            }
 
-        td {
-            padding: 0.2em 0;
+            th {
+                padding: 0.2em;
+                text-align: center;
+                width: 58px;
+            }
 
-            &.digits {
-                text-align: right;
-                width: 100%;
+            td {
+                padding: 0.2em 0;
+
+                &.decimal {
+                    text-align: left;
+                    width: 32px;
+                }
+
+                &.decimal-point {
+                    text-align: center;
+                    width: 5px;
+                }
+
+                &.whole {
+                    text-align: right;
+                    width: 35px;
+                }
             }
         }
     }
@@ -150,11 +166,13 @@
             }
 
             g.shown-time {
+                cursor: move;
                 fill: var(--shown-color);
 
                 .shown-time-border {
+                    cursor: ew-resize;
                     stroke: var(--accent) {
-                        width: 1;
+                        width: 5;
                     }
                 }
             }
