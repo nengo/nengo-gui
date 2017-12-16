@@ -34,7 +34,12 @@ Nengo.Raster = function(parent, sim, args) {
     this.neuron_highlights_g = this.axes2d.svg.append('g')
         .attr('class', 'neuron_highlights');
 
-    // TODO: put the crosshair properties in CSS
+    // Index of the neuron that makes a sound when spiking
+    this.sound_index = -1;
+    //this.neuron_sound = new Audio('data:audio/wav;base64,' + 'UklGRuIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0Yb4AAACH/4H/rP99/9j+uP8XAKr8jQJVAIz6EggS+iD7nAim+DL2/wt8Bxvo7w2ADlj6XRSC+RT+PRM9/KEO9Q1z6x0EZvxT6y4ZTPaZr8e+qNSYApASyeW6/SAQFv/qCPYXjiLUGfITZwRpBPUpJRBsCw4hm/wH+4ARShkiEKALwgqEHIUpVhdXOpAxJh3POPgwdiOkGQokbS1CFBkKcA0p6ZDQ1s1fvui7+adth1yR36nrvEHAwLf6yyzdF+Hz5gb3');
+    this.neuron_sound = new Audio('data:audio/wav;base64,' + 'UklGRiYAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQIAAAD9dg==');
+
+    // TODO: put the neuron highlight properties in CSS
     this.neuron_highlights_g.append('rect')
             .attr('id', 'neuron_highlights_Y')
             .attr('stroke', 'black')
@@ -120,8 +125,8 @@ Nengo.Raster.prototype.update_highlight = function(mouse) {
     // TODO: I don't like having ifs here, make a smaller rectangle for mouseovers
     if (x > this.axes2d.ax_left && x < this.axes2d.ax_right && y > this.axes2d.ax_top && y < this.axes2d.ax_bottom-1) {
         var y1 = this.axes2d.scale_y.invert(y);
-        var y2 = this.axes2d.scale_y(Math.round(y1));
-        var y3 = this.axes2d.scale_y(Math.round(y1-1));
+        var y2 = this.axes2d.scale_y(Math.ceil(y1));
+        var y3 = this.axes2d.scale_y(Math.ceil(y1-1));
 
         this.neuron_highlights_g.style('display', null);
 
@@ -135,10 +140,12 @@ Nengo.Raster.prototype.update_highlight = function(mouse) {
             .attr('x', this.axes2d.ax_left - 3)
             .attr('y', y2 + (y3-y2)/2 + 3)
             .text(function () {
-                return Math.round(y1);
+                return Math.ceil(y1);
             });
+        this.sound_index = Math.ceil(y1);
     } else {
         this.neuron_highlights_g.style('display', 'none');
+        this.sound_index = -1;
     }
 };
 
@@ -157,7 +164,6 @@ Nengo.Raster.prototype.update = function() {
 
     /** update the lines */
     var shown_data = this.data_store.get_shown_data();
-
     var path = [];
     for (var i = 0; i < shown_data[0].length; i++) {
         var t = this.axes2d.scale_x(
@@ -170,11 +176,18 @@ Nengo.Raster.prototype.update = function() {
             path.push('M ' + t + ' ' + y1 + 'V' + y2);
         }
     }
+
     this.path.attr("d", path.join(""));
+
+    //make a sound if the neuron spiked
+    if ($.inArray(this.sound_index-1, shown_data[0][shown_data[0].length-1])>-1) {
+        //console.log(this.sound_index);
+        this.neuron_sound.play();
+    }
 
     //** Update the crosshair text if the mouse is on top */
     if (this.neuron_highlight_updates) {
-    this.update_highlight(this.mouse_position);
+        this.update_highlight(this.mouse_position);
     }
 
 };
