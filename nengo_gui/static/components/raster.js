@@ -108,6 +108,11 @@ Nengo.Raster.prototype.on_message = function(event) {
     var data = new Int16Array(event.data, 4);
     this.data_store.push([time[0], data]);
     this.schedule_update();
+
+    // make a sound if the neuron spiked
+    if ($.inArray(this.sound_index-1, data) > -1) {
+        this.neuron_sound.play();
+    }
 }
 
 Nengo.Raster.prototype.set_n_neurons = function(n_neurons) {
@@ -178,12 +183,6 @@ Nengo.Raster.prototype.update = function() {
     }
 
     this.path.attr("d", path.join(""));
-
-    //make a sound if the neuron spiked
-    if ($.inArray(this.sound_index-1, shown_data[0][shown_data[0].length-1])>-1) {
-        //console.log(this.sound_index);
-        this.neuron_sound.play();
-    }
 
     //** Update the crosshair text if the mouse is on top */
     if (this.neuron_highlight_updates) {
