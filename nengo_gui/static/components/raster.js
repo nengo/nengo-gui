@@ -23,6 +23,50 @@ Nengo.Raster = function(parent, sim, args) {
     this.axes2d = new Nengo.TimeAxes(this.div, args);
     this.axes2d.scale_y.domain([0, args.n_neurons]);
 
+    // Flag for whether or not update code should be changing the highlight
+    // Both zooming and the simulator time changing cause an update, but the highlight
+    // should only update when the time is changing
+    this.neuron_highlight_updates = false;
+    
+    // Keep track of mouse position TODO: fix this to be not required
+    this.mouse_position = [0,0];
+
+    this.neuron_highlights_g = this.axes2d.svg.append('g')
+        .attr('class', 'neuron_highlights');
+
+    // TODO: put the crosshair properties in CSS
+    this.neuron_highlights_g.append('rect')
+            .attr('id', 'neuron_highlights_Y')
+            .attr('stroke', 'black')
+            .attr('fill', 'black')
+            .attr('fill-opacity', '0.1')
+            .attr('stroke-width', '0.5px');
+
+    // TODO: have the fonts and colour set appropriately
+    this.neuron_highlights_g.append('text')
+            .attr('id', 'neuron_highlights_text')
+            .style('text-anchor', 'end')
+            .attr('class', 'graph_text');
+
+    this.axes2d.svg
+            .on('mouseover', function() {
+                var mouse = d3.mouse(this);
+                self.neuron_highlight_updates = true;
+                self.neuron_highlights_g.style('display', null);                
+                self.mouse_position = [mouse[0], mouse[1]];
+            })
+            .on('mouseout', function() {
+                var mouse = d3.mouse(this);
+                self.neuron_highlight_updates = false;
+                self.neuron_highlights_g.style('display', 'none');                
+                self.mouse_position = [mouse[0], mouse[1]];
+            })
+            .on('mousemove', function() {
+                var mouse = d3.mouse(this);
+                self.neuron_highlight_updates = true;
+                self.mouse_position = [mouse[0], mouse[1]];
+                self.update_highlight(mouse);
+            })
 
     /** call schedule_update whenever the time is adjusted in the SimControl */
     this.sim.div.addEventListener('adjust_time',
@@ -68,6 +112,35 @@ Nengo.Raster.prototype.set_n_neurons = function(n_neurons) {
     this.ws.send('n_neurons:' + n_neurons);
 }
 
+Nengo.Raster.prototype.update_highlight = function(mouse) {
+    var self = this;
+    var x = mouse[0];
+    var y = mouse[1];
+
+    // TODO: I don't like having ifs here, make a smaller rectangle for mouseovers
+    if (x > this.axes2d.ax_left && x < this.axes2d.ax_right && y > this.axes2d.ax_top && y < this.axes2d.ax_bottom-1) {
+        var y1 = this.axes2d.scale_y.invert(y);
+        var y2 = this.axes2d.scale_y(Math.round(y1));
+        var y3 = this.axes2d.scale_y(Math.round(y1-1));
+
+        this.neuron_highlights_g.style('display', null);
+
+        this.neuron_highlights_g.select('#neuron_highlights_Y')
+            .attr('x', this.axes2d.ax_left)
+            .attr('y', y2)
+            .attr('width', this.axes2d.width)
+            .attr('height', y3-y2);
+
+        this.neuron_highlights_g.select('#neuron_highlights_text')
+            .attr('x', this.axes2d.ax_left - 3)
+            .attr('y', y2 + (y3-y2)/2 + 3)
+            .text(function () {
+                return Math.round(y1);
+            });
+    } else {
+        this.neuron_highlights_g.style('display', 'none');
+    }
+};
 
 /**
  * Redraw the lines and axis due to changed data
@@ -98,6 +171,12 @@ Nengo.Raster.prototype.update = function() {
         }
     }
     this.path.attr("d", path.join(""));
+
+    //** Update the crosshair text if the mouse is on top */
+    if (this.neuron_highlight_updates) {
+    this.update_highlight(this.mouse_position);
+    }
+
 };
 
 /**
