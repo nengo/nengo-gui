@@ -36,8 +36,10 @@ Nengo.Raster = function(parent, sim, args) {
 
     // Index of the neuron that makes a sound when spiking
     this.sound_index = -1;
-    //this.neuron_sound = new Audio('data:audio/wav;base64,' + 'UklGRuIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0Yb4AAACH/4H/rP99/9j+uP8XAKr8jQJVAIz6EggS+iD7nAim+DL2/wt8Bxvo7w2ADlj6XRSC+RT+PRM9/KEO9Q1z6x0EZvxT6y4ZTPaZr8e+qNSYApASyeW6/SAQFv/qCPYXjiLUGfITZwRpBPUpJRBsCw4hm/wH+4ARShkiEKALwgqEHIUpVhdXOpAxJh3POPgwdiOkGQokbS1CFBkKcA0p6ZDQ1s1fvui7+adth1yR36nrvEHAwLf6yyzdF+Hz5gb3');
-    this.neuron_sound = new Audio('data:audio/wav;base64,' + 'UklGRiYAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQIAAAD9dg==');
+    // A click sound made with my computer
+    this.neuron_sound = new Audio('data:audio/wav;base64,' + 'UklGRuIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0Yb4AAACH/4H/rP99/9j+uP8XAKr8jQJVAIz6EggS+iD7nAim+DL2/wt8Bxvo7w2ADlj6XRSC+RT+PRM9/KEO9Q1z6x0EZvxT6y4ZTPaZr8e+qNSYApASyeW6/SAQFv/qCPYXjiLUGfITZwRpBPUpJRBsCw4hm/wH+4ARShkiEKALwgqEHIUpVhdXOpAxJh3POPgwdiOkGQokbS1CFBkKcA0p6ZDQ1s1fvui7+adth1yR36nrvEHAwLf6yyzdF+Hz5gb3');
+    // A pure delta function sound
+    //this.neuron_sound = new Audio('data:audio/wav;base64,' + 'UklGRiYAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQIAAAD9dg==');
 
     // TODO: put the neuron highlight properties in CSS
     this.neuron_highlights_g.append('rect')
@@ -184,7 +186,7 @@ Nengo.Raster.prototype.update = function() {
 
     this.path.attr("d", path.join(""));
 
-    //** Update the crosshair text if the mouse is on top */
+    //** Update the highlight text if the mouse is on top */
     if (this.neuron_highlight_updates) {
         this.update_highlight(this.mouse_position);
     }
