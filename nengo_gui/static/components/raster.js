@@ -219,6 +219,7 @@ Nengo.Raster.prototype.on_resize = function(width, height) {
 Nengo.Raster.prototype.reset = function(event) {
     this.data_store.reset();
     this.schedule_update();
+    this.sound_index = -1;
 }
 
 Nengo.Raster.prototype.generate_menu = function() {
