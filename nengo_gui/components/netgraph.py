@@ -557,6 +557,8 @@ class NetGraph(Component):
                 info['passthrough'] = True
             if callable(obj.output) and hasattr(obj.output, '_nengo_html_'):
                 info['html'] = True
+            if hasattr(obj.output, '_nengo_spike_node_'):
+                info['spike'] = obj.output._nengo_spike_node_
             info['dimensions'] = int(obj.size_out)
         elif isinstance(obj, nengo.Ensemble):
             info['dimensions'] = int(obj.size_out)
