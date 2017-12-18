@@ -5,7 +5,6 @@ import collections
 import threading
 
 import nengo
-from nengo import spa
 import json
 
 from nengo_gui.components.component import Component
@@ -14,6 +13,7 @@ from nengo_gui.components.slider import OverriddenOutput
 from nengo_gui.modal_js import infomodal
 import nengo_gui.user_action
 import nengo_gui.layout
+
 
 class NetGraph(Component):
     """Handles computations and communications for NetGraph on the JS side.
@@ -53,6 +53,7 @@ class NetGraph(Component):
             self.last_modify_time = None
         except TypeError:  # happens if self.filename is None
             self.last_modify_time = None
+
         self.last_reload_check = time.time()
 
     def check_for_reload(self):
@@ -85,7 +86,7 @@ class NetGraph(Component):
         with self.page.lock:
             self._reload(code=code)
 
-    def _reload(self, code=None):
+    def _reload(self, code=None):  # noqa: C901
         """Loads and executes the code, removing old items,
         updating changed items
         and adding new ones"""
@@ -138,7 +139,8 @@ class NetGraph(Component):
                 new_item = None
 
             same_class = False
-            for cls in [nengo.Ensemble, nengo.Node, nengo.Network, nengo.Connection]:
+            for cls in [nengo.Ensemble, nengo.Node, nengo.Network,
+                        nengo.Connection]:
                 if isinstance(new_item, cls) and isinstance(old_item, cls):
                     same_class = True
                     break
@@ -151,7 +153,8 @@ class NetGraph(Component):
             elif not same_class:
                 # don't allow changing classes
                 keep_object = False
-            elif self.get_extra_info(new_item) != self.get_extra_info(old_item):
+            elif (self.get_extra_info(new_item) !=
+                    self.get_extra_info(old_item)):
                 keep_object = False
 
             if not keep_object:
@@ -191,7 +194,8 @@ class NetGraph(Component):
         removed_items = list(removed_uids.values())
         for c in self.page.components[:]:
             for item in c.code_python_args(old_default_labels):
-                if item not in self.uids.keys() and item not in collapsed_items:
+                if (item not in self.uids.keys() and
+                        item not in collapsed_items):
 
                     # item is a python string that is an argument to the
                     # constructor for the Component.  So it could be 'a',
@@ -203,7 +207,7 @@ class NetGraph(Component):
                     # The following lambda should do this, handling both
                     # the normal argument case and the keyword argument case.
                     safe_eval = ('(lambda *a, **b: '
-                                     'list(a) + list(b.values()))(%s)[0]')
+                                 'list(a) + list(b.values()))(%s)[0]')
 
                     # this Component depends on an item inside a collapsed
                     #  Network, so we need to check if that component has
@@ -270,8 +274,8 @@ class NetGraph(Component):
                 index = component_uids.index(name)
                 old_component = self.page.components[index]
                 if isinstance(obj, (nengo_gui.components.SimControlTemplate,
-                                  nengo_gui.components.AceEditorTemplate,
-                                  nengo_gui.components.NetGraphTemplate)):
+                              nengo_gui.components.AceEditorTemplate,
+                              nengo_gui.components.NetGraphTemplate)):
                     # just keep these ones
                     components.append(old_component)
                 else:
@@ -292,12 +296,14 @@ class NetGraph(Component):
         # notifies SimControl to pause the simulation
         self.page.changed = True
 
-    def _reload_update_item(self, uid, old_item, new_item, new_name_finder):
+    def _reload_update_item(self, uid, old_item, new_item, new_name_finder):  # noqa: C901
         """Tell the client about changes to the item due to reload."""
         changed = False
+
         if isinstance(old_item, (nengo.Node,
                                  nengo.Ensemble,
                                  nengo.Network)):
+
             old_label = self.page.get_label(old_item)
             new_label = self.page.get_label(
                 new_item, default_labels=new_name_finder.known_name)
@@ -351,6 +357,7 @@ class NetGraph(Component):
         return changed
 
     def get_parents(self, uid, default_labels=None):
+        """Get parent networks for a connection"""
         while uid not in self.parents:
             net = self.networks_to_search.pop(0)
             net_uid = self.page.get_uid(net, default_labels=default_labels)
@@ -410,9 +417,14 @@ class NetGraph(Component):
                 # These should not use the undo stack
                 getattr(self, 'act_' + action)(**info)
             else:
-                act = nengo_gui.user_action.create_action(action, self, **info)
-                self.page.undo_stack.append([act])
-                del self.page.redo_stack[:]
+                try:
+                    act = nengo_gui.user_action.create_action(action,
+                                                              self, **info)
+                    self.page.undo_stack.append([act])
+                    del self.page.redo_stack[:]
+                except:
+                    print('error processing message', repr(msg))
+                    traceback.print_exc()
         elif undo is not None:
             if undo == '1':
                 self.undo()
@@ -474,6 +486,8 @@ class NetGraph(Component):
         self.to_be_sent.append(dict(type='js', code=js))
 
     def expand_network(self, network, client):
+        """Display an expanded network, including the root network"""
+
         if not self.page.config[network].has_layout:
             pos = self.layout.make_layout(network)
             for obj, layout in pos.items():
@@ -486,36 +500,45 @@ class NetGraph(Component):
         else:
             parent = self.page.get_uid(network)
         for ens in network.ensembles:
-            self.create_object(client, ens, type='ens', parent=parent)
+            self.create_object(client, ens, obj_type='ens', parent=parent)
         for node in network.nodes:
-            self.create_object(client, node, type='node', parent=parent)
+            self.create_object(client, node, obj_type='node', parent=parent)
         for net in network.networks:
-            self.create_object(client, net, type='net', parent=parent)
+            self.create_object(client, net, obj_type='net', parent=parent)
         for conn in network.connections:
             self.create_connection(client, conn, parent=parent)
         self.page.config[network].expanded = True
 
-    def create_object(self, client, obj, type, parent):
+    def create_object(self, client, obj, obj_type, parent):
+        """Send the JSON of the newly created objects to client-side"""
         uid = self.page.get_uid(obj)
+
+        # if the uid already exists, then it's already been inserted in
+        # the netgraph, so don't send anything
         if uid in self.uids:
             return
+
+        self.uids[uid] = obj
 
         pos = self.page.config[obj].pos
         if pos is None:
             import random
             pos = random.uniform(0, 1), random.uniform(0, 1)
             self.page.config[obj].pos = pos
+
         size = self.page.config[obj].size
         if size is None:
             size = (0.1, 0.1)
             self.page.config[obj].size = size
+
         label = self.page.get_label(obj)
-        self.uids[uid] = obj
-        info = dict(uid=uid, label=label, pos=pos, type=type, size=size,
+
+        info = dict(uid=uid, label=label, pos=pos, type=obj_type, size=size,
                     parent=parent)
+        info.update(self.get_extra_info(obj))
+
         if type == 'net':
             info['expanded'] = self.page.config[obj].expanded
-        info.update(self.get_extra_info(obj))
 
         client.write_text(json.dumps(info))
 

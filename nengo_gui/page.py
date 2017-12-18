@@ -12,6 +12,7 @@ import nengo
 import nengo_gui
 import nengo_gui.user_action
 import nengo_gui.config
+import nengo_gui.seed_generation
 
 
 class PageSettings(object):
@@ -221,6 +222,13 @@ class Page(object):
             line = nengo_gui.exec_env.determine_line_number()
             exec_env.stdout.write('Warning: Simulators cannot be manually'
                                   ' run inside nengo_gui (line %d)\n' % line)
+            exec_env.stdout.write('\nIf you are running a Nengo script from'
+                ' a tutorial, this may be a tutorial\nthat'
+                ' should be run in a Python interpreter,'
+                ' rather than in the Nengo GUI.\nSee'
+                ' <a href="https://nengo.github.io/users.html"'
+                '  target="_blank">https://nengo.github.io/users.html</a>'
+                ' for more details.\n')
         except nengo_gui.exec_env.StartedGUIException:
             line = nengo_gui.exec_env.determine_line_number()
             exec_env.stdout.write('Warning: nengo_gui cannot be run inside'
@@ -434,6 +442,12 @@ class Page(object):
         with self.lock:
             self.building = True
 
+            # set all the seeds so that creating components doesn't affect
+            #  the neural model itself
+            seeds = nengo_gui.seed_generation.define_all_seeds(self.model)
+            for obj, s in seeds.items():
+                obj.seed = s
+
             # modify the model for the various Components
             for c in self.components:
                 c.add_nengo_objects(self)
@@ -455,6 +469,10 @@ class Page(object):
             except:
                 line = nengo_gui.exec_env.determine_line_number()
                 self.error = dict(trace=traceback.format_exc(), line=line)
+
+            # set the defined seeds back to None
+            for obj in seeds:
+                obj.seed = None
 
             self.stdout += exec_env.stdout.getvalue()
 
@@ -483,6 +501,8 @@ class Page(object):
                         self.sim.run_steps(self.sim.max_steps)
                     else:
                         self.sim.step()
+                        if 'on_step' in self.locals:
+                            self.locals['on_step'](self.sim)
                 except Exception as err:
                     if self.finished:
                         return

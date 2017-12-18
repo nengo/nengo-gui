@@ -51,12 +51,17 @@
     cursor: default !important;
 }
 
-#filename:hover {
+#Forum_link {
+    padding: 0.5em;
+    cursor: hand !important;
+}
+
+#filename:hover, #Forum_link:hover {
     color: #eee;
     background: #666;
 }
 
-#Help_button{
+#Help_button, #Forum_link{
     float: right;
 }
 
@@ -67,6 +72,11 @@
 #top_toolbar_div li.disabled a.glyphicon {
     color: #ccc;
     background: #eee;
+}
+
+#top_toolbar_div li.in-progress a.glyphicon {
+    color: #ccc;
+    background: #c22;
 }
 
 #global_config_menu {

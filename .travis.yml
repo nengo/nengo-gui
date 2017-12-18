@@ -1,24 +1,42 @@
-language: python
-sudo: required
-python:
-  - "2.7"
+language: c
+sudo: false
 
-install: 
-  - "pip install -r requirements.txt"
-  - "pip install -r requirements-test.txt"
+addons:
+  # 2.x Selenium WebDriver only works for Firefox <= 47.0.1
+  firefox: "47.0.1"
+
+env:
+  global:
+    - CONDA_DEPS="numpy pytest"
+    - PIP_DEPS="'selenium<3' pyimgur"
+
+matrix:
+  include:
+    - env: PYTHON="2.7"
+    - env: PYTHON="3.5"
+
+before_install:
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p "$HOME/miniconda"
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda info -a
+  - conda create -q -n test python="$PYTHON" pip
+  - source activate test
+  - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1920x1080x16
+
+install:
+  - eval conda install "$CONDA_DEPS"
+  - eval pip install "$PIP_DEPS"
+
 before_script:
-  - "cd nengo_gui"
-  - wget http://chromedriver.storage.googleapis.com/2.20/chromedriver_linux64.zip
-  - unzip chromedriver_linux64.zip
-  - "cd .."
-  - "python setup.py develop"
-  - "export DISPLAY=:99.0"
-  - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/cucumber_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1920x1080x16
-  - sleep 3 # give xvfb some time to start
-  - "wget http://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.1.jar"
-  - "java -jar selenium-server-standalone-2.31.0.jar > /dev/null &"
-  - "nengo_gui --no-browser --auto-shutdown 0 &"#starts up nengo_gui
-  - sleep 2
-# command to run tests
-script: 
+  - wget http://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.1.jar
+  - java -jar selenium-server-standalone-2.53.1.jar > /dev/null &
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+  - sleep 3  # give xvfb and some time to start
+
+script:
+  - python setup.py -q develop
   - py.test

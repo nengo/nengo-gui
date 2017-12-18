@@ -98,6 +98,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         '/': 'serve_main',
         '/login': 'login_page',
         '/static': 'serve_static',
+        '/local': 'serve_local',
         '/browse': 'browse',
         '/favicon.ico': 'serve_favicon',
     }
@@ -148,6 +149,15 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         return server.HttpResponse(data, mimetype)
 
     @RequireAuthentication('/login')
+    def serve_local(self):
+        """Handles http://host:port/local/* by returning pkg data"""
+        fn = os.path.join('local', self.resource)
+        mimetype, encoding = mimetypes.guess_type(fn)
+        with open(fn[1:], 'rb') as f:
+            data = f.read()
+        return server.HttpResponse(data, mimetype)
+
+    @RequireAuthentication('/login')
     def browse(self):
         r = [b'<ul class="jqueryFileTree" style="display: none;">']
         d = unquote(self.db['dir'])
@@ -171,7 +181,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
                 r.append(b'<li class="directory collapsed">'
                          b'<a href="#" rel="' + ff + b'/">' + f + b'</a></li>')
             else:
-                e = os.path.splitext(f)[1][1:] # get .ext and remove dot
+                e = os.path.splitext(f)[1][1:]  # get .ext and remove dot
                 if e == 'py':
                     e = e.encode('utf-8')
                     f = f.encode('utf-8')
@@ -213,7 +223,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         uid = int(self.query['uid'][0])
 
         component = gui.component_uids[uid]
-        while True:
+        while self.ws.state is server.WebSocket.ST_OPEN:
             try:
                 if component.replace_with is not None:
                     component.finish()

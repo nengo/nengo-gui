@@ -117,6 +117,11 @@ class ExecutionEnvironment(object):
 
         sys.stdout = sys.__stdout__
 
+        # ensure what has been printed is safe to show in html
+        s = self.stdout.getvalue()
+        s = s.replace('<', '&lt;').replace('>', '&gt;')
+        self.stdout = StringIO(s)
+
         if not self.allow_sim:
             if self.added_directory is not None:
                 sys.path.remove(self.added_directory)

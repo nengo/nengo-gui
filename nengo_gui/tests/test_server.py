@@ -97,6 +97,7 @@ Sec-WebSocket-Version: 13
                 return ['localhost:80']
 
         handler = HandlerClass(request, 'localhost', ServerMock())
+        assert handler
         # Ignore errors in decoding because binary WebSocket data might follow
         # response.
         response = request.file_io.written_data.decode(
@@ -124,6 +125,7 @@ Sec-WebSocket-Version: 13
                 return ['localhost:80']
 
         handler = HandlerClass(request, 'localhost', ServerMock())
+        assert handler
         response = request.file_io.written_data.decode('utf-8')
 
         assert re.match(r'^HTTP\/\d+\.\d+\s+400.*$', response, re.M)

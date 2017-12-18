@@ -171,6 +171,7 @@ Nengo.Ace.prototype.save_file = function () {
         var editor_code = this.editor.getValue();
         this.ws.send(JSON.stringify({code:editor_code, save:true}));
         this.disable_save();
+        $('#Save_file').addClass('in-progress');
     }
 }
 
@@ -184,7 +185,11 @@ Nengo.Ace.prototype.disable_save = function () {
 
 Nengo.Ace.prototype.on_message = function (event) {
     var msg = JSON.parse(event.data)
-    if (msg.code !== undefined) {
+    if (msg.save_success !== undefined) {
+       if (msg.save_success) {
+            $('#Save_file').removeClass('in-progress');
+       }
+    } else if (msg.code !== undefined) {
         this.editor.setValue(msg.code);
         this.current_code = msg.code;
         this.editor.gotoLine(1);
@@ -196,7 +201,7 @@ Nengo.Ace.prototype.on_message = function (event) {
             this.marker = null;
             this.editor.getSession().clearAnnotations();
         }
-        $(this.console_stdout).text(msg.stdout);
+        $(this.console_stdout).html(msg.stdout);
         $(this.console_error).text('');
         this.console.scrollTop = this.console.scrollHeight;
     } else if (msg.filename !== undefined) {
@@ -217,7 +222,7 @@ Nengo.Ace.prototype.on_message = function (event) {
             type: 'error',
             text: msg.short_msg,
         }]);
-        $(this.console_stdout).text(msg.stdout);
+        $(this.console_stdout).html(msg.stdout);
         $(this.console_error).text(msg.error.trace);
         this.console.scrollTop = this.console.scrollHeight;
     } else {

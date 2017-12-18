@@ -86,6 +86,8 @@ class AceEditor(Editor):
             try:
                 with open(self.page.filename, 'w') as f:
                     f.write(self.current_code)
+                self.pending_messages.append(json.dumps({
+                    'save_success': True}))
             except IOError:
                 print("Could not save %s; permission denied" %
                       self.page.filename)
