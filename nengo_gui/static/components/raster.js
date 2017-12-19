@@ -36,6 +36,9 @@ Nengo.Raster = function(parent, sim, args) {
 
     // Index of the neuron that makes a sound when spiking
     this.sound_index = -1;
+    this.draw_clicked = false;
+    this.neuron_highlight_click = false; //selected state of neurons
+
     // A click sound made with my computer
     this.neuron_sound = new Audio('data:audio/wav;base64,' + 'UklGRuIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0Yb4AAACH/4H/rP99/9j+uP8XAKr8jQJVAIz6EggS+iD7nAim+DL2/wt8Bxvo7w2ADlj6XRSC+RT+PRM9/KEO9Q1z6x0EZvxT6y4ZTPaZr8e+qNSYApASyeW6/SAQFv/qCPYXjiLUGfITZwRpBPUpJRBsCw4hm/wH+4ARShkiEKALwgqEHIUpVhdXOpAxJh3POPgwdiOkGQokbS1CFBkKcA0p6ZDQ1s1fvui7+adth1yR36nrvEHAwLf6yyzdF+Hz5gb3');
     // A pure delta function sound
@@ -59,18 +62,28 @@ Nengo.Raster = function(parent, sim, args) {
             .on('mouseover', function() {
                 var mouse = d3.mouse(this);
                 self.neuron_highlight_updates = true;
-                self.neuron_highlights_g.style('display', null);                
+                //self.neuron_highlights_g.style('display', null);                
                 self.mouse_position = [mouse[0], mouse[1]];
             })
-            .on('mouseout', function() {
+            .on('mouseleave', function() {
                 var mouse = d3.mouse(this);
                 self.neuron_highlight_updates = false;
-                self.neuron_highlights_g.style('display', 'none');                
+                if (!self.draw_clicked) {
+                    console.log(self.draw_clicked)
+                    self.neuron_highlights_g.style('display', 'none');
+                }                
                 self.mouse_position = [mouse[0], mouse[1]];
             })
             .on('mousemove', function() {
                 var mouse = d3.mouse(this);
                 self.neuron_highlight_updates = true;
+                self.mouse_position = [mouse[0], mouse[1]];
+                self.update_highlight(mouse);
+            })
+            .on('click', function() {
+                var mouse = d3.mouse(this);
+                self.neuron_highlight_updates = true;
+                self.neuron_highlight_click = true;
                 self.mouse_position = [mouse[0], mouse[1]];
                 self.update_highlight(mouse);
             })
@@ -132,27 +145,59 @@ Nengo.Raster.prototype.update_highlight = function(mouse) {
     // TODO: I don't like having ifs here, make a smaller rectangle for mouseovers
     if (x > this.axes2d.ax_left && x < this.axes2d.ax_right && y > this.axes2d.ax_top && y < this.axes2d.ax_bottom-1) {
         var y1 = this.axes2d.scale_y.invert(y);
-        var y2 = this.axes2d.scale_y(Math.ceil(y1));
-        var y3 = this.axes2d.scale_y(Math.ceil(y1-1));
+        var new_sound_index = Math.ceil(y1);
+        var y2 = this.axes2d.scale_y(new_sound_index);
+        var y3 = this.axes2d.scale_y(new_sound_index-1);
 
         this.neuron_highlights_g.style('display', null);
 
-        this.neuron_highlights_g.select('#neuron_highlights_Y')
-            .attr('x', this.axes2d.ax_left)
-            .attr('y', y2)
-            .attr('width', this.axes2d.width)
-            .attr('height', y3-y2);
+        if (this.neuron_highlight_click){
+            if (new_sound_index == this.sound_index) {
+                this.draw_clicked = false;
+                this.sound_index = -1;
+            } else {
+                this.draw_clicked = true;
+                this.sound_index = new_sound_index;
+            }
+            this.neuron_highlight_click = false;
+        }
 
-        this.neuron_highlights_g.select('#neuron_highlights_text')
-            .attr('x', this.axes2d.ax_left - 3)
-            .attr('y', y2 + (y3-y2)/2 + 3)
-            .text(function () {
-                return Math.ceil(y1);
-            });
-        this.sound_index = Math.ceil(y1);
+        //draw the currently clicked highlight
+        if (this.draw_clicked) {
+            var ys2 = this.axes2d.scale_y(this.sound_index)
+            var ys3 = this.axes2d.scale_y(this.sound_index-1)
+
+            this.neuron_highlights_g.select('#neuron_highlights_Y')
+                .attr('x', this.axes2d.ax_left)
+                .attr('y', ys2)
+                .attr('width', this.axes2d.width)
+                .attr('height', ys3-ys2);
+
+            this.neuron_highlights_g.select('#neuron_highlights_text')
+                .attr('x', this.axes2d.ax_left - 3)
+                .attr('y', ys2 + (ys3-ys2)/2 + 3)
+                .text(function () {
+                    return self.sound_index;
+                });
+        } else {
+            //draw the temporary highlight
+            this.neuron_highlights_g.select('#neuron_highlights_Y')
+                .attr('x', this.axes2d.ax_left)
+                .attr('y', y2)
+                .attr('width', this.axes2d.width)
+                .attr('height', y3-y2);
+
+            this.neuron_highlights_g.select('#neuron_highlights_text')
+                .attr('x', this.axes2d.ax_left - 3)
+                .attr('y', y2 + (y3-y2)/2 + 3)
+                .text(function () {
+                    return new_sound_index;
+                });            
+        }
+
     } else {
-        this.neuron_highlights_g.style('display', 'none');
-        this.sound_index = -1;
+        //this.neuron_highlights_g.style('display', 'none');
+        //this.sound_index = -1;
     }
 };
 
