@@ -62,14 +62,12 @@ Nengo.Raster = function(parent, sim, args) {
             .on('mouseover', function() {
                 var mouse = d3.mouse(this);
                 self.neuron_highlight_updates = true;
-                //self.neuron_highlights_g.style('display', null);                
                 self.mouse_position = [mouse[0], mouse[1]];
             })
             .on('mouseleave', function() {
                 var mouse = d3.mouse(this);
                 self.neuron_highlight_updates = false;
                 if (!self.draw_clicked) {
-                    console.log(self.draw_clicked)
                     self.neuron_highlights_g.style('display', 'none');
                 }                
                 self.mouse_position = [mouse[0], mouse[1]];
