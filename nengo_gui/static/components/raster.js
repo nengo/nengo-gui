@@ -39,11 +39,6 @@ Nengo.Raster = function(parent, sim, args) {
     this.draw_clicked = false;
     this.neuron_highlight_click = false; //selected state of neurons
 
-    // A click sound made with my computer
-    this.neuron_sound = new Audio('data:audio/wav;base64,' + 'UklGRuIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0Yb4AAACH/4H/rP99/9j+uP8XAKr8jQJVAIz6EggS+iD7nAim+DL2/wt8Bxvo7w2ADlj6XRSC+RT+PRM9/KEO9Q1z6x0EZvxT6y4ZTPaZr8e+qNSYApASyeW6/SAQFv/qCPYXjiLUGfITZwRpBPUpJRBsCw4hm/wH+4ARShkiEKALwgqEHIUpVhdXOpAxJh3POPgwdiOkGQokbS1CFBkKcA0p6ZDQ1s1fvui7+adth1yR36nrvEHAwLf6yyzdF+Hz5gb3');
-    // A pure delta function sound
-    //this.neuron_sound = new Audio('data:audio/wav;base64,' + 'UklGRiYAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQIAAAD9dg==');
-
     // TODO: put the neuron highlight properties in CSS
     this.neuron_highlights_g.append('rect')
             .attr('id', 'neuron_highlights_Y')
@@ -116,6 +111,44 @@ Nengo.Raster.prototype.constructor = Nengo.Raster;
 /**
  * Receive new line data from the server
  */
+Nengo.Raster.prototype.init_sound = function() {
+    // A click sound made with Chris' computer. To construct such an array run
+    // ffmpeg -loglevel quiet -i click.wav -f f32le - |
+    // LC_ALL=C od -tfF click.raw | cut -c8-
+    const audio_data = [
+    -0.0037, -0.0039, -0.0026, -0.0040, -0.0090, -0.0022,  0.0007, -0.0261,
+     0.0199,  0.0026, -0.0426,  0.0630, -0.0463, -0.0381,  0.0673, -0.0574,
+    -0.0766,  0.0937,  0.0585, -0.1867,  0.1089,  0.1133, -0.0442,  0.1591,
+    -0.0507, -0.0150,  0.1503, -0.0294,  0.1143,  0.1090, -0.1606,  0.0321,
+    -0.0281, -0.1615,  0.1967, -0.0758, -0.6281, -0.5096, -0.3386,  0.0203,
+     0.1450, -0.2048, -0.0178,  0.1260, -0.0071,  0.0696,  0.1872,  0.2700,
+     0.2018,  0.1558,  0.0344,  0.0345,  0.3278,  0.1261,  0.0892,  0.2582,
+    -0.0265, -0.0388,  0.1367,  0.1976,  0.1260,  0.0908,  0.0840,  0.2228,
+     0.3244,  0.1823,  0.4558,  0.3872,  0.2277,  0.4438,  0.3826,  0.2770,
+     0.2003,  0.2816,  0.3549,  0.1583,  0.0789,  0.1050, -0.1784, -0.3706,
+    -0.3919, -0.5127, -0.5320, -0.6877, -0.9420, -0.8644, -0.6729, -0.5241,
+    -0.4980, -0.5645, -0.4064, -0.2721, -0.2415, -0.1957, -0.0701,
+    ];
+
+    // Instantiate the WebAudio context, only one per browser window
+    if (Nengo.audio_ctx) {
+        return;
+    }
+    Nengo.audio_ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Create the AudioBuffer object containing the audio data, transfer the
+    // data from the above array into the audio buffer object
+    if (Nengo.audio_ctx) {
+        Nengo.audio_click_sound = Nengo.audio_ctx.createBuffer(
+                1, audio_data.length, 44100);
+        const channel_data = Nengo.audio_click_sound.getChannelData(0);
+        for (let i = 0; i < audio_data.length; i++) {
+            // Attenuate the sound to prevent clipping with high rates
+            channel_data[i] = 0.5 * audio_data[i];
+        }
+    }
+}
+
 Nengo.Raster.prototype.on_message = function(event) {
     var time = new Float32Array(event.data, 0, 1);
     var data = new Int16Array(event.data, 4);
@@ -124,7 +157,15 @@ Nengo.Raster.prototype.on_message = function(event) {
 
     // make a sound if the neuron spiked
     if ($.inArray(this.sound_index-1, data) > -1) {
-        this.neuron_sound.play();
+        if (!Nengo.audio_ctx) {
+            this.init_sound();
+        }
+        if (Nengo.audio_ctx && Nengo.audio_click_sound) {
+            const source = Nengo.audio_ctx.createBufferSource();
+            source.buffer = Nengo.audio_click_sound;
+            source.connect(Nengo.audio_ctx.destination);
+            source.start(0);
+        }
     }
 }
 
@@ -317,4 +358,3 @@ Nengo.Raster.prototype.set_neuron_count = function() {
         self.on_resize(w, h);
     })
 }
-
