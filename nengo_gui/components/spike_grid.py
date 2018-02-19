@@ -7,15 +7,21 @@ from nengo_gui.components.component import Component
 
 class SpikeGrid(Component):
     """Represents an ensemble of neurons as squares in a grid.
-    
+
     The color of the squares corresponds to the neuron spiking.
     """
 
     def __init__(self, obj, n_neurons=None):
         super(SpikeGrid, self).__init__()
-        self.obj = obj
+        if hasattr(obj, 'neurons'):
+            self.obj = obj.neurons
+            self.base_obj = obj
+            self.max_neurons = obj.neurons.size_out
+        else:
+            self.obj = obj
+            self.base_obj = obj
+            self.max_neurons = obj.size_out
         self.data = []
-        self.max_neurons = self.obj.neurons.size_out
         if n_neurons is None:
             n_neurons = self.max_neurons
         self.n_neurons = n_neurons
@@ -29,13 +35,13 @@ class SpikeGrid(Component):
 
     def attach(self, page, config, uid):
         super(SpikeGrid, self).attach(page, config, uid)
-        self.label = page.get_label(self.obj)
+        self.label = page.get_label(self.base_obj)
 
     def add_nengo_objects(self, page):
         with page.model:
             self.node = nengo.Node(self.gather_data,
-                                   size_in=self.obj.neurons.size_out)
-            self.conn = nengo.Connection(self.obj.neurons,
+                                   size_in=self.obj.size_out)
+            self.conn = nengo.Connection(self.obj,
                                          self.node, synapse=0.01)
 
     def remove_nengo_objects(self, page):
@@ -71,7 +77,7 @@ class SpikeGrid(Component):
         return 'new Nengo.Image(main, sim, %s);' % json
 
     def code_python_args(self, uids):
-        args = [uids[self.obj]]
+        args = [uids[self.base_obj]]
         if self.n_neurons != self.max_neurons:
             args.append('n_neurons=%d' % self.n_neurons)
         return args
