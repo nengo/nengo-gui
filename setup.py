@@ -26,14 +26,14 @@ version_module = imp.load_source(
     'version', os.path.join(root, 'nengo_gui', 'version.py'))
 
 setup(
-    name="nengo_gui",
+    name="nengo-gui",
     version=version_module.version,
     author="Applied Brain Research",
     author_email="info@appliedbrainresearch.com",
     packages=find_packages(),
     scripts=[],
     include_package_data=True,
-    url="https://github.com/nengo/nengo_gui",
+    url="https://github.com/nengo/nengo-gui",
     license="Free for non-commercial use",
     description="Web-based GUI for building and visualizing Nengo models.",
     long_description=read('README.rst', 'CHANGES.rst'),

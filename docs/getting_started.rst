@@ -9,26 +9,26 @@ The simplest way to install is with the standard Python installation system:
 
 .. code:: shell
 
-   pip install nengo_gui
+   pip install nengo-gui
 
-Running nengo_gui
+Running Nengo GUI
 =================
 
-There are two ways to run nengo_gui.  First, you can use it from the command
+There are two ways to run Nengo GUI. First, you can use it from the command
 line by running the installed script:
 
 .. code:: shell
 
-   nengo_gui
+   nengo
 
-If you specify a file to load, nengo_gui will do so:
+If you specify a file to load, ``nengo`` will do so:
 
 .. code:: shell
 
-   nengo_gui myfile.py
+   nengo myfile.py
 
-Alternatively, you can start nengo_gui manually from within your code.  To
-do so, add this to the bottom of your file that defines your Nengo model.
+Alternatively, you can start Nengo GUI manually from within your code.
+To do so, add this to the bottom of your file that defines your Nengo model.
 
 .. code:: python
 

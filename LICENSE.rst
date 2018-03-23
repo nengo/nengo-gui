@@ -48,7 +48,7 @@ This contributor agreement (the "Agreement") documents the rights
 granted by contributors to Us.
 
 By adding your name to the CONTRIBUTORS.rst file at
-<https://github.com/nengo/nengo_gui/blob/master/CONTRIBUTORS.rst>
+<https://github.com/nengo/nengo-gui/blob/master/CONTRIBUTORS.rst>
 you are agreeing to be bound by the Agreement in full.
 
 You agree to inform Us in the relevant pull request(s) if You do not own

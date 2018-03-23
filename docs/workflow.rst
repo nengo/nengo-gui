@@ -2,10 +2,11 @@
 Development workflow
 ********************
 
-Development happens on `Github <https://github.com/nengo/nengo_gui>`_.
+Development happens on `Github <https://github.com/nengo/nengo-gui>`_.
 Feel free to fork any of our repositories and send a pull request!
 However, note that we ask contributors to sign
-`a copyright assignment agreement <https://github.com/nengo/nengo_gui/blob/master/LICENSE.md>`_.
+`a copyright assignment agreement
+<https://github.com/nengo/nengo-gui/blob/master/LICENSE.rst>`_.
 
 Code style: Python
 ==================
@@ -22,7 +23,7 @@ and produce decent output with Sphinx.
 Code style: JavaScript
 ======================
 
-We adhere to a modified version of the Google style guide using 
+We adhere to a modified version of the Google style guide using
 `JSCS <http://jscs.info/>`_. Our custom rules for JSCS are saved in the
 ``jscs.json`` file in the root of this repository.
 
@@ -30,7 +31,7 @@ Unit testing
 ============
 
 We use `PyTest <http://pytest.org/latest/>`_
-to run our Python unit tests and `Mocha <https://mochajs.org/>`_ 
+to run our Python unit tests and `Mocha <https://mochajs.org/>`_
 for JavaScript. Eventually these tests will run
 on `Travis-CI <https://travis-ci.com/>`_. Please contribute unit tests
 where possible.

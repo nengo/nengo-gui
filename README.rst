@@ -23,7 +23,7 @@ The simplest way to install is with the standard Python installation system:
 
 .. code:: shell
 
-   pip install nengo_gui
+   pip install nengo-gui
 
 Running Nengo GUI
 =================
@@ -100,11 +100,11 @@ Developers should install Nengo GUI like so:
 
 .. code:: shell
 
-   git clone https://github.com/nengo/nengo_gui
-   cd nengo_gui
+   git clone https://github.com/nengo/nengo-gui
+   cd nengo-gui
    python setup.py develop --user
 
-Changes to the files in the ``nengo_gui`` directory will be
+Changes to the files in the ``nengo-gui`` directory will be
 reflected the next time the GUI is run or imported.
 
 Running unit tests
@@ -117,7 +117,7 @@ To run the tests, make sure you have a recent version of Firefox.
 Mac users should ensure that Firefox is in the applications folder.
 
 Additional dependencies are required for running unit tests.
-To install them, open a terminal and navigate to the ``nengo_gui`` folder.
+To install them, open a terminal and navigate to the ``nengo-gui`` folder.
 Execute the command
 
 .. code:: shell
@@ -134,7 +134,7 @@ To run the tests:
 
 1. Open a terminal window and start the ``nengo`` server.
 2. Open a second terminal window.
-3. Navigate to the ``nengo_gui`` directory.
+3. Navigate to the ``nengo-gui`` directory.
 4. Run ``py.test``.
 
 The console should say some number of tests are found,
