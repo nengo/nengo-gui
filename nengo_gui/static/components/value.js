@@ -285,6 +285,10 @@ Nengo.Value.prototype.set_legend_labels = function() {
 
     Nengo.modal.title('Enter comma seperated legend label values');
     Nengo.modal.single_input_body('Legend label', 'New value');
+    var body = Nengo.modal.$body;
+    body.prepend("Blank strings and excessive entries are ignored. \
+        Blank entries that are still delimited by commas will be replaced \
+        with a default value. ")
     Nengo.modal.footer('ok_cancel', function(e) {
         var label_csv = $('#singleInput').val();
         var modal = $('#myModalForm').data('bs.validator');

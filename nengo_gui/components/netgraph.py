@@ -548,6 +548,15 @@ class NetGraph(Component):
         elif isinstance(obj, nengo.Ensemble):
             info['dimensions'] = int(obj.size_out)
             info['n_neurons'] = int(obj.n_neurons)
+        # TODO: Add the same functionality for the BasalGanglia non-spa net
+        elif isinstance(obj, spa.BasalGanglia):
+            info['bg_inputs'] = obj.input.size_in
+            info['input_labels'] = []
+            for ac in obj.actions.actions:
+                if ac.name is None:
+                    info['input_labels'].append(ac.condition.expression.__str__())
+                else:
+                    info['input_labels'].append(ac.name)
         elif Value.default_output(obj) is not None:
             info['default_output'] = True
 

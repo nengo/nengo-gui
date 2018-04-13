@@ -105,6 +105,8 @@ class Value(Component):
         if isinstance(obj, spa.module.Module):
             if 'default' in obj.outputs.keys():
                 output = obj.outputs['default'][0]
+            elif isinstance(obj, spa.BasalGanglia):
+                output = obj.output
         elif isinstance(obj, nengo.network.Network):
             if hasattr(obj, 'output'):
                 output = obj.output
