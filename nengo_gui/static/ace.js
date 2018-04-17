@@ -149,7 +149,7 @@ Nengo.Ace = function (uid, args) {
     lang_tools.setCompleters([this.completer]);
     this.editor.setOptions({
         enableBasicAutocompletion: true,
-        enableLiveAutocompletion: true
+        enableLiveAutocompletion: Nengo.config.autocomplete
     });
 }
 

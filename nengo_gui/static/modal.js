@@ -254,6 +254,15 @@ Nengo.Modal.prototype.main_config = function() {
       '</div>' +
       '<div class="form-group">' +
         '<div class="checkbox">' +
+          '<label for="autocomplete" class="control-label">' +
+            '<input type="checkbox" id="autocomplete">' +
+            'Use live autocompletion in editor' +
+          '</label>' +
+          '<div class="help-block with-errors"></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<div class="checkbox">' +
           '<label for="transparent-nets" class="control-label">' +
             '<input type="checkbox" id="transparent-nets">' +
             'Expanded networks are transparent' +
@@ -301,6 +310,11 @@ Nengo.Modal.prototype.main_config = function() {
     $('#sync-editor').change(function () {
         Nengo.ace.auto_update = $('#sync-editor').prop('checked');
         Nengo.ace.update_trigger = $('#sync-editor').prop('checked');
+    });
+    $('#autocomplete').prop('checked', Nengo.config.autocomplete);
+    $('#autocomplete').change(function () {
+        Nengo.ace.editor.setOption("enableLiveAutocompletion", $('#autocomplete').prop('checked'));
+	Nengo.config.autocomplete = $('#autocomplete').prop('checked');
     });
 
     $('#config-fontsize').val(Nengo.netgraph.font_size);
