@@ -166,6 +166,8 @@ Nengo.Modal.prototype.help_body = function() {
                  '<td align="right">' + ctrl + '-m</td></tr>');
     $body.append('<tr><td>Toggle editor</td>'+
                  '<td align="right">' + ctrl + '-e</td></tr>');
+    $body.append('<tr><td>Trigger autocompletion</td>'+
+                 '<td align="right">' + ctrl + '-Spacebar</td></tr>');
     $body.append('<tr><td>Update display</td>'+
                  '<td align="right">' + ctrl + '-1</td></tr>'); //TODO: possibly pick a better shortcut key
     $body.append('<tr><td>Toggle auto-update</td>'+
