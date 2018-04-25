@@ -174,7 +174,26 @@ class IPythonViz(object):
 
         self.wait_for_startup()
         if self._server_thread.is_alive():
-            display(HTML('''
+            vdom = {
+                'tagName': 'div',
+                'attributes': {'id': str(uuid.uuid4())},
+                'children': [{
+                    'tagName': 'iframe',
+                    'attributes': {
+                        'src': self.resource,
+                        'width': '100%',
+                        'height': str(self.height),
+                        'frameborder': '0',
+                        'class': 'cell',
+                        'allowfullscreen': 'allowfullscreen',
+                        'style': {
+                            'border': '1px solid #eee',
+                            'boxSizing': 'border-box',
+                        },
+                    },
+                }],
+            }
+            html = '''
                 <div id="{id}">
                     <iframe
                         src="{url}"
@@ -182,11 +201,16 @@ class IPythonViz(object):
                         height="{height}"
                         frameborder="0"
                         class="cell"
-                        style="border: 1px solid #eee;"
+                        style="border: 1px solid #eee; box-sizing: border-box;"
                         allowfullscreen></iframe>
                 </div>
             '''.format(
-                url=self.resource, id=uuid.uuid4(), height=self.height)))
+                url=self.resource, id=uuid.uuid4(), height=self.height)
+            bundle = {
+                'application/vdom.v1+json': vdom,
+                'text/html': html,
+            }
+            display(bundle, raw=True)
         else:
             print("Server is not alive.")
 
