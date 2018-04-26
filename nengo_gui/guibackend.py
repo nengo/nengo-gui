@@ -19,6 +19,7 @@ except ImportError:  # for Python without ssl support
 import time
 
 import nengo_gui
+from nengo_gui import url
 from nengo_gui._vendor.cookies import Cookie
 from nengo_gui.completion import get_completions
 import nengo_gui.exec_env
@@ -474,3 +475,26 @@ class GuiServer(server.ManagedThreadHttpServer):
         token = gensalt(24)
         self._one_time_auth_tokens.add(token)
         return token
+
+    def get_resource(self, action=None, token=True):
+        path = []
+        if self.settings.prefix is not None:
+            path.append(self.settings.prefix)
+            if action is None:
+                path.append('')
+        if action is not None:
+            path.append(action)
+
+        if token == 'one-time':
+            query = {'token': self.gen_one_time_token()}
+        elif token:
+            query = {'token': self.auth_token}
+        else:
+            query = None
+        return url.Resource('/'.join(path), query)
+
+    def get_url(self, action=None, token=True):
+        protocol = 'https' if self.settings.use_ssl else 'http'
+        return url.URL(
+            self.server_name, self.server_port, protocol,
+            self.get_resource(action, token))

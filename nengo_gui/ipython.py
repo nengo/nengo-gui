@@ -36,7 +36,6 @@ class IPythonViz(object):
     shutdown_hook_registered = False
 
     servers = weakref.WeakValueDictionary()
-    threads = weakref.WeakValueDictionary()
     configs = set()
 
     host = 'localhost'
@@ -53,25 +52,8 @@ class IPythonViz(object):
         self.port = server.server.server_port
         server.server.settings.prefix = '/nengo/' + str(self.port)
 
-        self.resource = self.get_resource(
-            self.port, token=server.server.auth_token)
-        self.url = self.get_url(
-            self.host, self.port, token=server.server.auth_token)
-
-    @classmethod
-    def get_resource(cls, port, action=None, token=None):
-        url = '/nengo/{port}/'.format(port=port)
-        if action is not None:
-            url += action
-        if token is not None:
-            url += '?token=' + token
-        return url
-
-    @classmethod
-    def get_url(cls, host, port, action=None, token=None):
-        return 'http://{host}:{port}{resource}'.format(
-            host=host, port=port,
-            resource=cls.get_resource(port, action=action, token=token))
+        self.resource = self.server.server.get_resource()
+        self.url = self.server.server.get_url()
 
     @classmethod
     def start_server(cls, cfg, model):
@@ -180,7 +162,7 @@ class IPythonViz(object):
                 'children': [{
                     'tagName': 'iframe',
                     'attributes': {
-                        'src': self.resource,
+                        'src': str(self.resource),
                         'width': '100%',
                         'height': str(self.height),
                         'frameborder': '0',
