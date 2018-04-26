@@ -159,7 +159,6 @@ class DualStackHttpServer(object):
 
             host, port = self.address[:2]
             self.name = socket.getfqdn(host)
-            self.port = port
             self.bound = True
 
         def activate(self):
