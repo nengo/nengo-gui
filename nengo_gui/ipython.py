@@ -48,9 +48,9 @@ class IPythonViz(object):
         if cfg is None:
             cfg = get_ipython().mktempfile()
 
-        self._server_thread, server = self.start_server(cfg, model)
-        self.port = server.server.server_port
-        server.server.settings.prefix = '/nengo/' + str(self.port)
+        self.server = self.start_server(cfg, model)
+        self.port = self.server.server.server_port
+        self.server.server.settings.prefix = '/nengo/' + str(self.port)
 
         self.resource = self.server.server.get_resource()
         self.url = self.server.server.get_url()
@@ -62,10 +62,8 @@ class IPythonViz(object):
             cls.shutdown_hook_registered = True
 
         # Make sure only one server is writing the same config.
-        server_thread = cls.threads.get(cfg, None)
         server = cls.servers.get(cfg, None)
-        existent = server_thread is not None and server is not None
-        if existent and server_thread.is_alive():
+        if server is not None and server.is_alive():
             warnings.warn(ConfigReuseWarning(
                 "Reusing config. Only the most recent visualization will "
                 "update the config."))
@@ -73,7 +71,6 @@ class IPythonViz(object):
                 page.save_config(force=True)
                 page.filename_cfg = get_ipython().mktempfile()
                 cls.servers[page.filename_cfg] = server
-                cls.threads[page.filename_cfg] = server_thread
 
         name = model.label
         server_settings = nengo_gui.guibackend.GuiServerSettings(
@@ -84,26 +81,12 @@ class IPythonViz(object):
         page_settings = nengo_gui.page.PageSettings(
             filename_cfg=cfg,
             editor_class=nengo_gui.components.editor.NoEditor)
-        server = nengo_gui.gui.BaseGUI(
+        server = nengo_gui.gui.GuiThread(
             model_context, server_settings, page_settings)
-        server_thread = threading.Thread(target=server.start)
-        server_thread.daemon = True
-        server_thread.start()
+        server.start()
         cls.servers[cfg] = server
-        cls.threads[cfg] = server_thread
         cls.configs.add(cfg)
-        return server_thread, server
-
-    def wait_for_startup(self):
-        while self._server_thread.is_alive() and not self._started:
-            try:
-                s = socket.create_connection((self.host, self.port), 0.1)
-                self._started = True
-            except Exception:
-                pass
-            else:
-                s.shutdown(socket.SHUT_RDWR)
-                s.close()
+        return server
 
     @classmethod
     def shutdown_all(cls, timeout=None):
@@ -115,21 +98,7 @@ class IPythonViz(object):
 
         for cfg in cls.configs:
             server = cls.servers.get(cfg, None)
-            server_thread = cls.threads.get(cfg, None)
-            needs_shutdown = (
-                server_thread is not None and server_thread.is_alive() and
-                server is not None)
-            if needs_shutdown:
-                try:
-                    urlopen(
-                        cls.get_url(
-                            cls.host, server.server.server_port, 'shutdown',
-                            token=server.server.auth_token),
-                        timeout=get_timeout()).read()
-                except BadStatusLine:
-                    # no response expected as server was just shutdown
-                    pass
-                server_thread.join(get_timeout())
+            server.shutdown(get_timeout())
 
     def _ipython_display_(self):
         display(HTML(r'''
@@ -154,8 +123,8 @@ class IPythonViz(object):
             </script>
         '''.format(uuid=uuid.uuid4())))
 
-        self.wait_for_startup()
-        if self._server_thread.is_alive():
+        self.server.wait_for_startup()
+        if self.server.is_alive():
             vdom = {
                 'tagName': 'div',
                 'attributes': {'id': str(uuid.uuid4())},

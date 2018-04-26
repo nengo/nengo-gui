@@ -5,9 +5,16 @@ from __future__ import print_function
 
 import select
 import signal
+import socket
 import sys
 import threading
 import webbrowser
+try:
+    from http.client import BadStatusLine
+    from urllib.request import urlopen
+except ImportError:
+    from httplib import BadStatusLine
+    from urllib2 import urlopen
 
 import nengo_gui
 from nengo_gui.guibackend import GuiServer
@@ -50,6 +57,49 @@ class BaseGUI(object):
             self.server.shutdown()
         finally:
             self.server.wait_for_shutdown(0.05)
+
+
+class GuiThread(BaseGUI):
+    """Start a basic nengo_gui backend server in a separate thread."""
+
+    def __init__(self, *args, **kwargs):
+        self._started = False
+
+        super(GuiThread, self).__init__(*args, **kwargs)
+        self._server_thread = None
+
+    def start(self):
+        self._server_thread = threading.Thread(
+            target=super(GuiThread, self).start)
+        self._server_thread.daemon = True
+        self._server_thread.start()
+
+    def wait_for_startup(self):
+        while self._server_thread.is_alive() and not self._started:
+            try:
+                s = socket.create_connection(
+                    (self.server.server_name, self.server.server_port), 0.1)
+                self._started = True
+            except Exception:
+                pass
+            else:
+                s.shutdown(socket.SHUT_RDWR)
+                s.close()
+
+    def is_alive(self):
+        return (
+            self._server_thread is not None and self._server_thread.is_alive())
+
+    def shutdown(self, timeout=None):
+        if self.is_alive():
+            try:
+                urlopen(
+                    str(self.server.get_url(action='shutdown')),
+                    timeout=timeout).read()
+            except BadStatusLine:
+                # no response expected as server was just shutdown
+                pass
+            self._server_thread.join(timeout)
 
 
 class InteractiveGUI(BaseGUI):
