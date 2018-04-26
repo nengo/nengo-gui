@@ -99,8 +99,11 @@ class Page(object):
                 # drive than the current directory
                 self.filename = filename
 
+        if self.filename is None and self.gui.model_context.model is None:
+            raise ValueError('no model provided')
+
         # determine the .cfg filename
-        if self.settings.filename_cfg is None:
+        if self.settings.filename_cfg is None and self.filename is not None:
             self.filename_cfg = self.filename + '.cfg'
         else:
             self.filename_cfg = self.settings.filename_cfg

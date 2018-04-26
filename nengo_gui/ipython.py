@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import atexit
+import json
 import socket
 import threading
 import time
@@ -166,6 +167,37 @@ class IPythonViz(object):
             print("Server is not alive.")
 
 
+class LabServerManager(object):
+    shutdown_hook_registered = False
+    server = None
+
+    @classmethod
+    def start_server(cls):
+        if not cls.shutdown_hook_registered:
+            atexit.register(LabServerManager.shutdown, timeout=5)
+            cls.shutdown_hook_registered = True
+
+        if cls.server is not None:
+            return cls.server
+
+        server_settings = nengo_gui.guibackend.GuiServerSettings(
+            listen_addr=('localhost', 0), auto_shutdown=0)
+        model_context = nengo_gui.guibackend.ModelContext()
+
+        cls.server = nengo_gui.gui.GuiThread(model_context, server_settings)
+        cls.server.start()
+        cls.server.server.settings.prefix = '/nengo/' + str(
+            cls.server.server.server_port)
+        cls.server.wait_for_startup()
+        return cls.server
+
+    @classmethod
+    def shutdown(cls, timeout=None):
+        if cls.server is not None:
+            cls.server.shutdown(timeout)
+            cls.server = None
+
+
 class NengoGuiHandler(IPythonHandler):
     def __init__(self, *args, **kwargs):
         super(NengoGuiHandler, self).__init__(*args, **kwargs)
@@ -254,17 +286,32 @@ class AvailabilityCheckHandler(IPythonHandler):
         self.finish('OK')
 
 
+class StartGuiHandler(IPythonHandler):
+    def set_default_headers(self):
+        self.set_header('Content-Type', 'application/json')
+
+    def get(self):
+        server = LabServerManager.start_server()
+        self.finish(json.dumps({
+            'port': server.server.server_port,
+            'token': server.server.auth_token
+        }))
+
+
 def load_jupyter_server_extension(nb_server_app):
     web_app = nb_server_app.web_app
     host_pattern = '.*$'
     availability_check_pattern = url_path_join(
         web_app.settings['base_url'], '/nengo/check')
+    start_gui_pattern = url_path_join(
+        web_app.settings['base_url'], '/nengo/start_gui')
     ws_route_pattern = url_path_join(
         web_app.settings['base_url'], '/nengo/(\\d+)/viz_component(\\?.*)?$')
     route_pattern = url_path_join(
         web_app.settings['base_url'], '/nengo/(\\d+)/.*$')
     web_app.add_handlers(host_pattern, [
         (availability_check_pattern, AvailabilityCheckHandler),
+        (start_gui_pattern, StartGuiHandler),
         (ws_route_pattern, NengoGuiWSHandler),
         (route_pattern, NengoGuiHandler),
     ])

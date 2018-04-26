@@ -370,9 +370,6 @@ class ModelContext(object):
         if model is None and locals is not None:
             model = locals.get('model', None)
 
-        if model is None and filename is None:
-            raise ValueError("No model.")
-
         self.model = model
         self.locals = locals
 
