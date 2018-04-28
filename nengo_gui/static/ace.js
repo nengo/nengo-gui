@@ -277,13 +277,13 @@ Nengo.Ace.prototype.redraw = function () {
 
 Nengo.Ace.prototype.completer = {
     getCompletions: function (editor, session, pos, prefix, callback) {
-        $.getJSON('complete', {
+        $.post('complete', {
             filename: $('#filename')[0].innerHTML,
             row: pos.row,
             col: pos.column,
             code: editor.getValue()
         }, function (completions) {
             callback(null, completions);
-        });
+        }, 'json');
     }
 }
