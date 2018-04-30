@@ -10,6 +10,7 @@ import traceback
 import nengo
 
 import nengo_gui
+from nengo_gui import hooks
 import nengo_gui.user_action
 import nengo_gui.config
 import nengo_gui.seed_generation
@@ -214,7 +215,7 @@ class Page(object):
 
         exec_env = nengo_gui.exec_env.ExecutionEnvironment(self.filename)
         try:
-            with exec_env:
+            with exec_env, hooks.Context(self):
                 compiled = compile(code, nengo_gui.exec_env.compiled_filename,
                                    'exec')
                 exec(compiled, code_locals)
@@ -501,6 +502,7 @@ class Page(object):
                         self.sim.run_steps(self.sim.max_steps)
                     else:
                         self.sim.step()
+                        hooks.on_step.execute(self)
                 except Exception as err:
                     if self.finished:
                         return
@@ -508,8 +510,13 @@ class Page(object):
                     self.error = dict(trace=traceback.format_exc(), line=line)
                     self.sim = None
             while self.sims_to_close:
+                hooks.on_close.execute(self)
                 self.sims_to_close.pop().close()
 
             if self.rebuild:
                 self.build()
         self.sim = None
+
+    def close(self):
+        if self.sim is not None:
+            hooks.on_close.execute(self)
