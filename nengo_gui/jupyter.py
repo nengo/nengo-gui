@@ -110,11 +110,11 @@ class InlineGUI(object):
                     if (this.status != 200 && this.response != 'OK') {{
                         let p = document.getElementById('{uuid}').parentNode;
                         p.innerHTML +=
-                            'The nengo_gui.ipython notebook server ' +
+                            'The nengo_gui.jupyter notebook server ' +
                             'extension was not loaded. Please activate it ' +
                             'with the following command:' +
                             '<pre>jupyter serverextension enable ' +
-                            'nengo_gui.ipython</pre>';
+                            'nengo_gui.jupyter</pre>';
                         p.classList.add('output_stderr');
                     }}
                 }});
