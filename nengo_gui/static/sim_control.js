@@ -386,9 +386,7 @@ Nengo.TimeSlider.prototype.reset = function() {
  */
 Nengo.TimeSlider.prototype.resize = function(width, height) {
     this.div.style.width = width;
-    this.div.style.height = height;
     this.kept_scale.range([0, width]);
-    this.shown_div.style.height = height;
     this.shown_div.style.width = width * this.shown_time / this.kept_time;
     Nengo.set_transform(this.shown_div,
                       this.kept_scale(this.first_shown_time), 0);
