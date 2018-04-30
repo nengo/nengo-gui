@@ -86,6 +86,6 @@ Nengo.StatusBar = (function () {
 (function () {
     "use strict";
 
-    Nengo.status_bar = new Nengo.StatusBar(document.querySelector("#main"));
+    Nengo.status_bar = new Nengo.StatusBar(document.querySelector("#control"));
     Nengo.status_bar.set_caption("Welcome to Nengo GUI.");
 })();
