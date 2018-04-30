@@ -41,7 +41,7 @@ Nengo.SimControl = function(div, args) {
     /** Create the TimeSlider */
     this.time_slider = new Nengo.TimeSlider({x: 200, y: 10, sim:this,
                                            width: this.div.clientWidth-300,
-                                           height: this.div.clientHeight-20,
+                                           height: 60,
                                            shown_time: args.shown_time,
                                            kept_time: args.kept_time});
 
