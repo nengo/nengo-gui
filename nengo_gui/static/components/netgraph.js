@@ -225,14 +225,14 @@ Nengo.NetGraph = function(parent, args) {
                 return false;
             }
 
-            // Show a special status bar message if we're currently resizing
+            // Show a special info line message if we're currently resizing
             // elements. XXX: Getting the information this way is a terrible
             // hack, but it seemed to be the most reliably way to get this info
             // from interactjs.
             const cursor = document.querySelector('html').style.cursor;
             const in_resize = /resize/.test(cursor);
 
-            // The text that is being shown in the status bar depends on the
+            // The text that is being shown in the info line depends on the
             // object the mouse is over. Bubble up the DOM tree and find the
             // first DOM element (i.e. nodeType == 1) which either has a
             // "data-object-type" attribute or is the parent container.
@@ -249,17 +249,17 @@ Nengo.NetGraph = function(parent, args) {
             const display_type = object_type.charAt(0).toUpperCase() +
                 object_type.slice(1);
             if (in_resize) {
-                Nengo.status_bar.set_caption(
+                Nengo.info_line.set_caption(
                     `${display_type}: hold left mouse button and drag to ` +
                     'resize.');
             } else if (object_type == 'netgraph') {
-                Nengo.status_bar.set_caption(
+                Nengo.info_line.set_caption(
                     'Hold left mouse button and drag to pan view.');
             } else if (object_type == 'slider_handle') {
-                Nengo.status_bar.set_caption(
+                Nengo.info_line.set_caption(
                     'Hold left mouse button and drag to change slider value.');
             } else {
-                Nengo.status_bar.set_caption(
+                Nengo.info_line.set_caption(
                     `${display_type}: hold left mouse button and drag to ` +
                     'move; press CTRL or hold middle mouse button to pan ' +
                     'view.');
