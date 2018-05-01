@@ -246,10 +246,12 @@ Nengo.NetGraph = function(parent, args) {
             }
 
             const object_type = obj.getAttribute('data-object-type');
+            const display_type = object_type.charAt(0).toUpperCase() +
+                object_type.slice(1);
             if (in_resize) {
                 Nengo.status_bar.set_caption(
-                    'Hold left mouse button and drag to resize ' +
-                    `${object_type}.`);
+                    `${display_type}: hold left mouse button and drag to ` +
+                    'resize.');
             } else if (object_type == 'netgraph') {
                 Nengo.status_bar.set_caption(
                     'Hold left mouse button and drag to pan view.');
@@ -258,8 +260,9 @@ Nengo.NetGraph = function(parent, args) {
                     'Hold left mouse button and drag to change slider value.');
             } else {
                 Nengo.status_bar.set_caption(
-                    `Hold left mouse button and drag to move ${object_type}. ` +
-                    'Press CTRL or hold middle mouse button to pan view.');
+                    `${display_type}: hold left mouse button and drag to ` +
+                    'move; press CTRL or hold middle mouse button to pan ' +
+                    'view.');
             }
         })
         .on('click', function(event) {
