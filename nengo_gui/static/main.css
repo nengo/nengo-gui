@@ -53,11 +53,6 @@ div.minimap {
     z-index: 99999999;
 }
 
-div.status_bar {
-    padding: 0.25em 1em;
-    font-size: 85%;
-}
-
 .graph {
     background: #eeeeee;
 }
@@ -66,4 +61,37 @@ div.status_bar {
     fill: none;
     stroke: black;
     stroke-width: 1.5px;
+}
+
+#statusline {
+    padding: 0.4em 1em;
+    font-size: 85%;
+}
+
+#build-progress {
+    float: right;
+    width: 33%;
+    overflow: hidden;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+    position: relative;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.pb-text {
+    position: absolute;
+    width: 100%;
+}
+
+.pb-fill {
+    background-color: #bdd2e6;
+    width: 0%;
+
+}
+
+@keyframes pb-fill-anim {
+    0% { background-position: -100px 0px };
+    100% { background-position: 0px 0px };
 }

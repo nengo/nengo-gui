@@ -283,6 +283,9 @@ class Page(object):
         # Always use the editor given in page settings, do not rely on config
         self.locals['_viz_editor'] = self.settings.editor_class()
 
+        if '_viz_progress' not in self.locals:
+            self.locals['_viz_progress'] = nengo_gui.components.Progress()
+
         if self.model is not None:
             if config[self.model].pos is None:
                 config[self.model].pos = (0, 0)
@@ -466,7 +469,8 @@ class Page(object):
             # build the simulation
             try:
                 with exec_env:
-                    self.sim = backend.Simulator(self.model)
+                    self.sim = backend.Simulator(
+                        self.model, progress_bar=self.locals['_viz_progress'])
             except:
                 line = nengo_gui.exec_env.determine_line_number()
                 self.error = dict(trace=traceback.format_exc(), line=line)

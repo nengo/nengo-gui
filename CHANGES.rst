@@ -22,7 +22,8 @@ Release History
 0.3.2 (unreleased)
 ==================
 
-- Add status bar
+- Added build progress indicator
+- Added status bar
 - Pan view with CTRL/MMB
 - Support for nengo_spa
 - Added --browser option
