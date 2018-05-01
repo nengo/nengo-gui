@@ -167,6 +167,13 @@ class InlineGUI(object):
             print("Server is not alive.")
 
 
+class IPythonViz(InlineGUI):
+    def __init__(self, *args, **kwargs):
+        warnings.warn(DeprecationWarning(
+            "IPythonViz has been renamed to InlineGUI."))
+        super(IPythonViz, self).__init__(*args, **kwargs)
+
+
 class LabServerManager(object):
     shutdown_hook_registered = False
     server = None
