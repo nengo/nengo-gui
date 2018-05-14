@@ -67,10 +67,10 @@ with model:
     pd_new = []
     for element in range(vsize):
         pd_new.append([vocab[pd[element]].v.tolist()]) 
-        
-    #cleanup = nengo.Ensemble(300, dimensions=vsize)
-    model.cleanup = spa.State(neurons_per_dimension=300/vsize, dimensions=vsize)
-    
+
+    model.cleanup = nengo.networks.EnsembleArray(
+        n_neurons=60, n_ensembles=vsize)
+
     #Function that provides the model with an initial input semantic pointer.
     def start(t):
         if t < 0.4:
