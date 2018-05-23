@@ -58,6 +58,9 @@ class Config(nengo.Config):
                     lines.append('_viz_config[%s].has_layout=%s'
                                  % (uid, self[obj].has_layout))
 
+            elif isinstance(obj, nengo_gui.components.editor.Editor):
+                pass  # Do not persist editor
+
             elif isinstance(obj, nengo_gui.components.component.Component):
                 lines.append('%s = %s' % (uid, obj.code_python(uids)))
                 for k in obj.config_defaults.keys():

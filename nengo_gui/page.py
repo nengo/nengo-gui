@@ -276,11 +276,12 @@ class Page(object):
         if '_viz_net_graph' not in self.locals:
             c = nengo_gui.components.NetGraph()
             self.locals['_viz_net_graph'] = c
-        # FIXME general editor
-        if '_viz_ace_editor' not in self.locals:
-            c = self.settings.editor_class()
-            # c = nengo_gui.components.AceEditor()
-            self.locals['_viz_ace_editor'] = c
+
+        # Scrap legacy editor in config
+        if '_viz_ace_editor' in self.locals:
+            del self.locals['_viz_ace_editor']
+        # Always use the editor given in page settings, do not rely on config
+        self.locals['_viz_editor'] = self.settings.editor_class()
 
         if self.model is not None:
             if config[self.model].pos is None:
