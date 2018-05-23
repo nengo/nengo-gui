@@ -72,7 +72,7 @@ class IPythonViz(object):
         server_settings = nengo_gui.guibackend.GuiServerSettings(
             ('localhost', 0))
         model_context = nengo_gui.guibackend.ModelContext(
-            model=model, locals=get_ipython().user_ns, filename=name,
+            model=model, locals=get_ipython().user_ns, filename=None,
             writeable=False)
         page_settings = nengo_gui.page.PageSettings(
             filename_cfg=cfg,
