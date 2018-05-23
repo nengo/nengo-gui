@@ -140,7 +140,7 @@ class Page(object):
     def load(self):
         """Load the model and initialize everything"""
         if self.filename == self.gui.model_context.filename:
-            # if we're on the default filenaem, just load it from the GUI
+            # if we're on the default filename, just load it from the GUI
             self.model = self.gui.model_context.model
             if self.gui.model_context.locals is None:
                 self.locals = None
