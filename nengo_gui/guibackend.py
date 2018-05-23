@@ -97,8 +97,8 @@ class RequireAuthentication(object):
             session.peer_name = request_handler.request.getpeername()[0]
         except Exception:
             logger.warning(
-                    "Cannot get peer name. Session will not be tied to "
-                    "client.", exc_info=True)
+                "Cannot get peer name. Session will not be tied to "
+                "client.", exc_info=True)
         request_handler.persist_session(session)
 
 
