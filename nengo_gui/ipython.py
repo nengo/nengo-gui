@@ -41,7 +41,7 @@ class IPythonViz(object):
         self.port = server.server.server_port
 
         self.url = self.get_url(
-            self.host, self.port, token=server.server.settings.auth_token)
+            self.host, self.port, token=server.server.auth_token)
 
     @staticmethod
     def get_url(host, port, action=None, token=None):
