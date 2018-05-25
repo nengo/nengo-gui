@@ -319,6 +319,11 @@ Nengo.Modal.prototype.main_config = function() {
             Nengo.ace.editor.setOption("enableLiveAutocompletion", $('#autocomplete').prop('checked'));
             Nengo.config.autocomplete = $('#autocomplete').prop('checked');
         });
+    } else {
+	$('#sync-editor').attr("disabled", "disabled");
+	$('#autocomplete').attr("disabled", "disabled");
+	$('#sync-editor').parent().addClass("disabled");
+	$('#autocomplete').parent().addClass("disabled");
     }
 
     $('#config-fontsize').val(Nengo.netgraph.font_size);

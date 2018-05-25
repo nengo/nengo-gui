@@ -136,3 +136,7 @@ div.modal {
 .modal-dialog.modal-sm td {
     padding: 4px;
 }
+
+#myModalForm .disabled {
+    color: darkgrey;
+}
