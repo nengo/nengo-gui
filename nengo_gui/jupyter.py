@@ -148,7 +148,7 @@ class InlineGUI(object):
             html = '''
                 <div id="{id}">
                     <iframe
-                        src="../{url}"
+                        src="..{url}"
                         width="100%"
                         height="{height}"
                         frameborder="0"
@@ -179,7 +179,7 @@ class LabServerManager(object):
     server = None
 
     @classmethod
-    def start_server(cls):
+    def start_server(cls, base_url):
         if not cls.shutdown_hook_registered:
             atexit.register(LabServerManager.shutdown, timeout=5)
             cls.shutdown_hook_registered = True
@@ -193,8 +193,8 @@ class LabServerManager(object):
 
         cls.server = nengo_gui.gui.GuiThread(model_context, server_settings)
         cls.server.start()
-        cls.server.server.settings.prefix = '/nengo/' + str(
-            cls.server.server.server_port)
+        cls.server.server.settings.prefix = url_path_join(
+            base_url, 'nengo/' + str(cls.server.server.server_port))
         cls.server.wait_for_startup()
         return cls.server
 
@@ -298,7 +298,7 @@ class StartGuiHandler(IPythonHandler):
         self.set_header('Content-Type', 'application/json')
 
     def get(self):
-        server = LabServerManager.start_server()
+        server = LabServerManager.start_server(self.base_url)
         self.finish(json.dumps({
             'port': server.server.server_port,
             'token': server.server.auth_token
