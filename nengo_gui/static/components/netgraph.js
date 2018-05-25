@@ -268,6 +268,9 @@ Nengo.NetGraph = function(parent, args) {
         .on('click', function(event) {
             $('.ace_text-input').blur();
         })
+	.on('mouseleave', function(event) {
+            Nengo.info_line.set_caption("");
+	})
         .on('wheel', function(event) {
             event.preventDefault();
 
