@@ -453,7 +453,9 @@ Sec-WebSocket-Accept: {sec}\r\n\
 
         try:
             origin = urlparse(self.headers['Origin'])
-            assert origin.netloc.lower() in valid_srv_addrs
+            assert origin.netloc.lower() in valid_srv_addrs, (
+                "Invalid WS origin '{}', valid origins: {}".format(
+                    origin.netloc, valid_srv_addrs))
         except KeyError:
             raise Forbidden()
         except AssertionError:
