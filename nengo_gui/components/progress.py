@@ -37,6 +37,8 @@ class Progress(Component, ProgressBar):
                 'finished': self.progress.finished,
                 'success': self.progress.success
             }))
+            if self.progress.finished:
+                self.progress = None
 
     def javascript(self):
         info = dict(uid=id(self))
