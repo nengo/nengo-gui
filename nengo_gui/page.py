@@ -1,4 +1,5 @@
 import importlib
+import inspect
 import json
 import logging
 import os
@@ -466,11 +467,17 @@ class Page(object):
 
             exec_env = nengo_gui.exec_env.ExecutionEnvironment(self.filename,
                                                                allow_sim=True)
+            handles_progress = ('progress_bar' in 
+                                inspect.getfullargspec(backend.Simulator))
             # build the simulation
             try:
                 with exec_env:
-                    self.sim = backend.Simulator(
-                        self.model, progress_bar=self.locals['_viz_progress'])
+                    if handles_progress:
+                        self.sim = backend.Simulator(
+                            self.model, progress_bar=self.locals['_viz_progress'])
+                    else:
+                        self.sim = backend.Simulator(self.model)
+
             except:
                 line = nengo_gui.exec_env.determine_line_number()
                 self.error = dict(trace=traceback.format_exc(), line=line)
