@@ -1,6 +1,16 @@
 import json
 
-from nengo.utils.compat import escape
+try:
+    from nengo.utils.compat import escape
+except ImportError:
+    import sys
+    PY2 = sys.version_info[0] == 2
+    if PY2:
+        from cgi import escape as cgi_escape
+        escape = lambda s, quote=True: cgi_escape(s, quote=quote)
+    else:
+        from html import escape
+
 from nengo.utils.progress import ProgressBar, timestamp2timedelta
 
 from nengo_gui.components.component import Component
@@ -16,10 +26,9 @@ class Progress(Component, ProgressBar):
 
     def update_client(self, client):
         if self.progress is not None:
-            # print(str(timestamp2timedelta(self.progress.eta())), timestamp2timedelta(self.progress.eta()), self.progress.eta())
             client.write_text(json.dumps({
-                'name_during': escape(self.progress.name_during),
-                'name_after': escape(self.progress.name_after),
+                'name_during': escape(getattr(self.progress, 'name_during', 'Building')),
+                'name_after': escape(getattr(self.progress, 'name_after', 'Build')),
                 'progress': self.progress.progress,
                 'max_steps': self.progress.max_steps,
                 'elapsed_time': str(timestamp2timedelta(
