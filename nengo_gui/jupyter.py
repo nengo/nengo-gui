@@ -118,7 +118,7 @@ class InlineGUI(object):
                         p.classList.add('output_stderr');
                     }}
                 }});
-                req.open('GET', '/nengo/check', true);
+                req.open('GET', '../nengo/check', true);
                 req.send();
             }}
             </script>
@@ -148,7 +148,7 @@ class InlineGUI(object):
             html = '''
                 <div id="{id}">
                     <iframe
-                        src="{url}"
+                        src="../{url}"
                         width="100%"
                         height="{height}"
                         frameborder="0"
