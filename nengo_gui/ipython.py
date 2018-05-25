@@ -62,7 +62,7 @@ class IPythonViz(object):
             warnings.warn(ConfigReuseWarning(
                 "Reusing config. Only the most recent visualization will "
                 "update the config."))
-            for page in server.pages:
+            for page in server.server.pages:
                 page.save_config(force=True)
                 page.filename_cfg = get_ipython().mktempfile()
                 cls.servers[page.filename_cfg] = server
