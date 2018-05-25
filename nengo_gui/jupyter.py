@@ -305,6 +305,10 @@ class StartGuiHandler(IPythonHandler):
         }))
 
 
+def _jupyter_server_extension_paths():
+    return []
+
+
 def load_jupyter_server_extension(nb_server_app):
     web_app = nb_server_app.web_app
     host_pattern = '.*$'
