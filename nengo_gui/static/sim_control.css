@@ -30,6 +30,7 @@
     padding-left: 1px;
     padding-right: 1px;
     position:absolute;
+    height: 60px;
 }
 
 .time_slider .shown_time div {
