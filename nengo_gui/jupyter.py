@@ -118,7 +118,7 @@ class InlineGUI(object):
                         p.classList.add('output_stderr');
                     }}
                 }});
-                req.open('GET', '../nengo/check', true);
+                req.open('GET', './nengo/check', true);
                 req.send();
             }}
             </script>
@@ -132,7 +132,7 @@ class InlineGUI(object):
                 'children': [{
                     'tagName': 'iframe',
                     'attributes': {
-                        'src': str(self.resource),
+                        'src': '.' + str(self.resource),
                         'width': '100%',
                         'height': str(self.height),
                         'frameborder': '0',
@@ -148,7 +148,7 @@ class InlineGUI(object):
             html = '''
                 <div id="{id}">
                     <iframe
-                        src="..{url}"
+                        src=".{url}"
                         width="100%"
                         height="{height}"
                         frameborder="0"
@@ -305,6 +305,13 @@ class StartGuiHandler(IPythonHandler):
         }))
 
 
+class RedirectHandler(IPythonHandler):
+    def get(self, port, resource):
+        self.redirect(
+            url_path_join(self.base_url, 'nengo', port, resource) + '/?' +
+            self.request.query, permanent=True)
+
+
 def _jupyter_server_extension_paths():
     return []
 
@@ -313,16 +320,19 @@ def load_jupyter_server_extension(nb_server_app):
     web_app = nb_server_app.web_app
     host_pattern = '.*$'
     availability_check_pattern = url_path_join(
-        web_app.settings['base_url'], '/nengo/check')
+        web_app.settings['base_url'], '.*/nengo/check')
     start_gui_pattern = url_path_join(
         web_app.settings['base_url'], '/nengo/start_gui')
     ws_route_pattern = url_path_join(
         web_app.settings['base_url'], '/nengo/(\\d+)/viz_component(\\?.*)?$')
     route_pattern = url_path_join(
         web_app.settings['base_url'], '/nengo/(\\d+)/.*$')
+    redirect_pattern = url_path_join(
+        web_app.settings['base_url'], '.+/nengo/(\\d+)/(.*)$')
     web_app.add_handlers(host_pattern, [
         (availability_check_pattern, AvailabilityCheckHandler),
         (start_gui_pattern, StartGuiHandler),
         (ws_route_pattern, NengoGuiWSHandler),
         (route_pattern, NengoGuiHandler),
+        (redirect_pattern, RedirectHandler),
     ])
