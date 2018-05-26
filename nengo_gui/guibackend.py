@@ -70,7 +70,8 @@ class RequireAuthentication(object):
     def __init__(self, login_page):
         self.login_page = login_page
 
-    def get_token(self, inst):
+    @classmethod
+    def get_token(cls, inst):
         if 'token' in inst.db:
             return inst.db['token']
         elif inst.headers.get('Authorization', '').lower().startswith(
@@ -120,6 +121,16 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
         return [login_host] if login_host is not None else []
 
     def http_GET(self):
+        if self.server.settings.prefix is None:
+            if self.server.verify_token(RequireAuthentication.get_token(self)):
+                prefix = self.resource
+                if prefix.endswith('/'):
+                    prefix = prefix[:-1]
+                self.server.settings.prefix = prefix
+                RequireAuthentication.authenticate(self)
+            else:
+                raise server.InternalServerError("Prefix not set.")
+
         if not self.resource.startswith(self.server.settings.prefix):
             raise server.InvalidResource(self.resource)
         self.resource = self.resource[len(self.server.settings.prefix):]

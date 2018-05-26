@@ -51,10 +51,10 @@ class InlineGUI(object):
 
         self.server = self.start_server(cfg, model)
         self.port = self.server.server.server_port
-        self.server.server.settings.prefix = '/nengo/' + str(self.port)
+        self.server.server.settings.prefix = None
 
-        self.resource = self.server.server.get_resource()
-        self.url = self.server.server.get_url()
+        self.resource = url_path_join(
+            '/nengo', str(self.port), str(self.server.server.get_resource()))
 
     @classmethod
     def start_server(cls, cfg, model):
