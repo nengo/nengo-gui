@@ -28,7 +28,7 @@ class Progress(Component, ProgressBar):
         if self.progress is not None:
             client.write_text(json.dumps({
                 'name_during': escape(getattr(self.progress, 'name_during', 'Building')),
-                'name_after': escape(getattr(self.progress, 'name_after', 'Building')),
+                'name_after': escape(getattr(self.progress, 'name_after', 'Build')),
                 'progress': self.progress.progress,
                 'max_steps': self.progress.max_steps,
                 'elapsed_time': str(timestamp2timedelta(
