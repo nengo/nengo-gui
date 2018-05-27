@@ -510,8 +510,7 @@ class Page(object):
                 try:
                     if hasattr(self.sim, 'max_steps'):
                         # this is only for the nengo_spinnaker simulation
-                        self.sim.run_steps(
-                            self.sim.max_steps, progress_bar=False)
+                        self.sim.run_steps(self.sim.max_steps)
                     else:
                         self.sim.step()
                 except Exception as err:
