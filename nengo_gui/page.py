@@ -468,7 +468,7 @@ class Page(object):
             exec_env = nengo_gui.exec_env.ExecutionEnvironment(self.filename,
                                                                allow_sim=True)
             handles_progress = ('progress_bar' in 
-                                inspect.getfullargspec(backend.Simulator).args)
+                          inspect.getargspec(backend.Simulator.__init__).args)
             # build the simulation
             try:
                 with exec_env:
