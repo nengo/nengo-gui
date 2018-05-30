@@ -38,6 +38,7 @@ Nengo.Component = function(parent, args) {
     this.redraw_pos();
 
     this.div.style.position = 'absolute';
+    this.div.setAttribute('data-object-type', 'graph')
     this.div.classList.add('graph');
     parent.appendChild(this.div);
     this.parent = parent;
@@ -73,6 +74,10 @@ Nengo.Component = function(parent, args) {
                 self.menu.hide_any();
             },
             onmove: function (event) {
+                if (Nengo.netgraph.capture_move_event(event)) {
+                    return;
+                }
+
                 var target = event.target;
 
                 self.x = self.x + event.dx / (self.viewport.w * self.viewport.scale);

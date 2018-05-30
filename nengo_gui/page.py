@@ -1,4 +1,5 @@
 import importlib
+import inspect
 import json
 import logging
 import os
@@ -16,14 +17,15 @@ import nengo_gui.seed_generation
 
 
 class PageSettings(object):
-    __slots__ = ['backend', 'editor_class', 'filename_cfg']
+    __slots__ = ['backend', 'editor_class', 'filename_cfg', 'dt']
 
     def __init__(
-            self, filename_cfg=None, backend='nengo',
+            self, filename_cfg=None, backend='nengo', dt=0.001,
             editor_class=nengo_gui.components.AceEditor):
         self.filename_cfg = filename_cfg
         self.backend = backend
         self.editor_class = editor_class
+        self.dt = dt
 
 
 class Page(object):
@@ -283,6 +285,9 @@ class Page(object):
         # Always use the editor given in page settings, do not rely on config
         self.locals['_viz_editor'] = self.settings.editor_class()
 
+        if '_viz_progress' not in self.locals:
+            self.locals['_viz_progress'] = nengo_gui.components.Progress()
+
         if self.model is not None:
             if config[self.model].pos is None:
                 config[self.model].pos = (0, 0)
@@ -461,12 +466,22 @@ class Page(object):
                 old_sim.sim = None
                 old_sim.finished = True
 
+            dt = self.settings.dt
+
             exec_env = nengo_gui.exec_env.ExecutionEnvironment(self.filename,
                                                                allow_sim=True)
+            handles_progress = ('progress_bar' in 
+                          inspect.getargspec(backend.Simulator.__init__).args)
             # build the simulation
             try:
                 with exec_env:
-                    self.sim = backend.Simulator(self.model)
+                    if handles_progress:
+                        self.sim = backend.Simulator(
+                            self.model, dt=dt,
+                            progress_bar=self.locals['_viz_progress'])
+                    else:
+                        self.sim = backend.Simulator(self.model, dt=dt)
+
             except:
                 line = nengo_gui.exec_env.determine_line_number()
                 self.error = dict(trace=traceback.format_exc(), line=line)
