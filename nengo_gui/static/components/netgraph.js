@@ -113,6 +113,7 @@ Nengo.NetGraph = function(parent, args) {
 
     /** create the master SVG element */
     this.svg = this.createSVGElement('svg');
+    this.svg.setAttribute('data-object-type', 'netgraph')
     this.svg.classList.add('netgraph');
     this.svg.style.width = '100%';
     this.svg.id = 'netgraph';
@@ -217,6 +218,53 @@ Nengo.NetGraph = function(parent, args) {
      *  Note that offsetX,Y are also changed to zoom into a particular
      *  point in the space */
     interact(document.getElementById('main'))
+        .on('mousemove', function(event) {
+            // Do not change the text message while a mouse button is pressed
+            // (e.g. while resizing a control)
+            if (event.buttons !== 0) {
+                return false;
+            }
+
+            // Show a special status bar message if we're currently resizing
+            // elements. XXX: Getting the information this way is a terrible
+            // hack, but it seemed to be the most reliably way to get this info
+            // from interactjs.
+            const cursor = document.querySelector('html').style.cursor;
+            const in_resize = /resize/.test(cursor);
+
+            // The text that is being shown in the status bar depends on the
+            // object the mouse is over. Bubble up the DOM tree and find the
+            // first DOM element (i.e. nodeType == 1) which either has a
+            // "data-object-type" attribute or is the parent container.
+            let obj = event.target;
+            while (obj && obj !== self.svg && (obj.nodeType !== 1
+                    || !obj.hasAttribute('data-object-type'))) {
+                obj = obj.parentNode;
+            }
+            if (!obj) {
+                return false;
+            }
+
+            const object_type = obj.getAttribute('data-object-type');
+            const display_type = object_type.charAt(0).toUpperCase() +
+                object_type.slice(1);
+            if (in_resize) {
+                Nengo.status_bar.set_caption(
+                    `${display_type}: hold left mouse button and drag to ` +
+                    'resize.');
+            } else if (object_type == 'netgraph') {
+                Nengo.status_bar.set_caption(
+                    'Hold left mouse button and drag to pan view.');
+            } else if (object_type == 'slider_handle') {
+                Nengo.status_bar.set_caption(
+                    'Hold left mouse button and drag to change slider value.');
+            } else {
+                Nengo.status_bar.set_caption(
+                    `${display_type}: hold left mouse button and drag to ` +
+                    'move; press CTRL or hold middle mouse button to pan ' +
+                    'view.');
+            }
+        })
         .on('click', function(event) {
             $('.ace_text-input').blur();
         })
@@ -682,4 +730,20 @@ Nengo.NetGraph.prototype.scaleMiniMapViewBox = function () {
     this.view.setAttributeNS(null, 'y', view_offsetY);
     this.view.setAttribute('width', w / this.scale);
     this.view.setAttribute('height', h / this.scale);
+}
+
+/** Called from the individual component ondragmove handlers in order to pan
+ * the entire view whenever CTRL or the middle mouse button are pressed.
+ * Returns true if the event has been processed by the NetGraph component and
+ * no further event processing must be performed by the calling code.
+ * Returns false otherwise. */
+Nengo.NetGraph.prototype.capture_move_event = function (event) {
+    // For more constants see https://www.w3.org/TR/uievents/#mouseevent
+    var MOUSE_BUTTON_MIDDLE_MASK = 4
+
+    if (event.ctrlKey || (event.buttons & MOUSE_BUTTON_MIDDLE_MASK)) {
+        interact(this.svg).ondragmove(event);
+        return true;
+    }
+    return false;
 }

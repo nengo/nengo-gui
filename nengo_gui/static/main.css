@@ -38,6 +38,10 @@ body {
     flex-direction: row;
 }
 
+#control table {
+    margin-bottom: 0;
+}
+
 div.minimap {
     background: white;
     border: 2px solid #787878;
@@ -47,6 +51,11 @@ div.minimap {
     top: 82.5%;
     position: absolute;
     z-index: 99999999;
+}
+
+div.status_bar {
+    padding: 0.25em 1em;
+    font-size: 85%;
 }
 
 .graph {

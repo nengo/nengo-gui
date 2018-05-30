@@ -141,11 +141,14 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
         } else {
             this.shape = this.ng.createSVGElement('rect');
         }
+        g.setAttribute('data-object-type', 'node')
     } else if (info.type === 'net') {
         this.shape = this.ng.createSVGElement('rect');
+        g.setAttribute('data-object-type', 'network')
     } else if (info.type === 'ens') {
         this.aspect = 1.;
         this.shape = this.ensemble_svg();
+        g.setAttribute('data-object-type', 'ensemble')
     } else {
         console.log("Unknown NetGraphItem type");
         console.log(item);
@@ -177,6 +180,10 @@ Nengo.NetGraphItem = function(ng, info, minimap, mini_item) {
                     self.move_to_front();
                 },
                 onmove: function(event) {
+                    if (Nengo.netgraph.capture_move_event(event)) {
+                        return;
+                    }
+
                     var w = self.ng.get_scaled_width();
                     var h = self.ng.get_scaled_height();
                     var item = self.ng.svg_objects[uid];

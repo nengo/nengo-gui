@@ -3,13 +3,16 @@
 .sim_control {
     background-color: #eee;
     box-shadow: 0px -2px 4px 0px #999;
-    height: 80px;
     position: relative;
     overflow: hidden;
     flex: 0 0 auto;
     -webkit-flex: 0 0 auto;
     width: 100%;
-    z-index:99999999;
+    z-index:99999990; /* The SVG elements in the netgraph use z-index, so make
+                         sure they never cover the control panel. The z-index
+                         here is smaller than the 99999999 used by other UI divs,
+                         so other controls (e.g. the status bar) can cover the
+                         box shadow. */
 }
 
 .time_slider{
@@ -17,6 +20,7 @@
     border: 1px solid #ccc;
     border-radius: 4px;
     overflow: hidden;
+    height: 60px;
 }
 
 .time_slider .shown_time {

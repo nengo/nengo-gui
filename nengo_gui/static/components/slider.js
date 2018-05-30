@@ -37,6 +37,7 @@ Nengo.Slider = function(parent, sim, args) {
     this.group.style.whiteSpace = 'nowrap';
     this.group.position = 'relative';
     this.div.appendChild(this.group);
+    this.div.setAttribute('data-object-type', 'slider')
 
     /** make the sliders */
     // the value to use when releasing from user control
