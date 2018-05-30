@@ -209,7 +209,7 @@ Nengo.Raster.prototype.update_highlight = function(mouse) {
             this.neuron_highlights_g.select('#neuron_highlights_Y')
                 .attr('x', this.axes2d.ax_left)
                 .attr('y', ys2)
-                .attr('width', this.axes2d.width)
+                .attr('width', this.axes2d.ax_right - this.axes2d.ax_left)
                 .attr('height', ys3-ys2);
 
             this.neuron_highlights_g.select('#neuron_highlights_text')
@@ -223,7 +223,7 @@ Nengo.Raster.prototype.update_highlight = function(mouse) {
             this.neuron_highlights_g.select('#neuron_highlights_Y')
                 .attr('x', this.axes2d.ax_left)
                 .attr('y', y2)
-                .attr('width', this.axes2d.width)
+                .attr('width', this.axes2d.ax_right - this.axes2d.ax_left)
                 .attr('height', y3-y2);
 
             this.neuron_highlights_g.select('#neuron_highlights_text')
