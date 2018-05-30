@@ -37,7 +37,6 @@ Nengo.Raster = function(parent, sim, args) {
     // Index of the neuron that makes a sound when spiking
     this.sound_index = -1;
     this.draw_clicked = false;
-    this.neuron_highlight_click = false; //selected state of neurons
 
     // TODO: put the neuron highlight properties in CSS
     this.neuron_highlights_g.append('rect')
@@ -71,14 +70,13 @@ Nengo.Raster = function(parent, sim, args) {
                 var mouse = d3.mouse(this);
                 self.neuron_highlight_updates = true;
                 self.mouse_position = [mouse[0], mouse[1]];
-                self.update_highlight(mouse);
+                self.update_highlight(mouse, false);
             })
             .on('click', function() {
                 var mouse = d3.mouse(this);
                 self.neuron_highlight_updates = true;
-                self.neuron_highlight_click = true;
                 self.mouse_position = [mouse[0], mouse[1]];
-                self.update_highlight(mouse);
+                self.update_highlight(mouse, true);
             })
 
     /** call schedule_update whenever the time is adjusted in the SimControl */
@@ -176,7 +174,7 @@ Nengo.Raster.prototype.set_n_neurons = function(n_neurons) {
     this.ws.send('n_neurons:' + n_neurons);
 }
 
-Nengo.Raster.prototype.update_highlight = function(mouse) {
+Nengo.Raster.prototype.update_highlight = function(mouse, click) {
     var self = this;
     var x = mouse[0];
     var y = mouse[1];
@@ -190,7 +188,7 @@ Nengo.Raster.prototype.update_highlight = function(mouse) {
 
         this.neuron_highlights_g.style('display', null);
 
-        if (this.neuron_highlight_click){
+        if (click){
             if (new_sound_index == this.sound_index) {
                 this.draw_clicked = false;
                 this.sound_index = -1;
@@ -198,7 +196,6 @@ Nengo.Raster.prototype.update_highlight = function(mouse) {
                 this.draw_clicked = true;
                 this.sound_index = new_sound_index;
             }
-            this.neuron_highlight_click = false;
         }
 
         //draw the currently clicked highlight
@@ -272,7 +269,7 @@ Nengo.Raster.prototype.update = function() {
 
     //** Update the highlight text if the mouse is on top */
     if (this.neuron_highlight_updates) {
-        this.update_highlight(this.mouse_position);
+        this.update_highlight(this.mouse_position, false);
     }
 
 };
