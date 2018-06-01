@@ -19,8 +19,8 @@ Release History
    - Bugfixes
    - Documentation
 
-0.3.2 (unreleased)
-==================
+0.4.0 (June 1, 2018)
+====================
 
 - Added build progress indicator
 - Added status bar
