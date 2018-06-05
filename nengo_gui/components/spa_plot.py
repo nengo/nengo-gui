@@ -34,7 +34,7 @@ class SpaPlot(Component):
             client.write_text(data)
 
     def code_python_args(self, uids):
-        return [uids[self.obj], 'target=%r' % self.target]
+        return [uids[self.obj], 'args=%r' % self.target]
 
     @staticmethod
     def applicable_targets(obj):

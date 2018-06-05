@@ -110,9 +110,6 @@ class Pointer(SpaPlot):
         json = self.javascript_config(info)
         return 'new Nengo.Pointer(main, sim, %s);' % json
 
-    def code_python_args(self, uids):
-        return [uids[self.obj], 'target=%r' % self.target]
-
     def message(self, msg):
         if msg == ':empty:':
             self.override_target = None

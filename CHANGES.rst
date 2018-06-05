@@ -19,6 +19,11 @@ Release History
    - Bugfixes
    - Documentation
 
+0.4.1 (unreleased)
+==================
+
+- Bugfix: SPA plots for nengo_spa are now created correctly
+
 0.4.0 (June 1, 2018)
 ====================
 
