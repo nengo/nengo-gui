@@ -59,14 +59,6 @@ Nengo.SideMenu = function() {
 
             });
     }
-
-    $(window).on('resize', function() {self.on_resize();});
-    self.on_resize();
-};
-
-Nengo.SideMenu.prototype.on_resize = function() {
-    var h = $('.sidenav-container').height();
-    $('#filebrowser').height(h);
 };
 
 

@@ -24,59 +24,6 @@
 
     <body id="body" onload="onload();">
         <!-- Contains all sidenav html -->
-        <div class="sidenav-container">
-
-            <!-- holds all the sidenav content -->
-            <div id="Menu_content">
-
-                <!-- tab-content hold the content for their correpsonding sidenav tab -->
-                <!-- The first tab-content holds the content for the first menu tab -->
-                <div class="tab-content">
-                    <div id="filebrowser"></div>
-                </div>
-
-                <div class="tab-content">
-                    <div class="accordion-container" id="accordion-container1">
-                        <!-- side-menu-item creates a menu item for non accordion content -->
-                        <div id='Config_button' class="side-menu-item">
-                            <p class="title">Configure Settings</p>
-                            <p class="icon">
-                                <span class='glyphicon glyphicon-cog'></span>
-                            </p>
-                        </div>
-
-                        <div class="accordion-toggle">
-                            <p class="title">Download</p>
-                            <p class="icon">
-                                <span class="glyphicon glyphicon-chevron-down"></span>
-                            </p>
-                        </div>
-                        <div class="accordion-content">
-                            <div class="side-menu-item indent" id="Download_button">
-                                <p class="title">Download Simulation Data</p>
-                                <p class="icon">
-                                    <span class="glyphicon glyphicon-signal"></span>
-                                </p>
-                            </div>
-                            <div class="side-menu-item indent" id='Pdf_button'>
-                                <p class="title">Export layout as SVG</p>
-                                <p class="icon">
-                                    <span class="glyphicon glyphicon-picture"></span>
-                                </p>
-                            </div>
-                        </div>
-
-                        <div id='Minimap_button' class="side-menu-item">
-                            <p class="title">Minimap</p>
-                            <p class="icon">
-                                <span class='glyphicon glyphicon-credit-card'></span>
-                            </p>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        </div>
         <div id="top_toolbar_div">
             <ul id='toolbar_object' class="nav nav-pills">
                 <li id='Open_file_button' role="presentation">
@@ -121,6 +68,59 @@
             </ul>
         </div>
         <div id="vmiddle">
+          <div class="sidenav-container">
+
+              <!-- holds all the sidenav content -->
+              <div id="Menu_content">
+
+                  <!-- tab-content hold the content for their correpsonding sidenav tab -->
+                  <!-- The first tab-content holds the content for the first menu tab -->
+                  <div class="tab-content">
+                      <div id="filebrowser"></div>
+                  </div>
+
+                  <div class="tab-content">
+                      <div class="accordion-container" id="accordion-container1">
+                          <!-- side-menu-item creates a menu item for non accordion content -->
+                          <div id='Config_button' class="side-menu-item">
+                              <p class="title">Configure Settings</p>
+                              <p class="icon">
+                                  <span class='glyphicon glyphicon-cog'></span>
+                              </p>
+                          </div>
+
+                          <div class="accordion-toggle">
+                              <p class="title">Download</p>
+                              <p class="icon">
+                                  <span class="glyphicon glyphicon-chevron-down"></span>
+                              </p>
+                          </div>
+                          <div class="accordion-content">
+                              <div class="side-menu-item indent" id="Download_button">
+                                  <p class="title">Download Simulation Data</p>
+                                  <p class="icon">
+                                      <span class="glyphicon glyphicon-signal"></span>
+                                  </p>
+                              </div>
+                              <div class="side-menu-item indent" id='Pdf_button'>
+                                  <p class="title">Export layout as SVG</p>
+                                  <p class="icon">
+                                      <span class="glyphicon glyphicon-picture"></span>
+                                  </p>
+                              </div>
+                          </div>
+
+                          <div id='Minimap_button' class="side-menu-item">
+                              <p class="title">Minimap</p>
+                              <p class="icon">
+                                  <span class='glyphicon glyphicon-credit-card'></span>
+                              </p>
+                          </div>
+
+                      </div>
+                  </div>
+              </div>
+          </div>
           <div id="main" class="droppable"></div>
           <div id="rightpane"></div>
         </div>

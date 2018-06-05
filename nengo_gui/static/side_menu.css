@@ -1,10 +1,10 @@
 
 .sidenav-container {
-    height: calc(100% - 120px);
+    height: 100%;
     width: 250px;
-    position: fixed;
+    position: absolute;
     z-index: 9999;
-    top: 34px;
+    top: 0;
     left: 0;
     background-color: #eee;
     overflow-x: hidden;
@@ -28,8 +28,8 @@
 }
 
 .sidenav-container #Menu_content{
-  position: absolute;
   width: 2000px;
+  height: 100%;
   margin: 0px;
   padding: 0px;
 }
@@ -98,7 +98,7 @@
     top: 0;
     left: 0;
     width: 250px;
-    height: 0px;
+    height: 100%;
     border-bottom-right-radius: 4px;
     color: inherit;
     padding: 0.2em;
