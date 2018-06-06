@@ -22,6 +22,7 @@ Release History
 0.4.2 (unreleased)
 ==================
 
+- Bugfix: Cloud plots for nengo_spa.Transcode plots no longer fail
 
 
 0.4.1 (June 5, 2018)

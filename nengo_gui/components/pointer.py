@@ -57,12 +57,15 @@ class Pointer(SpaPlot):
             if loop_in and self.target == 'default':
                 input = self.obj.inputs[self.target][0]
                 self.conn2 = nengo.Connection(self.node, input, synapse=0.01)
-            else:
+            elif output.size_in > 0:
                 self.conn2 = nengo.Connection(self.node, output, synapse=0.01)
+            else:
+                self.conn2 = None
 
     def remove_nengo_objects(self, page):
         page.model.connections.remove(self.conn1)
-        page.model.connections.remove(self.conn2)
+        if self.conn2 is not None:
+            page.model.connections.remove(self.conn2)
         page.model.nodes.remove(self.node)
 
     def gather_data(self, t, x):
