@@ -19,8 +19,8 @@ Release History
    - Bugfixes
    - Documentation
 
-0.4.1 (unreleased)
-==================
+0.4.1 (June 5, 2018)
+====================
 
 - Bugfix: File menu no longer has an incorrect height
 - Bugfix: SPA plots for nengo_spa are now created correctly
