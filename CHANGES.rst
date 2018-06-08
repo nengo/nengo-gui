@@ -19,6 +19,10 @@ Release History
    - Bugfixes
    - Documentation
 
+0.4.3 (unreleased)
+==================
+
+
 0.4.2 (June 8, 2018)
 ====================
 
