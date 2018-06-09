@@ -225,6 +225,8 @@ class DualStackHttpServer(object):
                     raise
 
         self.bindings = [b for b in self.bindings if b.bound]
+        if not self.bindings:
+            raise RuntimeError("Could not bind to any address.")
 
     def server_activate(self):
         for b in self.bindings:
