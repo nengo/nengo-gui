@@ -1,3 +1,4 @@
+import threading
 import warnings
 
 try:
@@ -14,6 +15,9 @@ except ImportError:
             return []
 
 
+_jedi_lock = threading.Lock()
+
 def get_completions(code, line, column, path=None):
-    script = Script(code, line, column, path=path)
-    return script.completions()
+    with _jedi_lock:
+        script = Script(code, line, column, path=path)
+        return script.completions()

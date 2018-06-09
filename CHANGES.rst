@@ -22,6 +22,7 @@ Release History
 0.4.3 (unreleased)
 ==================
 
+- Bugfix: thread-safety for jedi autocompletion
 - Bugfix: Handle authentication when connecting to multiple servers
 - Bugfix: Fail gracefully when binding server
 
