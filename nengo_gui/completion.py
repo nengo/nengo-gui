@@ -7,7 +7,7 @@ except ImportError:
         "Install the jedi module to get autocompletion in Nengo GUI.")
 
     class Script(object):
-        def __init__(*args, **kwargs):
+        def __init__(self, *args, **kwargs):
             pass
 
         def completions(self):
