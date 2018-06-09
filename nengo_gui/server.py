@@ -148,6 +148,7 @@ class DualStackHttpServer(object):
             if self.address_family is socket.AF_INET6:
                 self.socket.setsockopt(
                     IPPROTO_IPV6, socket.IPV6_V6ONLY, 1)
+            self.name = None
 
         def bind(self):
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
