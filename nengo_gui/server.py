@@ -15,6 +15,7 @@ except ImportError:  # for Python without ssl support
 import sys
 import threading
 import traceback
+import warnings
 
 try:
     from http import server
@@ -149,6 +150,7 @@ class DualStackHttpServer(object):
                 self.socket.setsockopt(
                     IPPROTO_IPV6, socket.IPV6_V6ONLY, 1)
             self.name = None
+            self.bound = False
 
         def bind(self):
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -159,6 +161,7 @@ class DualStackHttpServer(object):
             host, port = self.address[:2]
             self.name = socket.getfqdn(host)
             self.port = port
+            self.bound = True
 
         def activate(self):
             self.socket.listen(self.request_queue_size)
@@ -209,9 +212,19 @@ class DualStackHttpServer(object):
             if b.port == 0 and self.server_port != 0:
                 # Use same port for all automatically chosen ports
                 b.port = self.server_port
-            b.bind()
-            if self.server_port == 0:
-                self.server_port = b.port
+            try:
+                b.bind()
+                if self.server_port == 0:
+                    self.server_port = b.port
+            except socket.error as err:
+                if err.errno in [errno.EADDRINUSE, errno.EADDRNOTAVAIL]:
+                    warnings.warn(
+                        "Cannot bind to address {} (error {}: {}).".format(
+                            b.address, err.errno, err.strerror))
+                else:
+                    raise
+
+        self.bindings = [b for b in self.bindings if b.bound]
 
     def server_activate(self):
         for b in self.bindings:
