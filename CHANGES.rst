@@ -22,6 +22,7 @@ Release History
 0.4.3 (unreleased)
 ==================
 
+- Bugfix: Handle authentication when connecting to multiple servers
 - Bugfix: Fail gracefully when binding server
 
 0.4.2 (June 8, 2018)

@@ -310,7 +310,8 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
             peer_name = None
 
         try:
-            session_id = self.cookie['_session_id'].value
+            session_id = self.cookie[
+                '_sid_' + str(self.server.server_port)].value
             session = self.server.sessions[session_id]
             if session.peer_name != peer_name:
                 logger.warning(
@@ -323,7 +324,7 @@ class GuiRequestHandler(server.HttpWsRequestHandler):
 
     def persist_session(self, session):
         session_id = self.server.sessions.add_session(self.request, session)
-        self.cookie['_session_id'] = session_id
+        self.cookie['_sid_' + str(self.server.server_port)] = session_id
 
     def log_message(self, format, *args):
         logger.info(format, *args)
