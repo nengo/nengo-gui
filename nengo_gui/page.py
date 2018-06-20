@@ -458,25 +458,32 @@ class Page(object):
                 c.add_nengo_objects(self)
 
             # determine the backend to use
-            backend = importlib.import_module(self.settings.backend)
+            backend_name = self.settings.backend
+            if '.' in backend_name:
+                backend_name, class_name = backend_name.split('.', 1)
+            else:
+                class_name = 'Simulator'
+            backend = importlib.import_module(backend_name)
             # if only one Simulator is allowed at a time, finish the old one
             old_sim = Page.singleton_sims.get(self.settings.backend, None)
             if old_sim is not None and old_sim is not self:
                 old_sim.sim = None
                 old_sim.finished = True
 
+            Simulator = getattr(backend, class_name)
+
             exec_env = nengo_gui.exec_env.ExecutionEnvironment(self.filename,
                                                                allow_sim=True)
             handles_progress = ('progress_bar' in 
-                          inspect.getargspec(backend.Simulator.__init__).args)
+                          inspect.getargspec(Simulator.__init__).args)
             # build the simulation
             try:
                 with exec_env:
                     if handles_progress:
-                        self.sim = backend.Simulator(
+                        self.sim = Simulator(
                             self.model, progress_bar=self.locals['_viz_progress'])
                     else:
-                        self.sim = backend.Simulator(self.model)
+                        self.sim = Simulator(self.model)
 
             except:
                 line = nengo_gui.exec_env.determine_line_number()
