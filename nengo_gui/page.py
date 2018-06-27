@@ -47,7 +47,7 @@ class Page(object):
     """
 
     # Some Simulators can only have one instance running at a time
-    singleton_sims = dict(nengo_spinnaker=None)
+    singleton_sims = dict(spinnaker=None)
 
     def __init__(self, gui, filename, settings, reset_cfg=False):
         self.gui = gui
@@ -458,7 +458,8 @@ class Page(object):
                 c.add_nengo_objects(self)
 
             # determine the backend to use
-            backend = importlib.import_module(self.settings.backend)
+            Simulator = nengo_gui.exec_env.discover_backends()[
+                self.settings.backend]()
             # if only one Simulator is allowed at a time, finish the old one
             old_sim = Page.singleton_sims.get(self.settings.backend, None)
             if old_sim is not None and old_sim is not self:
@@ -468,15 +469,15 @@ class Page(object):
             exec_env = nengo_gui.exec_env.ExecutionEnvironment(self.filename,
                                                                allow_sim=True)
             handles_progress = ('progress_bar' in 
-                          inspect.getargspec(backend.Simulator.__init__).args)
+                          inspect.getargspec(Simulator.__init__).args)
             # build the simulation
             try:
                 with exec_env:
                     if handles_progress:
-                        self.sim = backend.Simulator(
+                        self.sim = Simulator(
                             self.model, progress_bar=self.locals['_viz_progress'])
                     else:
-                        self.sim = backend.Simulator(self.model)
+                        self.sim = Simulator(self.model)
 
             except:
                 line = nengo_gui.exec_env.determine_line_number()
