@@ -19,8 +19,8 @@ Release History
    - Bugfixes
    - Documentation
 
-0.4.3 (unreleased)
-==================
+0.4.3 (June 28, 2018)
+=====================
 
 - Bugfix: thread-safety for jedi autocompletion
 - Bugfix: Handle authentication when connecting to multiple servers
