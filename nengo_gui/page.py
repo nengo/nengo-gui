@@ -47,7 +47,8 @@ class Page(object):
     """
 
     # Some Simulators can only have one instance running at a time
-    singleton_sims = dict(nengo_spinnaker=None)
+    singleton_sims = dict(nengo_spinnaker=None,
+                          nengo_loihi=None)
 
     def __init__(self, gui, filename, settings, reset_cfg=False):
         self.gui = gui
@@ -124,7 +125,10 @@ class Page(object):
 
     @sim.setter
     def sim(self, value):
-        if hasattr(self._sim, 'close'):
+        if self.settings.backend == 'nengo_loihi':
+            if self._sim is not None:
+                self._sim.close()
+        elif hasattr(self._sim, 'close'):
             self.sims_to_close.append(self._sim)
         self._sim = value
 
@@ -462,6 +466,7 @@ class Page(object):
             # if only one Simulator is allowed at a time, finish the old one
             old_sim = Page.singleton_sims.get(self.settings.backend, None)
             if old_sim is not None and old_sim is not self:
+                old_sim.sim.close()
                 old_sim.sim = None
                 old_sim.finished = True
 
@@ -472,7 +477,10 @@ class Page(object):
             # build the simulation
             try:
                 with exec_env:
-                    if handles_progress:
+                    if self.settings.backend == 'nengo_loihi':
+                        self.sim = backend.Simulator(
+                            self.model, precompute=False)
+                    elif handles_progress:
                         self.sim = backend.Simulator(
                             self.model, progress_bar=self.locals['_viz_progress'])
                     else:
@@ -511,8 +519,16 @@ class Page(object):
                     if hasattr(self.sim, 'max_steps'):
                         # this is only for the nengo_spinnaker simulation
                         self.sim.run_steps(self.sim.max_steps)
+                    elif self.settings.backend == 'nengo_loihi':
+                        run_time = self.locals.get('max_loihi_time', None)
+                        if run_time is None:
+                            run_time = 1.0
+                        self.sim.run(run_time)
+                        self.sim.close()
                     else:
                         self.sim.step()
+                except nengo.exceptions.SimulatorClosed:
+                    pass
                 except Exception as err:
                     if self.finished:
                         return
