@@ -6,6 +6,7 @@ import threading
 import numpy as np
 
 import nengo
+from nengo.utils.compat import escape
 import json
 
 from nengo_gui.components.component import Component
@@ -311,7 +312,7 @@ class NetGraph(Component):
 
             if old_label != new_label:
                 self.to_be_sent.append(dict(
-                    type='rename', uid=uid, name=new_label))
+                    type='rename', uid=uid, name=escape(new_label)))
                 changed = True
             if isinstance(old_item, nengo.Network):
                 if self.page.config[old_item].expanded:
@@ -518,8 +519,8 @@ class NetGraph(Component):
 
         label = self.page.get_label(obj)
 
-        info = dict(uid=uid, label=label, pos=pos, type=obj_type, size=size,
-                    parent=parent)
+        info = dict(uid=uid, label=escape(label), pos=pos, type=obj_type,
+                    size=size, parent=parent)
         info.update(self.get_extra_info(obj))
 
         if type == 'net':
