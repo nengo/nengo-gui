@@ -22,7 +22,7 @@ Release History
 0.4.4 (unreleased)
 ==================
 
-
+- Improvement: reworked networking to allow clean integration with Jupyter
 
 0.4.3 (June 28, 2018)
 =====================
