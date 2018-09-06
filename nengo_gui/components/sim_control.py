@@ -8,6 +8,7 @@ import json
 
 from nengo_gui.components.component import Component
 import nengo_gui.exec_env
+from nengo_gui import hooks
 from nengo_gui.server import WebSocketFrame
 
 
@@ -190,11 +191,15 @@ class SimControl(Component):
     def message(self, msg):
         if msg == 'pause':
             self.paused = True
+            hooks.on_pause.execute(self.page)
         elif msg == 'config':
             self.send_config_options = True
         elif msg == 'continue':
             if self.page.sim is None:
                 self.page.rebuild = True
+                hooks.on_start.execute(self.page)
+            else:
+                hooks.on_continue.execute(self.page)
             self.paused = False
         elif msg == 'reset':
             self.paused = True

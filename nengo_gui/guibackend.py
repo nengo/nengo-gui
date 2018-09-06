@@ -460,6 +460,7 @@ class GuiServer(server.ManagedThreadHttpServer):
 
     def remove_page(self, page):
         self._last_access = time.time()
+        page.close()
         self.pages.remove(page)
         if (not self._shutting_down and self.settings.auto_shutdown > 0 and
                 len(self.pages) <= 0):
