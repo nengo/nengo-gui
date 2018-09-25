@@ -299,12 +299,14 @@ Nengo.Raster.prototype.on_resize = function(width, height) {
     this.div.style.width = width;
     this.div.style.height= height;
 
-    this.neuron_highlights_g.select('#neuron_highlights_Y')
-                .attr('width', this.axes2d.ax_right - this.axes2d.ax_left)
-                .attr('height', this.axes2d.scale_y(this.sound_index-1)-this.axes2d.scale_y(this.sound_index))
-                .attr('y', this.axes2d.scale_y(this.sound_index));
-    this.neuron_highlights_g.select('#neuron_highlights_text')
-                .attr('y', this.axes2d.scale_y(this.sound_index) + (this.axes2d.scale_y(this.sound_index-1)-this.axes2d.scale_y(this.sound_index))/2 + 3);
+    if (this.draw_clicked) {
+        this.neuron_highlights_g.select('#neuron_highlights_Y')
+            .attr('width', this.axes2d.ax_right - this.axes2d.ax_left)
+            .attr('height', this.axes2d.scale_y(this.sound_index-1)-this.axes2d.scale_y(this.sound_index))
+            .attr('y', this.axes2d.scale_y(this.sound_index));
+        this.neuron_highlights_g.select('#neuron_highlights_text')
+            .attr('y', this.axes2d.scale_y(this.sound_index) + (this.axes2d.scale_y(this.sound_index-1)-this.axes2d.scale_y(this.sound_index))/2 + 3);
+    }
 };
 
 Nengo.Raster.prototype.reset = function(event) {
