@@ -218,7 +218,6 @@ Nengo.Raster.prototype.update_highlight = function(mouse, click) {
                 });
         } else {
             //draw the temporary highlight
-            console.log('draw_not_clicked');
             this.neuron_highlights_g.select('#neuron_highlights_Y')
                 .attr('x', this.axes2d.ax_left)
                 .attr('y', y2)
@@ -280,7 +279,6 @@ Nengo.Raster.prototype.update = function() {
  * Adjust the graph layout due to changed size
  */
 Nengo.Raster.prototype.on_resize = function(width, height) {
-    console.log('resize');
     if (width < this.minWidth) {
         width = this.minWidth;
     }
