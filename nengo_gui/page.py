@@ -380,8 +380,6 @@ class Page(object):
             assert label is not None
             if '.' in label:
                 label = label.rsplit('.', 1)[1]
-        if label is None:
-            label = repr(obj)
         return label
 
     def get_uid(self, obj, default_labels=None):
