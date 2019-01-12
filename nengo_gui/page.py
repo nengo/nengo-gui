@@ -3,6 +3,7 @@ import inspect
 import json
 import logging
 import os
+import re
 import socket
 import threading
 import time
@@ -380,6 +381,9 @@ class Page(object):
             assert label is not None
             if '.' in label:
                 label = label.rsplit('.', 1)[1]
+        if (re.match(r'networks\[\d+\]', label)
+                and obj.__class__.__name__ != 'Network'):
+            label = obj.__class__.__name__
         return label
 
     def get_uid(self, obj, default_labels=None):
