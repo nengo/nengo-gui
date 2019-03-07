@@ -13,6 +13,7 @@ import nengo
 import nengo_gui
 import nengo_gui.user_action
 import nengo_gui.config
+import nengo_gui.hooks
 import nengo_gui.seed_generation
 
 
@@ -516,6 +517,7 @@ class Page(object):
                         self.sim.run_steps(self.sim.max_steps)
                     else:
                         self.sim.step()
+                        nengo_gui.hooks.on_step.trigger(self.model, self.sim)
                 except Exception as err:
                     if self.finished:
                         return
@@ -523,8 +525,13 @@ class Page(object):
                     self.error = dict(trace=traceback.format_exc(), line=line)
                     self.sim = None
             while self.sims_to_close:
+                nengo_gui.hooks.on_close.trigger(self.model, self.sim)
                 self.sims_to_close.pop().close()
 
             if self.rebuild:
                 self.build()
         self.sim = None
+
+    def close(self):
+        if self.sim is not None:
+            nengo_gui.hooks.on_close.trigger(self.model, self.sim)
