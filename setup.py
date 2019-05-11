@@ -45,7 +45,7 @@ setup(
         ]
     },
     install_requires=[
-        "nengo>=2.8",
+        "nengo>=2.8,<3.0",
     ],
     tests_require=[
         "pytest",
