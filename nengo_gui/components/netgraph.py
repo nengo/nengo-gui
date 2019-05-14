@@ -608,6 +608,8 @@ class NetGraph(Component):
             return "modulatory"
         if isinstance(conn.post_obj, nengo.ensemble.Neurons):
             trafo = conn.transform
+            if hasattr(trafo, 'init'):   # check for DenseTransform
+                trafo = trafo.init
             if trafo.size > 0 and (np.all(trafo <= 0.0) and
                     not np.all(np.isclose(trafo, 0.0))):
                 return "inhibitory"
