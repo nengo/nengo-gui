@@ -41,7 +41,7 @@ class InlineGUI(object):
 
     host = 'localhost'
 
-    def __init__(self, model, cfg=None, height=600):
+    def __init__(self, model, cfg=None, height=600, backend='nengo'):
         self.height = height
 
         self._started = False
@@ -52,6 +52,7 @@ class InlineGUI(object):
         self.server = self.start_server(cfg, model)
         self.port = self.server.server.server_port
         self.server.server.settings.prefix = None
+        self.server.server.page_settings.backend = backend
 
         self.resource = url_path_join(
             '/nengo', str(self.port), str(self.server.server.get_resource()))

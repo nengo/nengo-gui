@@ -22,6 +22,7 @@ Release History
 0.4.4 (unreleased)
 ==================
 
+- API change: Added backend to InlineGUI constructor.
 - Improvement (Experimental): Added simulator hooks
 - Improvement: Added audible spike sounds
 - Improvement (Experimental): Nodes have access to the GUI keyboard state
