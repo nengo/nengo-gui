@@ -610,9 +610,10 @@ class NetGraph(Component):
             trafo = conn.transform
             if hasattr(trafo, 'init'):   # check for DenseTransform
                 trafo = trafo.init
-            if trafo.size > 0 and (np.all(trafo <= 0.0) and
-                    not np.all(np.isclose(trafo, 0.0))):
-                return "inhibitory"
+            if hasattr(trafo, 'size'):
+                if trafo.size > 0 and (np.all(trafo <= 0.0) and
+                        not np.all(np.isclose(trafo, 0.0))):
+                    return "inhibitory"
         return "normal"
 
     def get_connection_hierarchy(self, conn, default_labels=None):
