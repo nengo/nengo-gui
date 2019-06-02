@@ -447,6 +447,20 @@ Nengo.NetGraph.prototype.on_message = function(event) {
                 break;
             }
         }
+    } else if (data.type === 'feedforward_layout_done') {
+        // Preserve the location of the non-netgraph components by applying
+        // the inverse transformation of the below pan/zoom reset
+        const x = viewport.x, y = viewport.y, scale = viewport.scale;
+        for (let c of Nengo.Component.components) {
+            c.w = c.w * scale;
+            c.h = c.h * scale;
+            c.x = (c.x + x) * scale;
+            c.y = (c.y + y) * scale;
+        }
+
+        // Reset the scale and offset to the initial value
+        this.scale = 1.0;
+        this.set_offset(0.0, 0.0);
     } else {
         console.log('invalid message');
         console.log(data);
