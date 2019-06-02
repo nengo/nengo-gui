@@ -122,6 +122,9 @@ Nengo.NetGraphConnection.prototype.create_line = function() {
                 case "inhibitory":
                     this.marker.setAttribute('d', "M 4,0 C 4,-8 -4,-8 -4,-8 V 8 c 0,0 8,0 8,-8 z");
                     break;
+                case "excitatory":
+                    this.marker.setAttribute('d', "M -3,0.5 C -3,-6.8 -5.9,-9.7 -5.9,-9.7 L 5.8,0 -5.9,9.6 c 0,0 2.9,-2.8 2.9,-10.2 z");
+                    break;
                 case "modulatory":
                     this.marker.setAttribute('d', "M 7.5,0 0,-5 -7.5,0 0,5 z");
                     break;

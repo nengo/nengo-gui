@@ -30,6 +30,14 @@ g.net rect{
     fill: none;
 }
 
+.netgraph g.excitatory > .conn {
+    stroke: #3465a4;
+}
+
+.netgraph g.excitatory > .marker {
+    fill: #3465a4;
+}
+
 .netgraph g.inhibitory > .conn {
     stroke: #c00000;
 }
