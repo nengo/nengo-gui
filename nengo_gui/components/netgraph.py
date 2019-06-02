@@ -608,9 +608,13 @@ class NetGraph(Component):
             return "modulatory"
         if isinstance(conn.post_obj, nengo.ensemble.Neurons):
             trafo = conn.transform
-            if trafo.size > 0 and (np.all(trafo <= 0.0) and
-                    not np.all(np.isclose(trafo, 0.0))):
-                return "inhibitory"
+            if hasattr(nengo, 'transforms'): # Support for Nengo 3.0
+                trafo = trafo.sample()
+
+            if hasattr(trafo, 'size'):
+                if trafo.size > 0 and (np.all(trafo <= 0.0) and
+                        not np.all(np.isclose(trafo, 0.0))):
+                    return "inhibitory"
         return "normal"
 
     def get_connection_hierarchy(self, conn, default_labels=None):
