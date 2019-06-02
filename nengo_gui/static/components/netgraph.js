@@ -111,6 +111,11 @@ Nengo.NetGraph = function(parent, args) {
      *  when that item appears. */
     this.collapsed_conns = {};
 
+    /** This map groups connections based on their (currently visible) pre and
+     *  post objects. This is used to draw connections as non-overlapping
+     *  arcs. */
+    this.connection_groups = {};
+
     /** create the master SVG element */
     this.svg = this.createSVGElement('svg');
     this.svg.setAttribute('data-object-type', 'netgraph')
@@ -604,6 +609,120 @@ Nengo.NetGraph.prototype.detect_collapsed_conns = function(uid) {
             }
         }
     }
+}
+
+/**
+ * Generates the group identifier that determines whether a connection is
+ * considered to be between the same two objects.
+ */
+Nengo.NetGraph.prototype.make_conn_group_key = function(pre, post) {
+    if (pre && post) {
+        if (pre.uid < post.uid) {
+            return pre.uid + ':' + post.uid;
+        } else {
+            return post.uid + ':' + pre.uid;
+        }
+    } else if (pre) {
+        return pre.uid;
+    } else if (post) {
+        return post.uid;
+    }
+}
+
+/**
+ * Returns a sortable uid for the given connection object. This is used to
+ * ensure that all connections within a group are always drawn in the same
+ * order. The sort order is determined by the kind of the connection. E.g.
+ * all inhibitory connections are drawn first.
+ */
+Nengo.NetGraph.prototype.make_sortable_conn_uid = function(conn) {
+    return conn.kind + ':' + conn.uid;
+}
+
+/**
+ * This function is used by the connection objects to update the internal map
+ * determining how many connections exist between the same two objects.
+ */
+Nengo.NetGraph.prototype.update_conn_groups = function(
+        conn, old_pre, old_post, new_pre, new_post) {
+    // Helper function sorting the connections within a group and recomputing
+    // their indices. Triggers a deferred redraw in the connection.
+    const update_group = (grp) => {
+        // Assign the correct group index to each connection. Count the number
+        // of connections in the group.
+        let i = 0;
+        for (let key of Object.keys(grp).sort()) {
+           grp[key] = i++;
+        }
+        grp.length = i;
+
+        // Inform all connections in the group about needing a redraw.
+        for (let key of Object.keys(grp)) {
+            const uid = key.split(':', 2)[1];
+            if (uid && (uid in this.svg_conns)) {
+                this.svg_conns[uid].redraw(true);
+            }
+        }
+    }
+
+    // Abort if there is nothing to do.
+    if (old_pre == new_pre && old_post == new_post) {
+        return;
+    }
+
+    // Create a sortable UID for the connection.
+    const conn_uid = this.make_sortable_conn_uid(conn);
+
+    // Remove the connection from the old connection group.
+    const old_key = this.make_conn_group_key(old_pre, old_post);
+    if (old_key in this.connection_groups) {
+        const grp = this.connection_groups[old_key];
+        if (conn_uid in grp) {
+            delete grp[conn_uid];
+            update_group(grp);
+        }
+        if (grp.length === 0) {
+            delete this.connection_groups[old_key];
+        }
+    }
+
+    // If both pre objects are valid, add a new entry to the group map.
+    if (new_pre !== null && new_post !== null) {
+        // Fetch the correct group, create it if it does not exist.
+        const new_key = this.make_conn_group_key(new_pre, new_post);
+        let grp = this.connection_groups[new_key];
+        if (grp === undefined) {
+            grp = this.connection_groups[new_key] = {};
+            Object.defineProperty(grp, 'length', {
+                'value': 0,
+                'enumerable': false,
+                'writable': true
+            });
+        }
+
+        // Insert the UID into the group.
+        grp[conn_uid] = 0;
+        update_group(grp);
+    }
+}
+
+/**
+ * This function returns the index of the connection within its connection
+ * group, as well as the length of the connection group. These two numbers
+ * determine the way the connection is drawn on screen. If there are multiple
+ * connections between the same object these connections are drawn as arcs
+ * of different radii so they don't overlap.
+ */
+Nengo.NetGraph.prototype.get_conn_group_info = function(conn, pre, post) {
+    const key = this.make_conn_group_key(pre, post);
+    const conn_uid = this.make_sortable_conn_uid(conn);
+    if (key in this.connection_groups) {
+        const grp = this.connection_groups[key];
+        if (conn_uid in grp) {
+            return [grp[conn_uid], grp.length];
+        }
+    }
+    return [0, 1];
 }
 
 /** create a minimap */
