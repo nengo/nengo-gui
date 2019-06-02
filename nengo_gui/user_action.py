@@ -263,12 +263,8 @@ class FeedforwardLayout(Action):
 
         if self.uid is None:
             self.network = self.net_graph.page.model
-            self.scale = self.net_graph.page.config[self.network].size[0]
-            self.x, self.y = self.net_graph.page.config[self.network].pos
         else:
             self.network = self.obj
-            self.scale = 1.0
-            self.x, self.y = 0, 0
 
         self.pos = self.net_graph.layout.make_layout(self.network)
         # record the current positions and sizes of everything in the network
@@ -279,15 +275,15 @@ class FeedforwardLayout(Action):
     def act_feedforward_layout(self):
         for obj, layout in iteritems(self.pos):
             obj_cfg = self.net_graph.page.config[obj]
-            obj_cfg.pos = (layout['y'] / self.scale - self.x,
-                           layout['x'] / self.scale - self.y)
-            obj_cfg.size = (layout['h'] / 2 / self.scale,
-                            layout['w'] / 2 / self.scale)
+            obj_cfg.pos = (layout['y'], layout['x'])
+            obj_cfg.size = (layout['h'] / 2, layout['w'] / 2)
 
             obj_uid = self.net_graph.page.get_uid(obj)
 
             self.send('pos_size',
                       uid=obj_uid, pos=obj_cfg.pos, size=obj_cfg.size)
+
+        self.send('feedforward_layout_done')
 
         self.net_graph.page.config[self.network].has_layout = True
         self.net_graph.modified_config()
