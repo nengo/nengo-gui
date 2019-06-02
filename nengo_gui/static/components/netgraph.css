@@ -24,9 +24,10 @@ g.net rect{
     cursor: move;
 }
 
-.netgraph line {
+.netgraph path.conn {
     stroke: black;
     stroke-width: 2px;
+    fill: none;
 }
 
 .netgraph g.inhibitory > .conn {
@@ -54,9 +55,10 @@ g.net rect{
     width: 100%;
 }
 
-.minimap line {
+.minimap path.conn {
     stroke: black;
     stroke-width: 1px;
+    fill: none;
 }
 
 rect.view{

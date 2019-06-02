@@ -8,6 +8,7 @@
  * @param {string or null} info.parent - A containing NetGraphItem
  * @param {array of strings} info.pre - uid to connect from and its parents
  * @param {array of strings} info.post - uid to connect to and its parents
+ * @param {string or null} info.kind - type of the connection
  */
 Nengo.NetGraphConnection = function(ng, info, minimap, mini_conn) {
     this.ng = ng;
@@ -64,6 +65,7 @@ Nengo.NetGraphConnection = function(ng, info, minimap, mini_conn) {
 
     this.create_line();
 
+    this.redraw_timeout = null;
     this.redraw();
 
     this.g_conns.appendChild(this.g);
@@ -109,9 +111,8 @@ Nengo.NetGraphConnection.prototype.create_line = function() {
         } else {
             this.marker.setAttribute('d', "M 4 0 L 0 2 L 4 4 z");
         }
-
     } else {
-        this.line = this.ng.createSVGElement('line');
+        this.line = this.ng.createSVGElement('path');
         this.line.classList.add('conn');
         this.g.appendChild(this.line);
         this.marker = this.ng.createSVGElement('path');
@@ -162,6 +163,7 @@ Nengo.NetGraphConnection.prototype.set_pre = function(pre) {
         }
         this.pre.conn_out.splice(index, 1);
     }
+    this.ng.update_conn_groups(this, this.pre, this.post, pre, this.post);
     this.pre = pre;
     if (this.pre !== null) {
         /** add myself to pre's output connections list */
@@ -204,6 +206,7 @@ Nengo.NetGraphConnection.prototype.set_post = function(post) {
 
     // Update the post ensemble/connection target and notify the post ensembles
     // about the incoming connection.
+    this.ng.update_conn_groups(this, this.pre, this.post, this.pre, post);
     this.post = post;
     if (this.post !== null) {
         for_each_post_ensemble(function (ens) {
@@ -291,7 +294,22 @@ Nengo.NetGraphConnection.prototype.remove = function() {
 
 
 /** redraw the connection */
-Nengo.NetGraphConnection.prototype.redraw = function() {
+Nengo.NetGraphConnection.prototype.redraw = function(defer=false) {
+    // If defer is true, wait with the update until all events from the JS
+    // event queue have been processed.
+    if (defer) {
+        if (this.redraw_timeout === null) {
+            this.redraw_timeout = window.setTimeout(_ => {
+                this.redraw_timeout = null;
+                this.redraw();
+            }, 0);
+        }
+        return;
+    } else if (this.redraw_timeout !== null) {
+        window.clearTimeout(this.redraw_timeout);
+        this.redraw_timeout = null;
+    }
+
     if (this.pre === null || this.post === null) {
         if (this.line !== undefined) {
             this.line.setAttribute('visibility', 'hidden');
@@ -344,22 +362,61 @@ Nengo.NetGraphConnection.prototype.redraw = function() {
                           'translate(' + mx + ',' + my + ')');
         }
     } else {
-        var post_pos = this.post.get_screen_location();
-        this.line.setAttribute('x1', pre_pos[0]);
-        this.line.setAttribute('y1', pre_pos[1]);
-        this.line.setAttribute('x2', post_pos[0]);
-        this.line.setAttribute('y2', post_pos[1]);
+        // Fetch information about the set of connections connecting to this
+        // object
+        const post_pos = this.post.get_screen_location();
+        const [group_i, group_tot] = this.ng.get_conn_group_info(
+            this, this.pre, this.post);
 
-        var angle = Math.atan2(post_pos[1] - pre_pos[1], //angle between objects
-                                               post_pos[0] - pre_pos[0]);
+        // Fetch some information about the pre and post object location/size
+        const [x1, y1] = pre_pos, [x2, y2] = post_pos;
+        const w1 = this.pre.get_screen_width();
+        const h1 = this.pre.get_screen_height();
+        const w2 = this.post.get_screen_width();
+        const h2 = this.post.get_screen_height();
 
-        var w1 = this.pre.get_screen_width();
-        var h1 = this.pre.get_screen_height();
-        var w2 = this.post.get_screen_width();
-        var h2 = this.post.get_screen_height();
+        // Compute the index of arc in the connection group. arc_i == 0 means
+        // that this is the central arc. Negative numbers correspond to an arc
+        // in the top half, positive numbers to arcs in the bottom half.
+        // Compensate for the fact that there are no straight lines (arc_i == 0)
+        // in case the number of connections is even.
+        const n_arcs = Math.ceil((group_tot - 1) / 2) | 0
+        let arc_i = group_i - n_arcs;
+        if (group_tot % 2 == 0 && arc_i >= 0) {
+            arc_i++;
+        }
+        let has_arcs = this.post.type !== 'net';
 
-        a1 = Math.atan2(h1,w1);
-        a2 = Math.atan2(h2,w2);
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+        const angle_deg = 180.0 / Math.PI * angle;
+
+        let rx = 0.0, ry = 0.0;
+        if (arc_i === 0 || !has_arcs) {
+            // Central line in the connection group. Draw as a straight line.
+            this.line.setAttribute('d', `M ${x1} ${y1} L ${x2} ${y2}`)
+        } else {
+            // Radius along the x-axis (direction of the connection). This is
+            // just half the length of the line.
+            rx = 0.5 * Math.hypot(x2 - x1, y2 - y1);
+
+            // Scale the radius along the y-axis with the average object size.
+            // This determines the magnitude of the arc.
+            const obj_size = 0.25 * (w1 + h1 + w2 + h2);
+            ry = 0.5 * arc_i * obj_size / Math.sqrt(n_arcs);
+
+            // Flip the order depending on the direction of the connection.
+            if (x1 > x2) {
+                ry *= -1;
+            }
+
+            // Use the SVG arc path primitive to draw the path
+            this.line.setAttribute('d',
+                `M ${x1} ${y1} A ${rx} ${Math.abs(ry)} ${angle_deg} 0 ` +
+                `${(ry >= 0.0) ? 0 : 1} ${x2} ${y2}`);
+        }
+
+        const a1 = Math.atan2(h1,w1);
+        const a2 = Math.atan2(h2,w2);
 
         var pre_length = this.intersect_length(angle, a1, w1, h1);
         var post_to_pre_angle = angle - Math.PI;
@@ -369,13 +426,17 @@ Nengo.NetGraphConnection.prototype.redraw = function() {
         let mx, my;
         if (this.kind == 'modulatory') {
             // Just centre modulatory connection markers on the post object
+            // TODO: This won't work if the post-connection is an arc.
             mx = post_pos[0]
             my = post_pos[1]
         } else {
-            mx = (pre_pos[0]+pre_length[0]) * 0.4
-                        + (post_pos[0]+post_length[0]) * 0.6;
-            my = (pre_pos[1]+pre_length[1]) * 0.4
-                        + (post_pos[1]+post_length[1]) * 0.6;
+            if (has_arcs) {
+                mx = (x1 + x2) * 0.5 - Math.sin(angle) * ry;
+                my = (y1 + y2) * 0.5 + Math.cos(angle) * ry;
+            } else {
+                mx = (x1 + pre_length[0]) * 0.4 + (x2 + post_length[0]) * 0.6;
+                my = (y1 + pre_length[1]) * 0.4 + (y2 + post_length[1]) * 0.6;
+            }
 
             //Check to make sure the marker doesn't go past either endpoint
             vec1 = [post_pos[0]-pre_pos[0], post_pos[1]-pre_pos[1]];
@@ -391,10 +452,7 @@ Nengo.NetGraphConnection.prototype.redraw = function() {
                 my = post_pos[1];
             }
         }
-
-        angle = 180 / Math.PI * angle;
-        this.marker.setAttribute('transform',
-                          'translate(' + mx + ',' + my + ') rotate('+ angle +')');
+        this.marker.setAttribute('transform', `translate(${mx}, ${my}) rotate(${angle_deg})`);
     }
     
     if (!this.minimap && this.ng.mm_display) {

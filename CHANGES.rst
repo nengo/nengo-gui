@@ -22,6 +22,7 @@ Release History
 0.4.4 (unreleased)
 ==================
 
+- Improvement: show multiple connections between objects
 - Bugfix: handle new Connection transform in Nengo 3.0.0
 - Bugfix: escape labels so they aren't treated as HTML
 - Improvement: reworked networking to allow clean integration with Jupyter
