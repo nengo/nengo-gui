@@ -604,14 +604,35 @@ class NetGraph(Component):
         Categorises the given connection into one of three kinds: modulatory,
         inhibitory, and normal.
         """
-        if isinstance(conn.post_obj, nengo.connection.LearningRule):
-            return "modulatory"
-        if isinstance(conn.post_obj, nengo.ensemble.Neurons):
+
+        # Fetch the pre and post object for convenience
+        pre, post = conn.pre_obj, conn.post_obj
+
+        # Try to determine the connection kind by examining the connection class
+        # and weight matrix
+        kind = "normal"
+        if hasattr(conn, 'kind'):
+            kind = conn.kind
+        if isinstance(post, nengo.connection.LearningRule):
+            kind = "modulatory"
+        elif isinstance(post, nengo.ensemble.Neurons):
             trafo = conn.transform
             if trafo.size > 0 and (np.all(trafo <= 0.0) and
                     not np.all(np.isclose(trafo, 0.0))):
-                return "inhibitory"
-        return "normal"
+                kind = "inhibitory"
+
+        # Support biologically plausible connections as e.g. provided by
+        # nengo_bio
+        if hasattr(conn, "dales_principle") and conn.dales_principle:
+            if hasattr(pre, 'p_exc') and (not pre.p_exc is None):
+                is_purely_excitatory = np.allclose(pre.p_exc, 1.0)
+                is_purely_inhibitory = np.allclose(pre.p_exc, 0.0)
+                if kind == "inhibitory" and is_purely_excitatory:
+                    kind = "dead"
+                elif kind == "excitatory" and is_purely_inhibitory:
+                    kind = "dead"
+
+        return kind
 
     def get_connection_hierarchy(self, conn, default_labels=None):
         """
@@ -675,6 +696,11 @@ class NetGraph(Component):
                  UID of the parent network the connection belongs to.
         """
 
+        # Fetch the connection kind
+        kind = kind=NetGraph.connection_kind(conn)
+        if kind == "dead":
+            return
+
         # Generate a uid for the connection
         uid = self.page.get_uid(conn)
         if uid in self.uids:
@@ -686,5 +712,5 @@ class NetGraph(Component):
 
         # Serialise the connection descriptor and send it to the client
         info = dict(uid=uid, pre=pres, post=posts, type='conn', parent=parent,
-                    kind=NetGraph.connection_kind(conn))
+                    kind=kind)
         client.write_text(json.dumps(info))
