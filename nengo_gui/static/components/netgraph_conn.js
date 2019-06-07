@@ -496,16 +496,12 @@ Nengo.NetGraphConnection.prototype.intersect_length = function(theta, alpha, wid
  */
 
 Nengo.NetGraphConnection.prototype.get_bounding_box = function () {
-    let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
-
-    if (this.line.hasAttribute('x1') && this.line.hasAttribute('x2') &&
-        this.line.hasAttribute('y1') && this.line.hasAttribute('y2')) {
-        x1 = parseFloat(this.line.getAttribute('x1'))
-        x2 = parseFloat(this.line.getAttribute('x2'))
-        y1 = parseFloat(this.line.getAttribute('y1'))
-        y2 = parseFloat(this.line.getAttribute('y2'))
-    }
-    return [x1, y1, x2, y2];
+    const parent_rect = this.ng.svg.getBoundingClientRect();
+    const rect = this.line.getBoundingClientRect();
+    return [rect.left - parent_rect.left,
+            rect.top - parent_rect.top,
+            rect.right - parent_rect.left,
+            rect.bottom - parent_rect.top];
 }
 
 Nengo.NetGraphConnection.prototype.get_screen_location = function() {
