@@ -19,8 +19,8 @@ Release History
    - Bugfixes
    - Documentation
 
-0.4.4 (unreleased)
-==================
+0.4.4 (June 9, 2019)
+====================
 
 - API change: Added backend to InlineGUI constructor.
 - Improvement (Experimental): Added simulator hooks
