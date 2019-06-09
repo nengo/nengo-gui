@@ -19,6 +19,11 @@ Release History
    - Bugfixes
    - Documentation
 
+
+0.4.5 (unreleased)
+==================
+
+
 0.4.4 (June 9, 2019)
 ====================
 
