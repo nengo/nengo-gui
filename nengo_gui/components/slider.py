@@ -21,13 +21,20 @@ class OverriddenOutput(Process):
         self.to_client = to_client
         self.from_client = from_client
 
-    def make_step(self, shape_in, shape_out, dt, rng):
+    def make_step(self, shape_in, shape_out, dt, rng, state=None):
         size_out = shape_out[0] if is_iterable(shape_out) else shape_out
 
         if self.base_output is None:
             f = self.passthrough
         elif isinstance(self.base_output, Process):
-            f = self.base_output.make_step(shape_in, shape_out, dt, rng)
+            try:
+                state = self.base_output.make_state(shape_in, shape_out,
+                                                    dt, rng)
+                f = self.base_output.make_step(shape_in, shape_out, dt, rng,
+                                               state=state)
+            except AttributeError:
+                # for nengo<=2.8.0
+                f = self.base_output.make_step(shape_in, shape_out, dt, rng)
         else:
             f = self.base_output
         return self.Step(size_out, f,

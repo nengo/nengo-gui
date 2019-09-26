@@ -23,6 +23,7 @@ Release History
 0.4.5 (unreleased)
 ==================
 
+- Bugfix: Handle recent changes to nengo.Process API (backwards-compatible)
 
 0.4.4 (June 9, 2019)
 ====================
