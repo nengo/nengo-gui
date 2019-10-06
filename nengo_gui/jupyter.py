@@ -23,7 +23,7 @@ from notebook.base.handlers import IPythonHandler
 from tornado import httpclient
 from tornado import httputil
 from tornado.simple_httpclient import SimpleAsyncHTTPClient
-from tornado import web
+from tornado import gen
 from tornado.websocket import websocket_connect, WebSocketHandler
 
 import nengo_gui
@@ -211,7 +211,7 @@ class NengoGuiHandler(IPythonHandler):
         super(NengoGuiHandler, self).__init__(*args, **kwargs)
         self.header_lines = 0
 
-    @web.asynchronous
+    @gen.coroutine
     def get(self, port):
         client = httpclient.AsyncHTTPClient()
         headers = httputil.HTTPHeaders()
@@ -227,7 +227,11 @@ class NengoGuiHandler(IPythonHandler):
             headers=headers,
             header_callback=self.header_callback,
             streaming_callback=self.streaming_callback)
-        client.fetch(request, self.async_callback)
+        response = yield client.fetch(request)
+        if response.error is not None:
+            response.rethrow()
+        else:
+            self.finish()
 
     def compute_etag(self):
         return None
@@ -243,12 +247,6 @@ class NengoGuiHandler(IPythonHandler):
 
     def streaming_callback(self, data):
         self.write(data)
-
-    def async_callback(self, response):
-        if response.error is not None:
-            response.rethrow()
-        else:
-            self.finish()
 
 
 class NengoGuiWSHandler(IPythonHandler, WebSocketHandler):
