@@ -23,6 +23,7 @@ Release History
 0.4.5 (unreleased)
 ==================
 
+- Bugfix: Removed duplicate response headers (fixes loading in Chrome)
 - Bugfix: Fix for running with Tornado 6
 - Bugfix: Handle recent changes to nengo.Process API (backwards-compatible)
 

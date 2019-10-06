@@ -209,7 +209,8 @@ class LabServerManager(object):
 class NengoGuiHandler(IPythonHandler):
     def __init__(self, *args, **kwargs):
         super(NengoGuiHandler, self).__init__(*args, **kwargs)
-        self.header_lines = 0
+        self.status_code_read = False
+        self.header_keys = set()
 
     @gen.coroutine
     def get(self, port):
@@ -237,13 +238,17 @@ class NengoGuiHandler(IPythonHandler):
         return None
 
     def header_callback(self, data):
-        if self.header_lines == 0:
+        if not self.status_code_read:
             status = httputil.parse_response_start_line(data)
             self.set_status(status.code, status.reason)
+            self.status_code_read = True
         else:
             for name, value in httputil.HTTPHeaders.parse(data).get_all():
-                self.add_header(name, value)
-        self.header_lines += 1
+                if name in self.header_keys:
+                    self.add_header(name, value)
+                else:
+                    self.set_header(name, value)
+                    self.header_keys.add(name)
 
     def streaming_callback(self, data):
         self.write(data)
