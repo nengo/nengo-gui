@@ -9,8 +9,8 @@ except ImportError:
     class Process(object):
         pass
 
-from nengo.utils.compat import is_iterable
 
+from nengo_gui.compat import is_iterable
 from nengo_gui.components.component import Component
 
 

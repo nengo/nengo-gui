@@ -1,7 +1,6 @@
 """Respond to an action from the user on the NetGraph"""
 
-from nengo.utils.compat import iteritems
-
+from nengo_gui.compat import iteritems
 import nengo_gui.components
 
 

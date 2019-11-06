@@ -6,9 +6,9 @@ import threading
 import numpy as np
 
 import nengo
-from nengo.utils.compat import escape
 import json
 
+from nengo_gui.compat import escape, iteritems
 from nengo_gui.components.component import Component
 from nengo_gui.components.value import Value
 from nengo_gui.components.slider import OverriddenOutput
@@ -123,7 +123,7 @@ class NetGraph(Component):
         # for Nodes, Ensembles, and Networks, this means to find the item
         # with the same uid.  For Connections, we don't really have a uid,
         # so we use the uids of the pre and post objects.
-        for uid, old_item in nengo.utils.compat.iteritems(dict(self.uids)):
+        for uid, old_item in iteritems(dict(self.uids)):
             try:
                 new_item = eval(uid, self.page.locals)
             except:

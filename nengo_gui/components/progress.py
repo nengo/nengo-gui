@@ -1,18 +1,8 @@
 import json
 
-try:
-    from nengo.utils.compat import escape
-except ImportError:
-    import sys
-    PY2 = sys.version_info[0] == 2
-    if PY2:
-        from cgi import escape as cgi_escape
-        escape = lambda s, quote=True: cgi_escape(s, quote=quote)
-    else:
-        from html import escape
-
 from nengo.utils.progress import ProgressBar, timestamp2timedelta
 
+from nengo_gui.compat import escape
 from nengo_gui.components.component import Component
 
 

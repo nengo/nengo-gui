@@ -4,7 +4,8 @@ import os
 import threading
 import traceback
 import sys
-from nengo.utils.compat import StringIO
+
+from nengo_gui.compat import StringIO
 
 
 # list of Simulators to check for
