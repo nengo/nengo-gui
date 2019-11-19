@@ -20,8 +20,8 @@ Release History
    - Documentation
 
 
-0.4.5 (unreleased)
-==================
+0.4.5 (November 19, 2019)
+=========================
 
 - Improvement: subclasses of Network use their class name as a default label
 - Bugfix: Removed duplicate response headers (fixes loading in Chrome)
