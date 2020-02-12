@@ -22,6 +22,7 @@ Release History
 0.4.6 (unreleased)
 ==================
 
+- Bugfix: Failure when opening browser from script
 
 
 0.4.5 (November 19, 2019)

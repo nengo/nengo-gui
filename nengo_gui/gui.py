@@ -190,8 +190,8 @@ class GUI(InteractiveGUI):
 
     def start(self):
         t = threading.Thread(
-            target=webbrowser.open,
-            args=str(self.server.get_url(token='one-time')))
+            target=webbrowser.open, args=(str(self.server.get_url(token="one-time")),)
+        )
         t.start()
 
         super(GUI, self).start()
