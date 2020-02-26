@@ -22,6 +22,7 @@ Release History
 0.4.6 (unreleased)
 ==================
 
+- Bugfix: Fix examples for nengo 3.0 (those examples now require nengo>=2.6)
 - Bugfix: Failure when opening browser from script
 
 

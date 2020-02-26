@@ -4,7 +4,7 @@
 # single neurons (i.e., addition). Addition transforms two inputs into a single 
 # output which is their sum. You will construct a network that adds two inputs. 
 # The network utilizes two communication channels going into the same neural 
-# population. Addition is somewhat â€˜freeâ€™, since the incoming currents from 
+# population. Addition is somewhat ‘free’, since the incoming currents from 
 # different synaptic connections interact linearly.
 
 # This model has ensembles A and B which represent the two inputs to be added. 
@@ -33,15 +33,15 @@
 #Setup the environment
 import nengo
 from nengo.dists import Uniform
-from nengo.utils.functions import piecewise
+from nengo.processes import Piecewise
 
 #Create the network
 model = nengo.Network(label='Scalar Addition')
 
 with model:
     #Inputs to drive the activity in ensembles A and B 
-    input_A = nengo.Node(piecewise({0: -0.75, 1.25: 0.5, 2.5: 0.70, 3.75: 0}))
-    input_B = nengo.Node(piecewise({0: 0.25, 1.25: -0.5, 2.5: 0.85, 3.75: 0}))
+    input_A = nengo.Node(Piecewise({0: -0.75, 1.25: 0.5, 2.5: 0.70, 3.75: 0}))
+    input_B = nengo.Node(Piecewise({0: 0.25, 1.25: -0.5, 2.5: 0.85, 3.75: 0}))
 
     #Ensembles with 100 LIF neurons each
     # Represents the first input

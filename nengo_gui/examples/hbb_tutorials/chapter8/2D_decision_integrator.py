@@ -40,11 +40,8 @@
 #    (i.e., when LIP starts following MT)
 
 #Setup the environment
-import numpy as np
 import nengo
 from nengo.processes import WhiteNoise
-from nengo.utils.functions import piecewise
-from nengo.utils.matplotlib import rasterplot
 from nengo.dists import Uniform
 
 model = nengo.Network(label='2D Decision Integrator', seed=11)

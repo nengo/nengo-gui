@@ -37,14 +37,13 @@
 
 # Setup the environment
 import nengo
-from nengo.dists import Choice
-from nengo.utils.functions import piecewise
+from nengo.processes import Piecewise
 
 model = nengo.Network(label='Nonlinear Function')
 with model:
     #Input - Piecewise step functions
-    inputX = nengo.Node(piecewise({0: -0.75, 1.25: 0.5, 2.5: -0.75, 3.75: 0}))
-    inputY= nengo.Node(piecewise({0: 1, 1.25: 0.25, 2.5: -0.25, 3.75: 0.75}))
+    inputX = nengo.Node(Piecewise({0: -0.75, 1.25: 0.5, 2.5: -0.75, 3.75: 0}))
+    inputY= nengo.Node(Piecewise({0: 1, 1.25: 0.25, 2.5: -0.25, 3.75: 0.75}))
     
     #Five ensembles containing LIF neurons
     X = nengo.Ensemble(100, dimensions=1, radius=1)     # Represents inputX
