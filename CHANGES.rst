@@ -19,6 +19,10 @@ Release History
    - Bugfixes
    - Documentation
 
+0.4.7 (unreleased)
+==================
+
+
 0.4.6 (March 3, 2020)
 =====================
 
