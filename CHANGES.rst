@@ -19,8 +19,8 @@ Release History
    - Bugfixes
    - Documentation
 
-0.4.6 (unreleased)
-==================
+0.4.6 (March 3, 2020)
+=====================
 
 - Bugfix: Fix examples for nengo 3.0 (those examples now require nengo>=2.6)
 - Bugfix: Failure when opening browser from script
