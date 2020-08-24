@@ -22,7 +22,9 @@ Release History
 0.4.8 (unreleased)
 ==================
 
-*Compatible with Nengo 2.6.0 - 3.0.0*
+*Compatible with Nengo 2.6.0 - 3.1.0*
+
+- Bugfix: Fix compatibility with Nengo version 3.1.0.
 
 0.4.7 (November 24, 2020)
 =========================

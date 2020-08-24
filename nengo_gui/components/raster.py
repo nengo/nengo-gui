@@ -6,6 +6,13 @@ import numpy as np
 from nengo_gui.components.component import Component
 
 
+def is_spiking(neuron_type):
+    try:
+        return neuron_type.spiking
+    except AttributeError:
+        return "spikes" in neuron_type.probeable
+
+
 class Raster(Component):
     """Plot showing spike events over time."""
 
@@ -29,12 +36,12 @@ class Raster(Component):
     def add_nengo_objects(self, page):
         with page.model:
             self.node = nengo.Node(self.gather_data, size_in=self.max_neurons)
-            if "spikes" in self.neuron_type.probeable:
+            if is_spiking(self.neuron_type):
                 self.conn = nengo.Connection(self.obj, self.node, synapse=None)
 
     def remove_nengo_objects(self, page):
         page.model.nodes.remove(self.node)
-        if "spikes" in self.neuron_type.probeable:
+        if is_spiking(self.neuron_type):
             page.model.connections.remove(self.conn)
 
     def gather_data(self, t, x):
