@@ -19,6 +19,11 @@ Release History
    - Bugfixes
    - Documentation
 
+0.4.8 (unreleased)
+==================
+
+*Compatible with Nengo 2.6.0 - 3.0.0*
+
 0.4.7 (November 24, 2020)
 =========================
 
