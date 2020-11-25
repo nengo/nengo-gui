@@ -51,6 +51,9 @@ def main():
     parser.add_argument(
         '-b', '--backend', metavar='BACKEND',
         default='nengo', type=str, help='default backend to use')
+    parser.add_argument(
+        '--dt', metavar='DT', default=0.001, type=float,
+        help='simulator time step in seconds (default: 0.001)')
     parser.add_argument('--browser', dest='browser', type=str,
         metavar='BROWSER', default=True,
         help=browser_help)
@@ -97,7 +100,8 @@ def main():
                 nengo_gui.__path__[0], 'examples', 'default.py')
         else:
             filename = args.filename
-        page_settings = nengo_gui.page.PageSettings(backend=args.backend)
+        page_settings = nengo_gui.page.PageSettings(backend=args.backend,
+                                                    dt=args.dt)
         s = None
         while s is None:
             try:

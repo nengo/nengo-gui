@@ -18,14 +18,15 @@ import nengo_gui.seed_generation
 
 
 class PageSettings(object):
-    __slots__ = ['backend', 'editor_class', 'filename_cfg']
+    __slots__ = ['backend', 'editor_class', 'filename_cfg', 'dt']
 
     def __init__(
-            self, filename_cfg=None, backend='nengo',
+            self, filename_cfg=None, backend='nengo', dt=0.001,
             editor_class=nengo_gui.components.AceEditor):
         self.filename_cfg = filename_cfg
         self.backend = backend
         self.editor_class = editor_class
+        self.dt = dt
 
 
 class Page(object):
@@ -474,6 +475,8 @@ class Page(object):
                 old_sim.sim = None
                 old_sim.finished = True
 
+            dt = self.settings.dt
+
             exec_env = nengo_gui.exec_env.ExecutionEnvironment(self.filename,
                                                                allow_sim=True)
             handles_progress = ('progress_bar' in 
@@ -483,9 +486,10 @@ class Page(object):
                 with exec_env:
                     if handles_progress:
                         self.sim = backend.Simulator(
-                            self.model, progress_bar=self.locals['_viz_progress'])
+                            self.model, dt=dt,
+                            progress_bar=self.locals['_viz_progress'])
                     else:
-                        self.sim = backend.Simulator(self.model)
+                        self.sim = backend.Simulator(self.model, dt=dt)
 
             except:
                 line = nengo_gui.exec_env.determine_line_number()
