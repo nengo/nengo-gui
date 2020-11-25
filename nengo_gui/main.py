@@ -50,7 +50,7 @@ def main():
         '--debug', action='store_true', help='turn on debug logging')
     parser.add_argument(
         '-b', '--backend', metavar='BACKEND',
-        default='nengo', type=str, help='default backend to use')
+        default='reference', type=str, help='default backend to use')
     parser.add_argument('--browser', dest='browser', type=str,
         metavar='BROWSER', default=True,
         help=browser_help)

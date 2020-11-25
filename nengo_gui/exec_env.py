@@ -1,6 +1,7 @@
 import contextlib
 import importlib
 import os
+from pkg_resources import iter_entry_points
 import threading
 import traceback
 import sys
@@ -9,14 +10,21 @@ from nengo_gui.compat import StringIO
 
 
 # list of Simulators to check for
-known_modules = ['nengo', 'nengo_ocl', 'nengo_distilled',
-                 'nengo_dl', 'nengo_mpi',
-                 'nengo_brainstorm', 'nengo_spinnaker']
+known_modules = ['reference', 'ocl', 'distilled', 'dl', 'mpi', 'brainstorm',
+                 'spinnaker']
 
 
 def discover_backends():
-    found_modules = {}
+    found_modules = {
+        ep.name: ep.load for ep in iter_entry_points(group='nengo.backends')}
+
     for name in known_modules:
+        if name == 'reference':
+            prefixed_name = 'nengo'
+        else:
+            prefixed_name = 'nengo_' + name
+        if prefixed_name in found_modules:
+            continue
         try:
             mod = importlib.import_module(name)
         except Exception as e:
@@ -24,7 +32,7 @@ def discover_backends():
             # other errors to the user as they might help debugging broken
             # backend installations
             continue
-        found_modules[name] = mod
+        found_modules[name] = lambda: mod.Simulator
     return found_modules
 
 
@@ -108,13 +116,16 @@ class ExecutionEnvironment(object):
         sys.stdout = self.stdout
 
         if not self.allow_sim:
-            for mod in discover_backends().values():
-                self.simulators[mod] = mod.Simulator
-                mod.Simulator = make_dummy(mod.Simulator)
+            for load in discover_backends().values():
+                Simulator = load()
+                mod = importlib.import_module(Simulator.__module__)
+                name = Simulator.__name__
+                self.simulators[(mod, name)] = Simulator
+                setattr(mod, name, make_dummy(Simulator))
 
     def __exit__(self, exc_type, exc_value, traceback):
-        for mod, cls in self.simulators.items():
-            mod.Simulator = cls
+        for (mod, name), cls in self.simulators.items():
+            setattr(mod, name, cls)
         flag.executing = False
 
         sys.stdout = sys.__stdout__

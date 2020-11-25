@@ -105,7 +105,7 @@ class Slider(Component):
         if Process.__module__ == "nengo_gui.components.slider":
             self.node.output = self.override_output.make_step(
                 shape_in=None, shape_out=self.node.size_out, dt=None, rng=None)
-        elif page.settings.backend == 'nengo_spinnaker':
+        elif page.settings.backend == 'spinnaker':
             # TODO: this should happen for any backend that does not support
             #  Processes
             self.node.output = self.override_output.make_step(
