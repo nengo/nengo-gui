@@ -22,6 +22,8 @@ Release History
 0.4.8 (unreleased)
 ==================
 
+- Handle spike plots in latest nengo version
+
 *Compatible with Nengo 2.6.0 - 3.0.0*
 
 0.4.7 (November 24, 2020)

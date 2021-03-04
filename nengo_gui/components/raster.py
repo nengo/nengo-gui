@@ -33,12 +33,12 @@ class Raster(Component):
     def add_nengo_objects(self, page):
         with page.model:
             self.node = nengo.Node(self.gather_data, size_in=self.max_neurons)
-            if 'spikes' in self.neuron_type.probeable:
+            if 'spikes' in self.neuron_type.probeable or getattr(self.neuron_type, 'spiking', False):
                 self.conn = nengo.Connection(self.obj, self.node, synapse=None)
 
     def remove_nengo_objects(self, page):
         page.model.nodes.remove(self.node)
-        if 'spikes' in self.neuron_type.probeable:
+        if 'spikes' in self.neuron_type.probeable or getattr(self.neuron_type, 'spiking', False):
             page.model.connections.remove(self.conn)
 
     def gather_data(self, t, x):
