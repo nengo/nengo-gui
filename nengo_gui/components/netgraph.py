@@ -635,7 +635,8 @@ class NetGraph(Component):
         elif isinstance(post, nengo.ensemble.Neurons):
             trafo = conn.transform
             if hasattr(nengo, "transforms"):  # Support for Nengo 3.0
-                trafo = trafo.sample()
+                if not isinstance(trafo, nengo.transforms.NoTransform):
+                    trafo = trafo.sample()
 
             if hasattr(trafo, "size"):
                 if trafo.size > 0 and (
