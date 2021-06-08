@@ -21,19 +21,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 __version__ = "2.2.1"
-import re
 import datetime
 import logging
+import re
 import sys
 from unicodedata import normalize
+
 if sys.version_info >= (3, 0, 0):  # pragma: no cover
-    from urllib.parse import (
-        quote as _default_quote, unquote as _default_unquote)
+    from urllib.parse import quote as _default_quote
+    from urllib.parse import unquote as _default_unquote
     basestring = str
     long = int
 else:  # pragma: no cover
-    from urllib import (
-        quote as _default_quote, unquote as _default_unquote)
+    from urllib import quote as _default_quote
+    from urllib import unquote as _default_unquote
 
 
 def _total_seconds(td):

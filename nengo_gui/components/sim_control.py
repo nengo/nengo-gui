@@ -1,13 +1,12 @@
+import json
+import struct
 import time
 import timeit
-import struct
 
-import numpy as np
 import nengo
-import json
-
-from nengo_gui.components.component import Component
 import nengo_gui.exec_env
+import numpy as np
+from nengo_gui.components.component import Component
 from nengo_gui.server import WebSocketFrame
 
 
@@ -37,10 +36,10 @@ class SimControl(Component):
         self.send_config_options = False
         self.reset_inform = False
         self.node = None
-        self.target_rate = 1.0     # desired speed of simulation
-        self.target_scale = None   # desired proportion of full speed
-        self.delay_time = 0.0      # amount of delay per time step
-        self.rate_proportion = 1.0 # current proportion of full speed
+        self.target_rate = 1.0  # desired speed of simulation
+        self.target_scale = None  # desired proportion of full speed
+        self.delay_time = 0.0  # amount of delay per time step
+        self.rate_proportion = 1.0  # current proportion of full speed
         self.smart_sleep_offset = 0.0  # difference from actual sleep time
 
     def attach(self, page, config, uid):
@@ -82,18 +81,19 @@ class SimControl(Component):
 
                 if self.actual_model_dt > 0:
                     # compute current proportion of full speed
-                    self.rate_proportion = 1.0 - ((self.rate * self.delay_time) /
-                                              self.actual_model_dt)
+                    self.rate_proportion = 1.0 - (
+                        (self.rate * self.delay_time) / self.actual_model_dt
+                    )
 
         # if we have a desired proportion, use it to control delay_time
         #  Note that we need last_tick to not be None so that we have a
         #  valid dt value.
         if self.target_scale is not None and self.last_tick is not None:
             s = self.target_scale
-            if s <=0:
+            if s <= 0:
                 self.delay_time = 0.5
             else:
-                self.delay_time = (1.0/s - s) * (dt - self.delay_time)
+                self.delay_time = (1.0 / s - s) * (dt - self.delay_time)
 
         # if we have a desired rate, do a simple P-controller to get there
         if self.target_rate is not None:
@@ -146,8 +146,7 @@ class SimControl(Component):
         now = time.time()
         # send off a ping now and then so we'll notice when connection closes
         if self.next_ping_time is None or now > self.next_ping_time:
-            client.write_frame(WebSocketFrame(
-                1, 0, WebSocketFrame.OP_PING, 0, b''))
+            client.write_frame(WebSocketFrame(1, 0, WebSocketFrame.OP_PING, 0, b""))
             self.next_ping_time = now + 2.0
 
         if self.page.changed:
@@ -155,62 +154,64 @@ class SimControl(Component):
             self.page.sim = None
             self.page.changed = False
         if not self.paused or self.reset_inform:
-            client.write_binary(struct.pack(
-                '<fff', self.time, self.rate, self.rate_proportion))
+            client.write_binary(
+                struct.pack("<fff", self.time, self.rate, self.rate_proportion)
+            )
             self.reset_inform = False
         status = self.get_status()
         if status != self.last_status:
-            client.write_text('status:%s' % status)
+            client.write_text("status:%s" % status)
             self.last_status = status
         if self.send_config_options:
-            client.write_text('sims:' + self.backend_options_html())
-            client.write_text('config' +
-                         'Nengo.Toolbar.prototype.config_modal_show();')
+            client.write_text("sims:" + self.backend_options_html())
+            client.write_text("config" + "Nengo.Toolbar.prototype.config_modal_show();")
             self.send_config_options = False
 
     def get_status(self):
         if self.paused:
-            return 'paused'
+            return "paused"
         elif self.page.sim is None:
             if self.page.error is None:
-                return 'building'
+                return "building"
             else:
-                return 'build_error'
+                return "build_error"
         else:
-            return 'running'
+            return "running"
 
     def javascript(self):
         info = dict(uid=id(self))
         fn = json.dumps(self.page.filename)
         js = self.javascript_config(info)
-        return ('sim = new Nengo.SimControl(control, %s);\n'
-                'toolbar = new Nengo.Toolbar(%s);\n'
-                'Nengo.sidemenu = new Nengo.SideMenu();' % (js, fn))
+        return (
+            "sim = new Nengo.SimControl(control, %s);\n"
+            "toolbar = new Nengo.Toolbar(%s);\n"
+            "Nengo.sidemenu = new Nengo.SideMenu();" % (js, fn)
+        )
 
     def message(self, msg):
-        if msg == 'pause':
+        if msg == "pause":
             self.paused = True
-            if 'on_pause' in self.page.locals:
-                self.page.locals['on_pause'](self.page.sim)
-        elif msg == 'config':
+            if "on_pause" in self.page.locals:
+                self.page.locals["on_pause"](self.page.sim)
+        elif msg == "config":
             self.send_config_options = True
-        elif msg == 'continue':
+        elif msg == "continue":
             if self.page.sim is None:
                 self.page.rebuild = True
             else:
-                if 'on_continue' in self.page.locals:
-                    self.page.locals['on_continue'](self.page.sim)
+                if "on_continue" in self.page.locals:
+                    self.page.locals["on_continue"](self.page.sim)
             self.paused = False
-        elif msg == 'reset':
+        elif msg == "reset":
             self.paused = True
             self.time = 0
             self.rate = 0
             self.reset_inform = True
             self.page.sim = None
-        elif msg[:8] == 'backend:':
+        elif msg[:8] == "backend:":
             self.page.settings.backend = msg[8:]
             self.page.changed = True
-        elif msg[:13] == 'target_scale:':
+        elif msg[:13] == "target_scale:":
             self.target_scale = float(msg[13:])
             self.target_rate = None
 
@@ -218,9 +219,9 @@ class SimControl(Component):
         items = []
         for module in nengo_gui.exec_env.discover_backends():
             if module == self.page.settings.backend:
-                selected = ' selected'
+                selected = " selected"
             else:
-                selected = ''
-            item = '<option %s>%s</option>' % (selected, module)
+                selected = ""
+            item = "<option %s>%s</option>" % (selected, module)
             items.append(item)
-        return ''.join(items)
+        return "".join(items)

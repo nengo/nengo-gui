@@ -4,7 +4,7 @@
 # previous tutorial, but also any differential equation.
 
 # For example, the differential equation for a low-pass filter (a system where
-# the output y is a smoothed version of the input x) is 
+# the output y is a smoothed version of the input x) is
 #     dy/dt = x/tau - y/tau
 # where tau is the time constant for the smoothing (larger means smoother)
 
@@ -41,17 +41,16 @@ with model:
     stim_x = nengo.Node(0)
     x = nengo.Ensemble(n_neurons=50, dimensions=1)
     nengo.Connection(stim_x, x)
-    
+
     y = nengo.Ensemble(n_neurons=50, dimensions=1)
     tau = 0.5
     synapse = 0.1
-    
+
     def input_function(x):
         return x / tau * synapse
+
     def recurrent_function(y):
         return (-y / tau) * synapse + y
-    
-    
+
     nengo.Connection(x, y, synapse=synapse, function=input_function)
     nengo.Connection(y, y, synapse=synapse, function=recurrent_function)
-    

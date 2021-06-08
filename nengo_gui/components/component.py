@@ -40,8 +40,8 @@ class Component(object):
     def attach(self, page, config, uid):
         """Connect the Component to a Page."""
         self.config = config  # the nengo.Config[component] for this component
-        self.page = page      # the Page this component is in
-        self.uid = uid        # The Python string referencing this component
+        self.page = page  # the Page this component is in
+        self.uid = uid  # The Python string referencing this component
 
     def update_client(self, client):
         """Send any required information to the client.
@@ -60,7 +60,7 @@ class Component(object):
         Any data sent by the client ove the WebSocket will be passed into
         this method.
         """
-        print('unhandled message', msg)
+        print("unhandled message", msg)
 
     def finish(self):
         """Close this Component"""
@@ -91,10 +91,12 @@ class Component(object):
         """
         for attr in self.config._clsparams.params:
             if attr in cfg:
-                raise AttributeError("Value for %s is already set in the "
-                                     "config of this component. Do not try to "
-                                     "modify it via this function. Instead "
-                                     "modify the config directly." % (attr))
+                raise AttributeError(
+                    "Value for %s is already set in the "
+                    "config of this component. Do not try to "
+                    "modify it via this function. Instead "
+                    "modify the config directly." % (attr)
+                )
             else:
                 cfg[attr] = getattr(self.config, attr)
         return json.dumps(cfg)
@@ -110,7 +112,7 @@ class Component(object):
         """
         args = self.code_python_args(uids)
         name = self.__class__.__name__
-        return 'nengo_gui.components.%s(%s)' % (name, ','.join(args))
+        return "nengo_gui.components.%s(%s)" % (name, ",".join(args))
 
     def code_python_args(self, uids):
         """Return a list of strings giving the constructor arguments.

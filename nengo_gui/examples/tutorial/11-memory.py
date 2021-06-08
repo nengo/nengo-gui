@@ -30,8 +30,7 @@ with model:
     stim_a = nengo.Node(0)
     a = nengo.Ensemble(n_neurons=50, dimensions=1)
     nengo.Connection(stim_a, a)
-    
+
     b = nengo.Ensemble(n_neurons=50, dimensions=1)
     nengo.Connection(b, b, synapse=0.1)
     nengo.Connection(a, b, transform=0.1)
-    

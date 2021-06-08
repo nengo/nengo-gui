@@ -1,10 +1,10 @@
 # Nengo Example: A Simple Harmonic Oscillator
 #
-# This demo implements a simple harmonic oscillator in a 2D neural 
-# population.  The oscillator is more visually interesting on its own than 
-# the integrator, but the principle at work is the same. Here, instead of 
-# having the recurrent input just integrate (i.e. feeding the full input 
-# value back to the population), we have two dimensions which interact. 
+# This demo implements a simple harmonic oscillator in a 2D neural
+# population.  The oscillator is more visually interesting on its own than
+# the integrator, but the principle at work is the same. Here, instead of
+# having the recurrent input just integrate (i.e. feeding the full input
+# value back to the population), we have two dimensions which interact.
 
 import nengo
 

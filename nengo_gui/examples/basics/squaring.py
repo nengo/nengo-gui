@@ -5,6 +5,7 @@
 
 # Create the model object
 import nengo
+
 model = nengo.Network()
 with model:
     # Create two ensembles of 100 leaky-integrate-and-fire neurons

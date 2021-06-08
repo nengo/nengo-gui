@@ -9,6 +9,7 @@ import socket
 import sys
 import threading
 import webbrowser
+
 try:
     from http.client import BadStatusLine
     from urllib.request import urlopen
@@ -22,6 +23,7 @@ from nengo_gui.guibackend import GuiServer
 
 class ServerShutdown(Exception):
     """Causes the server to shutdown when raised."""
+
     pass
 
 
@@ -37,8 +39,8 @@ class BaseGUI(object):
     page_settings : nengo_gui.page.PageSettings, optional
         Frontend page settings.
     """
-    def __init__(
-            self, model_context, server_settings=None, page_settings=None):
+
+    def __init__(self, model_context, server_settings=None, page_settings=None):
         if server_settings is None:
             server_settings = nengo_gui.guibackend.GuiServerSettings()
         if page_settings is None:
@@ -46,8 +48,7 @@ class BaseGUI(object):
 
         self.model_context = model_context
 
-        self.server = GuiServer(
-            self.model_context, server_settings, page_settings)
+        self.server = GuiServer(self.model_context, server_settings, page_settings)
 
     def start(self):
         """Start the backend server and wait until it shuts down."""
@@ -69,8 +70,7 @@ class GuiThread(BaseGUI):
         self._server_thread = None
 
     def start(self):
-        self._server_thread = threading.Thread(
-            target=super(GuiThread, self).start)
+        self._server_thread = threading.Thread(target=super(GuiThread, self).start)
         self._server_thread.daemon = True
         self._server_thread.start()
 
@@ -78,7 +78,8 @@ class GuiThread(BaseGUI):
         while self._server_thread.is_alive() and not self._started:
             try:
                 s = socket.create_connection(
-                    (self.server.server_name, self.server.server_port), 0.1)
+                    (self.server.server_name, self.server.server_port), 0.1
+                )
                 self._started = True
             except Exception:
                 pass
@@ -87,15 +88,14 @@ class GuiThread(BaseGUI):
                 s.close()
 
     def is_alive(self):
-        return (
-            self._server_thread is not None and self._server_thread.is_alive())
+        return self._server_thread is not None and self._server_thread.is_alive()
 
     def shutdown(self, timeout=None):
         if self.is_alive():
             try:
                 urlopen(
-                    str(self.server.get_url(action='shutdown')),
-                    timeout=timeout).read()
+                    str(self.server.get_url(action="shutdown")), timeout=timeout
+                ).read()
             except BadStatusLine:
                 # no response expected as server was just shutdown
                 pass
@@ -119,11 +119,9 @@ class InteractiveGUI(BaseGUI):
     """
 
     def start(self):
-        print(
-            "Starting nengo server accessible at:\n  %s" %
-            self.server.get_url())
+        print("Starting nengo server accessible at:\n  %s" % self.server.get_url())
 
-        if not sys.platform.startswith('win'):
+        if not sys.platform.startswith("win"):
             signal.signal(signal.SIGINT, self._confirm_shutdown)
 
         try:
@@ -135,8 +133,7 @@ class InteractiveGUI(BaseGUI):
             print("Shutting down server...")
 
             self.server.wait_for_shutdown(0.05)
-            n_zombie = sum(thread.is_alive()
-                           for thread, _ in self.server.requests)
+            n_zombie = sum(thread.is_alive() for thread, _ in self.server.requests)
             if n_zombie > 0:
                 print("%d zombie threads will close abruptly" % n_zombie)
 
@@ -147,7 +144,7 @@ class InteractiveGUI(BaseGUI):
         rlist, _, _ = select.select([sys.stdin], [], [], 10)
         if rlist:
             line = sys.stdin.readline()
-            if line[0].lower() == 'y':
+            if line[0].lower() == "y":
                 raise ServerShutdown()
             else:
                 print("Resuming...")
@@ -178,15 +175,20 @@ class GUI(InteractiveGUI):
     editor : bool
         Whether or not to show the editor
     """
+
     def __init__(self, filename=None, model=None, locals=None, editor=True):
         if not editor:
             ps = nengo_gui.page.PageSettings(
-                    editor_class=nengo_gui.components.editor.NoEditor)
+                editor_class=nengo_gui.components.editor.NoEditor
+            )
         else:
             ps = nengo_gui.page.PageSettings()
-        super(GUI, self).__init__(nengo_gui.guibackend.ModelContext(
-            filename=filename, model=model, locals=locals),
-            page_settings=ps)
+        super(GUI, self).__init__(
+            nengo_gui.guibackend.ModelContext(
+                filename=filename, model=model, locals=locals
+            ),
+            page_settings=ps,
+        )
 
     def start(self):
         t = threading.Thread(

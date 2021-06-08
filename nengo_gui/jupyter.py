@@ -8,6 +8,7 @@ import time
 import uuid
 import warnings
 import weakref
+
 try:
     from http.client import BadStatusLine
     from urllib.request import urlopen
@@ -15,18 +16,14 @@ except ImportError:
     from httplib import BadStatusLine
     from urllib2 import urlopen
 
-from IPython import get_ipython
-from IPython.display import display, HTML
-
-from notebook.utils import url_path_join
-from notebook.base.handlers import IPythonHandler
-from tornado import httpclient
-from tornado import httputil
-from tornado.simple_httpclient import SimpleAsyncHTTPClient
-from tornado import gen
-from tornado.websocket import websocket_connect, WebSocketHandler
-
 import nengo_gui
+from IPython import get_ipython
+from IPython.display import HTML, display
+from notebook.base.handlers import IPythonHandler
+from notebook.utils import url_path_join
+from tornado import gen, httpclient, httputil
+from tornado.simple_httpclient import SimpleAsyncHTTPClient
+from tornado.websocket import WebSocketHandler, websocket_connect
 
 
 class ConfigReuseWarning(UserWarning):
@@ -39,9 +36,9 @@ class InlineGUI(object):
     servers = weakref.WeakValueDictionary()
     configs = set()
 
-    host = 'localhost'
+    host = "localhost"
 
-    def __init__(self, model, cfg=None, height=600, backend='nengo'):
+    def __init__(self, model, cfg=None, height=600, backend="nengo"):
         self.height = height
 
         self._started = False
@@ -55,7 +52,8 @@ class InlineGUI(object):
         self.server.server.page_settings.backend = backend
 
         self.resource = url_path_join(
-            '/nengo', str(self.port), str(self.server.server.get_resource()))
+            "/nengo", str(self.port), str(self.server.server.get_resource())
+        )
 
     @classmethod
     def start_server(cls, cfg, model):
@@ -66,25 +64,26 @@ class InlineGUI(object):
         # Make sure only one server is writing the same config.
         server = cls.servers.get(cfg, None)
         if server is not None and server.is_alive():
-            warnings.warn(ConfigReuseWarning(
-                "Reusing config. Only the most recent visualization will "
-                "update the config."))
+            warnings.warn(
+                ConfigReuseWarning(
+                    "Reusing config. Only the most recent visualization will "
+                    "update the config."
+                )
+            )
             for page in server.server.pages:
                 page.save_config(force=True)
                 page.filename_cfg = get_ipython().mktempfile()
                 cls.servers[page.filename_cfg] = server
 
         name = model.label
-        server_settings = nengo_gui.guibackend.GuiServerSettings(
-            ('localhost', 0))
+        server_settings = nengo_gui.guibackend.GuiServerSettings(("localhost", 0))
         model_context = nengo_gui.guibackend.ModelContext(
-            model=model, locals=get_ipython().user_ns, filename=None,
-            writeable=False)
+            model=model, locals=get_ipython().user_ns, filename=None, writeable=False
+        )
         page_settings = nengo_gui.page.PageSettings(
-            filename_cfg=cfg,
-            editor_class=nengo_gui.components.editor.NoEditor)
-        server = nengo_gui.gui.GuiThread(
-            model_context, server_settings, page_settings)
+            filename_cfg=cfg, editor_class=nengo_gui.components.editor.NoEditor
+        )
+        server = nengo_gui.gui.GuiThread(model_context, server_settings, page_settings)
         server.start()
         cls.servers[cfg] = server
         cls.configs.add(cfg)
@@ -103,7 +102,9 @@ class InlineGUI(object):
             server.shutdown(get_timeout())
 
     def _ipython_display_(self):
-        display(HTML(r'''
+        display(
+            HTML(
+                r"""
             <script type="text/javascript" id="{uuid}">
             {{
                 let req = new XMLHttpRequest();
@@ -123,30 +124,36 @@ class InlineGUI(object):
                 req.send();
             }}
             </script>
-        '''.format(uuid=uuid.uuid4())))
+        """.format(
+                    uuid=uuid.uuid4()
+                )
+            )
+        )
 
         self.server.wait_for_startup()
         if self.server.is_alive():
             vdom = {
-                'tagName': 'div',
-                'attributes': {'id': str(uuid.uuid4())},
-                'children': [{
-                    'tagName': 'iframe',
-                    'attributes': {
-                        'src': '.' + str(self.resource),
-                        'width': '100%',
-                        'height': str(self.height),
-                        'frameborder': '0',
-                        'class': 'cell',
-                        'allowfullscreen': 'allowfullscreen',
-                        'style': {
-                            'border': '1px solid #eee',
-                            'boxSizing': 'border-box',
+                "tagName": "div",
+                "attributes": {"id": str(uuid.uuid4())},
+                "children": [
+                    {
+                        "tagName": "iframe",
+                        "attributes": {
+                            "src": "." + str(self.resource),
+                            "width": "100%",
+                            "height": str(self.height),
+                            "frameborder": "0",
+                            "class": "cell",
+                            "allowfullscreen": "allowfullscreen",
+                            "style": {
+                                "border": "1px solid #eee",
+                                "boxSizing": "border-box",
+                            },
                         },
-                    },
-                }],
+                    }
+                ],
             }
-            html = '''
+            html = """
                 <div id="{id}">
                     <iframe
                         src=".{url}"
@@ -157,11 +164,12 @@ class InlineGUI(object):
                         style="border: 1px solid #eee; box-sizing: border-box;"
                         allowfullscreen></iframe>
                 </div>
-            '''.format(
-                url=self.resource, id=uuid.uuid4(), height=self.height)
+            """.format(
+                url=self.resource, id=uuid.uuid4(), height=self.height
+            )
             bundle = {
-                'application/vdom.v1+json': vdom,
-                'text/html': html,
+                "application/vdom.v1+json": vdom,
+                "text/html": html,
             }
             display(bundle, raw=True)
         else:
@@ -170,8 +178,7 @@ class InlineGUI(object):
 
 class IPythonViz(InlineGUI):
     def __init__(self, *args, **kwargs):
-        warnings.warn(DeprecationWarning(
-            "IPythonViz has been renamed to InlineGUI."))
+        warnings.warn(DeprecationWarning("IPythonViz has been renamed to InlineGUI."))
         super(IPythonViz, self).__init__(*args, **kwargs)
 
 
@@ -189,13 +196,15 @@ class LabServerManager(object):
             return cls.server
 
         server_settings = nengo_gui.guibackend.GuiServerSettings(
-            listen_addr=('localhost', 0), auto_shutdown=0)
+            listen_addr=("localhost", 0), auto_shutdown=0
+        )
         model_context = nengo_gui.guibackend.ModelContext()
 
         cls.server = nengo_gui.gui.GuiThread(model_context, server_settings)
         cls.server.start()
         cls.server.server.settings.prefix = url_path_join(
-            base_url, 'nengo/' + str(cls.server.server.server_port))
+            base_url, "nengo/" + str(cls.server.server.server_port)
+        )
         cls.server.wait_for_startup()
         return cls.server
 
@@ -217,17 +226,18 @@ class NengoGuiHandler(IPythonHandler):
         client = httpclient.AsyncHTTPClient()
         headers = httputil.HTTPHeaders()
         for name, value in self.request.headers.get_all():
-            if name.lower() == 'host':
-                headers.add(name, 'localhost:' + port)
-            elif name.lower() == 'origin':
-                headers.add(name, 'http://localhost:' + port)
+            if name.lower() == "host":
+                headers.add(name, "localhost:" + port)
+            elif name.lower() == "origin":
+                headers.add(name, "http://localhost:" + port)
             else:
                 headers.add(name, value)
         request = httpclient.HTTPRequest(
-            'http://localhost:' + port + self.request.uri,
+            "http://localhost:" + port + self.request.uri,
             headers=headers,
             header_callback=self.header_callback,
-            streaming_callback=self.streaming_callback)
+            streaming_callback=self.streaming_callback,
+        )
         response = yield client.fetch(request)
         if response.error is not None:
             response.rethrow()
@@ -257,19 +267,21 @@ class NengoGuiHandler(IPythonHandler):
 class NengoGuiWSHandler(IPythonHandler, WebSocketHandler):
     def open(self, port, query_str):
         self.ws = None
-        url = 'ws://localhost:' + port + self.request.uri
+        url = "ws://localhost:" + port + self.request.uri
         headers = httputil.HTTPHeaders()
         for name, value in self.request.headers.get_all():
-            if name.lower() == 'host':
-                headers.add(name, 'localhost:' + port)
-            elif name.lower() == 'origin':
-                headers.add(name, 'http://localhost:' + port)
+            if name.lower() == "host":
+                headers.add(name, "localhost:" + port)
+            elif name.lower() == "origin":
+                headers.add(name, "http://localhost:" + port)
             else:
                 headers.add(name, value)
         request = httpclient.HTTPRequest(url, headers=headers)
         websocket_connect(
-            request, callback=self.conn_callback,
-            on_message_callback=self.on_message_callback)
+            request,
+            callback=self.conn_callback,
+            on_message_callback=self.on_message_callback,
+        )
 
     def conn_callback(self, ws):
         self.ws = ws.result()
@@ -294,26 +306,30 @@ class NengoGuiWSHandler(IPythonHandler, WebSocketHandler):
 
 class AvailabilityCheckHandler(IPythonHandler):
     def get(self):
-        self.finish('OK')
+        self.finish("OK")
 
 
 class StartGuiHandler(IPythonHandler):
     def set_default_headers(self):
-        self.set_header('Content-Type', 'application/json')
+        self.set_header("Content-Type", "application/json")
 
     def get(self):
         server = LabServerManager.start_server(self.base_url)
-        self.finish(json.dumps({
-            'port': server.server.server_port,
-            'token': server.server.auth_token
-        }))
+        self.finish(
+            json.dumps(
+                {"port": server.server.server_port, "token": server.server.auth_token}
+            )
+        )
 
 
 class RedirectHandler(IPythonHandler):
     def get(self, port, resource):
         self.redirect(
-            url_path_join(self.base_url, 'nengo', port, resource) + '/?' +
-            self.request.query, permanent=True)
+            url_path_join(self.base_url, "nengo", port, resource)
+            + "/?"
+            + self.request.query,
+            permanent=True,
+        )
 
 
 def _jupyter_server_extension_paths():
@@ -322,21 +338,25 @@ def _jupyter_server_extension_paths():
 
 def load_jupyter_server_extension(nb_server_app):
     web_app = nb_server_app.web_app
-    host_pattern = '.*$'
+    host_pattern = ".*$"
     availability_check_pattern = url_path_join(
-        web_app.settings['base_url'], '.*/nengo/check')
-    start_gui_pattern = url_path_join(
-        web_app.settings['base_url'], '/nengo/start_gui')
+        web_app.settings["base_url"], ".*/nengo/check"
+    )
+    start_gui_pattern = url_path_join(web_app.settings["base_url"], "/nengo/start_gui")
     ws_route_pattern = url_path_join(
-        web_app.settings['base_url'], '/nengo/(\\d+)/viz_component(\\?.*)?$')
-    route_pattern = url_path_join(
-        web_app.settings['base_url'], '/nengo/(\\d+)/.*$')
+        web_app.settings["base_url"], "/nengo/(\\d+)/viz_component(\\?.*)?$"
+    )
+    route_pattern = url_path_join(web_app.settings["base_url"], "/nengo/(\\d+)/.*$")
     redirect_pattern = url_path_join(
-        web_app.settings['base_url'], '.+/nengo/(\\d+)/(.*)$')
-    web_app.add_handlers(host_pattern, [
-        (availability_check_pattern, AvailabilityCheckHandler),
-        (start_gui_pattern, StartGuiHandler),
-        (ws_route_pattern, NengoGuiWSHandler),
-        (route_pattern, NengoGuiHandler),
-        (redirect_pattern, RedirectHandler),
-    ])
+        web_app.settings["base_url"], ".+/nengo/(\\d+)/(.*)$"
+    )
+    web_app.add_handlers(
+        host_pattern,
+        [
+            (availability_check_pattern, AvailabilityCheckHandler),
+            (start_gui_pattern, StartGuiHandler),
+            (ws_route_pattern, NengoGuiWSHandler),
+            (route_pattern, NengoGuiHandler),
+            (redirect_pattern, RedirectHandler),
+        ],
+    )

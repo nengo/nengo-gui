@@ -13,7 +13,7 @@ class Editor(Component):
         pass
 
     def javascript(self):
-        return 'Nengo.disable_editor();'
+        return "Nengo.disable_editor();"
 
 
 class NoEditor(Editor):

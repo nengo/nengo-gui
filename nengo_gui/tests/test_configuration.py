@@ -1,13 +1,12 @@
 import time
 
-from selenium.webdriver import ActionChains
-
 from nengo_gui import testing_tools as tt
+from selenium.webdriver import ActionChains
 
 
 def test_config_persists(driver):
     tt.reset_page(driver)
-    menu = driver.find_element_by_id('Config_menu')
+    menu = driver.find_element_by_id("Config_menu")
     actions = ActionChains(driver)
     actions.move_to_element(menu)
     actions.click()
@@ -28,8 +27,8 @@ def test_config_persists(driver):
     time.sleep(0.5)
 
     val = driver.execute_script("return localStorage.getItem('ng.zoom_fonts')")
-    assert val == 'true'
+    assert val == "true"
 
     actions.perform()  # do it again to go back to default (False)
     val = driver.execute_script("return localStorage.getItem('ng.zoom_fonts')")
-    assert val == 'false'
+    assert val == "false"

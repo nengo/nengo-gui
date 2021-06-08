@@ -1,12 +1,13 @@
 from collections import OrderedDict
 
 import nengo
-from nengo_gui.grandalf.graphs import Vertex, Edge, Graph
-from nengo_gui.grandalf.layouts import VertexViewer, SugiyamaLayout
+from nengo_gui.grandalf.graphs import Edge, Graph, Vertex
+from nengo_gui.grandalf.layouts import SugiyamaLayout, VertexViewer
 
 
 class Layout(object):
     """Generates layouts for nengo Networks"""
+
     def __init__(self, model):
         self.model = model
 
@@ -120,7 +121,7 @@ class Layout(object):
             if pre is None or post is None:
                 # the connection does not go to a child of this network,
                 # so ignore it.
-                print('error processing', c)
+                print("error processing", c)
             else:
                 edges[c] = Edge(vertices[pre], vertices[post], data=c)
 

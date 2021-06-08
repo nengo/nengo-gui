@@ -11,6 +11,7 @@ PY2 = sys.version_info[0] == 2
 # If something's changed from Python 2 to 3, we handle that here
 if PY2:
     from cgi import escape as cgi_escape
+
     from StringIO import StringIO
 
     escape = lambda s, quote=True: cgi_escape(s, quote=quote)

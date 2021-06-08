@@ -3,29 +3,42 @@
 """Tests for code in cookies.py.
 """
 from __future__ import unicode_literals
+
+import logging
 import re
 import sys
-import logging
+
 if sys.version_info < (3, 0, 0):
     from urllib import quote, unquote
 else:
     from urllib.parse import quote, unquote
     unichr = chr
     basestring = str
-from datetime import datetime, tzinfo, timedelta
-from pytest import raises
+from datetime import datetime, timedelta, tzinfo
 
 from cookies import (
-        InvalidCookieError, InvalidCookieAttributeError,
-        Definitions,
-        Cookie, Cookies,
-        render_date, parse_date,
-        parse_string, parse_value, parse_domain, parse_path,
-        parse_one_response,
-        encode_cookie_value, encode_extension_av,
-        valid_value, valid_date, valid_domain, valid_path,
-        strip_spaces_and_quotes, _total_seconds,
-        )
+    Cookie,
+    Cookies,
+    Definitions,
+    InvalidCookieAttributeError,
+    InvalidCookieError,
+    _total_seconds,
+    encode_cookie_value,
+    encode_extension_av,
+    parse_date,
+    parse_domain,
+    parse_one_response,
+    parse_path,
+    parse_string,
+    parse_value,
+    render_date,
+    strip_spaces_and_quotes,
+    valid_date,
+    valid_domain,
+    valid_path,
+    valid_value,
+)
+from pytest import raises
 
 
 class RFC1034:

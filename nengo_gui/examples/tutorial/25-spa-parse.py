@@ -52,19 +52,17 @@ with model:
     model.hand = spa.State(D)
 
     actions = spa.Actions(
-        'dot(vision, WRITE+SAY) --> verb=vision',
-        'dot(vision, YES+NO+HI+BYE+OK) --> noun=vision',
-        'dot(phrase, VERB*WRITE) - 2*dot(vision, WRITE+SAY+YES+NO+HI+BYE+OK)'
-            '--> hand=phrase*~NOUN',
-        'dot(phrase, VERB*SAY) - 2*dot(vision, WRITE+SAY+YES+NO+HI+BYE+OK)'
-            '--> speech=phrase*~NOUN',
-        )
+        "dot(vision, WRITE+SAY) --> verb=vision",
+        "dot(vision, YES+NO+HI+BYE+OK) --> noun=vision",
+        "dot(phrase, VERB*WRITE) - 2*dot(vision, WRITE+SAY+YES+NO+HI+BYE+OK)"
+        "--> hand=phrase*~NOUN",
+        "dot(phrase, VERB*SAY) - 2*dot(vision, WRITE+SAY+YES+NO+HI+BYE+OK)"
+        "--> speech=phrase*~NOUN",
+    )
 
     model.bg = spa.BasalGanglia(actions)
     model.thalamus = spa.Thalamus(model.bg)
 
-    cortical_actions = spa.Actions(
-        'phrase = verb*VERB + noun*NOUN'
-    )
+    cortical_actions = spa.Actions("phrase = verb*VERB + noun*NOUN")
 
     model.cortical = spa.Cortical(cortical_actions)

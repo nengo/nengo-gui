@@ -1,6 +1,5 @@
-import numpy as np
-
 import nengo
+import numpy as np
 from nengo.utils.ensemble import response_curves, tuning_curves
 
 
@@ -21,14 +20,15 @@ class PlotInfo(object):
             x = self.x.tolist()
             y = [yy.tolist() for yy in self.y]
         return {
-            'plot': self.plot,
-            'title': self.title,
-            'warnings': self.warnings,
-            'x': x,
-            'y': y,
-            'x_label': self.x_label if self.x_label != None else "",
-            'y_label': self.y_label if self.y_label != None else "",
+            "plot": self.plot,
+            "title": self.title,
+            "warnings": self.warnings,
+            "x": x,
+            "y": y,
+            "x_label": self.x_label if self.x_label != None else "",
+            "y_label": self.y_label if self.y_label != None else "",
         }
+
 
 def response_curve_plot(ens, sim):
     rc = PlotInfo("Response curves", plot="multiline")
@@ -44,6 +44,7 @@ def response_curve_plot(ens, sim):
         rc.y = rc.y[:200]
     return rc.to_dict()
 
+
 def tuning_curve_plot(ens, sim):
     tc = PlotInfo("Tuning curves")
 
@@ -58,9 +59,9 @@ def tuning_curve_plot(ens, sim):
             tc.warnings.append("Only showing the first 200 neurons.")
             tc.y = tc.y[:200]
     else:
-        tc.warnings.append("Tuning curves only shown for "
-                           "one-dimensional ensembles.")
+        tc.warnings.append("Tuning curves only shown for " "one-dimensional ensembles.")
     return tc.to_dict()
+
 
 def node_output_plot(node):
     f_out = PlotInfo("Node output")

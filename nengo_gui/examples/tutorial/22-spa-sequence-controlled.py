@@ -26,13 +26,13 @@ with model:
     model.memory = spa.State(D, feedback=1, feedback_synapse=0.01)
 
     actions = spa.Actions(
-        'dot(memory, A) --> memory=B',
-        'dot(memory, B) --> memory=C',
-        'dot(memory, C) --> memory=D',
-        'dot(memory, D) --> memory=E',
-        'dot(memory, E) --> memory=vision',
-        '0.5 --> memory=vision'
-        )
+        "dot(memory, A) --> memory=B",
+        "dot(memory, B) --> memory=C",
+        "dot(memory, C) --> memory=D",
+        "dot(memory, D) --> memory=E",
+        "dot(memory, E) --> memory=vision",
+        "0.5 --> memory=vision",
+    )
 
     model.bg = spa.BasalGanglia(actions)
     model.thalamus = spa.Thalamus(model.bg)

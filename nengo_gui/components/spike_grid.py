@@ -1,13 +1,13 @@
-import nengo
-import numpy as np
 import struct
 
+import nengo
+import numpy as np
 from nengo_gui.components.component import Component
 
 
 class SpikeGrid(Component):
     """Represents an ensemble of neurons as squares in a grid.
-    
+
     The color of the squares corresponds to the neuron spiking.
     """
 
@@ -22,7 +22,7 @@ class SpikeGrid(Component):
         self.pixels_x = np.ceil(np.sqrt(self.n_neurons))
         self.pixels_y = np.ceil(float(self.n_neurons) / self.pixels_x)
         self.n_pixels = self.pixels_x * self.pixels_y
-        self.struct = struct.Struct('<f%dB' % (self.n_pixels))
+        self.struct = struct.Struct("<f%dB" % (self.n_pixels))
         self.max_value = 1.0
         self.node = None
         self.conn = None
@@ -33,10 +33,8 @@ class SpikeGrid(Component):
 
     def add_nengo_objects(self, page):
         with page.model:
-            self.node = nengo.Node(self.gather_data,
-                                   size_in=self.obj.neurons.size_out)
-            self.conn = nengo.Connection(self.obj.neurons,
-                                         self.node, synapse=0.01)
+            self.node = nengo.Node(self.gather_data, size_in=self.obj.neurons.size_out)
+            self.conn = nengo.Connection(self.obj.neurons, self.node, synapse=0.01)
 
     def remove_nengo_objects(self, page):
         page.model.connections.remove(self.conn)
@@ -45,10 +43,10 @@ class SpikeGrid(Component):
     def gather_data(self, t, x):
         self.max_value = max(self.max_value, np.max(x))
         if len(x) > self.n_neurons:
-            x = x[:self.n_neurons]
+            x = x[: self.n_neurons]
         y = np.zeros(int(self.n_pixels), dtype=np.uint8)
         if self.max_value > 0:
-            y[:x.size] = x * 255 / self.max_value
+            y[: x.size] = x * 255 / self.max_value
         data = self.struct.pack(t, *y)
         self.data.append(data)
 
@@ -65,13 +63,17 @@ class SpikeGrid(Component):
                 pass
 
     def javascript(self):
-        info = dict(uid=id(self), label=self.label,
-                    pixels_x=self.pixels_x, pixels_y=self.pixels_y)
+        info = dict(
+            uid=id(self),
+            label=self.label,
+            pixels_x=self.pixels_x,
+            pixels_y=self.pixels_y,
+        )
         json = self.javascript_config(info)
-        return 'new Nengo.Image(main, sim, %s);' % json
+        return "new Nengo.Image(main, sim, %s);" % json
 
     def code_python_args(self, uids):
         args = [uids[self.obj]]
         if self.n_neurons != self.max_neurons:
-            args.append('n_neurons=%d' % self.n_neurons)
+            args.append("n_neurons=%d" % self.n_neurons)
         return args

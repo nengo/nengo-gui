@@ -9,7 +9,7 @@
 # In this case, three different values are being decoded from each of the
 # groups of neurons.  Nengo decodes these values by finding different ways
 # of weighting together the actual spiking output (top graphs) in order to
-# produce the bottom graphs.  
+# produce the bottom graphs.
 
 # Nengo Tip: If you change the number of dimensions, the graphs and sliders
 # may not update to reflect those changes.  You can force them to do so by
@@ -27,6 +27,6 @@ with model:
     stim = nengo.Node([0, 0, 0])
     a = nengo.Ensemble(n_neurons=200, dimensions=3)
     nengo.Connection(stim, a)
-    
+
     b = nengo.Ensemble(n_neurons=200, dimensions=3)
     nengo.Connection(a, b)

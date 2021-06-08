@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+
+[tool.black]
+target-version = ['py36']
+exclude = '''
+(
+    _vendor/*
+)
+'''
+
+[tool.isort]
+profile = "black"
+src_paths = ["nengo"]

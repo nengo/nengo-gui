@@ -1,6 +1,7 @@
-import numpy as np
-import struct
 import collections
+import struct
+
+import numpy as np
 
 try:
     from nengo.processes import Process
@@ -28,18 +29,18 @@ class OverriddenOutput(Process):
             f = self.passthrough
         elif isinstance(self.base_output, Process):
             try:
-                state = self.base_output.make_state(shape_in, shape_out,
-                                                    dt, rng)
-                f = self.base_output.make_step(shape_in, shape_out, dt, rng,
-                                               state=state)
+                state = self.base_output.make_state(shape_in, shape_out, dt, rng)
+                f = self.base_output.make_step(
+                    shape_in, shape_out, dt, rng, state=state
+                )
             except AttributeError:
                 # for nengo<=2.8.0
                 f = self.base_output.make_step(shape_in, shape_out, dt, rng)
         else:
             f = self.base_output
-        return self.Step(size_out, f,
-                         to_client=self.to_client,
-                         from_client=self.from_client)
+        return self.Step(
+            size_out, f, to_client=self.to_client, from_client=self.from_client
+        )
 
     @staticmethod
     def passthrough(t, x):
@@ -53,7 +54,7 @@ class OverriddenOutput(Process):
             self.from_client = from_client
 
             self.last_time = None
-            self.struct = struct.Struct('<%df' % (1 + self.size_out))
+            self.struct = struct.Struct("<%df" % (1 + self.size_out))
             self.value = np.zeros(size_out, dtype=np.float64)
 
         def __call__(self, t, *args):
@@ -79,8 +80,7 @@ class OverriddenOutput(Process):
 class Slider(Component):
     """Input control component. Exclusively associated to Nodes"""
 
-    config_defaults = dict(max_value=1, min_value=-1,
-                           **Component.config_defaults)
+    config_defaults = dict(max_value=1, min_value=-1, **Component.config_defaults)
 
     def __init__(self, node):
         super(Slider, self).__init__()
@@ -90,11 +90,14 @@ class Slider(Component):
         self.to_client = collections.deque()
         self.from_client = np.zeros(node.size_out, dtype=np.float64) * np.nan
         self.override_output = OverriddenOutput(
-            self.base_output, self.to_client, self.from_client)
+            self.base_output, self.to_client, self.from_client
+        )
         self.start_value = np.zeros(node.size_out, dtype=np.float64)
-        if not (self.base_output is None or
-                callable(self.base_output) or
-                isinstance(self.base_output, Process)):
+        if not (
+            self.base_output is None
+            or callable(self.base_output)
+            or isinstance(self.base_output, Process)
+        ):
             self.start_value[:] = self.base_output
 
     def attach(self, page, config, uid):
@@ -104,12 +107,14 @@ class Slider(Component):
     def add_nengo_objects(self, page):
         if Process.__module__ == "nengo_gui.components.slider":
             self.node.output = self.override_output.make_step(
-                shape_in=None, shape_out=self.node.size_out, dt=None, rng=None)
-        elif page.settings.backend == 'nengo_spinnaker':
+                shape_in=None, shape_out=self.node.size_out, dt=None, rng=None
+            )
+        elif page.settings.backend == "nengo_spinnaker":
             # TODO: this should happen for any backend that does not support
             #  Processes
             self.node.output = self.override_output.make_step(
-                shape_in=None, shape_out=self.node.size_out, dt=None, rng=None)
+                shape_in=None, shape_out=self.node.size_out, dt=None, rng=None
+            )
         else:
             self.node.output = self.override_output
 
@@ -117,11 +122,14 @@ class Slider(Component):
         self.node.output = self.base_output
 
     def javascript(self):
-        info = dict(uid=id(self), n_sliders=self.node.size_out,
-                    label=self.label,
-                    start_value=[float(x) for x in self.start_value])
+        info = dict(
+            uid=id(self),
+            n_sliders=self.node.size_out,
+            label=self.label,
+            start_value=[float(x) for x in self.start_value],
+        )
         json = self.javascript_config(info)
-        return 'new Nengo.Slider(main, sim, %s);' % json
+        return "new Nengo.Slider(main, sim, %s);" % json
 
     def update_client(self, client):
         while len(self.to_client) > 0:
@@ -129,9 +137,9 @@ class Slider(Component):
             client.write_binary(to_client)
 
     def message(self, msg):
-        index, value = msg.split(',')
+        index, value = msg.split(",")
         index = int(index)
-        if value == 'reset':
+        if value == "reset":
             self.from_client[index] = np.nan
         else:
             self.from_client[index] = float(value)

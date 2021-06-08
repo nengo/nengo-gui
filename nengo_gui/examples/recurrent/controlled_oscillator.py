@@ -5,7 +5,7 @@
 
 import nengo
 
-tau = 0.1   # Post-synaptic time constant for feedback
+tau = 0.1  # Post-synaptic time constant for feedback
 w_max = 10  # Maximum frequency is w_max/(2*pi)
 
 model = nengo.Network()
@@ -16,7 +16,8 @@ with model:
     # The feedback connection
     def feedback(x):
         x0, x1, w = x  # These are the three variables stored in the ensemble
-        return x0 + w*w_max*tau*x1, x1 - w*w_max*tau*x0, 0
+        return x0 + w * w_max * tau * x1, x1 - w * w_max * tau * x0, 0
+
     nengo.Connection(oscillator, oscillator, function=feedback, synapse=tau)
 
     # The ensemble for controlling the speed of oscillation

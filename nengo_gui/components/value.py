@@ -2,7 +2,6 @@ import struct
 
 import nengo
 from nengo import spa
-
 from nengo_gui.components.component import Component
 
 
@@ -10,10 +9,14 @@ class Value(Component):
     """The server-side system for a Value plot."""
 
     # the parameters to be stored in the .cfg file
-    config_defaults = dict(max_value=1, min_value=-1,
-                           show_legend=False, legend_labels=[],
-                           synapse=0.01,
-                           **Component.config_defaults)
+    config_defaults = dict(
+        max_value=1,
+        min_value=-1,
+        show_legend=False,
+        legend_labels=[],
+        synapse=0.01,
+        **Component.config_defaults,
+    )
 
     def __init__(self, obj):
         super(Value, self).__init__()
@@ -35,7 +38,7 @@ class Value(Component):
         # the binary data format to sent in.  In this case, it is a list of
         # floats, with the first float being the time stamp and the rest
         # being the vector values, one per dimension.
-        self.struct = struct.Struct('<%df' % (1 + self.n_lines))
+        self.struct = struct.Struct("<%df" % (1 + self.n_lines))
 
         # Nengo objects for data collection
         self.node = None
@@ -50,11 +53,9 @@ class Value(Component):
         # create a Node and a Connection so the Node will be given the
         # data we want to show while the model is running.
         with page.model:
-            self.node = nengo.Node(self.gather_data,
-                                   size_in=self.n_lines)
+            self.node = nengo.Node(self.gather_data, size_in=self.n_lines)
             synapse = self.page.config[self].synapse
-            self.conn = nengo.Connection(self.output, self.node,
-                                         synapse=synapse)
+            self.conn = nengo.Connection(self.output, self.node, synapse=synapse)
 
     def remove_nengo_objects(self, page):
         # undo the changes made by add_nengo_objects
@@ -80,11 +81,10 @@ class Value(Component):
 
     def javascript(self):
         # generate the javascript that will create the client-side object
-        info = dict(uid=id(self), label=self.label,
-                    n_lines=self.n_lines)
+        info = dict(uid=id(self), label=self.label, n_lines=self.n_lines)
 
         json = self.javascript_config(info)
-        return 'new Nengo.Value(main, sim, %s);' % json
+        return "new Nengo.Value(main, sim, %s);" % json
 
     def code_python_args(self, uids):
         # generate the list of strings for the .cfg file to save this Component
@@ -92,7 +92,7 @@ class Value(Component):
         return [uids[self.obj]]
 
     def message(self, msg):
-        if msg.startswith('synapse:'):
+        if msg.startswith("synapse:"):
             synapse = float(msg[8:])
             self.page.config[self].synapse = synapse
             self.page.modified_config()
@@ -103,9 +103,9 @@ class Value(Component):
         """Find default output object for the input object if it exists"""
         output = None
         if isinstance(obj, spa.module.Module):
-            if 'default' in obj.outputs.keys():
-                output = obj.outputs['default'][0]
+            if "default" in obj.outputs.keys():
+                output = obj.outputs["default"][0]
         elif isinstance(obj, nengo.network.Network):
-            if hasattr(obj, 'output'):
+            if hasattr(obj, "output"):
                 output = obj.output
         return output

@@ -1,7 +1,7 @@
 # Tutorial 18: Networks
 
 # To help organize larger models, you can make Networks inside of the main
-# model Network.  
+# model Network.
 #
 # In the graphic interface, the items inside these Networks are not shown
 # by default.  If you double-click on a Network you can show (or hide) its
@@ -21,7 +21,7 @@ model = nengo.Network()
 with model:
     stim_a = nengo.Node([0, 0, 0])
     stim_b = nengo.Node([0, 0])
-    
+
     part1 = nengo.Network()
     with part1:
         a = nengo.Ensemble(n_neurons=100, dimensions=3)
@@ -31,9 +31,7 @@ with model:
         nengo.Connection(b, c[3:])
     nengo.Connection(stim_a, a)
     nengo.Connection(stim_b, b)
-    
-    
+
     part2 = nengo.networks.EnsembleArray(n_neurons=50, n_ensembles=5)
-    
+
     nengo.Connection(c, part2.input)
-    

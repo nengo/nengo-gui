@@ -1,17 +1,22 @@
 import contextlib
 import importlib
 import os
+import sys
 import threading
 import traceback
-import sys
 
 from nengo_gui.compat import StringIO
 
-
 # list of Simulators to check for
-known_modules = ['nengo', 'nengo_ocl', 'nengo_distilled',
-                 'nengo_dl', 'nengo_mpi',
-                 'nengo_brainstorm', 'nengo_spinnaker']
+known_modules = [
+    "nengo",
+    "nengo_ocl",
+    "nengo_distilled",
+    "nengo_dl",
+    "nengo_mpi",
+    "nengo_brainstorm",
+    "nengo_spinnaker",
+]
 
 
 def discover_backends():
@@ -44,24 +49,26 @@ def make_dummy(cls):
             if is_executing():
                 raise StartedSimulatorException()
             super(DummySimulator, self).__init__(*args, **kwargs)
+
     return DummySimulator
 
 
 # thread local storage for storing whether we are executing a script
 flag = threading.local()
 
-compiled_filename = '<nengo_gui_compiled>'
+compiled_filename = "<nengo_gui_compiled>"
+
 
 def is_executing():
-    return getattr(flag, 'executing', False)
+    return getattr(flag, "executing", False)
 
 
 def determine_line_number():
-    '''Checks stack trace to determine the line number we are currently at.
+    """Checks stack trace to determine the line number we are currently at.
 
     The filename argument should be the filename given to the code when
     it was compiled (with compile())
-    '''
+    """
 
     exc_type, exc_value, exc_traceback = sys.exc_info()
     if exc_traceback is not None:
@@ -76,10 +83,10 @@ def determine_line_number():
     trace = traceback.format_exc()
     pattern = 'File "%s", line ' % compiled_filename
     index = trace.find(pattern)
-    if index >=0:
-        text = trace[index + len(pattern):].split('\n', 1)[0]
-        if ',' in text:
-            text = text.split(',', 1)[0]
+    if index >= 0:
+        text = trace[index + len(pattern) :].split("\n", 1)[0]
+        if "," in text:
+            text = text.split(",", 1)[0]
         line = int(text)
         return line
     return None
@@ -93,6 +100,7 @@ class ExecutionEnvironment(object):
             self.directory = os.path.dirname(filename)
         self.added_directory = None
         self.allow_sim = allow_sim
+
     def __enter__(self):
         if self.directory is not None and self.directory not in sys.path:
             sys.path.insert(0, self.directory)
@@ -121,7 +129,7 @@ class ExecutionEnvironment(object):
 
         # ensure what has been printed is safe to show in html
         s = self.stdout.getvalue()
-        s = s.replace('<', '&lt;').replace('>', '&gt;')
+        s = s.replace("<", "&lt;").replace(">", "&gt;")
         self.stdout = StringIO(s)
 
         if not self.allow_sim:

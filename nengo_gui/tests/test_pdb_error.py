@@ -1,7 +1,6 @@
 import time
 
 import pytest
-
 from nengo_gui import testing_tools as tt
 
 
@@ -27,6 +26,6 @@ with model:
     time.sleep(0.5)
 
     ticker = driver.find_element_by_xpath('//*[@id="ticks_tr"]/td')
-    sim_time = ticker.get_attribute('textContent')
+    sim_time = ticker.get_attribute("textContent")
 
-    assert (float(sim_time) > 0)
+    assert float(sim_time) > 0

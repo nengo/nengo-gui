@@ -33,14 +33,15 @@ with model:
 
     a = nengo.Ensemble(n_neurons=50, dimensions=1)
 
-    b = nengo.Ensemble(n_neurons=50, dimensions=1,
-                       max_rates=nengo.dists.Uniform(50, 100))
+    b = nengo.Ensemble(
+        n_neurons=50, dimensions=1, max_rates=nengo.dists.Uniform(50, 100)
+    )
 
-    c = nengo.Ensemble(n_neurons=50, dimensions=1,
-                       encoders=nengo.dists.Choice([[1]]))
+    c = nengo.Ensemble(n_neurons=50, dimensions=1, encoders=nengo.dists.Choice([[1]]))
 
-    d = nengo.Ensemble(n_neurons=50, dimensions=1,
-                       intercepts=nengo.dists.Uniform(0.5, 1.0))
+    d = nengo.Ensemble(
+        n_neurons=50, dimensions=1, intercepts=nengo.dists.Uniform(0.5, 1.0)
+    )
 
     nengo.Connection(stim, a)
     nengo.Connection(stim, b)

@@ -33,8 +33,8 @@
 # such as CAT or COW.  You can also try a combination, such as
 # RAT+0.5*COW.  The system will (almost always) select a single action
 # to perform, and that will be the action with the highest utility at that
-# moment.  If there is no input, or the input is not sufficiently similar 
-# to any of the four animals it knows, then the speech State is set to 
+# moment.  If there is no input, or the input is not sufficiently similar
+# to any of the four animals it knows, then the speech State is set to
 # zero ("speech=0").
 #
 # The input graph above the Basal Ganglia shows the utilities of the
@@ -55,12 +55,12 @@ with model:
     model.speech = spa.State(D)
 
     actions = spa.Actions(
-        'dot(vision, DOG) --> speech=BARK',
-        'dot(vision, CAT) --> speech=MEOW',
-        'dot(vision, RAT) --> speech=SQUEAK',
-        'dot(vision, COW) --> speech=MOO',
-        '0.5 --> speech=0'
-        )
+        "dot(vision, DOG) --> speech=BARK",
+        "dot(vision, CAT) --> speech=MEOW",
+        "dot(vision, RAT) --> speech=SQUEAK",
+        "dot(vision, COW) --> speech=MOO",
+        "0.5 --> speech=0",
+    )
 
     model.bg = spa.BasalGanglia(actions)
     model.thalamus = spa.Thalamus(model.bg)

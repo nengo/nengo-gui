@@ -33,14 +33,13 @@ def test_save_as(driver):
     # Finds files to be read
     project_root = os.path.dirname(nengo_gui.__file__)
     test_file = os.path.join(project_root, "examples", "test_download.py")
-    test_file_conf = os.path.join(
-        project_root, "examples", "test_download.py.cfg")
+    test_file_conf = os.path.join(project_root, "examples", "test_download.py.cfg")
     default_file = os.path.join(project_root, "examples", "default.py")
 
-    assert(os.path.isfile(test_file))
-    with open(test_file, 'r') as f1:
+    assert os.path.isfile(test_file)
+    with open(test_file, "r") as f1:
         test_code = f1.read()
-    with open(default_file, 'r') as f2:
+    with open(default_file, "r") as f2:
         default_code = f2.read()
 
     assert test_code == default_code

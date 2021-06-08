@@ -28,12 +28,13 @@ with model:
     x = nengo.Ensemble(n_neurons=200, dimensions=2)
 
     synapse = 0.1
+
     def oscillator(x):
         r = 1
         s = 6
-        return [synapse * (-x[1] * s + x[0] * (r - x[0]**2 - x[1]**2)) + x[0],
-                synapse * ( x[0] * s + x[1] * (r - x[0]**2 - x[1]**2)) + x[1]]
+        return [
+            synapse * (-x[1] * s + x[0] * (r - x[0] ** 2 - x[1] ** 2)) + x[0],
+            synapse * (x[0] * s + x[1] * (r - x[0] ** 2 - x[1] ** 2)) + x[1],
+        ]
 
     nengo.Connection(x, x, synapse=synapse, function=oscillator)
-
-

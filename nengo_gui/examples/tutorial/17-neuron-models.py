@@ -14,31 +14,38 @@ import nengo
 
 model = nengo.Network()
 with model:
-    
+
     stim = nengo.Node(0)
-    
-    a = nengo.Ensemble(n_neurons=50, dimensions=1,
-                       neuron_type=nengo.LIF(tau_rc=0.02, tau_ref=0.002))
-                       
-    b = nengo.Ensemble(n_neurons=50, dimensions=1,
-                       neuron_type=nengo.LIFRate(tau_rc=0.02, tau_ref=0.002))
-                       
-    c = nengo.Ensemble(n_neurons=50, dimensions=1,
-                       neuron_type=nengo.Sigmoid(tau_ref=0.002),
-                       max_rates=nengo.dists.Uniform(250., 400.))
 
-    d = nengo.Ensemble(n_neurons=50, dimensions=1,
-                       neuron_type=nengo.RectifiedLinear())
+    a = nengo.Ensemble(
+        n_neurons=50, dimensions=1, neuron_type=nengo.LIF(tau_rc=0.02, tau_ref=0.002)
+    )
 
-    e = nengo.Ensemble(n_neurons=50, dimensions=1,
-                       neuron_type=nengo.Izhikevich(
-                           tau_recovery=0.02,
-                           coupling=0.2,
-                           reset_voltage=-65,
-                           reset_recovery=8))
+    b = nengo.Ensemble(
+        n_neurons=50,
+        dimensions=1,
+        neuron_type=nengo.LIFRate(tau_rc=0.02, tau_ref=0.002),
+    )
+
+    c = nengo.Ensemble(
+        n_neurons=50,
+        dimensions=1,
+        neuron_type=nengo.Sigmoid(tau_ref=0.002),
+        max_rates=nengo.dists.Uniform(250.0, 400.0),
+    )
+
+    d = nengo.Ensemble(n_neurons=50, dimensions=1, neuron_type=nengo.RectifiedLinear())
+
+    e = nengo.Ensemble(
+        n_neurons=50,
+        dimensions=1,
+        neuron_type=nengo.Izhikevich(
+            tau_recovery=0.02, coupling=0.2, reset_voltage=-65, reset_recovery=8
+        ),
+    )
 
     nengo.Connection(stim, a)
     nengo.Connection(stim, b)
     nengo.Connection(stim, c)
     nengo.Connection(stim, d)
-    nengo.Connection(stim, e)    
+    nengo.Connection(stim, e)

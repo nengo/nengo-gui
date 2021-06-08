@@ -5,7 +5,7 @@
 # The code below shows 20 neurons in a group (we call groups of neurons
 # an "Ensemble" of neurons).  The representation is much more accurate.
 # To see this, press Play.  Now, as you move the slider, the bottom graph
-# should follow your movements well.  
+# should follow your movements well.
 
 # Try changing the number of neurons by editing the code below where it says
 # "n_neurons=20".  Try 50.  Try 100.  The representation should get more and

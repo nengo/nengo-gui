@@ -7,6 +7,7 @@
 # have to combine in this way: see the combining demo).
 
 import nengo
+
 model = nengo.Network()
 with model:
     # Create 3 ensembles each containing 100 leaky integrate-and-fire neurons

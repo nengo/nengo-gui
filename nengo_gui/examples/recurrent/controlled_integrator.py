@@ -6,7 +6,7 @@
 # 2. Control - the control signal to the integrator
 #
 # A controlled integrator accumulates input, but its state can be directly
-# manipulated by the control signal. 
+# manipulated by the control signal.
 #
 # We can use standard network-creation commands to begin creating our
 # controlled integrator. We create a Network, and then we create a population
@@ -40,6 +40,4 @@ with model:
     # of both dimensions in A (i.e., the value times the control)
     # and then adds this back into the first dimension of A using
     # a transform
-    nengo.Connection(a, a[0],
-                     function=lambda x: x[0] * x[1],
-                     synapse=tau)
+    nengo.Connection(a, a[0], function=lambda x: x[0] * x[1], synapse=tau)

@@ -46,5 +46,4 @@ with model:
 
     model.memory = spa.State(D, feedback=1)
 
-    nengo.Connection(model.vision.output, model.memory.input,
-                     transform=0.1)
+    nengo.Connection(model.vision.output, model.memory.input, transform=0.1)

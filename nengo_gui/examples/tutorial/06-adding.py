@@ -25,12 +25,11 @@ with model:
     stim_a = nengo.Node(0)
     a = nengo.Ensemble(n_neurons=50, dimensions=1)
     nengo.Connection(stim_a, a)
-    
+
     stim_b = nengo.Node(0)
     b = nengo.Ensemble(n_neurons=50, dimensions=1)
     nengo.Connection(stim_b, b)
-    
+
     c = nengo.Ensemble(n_neurons=50, dimensions=1, radius=1)
     nengo.Connection(a, c)
     nengo.Connection(b, c)
-    

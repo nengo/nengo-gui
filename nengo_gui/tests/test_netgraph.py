@@ -1,10 +1,9 @@
-'''
+"""
 Tests for the NetGraph class.
-'''
-
-import numpy as np
+"""
 
 import nengo
+import numpy as np
 from nengo_gui.components.netgraph import NetGraph
 
 
@@ -54,17 +53,14 @@ def test_connection_inhibitory():
         a = nengo.Ensemble(1, 10)
         b = nengo.Ensemble(1, 10)
         conn_1 = nengo.Connection(a, b.neurons, transform=1 * np.ones((1, 10)))
-        conn_2 = nengo.Connection(
-            a, b.neurons, transform=-1 * np.ones((1, 10)))
+        conn_2 = nengo.Connection(a, b.neurons, transform=-1 * np.ones((1, 10)))
         conn_3 = nengo.Connection(
             a,
             b.neurons,
-            transform=np.array((0, -1, 0, 0, 0, 0, 0, 0, 0, 0)).reshape((1,
-                                                                         10)))
-        conn_4 = nengo.Connection(
-            a, b.neurons, transform=-1 * np.zeros((1, 10)))
+            transform=np.array((0, -1, 0, 0, 0, 0, 0, 0, 0, 0)).reshape((1, 10)),
+        )
+        conn_4 = nengo.Connection(a, b.neurons, transform=-1 * np.zeros((1, 10)))
     assert "normal" == NetGraph.connection_kind(conn_1)
     assert "inhibitory" == NetGraph.connection_kind(conn_2)
     assert "inhibitory" == NetGraph.connection_kind(conn_3)
     assert "normal" == NetGraph.connection_kind(conn_4)
-

@@ -27,7 +27,7 @@ class HTMLView(Component):
 
     def gather_data(self, t, *x):
         value = self.obj_output(t, *x)
-        data = '%g %s' % (t, self.obj_output._nengo_html_)
+        data = "%g %s" % (t, self.obj_output._nengo_html_)
         self.data.append(data)
         return value
 
@@ -39,7 +39,7 @@ class HTMLView(Component):
     def javascript(self):
         info = dict(uid=id(self), label=self.label)
         json = self.javascript_config(info)
-        return 'new Nengo.HTMLView(main, sim, %s);' % json
+        return "new Nengo.HTMLView(main, sim, %s);" % json
 
     def code_python_args(self, uids):
         return [uids[self.obj]]

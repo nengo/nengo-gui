@@ -1,7 +1,7 @@
 """Respond to an action from the user on the NetGraph"""
 
-from nengo_gui.compat import iteritems
 import nengo_gui.components
+from nengo_gui.compat import iteritems
 
 
 def create_action(action, net_graph, **kwargs):
@@ -51,10 +51,10 @@ class Action(object):
         self.net_graph.to_be_sent.append(kwargs)
 
     def apply(self):
-        raise NotImplementedError('Subclasses should implement this.')
+        raise NotImplementedError("Subclasses should implement this.")
 
     def undo(self):
-        raise NotImplementedError('Subclasses should implement this.')
+        raise NotImplementedError("Subclasses should implement this.")
 
 
 class ConfigAction(Action):
@@ -93,15 +93,15 @@ class ExpandCollapse(Action):
 
     def apply(self):
         if self.expand:
-            self.send('expand')
+            self.send("expand")
         else:
-            self.send('collapse')
+            self.send("collapse")
 
     def undo(self):
         if self.expand:
-            self.send('collapse')
+            self.send("collapse")
         else:
-            self.send('expand')
+            self.send("expand")
 
 
 class RemoveGraph(Action):
@@ -112,7 +112,7 @@ class RemoveGraph(Action):
         self.component = component
 
     def apply(self):
-        self.send('delete_graph')
+        self.send("delete_graph")
 
     def undo(self):
         page = self.net_graph.page
@@ -122,7 +122,7 @@ class RemoveGraph(Action):
         page.default_labels[self.component] = self.component.uid
 
         page.changed = True
-        self.send('js', code=self.component.javascript())
+        self.send("js", code=self.component.javascript())
 
 
 class CreateGraph(Action):
@@ -142,23 +142,24 @@ class CreateGraph(Action):
         self.duplicate = None
 
         # Remove any existing sliders associated with the same node
-        if type == 'Slider':
+        if type == "Slider":
             for component in self.net_graph.page.components:
-                if (isinstance(component, nengo_gui.components.slider.Slider)
-                        and component.node is self.obj):
+                if (
+                    isinstance(component, nengo_gui.components.slider.Slider)
+                    and component.node is self.obj
+                ):
                     self.duplicate = RemoveGraph(net_graph, component)
-                    self.send('delete_graph', uid=component.original_id)
+                    self.send("delete_graph", uid=component.original_id)
 
         self.act_create_graph()
 
     def act_create_graph(self):
         if self.graph_uid is None:
-            self.net_graph.page.generate_uid(self.component, prefix='_viz_')
+            self.net_graph.page.generate_uid(self.component, prefix="_viz_")
             self.graph_uid = self.net_graph.page.get_uid(self.component)
         else:
             self.net_graph.page.locals[self.graph_uid] = self.component
-            self.net_graph.page.default_labels[self.component] = (
-                self.graph_uid)
+            self.net_graph.page.default_labels[self.component] = self.graph_uid
         self.net_graph.page.config[self.component].x = self.x
         self.net_graph.page.config[self.component].y = self.y
         self.net_graph.page.config[self.component].width = self.width
@@ -167,7 +168,7 @@ class CreateGraph(Action):
 
         self.net_graph.page.add_component(self.component)
         self.net_graph.page.changed = True
-        self.send('js', code=self.component.javascript())
+        self.send("js", code=self.component.javascript())
 
     def apply(self):
         if self.duplicate is not None:
@@ -175,7 +176,7 @@ class CreateGraph(Action):
         self.act_create_graph()
 
     def undo(self):
-        self.send('delete_graph', uid=self.component.original_id)
+        self.send("delete_graph", uid=self.component.original_id)
         if self.duplicate is not None:
             self.duplicate.undo()
 
@@ -200,7 +201,7 @@ class PosSize(Action):
         self.x, self.y = self.obj_config.pos
         self.width, self.height = self.obj_config.size
         self.act_pos_size(x, y, width, height)
-        self.send('pos_size', pos=[x, y], size=[width, height])
+        self.send("pos_size", pos=[x, y], size=[width, height])
 
     def undo(self):
         self.apply()  # PosSize is a mirrored operation
@@ -224,7 +225,7 @@ class Pos(Action):
         self.x, self.y = self.obj_config.pos
         width, height = self.obj_config.size
         self.act_pos(x, y)
-        self.send('pos_size', pos=[x, y], size=[width, height])
+        self.send("pos_size", pos=[x, y], size=[width, height])
 
     def undo(self):
         self.apply()  # Pos is a mirrored operation
@@ -248,7 +249,7 @@ class Size(Action):
         x, y = self.obj_config.pos
         self.width, self.height = self.obj_config.size
         self.act_size(width, height)
-        self.send('pos_size', pos=[x, y], size=[width, height])
+        self.send("pos_size", pos=[x, y], size=[width, height])
 
     def undo(self):
         self.apply()  # Size is a mirrored operation
@@ -274,15 +275,14 @@ class FeedforwardLayout(Action):
     def act_feedforward_layout(self):
         for obj, layout in iteritems(self.pos):
             obj_cfg = self.net_graph.page.config[obj]
-            obj_cfg.pos = (layout['y'], layout['x'])
-            obj_cfg.size = (layout['h'] / 2, layout['w'] / 2)
+            obj_cfg.pos = (layout["y"], layout["x"])
+            obj_cfg.size = (layout["h"] / 2, layout["w"] / 2)
 
             obj_uid = self.net_graph.page.get_uid(obj)
 
-            self.send('pos_size',
-                      uid=obj_uid, pos=obj_cfg.pos, size=obj_cfg.size)
+            self.send("pos_size", uid=obj_uid, pos=obj_cfg.pos, size=obj_cfg.size)
 
-        self.send('feedforward_layout_done')
+        self.send("feedforward_layout_done")
 
         self.net_graph.page.config[self.network].has_layout = True
         self.net_graph.modified_config()
@@ -290,20 +290,21 @@ class FeedforwardLayout(Action):
     def save_network(self):
         state = []
         for obj, layout in iteritems(self.pos):
-            state.append({
-                'uid': self.net_graph.page.get_uid(obj),
-                'pos': self.net_graph.page.config[obj].pos,
-                'size': self.net_graph.page.config[obj].size,
-                'obj': obj,
-            })
+            state.append(
+                {
+                    "uid": self.net_graph.page.get_uid(obj),
+                    "pos": self.net_graph.page.config[obj].pos,
+                    "size": self.net_graph.page.config[obj].size,
+                    "obj": obj,
+                }
+            )
         return state
 
     def load_network(self, state):
         for item in state:
-            self.send('pos_size',
-                      uid=item['uid'], pos=item['pos'], size=item['size'])
-            self.net_graph.page.config[item['obj']].pos = item['pos']
-            self.net_graph.page.config[item['obj']].size = item['size']
+            self.send("pos_size", uid=item["uid"], pos=item["pos"], size=item["size"])
+            self.net_graph.page.config[item["obj"]].pos = item["pos"]
+            self.net_graph.page.config[item["obj"]].size = item["size"]
         # TODO: should config[network].has_layout be changed here?
         self.net_graph.modified_config()
 

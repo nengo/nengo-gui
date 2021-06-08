@@ -23,10 +23,10 @@ with model:
     stim = nengo.Node(0)
     a = nengo.Ensemble(n_neurons=50, dimensions=1)
     nengo.Connection(stim, a)
-    
+
     b = nengo.Ensemble(n_neurons=50, dimensions=1)
-    
+
     def compute_this(x):
         return x * x
-    
+
     nengo.Connection(a, b, synapse=0.01, function=compute_this)

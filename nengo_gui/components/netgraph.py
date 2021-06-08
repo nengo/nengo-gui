@@ -1,20 +1,19 @@
-import time
-import os
-import traceback
 import collections
+import json
+import os
 import threading
-import numpy as np
+import time
+import traceback
 
 import nengo
-import json
-
+import nengo_gui.layout
+import nengo_gui.user_action
+import numpy as np
 from nengo_gui.compat import escape, iteritems
 from nengo_gui.components.component import Component
-from nengo_gui.components.value import Value
 from nengo_gui.components.slider import OverriddenOutput
+from nengo_gui.components.value import Value
 from nengo_gui.modal_js import infomodal
-import nengo_gui.user_action
-import nengo_gui.layout
 
 
 class NetGraph(Component):
@@ -135,14 +134,12 @@ class NetGraph(Component):
             # not the normal uid for that item.  For example, the uid
             # "ensembles[0]" might still refer to something even after that
             # ensemble is removed.
-            new_uid = self.page.get_uid(new_item,
-                                        default_labels=name_finder.known_name)
+            new_uid = self.page.get_uid(new_item, default_labels=name_finder.known_name)
             if new_uid != uid:
                 new_item = None
 
             same_class = False
-            for cls in [nengo.Ensemble, nengo.Node, nengo.Network,
-                        nengo.Connection]:
+            for cls in [nengo.Ensemble, nengo.Node, nengo.Network, nengo.Connection]:
                 if isinstance(new_item, cls) and isinstance(old_item, cls):
                     same_class = True
                     break
@@ -155,20 +152,17 @@ class NetGraph(Component):
             elif not same_class:
                 # don't allow changing classes
                 keep_object = False
-            elif (self.get_extra_info(new_item) !=
-                    self.get_extra_info(old_item)):
+            elif self.get_extra_info(new_item) != self.get_extra_info(old_item):
                 keep_object = False
 
             if not keep_object:
-                self.to_be_sent.append(dict(
-                    type='remove', uid=uid))
+                self.to_be_sent.append(dict(type="remove", uid=uid))
                 del self.uids[uid]
                 removed_uids[old_item] = uid
                 rebuilt_objects.append(uid)
             else:
                 # fix aspects of the item that may have changed
-                if self._reload_update_item(uid, old_item, new_item,
-                                            name_finder):
+                if self._reload_update_item(uid, old_item, new_item, name_finder):
                     # something has changed about this object, so rebuild
                     # the components that use it
                     rebuilt_objects.append(uid)
@@ -196,8 +190,7 @@ class NetGraph(Component):
         removed_items = list(removed_uids.values())
         for c in self.page.components[:]:
             for item in c.code_python_args(old_default_labels):
-                if (item not in self.uids.keys() and
-                        item not in collapsed_items):
+                if item not in self.uids.keys() and item not in collapsed_items:
 
                     # item is a python string that is an argument to the
                     # constructor for the Component.  So it could be 'a',
@@ -208,8 +201,7 @@ class NetGraph(Component):
                     #
                     # The following lambda should do this, handling both
                     # the normal argument case and the keyword argument case.
-                    safe_eval = ('(lambda *a, **b: '
-                                 'list(a) + list(b.values()))(%s)[0]')
+                    safe_eval = "(lambda *a, **b: " "list(a) + list(b.values()))(%s)[0]"
 
                     # this Component depends on an item inside a collapsed
                     #  Network, so we need to check if that component has
@@ -226,8 +218,7 @@ class NetGraph(Component):
                         removed_items.append(item)
                     elif not isinstance(new_obj, old_obj.__class__):
                         rebuilt_objects.append(item)
-                    elif (self.get_extra_info(new_obj) !=
-                          self.get_extra_info(old_obj)):
+                    elif self.get_extra_info(new_obj) != self.get_extra_info(old_obj):
                         rebuilt_objects.append(item)
 
                     # add this to the list of collapsed items, so we
@@ -236,18 +227,24 @@ class NetGraph(Component):
                     collapsed_items.append(item)
 
                 if item in rebuilt_objects:
-                    self.to_be_sent.append(dict(type='delete_graph',
-                                                uid=c.original_id,
-                                                notify_server=False))
+                    self.to_be_sent.append(
+                        dict(
+                            type="delete_graph", uid=c.original_id, notify_server=False
+                        )
+                    )
                     rebuild_components.append(c.uid)
                     self.page.components.remove(c)
                     break
             else:
                 for item in c.code_python_args(old_default_labels):
                     if item in removed_items:
-                        self.to_be_sent.append(dict(type='delete_graph',
-                                                    uid=c.original_id,
-                                                    notify_server=False))
+                        self.to_be_sent.append(
+                            dict(
+                                type="delete_graph",
+                                uid=c.original_id,
+                                notify_server=False,
+                            )
+                        )
                         orphan_components.append(c)
                         break
 
@@ -267,17 +264,21 @@ class NetGraph(Component):
                 #  rebuilt, so let's recover it
                 if name not in component_uids:
                     self.page.add_component(obj)
-                    self.to_be_sent.append(dict(type='js',
-                                                code=obj.javascript()))
+                    self.to_be_sent.append(dict(type="js", code=obj.javascript()))
                     components.append(obj)
                     continue
 
                 # otherwise, find the corresponding old Component
                 index = component_uids.index(name)
                 old_component = self.page.components[index]
-                if isinstance(obj, (nengo_gui.components.SimControlTemplate,
-                              nengo_gui.components.AceEditorTemplate,
-                              nengo_gui.components.NetGraphTemplate)):
+                if isinstance(
+                    obj,
+                    (
+                        nengo_gui.components.SimControlTemplate,
+                        nengo_gui.components.AceEditorTemplate,
+                        nengo_gui.components.NetGraphTemplate,
+                    ),
+                ):
                     # just keep these ones
                     components.append(old_component)
                 else:
@@ -288,7 +289,7 @@ class NetGraph(Component):
                         obj.original_id = old_component.original_id
                     except:
                         traceback.print_exc()
-                        print('failed to recreate plot for %s' % obj)
+                        print("failed to recreate plot for %s" % obj)
                     components.append(obj)
 
         components.sort(key=lambda x: x.component_order)
@@ -298,21 +299,23 @@ class NetGraph(Component):
         # notifies SimControl to pause the simulation
         self.page.changed = True
 
-    def _reload_update_item(self, uid, old_item, new_item, new_name_finder):  # noqa: C901
+    def _reload_update_item(
+        self, uid, old_item, new_item, new_name_finder
+    ):  # noqa: C901
         """Tell the client about changes to the item due to reload."""
         changed = False
 
-        if isinstance(old_item, (nengo.Node,
-                                 nengo.Ensemble,
-                                 nengo.Network)):
+        if isinstance(old_item, (nengo.Node, nengo.Ensemble, nengo.Network)):
 
             old_label = self.page.get_label(old_item)
             new_label = self.page.get_label(
-                new_item, default_labels=new_name_finder.known_name)
+                new_item, default_labels=new_name_finder.known_name
+            )
 
             if old_label != new_label:
-                self.to_be_sent.append(dict(
-                    type='rename', uid=uid, name=escape(new_label)))
+                self.to_be_sent.append(
+                    dict(type="rename", uid=uid, name=escape(new_label))
+                )
                 changed = True
             if isinstance(old_item, nengo.Network):
                 if self.page.config[old_item].expanded:
@@ -328,17 +331,20 @@ class NetGraph(Component):
             old_pre = self.page.get_uid(old_pre)
             old_post = self.page.get_uid(old_post)
             new_pre = self.page.get_uid(
-                new_pre, default_labels=new_name_finder.known_name)
+                new_pre, default_labels=new_name_finder.known_name
+            )
             new_post = self.page.get_uid(
-                new_post, default_labels=new_name_finder.known_name)
+                new_post, default_labels=new_name_finder.known_name
+            )
 
             if new_pre != old_pre or new_post != old_post:
                 # if the connection has changed, tell javascript
-                pres, posts = self.get_connection_hierarchy(new_item,
-                    default_labels=new_name_finder.known_name)
-                self.to_be_sent.append(dict(
-                    type='reconnect', uid=uid,
-                    pres=pres, posts=posts))
+                pres, posts = self.get_connection_hierarchy(
+                    new_item, default_labels=new_name_finder.known_name
+                )
+                self.to_be_sent.append(
+                    dict(type="reconnect", uid=uid, pres=pres, posts=posts)
+                )
                 changed = True
         return changed
 
@@ -391,36 +397,35 @@ class NetGraph(Component):
         try:
             info = json.loads(msg)
         except ValueError:
-            print('invalid message', repr(msg))
+            print("invalid message", repr(msg))
             return
-        action = info.get('act', None)
-        undo = info.get('undo', None)
-        event = info.get('event', None)
+        action = info.get("act", None)
+        undo = info.get("undo", None)
+        event = info.get("event", None)
         if action is not None:
-            del info['act']
-            if action in ('auto_expand', 'auto_collapse'):
-                getattr(self, 'act_' + action[5:])(**info)
-            elif action in ('pan', 'zoom', 'create_modal'):
+            del info["act"]
+            if action in ("auto_expand", "auto_collapse"):
+                getattr(self, "act_" + action[5:])(**info)
+            elif action in ("pan", "zoom", "create_modal"):
                 # These should not use the undo stack
-                getattr(self, 'act_' + action)(**info)
+                getattr(self, "act_" + action)(**info)
             else:
                 try:
-                    act = nengo_gui.user_action.create_action(action,
-                                                              self, **info)
+                    act = nengo_gui.user_action.create_action(action, self, **info)
                     self.page.undo_stack.append([act])
                     del self.page.redo_stack[:]
                 except:
-                    print('error processing message', repr(msg))
+                    print("error processing message", repr(msg))
                     traceback.print_exc()
         elif undo is not None:
-            if undo == '1':
+            if undo == "1":
                 self.undo()
             else:
                 self.redo()
         elif event is not None:
             self.handle_event(event, info)
         else:
-            print('received message', msg)
+            print("received message", msg)
 
     def undo(self):
         if self.page.undo_stack:
@@ -472,7 +477,7 @@ class NetGraph(Component):
 
     def act_create_modal(self, uid, **info):
         js = infomodal(self, uid, **info)
-        self.to_be_sent.append(dict(type='js', code=js))
+        self.to_be_sent.append(dict(type="js", code=js))
 
     def expand_network(self, network, client):
         """Display an expanded network, including the root network"""
@@ -480,8 +485,8 @@ class NetGraph(Component):
         if not self.page.config[network].has_layout:
             pos = self.layout.make_layout(network)
             for obj, layout in pos.items():
-                self.page.config[obj].pos = layout['y'], layout['x']
-                self.page.config[obj].size = layout['h'] / 2, layout['w'] / 2
+                self.page.config[obj].pos = layout["y"], layout["x"]
+                self.page.config[obj].size = layout["h"] / 2, layout["w"] / 2
             self.page.config[network].has_layout = True
 
         if network is self.page.model:
@@ -489,11 +494,11 @@ class NetGraph(Component):
         else:
             parent = self.page.get_uid(network)
         for ens in network.ensembles:
-            self.create_object(client, ens, obj_type='ens', parent=parent)
+            self.create_object(client, ens, obj_type="ens", parent=parent)
         for node in network.nodes:
-            self.create_object(client, node, obj_type='node', parent=parent)
+            self.create_object(client, node, obj_type="node", parent=parent)
         for net in network.networks:
-            self.create_object(client, net, obj_type='net', parent=parent)
+            self.create_object(client, net, obj_type="net", parent=parent)
         for conn in network.connections:
             self.create_connection(client, conn, parent=parent)
         self.page.config[network].expanded = True
@@ -512,6 +517,7 @@ class NetGraph(Component):
         pos = self.page.config[obj].pos
         if pos is None:
             import random
+
             pos = random.uniform(0, 1), random.uniform(0, 1)
             self.page.config[obj].pos = pos
 
@@ -522,41 +528,49 @@ class NetGraph(Component):
 
         label = self.page.get_label(obj)
 
-        info = dict(uid=uid, label=escape(label), pos=pos, type=obj_type,
-                    size=size, parent=parent)
+        info = dict(
+            uid=uid,
+            label=escape(label),
+            pos=pos,
+            type=obj_type,
+            size=size,
+            parent=parent,
+        )
         info.update(self.get_extra_info(obj))
 
-        if type == 'net':
-            info['expanded'] = self.page.config[obj].expanded
+        if type == "net":
+            info["expanded"] = self.page.config[obj].expanded
 
         client.write_text(json.dumps(info))
 
     def get_extra_info(self, obj):
-        '''Determine helper information for each nengo object.
+        """Determine helper information for each nengo object.
 
         This is used by the client side to configure the display.  It is also
         used by the reload() code to determine if a NetGraph object should
         be recreated.
-        '''
+        """
         info = {}
         if isinstance(obj, nengo.Node):
             if obj.output is None or (
-                    isinstance(obj.output, OverriddenOutput)
-                    and obj.output.base_output is None):
-                info['passthrough'] = True
-            if callable(obj.output) and hasattr(obj.output, '_nengo_html_'):
-                info['html'] = True
-            info['dimensions'] = int(obj.size_out)
+                isinstance(obj.output, OverriddenOutput)
+                and obj.output.base_output is None
+            ):
+                info["passthrough"] = True
+            if callable(obj.output) and hasattr(obj.output, "_nengo_html_"):
+                info["html"] = True
+            info["dimensions"] = int(obj.size_out)
         elif isinstance(obj, nengo.Connection):
-            info['kind'] = NetGraph.connection_kind(obj)
+            info["kind"] = NetGraph.connection_kind(obj)
         elif isinstance(obj, nengo.Ensemble):
-            info['dimensions'] = int(obj.size_out)
-            info['n_neurons'] = int(obj.n_neurons)
+            info["dimensions"] = int(obj.size_out)
+            info["n_neurons"] = int(obj.n_neurons)
         elif Value.default_output(obj) is not None:
-            info['default_output'] = True
+            info["default_output"] = True
 
-        info['sp_targets'] = (
-            nengo_gui.components.spa_plot.SpaPlot.applicable_targets(obj))
+        info["sp_targets"] = nengo_gui.components.spa_plot.SpaPlot.applicable_targets(
+            obj
+        )
         return info
 
     def send_pan_and_zoom(self, client):
@@ -568,8 +582,8 @@ class NetGraph(Component):
             zoom = 1.0
         else:
             zoom = zoom[0]
-        client.write_text(json.dumps(dict(type='pan', pan=pan)))
-        client.write_text(json.dumps(dict(type='zoom', zoom=zoom)))
+        client.write_text(json.dumps(dict(type="pan", pan=pan)))
+        client.write_text(json.dumps(dict(type="zoom", zoom=zoom)))
 
     @staticmethod
     def connection_pre_obj(conn):
@@ -614,24 +628,25 @@ class NetGraph(Component):
         # Try to determine the connection kind by examining the connection class
         # and weight matrix
         kind = "normal"
-        if hasattr(conn, 'kind'):
+        if hasattr(conn, "kind"):
             kind = conn.kind
         if isinstance(post, nengo.connection.LearningRule):
             kind = "modulatory"
         elif isinstance(post, nengo.ensemble.Neurons):
             trafo = conn.transform
-            if hasattr(nengo, 'transforms'): # Support for Nengo 3.0
+            if hasattr(nengo, "transforms"):  # Support for Nengo 3.0
                 trafo = trafo.sample()
 
-            if hasattr(trafo, 'size'):
-                if trafo.size > 0 and (np.all(trafo <= 0.0) and
-                        not np.all(np.isclose(trafo, 0.0))):
+            if hasattr(trafo, "size"):
+                if trafo.size > 0 and (
+                    np.all(trafo <= 0.0) and not np.all(np.isclose(trafo, 0.0))
+                ):
                     return "inhibitory"
 
         # Support biologically plausible connections as e.g. provided by
         # nengo_bio
         if hasattr(conn, "dales_principle") and conn.dales_principle:
-            if hasattr(pre, 'p_exc') and (not pre.p_exc is None):
+            if hasattr(pre, "p_exc") and (not pre.p_exc is None):
                 is_purely_excitatory = np.allclose(pre.p_exc, 1.0)
                 is_purely_inhibitory = np.allclose(pre.p_exc, 0.0)
                 if kind == "inhibitory" and is_purely_excitatory:
@@ -668,11 +683,11 @@ class NetGraph(Component):
 
         # Fetch the uid for the pre and post connection objects
         pre = self.page.get_uid(
-                NetGraph.connection_pre_obj(conn),
-                default_labels=default_labels)
+            NetGraph.connection_pre_obj(conn), default_labels=default_labels
+        )
         post = self.page.get_uid(
-                NetGraph.connection_post_obj(conn),
-                default_labels=default_labels)
+            NetGraph.connection_post_obj(conn), default_labels=default_labels
+        )
 
         # Fetch the network hierarchy up to the post- and pre-connection object
         pres = self.get_parents(pre, default_labels=default_labels)[:-1]
@@ -682,8 +697,8 @@ class NetGraph(Component):
         # is being trained
         if isinstance(conn.post_obj, nengo.connection.LearningRule):
             posts[0] = self.page.get_uid(
-                    conn.post_obj.connection,
-                    default_labels=default_labels)
+                conn.post_obj.connection, default_labels=default_labels
+            )
 
         return pres, posts
 
@@ -704,7 +719,7 @@ class NetGraph(Component):
         """
 
         # Fetch the connection kind
-        kind = kind=NetGraph.connection_kind(conn)
+        kind = kind = NetGraph.connection_kind(conn)
         if kind == "dead":
             return
 
@@ -718,14 +733,15 @@ class NetGraph(Component):
         pres, posts = self.get_connection_hierarchy(conn)
 
         # Serialise the connection descriptor and send it to the client
-        info = dict(uid=uid, pre=pres, post=posts, type='conn', parent=parent,
-                    kind=kind)
+        info = dict(
+            uid=uid, pre=pres, post=posts, type="conn", parent=parent, kind=kind
+        )
         client.write_text(json.dumps(info))
 
     def handle_event(self, event, info):
-        if event == 'keyup':
-            self.page.keys_pressed.discard(info['key'])
-            self.page.key_codes_pressed.discard(info['keyCode'])
-        elif event == 'keydown':
-            self.page.keys_pressed.add(info['key'])
-            self.page.key_codes_pressed.add(info['keyCode'])
+        if event == "keyup":
+            self.page.keys_pressed.discard(info["key"])
+            self.page.key_codes_pressed.discard(info["keyCode"])
+        elif event == "keydown":
+            self.page.keys_pressed.add(info["key"])
+            self.page.key_codes_pressed.add(info["keyCode"])

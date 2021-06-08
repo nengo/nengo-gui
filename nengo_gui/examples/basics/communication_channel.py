@@ -4,8 +4,8 @@
 # ensemble to another that behaves like a communication channel (that is, it
 # transmits information without changing it).
 
-import numpy as np
 import nengo
+import numpy as np
 
 model = nengo.Network()
 with model:

@@ -54,7 +54,7 @@ with model:
     model.memory = spa.State(D, feedback=1)
 
     actions = spa.Actions(
-        'memory = color * shape',
-        )
+        "memory = color * shape",
+    )
 
     model.cortical = spa.Cortical(actions)

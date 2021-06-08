@@ -19,17 +19,18 @@ with model:
     stim_a = nengo.Node(0)
     a = nengo.Ensemble(n_neurons=50, dimensions=1)
     nengo.Connection(stim_a, a)
-    
+
     stim_b = nengo.Node(0)
     b = nengo.Ensemble(n_neurons=50, dimensions=1)
     nengo.Connection(stim_b, b)
-    
+
     c = nengo.Ensemble(n_neurons=200, dimensions=2, radius=1.5)
     nengo.Connection(a, c[0])
     nengo.Connection(b, c[1])
-    
+
     d = nengo.Ensemble(n_neurons=50, dimensions=1)
-    
+
     def multiply(x):
         return x[0] * x[1]
+
     nengo.Connection(c, d, function=multiply)

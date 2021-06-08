@@ -19,8 +19,7 @@ tau = 0.1
 model = nengo.Network()
 
 with model:
-    integrator = nengo.networks.Integrator(
-        tau, n_neurons=100, dimensions=1)
+    integrator = nengo.networks.Integrator(tau, n_neurons=100, dimensions=1)
     stim = nengo.Node(0)
 
     nengo.Connection(stim, integrator.input, synapse=tau)

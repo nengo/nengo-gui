@@ -35,8 +35,8 @@ with model:
     model.answer = spa.State(D)
 
     actions = spa.Actions(
-        'memory = color * shape',
-        'answer = memory * ~query',
-        )
- 
+        "memory = color * shape",
+        "answer = memory * ~query",
+    )
+
     model.cortical = spa.Cortical(actions)
