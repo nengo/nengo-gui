@@ -19,8 +19,8 @@ Release History
    - Bugfixes
    - Documentation
 
-0.4.8 (unreleased)
-==================
+0.4.8 (June 9, 2021)
+====================
 
 *Compatible with Nengo 2.6.0 - 3.1.0*
 
