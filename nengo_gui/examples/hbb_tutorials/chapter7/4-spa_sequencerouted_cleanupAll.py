@@ -30,15 +30,19 @@ from nengo import spa  # import spa related packages
 from nengo.spa import Vocabulary
 
 # Number of dimensions for the Semantic Pointers
-dimensions = 16
+dim = 16
+
+# Change the seed of this RNG to change the vocabulary
+rng = np.random.RandomState(4)
+vocab = Vocabulary(dimensions=dim, rng=rng, max_similarity=0.1)
 
 # Make a model object with the SPA network
-model = spa.SPA(label="Routed_Sequence with cleanupAll", seed=7)
+model = spa.SPA(label="Routed_Sequence with cleanupAll", vocabs=[vocab])
 
 with model:
     # Specify the modules to be used
-    model.state = spa.State(dimensions=dimensions, feedback=1, feedback_synapse=0.01)
-    model.vision = spa.State(dimensions=dimensions)
+    model.state = spa.State(dimensions=dim, feedback=1, feedback_synapse=0.01)
+    model.vision = spa.State(dimensions=dim)
     # Specify the action mapping
     actions = spa.Actions(
         "dot(vision, START) --> state = vision",
@@ -49,40 +53,33 @@ with model:
         "dot(state, E) --> state = A",
     )
 
-    # Creating the BG and Thalamus components that confirm to the specified rules
-    model.BG = spa.BasalGanglia(actions=actions)
-    model.thal = spa.Thalamus(model.BG)
+    # Creating the BG and thalamus components that confirm to the specified rules
+    model.bg = spa.BasalGanglia(actions=actions)
+    model.thal = spa.Thalamus(model.bg)
 
-    # Changing the seed of this RNG to change the vocabulary
-    rng = np.random.RandomState(7)
-    vocab = Vocabulary(dimensions=dimensions, rng=rng)
-
-    # Creating the transformation matrix (pd_new) and cleanup ensemble (cleanup)
+    # Get vocabulary items in order of creation
     vsize = len((model.get_output_vocab("state").keys))
+    vocab_items = []
+    for index in range(vsize):
+        vocab_items.append(model.get_output_vocab("state").keys[index])
 
+    # Creating the transformation matrix (pd) and cleanup SPA State (cleanup)
     pd = []
-    for item in range(vsize):
-        pd.append(model.get_output_vocab("state").keys[item])
+    for item in vocab_items:
+        pd.append([model.get_output_vocab("state")[item].v.tolist()])
 
-    pd_new = []
-    for element in range(vsize):
-        pd_new.append([vocab[pd[element]].v.tolist()])
-
-    model.cleanup = nengo.networks.EnsembleArray(n_neurons=60, n_ensembles=vsize)
+    model.cleanup = nengo.Ensemble(n_neurons=300, dimensions=vsize)
 
     # Function that provides the model with an initial input semantic pointer.
     def start(t):
         if t < 0.4:
             return "0.8*START+D"
-        else:
-            return "0"
+        return "0"
 
     # Input
     model.input = spa.Input(vision=start)
 
-    # Projecting the state on to the cleanup ensemble using a transformation
-    # matrix 'pd'.
-    for i in range(5):
-        nengo.Connection(
-            model.state.output, model.cleanup.input[i], transform=pd_new[i]
-        )
+    # Projecting the state on to the cleanup ensemble using a transformation matrix 'pd'
+    # Note that the first item in the vocabulary (`START`) is ignored.
+    for i in range(1, vsize):
+        nengo.Connection(model.state.output, model.cleanup[i], transform=pd[i])

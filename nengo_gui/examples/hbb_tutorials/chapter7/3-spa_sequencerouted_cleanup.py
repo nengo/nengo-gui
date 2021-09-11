@@ -30,15 +30,20 @@ from nengo import spa
 from nengo.spa import Vocabulary
 
 # Number of dimensions for the Semantic Pointers
-dimensions = 16
+dim = 16
+
+# Change the seed of this RNG to change the vocabulary
+rng = np.random.RandomState(4)
+vocab = Vocabulary(dimensions=dim, rng=rng, max_similarity=0.1)
 
 # Make a model object with the SPA network
-model = spa.SPA(label="Routed_Sequence with cleanupA", seed=12)
+model = spa.SPA(label="Routed_Sequence with cleanupA", vocabs=[vocab])
 
+# Create the spa.SPA network to which we can add SPA objects
 with model:
     # Specifying the modules to be used
-    model.state = spa.State(dimensions=dimensions, feedback=1, feedback_synapse=0.01)
-    model.vision = spa.State(dimensions=dimensions)
+    model.state = spa.State(dimensions=dim, feedback=1, feedback_synapse=0.01)
+    model.vision = spa.State(dimensions=dim)
 
     # Specify the action mapping
     actions = spa.Actions(
@@ -50,28 +55,23 @@ with model:
         "dot(state, E) --> state = A",
     )
 
-    # Creating the BG and Thalamus components that confirm to the specified rules
-    model.BG = spa.BasalGanglia(actions=actions)
-    model.thal = spa.Thalamus(model.BG)
+    # Creating the BG and thalamus components that confirm to the specified rules
+    model.bg = spa.BasalGanglia(actions=actions)
+    model.thal = spa.Thalamus(model.bg)
 
-    # Change the seed of this RNG to change the vocabulary
-    rng = np.random.RandomState(0)
-    vocab = Vocabulary(dimensions=dimensions)
-
-    # Create the transformation matrix (pd) and the cleanup ensemble (cleanupA)
-    pd = [vocab["A"].v.tolist()]
-    model.cleanup = spa.State(neurons_per_dimension=100, dimensions=1)
+    # Get the transformation matrix (pd) and create the cleanup ensemble (cleanup)
+    pd = [model.get_output_vocab("state")["A"].v.tolist()]
+    model.cleanup = nengo.Ensemble(n_neurons=100, dimensions=1)
 
     # Function that provides the model with an initial input semantic pointer.
     def start(t):
         if t < 0.4:
             return "0.8*START+D"
-        else:
-            return "0"
+        return "0"
 
     # Input
     model.input = spa.Input(vision=start)
 
     # Projecting the state of the cortex on to the cleanup ensemble using a
     # transformation matrix 'pd'.
-    nengo.Connection(model.state.output, model.cleanup.input, transform=pd)
+    nengo.Connection(model.state.output, model.cleanup, transform=pd)

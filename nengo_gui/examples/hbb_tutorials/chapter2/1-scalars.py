@@ -25,18 +25,21 @@ import nengo
 import numpy as np
 from nengo.dists import Uniform
 
+# Create the network object to which we can add ensembles, connections, etc.
 model = nengo.Network(label="Many Neurons")
+
 with model:
     # Input sine wave with range 1, freq of 16 rad/s
-    input = nengo.Node(lambda t: np.sin(16 * t))
+    stim = nengo.Node(lambda t: np.sin(16 * t), label="input")
+
     # Input sine wave with range increased to 4
-    # input = nengo.Node(lambda t: 4*np.sin(16 * t))
+    # stim = nengo.Node(lambda t: 4 * np.sin(16 * t), label="input")
 
     # Ensemble with 100 LIF neurons
     x = nengo.Ensemble(100, dimensions=1, max_rates=Uniform(100, 200))
 
     # Connecting input to ensemble
-    nengo.Connection(input, x)
+    nengo.Connection(stim, x)
 
 
 # Increasing the range of Input
@@ -44,6 +47,6 @@ with model:
 # You have seen that the population of neurons does a reasonably good job of
 # representing the input. However, neurons cannot represent arbitrary values
 # well and you can verify this by increasing the range of the input to 4
-# ( input = nengo.Node(lambda t: 4np.sin(16 t)) ). You will observe the same
+# ( input = nengo.Node(lambda t: 4 * np.sin(16 t)) ). You will observe the same
 # saturation effects as described in the book, showing that the neurons do a
 # much better job at representing information within the defined radius.

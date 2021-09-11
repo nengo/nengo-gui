@@ -39,47 +39,49 @@ import nengo
 
 # Setup the environment
 import numpy as np
-from nengo.spa import Memory, Vocabulary
+from nengo.spa import Vocabulary
 
-dim = 20  # Number of dimensions
-N_input = 300  # Number of neurons in population
-N_conv = 70  # Number of neurons per dimension in bind/unbind populations
-N_mem = 50  # Number of neurons per dimension in memory population
+dim = 32  # Number of dimensions
+n_neurons = 300  # Number of neurons in population
+n_conv = 70  # Number of neurons per dimension in bind/unbind populations
+n_mem = 50  # Number of neurons per dimension in memory population
 
 # Creating the vocabulary
-rng = np.random.RandomState(7)
+rng = np.random.RandomState(0)
 vocab = Vocabulary(dimensions=dim, rng=rng, max_similarity=0.1)
 
 model = nengo.Network(label="Question Answering with Memory", seed=12)
 with model:
     # Ensembles
-    A = nengo.Ensemble(n_neurons=N_input, dimensions=dim, label="color")
-    B = nengo.Ensemble(n_neurons=N_input, dimensions=dim, label="shape")
-    C = nengo.Ensemble(n_neurons=N_input, dimensions=dim, label="cue")
-    D = nengo.Ensemble(n_neurons=N_input, dimensions=dim, label="bound")
-    E = nengo.Ensemble(n_neurons=N_input, dimensions=dim, label="output")
+    ens_A = nengo.Ensemble(n_neurons=n_neurons, dimensions=dim, label="A")
+    ens_B = nengo.Ensemble(n_neurons=n_neurons, dimensions=dim, label="B")
+    ens_C = nengo.Ensemble(n_neurons=n_neurons, dimensions=dim, label="C")
+    ens_D = nengo.Ensemble(n_neurons=n_neurons, dimensions=dim, label="D")
+    ens_E = nengo.Ensemble(n_neurons=n_neurons, dimensions=dim, label="E")
 
     # Creating memory population and connecting ensemble D to it
     tau = 0.4
     memory = nengo.networks.EnsembleArray(
-        n_neurons=N_mem, n_ensembles=dim, label="Memory"
+        n_neurons=n_mem,
+        n_ensembles=dim,
+        label="Memory",
     )
     nengo.Connection(memory.output, memory.input, synapse=tau)
-    nengo.Connection(D, memory.input, synapse=0.01)
+    nengo.Connection(ens_D, memory.input)
 
     # Creating the Bind network
-    bind = nengo.networks.CircularConvolution(n_neurons=N_conv, dimensions=dim)
-    nengo.Connection(A, bind.A)
-    nengo.Connection(B, bind.B)
-    nengo.Connection(bind.output, D)
+    net_bind = nengo.networks.CircularConvolution(n_neurons=n_conv, dimensions=dim)
+    nengo.Connection(ens_A, net_bind.A)
+    nengo.Connection(ens_B, net_bind.B)
+    nengo.Connection(net_bind.output, ens_D)
 
     # Creating the Unbind network
-    unbind = nengo.networks.CircularConvolution(
-        n_neurons=N_conv, dimensions=dim, invert_a=True
+    net_unbind = nengo.networks.CircularConvolution(
+        n_neurons=n_conv, dimensions=dim, invert_a=True
     )
-    nengo.Connection(C, unbind.A)
-    nengo.Connection(memory.output, unbind.B)
-    nengo.Connection(unbind.output, E)
+    nengo.Connection(ens_C, net_unbind.A)
+    nengo.Connection(memory.output, net_unbind.B)
+    nengo.Connection(net_unbind.output, ens_E)
 
     # Getting semantic pointer values
     CIRCLE = vocab.parse("CIRCLE").v
@@ -88,25 +90,23 @@ with model:
     SQUARE = vocab.parse("SQUARE").v
     ZERO = [0] * dim
 
-    # function for providing color input
+    # Function for providing color input
     def color_input(t):
         if t < 0.25:
             return RED
         elif t < 0.5:
             return BLUE
-        else:
-            return ZERO
+        return ZERO
 
-    # function for providing shape input
+    # Function for providing shape input
     def shape_input(t):
         if t < 0.25:
             return CIRCLE
         elif t < 0.5:
             return SQUARE
-        else:
-            return ZERO
+        return ZERO
 
-    # function for providing the cue
+    # Function for providing the cue
     def cue_input(t):
         if t < 0.5:
             return ZERO
@@ -115,11 +115,11 @@ with model:
         return sequence[idx]
 
     # Defining inputs
-    inputA = nengo.Node(output=color_input, size_out=dim)
-    inputB = nengo.Node(output=shape_input, size_out=dim)
-    inputC = nengo.Node(output=cue_input, size_out=dim)
+    input_A = nengo.Node(output=color_input, size_out=dim, label="Input A")
+    input_B = nengo.Node(output=shape_input, size_out=dim, label="Input B")
+    input_C = nengo.Node(output=cue_input, size_out=dim, label="Input C")
 
     # Connecting input to ensembles
-    nengo.Connection(inputA, A)
-    nengo.Connection(inputB, B)
-    nengo.Connection(inputC, C)
+    nengo.Connection(input_A, ens_A)
+    nengo.Connection(input_B, ens_B)
+    nengo.Connection(input_C, ens_C)

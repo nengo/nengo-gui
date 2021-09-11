@@ -33,38 +33,42 @@ import numpy as np
 from nengo.spa import Vocabulary
 
 dim = 20  # Number of dimensions
-num_neurons = 300  # Number of neurons in each ensemble
+n_neurons = 300  # Number of neurons in each ensemble
 
 # Creating a vocabulary
 rng = np.random.RandomState(0)
 vocab = Vocabulary(dimensions=dim, rng=rng)
 
+# Create the network object to which we can add ensembles, connections, etc.
 model = nengo.Network(label="Structured Representation")
 with model:
     # Input - Get the raw vectors for the pointers using `vocab['A'].v`
-    inputA = nengo.Node(output=vocab["A"].v)
-    inputB = nengo.Node(output=vocab["B"].v)
+    input_A = nengo.Node(output=vocab["A"].v, label="Input A")
+    input_B = nengo.Node(output=vocab["B"].v, label="Input B")
 
     # Ensembles with 300 neurons and 20 dimensions
-    A = nengo.Ensemble(num_neurons, dimensions=dim)  # Represents inputA
-    B = nengo.Ensemble(num_neurons, dimensions=dim)  # Represents inputB
-    C = nengo.Ensemble(num_neurons, dimensions=dim)  # Represents the
-    # convolution of A and B
-    Sum = nengo.Ensemble(num_neurons, dimensions=dim)  # Represents the sum of
-    # A and B
+    # Represents input_A
+    ens_A = nengo.Ensemble(n_neurons, dimensions=dim, label="A")
+    # Represents input_B
+    ens_B = nengo.Ensemble(n_neurons, dimensions=dim, label="B")
+
+    # Represents the convolution of A and B
+    ens_C = nengo.Ensemble(n_neurons, dimensions=dim, label="C")
+    # Represents the sum of A and B
+    ens_sum = nengo.Ensemble(n_neurons, dimensions=dim, label="Sum")
 
     # Creating the circular convolution network with 70 neurons per dimension
-    Bind = nengo.networks.CircularConvolution(70, dimensions=dim)
+    net_bind = nengo.networks.CircularConvolution(70, dimensions=dim, label="Bind")
 
     # Connecting the input to ensembles A and B
-    nengo.Connection(inputA, A)
-    nengo.Connection(inputB, B)
+    nengo.Connection(input_A, ens_A)
+    nengo.Connection(input_B, ens_B)
 
     # Projecting ensembles A and B to the Bind network
-    nengo.Connection(A, Bind.A)
-    nengo.Connection(B, Bind.B)
-    nengo.Connection(Bind.output, C)
+    nengo.Connection(ens_A, net_bind.A)
+    nengo.Connection(ens_B, net_bind.B)
+    nengo.Connection(net_bind.output, ens_C)
 
     # Projecting ensembles A and B to the Sum ensemble
-    nengo.Connection(A, Sum)
-    nengo.Connection(B, Sum)
+    nengo.Connection(ens_A, ens_sum)
+    nengo.Connection(ens_B, ens_sum)

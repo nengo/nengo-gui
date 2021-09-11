@@ -44,27 +44,33 @@ import nengo
 from nengo.dists import Uniform
 from nengo.processes import WhiteNoise
 
+# Create the network object to which we can add ensembles, connections, etc.
 model = nengo.Network(label="2D Decision Integrator", seed=11)
+
 with model:
-    # Input
-    input1 = nengo.Node(-0.5)
-    input2 = nengo.Node(0.5)
+    # Inputs
+    input1 = nengo.Node(-0.5, label="Input 1")
+    input2 = nengo.Node(0.5, label="Input 2")
 
     # Ensembles
-    input = nengo.Ensemble(100, dimensions=2)
+    ens_inp = nengo.Ensemble(100, dimensions=2, label="Input")
     MT = nengo.Ensemble(100, dimensions=2, noise=WhiteNoise(dist=Uniform(-0.3, 0.3)))
     LIP = nengo.Ensemble(200, dimensions=2, noise=WhiteNoise(dist=Uniform(-0.3, 0.3)))
-    output = nengo.Ensemble(
-        100, dimensions=2, noise=WhiteNoise(dist=Uniform(-0.3, 0.3))
+    ens_out = nengo.Ensemble(
+        100,
+        dimensions=2,
+        intercepts=Uniform(0.3, 1),
+        noise=WhiteNoise(dist=Uniform(-0.3, 0.3)),
+        label="Output",
     )
 
     weight = 0.1
     # Connecting the input signal to the input ensemble
-    nengo.Connection(input1, input[0], synapse=0.01)
-    nengo.Connection(input2, input[1], synapse=0.01)
+    nengo.Connection(input1, ens_inp[0], synapse=0.01)
+    nengo.Connection(input2, ens_inp[1], synapse=0.01)
 
     # Providing input to MT ensemble
-    nengo.Connection(input, MT, synapse=0.01)
+    nengo.Connection(ens_inp, MT, synapse=0.01)
 
     # Connecting MT ensemble to LIP ensemble
     nengo.Connection(MT, LIP, transform=weight, synapse=0.1)
@@ -73,4 +79,4 @@ with model:
     nengo.Connection(LIP, LIP, synapse=0.1)
 
     # Connecting LIP population to output
-    nengo.Connection(LIP, output, synapse=0.01)
+    nengo.Connection(LIP, ens_out, synapse=0.01)

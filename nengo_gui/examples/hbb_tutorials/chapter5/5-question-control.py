@@ -40,36 +40,45 @@ import nengo
 # Setup the environment
 import numpy as np
 from nengo.dists import Uniform
-from nengo.spa import BasalGanglia, Thalamus, Vocabulary
+from nengo.spa import Vocabulary
 
 dim = 100  # Number of dimensions
-N = 30  # Neurons per dimension
-N_conv = 70  # Number of neurons per dimension in bind/unbind populations
-N_mem = 50  # Number of neurons per dimension in memory population
-ZERO = [0] * dim  # Defining a zero vector having length equal to the number of
-# dimensions
+n_neurons = 30  # Neurons per dimension
+n_conv = 70  # Number of neurons per dimension in bind/unbind populations
+n_mem = 50  # Number of neurons per dimension in memory population
+
+# Defining a zero vector having length equal to the number of dimensions
+ZERO = [0] * dim
 
 # Creating the vocabulary
 rng = np.random.RandomState(15)
 vocab = Vocabulary(dimensions=dim, rng=rng, max_similarity=0.05)
 
+# Create the network object to which we can add ensembles, connections, etc.
 model = nengo.Network(label="Question Answering with Control", seed=15)
 with model:
     # Ensembles
     visual = nengo.networks.EnsembleArray(
-        n_neurons=N, n_ensembles=dim, max_rates=Uniform(100, 300), label="Visual"
+        n_neurons=n_neurons,
+        n_ensembles=dim,
+        max_rates=Uniform(100, 300),
+        label="Visual",
     )
     channel = nengo.networks.EnsembleArray(
-        n_neurons=N, n_ensembles=dim, label="Channel"
+        n_neurons=n_neurons, n_ensembles=dim, label="Channel"
     )
-    motor = nengo.networks.EnsembleArray(n_neurons=N, n_ensembles=dim, label="Motor")
+    motor = nengo.networks.EnsembleArray(
+        n_neurons=n_neurons, n_ensembles=dim, label="Motor"
+    )
 
     # Creating a memory (integrator)
     tau = 0.1
-    memory = nengo.networks.EnsembleArray(n_neurons=N, n_ensembles=dim, label="Memory")
+    memory = nengo.networks.EnsembleArray(
+        n_neurons=n_mem, n_ensembles=dim, label="Memory"
+    )
     nengo.Connection(memory.output, memory.input, synapse=tau)
 
-    # function for providing visual input
+    # Function for providing visual input
     def visual_input(t):
         if 0.1 < t < 0.3:
             return vocab.parse("STATEMENT+RED*CIRCLE").v
@@ -79,48 +88,47 @@ with model:
             return vocab.parse("QUESTION+BLUE").v
         elif 0.75 < t < 0.9:
             return vocab.parse("QUESTION+CIRCLE").v
-        else:
-            return ZERO
+        return ZERO
 
-    # function for flipping the output of the thalamus
-    def xBiased(x):
+    # Function for flipping the output of the thalamus
+    def x_biased(x):
         return [1 - x]
 
     # Providing input to the model
-    input = nengo.Node(output=visual_input, size_out=dim)
-    nengo.Connection(input, visual.input)
+    vis_stim = nengo.Node(output=visual_input, size_out=dim, label="Input stimulus")
+    nengo.Connection(vis_stim, visual.input)
 
     nengo.Connection(visual.output, channel.input, synapse=0.02)
     nengo.Connection(channel.output, memory.input)
 
     # Creating the unbind network
     unbind = nengo.networks.CircularConvolution(
-        n_neurons=N_conv, dimensions=dim, invert_a=True
+        n_neurons=n_conv, dimensions=dim, invert_a=True
     )
     nengo.Connection(visual.output, unbind.A)
     nengo.Connection(memory.output, unbind.B)
     nengo.Connection(unbind.output, motor.input)
 
     # Creating the basal ganglia and the thalamus network
-    BG = nengo.networks.BasalGanglia(dimensions=2)
+    bg = nengo.networks.BasalGanglia(dimensions=2)
     thal = nengo.networks.Thalamus(dimensions=2)
-    nengo.Connection(BG.output, thal.input, synapse=0.01)
+    nengo.Connection(bg.output, thal.input, synapse=0.01)
 
     # Defining the transforms for connecting the visual input to the BG
     trans0 = np.matrix(vocab.parse("STATEMENT").v)
     trans1 = np.matrix(vocab.parse("QUESTION").v)
-    nengo.Connection(visual.output, BG.input[0], transform=trans0)
-    nengo.Connection(visual.output, BG.input[1], transform=trans1)
+    nengo.Connection(visual.output, bg.input[0], transform=trans0)
+    nengo.Connection(visual.output, bg.input[1], transform=trans1)
 
-    # Connecting thalamus output to the two gates gating the channel
-    # and the motor populations
-    passthrough = nengo.Ensemble(n_neurons=N, dimensions=2)
+    # Connecting thalamus output to the two gates gating the channel and the motor
+    # populations
+    passthrough = nengo.Ensemble(n_neurons, 2)
     nengo.Connection(thal.output, passthrough)
 
-    gate0 = nengo.Ensemble(N, 1, label="Gate0")
-    nengo.Connection(passthrough[0], gate0, function=xBiased, synapse=0.01)
-    gate1 = nengo.Ensemble(N, 1, label="Gate1")
-    nengo.Connection(passthrough[1], gate1, function=xBiased, synapse=0.01)
+    gate0 = nengo.Ensemble(n_neurons, 1, label="Gate0")
+    nengo.Connection(passthrough[0], gate0, function=x_biased, synapse=0.01)
+    gate1 = nengo.Ensemble(n_neurons, 1, label="Gate1")
+    nengo.Connection(passthrough[1], gate1, function=x_biased, synapse=0.01)
 
     for ensemble in channel.ea_ensembles:
         nengo.Connection(gate0, ensemble.neurons, transform=[[-3]] * gate0.n_neurons)

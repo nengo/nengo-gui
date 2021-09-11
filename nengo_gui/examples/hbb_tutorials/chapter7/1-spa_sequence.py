@@ -44,13 +44,13 @@ import nengo
 from nengo import spa  # import spa related packages
 
 # Number of dimensions for the Semantic Pointers
-dimensions = 16
+dim = 16
 
-# Make a model with the SPA network
+# Create the spa.SPA network to which we can add SPA objects
 model = spa.SPA(label="Sequence")
 with model:
     # Creating a working memory/cortical element
-    model.state = spa.State(dimensions=dimensions, feedback=1, feedback_synapse=0.01)
+    model.state = spa.State(dimensions=dim, feedback=1, feedback_synapse=0.01)
 
     # Specifying the action mappings (rules) for BG and Thal
     actions = spa.Actions(
@@ -61,16 +61,15 @@ with model:
         "dot(state, E) --> state = A",
     )
 
-    # Creating the BG and Thalamus components that confirm to the specified rules
-    model.BG = spa.BasalGanglia(actions=actions)
-    model.thal = spa.Thalamus(model.BG)
+    # Creating the BG and thalamus components that confirm to the specified rules
+    model.bg = spa.BasalGanglia(actions=actions)
+    model.thal = spa.Thalamus(model.bg)
 
     # Function that provides the model with an initial input semantic pointer.
     def start(t):
         if t < 0.1:  # Duration of the initial input = 0.1
             return "D"
-        else:
-            return "0"
+        return "0"
 
     # Input
     model.input = spa.Input(state=start)

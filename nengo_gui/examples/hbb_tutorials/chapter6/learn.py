@@ -10,10 +10,12 @@
 # rule is built into Nengo 1.4 as mentioned in the book. The same rule can be
 # implemented in Nengo 2.0 by combining the PES and the BCM rule as shown in the
 # code. Also, instead of using the 'gate' and 'switch' as described in the book,
-# 'inhibit' population is used which serves the same purpose of turning off the
-# learning by inhibiting the error population. For computing the actual error
-# (which is required only for analysis), direct mode can be used by specifying
-# the neuron_type as 'nengo.Direct()' while creating the 'actual_error' ensemble.
+# an 'inhibit' population is used which serves the same purpose of turning off the
+# learning by inhibiting the error population.
+
+# Note that to compute the actual error value (which is required only for analysis),
+# the book uses a population of "Direct" mode neurons. In Nengo 2.0, this can be done
+# more efficiently using a 'nengo.Node()'.
 
 # When you run the model, you will see that the 'post' population gradually
 # learns to compute the communication channel. In the model, you will inhibit
@@ -33,9 +35,9 @@
 
 # The model can also learn other functions by using an appropriate error signal.
 # For example to learn a square function, comment out the lines marked
-# 'Communication Channel' and uncomment the lines marked 'Square' in the code.
-# Run the model again and you will see that the model successfully learns the
-# square function.
+# "# Learn the communication channel" and uncomment the lines marked
+# "# Learn the square function" in the code. Run the model again and you will see
+# that the model successfully learns the square function.
 
 import nengo
 
@@ -43,25 +45,29 @@ import nengo
 import numpy as np
 from nengo.processes import WhiteSignal
 
-model = nengo.Network(label="Learning", seed=8)
+# Create the network object to which we can add ensembles, connections, etc.
+model = nengo.Network(label="Learning", seed=7)
 with model:
     # Ensembles to represent populations
-    pre = nengo.Ensemble(50, dimensions=1)
-    post = nengo.Ensemble(50, dimensions=1)
-    error = nengo.Ensemble(100, dimensions=1)
-    actual_error = nengo.Ensemble(100, dimensions=1, neuron_type=nengo.Direct())
+    pre = nengo.Ensemble(50, dimensions=1, label="Pre")
+    post = nengo.Ensemble(50, dimensions=1, label="Post")
 
-    # Actual Error = pre - post (direct mode)
-    # Square
+    # Ensemble to compute the learning error signal
+    error = nengo.Ensemble(100, dimensions=1, label="Learning Error")
+
+    # Node to compute the actual error value
+    actual_error = nengo.Node(size_in=1, label="Actual Error")
+
+    # Learn the communication channel
+    nengo.Connection(pre, actual_error, transform=-1)
+    nengo.Connection(pre, error, transform=-1, synapse=0.02)
+
+    # Learn the square function
     # nengo.Connection(pre, actual_error, function=lambda x: x**2, transform=-1)
-    nengo.Connection(pre, actual_error, transform=-1)  # Communication Channel
-    nengo.Connection(post, actual_error, transform=1)
+    # nengo.Connection(pre, error, function=lambda x: x**2, transform=-1)
 
     # Error = pre - post
-    # Square
-    # nengo.Connection(pre, error, function=lambda x: x**2, transform=-1)
-    # Communication Channel
-    nengo.Connection(pre, error, transform=-1, synapse=0.02)
+    nengo.Connection(post, actual_error, transform=1)
     nengo.Connection(post, error, transform=1, synapse=0.02)
 
     # Connecting pre population to post population (communication channel)
@@ -74,24 +80,23 @@ with model:
 
     # Adding the learning rule to the connection
     conn.learning_rule_type = {
-        "my_pes": nengo.PES(learning_rate=1e-3),
-        "my_bcm": nengo.BCM(),
+        "my_pes": nengo.PES(),
+        "my_bcm": nengo.BCM(learning_rate=1e-10),
     }
 
     # Error connections don't impart current
     error_conn = nengo.Connection(error, conn.learning_rule["my_pes"])
 
     # Providing input to the model
-    input = nengo.Node(WhiteSignal(30, high=10))  # RMS = 0.5 by default
-    # Connecting input to the pre ensemble
-    nengo.Connection(input, pre, synapse=0.02)
+    stim = nengo.Node(WhiteSignal(30, high=10), label="Input")  # RMS = 0.5 by default
+    nengo.Connection(stim, pre, synapse=0.02)  # Connect the input to the pre ensemble
 
-    # function to inhibit the error population after 25 seconds
+    # Function to inhibit the error population after 15s
     def inhib(t):
         return 2.0 if t > 15.0 else 0.0
 
     # Connecting inhibit population to error population
-    inhibit = nengo.Node(inhib)
+    inhibit = nengo.Node(inhib, label="Inhibit")
     nengo.Connection(
-        inhibit, error.neurons, transform=[[-1]] * error.n_neurons, synapse=0.01
+        inhibit, error.neurons, transform=[[-3]] * error.n_neurons, synapse=0.01
     )

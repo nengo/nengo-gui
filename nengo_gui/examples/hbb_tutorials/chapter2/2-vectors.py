@@ -28,11 +28,13 @@ import nengo
 import numpy as np
 from nengo.dists import Uniform
 
+# Create the network object to which we can add ensembles, connections, etc.
 model = nengo.Network(label="2D Representation")
+
 with model:
     # Input Nodes
-    sin = nengo.Node(output=np.sin)
-    cos = nengo.Node(output=np.cos)
+    stim_sin = nengo.Node(output=np.sin, label="sin")
+    stim_cos = nengo.Node(output=np.cos, label="cos")
 
     # Ensemble with 100 LIF neurons which represents a 2-dimensional signal
     x = nengo.Ensemble(100, dimensions=2, max_rates=Uniform(100, 200))
@@ -41,7 +43,6 @@ with model:
     encoders = x.encoders.sample(100, 2)
 
     # Connecnting input to ensemble
-    # The indices in ensemble 'x' define which dimension the input will project
-    # to
-    nengo.Connection(sin, x[0])
-    nengo.Connection(cos, x[1])
+    # The indices in ensemble 'x' define which dimension the input will project to
+    nengo.Connection(stim_sin, x[0])
+    nengo.Connection(stim_cos, x[1])

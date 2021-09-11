@@ -17,17 +17,17 @@
 # channel. However as described in the book, you can scale a represented
 # variable by a constant value by changing the transform. Example: if you
 # set the transform of ensemble B to 0 and ensemble A to 2
-# (i.e., nengo.Connection(input_A, A, transform=[2]) ), the sum will be twice
-# of the input_A. You will also need to set an appropriate radius for the
+# (i.e., nengo.Connection(stim_A, ens_A, transform=[2]) ), the sum will be twice
+# of the stim_A. You will also need to set an appropriate radius for the
 # Sum ensemble to avoid saturation when you change the transform values.
 
 # Press the play button to run the simulation.
-# The input_A and input_B graphs show the inputs to ensembles A and B
+# The stim_A and stim_B graphs show the inputs to ensembles A and B
 # respectively. The graphs A and B show the decoded value of the activity of
 # ensembles A and B respectively. The sum graph shows that the decoded value of
 # the activity in the Sum ensemble provides a good estimate of the sum of inputs
 # A and B. You can use the sliders to change the input values provided by the
-# input_A and input_B nodes.
+# stim_A and stim_B nodes.
 
 
 # Setup the environment
@@ -35,26 +35,32 @@ import nengo
 from nengo.dists import Uniform
 from nengo.processes import Piecewise
 
-# Create the network
+# Create the network object to which we can add ensembles, connections, etc.
 model = nengo.Network(label="Scalar Addition")
 
 with model:
     # Inputs to drive the activity in ensembles A and B
-    input_A = nengo.Node(Piecewise({0: -0.75, 1.25: 0.5, 2.5: 0.70, 3.75: 0}))
-    input_B = nengo.Node(Piecewise({0: 0.25, 1.25: -0.5, 2.5: 0.85, 3.75: 0}))
+    stim_A = nengo.Node(
+        Piecewise({0: -0.75, 1.25: 0.5, 2.5: 0.70, 3.75: 0}), label="Input A"
+    )
+    stim_B = nengo.Node(
+        Piecewise({0: 0.25, 1.25: -0.5, 2.5: 0.85, 3.75: 0}), label="Input B"
+    )
 
     # Ensembles with 100 LIF neurons each
-    # Represents the first input
-    A = nengo.Ensemble(100, dimensions=1, max_rates=Uniform(100, 200))
-    # Represents the second input
-    B = nengo.Ensemble(100, dimensions=1, max_rates=Uniform(100, 200))
+    # Represents the first input (A)
+    ens_A = nengo.Ensemble(100, dimensions=1, max_rates=Uniform(100, 200), label="A")
+    # Represents the second input (B)
+    ens_B = nengo.Ensemble(100, dimensions=1, max_rates=Uniform(100, 200), label="B")
     # Reprsents the sum of two inputs
-    Sum = nengo.Ensemble(100, dimensions=1, max_rates=Uniform(100, 200), radius=2)
+    ens_sum = nengo.Ensemble(
+        100, dimensions=1, max_rates=Uniform(100, 200), radius=2, label="Sum"
+    )
 
     # Connecting the input nodes to ensembles
-    nengo.Connection(input_A, A)
-    nengo.Connection(input_B, B)
+    nengo.Connection(stim_A, ens_A)
+    nengo.Connection(stim_B, ens_B)
 
     # Connecting ensembles A and B to the Sum ensemble
-    nengo.Connection(A, Sum)
-    nengo.Connection(B, Sum)
+    nengo.Connection(ens_A, ens_sum)
+    nengo.Connection(ens_B, ens_sum)

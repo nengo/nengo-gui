@@ -21,16 +21,17 @@ import nengo
 # Setup the environment
 import numpy as np
 
+# Create the network object to which we can add ensembles, connections, etc.
 model = nengo.Network(label="A Single Neuron")
+
 with model:
     # Input
-    cos = nengo.Node(lambda t: np.cos(16 * t))
+    stim = nengo.Node(lambda t: np.cos(16 * t), label="input")
 
     # Ensemble with one neuron
     neuron = nengo.Ensemble(
         1, dimensions=1, encoders=[[1]]  # Represent a scalar
-    )  # Sets the neurons firing rate to increase
-    # for positive input
+    )  # Sets the neurons firing rate to increase for positive input
 
     # Connecting input to ensemble
-    nengo.Connection(cos, neuron)
+    nengo.Connection(stim, neuron)

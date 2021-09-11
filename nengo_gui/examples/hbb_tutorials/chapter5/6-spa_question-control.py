@@ -21,23 +21,23 @@ import nengo.spa as spa
 import numpy as np
 from nengo.spa import Vocabulary
 
-D = 64  # the dimensionality of the vectors
-rng = np.random.RandomState(15)
-vocab = Vocabulary(dimensions=D, rng=rng, max_similarity=0.1)
+dim = 32  # The dimensionality of the vectors
+rng = np.random.RandomState(11)
+vocab = Vocabulary(dimensions=dim, rng=rng, max_similarity=0.1)
 
 # Adding semantic pointers to the vocabulary
 CIRCLE = vocab.parse("CIRCLE")
 BLUE = vocab.parse("BLUE")
 RED = vocab.parse("RED")
 SQUARE = vocab.parse("SQUARE")
-ZERO = vocab.add("ZERO", [0] * D)
+ZERO = vocab.add("ZERO", [0] * dim)
 
+# Create the spa.SPA network to which we can add SPA objects
 model = spa.SPA(label="Question Answering with Control", vocabs=[vocab])
 with model:
-
-    model.visual = spa.State(D)
-    model.motor = spa.State(D)
-    model.memory = spa.State(D, feedback=1, feedback_synapse=0.1)
+    model.visual = spa.State(dim)
+    model.motor = spa.State(dim)
+    model.memory = spa.State(dim, feedback=1, feedback_synapse=0.1)
 
     actions = spa.Actions(
         "dot(visual, STATEMENT) --> memory=visual",
@@ -47,7 +47,7 @@ with model:
     model.bg = spa.BasalGanglia(actions)
     model.thalamus = spa.Thalamus(model.bg)
 
-    # function for providing visual input
+    # Function for providing visual input
     def visual_input(t):
         if 0.1 < t < 0.3:
             return "STATEMENT+RED*CIRCLE"
@@ -57,8 +57,7 @@ with model:
             return "QUESTION+BLUE"
         elif 0.75 < t < 0.9:
             return "QUESTION+CIRCLE"
-        else:
-            return "ZERO"
+        return "ZERO"
 
     # Inputs
     model.input = spa.Input(visual=visual_input)

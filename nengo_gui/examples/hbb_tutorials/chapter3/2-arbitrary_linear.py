@@ -16,8 +16,8 @@
 
 # Press the play button to run the simulation.
 # The graphs show a two-dimesional input linearly projected on to a
-# two-dimensional ensemble of neurons (x), which further linearly projects it on
-# to a three-dimesional neuronal ensemble (z). You can use the sliders to change
+# two-dimensional ensemble of neurons (ens_X), which further linearly projects it on
+# to a three-dimesional neuronal ensemble (ens_Z). You can use the sliders to change
 # the input values provided by the input node.
 
 import nengo
@@ -25,20 +25,20 @@ import nengo
 # Setup the environment
 import numpy as np
 
-# Create a 'model' object to which we can add ensembles, connections, etc.
+# Create the network object to which we can add ensembles, connections, etc.
 model = nengo.Network(label="Arbitrary Linear Transformation")
-with model:
-    # Two-dimensional input signal with constant values of 0.5 and -0.5 in two
-    # dimensions
-    input = nengo.Node(lambda t: [0.5, -0.5])
 
-    # Ensembles with 200 LIF neurons having dimentions 2 and 3
-    x = nengo.Ensemble(200, dimensions=2)
-    z = nengo.Ensemble(200, dimensions=3)
+with model:
+    # Two-dimensional input signal with constant value of [0.5, -0.5]
+    stim = nengo.Node([0.5, -0.5], label="Input")
+
+    # 2 and 3-dimensional ensembles each with 200 LIF neurons
+    ens_X = nengo.Ensemble(200, dimensions=2, label="X")
+    ens_Z = nengo.Ensemble(200, dimensions=3, label="Z")
 
     # Connect the input to ensemble x
-    nengo.Connection(input, x)
+    nengo.Connection(stim, ens_X)
 
     # Connect ensemble x to ensemble z using a weight matrix
     weight_matrix = [[0.0, 1.0], [1.0, 0.0], [0.5, 0.5]]
-    nengo.Connection(x, z, transform=weight_matrix)
+    nengo.Connection(ens_X, ens_Z, transform=weight_matrix)
