@@ -5,6 +5,11 @@ import sys
 
 import numpy as np
 
+try:
+    collectionsAbc = collections.abc
+except AttributeError:
+    collectionsAbc = collections
+
 # Only test for Python 2 so that we have less changes for Python 4
 PY2 = sys.version_info[0] == 2
 
@@ -32,4 +37,4 @@ def is_iterable(obj):
     if isinstance(obj, np.ndarray):
         return obj.ndim > 0  # 0-d arrays give error if iterated over
     else:
-        return isinstance(obj, collections.Iterable)
+        return isinstance(obj, collectionsAbc.Iterable)
