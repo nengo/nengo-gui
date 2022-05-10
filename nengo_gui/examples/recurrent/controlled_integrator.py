@@ -31,7 +31,7 @@ with model:
     tau = 0.1
     nengo.Connection(stim, a[0], transform=tau, synapse=tau)
 
-    control = nengo.Node(1)
+    control = nengo.Node(0)
 
     # Connect the "Control" signal to the second of a's two input channels.
     nengo.Connection(control, a[1], synapse=0.005)
@@ -40,4 +40,4 @@ with model:
     # of both dimensions in A (i.e., the value times the control)
     # and then adds this back into the first dimension of A using
     # a transform
-    nengo.Connection(a, a[0], function=lambda x: x[0] * x[1], synapse=tau)
+    nengo.Connection(a, a[0], function=lambda x: x[0] * x[1] + x[0], synapse=tau)
