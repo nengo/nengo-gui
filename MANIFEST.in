@@ -18,5 +18,6 @@ recursive-include nengo_gui *.py
 recursive-include nengo_gui *.rst
 recursive-include nengo_gui *.svg
 recursive-include nengo_gui *.ttf
+recursive-include nengo_gui *.txt
 recursive-include nengo_gui *.woff
 recursive-include nengo_gui *.woff2

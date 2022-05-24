@@ -19,10 +19,13 @@ Release History
    - Bugfixes
    - Documentation
 
-0.4.9 (unreleased)
-==================
+0.4.9 (May 24, 2022)
+====================
 
 *Compatible with Nengo 2.6.0 - 3.1.0*
+
+- Improvement: Reworked How To Build a Brain examples to be more clear.
+- Bugfix: Fix compatibility with Python version 3.10.
 
 0.4.8 (June 9, 2021)
 ====================

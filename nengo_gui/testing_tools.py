@@ -97,23 +97,3 @@ def mouse_scroll(driver, scroll_y):
                 evt.clientY = %s ;
                 netg.dispatchEvent(evt);"""
     driver.execute_script(script % (scroll_y, mouse_x, mouse_y))
-
-
-def imgur_screenshot(driver):
-
-    """Takes a screenshot, uploads it to imgur, and prints the link"""
-
-    import pyimgur
-
-    driver.get_screenshot_as_file("test_result.png")
-    client_id = "ce3e3bc9c9f0af0"
-    client_secret = "b033592e871bd14ac89d3e7356d8d96691713170"
-    im = pyimgur.Imgur(client_id, client_secret)
-
-    current_folder = os.getcwd()
-    PATH = os.path.join(current_folder, "test_result.png")
-    uploaded_image = im.upload_image(PATH, title="Uploaded to Imgur")
-    os.remove("test_result.png")
-    print()
-    print(uploaded_image.title)
-    print(uploaded_image.link)
