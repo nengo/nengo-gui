@@ -37,7 +37,7 @@ setup(
     scripts=[],
     include_package_data=True,
     url="https://github.com/nengo/nengo-gui",
-    license="Free for non-commercial use",
+    license="GNU General Public License, version 2",
     description="Web-based GUI for building and visualizing Nengo models.",
     long_description=read("README.rst", "CHANGES.rst"),
     zip_safe=False,
@@ -57,7 +57,7 @@ setup(
     classifiers=[  # https://pypi.python.org/pypi?%3Aaction=list_classifiers
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Science/Research",
-        "License :: Free for non-commercial use",
+        "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
         "Operating System :: OS Independent",
         "Programming Language :: JavaScript",
         "Programming Language :: Python :: 2.7",
