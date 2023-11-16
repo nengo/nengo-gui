@@ -19,6 +19,11 @@ Release History
    - Bugfixes
    - Documentation
 
+0.5.1 (unreleased)
+==================
+
+
+
 0.5.0 (November 16, 2023)
 =========================
 
