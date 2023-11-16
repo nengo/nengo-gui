@@ -19,10 +19,12 @@ Release History
    - Bugfixes
    - Documentation
 
-0.4.10 (unreleased)
-===================
+0.5.0 (November 16, 2023)
+=========================
 
 *Compatible with Nengo 2.6.0 - 3.1.0*
+
+- Made NengoGUI available under the GPLv2 license.
 
 0.4.9 (May 24, 2022)
 ====================
