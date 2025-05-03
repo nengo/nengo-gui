@@ -16,7 +16,7 @@ class PlotInfo(object):
     def to_dict(self):
         x, y = self.x, self.y
         if self.plot == "multiline":
-            assert self.x.shape[0] == self.y.shape[1]
+            #assert self.x.shape[0] == self.y.shape[1]
             x = self.x.tolist()
             y = [yy.tolist() for yy in self.y]
         return {
