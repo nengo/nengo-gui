@@ -310,7 +310,8 @@ class Definitions(object):
     COOKIE_NAME_RE = re.compile("^([%s:]+)\Z" % COOKIE_NAME)
     COOKIE_RE = re.compile(COOKIE)
     SET_COOKIE_HEADER_RE = re.compile(SET_COOKIE_HEADER)
-    ATTR_RE = re.compile(ATTR)
+    # Python 3.11+ only allows global flags to be set at the beginning
+    ATTR_RE = re.compile('(?ix)'+ATTR.replace('(?ix)',''))  
     DATE_RE = re.compile(DATE)
     DOMAIN_RE = re.compile(DOMAIN)
     PATH_RE = re.compile('^([%s]+)\Z' % EXTENSION_AV)
