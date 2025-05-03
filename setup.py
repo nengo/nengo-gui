@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-import imp
+import importlib
 import io
 import os
+import sys
 
 try:
     from setuptools import find_packages, setup
@@ -24,13 +25,16 @@ def read(*filenames, **kwargs):
 
 
 root = os.path.dirname(os.path.realpath(__file__))
-version_module = imp.load_source(
+pkg_spec = importlib.util.spec_from_file_location(
     "version", os.path.join(root, "nengo_gui", "version.py")
 )
+pkg_module = importlib.util.module_from_spec(pkg_spec)
+sys.modules["version"] = pkg_module
+pkg_spec.loader.exec_module(pkg_module)
 
 setup(
     name="nengo-gui",
-    version=version_module.version,
+    version=pkg_module.version,
     author="Applied Brain Research",
     author_email="info@appliedbrainresearch.com",
     packages=find_packages(),
