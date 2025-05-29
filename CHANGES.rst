@@ -22,7 +22,7 @@ Release History
 0.5.1 (unreleased)
 ==================
 
-
+- Update to support Python 3.13
 
 0.5.0 (November 16, 2023)
 =========================
