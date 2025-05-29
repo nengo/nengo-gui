@@ -19,8 +19,8 @@ Release History
    - Bugfixes
    - Documentation
 
-0.5.1 (unreleased)
-==================
+0.6.0 (May 29, 2025)
+====================
 
 - Update to support Python 3.13
 
