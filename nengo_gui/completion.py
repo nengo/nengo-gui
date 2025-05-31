@@ -10,7 +10,7 @@ except ImportError:
         def __init__(self, *args, **kwargs):
             pass
 
-        def completions(self):
+        def complete(self, line, column):
             return []
 
 
@@ -19,5 +19,5 @@ _jedi_lock = threading.Lock()
 
 def get_completions(code, line, column, path=None):
     with _jedi_lock:
-        script = Script(code, line, column, path=path)
-        return script.completions()
+        script = Script(code, path=path)
+        return script.complete(line, column)
