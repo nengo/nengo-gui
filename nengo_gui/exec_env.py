@@ -107,13 +107,16 @@ class ExecutionEnvironment(object):
             self.added_directory = self.directory
 
         self.stdout = StringIO()
+        self.stdin = StringIO()
 
         flag.executing = True
         self.simulators = {}
 
-        # add hooks to record stdout
+        # add hooks to record stdout and replace stdin
+        #  as it can't be used in the gui
 
         sys.stdout = self.stdout
+        sys.stdin = self.stdin
 
         if not self.allow_sim:
             for mod in discover_backends().values():
@@ -126,6 +129,7 @@ class ExecutionEnvironment(object):
         flag.executing = False
 
         sys.stdout = sys.__stdout__
+        sys.stdin = sys.__stdin__
 
         # ensure what has been printed is safe to show in html
         s = self.stdout.getvalue()
