@@ -272,6 +272,15 @@ Nengo.Modal.prototype.main_config = function() {
           '<div class="help-block with-errors"></div>' +
         '</div>' +
       '</div>' +
+      '<div class="form-group">' +
+        '<div class="checkbox">' +
+          '<label for="auto-save" class="control-label">' +
+            '<input type="checkbox" id="auto-save">' +
+            'Automatically save changes (currently not working!)' +
+          '</label>' +
+          '<div class="help-block with-errors"></div>' +
+        '</div>' +
+      '</div>' +
       '<div class="form-group" id="config-scriptdir-group">' +
         '<label for="config-scriptdir" class="control-label">' +
           'Script directory</label>' +
