@@ -336,8 +336,10 @@ Nengo.Modal.prototype.main_config = function() {
     } else {
 	$('#sync-editor').attr("disabled", "disabled");
 	$('#autocomplete').attr("disabled", "disabled");
+	$('#auto-save').attr("disabled", "disabled");
 	$('#sync-editor').parent().addClass("disabled");
 	$('#autocomplete').parent().addClass("disabled");
+	$('#auto-save').parent().addClass("disabled");
     }
 
     $('#config-fontsize').val(Nengo.netgraph.font_size);
