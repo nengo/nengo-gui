@@ -265,18 +265,18 @@ Nengo.Modal.prototype.main_config = function() {
       '</div>' +
       '<div class="form-group">' +
         '<div class="checkbox">' +
-          '<label for="transparent-nets" class="control-label">' +
-            '<input type="checkbox" id="transparent-nets">' +
-            'Expanded networks are transparent' +
+          '<label for="auto-save" class="control-label">' +
+            '<input type="checkbox" id="auto-save">' +
+            'Automatically save changes' +
           '</label>' +
           '<div class="help-block with-errors"></div>' +
         '</div>' +
       '</div>' +
       '<div class="form-group">' +
         '<div class="checkbox">' +
-          '<label for="auto-save" class="control-label">' +
-            '<input type="checkbox" id="auto-save">' +
-            'Automatically save changes (currently not working!)' +
+          '<label for="transparent-nets" class="control-label">' +
+            '<input type="checkbox" id="transparent-nets">' +
+            'Expanded networks are transparent' +
           '</label>' +
           '<div class="help-block with-errors"></div>' +
         '</div>' +
@@ -328,8 +328,9 @@ Nengo.Modal.prototype.main_config = function() {
             Nengo.ace.editor.setOption("enableLiveAutocompletion", $('#autocomplete').prop('checked'));
             Nengo.config.autocomplete = $('#autocomplete').prop('checked');
         });
-        $('#auto-save').prop('checked', Nengo.config.autosave);
+        $('#auto-save').prop('checked', Nengo.config.auto_save);
         $('#auto-save').change(function () {
+            Nengo.ace.editor.setOption("enableLiveAutosave", $('#auto-save').prop('checked'));
             Nengo.ace.auto_save = $('#auto-save').prop('checked');
         });
     } else {
