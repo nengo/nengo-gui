@@ -128,7 +128,8 @@ Nengo.Ace = function (uid, args) {
     this.hidden = Nengo.config.hide_editor;
     this.font_size = Nengo.config.editor_font_size;
     this.auto_update = Nengo.config.auto_update;
-    this.auto_save = Nengo.config.auto_save;
+    // Change by Maddy & Daria 23/05/26: checkbox checked by default
+    this.auto_save = Nengo.config.auto_save !== undefined ? Nengo.config.auto_save : true;
     this.redraw();
 
     $(window).on('resize', function() {self.on_resize();});
