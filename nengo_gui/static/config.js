@@ -28,6 +28,7 @@ Nengo.Config = function(parent, args) {
     define_option("font_size", 100);
     define_option("scriptdir", ".");
     define_option("autocomplete", true);
+    define_option("auto-save", true);
 
     // Ace editor options
     define_option("hide_editor", false);

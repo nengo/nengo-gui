@@ -328,6 +328,10 @@ Nengo.Modal.prototype.main_config = function() {
             Nengo.ace.editor.setOption("enableLiveAutocompletion", $('#autocomplete').prop('checked'));
             Nengo.config.autocomplete = $('#autocomplete').prop('checked');
         });
+        $('#auto-save').prop('checked', Nengo.config.autosave);
+        $('#auto-save').change(function () {
+            Nengo.ace.auto_save = $('#auto-save').prop('checked');
+        });
     } else {
 	$('#sync-editor').attr("disabled", "disabled");
 	$('#autocomplete').attr("disabled", "disabled");
