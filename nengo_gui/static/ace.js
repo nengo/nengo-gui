@@ -61,6 +61,9 @@ Nengo.Ace = function (uid, args) {
 
     this.schedule_updates();
 
+    // attempt at implementing autosave
+    this.schedule_autosave();
+
     Object.defineProperty(this, 'width', {
         get: function() {
             return Nengo.config.editor_width;
@@ -181,6 +184,20 @@ Nengo.Ace.prototype.save_file = function () {
         $('#Save_file').addClass('in-progress');
     }
 }
+
+// Added by Maddy and Daria 23/05/26: autosave function with debouncing
+
+Nengo.Ace.prototype.schedule_autosave = function () {
+    var self = this;
+    var debounceTimer = null;
+
+    self.editor.on('change', function () {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(function () {
+            self.save_file();  
+        }, 2000);
+    });
+};
 
 Nengo.Ace.prototype.enable_save = function () {
     $('#Save_file').removeClass('disabled');
