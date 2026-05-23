@@ -19,13 +19,10 @@ Release History
    - Bugfixes
    - Documentation
 
-
 0.6.1 (unreleased)
 ==================
 
-
-
-
+- avoid freezing if nengo_ocl environment variable not set
 
 0.6.0 (May 29, 2025)
 ====================
