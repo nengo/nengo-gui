@@ -113,7 +113,7 @@ Nengo.Ace = function (uid, args) {
         }
     });
 
-    // automatically update the model based on the text
+    // automatically save the text when there are changes
     Object.defineProperty(this, 'auto_save', {
         get: function() {
             return Nengo.config.auto_save;
