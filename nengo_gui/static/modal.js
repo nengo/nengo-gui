@@ -265,6 +265,15 @@ Nengo.Modal.prototype.main_config = function() {
       '</div>' +
       '<div class="form-group">' +
         '<div class="checkbox">' +
+          '<label for="auto_save" class="control-label">' +
+            '<input type="checkbox" id="auto_save">' +
+            'Automatically save changes' +
+          '</label>' +
+          '<div class="help-block with-errors"></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<div class="checkbox">' +
           '<label for="transparent-nets" class="control-label">' +
             '<input type="checkbox" id="transparent-nets">' +
             'Expanded networks are transparent' +
@@ -319,11 +328,20 @@ Nengo.Modal.prototype.main_config = function() {
             Nengo.ace.editor.setOption("enableLiveAutocompletion", $('#autocomplete').prop('checked'));
             Nengo.config.autocomplete = $('#autocomplete').prop('checked');
         });
+        $('#auto_save').prop('checked', Nengo.config['auto_save']);
+        $('#auto_save').change(function () {
+            var enabled = $('#auto_save').prop('checked');
+            Nengo.ace.editor.setOption("enableLiveAutosave", enabled);
+            Nengo.ace.auto_save = enabled;
+            Nengo.config.auto_save = enabled;
+        });
     } else {
 	$('#sync-editor').attr("disabled", "disabled");
 	$('#autocomplete').attr("disabled", "disabled");
+	$('#auto_save').attr("disabled", "disabled");
 	$('#sync-editor').parent().addClass("disabled");
 	$('#autocomplete').parent().addClass("disabled");
+	$('#auto_save').parent().addClass("disabled");
     }
 
     $('#config-fontsize').val(Nengo.netgraph.font_size);

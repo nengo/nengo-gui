@@ -52,6 +52,7 @@ Nengo.Ace = function (uid, args) {
     this.save_disabled = true;
     this.update_trigger = true; // if an update of the model from the code editor is allowed
     this.auto_update = true; // automatically update the model based on the text
+    this.auto_save = true; // automatically save the code 
 
     //Setup the button to toggle the code editor
     $('#Toggle_ace').on('click', function(){self.toggle_shown();});
@@ -60,6 +61,9 @@ Nengo.Ace = function (uid, args) {
     $('#Font_decrease').on('click', function(){self.font_size -= 1;});
 
     this.schedule_updates();
+
+    // attempt at implementing autosave
+    this.schedule_autosave();
 
     Object.defineProperty(this, 'width', {
         get: function() {
@@ -109,10 +113,23 @@ Nengo.Ace = function (uid, args) {
         }
     });
 
+    // automatically save the text when there are changes
+    Object.defineProperty(this, 'auto_save', {
+        get: function() {
+            return Nengo.config.auto_save;
+        },
+        set: function(val) {
+            this.save_trigger = val;
+            Nengo.config.auto_save = val;
+        }
+    });
+
     this.width = Nengo.config.editor_width;
     this.hidden = Nengo.config.hide_editor;
     this.font_size = Nengo.config.editor_font_size;
     this.auto_update = Nengo.config.auto_update;
+    // Change by Maddy & Daria 23/05/26: checkbox checked by default
+    this.auto_save = Nengo.config.auto_save !== undefined ? Nengo.config.auto_save : true;
     this.redraw();
 
     $(window).on('resize', function() {self.on_resize();});
@@ -174,13 +191,40 @@ Nengo.Ace.prototype.schedule_updates = function () {
 }
 
 Nengo.Ace.prototype.save_file = function () {
+    var self = this;
     if (!($('#Save_file').hasClass('disabled'))) {
-        var editor_code = this.editor.getValue();
-        this.ws.send(JSON.stringify({code:editor_code, save:true}));
-        this.disable_save();
-        $('#Save_file').addClass('in-progress');
+        if (self.auto_save) {
+            self.save_trigger = self.auto_save;
+            var editor_code = this.editor.getValue();
+            this.ws.send(JSON.stringify({code:editor_code, save:true}));
+            this.disable_save();
+            $('#Save_file').addClass('in-progress');
+        }
     }
 }
+
+// Nengo.Ace.prototype.save_file = function () {
+//     if (!($('#Save_file').hasClass('disabled'))) {
+//         var editor_code = this.editor.getValue();
+//         this.ws.send(JSON.stringify({code:editor_code, save:true}));
+//         this.disable_save();
+//         $('#Save_file').addClass('in-progress');
+//     }
+// }
+
+// Added by Maddy and Daria 23/05/26: autosave function with debouncing
+
+Nengo.Ace.prototype.schedule_autosave = function () {
+    var self = this;
+    var debounceTimer = null;
+
+    self.editor.on('change', function () {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(function () {
+            self.save_file();  
+        }, 2000);
+    });
+};
 
 Nengo.Ace.prototype.enable_save = function () {
     $('#Save_file').removeClass('disabled');
